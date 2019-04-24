@@ -63,7 +63,7 @@ enum SectionCode : int8_t {
   kTypeSectionCode = 1,        // Function signature declarations
   kImportSectionCode = 2,      // Import declarations
   kFunctionSectionCode = 3,    // Function declarations
-  kTableSectionCode = 4,       // Indirect function table and others
+  kTableSectionCode = 4,       // Indirect function table and other tables
   kMemorySectionCode = 5,      // Memory attributes
   kGlobalSectionCode = 6,      // Global declarations
   kExportSectionCode = 7,      // Exports
@@ -79,11 +79,10 @@ enum SectionCode : int8_t {
   // to be consistent.
   kNameSectionCode,              // Name section (encoded as a string)
   kSourceMappingURLSectionCode,  // Source Map URL section
-  kCompilationHintsSectionCode,  // Compilation hints section
 
   // Helper values
   kFirstSectionInModule = kTypeSectionCode,
-  kLastKnownModuleSection = kCompilationHintsSectionCode,
+  kLastKnownModuleSection = kSourceMappingURLSectionCode,
   kFirstUnorderedSection = kDataCountSectionCode,
 };
 

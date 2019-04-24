@@ -24,7 +24,8 @@ static void md5_test(const char* string, const SkMD5::Digest& expectedDigest, sk
     {
         SkMD5 context;
         context.write(string, len);
-        SkMD5::Digest digest = context.finish();
+        SkMD5::Digest digest;
+        context.finish(digest);
 
         REPORTER_ASSERT(reporter, digests_equal(expectedDigest, digest));
     }
@@ -37,7 +38,8 @@ static void md5_test(const char* string, const SkMD5::Digest& expectedDigest, sk
         for (; data < end; ++data) {
             context.write(data, 1);
         }
-        SkMD5::Digest digest = context.finish();
+        SkMD5::Digest digest;
+        context.finish(digest);
 
         REPORTER_ASSERT(reporter, digests_equal(expectedDigest, digest));
     }

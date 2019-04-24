@@ -77,12 +77,6 @@
           ['initial', 'inherit'], next);
     },
 
-    function testValuePresets(next) {
-      testAgainstGolden(
-          valuePromptFor('transform'), 'tr', false, [], [], next,
-          ['translate(10px, 10px)', 'translateY(10px)', 'translate3d(10px, 10px, 10px)']);
-    },
-
     function testValueSubstring(next) {
       testAgainstGolden(
           valuePromptFor('color'), 'blue', false, ['blue', 'darkblue', 'lightblue'],
@@ -94,12 +88,11 @@
     },
 
     function testValueVariables(next) {
-      testAgainstGolden(valuePromptFor('color'), 'var(', true, ['--red-color', '--blue-color'], ['width'], next,
-          ['--red-color)', '--blue-color)']);
+      testAgainstGolden(valuePromptFor('color'), 'var(', true, ['--red-color)', '--blue-color)'], ['width'], next);
     }
   ]);
 
-  function testAgainstGolden(prompt, inputText, force, golden, antiGolden, callback, transformedGolden = []) {
+  function testAgainstGolden(prompt, inputText, force, golden, antiGolden, callback) {
     var proxyElement = document.createElement('div');
     document.body.appendChild(proxyElement);
     proxyElement.style = 'webkit-user-select: text; -webkit-user-modify: read-write-plaintext-only';
@@ -119,8 +112,7 @@
         .then(completions);
 
     function completions(result) {
-      var suggestions = new Set(result.map(s => s.title || s.text));
-      var appliedSuggestions = new Set(result.map(s => s.text));
+      var suggestions = new Set(result.map(s => s.text));
       var i;
       for (i = 0; i < golden.length; ++i) {
         if (!suggestions.has(golden[i]))
@@ -129,10 +121,6 @@
       for (i = 0; i < antiGolden.length; ++i) {
         if (suggestions.has(antiGolden[i]))
           TestRunner.addResult('FOUND: ' + antiGolden[i]);
-      }
-      for (i = 0; i < transformedGolden.length; ++i) {
-        if (!appliedSuggestions.has(transformedGolden[i]))
-          TestRunner.addResult('NOT FOUND: ' + transformedGolden[i]);
       }
       proxyElement.remove();
       callback();

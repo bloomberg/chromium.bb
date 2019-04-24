@@ -34,7 +34,8 @@ void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
   DWORD bytes_written = 0;
   LOG(WARNING) << "Timeout reached; unblocking pipe by writing "
                << size << " bytes";
-  CHECK(WriteFile(handle, unblock_data.data(), size, &bytes_written, nullptr));
+  CHECK(WriteFile(handle, unblock_data.data(), size, &bytes_written,
+                  NULL));
   CHECK_EQ(size, bytes_written);
   *unblocked = true;
 }
@@ -60,7 +61,7 @@ bool ReadData(HANDLE read_fd,
   while (bytes_read < bytes_max) {
     DWORD num_bytes;
     if (!ReadFile(read_fd, buffer + bytes_read, bytes_max - bytes_read,
-                  &num_bytes, nullptr)) {
+                  &num_bytes, NULL)) {
       PLOG(ERROR) << "ReadFile failed";
       return false;
     }
@@ -87,9 +88,7 @@ bool ReadData(HANDLE read_fd,
 
 namespace net {
 
-bool LocalTestServer::LaunchPython(
-    const base::FilePath& testserver_path,
-    const std::vector<base::FilePath>& python_path) {
+bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command))
     return false;
@@ -98,9 +97,9 @@ bool LocalTestServer::LaunchPython(
   if (!AddCommandLineArguments(&python_command))
     return false;
 
-  HANDLE child_read = nullptr;
-  HANDLE child_write = nullptr;
-  if (!CreatePipe(&child_read, &child_write, nullptr, 0)) {
+  HANDLE child_read = NULL;
+  HANDLE child_write = NULL;
+  if (!CreatePipe(&child_read, &child_write, NULL, 0)) {
     PLOG(ERROR) << "Failed to create pipe";
     return false;
   }
@@ -130,7 +129,6 @@ bool LocalTestServer::LaunchPython(
       base::NumberToString(reinterpret_cast<uintptr_t>(child_write)));
 
   base::LaunchOptions launch_options;
-  SetPythonPathInEnvironment(python_path, &launch_options.environment);
 
   // Set CWD to source root.
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT,

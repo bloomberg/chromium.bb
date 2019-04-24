@@ -102,12 +102,15 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
+                getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
+            }
             // The new Languages Preference *feature* is an advanced version of this translate
             // preference. Once Languages Preference is enabled, remove this setting.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
                 getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                 getPreferenceScreen().removePreference(findPreference(Type.SENSORS));
             }
         }
@@ -138,14 +141,16 @@ public class SiteSettingsPreferences extends PreferenceFragment
             }
             websitePrefs.add(Type.BACKGROUND_SYNC);
             websitePrefs.add(Type.CAMERA);
-            websitePrefs.add(Type.CLIPBOARD);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
+                websitePrefs.add(Type.CLIPBOARD);
+            }
             websitePrefs.add(Type.COOKIES);
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);
             websitePrefs.add(Type.MICROPHONE);
             websitePrefs.add(Type.NOTIFICATIONS);
             websitePrefs.add(Type.POPUPS);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                 websitePrefs.add(Type.SENSORS);
             }
             websitePrefs.add(Type.SOUND);
@@ -175,8 +180,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             p.setOnPreferenceClickListener(this);
 
-            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory
-                        || Type.NOTIFICATIONS == prefCategory)
+            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory)
                     && SiteSettingsCategory.createFromType(prefCategory)
                                .showPermissionBlockedMessage(getActivity())) {
                 // Show 'disabled' message when permission is not granted in Android.

@@ -213,6 +213,4 @@ SensorInfoLinux::SensorInfoLinux(
 
 SensorInfoLinux::~SensorInfoLinux() = default;
 
-SensorInfoLinux::SensorInfoLinux(const SensorInfoLinux&) = default;
-
 }  // namespace device

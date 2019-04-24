@@ -9,13 +9,14 @@
         .red { background-color: red; }
         .composited { transform: translateZ(0); }
     </style>
-    <script src="../resources/run-after-layout-and-paint.js"></script>
     <script type="text/javascript">
+        if (window.testRunner)
+            testRunner.dumpAsTextWithPixelResults();
         function moveFixedDiv()
         {
             document.getElementById('fixedDiv').style.top = '200px';
         }
-        runAfterLayoutAndPaint(moveFixedDiv, true);
+        window.addEventListener('load', moveFixedDiv, false);
     </script>
 </head>
 <body style="height:2000px;">

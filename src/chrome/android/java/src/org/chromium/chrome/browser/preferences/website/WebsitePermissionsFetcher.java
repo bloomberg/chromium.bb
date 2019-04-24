@@ -132,8 +132,7 @@ public class WebsitePermissionsFetcher {
         // Autoplay permission is per-origin.
         queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY));
         // USB device permission is per-origin and per-embedder.
-        queue.add(new ChooserExceptionInfoFetcher(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD));
+        queue.add(new UsbInfoFetcher());
         // Clipboard info is per-origin.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
         // Sensors permission is per-origin.
@@ -212,8 +211,7 @@ public class WebsitePermissionsFetcher {
             queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY));
         } else if (category.showSites(SiteSettingsCategory.Type.USB)) {
             // USB device permission is per-origin.
-            queue.add(new ChooserExceptionInfoFetcher(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD));
+            queue.add(new UsbInfoFetcher());
         } else if (category.showSites(SiteSettingsCategory.Type.CLIPBOARD)) {
             // Clipboard permission is per-origin.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
@@ -315,19 +313,11 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class ChooserExceptionInfoFetcher extends Task {
-        final @ContentSettingsType int mChooserDataType;
-
-        public ChooserExceptionInfoFetcher(@ContentSettingsType int type) {
-            mChooserDataType = SiteSettingsCategory.objectChooserDataTypeFromGuard(type);
-        }
-
+    private class UsbInfoFetcher extends Task {
         @Override
         public void run() {
-            if (mChooserDataType == -1) return;
-
-            for (ChosenObjectInfo info :
-                    WebsitePreferenceBridge.getChosenObjectInfo(mChooserDataType)) {
+            for (ChosenObjectInfo info : WebsitePreferenceBridge.getChosenObjectInfo(
+                         ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA)) {
                 String origin = info.getOrigin();
                 if (origin == null) continue;
                 findOrCreateSite(origin, info.getEmbedder()).addChosenObjectInfo(info);

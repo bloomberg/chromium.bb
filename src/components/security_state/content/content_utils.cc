@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -21,7 +20,6 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -59,16 +57,15 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
 }
 
 void ExplainHTTPSecurity(
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
   // If the page triggers an HTTP-Bad dangerous warning, then override the main
   // summary for the page and add a bullet describing the issue.
-  if (security_level == security_state::DANGEROUS &&
-      !security_state::IsSchemeCryptographic(visible_security_state.url)) {
+  if (security_info.security_level == security_state::DANGEROUS &&
+      !security_info.scheme_is_cryptographic) {
     security_style_explanations->summary =
         l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
-    if (visible_security_state.insecure_input_events.insecure_field_edited) {
+    if (security_info.insecure_input_events.insecure_field_edited) {
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
               l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE),
@@ -78,11 +75,12 @@ void ExplainHTTPSecurity(
 }
 
 void ExplainSafeBrowsingSecurity(
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  DCHECK_NE(visible_security_state.malicious_content_status,
-            MALICIOUS_CONTENT_STATUS_NONE);
-
+  if (security_info.malicious_content_status ==
+      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
+    return;
+  }
   // Override the main summary for the page.
   security_style_explanations->summary =
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING);
@@ -94,52 +92,48 @@ void ExplainSafeBrowsingSecurity(
 }
 
 void ExplainCertificateSecurity(
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  if (security_state::IsSHA1InChain(visible_security_state)) {
+  if (security_info.sha1_in_chain) {
     content::SecurityStyleExplanation explanation(
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_TITLE),
         l10n_util::GetStringUTF8(IDS_SHA1),
         l10n_util::GetStringUTF8(IDS_SHA1_DESCRIPTION),
-        visible_security_state.certificate,
+        security_info.certificate,
         blink::WebMixedContentContextType::kNotMixedContent);
     // The impact of SHA1 on the certificate status depends on
     // the EnableSHA1ForLocalAnchors policy.
-    if (visible_security_state.cert_status &
-        net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM) {
+    if (security_info.cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM) {
       security_style_explanations->insecure_explanations.push_back(explanation);
     } else {
       security_style_explanations->neutral_explanations.push_back(explanation);
     }
   }
 
-  if (visible_security_state.certificate &&
-      !visible_security_state.certificate->GetSubjectAltName(nullptr,
-                                                             nullptr)) {
+  if (security_info.cert_missing_subject_alt_name) {
     security_style_explanations->insecure_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_CERTIFICATE_TITLE),
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING),
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING_DESCRIPTION),
-            visible_security_state.certificate,
+            security_info.certificate,
             blink::WebMixedContentContextType::kNotMixedContent));
   }
 
-  bool is_cert_status_error =
-      net::IsCertStatusError(visible_security_state.cert_status);
+  bool is_cert_status_error = net::IsCertStatusError(security_info.cert_status);
   bool is_cert_status_minor_error =
-      net::IsCertStatusMinorError(visible_security_state.cert_status);
+      net::IsCertStatusMinorError(security_info.cert_status);
 
   if (is_cert_status_error) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
-        net::MapCertStatusToNetError(visible_security_state.cert_status)));
+        net::MapCertStatusToNetError(security_info.cert_status)));
 
     content::SecurityStyleExplanation explanation(
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_TITLE),
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
         l10n_util::GetStringFUTF8(
             IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
-        visible_security_state.certificate,
+        security_info.certificate,
         blink::WebMixedContentContextType::kNotMixedContent);
 
     if (is_cert_status_minor_error) {
@@ -152,10 +146,10 @@ void ExplainCertificateSecurity(
     // an explanation that the certificate is valid.
 
     base::string16 issuer_name;
-    if (visible_security_state.certificate) {
+    if (security_info.certificate) {
       // This results in the empty string if there is no relevant display name.
       issuer_name = base::UTF8ToUTF16(
-          visible_security_state.certificate->issuer().GetDisplayName());
+          security_info.certificate->issuer().GetDisplayName());
     } else {
       issuer_name = base::string16();
     }
@@ -164,19 +158,20 @@ void ExplainCertificateSecurity(
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
     }
 
-    if (!security_state::IsSHA1InChain(visible_security_state)) {
+    if (!security_info.sha1_in_chain) {
       security_style_explanations->secure_explanations.push_back(
           content::SecurityStyleExplanation(
               l10n_util::GetStringUTF8(IDS_CERTIFICATE_TITLE),
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
               l10n_util::GetStringFUTF8(
                   IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION, issuer_name),
-              visible_security_state.certificate,
+              security_info.certificate,
               blink::WebMixedContentContextType::kNotMixedContent));
     }
   }
 
-  if (visible_security_state.pkp_bypassed) {
+  security_style_explanations->pkp_bypassed = security_info.pkp_bypassed;
+  if (security_info.pkp_bypassed) {
     security_style_explanations->info_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_CERTIFICATE_TITLE),
@@ -185,12 +180,11 @@ void ExplainCertificateSecurity(
                 IDS_PRIVATE_KEY_PINNING_BYPASSED_DESCRIPTION)));
   }
 
-  if (visible_security_state.certificate &&
-      !visible_security_state.certificate->valid_expiry().is_null() &&
-      (visible_security_state.certificate->valid_expiry() - base::Time::Now())
+  if (security_info.certificate &&
+      !security_info.certificate->valid_expiry().is_null() &&
+      (security_info.certificate->valid_expiry() - base::Time::Now())
               .InHours() < 48 &&
-      (visible_security_state.certificate->valid_expiry() >
-       base::Time::Now())) {
+      (security_info.certificate->valid_expiry() > base::Time::Now())) {
     security_style_explanations->info_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_CERTIFICATE_EXPIRING_SOON),
@@ -200,17 +194,17 @@ void ExplainCertificateSecurity(
 }
 
 void ExplainConnectionSecurity(
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
   // Avoid showing TLS details when we couldn't even establish a TLS connection
   // (e.g. for net errors) or if there was no real connection (some tests). We
   // check the |connection_status| to see if there was a connection.
-  if (visible_security_state.connection_status == 0) {
+  if (security_info.connection_status == 0) {
     return;
   }
 
-  int ssl_version = net::SSLConnectionStatusToVersion(
-      visible_security_state.connection_status);
+  int ssl_version =
+      net::SSLConnectionStatusToVersion(security_info.connection_status);
   const char* protocol;
   net::SSLVersionToString(&protocol, ssl_version);
   const char* key_exchange;
@@ -218,8 +212,8 @@ void ExplainConnectionSecurity(
   const char* mac;
   bool is_aead;
   bool is_tls13;
-  uint16_t cipher_suite = net::SSLConnectionStatusToCipherSuite(
-      visible_security_state.connection_status);
+  uint16_t cipher_suite =
+      net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
   const base::string16 protocol_name = base::ASCIIToUTF16(protocol);
@@ -234,19 +228,17 @@ void ExplainConnectionSecurity(
   base::string16 key_exchange_name;
   if (is_tls13) {
     key_exchange_name = base::ASCIIToUTF16(
-        SSL_get_curve_name(visible_security_state.key_exchange_group));
-  } else if (visible_security_state.key_exchange_group != 0) {
+        SSL_get_curve_name(security_info.key_exchange_group));
+  } else if (security_info.key_exchange_group != 0) {
     key_exchange_name = l10n_util::GetStringFUTF16(
         IDS_SSL_KEY_EXCHANGE_WITH_GROUP, base::ASCIIToUTF16(key_exchange),
         base::ASCIIToUTF16(
-            SSL_get_curve_name(visible_security_state.key_exchange_group)));
+            SSL_get_curve_name(security_info.key_exchange_group)));
   } else {
     key_exchange_name = base::ASCIIToUTF16(key_exchange);
   }
 
-  int status =
-      net::ObsoleteSSLStatus(visible_security_state.connection_status,
-                             visible_security_state.peer_signature_algorithm);
+  int status = security_info.obsolete_ssl_status;
   if (status == net::OBSOLETE_SSL_NONE) {
     security_style_explanations->secure_explanations.emplace_back(
         l10n_util::GetStringUTF8(IDS_SSL_CONNECTION_TITLE),
@@ -286,13 +278,23 @@ void ExplainConnectionSecurity(
 }
 
 void ExplainContentSecurity(
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
+  security_style_explanations->ran_insecure_content_style =
+      SecurityLevelToSecurityStyle(security_state::kRanInsecureContentLevel);
+  security_style_explanations->displayed_insecure_content_style =
+      SecurityLevelToSecurityStyle(
+          security_state::kDisplayedInsecureContentLevel);
 
   // Add the secure explanation unless there is an issue.
   bool add_secure_explanation = true;
 
-  if (visible_security_state.ran_mixed_content) {
+  security_style_explanations->ran_mixed_content =
+      security_info.mixed_content_status ==
+          security_state::CONTENT_STATUS_RAN ||
+      security_info.mixed_content_status ==
+          security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  if (security_style_explanations->ran_mixed_content) {
     add_secure_explanation = false;
     security_style_explanations->insecure_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -302,7 +304,12 @@ void ExplainContentSecurity(
             nullptr, blink::WebMixedContentContextType::kBlockable));
   }
 
-  if (visible_security_state.displayed_mixed_content) {
+  security_style_explanations->displayed_mixed_content =
+      security_info.mixed_content_status ==
+          security_state::CONTENT_STATUS_DISPLAYED ||
+      security_info.mixed_content_status ==
+          security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  if (security_style_explanations->displayed_mixed_content) {
     add_secure_explanation = false;
     security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -312,7 +319,9 @@ void ExplainContentSecurity(
             nullptr, blink::WebMixedContentContextType::kOptionallyBlockable));
   }
 
-  if (visible_security_state.contained_mixed_form) {
+  security_style_explanations->contained_mixed_form =
+      security_info.contained_mixed_form;
+  if (security_style_explanations->contained_mixed_form) {
     add_secure_explanation = false;
     security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
@@ -327,12 +336,16 @@ void ExplainContentSecurity(
   // main resource was loaded with major certificate errors because, in the
   // common case, these subresource certificate errors would be duplicative with
   // the main resource's error.
-  bool is_cert_status_error =
-      net::IsCertStatusError(visible_security_state.cert_status);
+  bool is_cert_status_error = net::IsCertStatusError(security_info.cert_status);
   bool is_cert_status_minor_error =
-      net::IsCertStatusMinorError(visible_security_state.cert_status);
+      net::IsCertStatusMinorError(security_info.cert_status);
   if (!is_cert_status_error || is_cert_status_minor_error) {
-    if (visible_security_state.ran_content_with_cert_errors) {
+    security_style_explanations->ran_content_with_cert_errors =
+        security_info.content_with_cert_errors_status ==
+            security_state::CONTENT_STATUS_RAN ||
+        security_info.content_with_cert_errors_status ==
+            security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+    if (security_style_explanations->ran_content_with_cert_errors) {
       add_secure_explanation = false;
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
@@ -342,7 +355,12 @@ void ExplainContentSecurity(
                   IDS_CERT_ERROR_ACTIVE_CONTENT_DESCRIPTION)));
     }
 
-    if (visible_security_state.displayed_content_with_cert_errors) {
+    security_style_explanations->displayed_content_with_cert_errors =
+        security_info.content_with_cert_errors_status ==
+            security_state::CONTENT_STATUS_DISPLAYED ||
+        security_info.content_with_cert_errors_status ==
+            security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+    if (security_style_explanations->displayed_content_with_cert_errors) {
       add_secure_explanation = false;
       security_style_explanations->neutral_explanations.push_back(
           content::SecurityStyleExplanation(
@@ -354,7 +372,7 @@ void ExplainContentSecurity(
   }
 
   if (add_secure_explanation) {
-    DCHECK(security_state::IsSchemeCryptographic(visible_security_state.url));
+    DCHECK(security_info.scheme_is_cryptographic);
     security_style_explanations->secure_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE),
@@ -412,30 +430,13 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
 }
 
 blink::WebSecurityStyle GetSecurityStyle(
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
+    const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
   const blink::WebSecurityStyle security_style =
-      SecurityLevelToSecurityStyle(security_level);
+      SecurityLevelToSecurityStyle(security_info.security_level);
 
-  if (visible_security_state.malicious_content_status !=
-      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
-    ExplainSafeBrowsingSecurity(visible_security_state,
-                                security_style_explanations);
-  } else if (visible_security_state.is_error_page &&
-             (!net::IsCertStatusError(visible_security_state.cert_status) ||
-              net::IsCertStatusMinorError(
-                  visible_security_state.cert_status))) {
-    security_style_explanations->summary =
-        l10n_util::GetStringUTF8(IDS_ERROR_PAGE_SUMMARY);
-    // In the case of a non cert error page, we usually don't have a
-    // certificate, connection, or content that needs to be explained, e.g. in
-    // the case of a net error, so we can early return.
-    return security_style;
-  } else {
-    ExplainHTTPSecurity(security_level, visible_security_state,
-                        security_style_explanations);
-  }
+  ExplainHTTPSecurity(security_info, security_style_explanations);
+  ExplainSafeBrowsingSecurity(security_info, security_style_explanations);
 
   // Check if the page is HTTP; if so, no more explanations are needed. Note
   // that SecurityStyleUnauthenticated does not necessarily mean that
@@ -445,23 +446,14 @@ blink::WebSecurityStyle GetSecurityStyle(
   // if it wants to (for example, displaying deprecated crypto
   // algorithms with the same UI treatment as HTTP pages).
   security_style_explanations->scheme_is_cryptographic =
-      security_state::IsSchemeCryptographic(visible_security_state.url);
-  if (!security_style_explanations->scheme_is_cryptographic) {
-    // Some origins are considered secure even if they're not cryptographic, so
-    // display a more precise summary.
-    if (security_level == security_state::NONE &&
-        content::IsOriginSecure(visible_security_state.url)) {
-      security_style_explanations->summary =
-          l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY);
-    }
+      security_info.scheme_is_cryptographic;
+  if (!security_info.scheme_is_cryptographic) {
     return security_style;
   }
 
-  ExplainCertificateSecurity(visible_security_state,
-                             security_style_explanations);
-  ExplainConnectionSecurity(visible_security_state,
-                            security_style_explanations);
-  ExplainContentSecurity(visible_security_state, security_style_explanations);
+  ExplainCertificateSecurity(security_info, security_style_explanations);
+  ExplainConnectionSecurity(security_info, security_style_explanations);
+  ExplainContentSecurity(security_info, security_style_explanations);
 
   return security_style;
 }

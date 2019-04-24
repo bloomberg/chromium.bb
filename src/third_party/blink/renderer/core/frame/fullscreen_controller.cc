@@ -58,6 +58,11 @@ WebLocalFrameClient& GetWebFrameClient(LocalFrame& frame) {
 
 }  // anonymous namespace
 
+std::unique_ptr<FullscreenController> FullscreenController::Create(
+    WebViewImpl* web_view_base) {
+  return base::WrapUnique(new FullscreenController(web_view_base));
+}
+
 FullscreenController::FullscreenController(WebViewImpl* web_view_base)
     : web_view_base_(web_view_base),
       pending_frames_(MakeGarbageCollected<PendingFullscreenSet>()) {}
@@ -194,8 +199,7 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
 
   // We only override the WebView's background color for overlay fullscreen
   // video elements, so have to restore the override when the element changes.
-  if (IsHTMLVideoElement(old_element))
-    RestoreBackgroundColorOverride();
+  RestoreBackgroundColorOverride();
 
   if (new_element) {
     DCHECK(Fullscreen::IsFullscreenElement(*new_element));

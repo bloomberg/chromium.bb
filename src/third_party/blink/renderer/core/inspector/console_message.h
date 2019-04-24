@@ -8,6 +8,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -24,23 +25,23 @@ class CORE_EXPORT ConsoleMessage final
     : public GarbageCollectedFinalized<ConsoleMessage> {
  public:
   // Location must be non-null.
-  static ConsoleMessage* Create(mojom::ConsoleMessageSource,
+  static ConsoleMessage* Create(MessageSource,
                                 mojom::ConsoleMessageLevel,
                                 const String& message,
                                 std::unique_ptr<SourceLocation>);
 
   // Shortcut when location is unknown. Captures current location.
-  static ConsoleMessage* Create(mojom::ConsoleMessageSource,
+  static ConsoleMessage* Create(MessageSource,
                                 mojom::ConsoleMessageLevel,
                                 const String& message);
 
   // This method captures current location if available.
-  static ConsoleMessage* CreateForRequest(mojom::ConsoleMessageSource,
+  static ConsoleMessage* CreateForRequest(MessageSource,
                                           mojom::ConsoleMessageLevel,
                                           const String& message,
                                           const String& url,
                                           DocumentLoader*,
-                                          uint64_t request_identifier);
+                                          unsigned long request_identifier);
 
   // This creates message from WorkerMessageSource.
   static ConsoleMessage* CreateFromWorker(mojom::ConsoleMessageLevel,
@@ -52,7 +53,7 @@ class CORE_EXPORT ConsoleMessage final
   static ConsoleMessage* CreateFromWebConsoleMessage(const WebConsoleMessage&,
                                                      LocalFrame*);
 
-  ConsoleMessage(mojom::ConsoleMessageSource,
+  ConsoleMessage(MessageSource,
                  mojom::ConsoleMessageLevel,
                  const String& message,
                  std::unique_ptr<SourceLocation>);
@@ -61,7 +62,7 @@ class CORE_EXPORT ConsoleMessage final
   SourceLocation* Location() const;
   const String& RequestIdentifier() const;
   double Timestamp() const;
-  mojom::ConsoleMessageSource Source() const;
+  MessageSource Source() const;
   mojom::ConsoleMessageLevel Level() const;
   const String& Message() const;
   const String& WorkerId() const;
@@ -72,7 +73,7 @@ class CORE_EXPORT ConsoleMessage final
   void Trace(blink::Visitor*);
 
  private:
-  mojom::ConsoleMessageSource source_;
+  MessageSource source_;
   mojom::ConsoleMessageLevel level_;
   String message_;
   std::unique_ptr<SourceLocation> location_;

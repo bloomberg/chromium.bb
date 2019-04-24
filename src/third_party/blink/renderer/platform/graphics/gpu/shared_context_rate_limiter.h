@@ -40,12 +40,14 @@ class SharedContextRateLimiter final {
   USING_FAST_MALLOC(SharedContextRateLimiter);
 
  public:
-  explicit SharedContextRateLimiter(unsigned max_pending_ticks);
-
+  static std::unique_ptr<SharedContextRateLimiter> Create(
+      unsigned max_pending_ticks);
   void Tick();
   void Reset();
 
  private:
+  SharedContextRateLimiter(unsigned max_pending_ticks);
+
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
   Deque<GLuint> queries_;
   unsigned max_pending_ticks_;

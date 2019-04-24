@@ -133,8 +133,6 @@ class DenormalDisabler {
 #else
 // FIXME: add implementations for other architectures and compilers
 class DenormalDisabler {
-  STACK_ALLOCATED();
-
  public:
   DenormalDisabler() {}
 

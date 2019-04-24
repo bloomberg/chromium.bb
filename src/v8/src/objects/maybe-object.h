@@ -9,6 +9,7 @@
 #include "include/v8.h"
 #include "src/globals.h"
 #include "src/objects.h"
+#include "src/objects/slots.h"
 #include "src/objects/smi.h"
 
 namespace v8 {

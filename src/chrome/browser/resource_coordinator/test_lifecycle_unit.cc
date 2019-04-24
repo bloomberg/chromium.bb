@@ -15,7 +15,6 @@ TestLifecycleUnit::TestLifecycleUnit(base::TimeTicks last_focused_time,
     : LifecycleUnitBase(nullptr, content::Visibility::VISIBLE, nullptr),
       last_focused_time_(last_focused_time),
       process_handle_(process_handle),
-      sort_key_(last_focused_time),
       can_discard_(can_discard) {}
 
 TestLifecycleUnit::TestLifecycleUnit(content::Visibility visibility,
@@ -46,7 +45,7 @@ base::ProcessHandle TestLifecycleUnit::GetProcessHandle() const {
 }
 
 LifecycleUnit::SortKey TestLifecycleUnit::GetSortKey() const {
-  return sort_key_;
+  return SortKey(last_focused_time_);
 }
 
 content::Visibility TestLifecycleUnit::GetVisibility() const {
@@ -63,6 +62,10 @@ bool TestLifecycleUnit::Load() {
 
 int TestLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB() const {
   return 0;
+}
+
+bool TestLifecycleUnit::CanPurge() const {
+  return false;
 }
 
 bool TestLifecycleUnit::CanFreeze(DecisionDetails* decision_details) const {

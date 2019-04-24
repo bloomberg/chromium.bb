@@ -4,29 +4,18 @@
 
 cr.define('settings_select_test', function() {
   suite('SettingsSelectTest', function() {
-    /** @type {?PrintPreviewSettingsSelectElement} */
     let settingsSelect = null;
-
-    /** @type {?PrintPreviewModelElement} */
-    let model = null;
 
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
-      model = document.createElement('print-preview-model');
-      document.body.appendChild(model);
-
       settingsSelect = document.createElement('print-preview-settings-select');
-      settingsSelect.settings = model.settings;
       settingsSelect.disabled = false;
-      test_util.fakeDataBind(model, settingsSelect, 'settings');
       document.body.appendChild(settingsSelect);
     });
 
     // Test that destinations are correctly displayed in the lists.
     test('custom media names', function() {
-      model.set('settings.mediaSize.available', true);
-
       // Set a capability with custom paper sizes.
       settingsSelect.settingName = 'mediaSize';
       settingsSelect.capability =
@@ -49,7 +38,7 @@ cr.define('settings_select_test', function() {
 
     test('set setting', async () => {
       // Fake setting.
-      model.set('settings', {
+      settingsSelect.settings = {
         fruit: {
           value: {},
           unavailableValue: {},
@@ -58,7 +47,7 @@ cr.define('settings_select_test', function() {
           setByPolicy: false,
           key: 'fruit',
         },
-      });
+      };
       settingsSelect.settingName = 'fruit';
       settingsSelect.capability = {
         option: [

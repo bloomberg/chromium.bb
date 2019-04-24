@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "components/device_event_log/device_event_log.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
@@ -37,8 +36,7 @@ void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
   // request. The correct value will be set in the callback based on the
   // device response.
   supported_protocol_ = ProtocolVersion::kCtap;
-  FIDO_LOG(DEBUG)
-      << "Sending CTAP2 AuthenticatorGetInfo request to authenticator.";
+  VLOG(2) << "Sending CTAP2 AuthenticatorGetInfo request to authenticator.";
   DeviceTransact(AuthenticatorGetInfoRequest().Serialize(),
                  base::BindOnce(&FidoDevice::OnDeviceInfoReceived, GetWeakPtr(),
                                 std::move(done)));
@@ -62,11 +60,11 @@ void FidoDevice::OnDeviceInfoReceived(
   if (!get_info_response || !base::ContainsKey(get_info_response->versions(),
                                                ProtocolVersion::kCtap)) {
     supported_protocol_ = ProtocolVersion::kU2f;
-    FIDO_LOG(DEBUG) << "The device only supports the U2F protocol.";
+    VLOG(2) << "The device only supports the U2F protocol.";
   } else {
     supported_protocol_ = ProtocolVersion::kCtap;
     device_info_ = std::move(*get_info_response);
-    FIDO_LOG(DEBUG) << "The device supports the CTAP2 protocol.";
+    VLOG(2) << "The device supports the CTAP2 protocol.";
   }
   std::move(done).Run();
 }

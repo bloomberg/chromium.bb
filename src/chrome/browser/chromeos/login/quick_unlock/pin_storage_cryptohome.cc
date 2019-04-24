@@ -109,15 +109,19 @@ void OnCryptohomedServiceAvailable(int attempt,
     return;
   }
 
-  CryptohomeClient::Get()->GetSupportedKeyPolicies(
-      cryptohome::GetSupportedKeyPoliciesRequest(),
-      base::BindOnce(&OnGetSupportedKeyPolicies, std::move(result)));
+  chromeos::DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->GetSupportedKeyPolicies(
+          cryptohome::GetSupportedKeyPoliciesRequest(),
+          base::BindOnce(&OnGetSupportedKeyPolicies, std::move(result)));
 }
 
 void CheckForCryptohomedService(int attempt,
                                 PinStorageCryptohome::BoolCallback result) {
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
-      &OnCryptohomedServiceAvailable, attempt, std::move(result)));
+  chromeos::DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->WaitForServiceToBeAvailable(base::BindOnce(
+          &OnCryptohomedServiceAvailable, attempt, std::move(result)));
 }
 
 }  // namespace
@@ -159,7 +163,7 @@ void PinStorageCryptohome::IsPinSetInCryptohome(const AccountId& account_id,
                                                 BoolCallback result) const {
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomePinLabel);
-  chromeos::CryptohomeClient::Get()->GetKeyDataEx(
+  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       cryptohome::AuthorizationRequest(), request,
       base::AdaptCallbackForRepeating(
@@ -259,7 +263,7 @@ void PinStorageCryptohome::CanAuthenticate(const AccountId& account_id,
                                            BoolCallback result) const {
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomePinLabel);
-  chromeos::CryptohomeClient::Get()->GetKeyDataEx(
+  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       cryptohome::AuthorizationRequest(), request,
       base::AdaptCallbackForRepeating(

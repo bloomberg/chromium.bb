@@ -821,12 +821,9 @@ bool VulkanTestHelper::flushSurfaceAndSignalSemaphore(skiatest::Reporter* report
     if (!this->setupSemaphoreForSignaling(reporter, &semaphore)) {
         return false;
     }
-    GrFlushInfo info;
-    info.fNumSemaphores = 1;
-    info.fSignalSemaphores = &semaphore;
-    GrSemaphoresSubmitted submitted = fGrContext->flush(info);
+    GrSemaphoresSubmitted submitted = fGrContext->flushAndSignalSemaphores(1, &semaphore);
     if (GrSemaphoresSubmitted::kNo == submitted) {
-        ERRORF(reporter, "Failing call to flush on GrContext");
+        ERRORF(reporter, "Failing call to flushAndSignalSemaphores on SkSurface");
         return false;
     }
     SkASSERT(semaphore.isInitialized());

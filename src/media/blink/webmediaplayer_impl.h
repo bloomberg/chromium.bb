@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "cc/layers/surface_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "media/base/cdm_config.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/overlay_info.h"
@@ -124,7 +123,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnRequestPictureInPicture() override;
   void SetSinkId(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCompleteCallback completion_callback) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
   void SetPoster(const blink::WebURL& poster) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
@@ -195,13 +194,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       bool flip_y,
       int already_uploaded_id,
       VideoFrameUploadMetadata* out_metadata) override;
-
-  bool PrepareVideoFrameForWebGL(
-      gpu::gles2::GLES2Interface* gl,
-      unsigned target,
-      unsigned texture,
-      int already_uploaded_id,
-      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) override;
 
   static void ComputeFrameUploadMetadata(
       VideoFrame* frame,
@@ -392,7 +384,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Sets CdmContext from |cdm| on the pipeline and calls OnCdmAttached()
   // when done.
-  void SetCdmInternal(blink::WebContentDecryptionModule* cdm);
+  void SetCdm(blink::WebContentDecryptionModule* cdm);
 
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(bool success);
@@ -461,11 +453,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // is intended for android.
   bool DoesOverlaySupportMetadata() const;
 
-  // Whether the playback should be paused when hidden. Uses metadata so has
+  // Whether the video should be paused when hidden. Uses metadata so has
   // meaning only after the pipeline has started, otherwise returns false.
-  // Doesn't check if the playback can actually be paused depending on the
+  // Doesn't check if the video can actually be paused depending on the
   // pipeline's state.
-  bool ShouldPausePlaybackWhenHidden() const;
+  bool ShouldPauseVideoWhenHidden() const;
 
   // Whether the video track should be disabled when hidden. Uses metadata so
   // has meaning only after the pipeline has started, otherwise returns false.
@@ -739,27 +731,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // the pipeline.
   std::unique_ptr<CdmContextRef> pending_cdm_context_ref_;
 
-  // True when encryption is detected, either by demuxer or by presence of a
-  // ContentDecyprtionModule (CDM).
-  bool is_encrypted_ = false;
-
-  // Captured once the cdm is provided to SetCdmInternal(). Used in creation of
-  // |video_decode_stats_reporter_|.
-  base::Optional<CdmConfig> cdm_config_;
-
-  // String identifying the KeySystem described by |cdm_config_|. Empty until a
-  // CDM has been attached. Used in creation |video_decode_stats_reporter_|.
-  std::string key_system_;
-
   // Tracks if we are currently flinging a video (e.g. in a RemotePlayback
   // session). Used to prevent videos from being paused when hidden.
   // TODO(https://crbug.com/839651): remove or rename this flag, when removing
   // IsRemote().
   bool is_flinging_ = false;
-
-  // Tracks if we are currently using a remote renderer. See
-  // SwitchToRemoteRenderer().
-  bool is_remote_rendering_ = false;
 
   // The last volume received by setVolume() and the last volume multiplier from
   // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
@@ -804,12 +780,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // MediaResource::Type::URL for now.
   bool using_media_player_renderer_ = false;
 
-#if defined(OS_ANDROID)
-  // Set during the initial DoLoad() call. Used to determine whether to allow
-  // credentials or not for MediaPlayerRenderer.
-  bool allow_media_player_renderer_credentials_ = false;
-#endif
-
   // Set whenever the demuxer encounters an HLS file.
   // This flag is distinct from |using_media_player_renderer_|, because on older
   // devices we might use MediaPlayerRenderer for non HLS playback.
@@ -831,6 +801,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Monitors the watch time of the played content.
   std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
+  bool is_encrypted_ = false;
   std::string audio_decoder_name_;
   std::string video_decoder_name_;
 
@@ -894,7 +865,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::Optional<base::TimeDelta> pipeline_media_duration_for_test_;
 
   // Whether the video requires a user gesture to resume after it was paused in
-  // the background. Affects the value of ShouldPausePlaybackWhenHidden().
+  // the background. Affects the value of ShouldPauseVideoWhenHidden().
   bool video_locked_when_paused_when_hidden_ = false;
 
   // Whether embedded media experience is currently enabled.
@@ -964,7 +935,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool is_background_suspend_enabled_ = false;
 
   // If disabled, video will be auto paused when in background. Affects the
-  // value of ShouldPausePlaybackWhenHidden().
+  // value of ShouldPauseVideoWhenHidden().
   bool is_background_video_playback_enabled_ = true;
 
   // Whether background video optimization is supported on current platform.

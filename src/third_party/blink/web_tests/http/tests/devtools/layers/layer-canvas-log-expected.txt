@@ -8,7 +8,7 @@ Canvas log:
         params : {
             paint : {
                 blendMode : "Src"
-                color : "#00000000"
+                color : "#0"
                 filterLevel : "None"
                 flags : "none"
                 strokeCap : "Butt"

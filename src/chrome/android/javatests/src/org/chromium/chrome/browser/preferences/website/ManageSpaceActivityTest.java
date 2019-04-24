@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -30,7 +31,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -130,16 +130,20 @@ public class ManageSpaceActivityTest {
         mActivityTestRule.loadUrl("about:blank");
 
         // Now we set the origin as important, and check that we don't clear it.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { BrowsingDataBridge.markOriginAsImportantForTesting(serverOrigin); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                BrowsingDataBridge.markOriginAsImportantForTesting(serverOrigin);
+            }
+        });
 
         ManageSpaceActivity manageSpaceActivity = startManageSpaceActivity();
         // Click 'clear' in the CBD screen.
         waitForClearButtonEnabled(manageSpaceActivity);
-        TestThreadUtils.runOnUiThreadBlocking(getClickClearRunnable(manageSpaceActivity));
+        ThreadUtils.runOnUiThreadBlocking(getClickClearRunnable(manageSpaceActivity));
         // Press 'clear' in our dialog.
         waitForDialogShowing(manageSpaceActivity);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 getPressClearRunnable(manageSpaceActivity.getUnimportantConfirmDialog()));
         waitForClearButtonEnabled(manageSpaceActivity);
         manageSpaceActivity.finish();
@@ -156,10 +160,10 @@ public class ManageSpaceActivityTest {
         ManageSpaceActivity manageSpaceActivity = startManageSpaceActivity();
         // Click 'clear' in the CBD screen.
         waitForClearButtonEnabled(manageSpaceActivity);
-        TestThreadUtils.runOnUiThreadBlocking(getClickClearRunnable(manageSpaceActivity));
+        ThreadUtils.runOnUiThreadBlocking(getClickClearRunnable(manageSpaceActivity));
         // Press 'clear' in our dialog.
         waitForDialogShowing(manageSpaceActivity);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 getPressClearRunnable(manageSpaceActivity.getUnimportantConfirmDialog()));
         waitForClearButtonEnabled(manageSpaceActivity);
         manageSpaceActivity.finish();

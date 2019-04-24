@@ -48,7 +48,7 @@ const char* HistogramLabel(const std::string& str) {
       return kOthers;
     }
   }
-  return nullptr;
+  return NULL;
 }
 
 std::string HistogramName(const char* prefix, const char* label) {

@@ -19,8 +19,10 @@ class NamedTestView : public views::View {
   const char* GetClassName() const override { return kViewClassName; }
 
   // For custom properties test.
-  base::string16 GetTooltipText(const gfx::Point& p) const override {
-    return base::ASCIIToUTF16("This is the tooltip");
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override {
+    *tooltip = base::ASCIIToUTF16("This is the tooltip");
+    return true;
   }
 };
 const char NamedTestView::kViewClassName[] = "NamedTestView";

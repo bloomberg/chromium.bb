@@ -39,9 +39,8 @@ void TransportChannelSocketAdapter::SetOnDestroyedCallback(
 }
 
 int TransportChannelSocketAdapter::Recv(
-    const scoped_refptr<net::IOBuffer>& buf,
-    int buffer_size,
-    const net::CompletionRepeatingCallback& callback) {
+    const scoped_refptr<net::IOBuffer>& buf, int buffer_size,
+    const net::CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buf);
   DCHECK(!callback.is_null());
@@ -60,9 +59,8 @@ int TransportChannelSocketAdapter::Recv(
 }
 
 int TransportChannelSocketAdapter::Send(
-    const scoped_refptr<net::IOBuffer>& buffer,
-    int buffer_size,
-    const net::CompletionRepeatingCallback& callback) {
+    const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
+    const net::CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer);
   DCHECK(!callback.is_null());
@@ -110,14 +108,14 @@ void TransportChannelSocketAdapter::Close(int error_code) {
   channel_ = NULL;
 
   if (!read_callback_.is_null()) {
-    net::CompletionRepeatingCallback callback = read_callback_;
+    net::CompletionCallback callback = read_callback_;
     read_callback_.Reset();
     read_buffer_ = NULL;
     callback.Run(error_code);
   }
 
   if (!write_callback_.is_null()) {
-    net::CompletionRepeatingCallback callback = write_callback_;
+    net::CompletionCallback callback = write_callback_;
     write_callback_.Reset();
     write_buffer_ = NULL;
     callback.Run(error_code);
@@ -144,9 +142,10 @@ void TransportChannelSocketAdapter::OnNewPacket(
 
     memcpy(read_buffer_->data(), data, data_size);
 
-    net::CompletionRepeatingCallback callback = read_callback_;
+    net::CompletionCallback callback = read_callback_;
     read_callback_.Reset();
     read_buffer_ = NULL;
+
     callback.Run(data_size);
   } else {
     LOG(WARNING)
@@ -167,7 +166,7 @@ void TransportChannelSocketAdapter::OnWritableState(
       result = net::MapSystemError(channel_->GetError());
 
     if (result != net::ERR_IO_PENDING) {
-      net::CompletionRepeatingCallback callback = write_callback_;
+      net::CompletionCallback callback = write_callback_;
       write_callback_.Reset();
       write_buffer_ = NULL;
       callback.Run(result);

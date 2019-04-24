@@ -58,7 +58,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
 
-  auto* channel = MakeGarbageCollected<MessageChannel>(context);
+  MessageChannel* channel = MessageChannel::Create(context);
   worker->port_ = channel->port1();
   MessagePortChannel remote_port = channel->port2()->Disentangle();
 

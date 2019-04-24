@@ -5,8 +5,10 @@ progressively during loading.
 The result image should show the dice image partially.
 -->
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
 function loadAndStall()
 {

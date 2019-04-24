@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/tray/detailed_view_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 
 namespace ash {
 
@@ -26,17 +25,9 @@ ImeListView::SingleImeBehavior GetSingleImeBehavior() {
 UnifiedIMEDetailedViewController::UnifiedIMEDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<DetailedViewDelegate>(tray_controller)) {
-  Shell::Get()->system_tray_notifier()->AddIMEObserver(this);
-  Shell::Get()->system_tray_notifier()->AddVirtualKeyboardObserver(this);
-  Shell::Get()->accessibility_controller()->AddObserver(this);
-}
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {}
 
-UnifiedIMEDetailedViewController::~UnifiedIMEDetailedViewController() {
-  Shell::Get()->system_tray_notifier()->RemoveIMEObserver(this);
-  Shell::Get()->system_tray_notifier()->RemoveVirtualKeyboardObserver(this);
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
-}
+UnifiedIMEDetailedViewController::~UnifiedIMEDetailedViewController() {}
 
 views::View* UnifiedIMEDetailedViewController::CreateView() {
   DCHECK(!view_);

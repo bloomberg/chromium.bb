@@ -20,9 +20,9 @@
 
 namespace dawn_native {
 
-    DawnProcTable GetProcsAutogen();
+    dawnProcTable GetProcsAutogen();
 
-    DawnProcTable GetProcs() {
+    dawnProcTable GetProcs() {
         return GetProcsAutogen();
     }
 
@@ -41,10 +41,6 @@ namespace dawn_native {
         return mImpl->GetBackendType();
     }
 
-    DeviceType Adapter::GetDeviceType() const {
-        return mImpl->GetDeviceType();
-    }
-
     const PCIInfo& Adapter::GetPCIInfo() const {
         return mImpl->GetPCIInfo();
     }
@@ -53,8 +49,8 @@ namespace dawn_native {
         return mImpl != nullptr;
     }
 
-    DawnDevice Adapter::CreateDevice() {
-        return reinterpret_cast<DawnDevice>(mImpl->CreateDevice());
+    dawnDevice Adapter::CreateDevice() {
+        return reinterpret_cast<dawnDevice>(mImpl->CreateDevice());
     }
 
     // AdapterDiscoverOptionsBase

@@ -4,8 +4,6 @@
 
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 
-#include <utility>
-
 #include "content/public/browser/web_contents.h"
 
 namespace background_loader {
@@ -66,12 +64,12 @@ bool BackgroundLoaderContents::ShouldFocusPageAfterCrash() {
 void BackgroundLoaderContents::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    base::OnceCallback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback) {
   if (delegate_) {
-    delegate_->CanDownload(std::move(callback));
+    delegate_->CanDownload(callback);
   } else {
     // Do not download anything if there's no delegate.
-    std::move(callback).Run(false);
+    callback.Run(false);
   }
 }
 

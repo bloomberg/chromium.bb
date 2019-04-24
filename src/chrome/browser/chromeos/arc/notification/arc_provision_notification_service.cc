@@ -97,7 +97,7 @@ void ArcProvisionNotificationService::ShowNotification() {
       notifier_id, optional_fields, new message_center::NotificationDelegate());
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, notification);
 }
 
 void ArcProvisionNotificationService::HideNotification() {

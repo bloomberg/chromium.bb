@@ -7,9 +7,7 @@ found in the LICENSE file.
 
 <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <script src="/bower_components/web-component-tester/browser.js"></script>
-<link rel="import" href="/bower_components/polymer/polymer.html">
-<link rel="import" href="/dashboard/spa/utils.html">
-<script src="/dashboard/spa/import-module.js">
+<link rel="import" href="/dashboard/spa/cp-toast.html">
 
 <test-fixture id="test">
   <template>
@@ -21,7 +19,6 @@ found in the LICENSE file.
 'use strict';
 suite('cp-toast', function() {
   test('autoclose', async function() {
-    await importModule('./cp-toast.js');
     const toast = fixture('test');
     assert.isFalse(toast.opened);
     let finish;
@@ -33,7 +30,6 @@ suite('cp-toast', function() {
   });
 
   test('no-autoclose', async function() {
-    await importModule('./cp-toast.js');
     const toast = fixture('test');
     assert.isFalse(toast.opened);
     const promise = toast.open(false);
@@ -43,7 +39,6 @@ suite('cp-toast', function() {
   });
 
   test('autoclose-only-last', async function() {
-    await importModule('./cp-toast.js');
     const toast = fixture('test');
     assert.isFalse(toast.opened);
 

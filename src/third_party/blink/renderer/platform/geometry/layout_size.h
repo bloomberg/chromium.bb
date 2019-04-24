@@ -50,28 +50,21 @@ class PLATFORM_EXPORT LayoutSize {
 
  public:
   constexpr LayoutSize() = default;
-  constexpr explicit LayoutSize(const IntSize& size)
+  explicit LayoutSize(const IntSize& size)
       : width_(size.Width()), height_(size.Height()) {}
   constexpr LayoutSize(LayoutUnit width, LayoutUnit height)
       : width_(width), height_(height) {}
-  constexpr LayoutSize(int width, int height)
+  LayoutSize(int width, int height)
       : width_(LayoutUnit(width)), height_(LayoutUnit(height)) {}
-  constexpr LayoutSize(float width, float height)
+  LayoutSize(float width, float height)
       : width_(LayoutUnit(width)), height_(LayoutUnit(height)) {}
 
-  constexpr explicit LayoutSize(const FloatSize& size)
+  explicit LayoutSize(const FloatSize& size)
       : width_(size.Width()), height_(size.Height()) {}
-  constexpr explicit LayoutSize(const DoubleSize& size)
+  explicit LayoutSize(const DoubleSize& size)
       : width_(size.Width()), height_(size.Height()) {}
-  constexpr explicit LayoutSize(const gfx::Size& size)
+  explicit LayoutSize(const gfx::Size& size)
       : width_(size.width()), height_(size.height()) {}
-
-  constexpr explicit operator FloatSize() const {
-    return FloatSize(width_.ToFloat(), height_.ToFloat());
-  }
-  constexpr explicit operator FloatPoint() const {
-    return FloatPoint(width_.ToFloat(), height_.ToFloat());
-  }
 
   constexpr LayoutUnit Width() const { return width_; }
   constexpr LayoutUnit Height() const { return height_; }

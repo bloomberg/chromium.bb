@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/merge_blocks_reduction_opportunity.h"
-
+#include "merge_blocks_reduction_opportunity.h"
 #include "source/opt/block_merge_util.h"
+
 #include "source/opt/ir_context.h"
 
 namespace spvtools {
 namespace reduce {
 
-using opt::BasicBlock;
-using opt::Function;
-using opt::IRContext;
+using namespace opt;
 
 MergeBlocksReductionOpportunity::MergeBlocksReductionOpportunity(
     IRContext* context, Function* function, BasicBlock* block) {
@@ -50,8 +48,7 @@ bool MergeBlocksReductionOpportunity::PreconditionHolds() {
          "predecessor must be present.");
   const uint32_t predecessor_id = predecessors[0];
   BasicBlock* predecessor_block = context_->get_instr_block(predecessor_id);
-  return opt::blockmergeutil::CanMergeWithSuccessor(context_,
-                                                    predecessor_block);
+  return blockmergeutil::CanMergeWithSuccessor(context_, predecessor_block);
 }
 
 void MergeBlocksReductionOpportunity::Apply() {
@@ -68,7 +65,7 @@ void MergeBlocksReductionOpportunity::Apply() {
   // We need an iterator pointing to the predecessor, hence the loop.
   for (auto bi = function_->begin(); bi != function_->end(); ++bi) {
     if (bi->id() == predecessor_id) {
-      opt::blockmergeutil::MergeWithSuccessor(context_, function_, bi);
+      blockmergeutil::MergeWithSuccessor(context_, function_, bi);
       // Block merging changes the control flow graph, so invalidate it.
       context_->InvalidateAnalysesExceptFor(IRContext::Analysis::kAnalysisNone);
       return;

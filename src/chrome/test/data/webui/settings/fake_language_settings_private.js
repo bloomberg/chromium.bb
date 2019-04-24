@@ -72,7 +72,6 @@ cr.define('settings', function() {
           code: 'sw',
           displayName: 'Swahili',
           nativeDisplayName: 'Kiswahili',
-          supportsSpellcheck: true,
           supportsTranslate: true,
           supportsUI: true,
         },
@@ -406,11 +405,6 @@ cr.define('settings', function() {
         value: 'en-US,sw',
       },
       {
-        key: 'spellcheck.blacklisted_dictionaries',
-        type: chrome.settingsPrivate.PrefType.LIST,
-        value: [],
-      },
-      {
         key: 'spellcheck.dictionaries',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: ['en-US'],
@@ -419,11 +413,6 @@ cr.define('settings', function() {
         key: 'spellcheck.forced_dictionaries',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: [],
-      },
-      {
-        key: 'spellcheck.use_spelling_service',
-        type: chrome.settingsPrivate.PrefType.BOOLEAN,
-        value: false,
       },
       {
         key: 'translate.enabled',

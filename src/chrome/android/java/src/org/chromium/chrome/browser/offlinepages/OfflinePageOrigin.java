@@ -18,7 +18,6 @@ import org.json.JSONException;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabAssociatedApp;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +32,7 @@ public class OfflinePageOrigin {
 
     /** Creates origin based on the context and tab. */
     public OfflinePageOrigin(Context context, Tab tab) {
-        this(context, TabAssociatedApp.getAppId(tab));
+        this(context, tab.getAppAssociatedWith());
     }
 
     /** Creates origin based on the context and an app name. */

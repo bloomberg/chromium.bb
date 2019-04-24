@@ -18,22 +18,16 @@ FakeFindInPageManagerDelegate::FakeFindInPageManagerDelegate() = default;
 
 FakeFindInPageManagerDelegate::~FakeFindInPageManagerDelegate() = default;
 
-void FakeFindInPageManagerDelegate::DidHighlightMatches(WebState* web_state,
-                                                        int match_count,
-                                                        NSString* query) {
+void FakeFindInPageManagerDelegate::DidCountMatches(WebState* web_state,
+                                                    int match_count,
+                                                    const std::string& query) {
   delegate_state_ = std::make_unique<State>();
   delegate_state_->web_state = web_state;
   delegate_state_->match_count = match_count;
   delegate_state_->query = query;
 }
 
-void FakeFindInPageManagerDelegate::DidSelectMatch(WebState* web_state,
-                                                   int index) {
-  if (!delegate_state_) {
-    delegate_state_ = std::make_unique<State>();
-  }
-  delegate_state_->web_state = web_state;
-  delegate_state_->index = index;
-}
+void FakeFindInPageManagerDelegate::DidHighlightMatch(WebState* web_state,
+                                                      int index) {}
 
 }  // namespace web

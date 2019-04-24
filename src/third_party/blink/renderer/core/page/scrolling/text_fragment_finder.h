@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -25,18 +24,18 @@ class CORE_EXPORT TextFragmentFinder final {
   };
 
   // Client must outlive the finder.
-  TextFragmentFinder(Client& client, const TextFragmentSelector& selector);
+  TextFragmentFinder(Client& client);
   ~TextFragmentFinder() = default;
 
-  // Begins searching in the given top-level document.
-  void FindMatch(Document& document);
+  // Begins searching for the given string in the given top-level document.
+  void FindMatch(const String& search_text, Document& document);
 
  private:
   Client& client_;
-  const TextFragmentSelector selector_;
 
-  PositionInFlatTree FindStart();
-  PositionInFlatTree FindEnd();
+  String search_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextFragmentFinder);
 };
 
 }  // namespace blink

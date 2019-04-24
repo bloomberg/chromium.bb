@@ -90,6 +90,7 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
                     R.dimen.chip_list_inter_chip_padding);
             mSidePaddingPx = (int) context.getResources().getDimensionPixelSize(
                     R.dimen.chip_list_side_padding);
+            ;
         }
 
         @Override

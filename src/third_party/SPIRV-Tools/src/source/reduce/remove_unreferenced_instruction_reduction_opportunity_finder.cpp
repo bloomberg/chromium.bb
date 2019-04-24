@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/remove_unreferenced_instruction_reduction_opportunity_finder.h"
-
+#include "remove_unreferenced_instruction_reduction_opportunity_finder.h"
+#include "remove_instruction_reduction_opportunity.h"
 #include "source/opcode.h"
 #include "source/opt/instruction.h"
-#include "source/reduce/remove_instruction_reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {
 
-using opt::IRContext;
+using namespace opt;
 
 std::vector<std::unique_ptr<ReductionOpportunity>>
 RemoveUnreferencedInstructionReductionOpportunityFinder::
-    GetAvailableOpportunities(IRContext* context) const {
+    GetAvailableOpportunities(opt::IRContext* context) const {
   std::vector<std::unique_ptr<ReductionOpportunity>> result;
 
   for (auto& function : *context->module()) {

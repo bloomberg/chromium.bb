@@ -8,7 +8,6 @@
 #include <ios>
 
 #include "core/fxcrt/fx_string.h"
-#include "third_party/base/span.h"
 
 std::ostream& operator<<(std::ostream& os, const CFX_DateTime& dt) {
   os << dt.GetYear() << "-" << std::to_string(dt.GetMonth()) << "-"
@@ -56,22 +55,18 @@ std::wstring GetPlatformWString(FPDF_WIDESTRING wstr) {
   return platform_string;
 }
 
-ScopedFPDFWideString GetFPDFWideString(const std::wstring& wstr) {
+std::unique_ptr<unsigned short, pdfium::FreeDeleter> GetFPDFWideString(
+    const std::wstring& wstr) {
   size_t length = sizeof(uint16_t) * (wstr.length() + 1);
-  ScopedFPDFWideString result(static_cast<FPDF_WCHAR*>(malloc(length)));
-  pdfium::span<uint8_t> result_span(reinterpret_cast<uint8_t*>(result.get()),
-                                    length);
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> result(
+      static_cast<unsigned short*>(malloc(length)));
+  char* ptr = reinterpret_cast<char*>(result.get());
   size_t i = 0;
   for (wchar_t w : wstr) {
-    result_span[i++] = w & 0xff;
-    result_span[i++] = (w >> 8) & 0xff;
+    ptr[i++] = w & 0xff;
+    ptr[i++] = (w >> 8) & 0xff;
   }
-  result_span[i++] = 0;
-  result_span[i] = 0;
+  ptr[i++] = 0;
+  ptr[i] = 0;
   return result;
-}
-
-std::vector<FPDF_WCHAR> GetFPDFWideStringBuffer(size_t length_bytes) {
-  ASSERT(length_bytes % sizeof(FPDF_WCHAR) == 0);
-  return std::vector<FPDF_WCHAR>(length_bytes / sizeof(FPDF_WCHAR));
 }

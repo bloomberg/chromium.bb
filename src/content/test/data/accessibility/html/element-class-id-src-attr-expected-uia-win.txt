@@ -1,4 +1,0 @@
-region
-++document
-++++heading Name='Image'
-++++img Name='ImageAlt'

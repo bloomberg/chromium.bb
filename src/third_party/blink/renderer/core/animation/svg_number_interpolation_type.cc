@@ -4,20 +4,17 @@
 
 #include "third_party/blink/renderer/core/animation/svg_number_interpolation_type.h"
 
-#include <memory>
-
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_number.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 InterpolationValue SVGNumberInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
 InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
@@ -25,15 +22,14 @@ InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedNumber)
     return nullptr;
   return InterpolationValue(
-      std::make_unique<InterpolableNumber>(ToSVGNumber(svg_value).Value()));
+      InterpolableNumber::Create(ToSVGNumber(svg_value).Value()));
 }
 
 SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   double value = ToInterpolableNumber(interpolable_value).Value();
-  return MakeGarbageCollected<SVGNumber>(is_non_negative_ && value < 0 ? 0
-                                                                       : value);
+  return SVGNumber::Create(is_non_negative_ && value < 0 ? 0 : value);
 }
 
 }  // namespace blink

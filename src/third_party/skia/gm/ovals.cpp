@@ -5,16 +5,16 @@
  * found in the LICENSE file.
  */
 
-#include "SkBlurDrawLooper.h"
+#include "gm.h"
+#include "sk_tool_utils.h"
+#include "SkTArray.h"
+#include "SkRandom.h"
+#include "SkMatrix.h"
 #include "SkBlurMaskFilter.h"
 #include "SkColorFilter.h"
 #include "SkGradientShader.h"
-#include "SkMatrix.h"
-#include "SkRandom.h"
+#include "SkBlurDrawLooper.h"
 #include "SkRect.h"
-#include "SkTArray.h"
-#include "ToolUtils.h"
-#include "gm.h"
 
 namespace skiagm {
 
@@ -133,7 +133,7 @@ protected:
         hsv[1] = rand->nextRangeF(0.75f, 1.0f);
         hsv[2] = rand->nextRangeF(0.75f, 1.0f);
 
-        return ToolUtils::color_to_565(SkHSVToColor(hsv));
+        return sk_tool_utils::color_to_565(SkHSVToColor(hsv));
     }
 
     void onDraw(SkCanvas* canvas) override {
@@ -248,7 +248,7 @@ protected:
         SkColor colors[] = { SK_ColorBLUE, SK_ColorRED, SK_ColorGREEN };
         SkScalar pos[] = { 0, SK_ScalarHalf, SK_Scalar1 };
         auto shader = SkGradientShader::MakeRadial(center, 20, colors, pos, SK_ARRAY_COUNT(colors),
-                                                   SkTileMode::kClamp);
+                                                   SkShader::kClamp_TileMode);
 
         for (int i = 0; i < fPaints.count(); ++i) {
             canvas->save();

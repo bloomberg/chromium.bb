@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/arc/arc_prefs.h"
-#include "components/arc/session/arc_supervision_transition.h"
+#include "components/arc/arc_supervision_transition.h"
 
 #include <string>
 
@@ -91,7 +91,7 @@ const char kArcSkippedReportingNotice[] = "arc.skipped.reporting.notice";
 const char kArcCompatibleFilesystemChosen[] =
     "arc.compatible_filesystem.chosen";
 // Integer pref indicating the ecryptfs to ext4 migration strategy. One of
-// options: forbidden = 0, migrate = 1, wipe = 2 or minimal migrate = 4.
+// options: forbidden = 0, migrate = 1, wipe = 2 or ask the user = 3.
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
 // A preference that persists total engagement time across sessions, which is
 // accumulated and sent to UMA once a day.

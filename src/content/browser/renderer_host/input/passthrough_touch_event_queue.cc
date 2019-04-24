@@ -305,34 +305,26 @@ void PassthroughTouchEventQueue::SendTouchEventImmediately(
 PassthroughTouchEventQueue::PreFilterResult
 PassthroughTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
   PreFilterResult result = FilterBeforeForwardingImpl(event);
-  if (result == PreFilterResult::kFilteredTimeout ||
-      result == PreFilterResult::kFilteredNoNonstationaryPointers)
-    return result;
+  if (result == PreFilterResult::kFilteredTimeout)
+    return PreFilterResult::kFilteredTimeout;
 
   // Override non-timeout filter results based on the Finch trial that bypasses
   // the filter. We do this here so that the event still has the opportunity to
   // update any internal state that's necessary to handle future events
   // (i.e. future touch moves might be dropped, even if this touch start isn't
   // due to a filter override).
-  if (!ShouldFilterForEvent(event))
-    return PreFilterResult::kUnfiltered;
+  if (skip_touch_filter_) {
+    if (events_to_always_forward_ ==
+        features::kSkipBrowserTouchFilterTypeParamValueAll) {
+      return PreFilterResult::kUnfiltered;
+    } else if (events_to_always_forward_ ==
+                   features::kSkipBrowserTouchFilterTypeParamValueDiscrete &&
+               event.GetType() != WebInputEvent::kTouchMove) {
+      return PreFilterResult::kUnfiltered;
+    }
+  }
 
   return result;
-}
-
-bool PassthroughTouchEventQueue::ShouldFilterForEvent(
-    const blink::WebTouchEvent& event) {
-  // Always run all filtering if the SkipBrowserTouchFilter is disabled.
-  if (!skip_touch_filter_)
-    return true;
-  // If the experiment is enabled and all events are forwarded, always skip
-  // filtering.
-  if (events_to_always_forward_ ==
-      features::kSkipBrowserTouchFilterTypeParamValueAll)
-    return false;
-  // If the experiment is enabled and only discrete events are forwarded,
-  // always run filtering for touchmove events only.
-  return event.GetType() == WebInputEvent::kTouchMove;
 }
 
 PassthroughTouchEventQueue::PreFilterResult
@@ -356,32 +348,23 @@ PassthroughTouchEventQueue::FilterBeforeForwardingImpl(
     drop_remaining_touches_in_sequence_ = false;
     if (!has_handlers_) {
       drop_remaining_touches_in_sequence_ = true;
-      // If the SkipBrowserTouchFilter experiment is running, drop through to
-      // the loop that filters events with no nonstationary pointers below.
-      if (ShouldFilterForEvent(event))
-        return PreFilterResult::kFilteredNoPageHandlers;
+      return PreFilterResult::kFilteredNoPageHandlers;
     }
   }
 
   if (drop_remaining_touches_in_sequence_ &&
-      event.GetType() != WebInputEvent::kTouchCancel &&
-      // If the SkipBrowserTouchFilter experiment is running, drop through to
-      // the loop that filters events with no nonstationary pointers below.
-      ShouldFilterForEvent(event))
+      event.GetType() != WebInputEvent::kTouchCancel)
     return PreFilterResult::kFilteredNoPageHandlers;
 
   if (event.GetType() == WebInputEvent::kTouchStart) {
-    if (has_handlers_ || maybe_has_handler_for_current_sequence_)
-      return PreFilterResult::kUnfiltered;
-    // If the SkipBrowserTouchFilter experiment is running, drop through to
-    // the loop that filters events with no nonstationary pointers below.
-    else if (ShouldFilterForEvent(event))
-      return PreFilterResult::kFilteredNoPageHandlers;
+    return (has_handlers_ || maybe_has_handler_for_current_sequence_)
+               ? PreFilterResult::kUnfiltered
+               : PreFilterResult::kFilteredNoPageHandlers;
   }
 
   // If none of the touch points active in the current sequence have handlers,
   // don't forward the touch event.
-  if (!maybe_has_handler_for_current_sequence_ && ShouldFilterForEvent(event))
+  if (!maybe_has_handler_for_current_sequence_)
     return PreFilterResult::kFilteredNoHandlerForSequence;
 
   // Only forward a touch if it has a non-stationary pointer that is active

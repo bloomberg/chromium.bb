@@ -1,11 +1,12 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="role" role="button"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("role");
     assert_equals(element.role, "button");
     element.role = "checkbox";
@@ -16,7 +17,7 @@ test(function(t) {
 <div id="activedescendant" aria-activedescendant="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("activedescendant");
     assert_equals(element.ariaActiveDescendant, "x");
     element.ariaActiveDescendant = "y";
@@ -27,7 +28,7 @@ test(function(t) {
 <div id="atomic" aria-atomic="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("atomic");
     assert_equals(element.ariaAtomic, "true");
     element.ariaAtomic = "false";
@@ -38,7 +39,7 @@ test(function(t) {
 <div id="autocomplete" aria-autocomplete="list"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("autocomplete");
     assert_equals(element.ariaAutoComplete, "list");
     element.ariaAutoComplete = "inline";
@@ -49,7 +50,7 @@ test(function(t) {
 <div id="busy" aria-busy="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("busy");
     assert_equals(element.ariaBusy, "true");
     element.ariaBusy = "false";
@@ -60,7 +61,7 @@ test(function(t) {
 <div id="checked" aria-checked="mixed"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("checked");
     assert_equals(element.ariaChecked, "mixed");
     element.ariaChecked = "true";
@@ -71,7 +72,7 @@ test(function(t) {
 <div id="colcount" aria-colcount="5"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("colcount");
     assert_equals(element.ariaColCount, "5");
     element.ariaColCount = "6";
@@ -82,7 +83,7 @@ test(function(t) {
 <div id="colindex" aria-colindex="1"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("colindex");
     assert_equals(element.ariaColIndex, "1");
     element.ariaColIndex = "2";
@@ -93,7 +94,7 @@ test(function(t) {
 <div id="colspan" aria-colspan="2"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("colspan");
     assert_equals(element.ariaColSpan, "2");
     element.ariaColSpan = "3";
@@ -104,7 +105,7 @@ test(function(t) {
 <div id="controls" aria-controls="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("controls");
     assert_equals(element.ariaControls, "x");
     element.ariaControls = "y";
@@ -115,7 +116,7 @@ test(function(t) {
 <div id="current" aria-current="page"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("current");
     assert_equals(element.ariaCurrent, "page");
     element.ariaCurrent = "step";
@@ -126,7 +127,7 @@ test(function(t) {
 <div id="describedby" aria-describedby="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("describedby");
     assert_equals(element.ariaDescribedBy, "x");
     element.ariaDescribedBy = "y";
@@ -137,7 +138,7 @@ test(function(t) {
 <div id="details" aria-details="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("details");
     assert_equals(element.ariaDetails, "x");
     element.ariaDetails = "y";
@@ -148,7 +149,7 @@ test(function(t) {
 <div id="disabled" aria-disabled="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("disabled");
     assert_equals(element.ariaDisabled, "true");
     element.ariaDisabled = "false";
@@ -159,7 +160,7 @@ test(function(t) {
 <div id="errormessage" aria-errormessage="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("errormessage");
     assert_equals(element.ariaErrorMessage, "x");
     element.ariaErrorMessage = "y";
@@ -170,7 +171,7 @@ test(function(t) {
 <div id="expanded" aria-expanded="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("expanded");
     assert_equals(element.ariaExpanded, "true");
     element.ariaExpanded = "false";
@@ -181,7 +182,7 @@ test(function(t) {
 <div id="flowto" aria-flowto="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("flowto");
     assert_equals(element.ariaFlowTo, "x");
     element.ariaFlowTo = "y";
@@ -192,7 +193,7 @@ test(function(t) {
 <div id="haspopup" aria-haspopup="menu"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("haspopup");
     assert_equals(element.ariaHasPopup, "menu");
     element.ariaHasPopup = "listbox";
@@ -203,7 +204,7 @@ test(function(t) {
 <div id="hidden" aria-hidden="true" tabindex="-1"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("hidden");
     assert_equals(element.ariaHidden, "true");
     element.ariaHidden = "false";
@@ -214,7 +215,7 @@ test(function(t) {
 <div id="keyshortcuts" aria-keyshortcuts="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("keyshortcuts");
     assert_equals(element.ariaKeyShortcuts, "x");
     element.ariaKeyShortcuts = "y";
@@ -225,7 +226,7 @@ test(function(t) {
 <div id="label" aria-label="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("label");
     assert_equals(element.ariaLabel, "x");
     element.ariaLabel = "y";
@@ -236,7 +237,7 @@ test(function(t) {
 <div id="labelledby" aria-labelledby="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("labelledby");
     assert_equals(element.ariaLabelledBy, "x");
     element.ariaLabelledBy = "y";
@@ -247,7 +248,7 @@ test(function(t) {
 <div id="level" aria-level="1"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("level");
     assert_equals(element.ariaLevel, "1");
     element.ariaLevel = "2";
@@ -258,7 +259,7 @@ test(function(t) {
 <div id="live" aria-live="polite"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("live");
     assert_equals(element.ariaLive, "polite");
     element.ariaLive = "assertive";
@@ -269,7 +270,7 @@ test(function(t) {
 <div id="modal" aria-modal="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("modal");
     assert_equals(element.ariaModal, "true");
     element.ariaModal = "false";
@@ -280,7 +281,7 @@ test(function(t) {
 <div id="multiline" aria-multiline="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("multiline");
     assert_equals(element.ariaMultiLine, "true");
     element.ariaMultiLine = "false";
@@ -291,7 +292,7 @@ test(function(t) {
 <div id="multiselectable" aria-multiselectable="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("multiselectable");
     assert_equals(element.ariaMultiSelectable, "true");
     element.ariaMultiSelectable = "false";
@@ -302,7 +303,7 @@ test(function(t) {
 <div id="orientation" aria-orientation="vertical"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("orientation");
     assert_equals(element.ariaOrientation, "vertical");
     element.ariaOrientation = "horizontal";
@@ -313,7 +314,7 @@ test(function(t) {
 <div id="owns" aria-owns="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("owns");
     assert_equals(element.ariaOwns, "x");
     element.ariaOwns = "y";
@@ -324,7 +325,7 @@ test(function(t) {
 <div id="placeholder" aria-placeholder="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("placeholder");
     assert_equals(element.ariaPlaceholder, "x");
     element.ariaPlaceholder = "y";
@@ -335,7 +336,7 @@ test(function(t) {
 <div id="posinset" aria-posinset="10"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("posinset");
     assert_equals(element.ariaPosInSet, "10");
     element.ariaPosInSet = "11";
@@ -346,7 +347,7 @@ test(function(t) {
 <button id="pressed" aria-pressed="true"></button>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("pressed");
     assert_equals(element.ariaPressed, "true");
     element.ariaPressed = "false";
@@ -357,7 +358,7 @@ test(function(t) {
 <div id="readonly" aria-readonly="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("readonly");
     assert_equals(element.ariaReadOnly, "true");
     element.ariaReadOnly = "false";
@@ -368,7 +369,7 @@ test(function(t) {
 <div id="relevant" aria-relevant="text"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("relevant");
     assert_equals(element.ariaRelevant, "text");
     element.ariaRelevant = "removals";
@@ -379,7 +380,7 @@ test(function(t) {
 <div id="required" aria-required="true"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("required");
     assert_equals(element.ariaRequired, "true");
     element.ariaRequired = "false";
@@ -390,7 +391,7 @@ test(function(t) {
 <div id="roledescription" aria-roledescription="x"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("roledescription");
     assert_equals(element.ariaRoleDescription, "x");
     element.ariaRoleDescription = "y";
@@ -401,7 +402,7 @@ test(function(t) {
 <div id="rowcount" aria-rowcount="10"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("rowcount");
     assert_equals(element.ariaRowCount, "10");
     element.ariaRowCount = "11";
@@ -412,7 +413,7 @@ test(function(t) {
 <div id="rowindex" aria-rowindex="1"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("rowindex");
     assert_equals(element.ariaRowIndex, "1");
     element.ariaRowIndex = "2";
@@ -423,7 +424,7 @@ test(function(t) {
 <div id="rowspan" aria-rowspan="2"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("rowspan");
     assert_equals(element.ariaRowSpan, "2");
     element.ariaRowSpan = "3";
@@ -434,7 +435,7 @@ test(function(t) {
 <div id="setsize" aria-setsize="10"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("setsize");
     assert_equals(element.ariaSelected, "10");
     element.ariaSelected = "11";
@@ -445,7 +446,7 @@ test(function(t) {
 <div id="sort" aria-sort="descending"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("sort");
     assert_equals(element.ariaSort, "descending");
     element.ariaSort = "ascending";
@@ -456,7 +457,7 @@ test(function(t) {
 <div id="valuemax" aria-valuemax="99"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("valuemax");
     assert_equals(element.ariaValueMax, "99");
     element.ariaValueMax = "100";
@@ -467,7 +468,7 @@ test(function(t) {
 <div id="valuemin" aria-valuemin="3"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("valuemin");
     assert_equals(element.ariaValueMin, "3");
     element.ariaValueMin = "2";
@@ -478,7 +479,7 @@ test(function(t) {
 <div id="valuenow" aria-valuenow="50"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("valuenow");
     assert_equals(element.ariaValueNow, "50");
     element.ariaValueNow = "51";
@@ -489,7 +490,7 @@ test(function(t) {
 <div id="valuetext" aria-valuetext="50%"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var element = document.getElementById("valuetext");
     assert_equals(element.ariaValueText, "50%");
     element.ariaValueText = "51%";

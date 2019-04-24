@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/render_frame_host.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "content/public/common/console_message_level.h"
 
 namespace chromeos {
 namespace launcher_search_provider {
@@ -20,8 +20,8 @@ ErrorReporter::~ErrorReporter() {
 void ErrorReporter::Warn(const std::string& message) {
   DCHECK(host_);
 
-  host_->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
-                             message);
+  host_->AddMessageToConsole(
+      content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
 std::unique_ptr<ErrorReporter> ErrorReporter::Duplicate() {

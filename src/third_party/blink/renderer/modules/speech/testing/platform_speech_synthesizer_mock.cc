@@ -110,13 +110,9 @@ void PlatformSpeechSynthesizerMock::SpeakNow() {
   Client()->DidStartSpeaking(current_utterance_);
 
   // Fire a fake word and then sentence boundary event.
-  String utterance_text = current_utterance_->GetText();
-  int char_length = utterance_text.find(' ');
-  int sentence_length = current_utterance_->GetText().length();
-  Client()->BoundaryEventOccurred(current_utterance_, kSpeechWordBoundary, 0,
-                                  char_length);
+  Client()->BoundaryEventOccurred(current_utterance_, kSpeechWordBoundary, 0);
   Client()->BoundaryEventOccurred(current_utterance_, kSpeechSentenceBoundary,
-                                  0, sentence_length);
+                                  current_utterance_->GetText().length());
 
   // Give the fake speech job some time so that pause and other functions have
   // time to be called.

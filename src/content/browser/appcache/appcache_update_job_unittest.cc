@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -727,11 +726,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   // when it goes out of scope.
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    base::RunLoop run_loop;
-    test_completed_cb_ = run_loop.QuitClosure();
+    event_.reset(new base::WaitableEvent(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED));
+
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                              base::BindOnce(method, base::Unretained(this)));
-    run_loop.Run();
+
+    // Wait until task is done before exiting the test.
+    event_->Wait();
   }
 
   void InitializeFactory() {
@@ -3465,7 +3468,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     response_infos_.clear();
     service_.reset(nullptr);
 
-    std::move(test_completed_cb_).Run();
+    event_->Signal();
   }
 
   void MakeService() {
@@ -3821,7 +3824,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   std::unique_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
-  base::OnceClosure test_completed_cb_;
+  std::unique_ptr<base::WaitableEvent> event_;
 
   std::unique_ptr<AppCacheResponseWriter> response_writer_;
 

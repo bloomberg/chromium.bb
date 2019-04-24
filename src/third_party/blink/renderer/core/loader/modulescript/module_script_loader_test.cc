@@ -88,7 +88,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
       requests_.emplace_back(request, TextPosition::MinimumPosition());
     }
   }
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
     return requests_;
   }
 
@@ -194,7 +194,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       MakeGarbageCollected<WorkletModuleResponsesMap>());
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame());
-  ASSERT_TRUE(global_scope_->ScriptController()->Initialize(NullURL()));
+  ASSERT_TRUE(global_scope_->ScriptController()->InitializeContext(
+      "Dummy Context", NullURL()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());
 }
@@ -202,7 +203,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
 void ModuleScriptLoaderTest::TestFetchDataURL(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
-  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
                             fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -259,7 +260,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 void ModuleScriptLoaderTest::TestInvalidSpecifier(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
-  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   GetModulator()->SetModuleRequests({"invalid"});
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
@@ -303,7 +304,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
 void ModuleScriptLoaderTest::TestFetchInvalidURL(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
-  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
   EXPECT_FALSE(url.IsValid());
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
@@ -346,7 +347,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
   url_test_helpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
 
-  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
                             fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
                             GetModulator(), custom_fetch_type, registry,

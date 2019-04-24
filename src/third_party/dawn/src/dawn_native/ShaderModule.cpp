@@ -22,8 +22,6 @@
 #include <spirv-cross/spirv_cross.hpp>
 #include <spirv-tools/libspirv.hpp>
 
-#include <sstream>
-
 namespace dawn_native {
 
     MaybeError ValidateShaderModuleDescriptor(DeviceBase*,
@@ -84,7 +82,7 @@ namespace dawn_native {
         ASSERT(!IsError());
 
         DeviceBase* device = GetDevice();
-        // TODO(cwallez@chromium.org): make errors here creation errors
+        // TODO(cwallez@chromium.org): make errors here builder-level
         // currently errors here do not prevent the shadermodule from being used
         const auto& resources = compiler.get_shader_resources();
 
@@ -155,8 +153,7 @@ namespace dawn_native {
         }
 
         // Fill in bindingInfo with the SPIRV bindings
-        auto ExtractResourcesBinding = [this](const spirv_cross::SmallVector<spirv_cross::Resource>&
-                                                  resources,
+        auto ExtractResourcesBinding = [this](const std::vector<spirv_cross::Resource>& resources,
                                               const spirv_cross::Compiler& compiler,
                                               dawn::BindingType bindingType) {
             for (const auto& resource : resources) {

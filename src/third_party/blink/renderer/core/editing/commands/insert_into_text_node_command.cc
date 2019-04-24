@@ -51,7 +51,7 @@ void InsertIntoTextNodeCommand::DoApply(EditingState*) {
       GetDocument().GetSettings() &&
       GetDocument().GetSettings()->GetPasswordEchoEnabled();
   if (password_echo_enabled)
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!HasEditableStyle(*node_))
     return;

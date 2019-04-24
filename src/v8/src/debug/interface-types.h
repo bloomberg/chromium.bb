@@ -194,7 +194,7 @@ class ConsoleDelegate {
   virtual ~ConsoleDelegate() = default;
 };
 
-using BreakpointId = int;
+typedef int BreakpointId;
 
 }  // namespace debug
 }  // namespace v8

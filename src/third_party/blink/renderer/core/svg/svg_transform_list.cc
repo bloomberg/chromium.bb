@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_distance.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -47,7 +46,7 @@ SVGTransform* SVGTransformList::Consolidate() {
   if (!Concatenate(matrix))
     return nullptr;
 
-  return Initialize(MakeGarbageCollected<SVGTransform>(matrix));
+  return Initialize(SVGTransform::Create(matrix));
 }
 
 bool SVGTransformList::Concatenate(AffineTransform& result) const {
@@ -67,30 +66,29 @@ namespace {
 CSSValueID MapTransformFunction(const SVGTransform& transform) {
   switch (transform.TransformType()) {
     case SVGTransformType::kMatrix:
-      return CSSValueID::kMatrix;
+      return CSSValueMatrix;
     case SVGTransformType::kTranslate:
-      return CSSValueID::kTranslate;
+      return CSSValueTranslate;
     case SVGTransformType::kScale:
-      return CSSValueID::kScale;
+      return CSSValueScale;
     case SVGTransformType::kRotate:
-      return CSSValueID::kRotate;
+      return CSSValueRotate;
     case SVGTransformType::kSkewx:
-      return CSSValueID::kSkewX;
+      return CSSValueSkewX;
     case SVGTransformType::kSkewy:
-      return CSSValueID::kSkewY;
+      return CSSValueSkewY;
     case SVGTransformType::kUnknown:
     default:
       NOTREACHED();
   }
-  return CSSValueID::kInvalid;
+  return CSSValueInvalid;
 }
 
 CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
   CSSValueID function_id = MapTransformFunction(transform);
-  CSSFunctionValue* transform_value =
-      MakeGarbageCollected<CSSFunctionValue>(function_id);
+  CSSFunctionValue* transform_value = CSSFunctionValue::Create(function_id);
   switch (function_id) {
-    case CSSValueID::kRotate: {
+    case CSSValueRotate: {
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       FloatPoint rotation_origin = transform.RotationCenter();
@@ -102,12 +100,12 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
       }
       break;
     }
-    case CSSValueID::kSkewX:
-    case CSSValueID::kSkewY:
+    case CSSValueSkewX:
+    case CSSValueSkewY:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       break;
-    case CSSValueID::kMatrix:
+    case CSSValueMatrix:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
@@ -121,13 +119,13 @@ CSSValue* CreateTransformCSSValue(const SVGTransform& transform) {
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().F(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
-    case CSSValueID::kScale:
+    case CSSValueScale:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().A(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().D(), CSSPrimitiveValue::UnitType::kUserUnits));
       break;
-    case CSSValueID::kTranslate:
+    case CSSValueTranslate:
       transform_value->Append(*CSSPrimitiveValue::Create(
           transform.Matrix().E(), CSSPrimitiveValue::UnitType::kUserUnits));
       transform_value->Append(*CSSPrimitiveValue::Create(
@@ -149,7 +147,7 @@ const CSSValue* SVGTransformList::CssValue() const {
   // that complicates things.
   size_t length = this->length();
   if (!length)
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
+    return CSSIdentifierValue::Create(CSSValueNone);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (length == 1) {
     list->Append(*CreateTransformCSSValue(*at(0)));
@@ -259,7 +257,7 @@ SVGParseStatus ParseTransformArgumentsForType(SVGTransformType type,
 
 SVGTransform* CreateTransformFromValues(SVGTransformType type,
                                         const TransformArguments& arguments) {
-  auto* transform = MakeGarbageCollected<SVGTransform>();
+  SVGTransform* transform = SVGTransform::Create();
   switch (type) {
     case SVGTransformType::kSkewx:
       transform->SetSkewX(arguments[0]);
@@ -420,7 +418,7 @@ SVGTransformList* SVGTransformList::Create(SVGTransformType transform_type,
     at_end_of_value = !SkipOptionalSVGSpaces(ptr, end);
   }
 
-  auto* svg_transform_list = MakeGarbageCollected<SVGTransformList>();
+  SVGTransformList* svg_transform_list = SVGTransformList::Create();
   if (at_end_of_value && status == SVGParseStatus::kNoError)
     svg_transform_list->Append(
         CreateTransformFromValues(transform_type, arguments));
@@ -482,7 +480,7 @@ void SVGTransformList::CalculateAnimatedValue(
       from_list->at(0)->TransformType() == to_transform->TransformType())
     effective_from = from_list->at(0);
   else
-    effective_from = MakeGarbageCollected<SVGTransform>(
+    effective_from = SVGTransform::Create(
         to_transform->TransformType(), SVGTransform::kConstructZeroTransform);
 
   // Never resize the animatedTransformList to the toList size, instead either
@@ -498,9 +496,8 @@ void SVGTransformList::CalculateAnimatedValue(
     SVGTransform* effective_to_at_end =
         !to_at_end_of_duration_list->IsEmpty()
             ? to_at_end_of_duration_list->at(0)
-            : MakeGarbageCollected<SVGTransform>(
-                  to_transform->TransformType(),
-                  SVGTransform::kConstructZeroTransform);
+            : SVGTransform::Create(to_transform->TransformType(),
+                                   SVGTransform::kConstructZeroTransform);
     Append(SVGTransformDistance::AddSVGTransforms(
         current_transform, effective_to_at_end, repeat_count));
   } else {

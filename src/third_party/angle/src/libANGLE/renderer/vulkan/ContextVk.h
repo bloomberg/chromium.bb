@@ -25,7 +25,6 @@ struct FeaturesVk;
 namespace rx
 {
 class RendererVk;
-class WindowSurfaceVk;
 
 class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBufferOwner
 {
@@ -39,9 +38,7 @@ class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBuff
 
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
-    angle::Result flushImpl();
     angle::Result finish(const gl::Context *context) override;
-    angle::Result finishImpl();
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
@@ -81,7 +78,7 @@ class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBuff
                                        const void *indirect) override;
 
     // Device loss
-    gl::GraphicsResetStatus getResetStatus() override;
+    GLenum getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -155,9 +152,6 @@ class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBuff
     // Path object creation
     std::vector<PathImpl *> createPaths(GLsizei) override;
 
-    // Memory object creation.
-    MemoryObjectImpl *createMemoryObject() override;
-
     angle::Result dispatchCompute(const gl::Context *context,
                                   GLuint numGroupsX,
                                   GLuint numGroupsY,
@@ -173,8 +167,6 @@ class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBuff
 
     ANGLE_INLINE void invalidateVertexAndIndexBuffers()
     {
-        // TODO: Make the pipeline invalidate more fine-grained. Only need to dirty here if PSO
-        //  VtxInput state (stride, fmt, inputRate...) has changed. http://anglebug.com/3256
         invalidateCurrentPipeline();
         mDirtyBits.set(DIRTY_BIT_VERTEX_BUFFERS);
         mDirtyBits.set(DIRTY_BIT_INDEX_BUFFER);
@@ -293,8 +285,6 @@ class ContextVk : public ContextImpl, public vk::Context, public vk::CommandBuff
 
     vk::PipelineHelper *mCurrentPipeline;
     gl::PrimitiveMode mCurrentDrawMode;
-
-    WindowSurfaceVk *mCurrentWindowSurface;
 
     // Keep a cached pipeline description structure that can be used to query the pipeline cache.
     // Kept in a pointer so allocations can be aligned, and structs can be portably packed.

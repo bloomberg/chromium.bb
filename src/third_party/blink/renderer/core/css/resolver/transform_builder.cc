@@ -56,57 +56,57 @@ static TransformOperation::OperationType GetTransformOperationType(
     default:
       NOTREACHED();
       FALLTHROUGH;
-    case CSSValueID::kScale:
+    case CSSValueScale:
       return TransformOperation::kScale;
-    case CSSValueID::kScaleX:
+    case CSSValueScaleX:
       return TransformOperation::kScaleX;
-    case CSSValueID::kScaleY:
+    case CSSValueScaleY:
       return TransformOperation::kScaleY;
-    case CSSValueID::kScaleZ:
+    case CSSValueScaleZ:
       return TransformOperation::kScaleZ;
-    case CSSValueID::kScale3d:
+    case CSSValueScale3d:
       return TransformOperation::kScale3D;
-    case CSSValueID::kTranslate:
+    case CSSValueTranslate:
       return TransformOperation::kTranslate;
-    case CSSValueID::kTranslateX:
+    case CSSValueTranslateX:
       return TransformOperation::kTranslateX;
-    case CSSValueID::kTranslateY:
+    case CSSValueTranslateY:
       return TransformOperation::kTranslateY;
-    case CSSValueID::kTranslateZ:
+    case CSSValueTranslateZ:
       return TransformOperation::kTranslateZ;
-    case CSSValueID::kTranslate3d:
+    case CSSValueTranslate3d:
       return TransformOperation::kTranslate3D;
-    case CSSValueID::kRotate:
+    case CSSValueRotate:
       return TransformOperation::kRotate;
-    case CSSValueID::kRotateX:
+    case CSSValueRotateX:
       return TransformOperation::kRotateX;
-    case CSSValueID::kRotateY:
+    case CSSValueRotateY:
       return TransformOperation::kRotateY;
-    case CSSValueID::kRotateZ:
+    case CSSValueRotateZ:
       return TransformOperation::kRotateZ;
-    case CSSValueID::kRotate3d:
+    case CSSValueRotate3d:
       return TransformOperation::kRotate3D;
-    case CSSValueID::kSkew:
+    case CSSValueSkew:
       return TransformOperation::kSkew;
-    case CSSValueID::kSkewX:
+    case CSSValueSkewX:
       return TransformOperation::kSkewX;
-    case CSSValueID::kSkewY:
+    case CSSValueSkewY:
       return TransformOperation::kSkewY;
-    case CSSValueID::kMatrix:
+    case CSSValueMatrix:
       return TransformOperation::kMatrix;
-    case CSSValueID::kMatrix3d:
+    case CSSValueMatrix3d:
       return TransformOperation::kMatrix3D;
-    case CSSValueID::kPerspective:
+    case CSSValuePerspective:
       return TransformOperation::kPerspective;
   }
 }
 
 bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
   for (auto& value : value_list) {
-    const auto* transform_value = To<CSSFunctionValue>(value.Get());
+    const CSSFunctionValue* transform_value = ToCSSFunctionValue(value.Get());
 
     for (const CSSValue* item : *transform_value) {
-      const auto& primitive_value = To<CSSPrimitiveValue>(*item);
+      const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(*item);
 
       if (primitive_value.IsCalculated()) {
         CSSCalcValue* css_calc_value = primitive_value.CssCalcValue();
@@ -131,19 +131,19 @@ TransformOperations TransformBuilder::CreateTransformOperations(
     const CSSValue& in_value,
     const CSSToLengthConversionData& conversion_data) {
   TransformOperations operations;
-  auto* in_value_list = DynamicTo<CSSValueList>(in_value);
-  if (!in_value_list) {
-    DCHECK_EQ(To<CSSIdentifierValue>(in_value).GetValueID(), CSSValueID::kNone);
+  if (!in_value.IsValueList()) {
+    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
     return operations;
   }
 
   float zoom_factor = conversion_data.Zoom();
-  for (auto& value : *in_value_list) {
-    const auto* transform_value = To<CSSFunctionValue>(value.Get());
+  for (auto& value : ToCSSValueList(in_value)) {
+    const CSSFunctionValue* transform_value = ToCSSFunctionValue(value.Get());
     TransformOperation::OperationType transform_type =
         GetTransformOperationType(transform_value->FunctionType());
 
-    const auto& first_value = To<CSSPrimitiveValue>(transform_value->Item(0));
+    const CSSPrimitiveValue& first_value =
+        ToCSSPrimitiveValue(transform_value->Item(0));
 
     switch (transform_type) {
       case TransformOperation::kScale:
@@ -157,8 +157,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
           sx = first_value.GetDoubleValue();
           if (transform_type != TransformOperation::kScaleX) {
             if (transform_value->length() > 1) {
-              const auto& second_value =
-                  To<CSSPrimitiveValue>(transform_value->Item(1));
+              const CSSPrimitiveValue& second_value =
+                  ToCSSPrimitiveValue(transform_value->Item(1));
               sy = second_value.GetDoubleValue();
             } else {
               sy = sx;
@@ -178,8 +178,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
           sz = first_value.GetDoubleValue();
         } else {
           sx = first_value.GetDoubleValue();
-          sy = To<CSSPrimitiveValue>(transform_value->Item(1)).GetDoubleValue();
-          sz = To<CSSPrimitiveValue>(transform_value->Item(2)).GetDoubleValue();
+          sy = ToCSSPrimitiveValue(transform_value->Item(1)).GetDoubleValue();
+          sz = ToCSSPrimitiveValue(transform_value->Item(2)).GetDoubleValue();
         }
         operations.Operations().push_back(
             ScaleTransformOperation::Create(sx, sy, sz, transform_type));
@@ -196,8 +196,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
           tx = ConvertToFloatLength(first_value, conversion_data);
           if (transform_type != TransformOperation::kTranslateX) {
             if (transform_value->length() > 1) {
-              const auto& second_value =
-                  To<CSSPrimitiveValue>(transform_value->Item(1));
+              const CSSPrimitiveValue& second_value =
+                  ToCSSPrimitiveValue(transform_value->Item(1));
               ty = ConvertToFloatLength(second_value, conversion_data);
             }
           }
@@ -217,8 +217,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
         } else {
           tx = ConvertToFloatLength(first_value, conversion_data);
           ty = ConvertToFloatLength(
-              To<CSSPrimitiveValue>(transform_value->Item(1)), conversion_data);
-          tz = To<CSSPrimitiveValue>(transform_value->Item(2))
+              ToCSSPrimitiveValue(transform_value->Item(1)), conversion_data);
+          tz = ToCSSPrimitiveValue(transform_value->Item(2))
                    .ComputeLength<double>(conversion_data);
         }
 
@@ -240,10 +240,10 @@ TransformOperations TransformBuilder::CreateTransformOperations(
           // For SVG 'transform' attributes we generate 3-argument rotate()
           // functions.
           DCHECK_EQ(transform_value->length(), 3u);
-          const auto& second_value =
-              To<CSSPrimitiveValue>(transform_value->Item(1));
+          const CSSPrimitiveValue& second_value =
+              ToCSSPrimitiveValue(transform_value->Item(1));
           const CSSPrimitiveValue& third_value =
-              To<CSSPrimitiveValue>(transform_value->Item(2));
+              ToCSSPrimitiveValue(transform_value->Item(2));
           operations.Operations().push_back(
               RotateAroundOriginTransformOperation::Create(
                   angle, second_value.ComputeLength<double>(conversion_data),
@@ -252,12 +252,12 @@ TransformOperations TransformBuilder::CreateTransformOperations(
         break;
       }
       case TransformOperation::kRotate3D: {
-        const auto& second_value =
-            To<CSSPrimitiveValue>(transform_value->Item(1));
-        const auto& third_value =
-            To<CSSPrimitiveValue>(transform_value->Item(2));
-        const auto& fourth_value =
-            To<CSSPrimitiveValue>(transform_value->Item(3));
+        const CSSPrimitiveValue& second_value =
+            ToCSSPrimitiveValue(transform_value->Item(1));
+        const CSSPrimitiveValue& third_value =
+            ToCSSPrimitiveValue(transform_value->Item(2));
+        const CSSPrimitiveValue& fourth_value =
+            ToCSSPrimitiveValue(transform_value->Item(3));
         double x = first_value.GetDoubleValue();
         double y = second_value.GetDoubleValue();
         double z = third_value.GetDoubleValue();
@@ -278,8 +278,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
           angle_x = angle;
           if (transform_type == TransformOperation::kSkew) {
             if (transform_value->length() > 1) {
-              const auto& second_value =
-                  To<CSSPrimitiveValue>(transform_value->Item(1));
+              const CSSPrimitiveValue& second_value =
+                  ToCSSPrimitiveValue(transform_value->Item(1));
               angle_y = second_value.ComputeDegrees();
             }
           }
@@ -291,39 +291,39 @@ TransformOperations TransformBuilder::CreateTransformOperations(
       case TransformOperation::kMatrix: {
         double a = first_value.GetDoubleValue();
         double b =
-            To<CSSPrimitiveValue>(transform_value->Item(1)).GetDoubleValue();
+            ToCSSPrimitiveValue(transform_value->Item(1)).GetDoubleValue();
         double c =
-            To<CSSPrimitiveValue>(transform_value->Item(2)).GetDoubleValue();
+            ToCSSPrimitiveValue(transform_value->Item(2)).GetDoubleValue();
         double d =
-            To<CSSPrimitiveValue>(transform_value->Item(3)).GetDoubleValue();
+            ToCSSPrimitiveValue(transform_value->Item(3)).GetDoubleValue();
         double e =
             zoom_factor *
-            To<CSSPrimitiveValue>(transform_value->Item(4)).GetDoubleValue();
+            ToCSSPrimitiveValue(transform_value->Item(4)).GetDoubleValue();
         double f =
             zoom_factor *
-            To<CSSPrimitiveValue>(transform_value->Item(5)).GetDoubleValue();
+            ToCSSPrimitiveValue(transform_value->Item(5)).GetDoubleValue();
         operations.Operations().push_back(
             MatrixTransformOperation::Create(a, b, c, d, e, f));
         break;
       }
       case TransformOperation::kMatrix3D: {
         TransformationMatrix matrix(
-            To<CSSPrimitiveValue>(transform_value->Item(0)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(1)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(2)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(3)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(4)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(5)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(6)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(7)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(8)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(9)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(10)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(11)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(12)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(13)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(14)).GetDoubleValue(),
-            To<CSSPrimitiveValue>(transform_value->Item(15)).GetDoubleValue());
+            ToCSSPrimitiveValue(transform_value->Item(0)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(1)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(2)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(3)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(4)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(5)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(6)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(7)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(8)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(9)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(10)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(11)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(12)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(13)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(14)).GetDoubleValue(),
+            ToCSSPrimitiveValue(transform_value->Item(15)).GetDoubleValue());
         matrix.Zoom(zoom_factor);
         operations.Operations().push_back(
             Matrix3DTransformOperation::Create(matrix));

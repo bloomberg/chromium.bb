@@ -20,6 +20,8 @@ class SimpleURLLoader;
 
 namespace chromeos {
 
+class BaseScreenDelegate;
+
 // A screen that shows Terms of Service which have been configured through
 // policy. The screen is shown during login and requires the user to accept the
 // Terms of Service before proceeding. Currently, Terms of Service are available
@@ -30,7 +32,8 @@ class TermsOfServiceScreen : public BaseScreen,
   enum class Result { ACCEPTED, DECLINED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  TermsOfServiceScreen(TermsOfServiceScreenView* view,
+  TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
+                       TermsOfServiceScreenView* view,
                        const ScreenExitCallback& exit_callback);
   ~TermsOfServiceScreen() override;
 

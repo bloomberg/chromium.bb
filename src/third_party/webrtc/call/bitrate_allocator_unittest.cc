@@ -19,6 +19,7 @@
 
 using ::testing::_;
 using ::testing::NiceMock;
+using ::testing::StrictMock;
 
 namespace webrtc {
 // Emulating old interface for test suite compatibility.

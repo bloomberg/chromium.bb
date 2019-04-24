@@ -108,7 +108,6 @@ TextureState::TextureState(TextureType type)
       mGenerateMipmapHint(GL_FALSE),
       mInitState(InitState::MayNeedInit),
       mCachedSamplerFormat(SamplerFormat::InvalidEnum),
-      mCachedSamplerCompareMode(GL_NONE),
       mCachedSamplerFormatValid(false)
 {}
 
@@ -242,12 +241,12 @@ GLenum TextureState::getGenerateMipmapHint() const
     return mGenerateMipmapHint;
 }
 
-SamplerFormat TextureState::computeRequiredSamplerFormat(const SamplerState &samplerState) const
+SamplerFormat TextureState::computeRequiredSamplerFormat() const
 {
     const ImageDesc &baseImageDesc = getImageDesc(getBaseImageTarget(), getEffectiveBaseLevel());
     if ((baseImageDesc.format.info->format == GL_DEPTH_COMPONENT ||
          baseImageDesc.format.info->format == GL_DEPTH_STENCIL) &&
-        samplerState.getCompareMode() != GL_NONE)
+        mSamplerState.getCompareMode() != GL_NONE)
     {
         return SamplerFormat::Shadow;
     }
@@ -1147,22 +1146,24 @@ angle::Result Texture::copyImage(Context *context,
 }
 
 angle::Result Texture::copySubImage(Context *context,
-                                    const ImageIndex &index,
+                                    TextureTarget target,
+                                    GLint level,
                                     const Offset &destOffset,
                                     const Rectangle &sourceArea,
                                     Framebuffer *source)
 {
-    ASSERT(TextureTargetToType(index.getTarget()) == mState.mType);
+    ASSERT(TextureTargetToType(target) == mState.mType);
 
     // Ensure source FBO is initialized.
     ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
 
-    Box destBox(destOffset.x, destOffset.y, destOffset.z, sourceArea.width, sourceArea.height, 1);
-    ANGLE_TRY(
-        ensureSubImageInitialized(context, index.getTarget(), index.getLevelIndex(), destBox));
+    Box destBox(destOffset.x, destOffset.y, destOffset.y, sourceArea.width, sourceArea.height, 1);
+    ANGLE_TRY(ensureSubImageInitialized(context, target, level, destBox));
+
+    ImageIndex index = ImageIndex::MakeFromTarget(target, level);
 
     ANGLE_TRY(mTexture->copySubImage(context, index, destOffset, sourceArea, source));
-    ANGLE_TRY(handleMipmapGenerationHint(context, index.getLevelIndex()));
+    ANGLE_TRY(handleMipmapGenerationHint(context, level));
 
     return angle::Result::Continue;
 }
@@ -1769,7 +1770,6 @@ void Texture::onSubjectStateChange(const gl::Context *context,
     if (message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS)
     {
         mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
-        signalDirtyState(context, DIRTY_BIT_IMPLEMENTATION);
     }
 }
 }  // namespace gl

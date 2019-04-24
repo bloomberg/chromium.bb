@@ -31,7 +31,7 @@ namespace views {
 BasePaintedLayerDelegate::BasePaintedLayerDelegate(SkColor color)
     : color_(color) {}
 
-BasePaintedLayerDelegate::~BasePaintedLayerDelegate() = default;
+BasePaintedLayerDelegate::~BasePaintedLayerDelegate() {}
 
 gfx::Vector2dF BasePaintedLayerDelegate::GetCenteringOffset() const {
   return gfx::RectF(GetPaintedBounds()).CenterPoint().OffsetFromOrigin();
@@ -49,7 +49,7 @@ void BasePaintedLayerDelegate::OnDeviceScaleFactorChanged(
 CircleLayerDelegate::CircleLayerDelegate(SkColor color, int radius)
     : BasePaintedLayerDelegate(color), radius_(radius) {}
 
-CircleLayerDelegate::~CircleLayerDelegate() = default;
+CircleLayerDelegate::~CircleLayerDelegate() {}
 
 gfx::RectF CircleLayerDelegate::GetPaintedBounds() const {
   const int diameter = radius_ * 2;
@@ -77,7 +77,7 @@ void CircleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
 RectangleLayerDelegate::RectangleLayerDelegate(SkColor color, gfx::SizeF size)
     : BasePaintedLayerDelegate(color), size_(size) {}
 
-RectangleLayerDelegate::~RectangleLayerDelegate() = default;
+RectangleLayerDelegate::~RectangleLayerDelegate() {}
 
 gfx::RectF RectangleLayerDelegate::GetPaintedBounds() const {
   return gfx::RectF(size_);
@@ -107,7 +107,7 @@ RoundedRectangleLayerDelegate::RoundedRectangleLayerDelegate(
       size_(size),
       corner_radius_(corner_radius) {}
 
-RoundedRectangleLayerDelegate::~RoundedRectangleLayerDelegate() = default;
+RoundedRectangleLayerDelegate::~RoundedRectangleLayerDelegate() {}
 
 gfx::RectF RoundedRectangleLayerDelegate::GetPaintedBounds() const {
   return gfx::RectF(size_);
@@ -144,7 +144,7 @@ BorderShadowLayerDelegate::BorderShadowLayerDelegate(
       fill_color_(fill_color),
       corner_radius_(corner_radius) {}
 
-BorderShadowLayerDelegate::~BorderShadowLayerDelegate() = default;
+BorderShadowLayerDelegate::~BorderShadowLayerDelegate() {}
 
 gfx::RectF BorderShadowLayerDelegate::GetPaintedBounds() const {
   gfx::Rect total_rect(bounds_);

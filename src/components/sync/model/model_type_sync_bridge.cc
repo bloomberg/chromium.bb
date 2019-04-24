@@ -37,9 +37,10 @@ bool ModelTypeSyncBridge::SupportsIncrementalUpdates() const {
 }
 
 ConflictResolution ModelTypeSyncBridge::ResolveConflict(
-    const std::string& storage_key,
+    const EntityData& local_data,
     const EntityData& remote_data) const {
   if (remote_data.is_deleted()) {
+    DCHECK(!local_data.is_deleted());
     return ConflictResolution::UseLocal();
   }
   return ConflictResolution::UseRemote();

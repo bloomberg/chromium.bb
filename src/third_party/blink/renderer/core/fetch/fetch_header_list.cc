@@ -12,8 +12,12 @@
 
 namespace blink {
 
+FetchHeaderList* FetchHeaderList::Create() {
+  return MakeGarbageCollected<FetchHeaderList>();
+}
+
 FetchHeaderList* FetchHeaderList::Clone() const {
-  auto* list = MakeGarbageCollected<FetchHeaderList>();
+  FetchHeaderList* list = Create();
   for (const auto& header : header_list_)
     list->Append(header.first, header.second);
   return list;

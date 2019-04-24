@@ -68,10 +68,10 @@ class NGPhysicalFragmentCollectorBase {
     DCHECK(fragment.IsContainer());
     DCHECK(fragment.IsInline() || fragment.IsLineBox() ||
            (fragment.IsBlockFlow() &&
-            To<NGPhysicalBoxFragment>(fragment).ChildrenInline()));
+            ToNGPhysicalBoxFragment(fragment).ChildrenInline()));
 
     for (const auto& child :
-         To<NGPhysicalContainerFragment>(fragment).Children()) {
+         ToNGPhysicalContainerFragment(fragment).Children()) {
       base::AutoReset<NGPhysicalOffset> offset_resetter(
           &current_offset_to_root_, current_offset_to_root_ + child.Offset());
       base::AutoReset<const NGPhysicalFragment*> fragment_resetter(

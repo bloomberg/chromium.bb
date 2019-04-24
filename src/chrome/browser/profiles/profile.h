@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile_key.h"
 #include "components/domain_reliability/clear_mode.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -34,10 +34,6 @@ class SequencedTaskRunner;
 
 namespace content {
 class WebUI;
-}
-
-namespace policy {
-class SchemaRegistryService;
 }
 
 namespace network {
@@ -227,11 +223,8 @@ class Profile : public content::BrowserContext {
   virtual base::Time GetStartTime() const = 0;
 
   // Returns the key used to index KeyedService instances created by a
-  // SimpleKeyedServiceFactory, more strictly typed as a ProfileKey.
-  virtual ProfileKey* GetProfileKey() const = 0;
-
-  // Returns the SchemaRegistryService.
-  virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService();
+  // SimpleKeyedServiceFactory.
+  virtual SimpleFactoryKey* GetSimpleFactoryKey() const = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;
@@ -276,14 +269,6 @@ class Profile : public content::BrowserContext {
   virtual bool WasCreatedByVersionOrLater(const std::string& version) = 0;
 
   std::string GetDebugName();
-
-  // Returns whether it's a regular profile. Short-hand for GetProfileType() ==
-  // REGULAR_PROFILE.
-  bool IsRegularProfile() const;
-
-  // Returns whether it is an Incognito session. An Incognito session is an
-  // off-the-record session that is not a guest session.
-  bool IsIncognito() const;
 
   // Returns whether it is a guest session.
   virtual bool IsGuestSession() const;

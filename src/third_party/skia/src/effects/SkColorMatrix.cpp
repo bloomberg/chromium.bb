@@ -93,8 +93,11 @@ void SkColorMatrix::postTranslate(SkScalar dr, SkScalar dg, SkScalar db,
 ///////////////////////////////////////////////////////////////////////////////
 
 void SkColorMatrix::setRotate(Axis axis, SkScalar degrees) {
-    SkScalar r = SkDegreesToRadians(degrees);
-    this->setSinCos(axis, SkScalarSin(r), SkScalarCos(r));
+    SkScalar S, C;
+
+    S = SkScalarSinCos(SkDegreesToRadians(degrees), &C);
+
+    this->setSinCos(axis, S, C);
 }
 
 void SkColorMatrix::setSinCos(Axis axis, SkScalar sine, SkScalar cosine) {

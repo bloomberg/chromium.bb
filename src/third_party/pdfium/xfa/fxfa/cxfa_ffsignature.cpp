@@ -22,18 +22,18 @@ bool CXFA_FFSignature::LoadWidget() {
 
 void CXFA_FFSignature::RenderWidget(CXFA_Graphics* pGS,
                                     const CFX_Matrix& matrix,
-                                    HighlightOption highlight) {
-  if (!HasVisibleStatus())
+                                    uint32_t dwStatus) {
+  if (!IsMatchVisibleStatus(dwStatus))
     return;
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
 
-  CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
+  CXFA_FFWidget::RenderWidget(pGS, mtRotate, dwStatus);
 
   DrawBorder(pGS, m_pNode->GetUIBorder(), m_rtUI, mtRotate);
   RenderCaption(pGS, &mtRotate);
-  DrawHighlight(pGS, &mtRotate, highlight, kSquareShape);
+  DrawHighlight(pGS, &mtRotate, dwStatus, false);
 }
 
 bool CXFA_FFSignature::OnMouseEnter() {

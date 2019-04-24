@@ -34,10 +34,6 @@ _CARDBOARD_EXTRA_ARGS = [
     '--shared-prefs-file', run_vr_telemetry_test.CARDBOARD_PREFS,
     '--benchmarks', 'xr.webxr.static'] + _BASE_EXTRA_ARGS
 
-
-_BASE_SWARMING_TAGS = {}
-
-
 class FromDictTest(unittest.TestCase):
 
   def testMinimumArgs(self):
@@ -54,14 +50,12 @@ class FromDictTest(unittest.TestCase):
     quest = run_vr_telemetry_test.RunVrTelemetryTest.FromDict(
         _CARDBOARD_ARGUMENTS)
     expected = run_vr_telemetry_test.RunVrTelemetryTest(
-        'server', run_test_test.DIMENSIONS, _CARDBOARD_EXTRA_ARGS,
-        _BASE_SWARMING_TAGS)
+        'server', run_test_test.DIMENSIONS, _CARDBOARD_EXTRA_ARGS)
     self.assertEqual(quest, expected)
 
   def testBrowsingArgs(self):
     quest = run_vr_telemetry_test.RunVrTelemetryTest.FromDict(
         _BROWSING_ARGUMENTS)
     expected = run_vr_telemetry_test.RunVrTelemetryTest(
-        'server', run_test_test.DIMENSIONS, _BROWSING_EXTRA_ARGS,
-        _BASE_SWARMING_TAGS)
+        'server', run_test_test.DIMENSIONS, _BROWSING_EXTRA_ARGS)
     self.assertEqual(quest, expected)

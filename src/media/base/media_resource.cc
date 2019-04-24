@@ -28,10 +28,4 @@ DemuxerStream* MediaResource::GetFirstStream(DemuxerStream::Type type) {
   return nullptr;
 }
 
-void MediaResource::ForwardDurationChangeToDemuxerHost(
-    base::TimeDelta duration) {
-  // Only implemented by MediaUrlDemuxer, for the MediaPlayerRendererClient.
-  NOTREACHED();
-}
-
 }  // namespace media

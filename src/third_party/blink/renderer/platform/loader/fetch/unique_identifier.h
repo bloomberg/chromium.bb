@@ -35,7 +35,7 @@
 
 namespace blink {
 
-PLATFORM_EXPORT uint64_t CreateUniqueIdentifier();
+PLATFORM_EXPORT unsigned long CreateUniqueIdentifier();
 }
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_UNIQUE_IDENTIFIER_H_

@@ -16,7 +16,7 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "build/build_config.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -61,6 +61,7 @@ class QuotaReservation;
 class SandboxFileSystemBackend;
 class SpecialStoragePolicy;
 
+struct DefaultContextDeleter;
 struct FileSystemInfo;
 
 struct FileSystemRequestInfo {
@@ -87,7 +88,8 @@ using URLRequestAutoMountHandler = base::RepeatingCallback<bool(
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
-    : public base::RefCountedDeleteOnSequence<FileSystemContext> {
+    : public base::RefCountedThreadSafe<FileSystemContext,
+                                        DefaultContextDeleter> {
  public:
   // Returns file permission policy we should apply for the given |type|.
   // The return value must be bitwise-or'd of FilePermissionPolicy.
@@ -321,8 +323,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // Deleters.
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
-  friend class base::RefCountedDeleteOnSequence<FileSystemContext>;
+  friend class base::RefCountedThreadSafe<FileSystemContext,
+                                          DefaultContextDeleter>;
   ~FileSystemContext();
+
+  void DeleteOnCorrectSequence() const;
 
   // Creates a new FileSystemOperation instance by getting an appropriate
   // FileSystemBackend for |url| and calling the backend's corresponding
@@ -408,6 +413,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   std::unique_ptr<FileSystemOperationRunner> operation_runner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
+};
+
+struct DefaultContextDeleter {
+  static void Destruct(const FileSystemContext* context) {
+    context->DeleteOnCorrectSequence();
+  }
 };
 
 }  // namespace storage

@@ -54,7 +54,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_test_support.h"
 #include "content/shell/browser/shell.h"
@@ -69,7 +68,7 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
-#include "content/shell/common/web_test/blink_test_messages.h"
+#include "content/shell/common/shell_messages.h"
 #include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/common/web_test/web_test_utils.h"
@@ -439,9 +438,10 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
       // test.
       NavigationController::LoadURLParams params(test_url_);
 
-      // Using PAGE_TRANSITION_TYPED replicates an omnibox navigation.
+      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
+      // between web tests.
       params.transition_type =
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
 
       // Clear history to purge the prior navigation to about:blank.
       params.should_clear_history_list = true;
@@ -589,7 +589,7 @@ void BlinkTestController::OpenURL(const GURL& url) {
 void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
   RenderViewHost* main_render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  main_render_view_host->Send(new BlinkTestMsg_TestFinishedInSecondaryRenderer(
+  main_render_view_host->Send(new ShellViewMsg_TestFinishedInSecondaryRenderer(
       main_render_view_host->GetRoutingID()));
 }
 
@@ -625,6 +625,8 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
   waiting_for_main_frame_dump_ = true;
 
   if (capture_pixels) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableDisplayCompositorPixelDump));
     waiting_for_pixel_results_ = true;
     auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
     // If we're running in threaded mode, then the frames will be produced via a
@@ -808,28 +810,28 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessage, OnPrintMessage)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessageToStderr,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessageToStderr,
                         OnPrintMessageToStderr)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_InitiateLayoutDump,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_InitiateLayoutDump,
                         OnInitiateLayoutDump)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_OverridePreferences,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SetPopupBlockingEnabled,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPopupBlockingEnabled,
                         OnSetPopupBlockingEnabled)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_NavigateSecondaryWindow,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NavigateSecondaryWindow,
                         OnNavigateSecondaryWindow)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_GoToOffset, OnGoToOffset)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_LoadURLForFrame, OnLoadURLForFrame)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_CloseRemainingWindows,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
                         OnCloseRemainingWindows)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_ResetDone, OnResetDone)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SetBluetoothManualChooser,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetBluetoothManualChooser,
                         OnSetBluetoothManualChooser)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_GetBluetoothManualChooserEvents,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GetBluetoothManualChooserEvents,
                         OnGetBluetoothManualChooserEvents)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SendBluetoothManualChooserEvent,
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                         OnSendBluetoothManualChooserEvent)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_BlockThirdPartyCookies,
                         OnBlockThirdPartyCookies)
@@ -1055,13 +1057,13 @@ void BlinkTestController::OnCleanupFinished() {
   if (main_window_) {
     main_window_->web_contents()->Stop();
     RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-    rvh->Send(new BlinkTestMsg_Reset(rvh->GetRoutingID()));
+    rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
   }
   if (secondary_window_) {
     secondary_window_->web_contents()->Stop();
     RenderViewHost* rvh =
         secondary_window_->web_contents()->GetRenderViewHost();
-    rvh->Send(new BlinkTestMsg_Reset(rvh->GetRoutingID()));
+    rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
   }
 }
 
@@ -1238,7 +1240,7 @@ void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
   // Continue finishing the test.
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  render_view_host->Send(new BlinkTestMsg_LayoutDumpCompleted(
+  render_view_host->Send(new ShellViewMsg_LayoutDumpCompleted(
       render_view_host->GetRoutingID(), stitched_layout_dump));
 }
 
@@ -1347,7 +1349,7 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
     return;
   }
   RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-  rvh->Send(new BlinkTestMsg_ReplyBluetoothManualChooserEvents(
+  rvh->Send(new ShellViewMsg_ReplyBluetoothManualChooserEvents(
       rvh->GetRoutingID(), bluetooth_chooser_factory_->GetAndResetEvents()));
 }
 

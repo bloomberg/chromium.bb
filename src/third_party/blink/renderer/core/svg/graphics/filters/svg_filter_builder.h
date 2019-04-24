@@ -42,6 +42,10 @@ class SVGFilterElement;
 class SVGFilterGraphNodeMap final
     : public GarbageCollected<SVGFilterGraphNodeMap> {
  public:
+  static SVGFilterGraphNodeMap* Create() {
+    return MakeGarbageCollected<SVGFilterGraphNodeMap>();
+  }
+
   SVGFilterGraphNodeMap();
 
   typedef HeapHashSet<Member<FilterEffect>> FilterEffectSet;

@@ -7,10 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_response_headers.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 
@@ -31,10 +28,10 @@ class FakeNavigableContents : public mojom::NavigableContents {
     default_response_headers_ = headers;
   }
 
-  // Binds this object to a NavigableContents receiver and gives it a
-  // corresponding remote client interface. May only be called once.
-  void Bind(mojo::PendingReceiver<mojom::NavigableContents> receiver,
-            mojo::PendingRemote<mojom::NavigableContentsClient> client);
+  // Binds this object to a NavigableContents request and gives it a
+  // corresponding client interface. May only be called once.
+  void Bind(mojom::NavigableContentsRequest request,
+            mojom::NavigableContentsClientPtr client);
 
  private:
   // mojom::NavigableContents:
@@ -45,8 +42,8 @@ class FakeNavigableContents : public mojom::NavigableContents {
   void Focus() override;
   void FocusThroughTabTraversal(bool reverse) override;
 
-  mojo::Receiver<mojom::NavigableContents> receiver_{this};
-  mojo::Remote<mojom::NavigableContentsClient> client_;
+  mojo::Binding<mojom::NavigableContents> binding_{this};
+  mojom::NavigableContentsClientPtr client_;
 
   scoped_refptr<net::HttpResponseHeaders> default_response_headers_;
 

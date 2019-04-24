@@ -20,6 +20,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
@@ -39,8 +40,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -59,11 +60,12 @@
 #include "extensions/common/constants.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #endif
 
 using autofill::PasswordForm;
+using browser_sync::ProfileSyncServiceMock;
 using content::BrowserContext;
 using content::WebContents;
 using password_manager::PasswordManagerClient;
@@ -82,14 +84,14 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {
     ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
     password_protection_service_ =
         std::make_unique<safe_browsing::MockPasswordProtectionService>();
 #endif
   }
   ~MockChromePasswordManagerClient() override {}
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override {
     return password_protection_service_.get();
@@ -101,7 +103,7 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
 #endif
 
  private:
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<safe_browsing::MockPasswordProtectionService>
       password_protection_service_;
 #endif
@@ -167,11 +169,6 @@ class FakePasswordAutofillAgent
   mojo::AssociatedBinding<autofill::mojom::PasswordAutofillAgent> binding_;
 };
 
-std::unique_ptr<KeyedService> CreateTestSyncService(
-    content::BrowserContext* context) {
-  return std::make_unique<syncer::TestSyncService>();
-}
-
 }  // namespace
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
@@ -186,18 +183,26 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Caller does not own the returned pointer.
-  syncer::TestSyncService* SetupBasicTestSync() {
-    syncer::TestSyncService* sync_service =
-        static_cast<syncer::TestSyncService*>(
+  ProfileSyncServiceMock* SetupBasicMockSync() {
+    ProfileSyncServiceMock* mock_sync_service =
+        static_cast<ProfileSyncServiceMock*>(
             ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile(), base::BindRepeating(&CreateTestSyncService)));
-    return sync_service;
+                profile(), base::BindRepeating(&BuildMockProfileSyncService)));
+
+    EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+                IsFirstSetupComplete())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service, GetTransportState())
+        .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
+    return mock_sync_service;
   }
 
   // Make a navigation entry that will accept an annotation.
   void SetupNavigationForAnnotation() {
-    syncer::TestSyncService* sync_service = SetupBasicTestSync();
-    sync_service->SetIsUsingSecondaryPassphrase(false);
+    ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
+    EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+                IsUsingSecondaryPassphrase())
+        .WillRepeatedly(Return(false));
     metrics_enabled_ = true;
     NavigateAndCommit(GURL("about:blank"));
   }
@@ -282,10 +287,15 @@ TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
-  syncer::TestSyncService* sync_service = SetupBasicTestSync();
+  ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
 
-  sync_service->SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
-  sync_service->SetIsUsingSecondaryPassphrase(false);
+  syncer::ModelTypeSet active_types;
+  active_types.Put(syncer::PASSWORDS);
+  EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
+      .WillRepeatedly(Return(active_types));
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
 
   ChromePasswordManagerClient* client = GetClient();
 
@@ -294,18 +304,25 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
             client->GetPasswordSyncState());
 
   // Again, using a custom passphrase.
-  sync_service->SetIsUsingSecondaryPassphrase(true);
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
 
   EXPECT_EQ(password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
             client->GetPasswordSyncState());
 
   // Report correctly if we aren't syncing passwords.
-  sync_service->SetActiveDataTypes(syncer::ModelTypeSet(syncer::BOOKMARKS));
+  active_types.Remove(syncer::PASSWORDS);
+  active_types.Put(syncer::BOOKMARKS);
+  EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
+      .WillRepeatedly(Return(active_types));
 
   EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
 
   // Again, without a custom passphrase.
-  sync_service->SetIsUsingSecondaryPassphrase(false);
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
 
   EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
 }
@@ -507,8 +524,10 @@ TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {
 // Metrics enabled, syncing with non-custom passphrase: Do not annotate.
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryWithMetricsNoCustom) {
-  syncer::TestSyncService* sync_service = SetupBasicTestSync();
-  sync_service->SetIsUsingSecondaryPassphrase(false);
+  ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
   metrics_enabled_ = true;
 
   NavigateAndCommit(GURL("about:blank"));
@@ -522,8 +541,10 @@ TEST_F(ChromePasswordManagerClientTest,
 // Metrics disabled, syncing with non-custom passphrase: Do not annotate.
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryNoMetricsNoCustom) {
-  syncer::TestSyncService* sync_service = SetupBasicTestSync();
-  sync_service->SetIsUsingSecondaryPassphrase(false);
+  ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
   metrics_enabled_ = false;
 
   NavigateAndCommit(GURL("about:blank"));
@@ -537,8 +558,10 @@ TEST_F(ChromePasswordManagerClientTest,
 // Metrics enabled, syncing with custom passphrase: Do not annotate.
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryWithMetricsWithCustom) {
-  syncer::TestSyncService* sync_service = SetupBasicTestSync();
-  sync_service->SetIsUsingSecondaryPassphrase(true);
+  ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
   metrics_enabled_ = true;
 
   NavigateAndCommit(GURL("about:blank"));
@@ -552,8 +575,10 @@ TEST_F(ChromePasswordManagerClientTest,
 // Metrics disabled, syncing with custom passphrase: Do not annotate.
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryNoMetricsWithCustom) {
-  syncer::TestSyncService* sync_service = SetupBasicTestSync();
-  sync_service->SetIsUsingSecondaryPassphrase(true);
+  ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
   metrics_enabled_ = false;
 
   NavigateAndCommit(GURL("about:blank"));
@@ -656,7 +681,7 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
   }
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 TEST_F(ChromePasswordManagerClientTest,
        VerifyMaybeStartPasswordFieldOnFocusRequestCalled) {
   std::unique_ptr<WebContents> test_web_contents(

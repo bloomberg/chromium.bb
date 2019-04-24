@@ -110,7 +110,7 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     // has pending work should flush begin too.
     if (mQueryHelper.hasPendingWork(renderer))
     {
-        ANGLE_TRY(contextVk->flushImpl());
+        ANGLE_TRY(renderer->flush(contextVk));
 
         ASSERT(!mQueryHelperTimeElapsedBegin.hasPendingWork(renderer));
         ASSERT(!mQueryHelper.hasPendingWork(renderer));

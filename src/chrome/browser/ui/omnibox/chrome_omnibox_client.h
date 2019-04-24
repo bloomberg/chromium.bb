@@ -70,9 +70,6 @@ class ChromeOmniboxClient : public OmniboxClient {
       FaviconFetchedCallback on_favicon_fetched) override;
   gfx::Image GetFaviconForDefaultSearchProvider(
       FaviconFetchedCallback on_favicon_fetched) override;
-  gfx::Image GetFaviconForKeywordSearchProvider(
-      const TemplateURL* template_url,
-      FaviconFetchedCallback on_favicon_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
   void OnTextChanged(const AutocompleteMatch& current_match,
                      bool user_input_in_progress,

@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "Resources.h"
 #include "SkBlurTypes.h"
 #include "SkCanvas.h"
@@ -15,8 +17,6 @@
 #include "SkTextBlob.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
-#include "ToolUtils.h"
-#include "gm.h"
 
 static void getGlyphPositions(const SkFont& font, const uint16_t glyphs[],
                              int count, SkScalar x, SkScalar y, SkPoint pos[]) {
@@ -101,6 +101,7 @@ protected:
         if (fApplyKerning) {
             name.append("_kerning");
         }
+        name.append(sk_tool_utils::platform_font_manager());
         return name;
     }
 
@@ -349,7 +350,9 @@ static void draw_typeface_rendering_gm(SkCanvas* canvas, sk_sp<SkTypeface> face,
     }
 }
 
-DEF_SIMPLE_GM(typefacerendering, canvas, 640, 840) {
+DEF_SIMPLE_GM_BG_NAME(typefacerendering, canvas, 640, 840, SK_ColorWHITE,
+                      SkStringPrintf("typefacerendering%s",
+                                     sk_tool_utils::platform_font_manager())) {
     if (sk_sp<SkTypeface> face = MakeResourceAsTypeface("fonts/hintgasp.ttf")) {
         draw_typeface_rendering_gm(canvas, std::move(face));
     }
@@ -358,14 +361,18 @@ DEF_SIMPLE_GM(typefacerendering, canvas, 640, 840) {
 // Type1 fonts don't currently work in Skia on Windows.
 #ifndef SK_BUILD_FOR_WIN
 
-DEF_SIMPLE_GM(typefacerendering_pfa, canvas, 640, 840) {
+DEF_SIMPLE_GM_BG_NAME(typefacerendering_pfa, canvas, 640, 840, SK_ColorWHITE,
+                      SkStringPrintf("typefacerendering_pfa%s",
+                                     sk_tool_utils::platform_font_manager())) {
     if (sk_sp<SkTypeface> face = MakeResourceAsTypeface("fonts/Roboto2-Regular.pfa")) {
         // This subsetted typeface doesn't have the character 'A'.
         draw_typeface_rendering_gm(canvas, std::move(face), 'O');
     }
 }
 
-DEF_SIMPLE_GM(typefacerendering_pfb, canvas, 640, 840) {
+DEF_SIMPLE_GM_BG_NAME(typefacerendering_pfb, canvas, 640, 840, SK_ColorWHITE,
+                      SkStringPrintf("typefacerendering_pfb%s",
+                                     sk_tool_utils::platform_font_manager())) {
     if (sk_sp<SkTypeface> face = MakeResourceAsTypeface("fonts/Roboto2-Regular.pfb")) {
         draw_typeface_rendering_gm(canvas, std::move(face), 'O');
     }

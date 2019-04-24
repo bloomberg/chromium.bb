@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StatFs;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -30,13 +32,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateControllerFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -59,7 +59,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         int FROM_MENU = 0;
         int FROM_INFOBAR = 1;
 
-        int NUM_ENTRIES = 2;
+        int COUNT = 2;
     }
 
     /**
@@ -79,7 +79,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         int INLINE_UPDATE_READY = 5;
         int INLINE_UPDATE_FAILED = 6;
 
-        int NUM_ENTRIES = 7;
+        int COUNT = 7;
     }
 
     /** A set of properties that represent the current update state for Chrome. */
@@ -131,6 +131,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         }
     }
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final ObserverList<Callback<UpdateStatus>> mObservers = new ObserverList<>();
 
     private final InlineUpdateController mInlineController;
@@ -159,7 +160,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         mObservers.addObserver(observer);
 
         if (mStatus != null) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> observer.onResult(mStatus));
+            mHandler.post(() -> observer.onResult(mStatus));
         } else {
             if (mOmahaQuery.getStatus() == Status.PENDING) {
                 mOmahaQuery.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -208,7 +209,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
     public void startInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.NUM_ENTRIES);
+                "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.COUNT);
         mInlineController.startUpdate(activity);
     }
 
@@ -219,15 +220,15 @@ public class UpdateStatusProvider implements ActivityStateListener {
     public void retryInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.NUM_ENTRIES);
+                "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.COUNT);
         mInlineController.startUpdate(activity);
     }
 
     /** Finishes the inline update process, which may involve restarting the app. */
     public void finishInlineUpdate(@UpdateInteractionSource int source) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_READY) return;
-        RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.UI.Install.Source", source,
-                UpdateInteractionSource.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.UI.Install.Source", source, UpdateInteractionSource.COUNT);
         mInlineController.completeUpdate();
     }
 
@@ -289,7 +290,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
         if (!mRecordedInitialStatus) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.NUM_ENTRIES);
+                    "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.COUNT);
             mRecordedInitialStatus = true;
         }
 
@@ -323,6 +324,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
     }
 
     private static final class UpdateQuery extends AsyncTask<UpdateStatus> {
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
         private final Context mContext = ContextUtils.getApplicationContext();
         private final Runnable mCallback;
 
@@ -346,7 +348,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         @Override
         protected void onPostExecute(UpdateStatus result) {
             mStatus = result;
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mCallback);
+            mHandler.post(mCallback);
         }
 
         private UpdateStatus getTestStatus() {

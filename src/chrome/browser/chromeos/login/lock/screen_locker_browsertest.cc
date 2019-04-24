@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -23,7 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
@@ -60,28 +60,34 @@ class ScreenLockerTest : public InProcessBrowserTest {
   ~ScreenLockerTest() override = default;
 
   FakeSessionManagerClient* session_manager_client() {
-    return FakeSessionManagerClient::Get();
+    return fake_session_manager_client_;
   }
 
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
+    fake_session_manager_client_ = new FakeSessionManagerClient;
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+
     zero_duration_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+    fake_biod_client_ = new FakeBiodClient();
+    DBusThreadManager::GetSetterForTesting()->SetBiodClient(
+        base::WrapUnique(fake_biod_client_));
   }
 
-  void TearDown() override { quick_unlock::EnabledForTesting(false); }
-
   void EnrollFingerprint() {
-    quick_unlock::EnabledForTesting(true);
+    quick_unlock::EnableForTesting();
 
-    FakeBiodClient::Get()->StartEnrollSession(
+    fake_biod_client_->StartEnrollSession(
         "test-user", std::string(),
         base::BindRepeating(&ScreenLockerTest::OnStartSession,
                             base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
-    FakeBiodClient::Get()->SendEnrollScanDone(
+    fake_biod_client_->SendEnrollScanDone(
         kFingerprint, biod::SCAN_RESULT_SUCCESS, true /* is_complete */,
         -1 /* percent_complete */);
     base::RunLoop().RunUntilIdle();
@@ -91,13 +97,17 @@ class ScreenLockerTest : public InProcessBrowserTest {
   }
 
   void AuthenticateWithFingerprint() {
-    FakeBiodClient::Get()->SendAuthScanDone(kFingerprint,
-                                            biod::SCAN_RESULT_SUCCESS);
+    fake_biod_client_->SendAuthScanDone(kFingerprint,
+                                        biod::SCAN_RESULT_SUCCESS);
     base::RunLoop().RunUntilIdle();
   }
 
  private:
   void OnStartSession(const dbus::ObjectPath& path) {}
+
+  FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
+  // Ownership is passed on to DBusThreadManager.
+  FakeBiodClient* fake_biod_client_ = nullptr;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
@@ -247,12 +257,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
-  ScreenLocker::default_screen_locker()->DisableAuthForUser(
-      user_manager::StubAccountId(),
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(1),
-          base::TimeDelta::FromHours(1)));
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), false /*is_enabled*/,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
 
   // Try to authenticate with password.
   tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
@@ -260,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
-  ScreenLocker::default_screen_locker()->EnableAuthForUser(
-      user_manager::StubAccountId());
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
 
   // Try to authenticate with password.
   tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
@@ -286,20 +293,17 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
-  ScreenLocker::default_screen_locker()->DisableAuthForUser(
-      user_manager::StubAccountId(),
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_USAGE_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(1),
-          base::TimeDelta::FromHours(3)));
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), false /*is_enabled*/,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();
   EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
-  ScreenLocker::default_screen_locker()->EnableAuthForUser(
-      user_manager::StubAccountId());
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();

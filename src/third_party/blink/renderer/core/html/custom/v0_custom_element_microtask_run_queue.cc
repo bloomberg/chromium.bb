@@ -13,9 +13,8 @@
 namespace blink {
 
 V0CustomElementMicrotaskRunQueue::V0CustomElementMicrotaskRunQueue()
-    : sync_queue_(MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>()),
-      async_queue_(
-          MakeGarbageCollected<V0CustomElementAsyncImportMicrotaskQueue>()),
+    : sync_queue_(V0CustomElementSyncMicrotaskQueue::Create()),
+      async_queue_(V0CustomElementAsyncImportMicrotaskQueue::Create()),
       dispatch_is_pending_(false) {}
 
 void V0CustomElementMicrotaskRunQueue::Enqueue(

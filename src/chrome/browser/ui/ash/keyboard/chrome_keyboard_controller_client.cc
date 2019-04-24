@@ -132,7 +132,7 @@ void ChromeKeyboardControllerClient::Shutdown() {
       keyboard::KeyboardController::HasInstance()) {
     // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
     // accesses this class, so make sure that the UI has been destroyed.
-    keyboard::KeyboardController::Get()->Shutdown();
+    keyboard::KeyboardController::Get()->DisableKeyboard();
   }
   keyboard_contents_.reset();
 }
@@ -240,7 +240,8 @@ bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
     return cached_keyboard_config_->overscroll_behavior ==
            keyboard::mojom::KeyboardOverscrollBehavior::kEnabled;
   }
-  return true;
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      keyboard::switches::kDisableVirtualKeyboardOverscroll);
 }
 
 GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {

@@ -204,10 +204,10 @@ class Utf16CharacterStream {
 // ----------------------------------------------------------------------------
 // JavaScript Scanner.
 
-class V8_EXPORT_PRIVATE Scanner {
+class Scanner {
  public:
   // Scoped helper for a re-settable bookmark.
-  class V8_EXPORT_PRIVATE BookmarkScope {
+  class BookmarkScope {
    public:
     explicit BookmarkScope(Scanner* scanner)
         : scanner_(scanner),

@@ -248,50 +248,70 @@ void MockMediaSession::AbandonAudioFocusFromClient() {
   afr_client_->AbandonAudioFocus();
   afr_client_.FlushForTesting();
   afr_client_.reset();
-  request_id_ = base::UnguessableToken::Null();
+}
+
+base::UnguessableToken MockMediaSession::GetRequestIdFromClient() {
+  DCHECK(afr_client_.is_bound());
+  base::UnguessableToken id = base::UnguessableToken::Null();
+
+  afr_client_->GetRequestId(base::BindOnce(
+      [](base::UnguessableToken* id,
+         const base::UnguessableToken& received_id) { *id = received_id; },
+      &id));
+
+  afr_client_.FlushForTesting();
+  DCHECK_NE(base::UnguessableToken::Null(), id);
+  return id;
 }
 
 base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
     mojom::AudioFocusManagerPtr& service,
     mojom::AudioFocusType audio_focus_type) {
-  if (afr_client_.is_bound()) {
-    RequestAudioFocusFromClient(audio_focus_type);
-  } else {
-    DCHECK(request_id_.is_empty());
+  bool result;
+  base::OnceClosure callback =
+      base::BindOnce([](bool* out_result) { *out_result = true; }, &result);
 
+  if (afr_client_.is_bound()) {
+    // Request audio focus through the existing request.
+    afr_client_->RequestAudioFocus(GetMediaSessionInfoSync(), audio_focus_type,
+                                   std::move(callback));
+
+    afr_client_.FlushForTesting();
+  } else {
     // Build a new audio focus request.
     mojom::MediaSessionPtr media_session;
     bindings_.AddBinding(this, mojo::MakeRequest(&media_session));
 
     service->RequestAudioFocus(
         mojo::MakeRequest(&afr_client_), std::move(media_session),
-        GetMediaSessionInfoSync(), audio_focus_type,
-        base::BindOnce(
-            [](base::UnguessableToken* id,
-               const base::UnguessableToken& received_id) {
-              *id = received_id;
-            },
-            &request_id_));
+        GetMediaSessionInfoSync(), audio_focus_type, std::move(callback));
 
     service.FlushForTesting();
-    afr_client_.FlushForTesting();
   }
 
-  DCHECK(!request_id_.is_empty());
-  SetState(mojom::MediaSessionInfo::SessionState::kActive);
+  // If the audio focus was granted then we should set the session state to
+  // active.
+  if (result)
+    SetState(mojom::MediaSessionInfo::SessionState::kActive);
 
-  return request_id_;
+  return GetRequestIdFromClient();
 }
 
 base::UnguessableToken MockMediaSession::RequestGroupedAudioFocusFromService(
     mojom::AudioFocusManagerPtr& service,
     mojom::AudioFocusType audio_focus_type,
     const base::UnguessableToken& group_id) {
-  if (afr_client_.is_bound()) {
-    RequestAudioFocusFromClient(audio_focus_type);
-  } else {
-    DCHECK(request_id_.is_empty());
+  bool result;
+  base::OnceClosure callback =
+      base::BindOnce([](bool* out_result) { *out_result = true; }, &result);
 
+  if (afr_client_.is_bound()) {
+    // Request audio focus through the existing request.
+    afr_client_->RequestAudioFocus(GetMediaSessionInfoSync(), audio_focus_type,
+                                   std::move(callback));
+
+    afr_client_.FlushForTesting();
+  } else {
     // Build a new audio focus request.
     mojom::MediaSessionPtr media_session;
     bindings_.AddBinding(this, mojo::MakeRequest(&media_session));
@@ -299,21 +319,17 @@ base::UnguessableToken MockMediaSession::RequestGroupedAudioFocusFromService(
     service->RequestGroupedAudioFocus(
         mojo::MakeRequest(&afr_client_), std::move(media_session),
         GetMediaSessionInfoSync(), audio_focus_type, group_id,
-        base::BindOnce(
-            [](base::UnguessableToken* id,
-               const base::UnguessableToken& received_id) {
-              *id = received_id;
-            },
-            &request_id_));
+        std::move(callback));
 
     service.FlushForTesting();
-    afr_client_.FlushForTesting();
   }
 
-  DCHECK(!request_id_.is_empty());
-  SetState(mojom::MediaSessionInfo::SessionState::kActive);
+  // If the audio focus was granted then we should set the session state to
+  // active.
+  if (result)
+    SetState(mojom::MediaSessionInfo::SessionState::kActive);
 
-  return request_id_;
+  return GetRequestIdFromClient();
 }
 
 mojom::MediaSessionInfo::SessionState MockMediaSession::GetState() const {
@@ -404,20 +420,6 @@ void MockMediaSession::NotifyActionObservers() {
   observers_.ForAllPtrs([&actions](mojom::MediaSessionObserver* observer) {
     observer->MediaSessionActionsChanged(actions);
   });
-}
-
-void MockMediaSession::RequestAudioFocusFromClient(
-    mojom::AudioFocusType audio_focus_type) {
-  DCHECK(afr_client_.is_bound());
-  DCHECK(!request_id_.is_empty());
-
-  bool result = false;
-  afr_client_->RequestAudioFocus(
-      GetMediaSessionInfoSync(), audio_focus_type,
-      base::BindOnce([](bool* out_result) { *out_result = true; }, &result));
-
-  afr_client_.FlushForTesting();
-  DCHECK(result);
 }
 
 }  // namespace test

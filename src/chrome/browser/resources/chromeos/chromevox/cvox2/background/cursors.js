@@ -103,7 +103,7 @@ cursors.Cursor = function(node, index) {
   /** @type {number} @private */
   this.index_ = index;
   /** @type {RecoveryStrategy} */
-  this.recovery_ = new AncestryRecoveryStrategy(node);
+  this.recovery_ = new TreePathRecoveryStrategy(node);
 };
 
 /**
@@ -406,10 +406,7 @@ cursors.Cursor.prototype = {
           case Movement.DIRECTIONAL:
             var pred = unit == Unit.TEXT ? AutomationPredicate.leaf :
                                            AutomationPredicate.object;
-            const explicitFocus = dir == Dir.FORWARD ?
-                originalNode.nextFocus :
-                originalNode.previousFocus;
-            newNode = explicitFocus ||
+            newNode =
                 AutomationUtil.findNextNode(newNode, dir, pred) || originalNode;
             newIndex = cursors.NODE_INDEX;
             break;

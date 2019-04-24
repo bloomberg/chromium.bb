@@ -82,6 +82,15 @@
 
 namespace blink {
 
+SQLStatementBackend* SQLStatementBackend::Create(
+    SQLStatement* frontend,
+    const String& statement,
+    const Vector<SQLValue>& arguments,
+    int permissions) {
+  return MakeGarbageCollected<SQLStatementBackend>(frontend, statement,
+                                                   arguments, permissions);
+}
+
 SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
                                          const String& statement,
                                          const Vector<SQLValue>& arguments,
@@ -91,7 +100,7 @@ SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
       arguments_(arguments),
       has_callback_(frontend_->HasCallback()),
       has_error_callback_(frontend_->HasErrorCallback()),
-      result_set_(MakeGarbageCollected<SQLResultSet>()),
+      result_set_(SQLResultSet::Create()),
       permissions_(permissions) {
   DCHECK(IsMainThread());
 
@@ -157,7 +166,7 @@ bool SQLStatementBackend::Execute(Database* db) {
   if (statement.BindParameterCount() != arguments_.size()) {
     STORAGE_DVLOG(1)
         << "Bind parameter count doesn't match number of question marks";
-    error_ = std::make_unique<SQLErrorData>(
+    error_ = SQLErrorData::Create(
         SQLError::kSyntaxErr,
         "number of '?'s in statement string does not match argument count");
     return false;
@@ -240,7 +249,7 @@ bool SQLStatementBackend::Execute(Database* db) {
 void SQLStatementBackend::SetVersionMismatchedError(Database* database) {
   DCHECK(!error_);
   DCHECK(!result_set_->IsValid());
-  error_ = std::make_unique<SQLErrorData>(
+  error_ = SQLErrorData::Create(
       SQLError::kVersionErr,
       "current version of the database and `oldVersion` argument do not match");
 }
@@ -248,11 +257,10 @@ void SQLStatementBackend::SetVersionMismatchedError(Database* database) {
 void SQLStatementBackend::SetFailureDueToQuota(Database* database) {
   DCHECK(!error_);
   DCHECK(!result_set_->IsValid());
-  error_ = std::make_unique<SQLErrorData>(
-      SQLError::kQuotaErr,
-      "there was not enough remaining storage "
-      "space, or the storage quota was reached and "
-      "the user declined to allow more space");
+  error_ = SQLErrorData::Create(SQLError::kQuotaErr,
+                                "there was not enough remaining storage "
+                                "space, or the storage quota was reached and "
+                                "the user declined to allow more space");
 }
 
 void SQLStatementBackend::ClearFailureDueToQuota() {

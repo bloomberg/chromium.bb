@@ -24,16 +24,16 @@ var span = document.getElementById('span');
 
 shouldBeFalse('checkbox.checked');
 debug('The checkbox should be checked after three clicks');
-testWithContinuousClick(span, 3);
+testWithContinousClick(span, 3);
 shouldBeTrue('checkbox.checked');
 
 debug('Checkbox should still be checked after ten clicks');
-testWithContinuousClick(span, 10);
+testWithContinousClick(span, 10);
 shouldBeTrue('checkbox.checked');
 
 checkbox.style.display = 'none';
 
-function testWithContinuousClick(element, number)
+function testWithContinousClick(element, number)
 {
     eventSender.mouseMoveTo(element.offsetLeft, element.offsetTop);
     for (n = 0; n < number; ++n) {

@@ -158,12 +158,7 @@ void AudioContext::Uninitialize() {
 }
 
 AudioContext::~AudioContext() {
-  // TODO(crbug.com/945379) Disable this DCHECK for now.  It's not terrible if
-  // the autoplay metrics aren't recorded in some odd situations.  haraken@ said
-  // that we shouldn't get here without also calling |Uninitialize()|, but it
-  // can happen.  Until that is fixed, disable this DCHECK.
-
-  // DCHECK(!autoplay_status_.has_value());
+  DCHECK(!autoplay_status_.has_value());
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this,
           context_id_);
@@ -178,7 +173,7 @@ void AudioContext::Trace(blink::Visitor* visitor) {
 ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
@@ -186,8 +181,6 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Cannot suspend a context that has been closed"));
   } else {
-    suspended_by_user_ = true;
-
     // Stop rendering now.
     if (destination())
       StopRendering();
@@ -213,17 +206,15 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
                              "cannot resume a closed AudioContext"));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // If we're already running, just resolve; nothing else needs to be done.
+  // If we're already running, just resolve; nothing else needs to be
+  // done.
   if (ContextState() == kRunning) {
     resolver->Resolve();
     return promise;
   }
-
-  suspended_by_user_ = false;
-
   // Restart the destination node to pull on the audio graph.
   if (destination()) {
     MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kContextResume);
@@ -294,7 +285,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
                              "has already been closed."));
   }
 
-  close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  close_resolver_ = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = close_resolver_->Promise();
 
   // Stops the rendering, but it doesn't release the resources here.
@@ -380,8 +371,7 @@ void AudioContext::NotifySourceNodeStart() {
 
   MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kSourceNodeStart);
 
-  if (ContextState() == AudioContextState::kSuspended && !suspended_by_user_ &&
-      IsAllowedToStart()) {
+  if (IsAllowedToStart()) {
     StartRendering();
     SetContextState(kRunning);
   }
@@ -454,15 +444,13 @@ bool AudioContext::IsAllowedToStart() const {
       DCHECK(document->GetFrame() &&
              document->GetFrame()->IsCrossOriginSubframe());
       document->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kWarning,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
           "The AudioContext was not allowed to start. It must be resumed (or "
           "created) from a user gesture event handler. https://goo.gl/7K7WLu"));
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       document->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kWarning,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
           "The AudioContext was not allowed to start. It must be resumed (or "
           "created) after a user gesture on the page. https://goo.gl/7K7WLu"));
       break;

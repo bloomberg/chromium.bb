@@ -7,15 +7,14 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -52,8 +51,8 @@ namespace {
 class BridgedNativeWidgetHostDummy
     : public views_bridge_mac::mojom::BridgedNativeWidgetHost {
  public:
-  BridgedNativeWidgetHostDummy() = default;
-  ~BridgedNativeWidgetHostDummy() override = default;
+  BridgedNativeWidgetHostDummy() {}
+  ~BridgedNativeWidgetHostDummy() override {}
 
  private:
   void OnVisibilityChanged(bool visible) override {}
@@ -372,7 +371,6 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
     BridgeFactoryHost* bridge_factory_host,
     views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params) {
-  accessibility_focus_overrider_.SetAppIsRemote(true);
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
 
@@ -613,22 +611,6 @@ void BridgedNativeWidgetHostImpl::OnWidgetInitDone() {
     dialog->AddObserver(this);
 }
 
-bool BridgedNativeWidgetHostImpl::RedispatchKeyEvent(NSEvent* event) {
-  // If the target window is in-process, then redispatch the event directly,
-  // and give an accurate return value.
-  if (bridge_impl_)
-    return bridge_impl_->RedispatchKeyEvent(event);
-
-  // If the target window is out of process then always report the event as
-  // handled (because it should never be handled in this process).
-  bridge()->RedispatchKeyEvent(
-      [event type], [event modifierFlags], [event timestamp],
-      base::SysNSStringToUTF16([event characters]),
-      base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
-      [event keyCode]);
-  return true;
-}
-
 ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
   if (!input_method_) {
     input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
@@ -699,10 +681,8 @@ void BridgedNativeWidgetHostImpl::ClearAssociationForView(const View* view) {
 }
 
 void BridgedNativeWidgetHostImpl::ReorderChildViews() {
-  Widget* widget = native_widget_mac_->GetWidget();
-  if (!widget->GetRootView())
-    return;
   std::map<NSView*, int> rank;
+  Widget* widget = native_widget_mac_->GetWidget();
   RankNSViewsRecursive(widget->GetRootView(), &rank);
   if (bridge_impl_)
     bridge_impl_->SortSubviews(std::move(rank));
@@ -714,8 +694,8 @@ void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
   auto it = associated_views_.find(view);
   if (it != associated_views_.end())
     rank->emplace(it->second, rank->size());
-  for (View* child : view->children())
-    RankNSViewsRecursive(child, rank);
+  for (int i = 0; i < view->child_count(); ++i)
+    RankNSViewsRecursive(view->child_at(i), rank);
 }
 
 void BridgedNativeWidgetHostImpl::UpdateLocalWindowFrame(
@@ -903,7 +883,8 @@ bool BridgedNativeWidgetHostImpl::GetTooltipTextAt(
     gfx::Point view_point = location_in_content;
     views::View::ConvertPointToScreen(root_view_, &view_point);
     views::View::ConvertPointFromScreen(view, &view_point);
-    *new_tooltip_text = view->GetTooltipText(view_point);
+    if (!view->GetTooltipText(view_point, new_tooltip_text))
+      DCHECK(new_tooltip_text->empty());
   }
   return true;
 }
@@ -1425,10 +1406,6 @@ void BridgedNativeWidgetHostImpl::OnDeviceScaleFactorChanged(
     float new_device_scale_factor) {
   native_widget_mac_->GetWidget()->DeviceScaleFactorChanged(
       old_device_scale_factor, new_device_scale_factor);
-}
-
-void BridgedNativeWidgetHostImpl::UpdateVisualState() {
-  native_widget_mac_->GetWidget()->LayoutRootViewIfNecessary();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

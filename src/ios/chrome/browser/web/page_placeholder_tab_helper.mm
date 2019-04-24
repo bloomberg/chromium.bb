@@ -91,15 +91,23 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   }
 
   // Update placeholder view's image and display it on top of WebState's view.
+  __weak UIImageView* weak_placeholder_view = placeholder_view_;
+  __weak UIView* weak_web_state_view = web_state_->GetView();
+  __weak id<CRWWebViewProxy> web_view_proxy = web_state_->GetWebViewProxy();
+
   SnapshotTabHelper* snapshotTabHelper =
       SnapshotTabHelper::FromWebState(web_state_);
   if (snapshotTabHelper) {
-    base::WeakPtr<PagePlaceholderTabHelper> weak_tab_helper =
-        weak_factory_.GetWeakPtr();
     snapshotTabHelper->RetrieveGreySnapshot(^(UIImage* snapshot) {
-      if (weak_tab_helper && weak_tab_helper->displaying_placeholder()) {
-        DisplaySnapshotImage(snapshot);
-      }
+      CGRect frame = weak_web_state_view.frame;
+      UIEdgeInsets inset = web_view_proxy.contentInset;
+      frame.origin.x += inset.left;
+      frame.origin.y += inset.top;
+      frame.size.width -= (inset.right + inset.left);
+      frame.size.height -= (inset.bottom + inset.top);
+      weak_placeholder_view.frame = frame;
+      weak_placeholder_view.image = snapshot;
+      [weak_web_state_view addSubview:weak_placeholder_view];
     });
   }
 
@@ -109,18 +117,6 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
       base::BindOnce(&PagePlaceholderTabHelper::RemovePlaceholder,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSeconds));
-}
-
-void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
-  CGRect frame = web_state_->GetView().frame;
-  UIEdgeInsets inset = web_state_->GetWebViewProxy().contentInset;
-  frame.origin.x += inset.left;
-  frame.origin.y += inset.top;
-  frame.size.width -= (inset.right + inset.left);
-  frame.size.height -= (inset.bottom + inset.top);
-  placeholder_view_.frame = frame;
-  placeholder_view_.image = snapshot;
-  [web_state_->GetView() addSubview:placeholder_view_];
 }
 
 void PagePlaceholderTabHelper::RemovePlaceholder() {

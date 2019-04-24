@@ -15,7 +15,7 @@ namespace base {
 // Helper class representing an address region of certain size.
 class AddressRegion {
  public:
-  using Address = uintptr_t;
+  typedef uintptr_t Address;
 
   AddressRegion() = default;
 

@@ -19,8 +19,6 @@ class WebUIIOSControllerFactoryRegistry : public WebUIIOSControllerFactory {
  public:
   static WebUIIOSControllerFactoryRegistry* GetInstance();
 
-  NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override;
-
   // WebUIIOSControllerFactory implementation. Each method loops through the
   // same method on all the factories.
   std::unique_ptr<WebUIIOSController> CreateWebUIIOSControllerForURL(

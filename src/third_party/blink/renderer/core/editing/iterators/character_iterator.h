@@ -60,6 +60,8 @@ class CharacterIteratorAlgorithm {
     return text_iterator_.CharacterAt(run_offset_ + index);
   }
 
+  void CopyTextTo(ForwardsTextBuffer* output);
+
   int CharacterOffset() const { return offset_; }
 
   const Document& OwnerDocument() const;

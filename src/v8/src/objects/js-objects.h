@@ -84,8 +84,8 @@ class JSReceiver : public HeapObject {
       Handle<JSReceiver> receiver);
 
   // Get the first non-hidden prototype.
-  static inline MaybeHandle<HeapObject> GetPrototype(
-      Isolate* isolate, Handle<JSReceiver> receiver);
+  static inline MaybeHandle<Object> GetPrototype(Isolate* isolate,
+                                                 Handle<JSReceiver> receiver);
 
   V8_WARN_UNUSED_RESULT static Maybe<bool> HasInPrototypeChain(
       Isolate* isolate, Handle<JSReceiver> object, Handle<Object> proto);
@@ -107,7 +107,7 @@ class JSReceiver : public HeapObject {
   V8_WARN_UNUSED_RESULT static inline Maybe<bool> HasElement(
       Handle<JSReceiver> object, uint32_t index);
 
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool> HasOwnProperty(
+  V8_WARN_UNUSED_RESULT static Maybe<bool> HasOwnProperty(
       Handle<JSReceiver> object, Handle<Name> name);
   V8_WARN_UNUSED_RESULT static inline Maybe<bool> HasOwnProperty(
       Handle<JSReceiver> object, uint32_t index);
@@ -120,10 +120,10 @@ class JSReceiver : public HeapObject {
       Isolate* isolate, Handle<JSReceiver> receiver, uint32_t index);
 
   // Implementation of ES6 [[Delete]]
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool>
-  DeletePropertyOrElement(Handle<JSReceiver> object, Handle<Name> name,
-                          LanguageMode language_mode = LanguageMode::kSloppy);
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool> DeleteProperty(
+  V8_WARN_UNUSED_RESULT static Maybe<bool> DeletePropertyOrElement(
+      Handle<JSReceiver> object, Handle<Name> name,
+      LanguageMode language_mode = LanguageMode::kSloppy);
+  V8_WARN_UNUSED_RESULT static Maybe<bool> DeleteProperty(
       Handle<JSReceiver> object, Handle<Name> name,
       LanguageMode language_mode = LanguageMode::kSloppy);
   V8_WARN_UNUSED_RESULT static Maybe<bool> DeleteProperty(
@@ -178,7 +178,7 @@ class JSReceiver : public HeapObject {
   V8_WARN_UNUSED_RESULT static Maybe<bool> GetOwnPropertyDescriptor(
       LookupIterator* it, PropertyDescriptor* desc);
 
-  using IntegrityLevel = PropertyAttributes;
+  typedef PropertyAttributes IntegrityLevel;
 
   // ES6 7.3.14 (when passed kDontThrow)
   // 'level' must be SEALED or FROZEN.
@@ -208,7 +208,7 @@ class JSReceiver : public HeapObject {
   // function that was used to instantiate the object).
   static Handle<String> GetConstructorName(Handle<JSReceiver> receiver);
 
-  V8_EXPORT_PRIVATE Handle<NativeContext> GetCreationContext();
+  Handle<NativeContext> GetCreationContext();
 
   V8_WARN_UNUSED_RESULT static inline Maybe<PropertyAttributes>
   GetPropertyAttributes(Handle<JSReceiver> object, Handle<Name> name);
@@ -232,20 +232,20 @@ class JSReceiver : public HeapObject {
 
   inline static Handle<Object> GetDataProperty(Handle<JSReceiver> object,
                                                Handle<Name> name);
-  V8_EXPORT_PRIVATE static Handle<Object> GetDataProperty(LookupIterator* it);
+  static Handle<Object> GetDataProperty(LookupIterator* it);
 
   // Retrieves a permanent object identity hash code. The undefined value might
   // be returned in case no hash was created yet.
-  V8_EXPORT_PRIVATE Object GetIdentityHash();
+  Object GetIdentityHash();
 
   // Retrieves a permanent object identity hash code. May create and store a
   // hash code if needed and none exists.
   static Smi CreateIdentityHash(Isolate* isolate, JSReceiver key);
-  V8_EXPORT_PRIVATE Smi GetOrCreateIdentityHash(Isolate* isolate);
+  Smi GetOrCreateIdentityHash(Isolate* isolate);
 
   // Stores the hash code. The hash passed in must be masked with
   // JSReceiver::kHashMask.
-  V8_EXPORT_PRIVATE void SetIdentityHash(int masked_hash);
+  void SetIdentityHash(int masked_hash);
 
   // ES6 [[OwnPropertyKeys]] (modulo return type)
   V8_WARN_UNUSED_RESULT static inline MaybeHandle<FixedArray> OwnPropertyKeys(
@@ -286,7 +286,7 @@ class JSObject : public JSReceiver {
  public:
   static bool IsUnmodifiedApiObject(FullObjectSlot o);
 
-  V8_EXPORT_PRIVATE static V8_WARN_UNUSED_RESULT MaybeHandle<JSObject> New(
+  static V8_WARN_UNUSED_RESULT MaybeHandle<JSObject> New(
       Handle<JSFunction> constructor, Handle<JSReceiver> new_target,
       Handle<AllocationSite> site);
 
@@ -303,22 +303,23 @@ class JSObject : public JSReceiver {
   // corresponds to a set of object representations of elements that
   // have something in common.
   //
-  // In the fast mode elements is a FixedArray and so each element can be
-  // quickly accessed. The elements array can have one of several maps in this
-  // mode: fixed_array_map, fixed_double_array_map,
-  // sloppy_arguments_elements_map or fixed_cow_array_map (for copy-on-write
-  // arrays). In the latter case the elements array may be shared by a few
-  // objects and so before writing to any element the array must be copied. Use
+  // In the fast mode elements is a FixedArray and so each element can
+  // be quickly accessed. This fact is used in the generated code. The
+  // elements array can have one of three maps in this mode:
+  // fixed_array_map, sloppy_arguments_elements_map or
+  // fixed_cow_array_map (for copy-on-write arrays). In the latter case
+  // the elements array may be shared by a few objects and so before
+  // writing to any element the array must be copied. Use
   // EnsureWritableFastElements in this case.
   //
-  // In the slow mode the elements is either a NumberDictionary or a
+  // In the slow mode the elements is either a NumberDictionary, a
   // FixedArray parameter map for a (sloppy) arguments object.
   DECL_ACCESSORS(elements, FixedArrayBase)
   inline void initialize_elements();
   static inline void SetMapAndElements(Handle<JSObject> object, Handle<Map> map,
                                        Handle<FixedArrayBase> elements);
   inline ElementsKind GetElementsKind() const;
-  V8_EXPORT_PRIVATE ElementsAccessor* GetElementsAccessor();
+  ElementsAccessor* GetElementsAccessor();
   // Returns true if an object has elements of PACKED_SMI_ELEMENTS or
   // HOLEY_SMI_ELEMENTS ElementsKind.
   inline bool HasSmiElements();
@@ -341,10 +342,8 @@ class JSObject : public JSReceiver {
   inline bool HasSloppyArgumentsElements();
   inline bool HasStringWrapperElements();
   inline bool HasDictionaryElements();
-
   // Returns true if an object has elements of PACKED_ELEMENTS
   inline bool HasPackedElements();
-  inline bool HasFrozenOrSealedElements();
 
   inline bool HasFixedTypedArrayElements();
 
@@ -391,7 +390,7 @@ class JSObject : public JSReceiver {
       Maybe<ShouldThrow> should_throw,
       AccessorInfoHandling handling = DONT_FORCE_FIELD);
 
-  V8_WARN_UNUSED_RESULT static MaybeHandle<Object> V8_EXPORT_PRIVATE
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object>
   SetOwnPropertyIgnoreAttributes(Handle<JSObject> object, Handle<Name> name,
                                  Handle<Object> value,
                                  PropertyAttributes attributes);
@@ -403,7 +402,7 @@ class JSObject : public JSReceiver {
 
   // Equivalent to one of the above depending on whether |name| can be converted
   // to an array index.
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static MaybeHandle<Object>
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object>
   DefinePropertyOrElementIgnoreAttributes(Handle<JSObject> object,
                                           Handle<Name> name,
                                           Handle<Object> value,
@@ -415,21 +414,18 @@ class JSObject : public JSReceiver {
       LookupIterator* it, Handle<Object> value,
       Maybe<ShouldThrow> should_throw = Just(kDontThrow));
 
-  V8_EXPORT_PRIVATE static void AddProperty(Isolate* isolate,
-                                            Handle<JSObject> object,
-                                            Handle<Name> name,
-                                            Handle<Object> value,
-                                            PropertyAttributes attributes);
+  static void AddProperty(Isolate* isolate, Handle<JSObject> object,
+                          Handle<Name> name, Handle<Object> value,
+                          PropertyAttributes attributes);
 
   // {name} must be a UTF-8 encoded, null-terminated string.
   static void AddProperty(Isolate* isolate, Handle<JSObject> object,
                           const char* name, Handle<Object> value,
                           PropertyAttributes attributes);
 
-  V8_EXPORT_PRIVATE static void AddDataElement(Handle<JSObject> receiver,
-                                               uint32_t index,
-                                               Handle<Object> value,
-                                               PropertyAttributes attributes);
+  static void AddDataElement(Handle<JSObject> receiver, uint32_t index,
+                             Handle<Object> value,
+                             PropertyAttributes attributes);
 
   // Extend the receiver with a single fast property appeared first in the
   // passed map. This also extends the property backing store if necessary.
@@ -493,9 +489,11 @@ class JSObject : public JSReceiver {
 
   // Defines an AccessorPair property on the given object.
   // TODO(mstarzinger): Rename to SetAccessor().
-  V8_EXPORT_PRIVATE static MaybeHandle<Object> DefineAccessor(
-      Handle<JSObject> object, Handle<Name> name, Handle<Object> getter,
-      Handle<Object> setter, PropertyAttributes attributes);
+  static MaybeHandle<Object> DefineAccessor(Handle<JSObject> object,
+                                            Handle<Name> name,
+                                            Handle<Object> getter,
+                                            Handle<Object> setter,
+                                            PropertyAttributes attributes);
   static MaybeHandle<Object> DefineAccessor(LookupIterator* it,
                                             Handle<Object> getter,
                                             Handle<Object> setter,
@@ -595,40 +593,37 @@ class JSObject : public JSReceiver {
   // map and the ElementsKind set.
   static Handle<Map> GetElementsTransitionMap(Handle<JSObject> object,
                                               ElementsKind to_kind);
-  V8_EXPORT_PRIVATE static void TransitionElementsKind(Handle<JSObject> object,
-                                                       ElementsKind to_kind);
+  static void TransitionElementsKind(Handle<JSObject> object,
+                                     ElementsKind to_kind);
 
   // Always use this to migrate an object to a new map.
   // |expected_additional_properties| is only used for fast-to-slow transitions
   // and ignored otherwise.
-  V8_EXPORT_PRIVATE static void MigrateToMap(
-      Handle<JSObject> object, Handle<Map> new_map,
-      int expected_additional_properties = 0);
+  static void MigrateToMap(Handle<JSObject> object, Handle<Map> new_map,
+                           int expected_additional_properties = 0);
 
   // Forces a prototype without any of the checks that the regular SetPrototype
   // would do.
-  static void ForceSetPrototype(Handle<JSObject> object,
-                                Handle<HeapObject> proto);
+  static void ForceSetPrototype(Handle<JSObject> object, Handle<Object> proto);
 
   // Convert the object to use the canonical dictionary
   // representation. If the object is expected to have additional properties
   // added this number can be indicated to have the backing store allocated to
   // an initial capacity for holding these properties.
-  V8_EXPORT_PRIVATE static void NormalizeProperties(
-      Handle<JSObject> object, PropertyNormalizationMode mode,
-      int expected_additional_properties, const char* reason);
+  static void NormalizeProperties(Handle<JSObject> object,
+                                  PropertyNormalizationMode mode,
+                                  int expected_additional_properties,
+                                  const char* reason);
 
   // Convert and update the elements backing store to be a
   // NumberDictionary dictionary.  Returns the backing after conversion.
-  V8_EXPORT_PRIVATE static Handle<NumberDictionary> NormalizeElements(
-      Handle<JSObject> object);
+  static Handle<NumberDictionary> NormalizeElements(Handle<JSObject> object);
 
   void RequireSlowElements(NumberDictionary dictionary);
 
   // Transform slow named properties to fast variants.
-  V8_EXPORT_PRIVATE static void MigrateSlowToFast(Handle<JSObject> object,
-                                                  int unused_property_fields,
-                                                  const char* reason);
+  static void MigrateSlowToFast(Handle<JSObject> object,
+                                int unused_property_fields, const char* reason);
 
   inline bool IsUnboxedDoubleField(FieldIndex index);
 
@@ -728,7 +723,7 @@ class JSObject : public JSReceiver {
   // If a GC was caused while constructing this object, the elements pointer
   // may point to a one pointer filler map. The object won't be rooted, but
   // our heap verification code could stumble across it.
-  V8_EXPORT_PRIVATE bool ElementsAreSafeToExamine() const;
+  bool ElementsAreSafeToExamine() const;
 #endif
 
   Object SlowReverseLookup(Object value);
@@ -797,11 +792,6 @@ class JSObject : public JSReceiver {
   static bool AllCanRead(LookupIterator* it);
   static bool AllCanWrite(LookupIterator* it);
 
-  template <typename Dictionary>
-  static void ApplyAttributesToDictionary(Isolate* isolate, ReadOnlyRoots roots,
-                                          Handle<Dictionary> dictionary,
-                                          const PropertyAttributes attributes);
-
  private:
   friend class JSReceiver;
   friend class Object;
@@ -856,8 +846,18 @@ class JSAccessorPropertyDescriptor : public JSObject {
 // FromPropertyDescriptor function for regular data properties.
 class JSDataPropertyDescriptor : public JSObject {
  public:
-  DEFINE_FIELD_OFFSET_CONSTANTS(
-      JSObject::kHeaderSize, TORQUE_GENERATED_JSDATA_PROPERTY_DESCRIPTOR_FIELDS)
+  // Layout description.
+#define JS_DATA_PROPERTY_DESCRIPTOR_FIELDS(V) \
+  V(kValueOffset, kTaggedSize)                \
+  V(kWritableOffset, kTaggedSize)             \
+  V(kEnumerableOffset, kTaggedSize)           \
+  V(kConfigurableOffset, kTaggedSize)         \
+  /* Total size. */                           \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
+                                JS_DATA_PROPERTY_DESCRIPTOR_FIELDS)
+#undef JS_DATA_PROPERTY_DESCRIPTOR_FIELDS
 
   // Indices of in-object properties.
   static const int kValueIndex = 0;
@@ -958,9 +958,9 @@ class JSFunction : public JSObject {
   inline void set_context(Object context);
   inline JSGlobalProxy global_proxy();
   inline NativeContext native_context();
-  inline int length();
 
   static Handle<Object> GetName(Isolate* isolate, Handle<JSFunction> function);
+  static Maybe<int> GetLength(Isolate* isolate, Handle<JSFunction> function);
   static Handle<NativeContext> GetFunctionRealm(Handle<JSFunction> function);
 
   // [code]: The generated code object for this function.  Executed
@@ -1034,27 +1034,10 @@ class JSFunction : public JSObject {
   // the JSFunction's bytecode being flushed.
   DECL_ACCESSORS(raw_feedback_cell, FeedbackCell)
 
-  // Functions related to feedback vector. feedback_vector() can be used once
-  // the function has feedback vectors allocated. feedback vectors may not be
-  // available after compile when lazily allocating feedback vectors.
+  // feedback_vector() can be used once the function is compiled.
   inline FeedbackVector feedback_vector() const;
   inline bool has_feedback_vector() const;
-  V8_EXPORT_PRIVATE static void EnsureFeedbackVector(
-      Handle<JSFunction> function);
-
-  // Functions related to clousre feedback cell array that holds feedback cells
-  // used to create closures from this function. We allocate closure feedback
-  // cell arrays after compile, when we want to allocate feedback vectors
-  // lazily.
-  inline bool has_closure_feedback_cell_array() const;
-  inline ClosureFeedbackCellArray closure_feedback_cell_array() const;
-  static void EnsureClosureFeedbackCellArray(Handle<JSFunction> function);
-
-  // Initializes the feedback cell of |function|. In lite mode, this would be
-  // initialized to the closure feedback cell array that holds the feedback
-  // cells for create closure calls from this function. In the regular mode,
-  // this allocates feedback vector.
-  static void InitializeFeedbackCell(Handle<JSFunction> function);
+  static void EnsureFeedbackVector(Handle<JSFunction> function);
 
   // Unconditionally clear the type feedback vector.
   void ClearTypeFeedbackInfo();
@@ -1068,10 +1051,9 @@ class JSFunction : public JSObject {
   // The initial map for an object created by this constructor.
   inline Map initial_map();
   static void SetInitialMap(Handle<JSFunction> function, Handle<Map> map,
-                            Handle<HeapObject> prototype);
+                            Handle<Object> prototype);
   inline bool has_initial_map();
-  V8_EXPORT_PRIVATE static void EnsureHasInitialMap(
-      Handle<JSFunction> function);
+  static void EnsureHasInitialMap(Handle<JSFunction> function);
 
   // Creates a map that matches the constructor's initial map, but with
   // [[prototype]] being new.target.prototype. Because new.target can be a
@@ -1087,7 +1069,7 @@ class JSFunction : public JSObject {
   inline bool has_prototype();
   inline bool has_instance_prototype();
   inline Object prototype();
-  inline HeapObject instance_prototype();
+  inline Object instance_prototype();
   inline bool has_prototype_property();
   inline bool PrototypeRequiresRuntimeLookup();
   static void SetPrototype(Handle<JSFunction> function, Handle<Object> value);
@@ -1187,7 +1169,7 @@ class JSGlobalObject : public JSObject {
   DECL_ACCESSORS(native_context, NativeContext)
 
   // [global proxy]: the global proxy object of the context
-  DECL_ACCESSORS(global_proxy, JSGlobalProxy)
+  DECL_ACCESSORS(global_proxy, JSObject)
 
   // Gets global object properties.
   inline GlobalDictionary global_dictionary();
@@ -1321,8 +1303,22 @@ class JSDate : public JSObject {
     kTimezoneOffset
   };
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSDATE_FIELDS)
+  // Layout description.
+#define JS_DATE_FIELDS(V)           \
+  V(kValueOffset, kTaggedSize)      \
+  V(kYearOffset, kTaggedSize)       \
+  V(kMonthOffset, kTaggedSize)      \
+  V(kDayOffset, kTaggedSize)        \
+  V(kWeekdayOffset, kTaggedSize)    \
+  V(kHourOffset, kTaggedSize)       \
+  V(kMinOffset, kTaggedSize)        \
+  V(kSecOffset, kTaggedSize)        \
+  V(kCacheStampOffset, kTaggedSize) \
+  /* Header size. */                \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_DATE_FIELDS)
+#undef JS_DATE_FIELDS
 
  private:
   inline Object DoGetField(FieldIndex index);
@@ -1366,10 +1362,10 @@ class JSMessageObject : public JSObject {
 
   // Returns the line number for the error message (1-based), or
   // Message::kNoLineNumberInfo if the line cannot be determined.
-  V8_EXPORT_PRIVATE int GetLineNumber() const;
+  int GetLineNumber() const;
 
   // Returns the offset of the given position within the containing line.
-  V8_EXPORT_PRIVATE int GetColumnNumber() const;
+  int GetColumnNumber() const;
 
   // Returns the source code line containing the given source
   // position, or the empty string if the position is invalid.
@@ -1384,13 +1380,28 @@ class JSMessageObject : public JSObject {
   DECL_PRINTER(JSMessageObject)
   DECL_VERIFIER(JSMessageObject)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSMESSAGE_OBJECT_FIELDS)
-  // TODO(v8:8989): [torque] Support marker constants.
-  static const int kPointerFieldsEndOffset = kStartPositionOffset;
+  // Layout description.
+#define JS_MESSAGE_FIELDS(V)                         \
+  /* Tagged fields. */                               \
+  V(kTypeOffset, kTaggedSize)                        \
+  V(kArgumentsOffset, kTaggedSize)                   \
+  V(kScriptOffset, kTaggedSize)                      \
+  V(kStackFramesOffset, kTaggedSize)                 \
+  V(kPointerFieldsEndOffset, 0)                      \
+  /* Raw data fields. */                             \
+  /* TODO(ishell): store as int32 instead of Smi. */ \
+  V(kStartPositionOffset, kTaggedSize)               \
+  V(kEndPositionOffset, kTaggedSize)                 \
+  V(kErrorLevelOffset, kTaggedSize)                  \
+  /* Total size. */                                  \
+  V(kSize, 0)
 
-  using BodyDescriptor = FixedBodyDescriptor<HeapObject::kMapOffset,
-                                             kPointerFieldsEndOffset, kSize>;
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_MESSAGE_FIELDS)
+#undef JS_MESSAGE_FIELDS
+
+  typedef FixedBodyDescriptor<HeapObject::kMapOffset, kPointerFieldsEndOffset,
+                              kSize>
+      BodyDescriptor;
 
   OBJECT_CONSTRUCTORS(JSMessageObject, JSObject);
 };
@@ -1417,8 +1428,16 @@ class JSAsyncFromSyncIterator : public JSObject {
   // subsequent "next" invocations.
   DECL_ACCESSORS(next, Object)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(
-      JSObject::kHeaderSize, TORQUE_GENERATED_JSASYNC_FROM_SYNC_ITERATOR_FIELDS)
+  // Layout description.
+#define JS_ASYNC_FROM_SYNC_ITERATOR_FIELDS(V) \
+  V(kSyncIteratorOffset, kTaggedSize)         \
+  V(kNextOffset, kTaggedSize)                 \
+  /* Total size. */                           \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
+                                JS_ASYNC_FROM_SYNC_ITERATOR_FIELDS)
+#undef JS_ASYNC_FROM_SYNC_ITERATOR_FIELDS
 
   OBJECT_CONSTRUCTORS(JSAsyncFromSyncIterator, JSObject);
 };
@@ -1438,8 +1457,16 @@ class JSStringIterator : public JSObject {
   inline int index() const;
   inline void set_index(int value);
 
+  // Layout description.
+#define JS_STRING_ITERATOR_FIELDS(V) \
+  V(kStringOffset, kTaggedSize)      \
+  V(kNextIndexOffset, kTaggedSize)   \
+  /* Total size. */                  \
+  V(kSize, 0)
+
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSSTRING_ITERATOR_FIELDS)
+                                JS_STRING_ITERATOR_FIELDS)
+#undef JS_STRING_ITERATOR_FIELDS
 
   OBJECT_CONSTRUCTORS(JSStringIterator, JSObject);
 };

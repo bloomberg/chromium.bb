@@ -160,7 +160,7 @@ class BulletedPermissionsList : public views::View {
                                  views::Label* permission_label,
                                  RevokeButton* revoke_button) {
     // Add a padding row before every item except the first.
-    if (!children().empty()) {
+    if (has_children()) {
       layout_->AddPaddingRow(views::GridLayout::kFixedSize,
                              ChromeLayoutProvider::Get()->GetDistanceMetric(
                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));
@@ -203,23 +203,23 @@ AppInfoPermissionsPanel::~AppInfoPermissionsPanel() {
 }
 
 void AppInfoPermissionsPanel::CreatePermissionsList() {
-  auto permissions_heading = CreateHeading(
+  views::View* permissions_heading = CreateHeading(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_APP_PERMISSIONS_TITLE));
-  AddChildView(std::move(permissions_heading));
+  AddChildView(permissions_heading);
 
   if (!HasActivePermissionMessages() && GetRetainedDeviceCount() == 0 &&
       GetRetainedFileCount() == 0) {
-    auto no_permissions_text =
-        std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+    views::Label* no_permissions_text =
+        new views::Label(l10n_util::GetStringUTF16(
             app_->is_extension()
                 ? IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT
                 : IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT));
     no_permissions_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(std::move(no_permissions_text));
+    AddChildView(no_permissions_text);
     return;
   }
 
-  auto permissions_list = std::make_unique<BulletedPermissionsList>();
+  BulletedPermissionsList* permissions_list = new BulletedPermissionsList();
 
   // Add regular and host permission messages.
   for (const auto& message : GetActivePermissionMessages()) {
@@ -248,7 +248,7 @@ void AppInfoPermissionsPanel::CreatePermissionsList() {
                    base::Unretained(this)));
   }
 
-  AddChildView(std::move(permissions_list));
+  AddChildView(permissions_list);
 }
 
 bool AppInfoPermissionsPanel::HasActivePermissionMessages() const {

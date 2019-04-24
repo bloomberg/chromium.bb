@@ -16,8 +16,10 @@
 </head>
 
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
+}
 
 var totalTestImages = 4;
 

@@ -14,7 +14,7 @@
 #include "SkPaint.h"
 #include "SkVertices.h"
 
-#include "ToolUtils.h"
+#include "sk_tool_utils.h"
 
 #define BG_COLOR    0xFFDDDDDD
 
@@ -175,11 +175,11 @@ static const GradData gGradData[] = {
 { 5, gColors, gPos2 }
 };
 
-static sk_sp<SkShader> MakeLinear(const SkPoint pts[2], const GradData& data, SkTileMode tm) {
+static sk_sp<SkShader> MakeLinear(const SkPoint pts[2], const GradData& data, SkShader::TileMode tm) {
     return SkGradientShader::MakeLinear(pts, data.fColors, data.fPos, data.fCount, tm);
 }
 
-static sk_sp<SkShader> MakeRadial(const SkPoint pts[2], const GradData& data, SkTileMode tm) {
+static sk_sp<SkShader> MakeRadial(const SkPoint pts[2], const GradData& data, SkShader::TileMode tm) {
     SkPoint center;
     center.set(SkScalarAve(pts[0].fX, pts[1].fX),
                SkScalarAve(pts[0].fY, pts[1].fY));
@@ -187,14 +187,14 @@ static sk_sp<SkShader> MakeRadial(const SkPoint pts[2], const GradData& data, Sk
                                           data.fPos, data.fCount, tm);
 }
 
-static sk_sp<SkShader> MakeSweep(const SkPoint pts[2], const GradData& data, SkTileMode tm) {
+static sk_sp<SkShader> MakeSweep(const SkPoint pts[2], const GradData& data, SkShader::TileMode tm) {
     SkPoint center;
     center.set(SkScalarAve(pts[0].fX, pts[1].fX),
                SkScalarAve(pts[0].fY, pts[1].fY));
     return SkGradientShader::MakeSweep(center.fX, center.fY, data.fColors, data.fPos, data.fCount);
 }
 
-static sk_sp<SkShader> Make2Conical(const SkPoint pts[2], const GradData& data, SkTileMode tm) {
+static sk_sp<SkShader> Make2Conical(const SkPoint pts[2], const GradData& data, SkShader::TileMode tm) {
     SkPoint center0, center1;
     center0.set(SkScalarAve(pts[0].fX, pts[1].fX),
                 SkScalarAve(pts[0].fY, pts[1].fY));
@@ -205,7 +205,7 @@ static sk_sp<SkShader> Make2Conical(const SkPoint pts[2], const GradData& data, 
                                                   data.fColors, data.fPos, data.fCount, tm);
 }
 
-typedef sk_sp<SkShader> (*GradMaker)(const SkPoint pts[2], const GradData&, SkTileMode);
+typedef sk_sp<SkShader> (*GradMaker)(const SkPoint pts[2], const GradData&, SkShader::TileMode);
 static const GradMaker gGradMakers[] = {
     MakeLinear, MakeRadial, MakeSweep, Make2Conical
 };
@@ -215,7 +215,7 @@ static void gradient_slide(SkCanvas* canvas) {
         { 0, 0 },
         { SkIntToScalar(100), SkIntToScalar(100) }
     };
-    SkTileMode tm = SkTileMode::kClamp;
+    SkShader::TileMode tm = SkShader::kClamp_TileMode;
     SkRect r = { 0, 0, SkIntToScalar(100), SkIntToScalar(100) };
     SkPaint paint;
     paint.setAntiAlias(true);
@@ -246,7 +246,8 @@ static sk_sp<SkShader> make_shader0(SkIPoint* size) {
 
     decode_file("/skimages/logo.gif", &bm);
     size->set(bm.width(), bm.height());
-    return bm.makeShader();
+    return SkShader::MakeBitmapShader(bm, SkShader::kClamp_TileMode,
+                                        SkShader::kClamp_TileMode);
 }
 
 static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
@@ -254,7 +255,7 @@ static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
                       { SkIntToScalar(size.fX), SkIntToScalar(size.fY) } };
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorRED };
     return SkGradientShader::MakeLinear(pts, colors, nullptr,
-                                          SK_ARRAY_COUNT(colors), SkTileMode::kMirror);
+                                          SK_ARRAY_COUNT(colors), SkShader::kMirror_TileMode);
 }
 
 class Rec {
@@ -300,9 +301,8 @@ static void make_fan(Rec* rec, int texWidth, int texHeight) {
     v[0].set(0, 0);
     t[0].set(0, 0);
     for (int i = 0; i < n; i++) {
-        SkScalar r   = SK_ScalarPI * 2 * i / n,
-                 sin = SkScalarSin(r),
-                 cos = SkScalarCos(r);
+        SkScalar cos;
+        SkScalar sin = SkScalarSinCos(SK_ScalarPI * 2 * i / n, &cos);
         v[i+1].set(cos, sin);
         t[i+1].set(i*tx/n, ty);
     }
@@ -329,9 +329,8 @@ static void make_strip(Rec* rec, int texWidth, int texHeight) {
     SkPoint* t = rec->fTexs;
 
     for (int i = 0; i < n; i++) {
-        SkScalar r   = SK_ScalarPI * 2 * i / n,
-                 sin = SkScalarSin(r),
-                 cos = SkScalarCos(r);
+        SkScalar cos;
+        SkScalar sin = SkScalarSinCos(SK_ScalarPI * 2 * i / n, &cos);
         v[i*2 + 0].set(cos/2, sin/2);
         v[i*2 + 1].set(cos, sin);
 
@@ -430,7 +429,7 @@ public:
             canvas.restore();
             SkString str;
             str.printf("/skimages/slide_" SK_SIZE_T_SPECIFIER ".png", i);
-            ToolUtils::EncodeImageToFile(str.c_str(), bm, SkEncodedImageFormat::kPNG, 100);
+            sk_tool_utils::EncodeImageToFile(str.c_str(), bm, SkEncodedImageFormat::kPNG, 100);
         }
         this->setBGColor(BG_COLOR);
     }

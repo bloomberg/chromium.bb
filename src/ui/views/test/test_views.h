@@ -109,8 +109,8 @@ class EventCountView : public View {
   void RecordEvent(ui::Event* event);
 
   std::map<ui::EventType, int> event_count_;
-  int last_flags_ = 0;
-  HandleMode handle_mode_ = PROPAGATE_EVENTS;
+  int last_flags_;
+  HandleMode handle_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountView);
 };

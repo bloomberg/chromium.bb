@@ -35,8 +35,6 @@ class FakeContextFactory : public ui::ContextFactory {
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
-  scoped_refptr<viz::RasterContextProvider>
-  SharedMainThreadRasterContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

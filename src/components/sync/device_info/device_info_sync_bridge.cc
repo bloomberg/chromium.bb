@@ -15,10 +15,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info_util.h"
-#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -36,8 +34,6 @@ using sync_pb::ModelTypeState;
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using WriteBatch = ModelTypeStore::WriteBatch;
-using ClientIdToSpecifics =
-    std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
 namespace {
 
@@ -85,48 +81,26 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
   return specifics;
 }
 
-// Parses the content of |record_list| into |*all_data|. The output
-// parameter is first for binding purposes.
-base::Optional<ModelError> ParseSpecificsOnBackendSequence(
-    ClientIdToSpecifics* all_data,
-    std::string* local_session_name,
-    std::unique_ptr<ModelTypeStore::RecordList> record_list) {
-  DCHECK(all_data);
-  DCHECK(all_data->empty());
-  DCHECK(local_session_name);
-  DCHECK(record_list);
-
-  // For convenience, we get the session name (i.e. local device name) here,
-  // since we're running on the backend sequence, because the function is
-  // blocking.
-  *local_session_name = GetSessionNameBlocking();
-
-  for (const Record& r : *record_list) {
-    std::unique_ptr<DeviceInfoSpecifics> specifics =
-        std::make_unique<DeviceInfoSpecifics>();
-    if (!specifics->ParseFromString(r.value)) {
-      return ModelError(FROM_HERE, "Failed to deserialize specifics.");
-    }
-
-    all_data->emplace(specifics->cache_guid(), std::move(specifics));
-  }
-
-  return base::nullopt;
-}
-
 }  // namespace
 
 DeviceInfoSyncBridge::DeviceInfoSyncBridge(
-    std::unique_ptr<MutableLocalDeviceInfoProvider> local_device_info_provider,
+    LocalDeviceInfoProvider* local_device_info_provider,
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(std::move(local_device_info_provider)),
+      local_device_info_provider_(local_device_info_provider),
       weak_ptr_factory_(this) {
-  DCHECK(local_device_info_provider_);
+  DCHECK(local_device_info_provider);
 
-  // Provider must not be initialized, the bridge takes care.
-  DCHECK(!local_device_info_provider_->GetLocalDeviceInfo());
+  // This is not threadsafe, but presuably the provider initializes on the same
+  // thread as us so we're okay.
+  if (local_device_info_provider->GetLocalDeviceInfo()) {
+    OnProviderInitialized();
+  } else {
+    subscription_ = local_device_info_provider->RegisterOnInitializedCallback(
+        base::BindRepeating(&DeviceInfoSyncBridge::OnProviderInitialized,
+                            base::Unretained(this)));
+  }
 
   std::move(store_factory)
       .Run(DEVICE_INFO, base::BindOnce(&DeviceInfoSyncBridge::OnStoreCreated,
@@ -134,16 +108,6 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
 }
 
 DeviceInfoSyncBridge::~DeviceInfoSyncBridge() {}
-
-LocalDeviceInfoProvider* DeviceInfoSyncBridge::GetLocalDeviceInfoProvider() {
-  return local_device_info_provider_.get();
-}
-
-void DeviceInfoSyncBridge::OnSyncStarting(
-    const DataTypeActivationRequest& request) {
-  // Store the cache GUID, mainly in case MergeSyncData() is executed later.
-  local_cache_guid_ = request.cache_guid;
-}
 
 std::unique_ptr<MetadataChangeList>
 DeviceInfoSyncBridge::CreateMetadataChangeList() {
@@ -153,53 +117,80 @@ DeviceInfoSyncBridge::CreateMetadataChangeList() {
 base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_data) {
+  DCHECK(has_provider_initialized_);
   DCHECK(change_processor()->IsTrackingMetadata());
-  DCHECK(all_data_.empty());
-  DCHECK(!local_cache_guid_.empty());
+  const DeviceInfo* local_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  // DEVICE_INFO sync is running; DeviceInfo thus exists (it gets cleared only
+  // synchronously with disabling DEVICE_INFO sync).
+  DCHECK(local_info);
 
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
+  // Local data should typically be near empty, with the only possible value
+  // corresponding to this device. This is because on signout all device info
+  // data is blown away. However, this simplification is being ignored here and
+  // a full difference is going to be calculated to explore what other bridge
+  // implementations may look like.
+  std::set<std::string> local_guids_to_put;
+  for (const auto& kv : all_data_) {
+    local_guids_to_put.insert(kv.first);
+  }
 
+  bool has_changes = false;
+  std::string local_guid = local_info->guid();
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
     const DeviceInfoSpecifics& specifics =
-        change->data().specifics.device_info();
-    DCHECK_EQ(change->storage_key(), specifics.cache_guid());
-
-    // Each device is the authoritative source for itself, ignore any remote
-    // changes that have our local cache guid.
-    if (change->storage_key() == local_cache_guid_) {
-      continue;
+        change.data().specifics.device_info();
+    DCHECK_EQ(change.storage_key(), specifics.cache_guid());
+    if (specifics.cache_guid() == local_guid) {
+      // Don't Put local data if it's the same as the remote copy.
+      if (local_info->Equals(*SpecificsToModel(specifics))) {
+        local_guids_to_put.erase(local_guid);
+      }
+    } else {
+      // Remote data wins conflicts.
+      local_guids_to_put.erase(specifics.cache_guid());
+      has_changes = true;
+      StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
+                     batch.get());
     }
+  }
 
-    StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
-                   batch.get());
+  for (const std::string& guid : local_guids_to_put) {
+    change_processor()->Put(guid, CopyToEntityData(*all_data_[guid]),
+                            metadata_change_list.get());
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
-  // Complete batch with local data and commit.
-  SendLocalDataWithBatch(std::move(batch));
-  return base::nullopt;
+  CommitAndNotify(std::move(batch), has_changes);
+  return {};
 }
 
 base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
+  DCHECK(has_provider_initialized_);
+  const DeviceInfo* local_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  // DEVICE_INFO sync is running; DeviceInfo thus exists (it gets cleared only
+  // synchronously with disabling DEVICE_INFO sync).
+  DCHECK(local_info);
+
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
-  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
-    const std::string guid = change->storage_key();
+  for (EntityChange& change : entity_changes) {
+    const std::string guid = change.storage_key();
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
-    if (guid == local_cache_guid_) {
+    if (guid == local_info->guid()) {
       continue;
     }
 
-    if (change->type() == EntityChange::ACTION_DELETE) {
+    if (change.type() == EntityChange::ACTION_DELETE) {
       has_changes |= DeleteSpecifics(guid, batch.get());
     } else {
       const DeviceInfoSpecifics& specifics =
-          change->data().specifics.device_info();
+          change.data().specifics.device_info();
       DCHECK(guid == specifics.cache_guid());
       StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
                      batch.get());
@@ -209,7 +200,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
-  return base::nullopt;
+  return {};
 }
 
 void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
@@ -245,22 +236,17 @@ std::string DeviceInfoSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 void DeviceInfoSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
-  if (!delete_metadata_change_list) {
-    return;
-  }
-
-  // Sync is being disabled, so the local DeviceInfo is no longer valid and
-  // should be cleared.
-  local_device_info_provider_->Clear();
-  local_cache_guid_.clear();
-  pulse_timer_.Stop();
+  // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
+  // or subscription_.reset() here?
 
   // Remove all local data, if sync is being disabled, the user has expressed
   // their desire to not have knowledge about other devices.
-  store_->DeleteAllDataAndMetadata(base::DoNothing());
-  if (!all_data_.empty()) {
-    all_data_.clear();
-    NotifyObservers();
+  if (delete_metadata_change_list) {
+    store_->DeleteAllDataAndMetadata(base::DoNothing());
+    if (!all_data_.empty()) {
+      all_data_.clear();
+      NotifyObservers();
+    }
   }
 }
 
@@ -298,6 +284,13 @@ int DeviceInfoSyncBridge::CountActiveDevices() const {
   return CountActiveDevices(Time::Now());
 }
 
+// static
+std::unique_ptr<ModelTypeStore>
+DeviceInfoSyncBridge::DestroyAndStealStoreForTest(
+    std::unique_ptr<DeviceInfoSyncBridge> bridge) {
+  return std::move(bridge->store_);
+}
+
 bool DeviceInfoSyncBridge::IsPulseTimerRunningForTest() const {
   return pulse_timer_.IsRunning();
 }
@@ -331,6 +324,19 @@ bool DeviceInfoSyncBridge::DeleteSpecifics(const std::string& guid,
   }
 }
 
+void DeviceInfoSyncBridge::OnProviderInitialized() {
+  // Now that the provider has initialized, remove the subscription. The bridge
+  // should only need to give the processor metadata upon initialization. If
+  // sync is disabled and enabled, our provider will try to retrigger this
+  // event, but we do not want to send any more metadata to the processor.
+  // TODO(skym, crbug.com/672600): Handle re-initialization and start the pulse
+  // timer.
+  subscription_.reset();
+
+  has_provider_initialized_ = true;
+  LoadMetadataIfReady();
+}
+
 void DeviceInfoSyncBridge::OnStoreCreated(
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
@@ -340,40 +346,40 @@ void DeviceInfoSyncBridge::OnStoreCreated(
   }
 
   store_ = std::move(store);
-
-  auto all_data = std::make_unique<ClientIdToSpecifics>();
-  ClientIdToSpecifics* all_data_copy = all_data.get();
-
-  auto local_session_name = std::make_unique<std::string>();
-  std::string* local_session_name_copy = local_session_name.get();
-
-  store_->ReadAllDataAndPreprocess(
-      base::BindOnce(&ParseSpecificsOnBackendSequence,
-                     base::Unretained(all_data_copy),
-                     base::Unretained(local_session_name_copy)),
-      base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(all_data),
-                     std::move(local_session_name)));
+  store_->ReadAllData(base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
-    std::unique_ptr<ClientIdToSpecifics> all_data,
-    std::unique_ptr<std::string> local_session_name,
-    const base::Optional<syncer::ModelError>& error) {
-  DCHECK(all_data);
-  DCHECK(local_session_name);
-
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<RecordList> record_list) {
   if (error) {
     change_processor()->ReportError(*error);
     return;
   }
 
-  all_data_ = std::move(*all_data);
-  local_session_name_ = std::move(*local_session_name);
+  for (const Record& r : *record_list) {
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        std::make_unique<DeviceInfoSpecifics>();
+    if (specifics->ParseFromString(r.value)) {
+      all_data_[specifics->cache_guid()] = std::move(specifics);
+    } else {
+      change_processor()->ReportError(
+          {FROM_HERE, "Failed to deserialize specifics."});
+      return;
+    }
+  }
 
-  store_->ReadAllMetadata(
-      base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
-                     weak_ptr_factory_.GetWeakPtr()));
+  has_data_loaded_ = true;
+  LoadMetadataIfReady();
+}
+
+void DeviceInfoSyncBridge::LoadMetadataIfReady() {
+  if (has_data_loaded_ && has_provider_initialized_) {
+    store_->ReadAllMetadata(
+        base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void DeviceInfoSyncBridge::OnReadAllMetadata(
@@ -384,44 +390,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
     return;
   }
 
-  // In the regular case for sync being disabled, wait for MergeSyncData()
-  // before initializing the LocalDeviceInfoProvider.
-  if (!metadata_batch->GetModelTypeState().initial_sync_done() &&
-      metadata_batch->GetAllMetadata().empty() && all_data_.empty()) {
-    change_processor()->ModelReadyToSync(std::move(metadata_batch));
-    return;
-  }
-
-  const std::string local_cache_guid_in_metadata =
-      metadata_batch->GetModelTypeState().cache_guid();
-
-  // Protect against corrupt local data.
-  if (!metadata_batch->GetModelTypeState().initial_sync_done() ||
-      local_cache_guid_in_metadata.empty() ||
-      all_data_.count(local_cache_guid_in_metadata) == 0) {
-    // Data or metadata is off. Just throw everything away and start clean.
-    all_data_.clear();
-    store_->DeleteAllDataAndMetadata(base::DoNothing());
-    change_processor()->ModelReadyToSync(std::make_unique<MetadataBatch>());
-    return;
-  }
-
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
-
-  // In rare cases a mismatch between cache GUIDs should cause all sync metadata
-  // dropped. In that case, MergeSyncData() will eventually follow.
-  if (!change_processor()->IsTrackingMetadata()) {
-    // In this scenario, ApplyStopSyncChanges() should have been exercised.
-    DCHECK(local_cache_guid_.empty());
-    DCHECK(all_data_.empty());
-    return;
-  }
-
-  // If sync already enabled (usual case without data corruption), we can
-  // initialize the provider immediately.
-  local_cache_guid_ = local_cache_guid_in_metadata;
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
   ReconcileLocalAndStored();
 }
 
@@ -433,21 +402,37 @@ void DeviceInfoSyncBridge::OnCommit(
 }
 
 void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
+  // On initial syncing we will have a change processor here, but it will not be
+  // tracking changes. We need to persist a copy of our local device info to
+  // disk, but the Put call to the processor will be ignored. That should be
+  // fine however, as the discrepancy will be picked up later in merge. We don't
+  // bother trying to track this case and act intelligently because simply not
+  // much of a benefit in doing so.
+  DCHECK(has_provider_initialized_);
+
   const DeviceInfo* current_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  DCHECK(current_info);
-
+  // Must ensure |pulse_timer_| is started even if sync is in the process of
+  // being disabled. TODO(skym, crbug.com/672600): Remove this timer Start(), as
+  // it should be started when the provider re-initializes instead.
+  if (current_info == nullptr) {
+    pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::kPulseInterval,
+                       base::BindRepeating(&DeviceInfoSyncBridge::SendLocalData,
+                                           base::Unretained(this)));
+    return;
+  }
   auto iter = all_data_.find(current_info->guid());
-  DCHECK(iter != all_data_.end());
 
   // Convert to DeviceInfo for Equals function.
-  if (current_info->Equals(*SpecificsToModel(*iter->second))) {
+  if (iter != all_data_.end() &&
+      current_info->Equals(*SpecificsToModel(*iter->second))) {
     const TimeDelta pulse_delay(DeviceInfoUtil::CalculatePulseDelay(
         GetLastUpdateTime(*iter->second), Time::Now()));
     if (!pulse_delay.is_zero()) {
-      pulse_timer_.Start(FROM_HERE, pulse_delay,
-                         base::BindOnce(&DeviceInfoSyncBridge::SendLocalData,
-                                        base::Unretained(this)));
+      pulse_timer_.Start(
+          FROM_HERE, pulse_delay,
+          base::BindRepeating(&DeviceInfoSyncBridge::SendLocalData,
+                              base::Unretained(this)));
       return;
     }
   }
@@ -455,26 +440,30 @@ void DeviceInfoSyncBridge::ReconcileLocalAndStored() {
 }
 
 void DeviceInfoSyncBridge::SendLocalData() {
-  SendLocalDataWithBatch(store_->CreateWriteBatch());
-}
+  DCHECK(has_provider_initialized_);
 
-void DeviceInfoSyncBridge::SendLocalDataWithBatch(
-    std::unique_ptr<ModelTypeStore::WriteBatch> batch) {
-  DCHECK(store_);
-  DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
-  DCHECK(change_processor()->IsTrackingMetadata());
+  // It is possible that the provider no longer has data for us, such as when
+  // the user signs out. No-op this pulse, but keep the timer going in case sync
+  // is enabled later.
+  if (local_device_info_provider_->GetLocalDeviceInfo() != nullptr) {
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
+                         TimeToProtoTime(Time::Now()));
+    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
 
-  std::unique_ptr<DeviceInfoSpecifics> specifics =
-      ModelToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo(),
-                       TimeToProtoTime(Time::Now()));
-  change_processor()->Put(specifics->cache_guid(), CopyToEntityData(*specifics),
-                          batch->GetMetadataChangeList());
-  StoreSpecifics(std::move(specifics), batch.get());
-  CommitAndNotify(std::move(batch), /*should_notify=*/true);
+    if (change_processor()->IsTrackingMetadata()) {
+      change_processor()->Put(specifics->cache_guid(),
+                              CopyToEntityData(*specifics),
+                              batch->GetMetadataChangeList());
+    }
+
+    StoreSpecifics(std::move(specifics), batch.get());
+    CommitAndNotify(std::move(batch), true);
+  }
 
   pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::kPulseInterval,
-                     base::BindOnce(&DeviceInfoSyncBridge::SendLocalData,
-                                    base::Unretained(this)));
+                     base::BindRepeating(&DeviceInfoSyncBridge::SendLocalData,
+                                         base::Unretained(this)));
 }
 
 void DeviceInfoSyncBridge::CommitAndNotify(std::unique_ptr<WriteBatch> batch,

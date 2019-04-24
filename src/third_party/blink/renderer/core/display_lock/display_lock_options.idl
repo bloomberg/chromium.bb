@@ -5,6 +5,5 @@
 dictionary DisplayLockOptions {
   unrestricted double timeout;
   boolean activatable = false;
-  sequence<double> size;
 };
 

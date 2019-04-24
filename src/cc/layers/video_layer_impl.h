@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "components/viz/common/resources/release_callback.h"
@@ -30,10 +31,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
       int id,
       VideoFrameProvider* provider,
       media::VideoRotation video_rotation);
-  VideoLayerImpl(const VideoLayerImpl&) = delete;
   ~VideoLayerImpl() override;
-
-  VideoLayerImpl& operator=(const VideoLayerImpl&) = delete;
 
   // LayerImpl implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -65,6 +63,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   media::VideoRotation video_rotation_;
 
   std::unique_ptr<media::VideoResourceUpdater> updater_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };
 
 }  // namespace cc

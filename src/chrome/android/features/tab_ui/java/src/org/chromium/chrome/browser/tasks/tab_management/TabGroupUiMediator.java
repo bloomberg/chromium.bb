@@ -68,8 +68,6 @@ public class TabGroupUiMediator {
     private final ThemeColorProvider.TintObserver mTintObserver;
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private boolean mIsTabGroupUiVisible;
-    private boolean mIsClosingAGroup;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
@@ -88,23 +86,10 @@ public class TabGroupUiMediator {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                if (!mIsTabGroupUiVisible) return;
-                if (type == TabSelectionType.FROM_CLOSE && !mIsClosingAGroup) return;
-                if (getRelatedTabsForId(lastId).contains(tab)) return;
+                if (type == TabSelectionType.FROM_CLOSE
+                        || getRelatedTabsForId(lastId).contains(tab))
+                    return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
-            }
-
-            @Override
-            public void willCloseTab(Tab tab, boolean animate) {
-                if (!mIsTabGroupUiVisible) return;
-                Tab currentTab = mTabModelSelector.getCurrentTab();
-                if (currentTab == null) mResetHandler.resetSheetWithListOfTabs(null);
-                int tabsCount = mTabModelSelector.getTabModelFilterProvider()
-                                        .getCurrentTabModelFilter()
-                                        .getRelatedTabList(currentTab.getId())
-                                        .size();
-
-                mIsClosingAGroup = tabsCount == 0;
             }
 
             @Override
@@ -142,7 +127,8 @@ public class TabGroupUiMediator {
                                                .getRelatedTabList(tab.getId());
                 int numTabs = listOfTabs.size();
                 // This is set to zero because the UI is hidden.
-                if (!mIsTabGroupUiVisible) numTabs = 0;
+                if (numTabs < 2) numTabs = 0;
+
                 RecordHistogram.recordCountHistogram("TabStrip.TabCountOnPageLoad", numTabs);
             }
         };
@@ -204,12 +190,11 @@ public class TabGroupUiMediator {
                                        .getRelatedTabList(id);
         if (listOfTabs.size() < 2) {
             mResetHandler.resetStripWithListOfTabs(null);
-            mIsTabGroupUiVisible = false;
+            mVisibilityController.setBottomControlsVisible(false);
         } else {
             mResetHandler.resetStripWithListOfTabs(listOfTabs);
-            mIsTabGroupUiVisible = true;
+            mVisibilityController.setBottomControlsVisible(true);
         }
-        mVisibilityController.setBottomControlsVisible(mIsTabGroupUiVisible);
     }
 
     private List<Tab> getRelatedTabsForId(int id) {

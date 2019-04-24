@@ -33,6 +33,7 @@
   [super configureCell:tableCell withStyler:styler];
   TableViewTextCell* cell =
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
+  // TODO(crbug.com/894791): set isAccessibilityElement = YES in TableViewItem.
   cell.isAccessibilityElement = YES;
 
   if (self.masked) {
@@ -65,7 +66,7 @@
         UIColorFromRGB(kTableViewTextLabelColorLightGrey);
   }
   cell.textLabel.textAlignment =
-      self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
+      self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
 
   cell.userInteractionEnabled = self.enabled;
 }

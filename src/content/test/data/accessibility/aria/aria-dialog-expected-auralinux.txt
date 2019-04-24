@@ -1,3 +1,0 @@
-[document web]
-++[dialog]
-++++[text] name='This is ARIA dialog.'

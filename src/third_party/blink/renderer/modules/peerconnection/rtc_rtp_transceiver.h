@@ -33,7 +33,7 @@ class RTCRtpTransceiver final : public ScriptWrappable {
                     RTCRtpSender*,
                     RTCRtpReceiver*);
 
-  // rtc_rtp_transceiver.idl
+  // rtc_rtp_transciever.idl
   String mid() const;
   RTCRtpSender* sender() const;
   RTCRtpReceiver* receiver() const;

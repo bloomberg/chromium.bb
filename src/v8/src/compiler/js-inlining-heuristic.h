@@ -24,8 +24,7 @@ class JSInliningHeuristic final : public AdvancedReducer {
         candidates_(local_zone),
         seen_(local_zone),
         source_positions_(source_positions),
-        jsgraph_(jsgraph),
-        broker_(broker) {}
+        jsgraph_(jsgraph) {}
 
   const char* reducer_name() const override { return "JSInliningHeuristic"; }
 
@@ -41,18 +40,18 @@ class JSInliningHeuristic final : public AdvancedReducer {
   static const int kMaxCallPolymorphism = 4;
 
   struct Candidate {
-    base::Optional<JSFunctionRef> functions[kMaxCallPolymorphism];
+    Handle<JSFunction> functions[kMaxCallPolymorphism];
     // In the case of polymorphic inlining, this tells if each of the
     // functions could be inlined.
     bool can_inline_function[kMaxCallPolymorphism];
     // Strong references to bytecode to ensure it is not flushed from SFI
     // while choosing inlining candidates.
-    base::Optional<BytecodeArrayRef> bytecode[kMaxCallPolymorphism];
+    Handle<BytecodeArray> bytecode[kMaxCallPolymorphism];
     // TODO(2206): For now polymorphic inlining is treated orthogonally to
     // inlining based on SharedFunctionInfo. This should be unified and the
     // above array should be switched to SharedFunctionInfo instead. Currently
     // we use {num_functions == 1 && functions[0].is_null()} as an indicator.
-    base::Optional<SharedFunctionInfoRef> shared_info;
+    Handle<SharedFunctionInfo> shared_info;
     int num_functions;
     Node* node = nullptr;     // The call site at which to inline.
     CallFrequency frequency;  // Relative frequency of this call site.
@@ -65,7 +64,7 @@ class JSInliningHeuristic final : public AdvancedReducer {
   };
 
   // Candidates are kept in a sorted set of unique candidates.
-  using Candidates = ZoneSet<Candidate, CandidateCompare>;
+  typedef ZoneSet<Candidate, CandidateCompare> Candidates;
 
   // Dumps candidates to console.
   void PrintCandidates();
@@ -81,13 +80,10 @@ class JSInliningHeuristic final : public AdvancedReducer {
                                      StateCloneMode mode);
   Node* DuplicateStateValuesAndRename(Node* state_values, Node* from, Node* to,
                                       StateCloneMode mode);
-  Candidate CollectFunctions(Node* node, int functions_size);
 
   CommonOperatorBuilder* common() const;
   Graph* graph() const;
   JSGraph* jsgraph() const { return jsgraph_; }
-  // TODO(neis): Make heap broker a component of JSGraph?
-  JSHeapBroker* broker() const { return broker_; }
   Isolate* isolate() const { return jsgraph_->isolate(); }
   SimplifiedOperatorBuilder* simplified() const;
 
@@ -97,7 +93,6 @@ class JSInliningHeuristic final : public AdvancedReducer {
   ZoneSet<NodeId> seen_;
   SourcePositionTable* source_positions_;
   JSGraph* const jsgraph_;
-  JSHeapBroker* const broker_;
   int cumulative_count_ = 0;
 };
 

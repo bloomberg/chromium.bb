@@ -375,6 +375,10 @@ class DataReductionProxyTestContext {
 
   virtual ~DataReductionProxyTestContext();
 
+  // Returns the name of the preference used to enable the Data Reduction
+  // Proxy.
+  const char* GetDataReductionProxyEnabledPrefName() const;
+
   // Registers, sets, and gets the preference used to enable the Data Reduction
   // Proxy, respectively.
   void RegisterDataReductionProxyEnabledPref();

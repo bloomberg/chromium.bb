@@ -78,28 +78,13 @@ bool ContainsReservedCharacters(const base::FilePath& path) {
 }
 
 // Returns true if the given |manifest_version| is supported for the specified
-// |type| of extension. Optionally populates |warning| if an InstallWarning
-// should be added.
+// |type| of extension.
 bool IsManifestSupported(int manifest_version,
                          Manifest::Type type,
-                         int creation_flags,
-                         std::string* warning) {
-  static constexpr int kMaximumSupportedManifestVersion = 2;
-  static_assert(kMaximumSupportedManifestVersion >= kModernManifestVersion,
-                "The modern manifest version must be supported.");
+                         int creation_flags) {
   // Modern is always safe.
-  if (manifest_version >= kModernManifestVersion &&
-      manifest_version <= kMaximumSupportedManifestVersion) {
+  if (manifest_version >= kModernManifestVersion)
     return true;
-  }
-
-  if (manifest_version > kMaximumSupportedManifestVersion) {
-    *warning = ErrorUtils::FormatErrorMessage(
-        manifest_errors::kManifestVersionTooHighWarning,
-        base::NumberToString(kMaximumSupportedManifestVersion),
-        base::NumberToString(manifest_version));
-    return true;
-  }
 
   // Allow an exception for extensions if a special commandline flag is present.
   // Note: This allows the extension to load, but it may effectively be treated
@@ -763,9 +748,7 @@ bool Extension::LoadManifestVersion(base::string16* error) {
   }
 
   manifest_version_ = manifest_->GetManifestVersion();
-  std::string warning;
-  if (!IsManifestSupported(manifest_version_, GetType(), creation_flags_,
-                           &warning)) {
+  if (!IsManifestSupported(manifest_version_, GetType(), creation_flags_)) {
     std::string json;
     base::JSONWriter::Write(*manifest_->value(), &json);
     LOG(WARNING) << "Failed to load extension.  Manifest JSON: " << json;
@@ -775,9 +758,6 @@ bool Extension::LoadManifestVersion(base::string16* error) {
         is_platform_app() ? "apps" : "extensions");
     return false;
   }
-
-  if (!warning.empty())
-    AddInstallWarning(InstallWarning(warning, keys::kManifestVersion));
 
   return true;
 }

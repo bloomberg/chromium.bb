@@ -341,7 +341,7 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
 void CookieStoreIOS::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,
     std::string source_scheme,
-    const net::CookieOptions& options,
+    bool modify_http_only,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -352,7 +352,7 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   DCHECK(cookie->IsCanonical());
   // The exclude_httponly() option would only be used by a javascript
   // engine.
-  DCHECK(!options.exclude_httponly());
+  DCHECK(modify_http_only);
 
   bool secure_source =
       GURL::SchemeIsCryptographic(base::ToLowerASCII(source_scheme));
@@ -501,6 +501,7 @@ CookieStoreIOS::CookieStoreIOS(
     std::unique_ptr<SystemCookieStore> system_store,
     NetLog* net_log)
     : cookie_monster_(new net::CookieMonster(persistent_store,
+                                             nullptr /* channel_id_service */,
                                              net_log)),
       system_store_(std::move(system_store)),
       metrics_enabled_(false),
@@ -637,13 +638,6 @@ void CookieStoreIOS::OnSystemCookiesChanged() {
 
 CookieChangeDispatcher& CookieStoreIOS::GetChangeDispatcher() {
   return change_dispatcher_;
-}
-
-void CookieStoreIOS::SetCookieableSchemes(
-    const std::vector<std::string>& schemes,
-    SetCookieableSchemesCallback callback) {
-  // Not supported on iOS.
-  std::move(callback).Run(false);
 }
 
 bool CookieStoreIOS::IsEphemeral() {

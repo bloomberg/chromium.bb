@@ -263,16 +263,3 @@ TEST_F(FullscreenModelTest, DisableForShortContent) {
                            1.0);
   EXPECT_TRUE(model().enabled());
 }
-
-// Tests that scrolling past the edge of the page content is ignored when the
-// scroll view is being resized.
-TEST_F(FullscreenModelTest, IgnoreScrollsPastBottomWhileResizing) {
-  // Instruct the model to resize the scroll view and scroll to the bottom of
-  // the page.
-  model().SetResizesScrollView(true);
-  model().SetYContentOffset(kContentHeight - kScrollViewHeight);
-  // Try scrolling with a user gesture such that the toolars are hidden, then
-  // verify that this scroll is ignored.
-  SimulateFullscreenUserScrollForProgress(&model(), 0.0);
-  EXPECT_EQ(observer().progress(), 1.0);
-}

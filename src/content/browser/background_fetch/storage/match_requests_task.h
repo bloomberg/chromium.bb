@@ -42,12 +42,10 @@ class MatchRequestsTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidOpenCache(int64_t trace_id,
-                    CacheStorageCacheHandle handle,
+  void DidOpenCache(CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidGetAllMatchedEntries(
-      int64_t trace_id,
       blink::mojom::CacheStorageError error,
       std::vector<CacheStorageCache::CacheEntry> entries);
 
@@ -71,6 +69,7 @@ class MatchRequestsTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MATCH_REQUESTS_TASK_H_

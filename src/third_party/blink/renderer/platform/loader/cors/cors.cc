@@ -432,10 +432,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   return header_set;
 }
 
-bool IsCorsSafelistedResponseHeader(const String& name) {
-  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name
-  // TODO(dcheng): Consider using a flat_set here with a transparent comparator.
-  // TODO(toyoshim): This set is missing "content-length".
+bool IsOnAccessControlResponseHeaderWhitelist(const String& name) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       WebHTTPHeaderSet, allowed_cross_origin_response_headers,
       ({

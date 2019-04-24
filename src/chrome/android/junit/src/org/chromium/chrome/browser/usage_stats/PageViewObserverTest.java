@@ -74,14 +74,12 @@ public final class PageViewObserverTest {
 
     private TabObserver mTabObserver;
     private UserDataHost mUserDataHost;
-    private UserDataHost mUserDataHostTab2;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         mUserDataHost = new UserDataHost();
-        mUserDataHostTab2 = new UserDataHost();
 
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrl();
@@ -89,7 +87,6 @@ public final class PageViewObserverTest {
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
-        doReturn(mUserDataHostTab2).when(mTab2).getUserDataHost();
         doReturn(Promise.fulfilled("1")).when(mTokenTracker).getTokenForFqdn(anyString());
     }
 
@@ -273,23 +270,6 @@ public final class PageViewObserverTest {
 
         verify(mTab, times(3)).addObserver(any());
         assertEquals(DIFFERENT_FQDN, suspendedTab.getFqdn());
-    }
-
-    @Test
-    public void eagerSuspension_reshowSameDomain_nowUnsuspended() {
-        PageViewObserver observer = createPageViewObserver();
-        onUpdateUrl(mTab, STARTING_URL);
-
-        doReturn(STARTING_URL).when(mTab).getUrl();
-        observer.notifySiteSuspensionChanged(STARTING_FQDN, true);
-
-        verify(mTab, times(2)).addObserver(mTabObserverCaptor.capture());
-        assertTrue(mTabObserverCaptor.getValue() instanceof SuspendedTab);
-        SuspendedTab suspendedTab = (SuspendedTab) mTabObserverCaptor.getValue();
-
-        doReturn(false).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
-        onShown(mTab, TabSelectionType.FROM_USER);
-        verify(mTab, times(1)).removeObserver(suspendedTab);
     }
 
     @Test

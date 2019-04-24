@@ -4,7 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -21,7 +20,7 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   EXPECT_EQ(SyncerError::SYNCER_OK,
             status.model_neutral_state().last_download_updates_result.value());
 
-  status.set_commit_result(SyncerError::HttpError(net::HTTP_UNAUTHORIZED));
+  status.set_commit_result(SyncerError(SyncerError::SYNC_AUTH_ERROR));
   EXPECT_EQ(SyncerError::SYNC_AUTH_ERROR,
             status.model_neutral_state().commit_result.value());
 

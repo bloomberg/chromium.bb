@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
@@ -21,7 +20,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -176,7 +174,6 @@ PageLoadTracker::PageLoadTracker(
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
       start_url_(navigation_handle->GetURL()),
-      visibility_tracker_(base::DefaultTickClock::GetInstance(), in_foreground),
       did_commit_(false),
       page_end_reason_(END_NONE),
       page_end_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
@@ -189,8 +186,7 @@ PageLoadTracker::PageLoadTracker(
       embedder_interface_(embedder_interface),
       metrics_update_dispatcher_(this, navigation_handle, embedder_interface),
       source_id_(ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
-                                        ukm::SourceIdType::NAVIGATION_ID)),
-      web_contents_(navigation_handle->GetWebContents()) {
+                                        ukm::SourceIdType::NAVIGATION_ID)) {
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
@@ -310,7 +306,6 @@ void PageLoadTracker::WebContentsHidden() {
     background_time_ = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
   }
-  visibility_tracker_.OnHidden();
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden,
                              metrics_update_dispatcher_.timing(), info);
@@ -327,7 +322,6 @@ void PageLoadTracker::WebContentsShown() {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&foreground_time_);
   }
 
-  visibility_tracker_.OnShown();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
@@ -473,7 +467,6 @@ void PageLoadTracker::StopTracking() {
 
 void PageLoadTracker::AddObserver(
     std::unique_ptr<PageLoadMetricsObserver> observer) {
-  observer->SetDelegate(this);
   observers_.push_back(std::move(observer));
 }
 
@@ -537,7 +530,6 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
       page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
       metrics_update_dispatcher_.subframe_metadata(),
-      metrics_update_dispatcher_.page_render_data(),
       metrics_update_dispatcher_.main_frame_render_data(), source_id_);
 }
 
@@ -666,7 +658,7 @@ void PageLoadTracker::OnSubFrameTimingChanged(
 
 void PageLoadTracker::OnSubFrameRenderDataChanged(
     content::RenderFrameHost* rfh,
-    const mojom::FrameRenderDataUpdate& render_data) {
+    const mojom::PageRenderData& render_data) {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   DCHECK(rfh->GetParent());
   for (const auto& observer : observers_) {
@@ -677,18 +669,14 @@ void PageLoadTracker::OnSubFrameRenderDataChanged(
 void PageLoadTracker::OnMainFrameMetadataChanged() {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(
-        nullptr, extra_info.main_frame_metadata.behavior_flags, extra_info);
+    observer->OnLoadingBehaviorObserved(extra_info);
   }
 }
 
-void PageLoadTracker::OnSubframeMetadataChanged(
-    content::RenderFrameHost* rfh,
-    const mojom::PageLoadMetadata& metadata) {
+void PageLoadTracker::OnSubframeMetadataChanged() {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(rfh, metadata.behavior_flags,
-                                        extra_info);
+    observer->OnLoadingBehaviorObserved(extra_info);
   }
 }
 
@@ -708,19 +696,10 @@ void PageLoadTracker::UpdateFeaturesUsage(
 }
 
 void PageLoadTracker::UpdateResourceDataUse(
-    content::RenderFrameHost* rfh,
+    int frame_tree_node_id,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
-  resource_tracker_.UpdateResourceDataUse(rfh->GetProcess()->GetID(),
-                                          resources);
   for (const auto& observer : observers_) {
-    observer->OnResourceDataUseObserved(rfh, resources);
-  }
-}
-
-void PageLoadTracker::OnNewDeferredResourceCounts(
-    const mojom::DeferredResourceCounts& new_deferred_resource_data) {
-  for (const auto& observer : observers_) {
-    observer->OnNewDeferredResourceCounts(new_deferred_resource_data);
+    observer->OnResourceDataUseObserved(frame_tree_node_id, resources);
   }
 }
 
@@ -729,26 +708,6 @@ void PageLoadTracker::UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
   for (const auto& observer : observers_) {
     observer->OnCpuTimingUpdate(rfh, timing);
   }
-}
-
-content::WebContents* PageLoadTracker::GetWebContents() const {
-  return web_contents_;
-}
-
-base::TimeTicks PageLoadTracker::GetNavigationStart() const {
-  return navigation_start_;
-}
-
-bool PageLoadTracker::DidCommit() const {
-  return did_commit_;
-}
-
-const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {
-  return visibility_tracker_;
-}
-
-const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
-  return resource_tracker_;
 }
 
 }  // namespace page_load_metrics

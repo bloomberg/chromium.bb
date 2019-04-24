@@ -13,15 +13,15 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
+#include "content/renderer/media/stream/video_track_adapter.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -74,12 +74,12 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   MOCK_METHOD0(MockNotification, void());
 
  protected:
-  blink::MediaStreamVideoSource* source() { return mock_source_; }
+  MediaStreamVideoSource* source() { return mock_source_; }
 
   // Create a track that's associated with |web_source_|.
   blink::WebMediaStreamTrack CreateTrack(const std::string& id) {
     bool enabled = true;
-    return blink::MediaStreamVideoTrack::CreateVideoTrack(
+    return MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_,
         base::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
                    base::Unretained(this)),
@@ -88,12 +88,12 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
 
   blink::WebMediaStreamTrack CreateTrack(
       const std::string& id,
-      const blink::VideoTrackAdapterSettings& adapter_settings,
+      const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
       bool is_screencast,
       double min_frame_rate) {
     bool enabled = true;
-    return blink::MediaStreamVideoTrack::CreateVideoTrack(
+    return MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, adapter_settings, noise_reduction, is_screencast,
         min_frame_rate,
         base::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
@@ -107,8 +107,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
       double frame_rate,
       bool detect_rotation = false) {
     blink::WebMediaStreamTrack track = CreateTrack(
-        "123",
-        blink::VideoTrackAdapterSettings(gfx::Size(width, height), frame_rate),
+        "123", VideoTrackAdapterSettings(gfx::Size(width, height), frame_rate),
         base::Optional<bool>(), false, 0.0);
 
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
@@ -197,16 +196,15 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                                           int expected_height1,
                                           int expected_width2,
                                           int expected_height2) {
-    blink::WebMediaStreamTrack track1 = CreateTrackAndStartSource(
-        expected_width1, expected_height1,
-        blink::MediaStreamVideoSource::kDefaultFrameRate);
+    blink::WebMediaStreamTrack track1 =
+        CreateTrackAndStartSource(expected_width1, expected_height1,
+                                  MediaStreamVideoSource::kDefaultFrameRate);
 
-    blink::WebMediaStreamTrack track2 =
-        CreateTrack("dummy",
-                    blink::VideoTrackAdapterSettings(
-                        gfx::Size(expected_width2, expected_height2),
-                        blink::MediaStreamVideoSource::kDefaultFrameRate),
-                    base::Optional<bool>(), false, 0.0);
+    blink::WebMediaStreamTrack track2 = CreateTrack(
+        "dummy",
+        VideoTrackAdapterSettings(gfx::Size(expected_width2, expected_height2),
+                                  MediaStreamVideoSource::kDefaultFrameRate),
+        base::Optional<bool>(), false, 0.0);
 
     MockMediaStreamVideoSink sink1;
     sink1.ConnectToTrack(track1);
@@ -454,8 +452,8 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureTrack) {
   EXPECT_EQ(track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateLive);
 
-  blink::MediaStreamVideoTrack* native_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
+  MediaStreamVideoTrack* native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
   blink::WebMediaStreamTrack::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 640);
@@ -463,8 +461,8 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureTrack) {
   EXPECT_EQ(settings.frame_rate, media::limits::kMaxFramesPerSecond - 2);
   EXPECT_EQ(settings.aspect_ratio, 640.0 / 480.0);
 
-  source()->ReconfigureTrack(native_track, blink::VideoTrackAdapterSettings(
-                                               gfx::Size(630, 470), 30.0));
+  source()->ReconfigureTrack(
+      native_track, VideoTrackAdapterSettings(gfx::Size(630, 470), 30.0));
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 630);
   EXPECT_EQ(settings.height, 470);
@@ -485,8 +483,8 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
   EXPECT_EQ(track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateLive);
 
-  blink::MediaStreamVideoTrack* native_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
+  MediaStreamVideoTrack* native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
   blink::WebMediaStreamTrack::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 640);
@@ -500,8 +498,8 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
   EXPECT_EQ(track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateEnded);
 
-  source()->ReconfigureTrack(native_track, blink::VideoTrackAdapterSettings(
-                                               gfx::Size(630, 470), 30.0));
+  source()->ReconfigureTrack(
+      native_track, VideoTrackAdapterSettings(gfx::Size(630, 470), 30.0));
   blink::WebMediaStreamTrack::Settings stopped_settings;
   native_track->GetSettings(stopped_settings);
   EXPECT_EQ(stopped_settings.width, -1);
@@ -520,9 +518,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestart) {
 
   // The source does not support Restart/StopForRestart.
   mock_source()->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_RUNNING);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_RUNNING);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -532,9 +529,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestart) {
   // successful StopForRestart().
   mock_source()->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -544,9 +540,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestart) {
   // Verify that StopForRestart() fails with INVALID_STATE when called when the
   // source is not running.
   mock_source()->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
 }
 
@@ -561,9 +556,8 @@ TEST_F(MediaStreamVideoSourceTest, SuccessfulRestart) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   mock_source()->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -572,9 +566,8 @@ TEST_F(MediaStreamVideoSourceTest, SuccessfulRestart) {
   // Verify that StopForRestart() fails with INVALID_STATE called after the
   // source is already stopped.
   mock_source()->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -582,9 +575,8 @@ TEST_F(MediaStreamVideoSourceTest, SuccessfulRestart) {
 
   mock_source()->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_RUNNING);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_RUNNING);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -594,9 +586,8 @@ TEST_F(MediaStreamVideoSourceTest, SuccessfulRestart) {
   // started.
   mock_source()->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -619,9 +610,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestartAfterStopForRestart) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   mock_source()->StopForRestart(
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -629,9 +619,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestartAfterStopForRestart) {
 
   mock_source()->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -641,9 +630,8 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestartAfterStopForRestart) {
   // state.
   mock_source()->Restart(
       media::VideoCaptureFormat(),
-      base::BindOnce([](blink::MediaStreamVideoSource::RestartResult result) {
-        EXPECT_EQ(result,
-                  blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
       }));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
@@ -698,15 +686,15 @@ TEST_F(MediaStreamVideoSourceTest, StopSuspendedTrack) {
 
   // Simulate assigning |track1| to a sink, then removing it from the sink, and
   // then stopping it.
-  blink::MediaStreamVideoTrack* track1 =
-      blink::MediaStreamVideoTrack::GetVideoTrack(web_track1);
+  MediaStreamVideoTrack* track1 =
+      MediaStreamVideoTrack::GetVideoTrack(web_track1);
   mock_source()->UpdateHasConsumers(track1, true);
   mock_source()->UpdateHasConsumers(track1, false);
   track1->Stop();
 
   // Simulate assigning |track2| to a sink. The source should not be suspended.
-  blink::MediaStreamVideoTrack* track2 =
-      blink::MediaStreamVideoTrack::GetVideoTrack(web_track2);
+  MediaStreamVideoTrack* track2 =
+      MediaStreamVideoTrack::GetVideoTrack(web_track2);
   mock_source()->UpdateHasConsumers(track2, true);
   EXPECT_FALSE(mock_source()->is_suspended());
 }
@@ -717,8 +705,8 @@ TEST_F(MediaStreamVideoSourceTest, AddTrackAfterStoppingSource) {
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
   EXPECT_EQ(0, NumberOfFailedConstraintsCallbacks());
 
-  blink::MediaStreamVideoTrack* track1 =
-      blink::MediaStreamVideoTrack::GetVideoTrack(web_track1);
+  MediaStreamVideoTrack* track1 =
+      MediaStreamVideoTrack::GetVideoTrack(web_track1);
   EXPECT_CALL(*this, MockNotification());
   // This is equivalent to track.stop() in JavaScript.
   track1->StopAndNotify(base::BindOnce(

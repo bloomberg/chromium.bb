@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -65,11 +64,11 @@ DocumentParser* HTMLViewSourceDocument::CreateParser() {
 }
 
 void HTMLViewSourceDocument::CreateContainingTable() {
-  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*this);
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*this);
   ParserAppendChild(html);
-  auto* head = MakeGarbageCollected<HTMLHeadElement>(*this);
+  HTMLHeadElement* head = HTMLHeadElement::Create(*this);
   html->ParserAppendChild(head);
-  auto* body = MakeGarbageCollected<HTMLBodyElement>(*this);
+  HTMLBodyElement* body = HTMLBodyElement::Create(*this);
   html->ParserAppendChild(body);
 
   // Create a line gutter div that can be used to make sure the gutter extends
@@ -78,9 +77,9 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   div->setAttribute(kClassAttr, "line-gutter-backdrop");
   body->ParserAppendChild(div);
 
-  auto* table = MakeGarbageCollected<HTMLTableElement>(*this);
+  HTMLTableElement* table = HTMLTableElement::Create(*this);
   body->ParserAppendChild(table);
-  tbody_ = MakeGarbageCollected<HTMLTableSectionElement>(kTbodyTag, *this);
+  tbody_ = HTMLTableSectionElement::Create(kTbodyTag, *this);
   table->ParserAppendChild(tbody_);
   current_ = tbody_;
   line_number_ = 0;
@@ -207,18 +206,18 @@ Element* HTMLViewSourceDocument::AddSpanWithClassName(
 
 void HTMLViewSourceDocument::AddLine(const AtomicString& class_name) {
   // Create a table row.
-  auto* trow = MakeGarbageCollected<HTMLTableRowElement>(*this);
+  HTMLTableRowElement* trow = HTMLTableRowElement::Create(*this);
   tbody_->ParserAppendChild(trow);
 
   // Create a cell that will hold the line number (it is generated in the
   // stylesheet using counters).
-  auto* td = MakeGarbageCollected<HTMLTableCellElement>(kTdTag, *this);
+  HTMLTableCellElement* td = HTMLTableCellElement::Create(kTdTag, *this);
   td->setAttribute(kClassAttr, "line-number");
   td->SetIntegralAttribute(kValueAttr, ++line_number_);
   trow->ParserAppendChild(td);
 
   // Create a second cell for the line contents
-  td = MakeGarbageCollected<HTMLTableCellElement>(kTdTag, *this);
+  td = HTMLTableCellElement::Create(kTdTag, *this);
   td->setAttribute(kClassAttr, "line-content");
   trow->ParserAppendChild(td);
   current_ = td_ = td;
@@ -234,7 +233,7 @@ void HTMLViewSourceDocument::AddLine(const AtomicString& class_name) {
 
 void HTMLViewSourceDocument::FinishLine() {
   if (!current_->HasChildren()) {
-    auto* br = MakeGarbageCollected<HTMLBRElement>(*this);
+    HTMLBRElement* br = HTMLBRElement::Create(*this);
     current_->ParserAppendChild(br);
   }
   current_ = tbody_;
@@ -294,7 +293,7 @@ int HTMLViewSourceDocument::AddRange(const String& source,
 }
 
 Element* HTMLViewSourceDocument::AddBase(const AtomicString& href) {
-  auto* base = MakeGarbageCollected<HTMLBaseElement>(*this);
+  HTMLBaseElement* base = HTMLBaseElement::Create(*this);
   base->setAttribute(kHrefAttr, href);
   current_->ParserAppendChild(base);
   return base;
@@ -306,7 +305,7 @@ Element* HTMLViewSourceDocument::AddLink(const AtomicString& url,
     AddLine("html-tag");
 
   // Now create a link for the attribute value instead of a span.
-  auto* anchor = MakeGarbageCollected<HTMLAnchorElement>(*this);
+  HTMLAnchorElement* anchor = HTMLAnchorElement::Create(*this);
   const char* class_value;
   if (is_anchor)
     class_value = "html-attribute-value html-external-link";

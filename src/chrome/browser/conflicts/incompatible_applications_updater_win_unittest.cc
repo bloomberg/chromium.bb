@@ -10,16 +10,13 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/common/process_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,12 +79,11 @@ constexpr wchar_t kCertificateSubject[] = L"CertificateSubject";
 constexpr wchar_t kDllPath1[] = L"c:\\path\\to\\module.dll";
 constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
 
-// Returns a new ModuleInfoData marked as loaded into the browser process but
-// otherwise empty.
+// Returns a new ModuleInfoData marked as loaded into the process but otherwise
+// empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
-  module_data.process_types |= ProcessTypeToBit(content::PROCESS_TYPE_BROWSER);
   module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   return module_data;
 }
@@ -160,8 +156,6 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   void AddObserver(ModuleDatabaseObserver* observer) override {}
   void RemoveObserver(ModuleDatabaseObserver* observer) override {}
 
-  void RunLoopUntilIdle() { base::RunLoop().RunUntilIdle(); }
-
   const base::FilePath dll1_;
   const base::FilePath dll2_;
 
@@ -180,9 +174,6 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
 // Tests that when the Local State cache is empty, no incompatible applications
 // are returned.
 TEST_F(IncompatibleApplicationsUpdaterTest, EmptyCache) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
 }
@@ -190,9 +181,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, EmptyCache) {
 // IncompatibleApplicationsUpdater doesn't do anything when there is no
 // registered installed applications.
 TEST_F(IncompatibleApplicationsUpdaterTest, NoIncompatibleApplications) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   auto incompatible_applications_updater =
       CreateIncompatibleApplicationsUpdater();
 
@@ -200,16 +188,12 @@ TEST_F(IncompatibleApplicationsUpdaterTest, NoIncompatibleApplications) {
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll1_, 0, 0), CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, NoTiedApplications) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   auto incompatible_applications_updater =
       CreateIncompatibleApplicationsUpdater();
 
@@ -218,7 +202,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, NoTiedApplications) {
   incompatible_applications_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
@@ -230,9 +213,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, NoTiedApplications) {
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
@@ -243,7 +223,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
   incompatible_applications_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -256,9 +235,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddIncompatibleApplication(dll1_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
@@ -270,7 +246,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
   incompatible_applications_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -283,9 +258,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
 
 TEST_F(IncompatibleApplicationsUpdaterTest,
        MultipleCallsToOnModuleDatabaseIdle) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddIncompatibleApplication(dll2_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
@@ -297,14 +269,12 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
   incompatible_applications_updater->OnNewModuleFound(
       module_key1, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   // Add an additional module.
   ModuleInfoKey module_key2(dll2_, 0, 0);
   incompatible_applications_updater->OnNewModuleFound(
       module_key2, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -325,9 +295,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
 // the list isn't tied to the lifetime of the IncompatibleApplicationsUpdater
 // instance. It is assumed that the Local State file works as intended.
 TEST_F(IncompatibleApplicationsUpdaterTest, PersistsThroughRestarts) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
@@ -337,7 +304,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, PersistsThroughRestarts) {
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll1_, 0, 0), CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
 
@@ -349,9 +315,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, PersistsThroughRestarts) {
 
 // Tests that applications that do not have a registry entry are removed.
 TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddIncompatibleApplication(dll2_, L"Bar", Option::NO_REGISTRY_ENTRY);
 
@@ -364,7 +327,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll2_, 0, 0), CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -374,9 +336,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreNotLoadedModules) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
@@ -388,7 +347,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreNotLoadedModules) {
   module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   incompatible_applications_updater->OnNewModuleFound(module_key, module_data);
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -402,9 +360,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreNotLoadedModules) {
 // Tests that modules with a matching certificate subject are whitelisted.
 TEST_F(IncompatibleApplicationsUpdaterTest,
        WhitelistMatchingCertificateSubject) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
@@ -415,7 +370,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
   incompatible_applications_updater->OnNewModuleFound(
       module_key, CreateSignedLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -429,9 +383,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
 
 // Registered modules are defined as either a shell extension or an IME.
 TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Shell Extension",
                              Option::ADD_REGISTRY_ENTRY);
   AddIncompatibleApplication(dll2_, L"Input Method Editor",
@@ -455,7 +406,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
   incompatible_applications_updater->OnNewModuleFound(module_key2,
                                                       module_data2);
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -471,9 +421,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Blacklisted Application",
                              Option::ADD_REGISTRY_ENTRY);
 
@@ -488,7 +435,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll1_, 0, 0), module_data);
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
@@ -497,9 +443,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, DisableModuleAnalysis) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
-    return;
-
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
@@ -512,7 +455,6 @@ TEST_F(IncompatibleApplicationsUpdaterTest, DisableModuleAnalysis) {
   incompatible_applications_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
-  RunLoopUntilIdle();
 
   // The module does not cause a warning.
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());

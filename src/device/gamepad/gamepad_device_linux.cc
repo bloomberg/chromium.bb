@@ -14,14 +14,9 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/udev_linux/udev.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/permission_broker/permission_broker_client.h"
-#endif  // defined(OS_CHROMEOS)
+#include "device/udev_linux/udev_linux.h"
 
 namespace device {
 
@@ -54,9 +49,9 @@ static inline bool test_bit(int bit, const unsigned long* data) {
   return data[bit / LONG_BITS] & (1UL << (bit % LONG_BITS));
 }
 
-GamepadBusType GetEvdevBusType(const base::ScopedFD& fd) {
+GamepadBusType GetEvdevBusType(int fd) {
   struct input_id input_info;
-  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGID, &input_info)) >= 0) {
+  if (HANDLE_EINTR(ioctl(fd, EVIOCGID, &input_info)) >= 0) {
     if (input_info.bustype == BUS_USB)
       return GAMEPAD_BUS_USB;
     if (input_info.bustype == BUS_BLUETOOTH)
@@ -65,12 +60,12 @@ GamepadBusType GetEvdevBusType(const base::ScopedFD& fd) {
   return GAMEPAD_BUS_UNKNOWN;
 }
 
-bool HasRumbleCapability(const base::ScopedFD& fd) {
+bool HasRumbleCapability(int fd) {
   unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
   unsigned long ffbit[BITS_TO_LONGS(FF_MAX)];
 
-  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
-      HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(EV_FF, FF_MAX), ffbit)) < 0) {
+  if (HANDLE_EINTR(ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
+      HANDLE_EINTR(ioctl(fd, EVIOCGBIT(EV_FF, FF_MAX), ffbit)) < 0) {
     return false;
   }
 
@@ -85,16 +80,15 @@ bool HasRumbleCapability(const base::ScopedFD& fd) {
 // aren't reported by joydev. If a special key is found, the corresponding entry
 // of the |has_special_key| vector is set to true. Returns the number of
 // special keys found.
-size_t CheckSpecialKeys(const base::ScopedFD& fd,
-                        std::vector<bool>* has_special_key) {
+size_t CheckSpecialKeys(int fd, std::vector<bool>* has_special_key) {
   DCHECK(has_special_key);
   unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
   unsigned long keybit[BITS_TO_LONGS(KEY_MAX)];
   size_t found_special_keys = 0;
 
   has_special_key->clear();
-  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
-      HANDLE_EINTR(ioctl(fd.get(), EVIOCGBIT(EV_KEY, KEY_MAX), keybit)) < 0) {
+  if (HANDLE_EINTR(ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
+      HANDLE_EINTR(ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), keybit)) < 0) {
     return 0;
   }
 
@@ -113,12 +107,12 @@ size_t CheckSpecialKeys(const base::ScopedFD& fd,
   return found_special_keys;
 }
 
-bool GetHidrawDevinfo(const base::ScopedFD& fd,
+bool GetHidrawDevinfo(int fd,
                       GamepadBusType* bus_type,
                       uint16_t* vendor_id,
                       uint16_t* product_id) {
   struct hidraw_devinfo info;
-  if (HANDLE_EINTR(ioctl(fd.get(), HIDIOCGRAWINFO, &info)) < 0)
+  if (HANDLE_EINTR(ioctl(fd, HIDIOCGRAWINFO, &info)) < 0)
     return false;
   if (bus_type) {
     if (info.bustype == BUS_USB)
@@ -135,7 +129,7 @@ bool GetHidrawDevinfo(const base::ScopedFD& fd,
   return true;
 }
 
-int StoreRumbleEffect(const base::ScopedFD& fd,
+int StoreRumbleEffect(int fd,
                       int effect_id,
                       uint16_t duration,
                       uint16_t start_delay,
@@ -150,23 +144,23 @@ int StoreRumbleEffect(const base::ScopedFD& fd,
   effect.u.rumble.strong_magnitude = strong_magnitude;
   effect.u.rumble.weak_magnitude = weak_magnitude;
 
-  if (HANDLE_EINTR(ioctl(fd.get(), EVIOCSFF, (const void*)&effect)) < 0)
+  if (HANDLE_EINTR(ioctl(fd, EVIOCSFF, (const void*)&effect)) < 0)
     return kInvalidEffectId;
   return effect.id;
 }
 
-void DestroyEffect(const base::ScopedFD& fd, int effect_id) {
-  HANDLE_EINTR(ioctl(fd.get(), EVIOCRMFF, effect_id));
+void DestroyEffect(int fd, int effect_id) {
+  HANDLE_EINTR(ioctl(fd, EVIOCRMFF, effect_id));
 }
 
-bool StartOrStopEffect(const base::ScopedFD& fd, int effect_id, bool do_start) {
+bool StartOrStopEffect(int fd, int effect_id, bool do_start) {
   struct input_event start_stop;
   memset(&start_stop, 0, sizeof(start_stop));
   start_stop.type = EV_FF;
   start_stop.code = effect_id;
   start_stop.value = do_start ? 1 : 0;
-  ssize_t nbytes = HANDLE_EINTR(
-      write(fd.get(), (const void*)&start_stop, sizeof(start_stop)));
+  ssize_t nbytes =
+      HANDLE_EINTR(write(fd, (const void*)&start_stop, sizeof(start_stop)));
   return nbytes == sizeof(start_stop);
 }
 
@@ -182,13 +176,9 @@ uint16_t HexStringToUInt16WithDefault(base::StringPiece input,
 
 }  // namespace
 
-GamepadDeviceLinux::GamepadDeviceLinux(
-    const std::string& syspath_prefix,
-    scoped_refptr<base::SequencedTaskRunner> dbus_runner)
+GamepadDeviceLinux::GamepadDeviceLinux(const std::string& syspath_prefix)
     : syspath_prefix_(syspath_prefix),
-      button_indices_used_(Gamepad::kButtonsLengthCap, false),
-      dbus_runner_(dbus_runner),
-      polling_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+      button_indices_used_(Gamepad::kButtonsLengthCap, false) {}
 
 GamepadDeviceLinux::~GamepadDeviceLinux() = default;
 
@@ -199,19 +189,31 @@ void GamepadDeviceLinux::DoShutdown() {
 }
 
 bool GamepadDeviceLinux::IsEmpty() const {
-  return !joydev_fd_.is_valid() && !evdev_fd_.is_valid() &&
-         !hidraw_fd_.is_valid();
+  return joydev_fd_ < 0 && evdev_fd_ < 0 && hidraw_fd_ < 0;
 }
 
 bool GamepadDeviceLinux::SupportsVibration() const {
   if (dualshock4_ || hid_haptics_)
     return true;
 
-  return supports_force_feedback_ && evdev_fd_.is_valid();
+  // Vibration is only supported over USB.
+  // TODO(mattreynolds): add support for Switch Pro vibration over Bluetooth.
+  if (switch_pro_)
+    return bus_type_ == GAMEPAD_BUS_USB;
+
+  return supports_force_feedback_ && evdev_fd_ >= 0;
 }
 
 void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
-  DCHECK(joydev_fd_.is_valid());
+  if (switch_pro_ && bus_type_ == GAMEPAD_BUS_USB) {
+    // When connected over USB, the Switch Pro controller does not correctly
+    // report its state over USB HID. Instead, fetch the state using the
+    // device's vendor-specific USB protocol.
+    switch_pro_->ReadUsbPadState(pad);
+    return;
+  }
+
+  DCHECK_GE(joydev_fd_, 0);
 
   // Read button and axis events from the joydev device.
   bool pad_updated = ReadJoydevState(pad);
@@ -233,17 +235,15 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
 }
 
 bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
-  if (!joydev_fd_.is_valid())
+  if (joydev_fd_ < 0)
     return false;
 
   // Read button and axis events from the joydev device.
   bool pad_updated = false;
   js_event event;
-  while (HANDLE_EINTR(read(joydev_fd_.get(), &event, sizeof(struct js_event))) >
-         0) {
+  while (HANDLE_EINTR(read(joydev_fd_, &event, sizeof(struct js_event))) > 0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
       if (item >= Gamepad::kAxesLengthCap)
@@ -276,8 +276,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
 }
 
 void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (!evdev_fd_.is_valid())
+  if (evdev_fd_ < 0)
     return;
 
   // Do some one-time initialization to decide indices for the evdev special
@@ -316,18 +315,17 @@ void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
 }
 
 bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad);
 
-  if (!evdev_fd_.is_valid())
+  if (evdev_fd_ < 0)
     return false;
 
   // Read special button events through evdev.
   bool pad_updated = false;
   input_event ev;
   ssize_t bytes_read;
-  while ((bytes_read = HANDLE_EINTR(
-              read(evdev_fd_.get(), &ev, sizeof(input_event)))) > 0) {
+  while ((bytes_read =
+              HANDLE_EINTR(read(evdev_fd_, &ev, sizeof(input_event)))) > 0) {
     if (size_t{bytes_read} < sizeof(input_event))
       break;
     if (ev.type != EV_KEY)
@@ -360,28 +358,26 @@ bool GamepadDeviceLinux::IsSameDevice(const UdevGamepadLinux& pad_info) {
 
 bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
                                         udev_device* device) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad_info.type == UdevGamepadLinux::Type::JOYDEV);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseJoydevNode();
-  joydev_fd_ =
-      base::ScopedFD(open(pad_info.path.c_str(), O_RDONLY | O_NONBLOCK));
-  if (!joydev_fd_.is_valid())
+  joydev_fd_ = open(pad_info.path.c_str(), O_RDONLY | O_NONBLOCK);
+  if (joydev_fd_ < 0)
     return false;
 
   udev_device* parent_device =
       device::udev_device_get_parent_with_subsystem_devtype(
           device, kInputSubsystem, nullptr);
 
-  const base::StringPiece vendor_id =
+  const char* vendor_id =
       udev_device_get_sysattr_value(parent_device, "id/vendor");
-  const base::StringPiece product_id =
+  const char* product_id =
       udev_device_get_sysattr_value(parent_device, "id/product");
-  const base::StringPiece version_number =
+  const char* version_number =
       udev_device_get_sysattr_value(parent_device, "id/version");
-  const base::StringPiece name =
-      udev_device_get_sysattr_value(parent_device, "name");
+  const char* name = udev_device_get_sysattr_value(parent_device, "name");
+  std::string name_string(name ? name : "");
 
   uint16_t vendor_id_int = HexStringToUInt16WithDefault(vendor_id, 0);
   uint16_t product_id_int = HexStringToUInt16WithDefault(product_id, 0);
@@ -394,24 +390,22 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   struct udev_device* usb_device =
       udev_device_get_parent_with_subsystem_devtype(
           parent_device, kUsbSubsystem, kUsbDeviceType);
-  std::string name_string(name);
   if (usb_device) {
-    const base::StringPiece usb_vendor_id =
+    const char* usb_vendor_id =
         udev_device_get_sysattr_value(usb_device, "idVendor");
-    const base::StringPiece usb_product_id =
+    const char* usb_product_id =
         udev_device_get_sysattr_value(usb_device, "idProduct");
 
-    if (vendor_id == usb_vendor_id && product_id == usb_product_id) {
+    if (vendor_id && product_id && strcmp(vendor_id, usb_vendor_id) == 0 &&
+        strcmp(product_id, usb_product_id) == 0) {
       const char* manufacturer =
           udev_device_get_sysattr_value(usb_device, "manufacturer");
       const char* product =
           udev_device_get_sysattr_value(usb_device, "product");
 
-      if (manufacturer && product) {
-        // Replace the previous name string with one containing the better
-        // information.
-        name_string = base::StringPrintf("%s %s", manufacturer, product);
-      }
+      // Replace the previous name string with one containing the better
+      // information.
+      name_string = base::StringPrintf("%s %s", manufacturer, product);
     }
   }
 
@@ -425,8 +419,10 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
 }
 
 void GamepadDeviceLinux::CloseJoydevNode() {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  joydev_fd_.reset();
+  if (joydev_fd_ >= 0) {
+    close(joydev_fd_);
+    joydev_fd_ = -1;
+  }
   joydev_index_ = -1;
   vendor_id_ = 0;
   product_id_ = 0;
@@ -440,13 +436,12 @@ void GamepadDeviceLinux::CloseJoydevNode() {
 }
 
 bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   DCHECK(pad_info.type == UdevGamepadLinux::Type::EVDEV);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseEvdevNode();
-  evdev_fd_ = base::ScopedFD(open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK));
-  if (!evdev_fd_.is_valid())
+  evdev_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
+  if (evdev_fd_ < 0)
     return false;
 
   supports_force_feedback_ = HasRumbleCapability(evdev_fd_);
@@ -456,14 +451,14 @@ bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
 }
 
 void GamepadDeviceLinux::CloseEvdevNode() {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (evdev_fd_.is_valid()) {
+  if (evdev_fd_ >= 0) {
     if (effect_id_ != kInvalidEffectId) {
       DestroyEffect(evdev_fd_, effect_id_);
       effect_id_ = kInvalidEffectId;
     }
+    close(evdev_fd_);
+    evdev_fd_ = -1;
   }
-  evdev_fd_.reset();
   supports_force_feedback_ = false;
 
   // Clear any entries in |button_indices_used_| that were taken by evdev.
@@ -477,121 +472,72 @@ void GamepadDeviceLinux::CloseEvdevNode() {
   evdev_special_keys_initialized_ = false;
 }
 
-void GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info,
-                                        OpenDeviceNodeCallback callback) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
+bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
   DCHECK(pad_info.type == UdevGamepadLinux::Type::HIDRAW);
   DCHECK(pad_info.syspath_prefix == syspath_prefix_);
 
   CloseHidrawNode();
-
-  auto fd = base::ScopedFD(open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK));
-
-#if defined(OS_CHROMEOS)
-  // If we failed to open the device it may be due to insufficient permissions.
-  // Try again using the PermissionBrokerClient.
-  if (!fd.is_valid()) {
-    DCHECK(dbus_runner_);
-    DCHECK(polling_runner_);
-    auto open_path_callback =
-        base::BindOnce(&GamepadDeviceLinux::OnOpenHidrawNodeComplete,
-                       weak_factory_.GetWeakPtr(), std::move(callback));
-    dbus_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GamepadDeviceLinux::OpenPathWithPermissionBroker,
-                       weak_factory_.GetWeakPtr(), pad_info.path,
-                       std::move(open_path_callback)));
-    return;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  OnOpenHidrawNodeComplete(std::move(callback), std::move(fd));
-}
-
-void GamepadDeviceLinux::OnOpenHidrawNodeComplete(
-    OpenDeviceNodeCallback callback,
-    base::ScopedFD fd) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  if (fd.is_valid())
-    InitializeHidraw(std::move(fd));
-  std::move(callback).Run(this);
-}
-
-void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
-  DCHECK(fd.is_valid());
-  hidraw_fd_ = std::move(fd);
+  hidraw_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
+  if (hidraw_fd_ < 0)
+    return false;
 
   uint16_t vendor_id;
   uint16_t product_id;
   bool is_dualshock4 = false;
+  bool is_switch_pro = false;
   bool is_hid_haptic = false;
   if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
     is_dualshock4 =
         Dualshock4ControllerLinux::IsDualshock4(vendor_id, product_id);
+    is_switch_pro =
+        SwitchProControllerLinux::IsSwitchPro(vendor_id, product_id);
     is_hid_haptic = HidHapticGamepadLinux::IsHidHaptic(vendor_id, product_id);
-    DCHECK_LE(is_dualshock4 + is_hid_haptic, 1);
+    DCHECK_LE(is_dualshock4 + is_switch_pro + is_hid_haptic, 1);
   }
 
   if (is_dualshock4 && !dualshock4_)
     dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
 
+  if (is_switch_pro && !switch_pro_) {
+    switch_pro_ = std::make_unique<SwitchProControllerLinux>(hidraw_fd_);
+
+    if (bus_type_ == GAMEPAD_BUS_USB)
+      switch_pro_->SendConnectionStatusQuery();
+  }
+
   if (is_hid_haptic && !hid_haptics_) {
     hid_haptics_ =
         HidHapticGamepadLinux::Create(vendor_id, product_id, hidraw_fd_);
   }
+
+  return true;
 }
 
 void GamepadDeviceLinux::CloseHidrawNode() {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
+  if (switch_pro_)
+    switch_pro_->Shutdown();
+  switch_pro_.reset();
   if (hid_haptics_)
     hid_haptics_->Shutdown();
   hid_haptics_.reset();
-  hidraw_fd_.reset();
+  if (hidraw_fd_ >= 0) {
+    close(hidraw_fd_);
+    hidraw_fd_ = -1;
+  }
 }
-
-#if defined(OS_CHROMEOS)
-void GamepadDeviceLinux::OpenPathWithPermissionBroker(
-    const std::string& path,
-    OpenPathCallback callback) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  auto* client = chromeos::PermissionBrokerClient::Get();
-  DCHECK(client) << "Could not get permission broker client.";
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  auto success_callback =
-      base::BindOnce(&GamepadDeviceLinux::OnOpenPathSuccess,
-                     weak_factory_.GetWeakPtr(), copyable_callback);
-  auto error_callback =
-      base::BindOnce(&GamepadDeviceLinux::OnOpenPathError,
-                     weak_factory_.GetWeakPtr(), copyable_callback);
-  client->OpenPath(path, std::move(success_callback),
-                   std::move(error_callback));
-}
-
-void GamepadDeviceLinux::OnOpenPathSuccess(OpenPathCallback callback,
-                                           base::ScopedFD fd) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  polling_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(std::move(callback), std::move(fd)));
-}
-
-void GamepadDeviceLinux::OnOpenPathError(OpenPathCallback callback,
-                                         const std::string& error_name,
-                                         const std::string& error_message) {
-  DCHECK(dbus_runner_->RunsTasksInCurrentSequence());
-  polling_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::ScopedFD()));
-}
-#endif
 
 void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_) {
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
+  if (switch_pro_) {
+    switch_pro_->SetVibration(strong_magnitude, weak_magnitude);
     return;
   }
 
@@ -622,9 +568,13 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 }
 
 void GamepadDeviceLinux::SetZeroVibration() {
-  DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
+    return;
+  }
+
+  if (switch_pro_) {
+    switch_pro_->SetZeroVibration();
     return;
   }
 

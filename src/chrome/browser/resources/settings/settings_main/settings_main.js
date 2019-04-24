@@ -80,7 +80,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!PageVisibility}
+     * @type {!GuestModePageVisibility}
      */
     pageVisibility: Object,
 
@@ -230,5 +230,13 @@ Polymer({
         });
       }, 0);
     });
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showManagedHeader_: function() {
+    return !this.inSearchMode_ && !this.showingSubpage_;
   },
 });

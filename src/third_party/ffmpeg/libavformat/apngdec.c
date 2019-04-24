@@ -66,7 +66,7 @@ typedef struct APNGDemuxContext {
  *     ...
  *     IDAT
  */
-static int apng_probe(const AVProbeData *p)
+static int apng_probe(AVProbeData *p)
 {
     GetByteContext gb;
     int state = 0;

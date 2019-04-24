@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -158,11 +157,13 @@ LayoutText::~LayoutText() {
 #endif
 }
 
-LayoutText* LayoutText::CreateEmptyAnonymous(Document& doc,
-                                             scoped_refptr<ComputedStyle> style,
-                                             LegacyLayout legacy) {
+LayoutText* LayoutText::CreateEmptyAnonymous(
+    Document& doc,
+    scoped_refptr<ComputedStyle> style) {
   LayoutText* text =
-      LayoutObjectFactory::CreateText(nullptr, StringImpl::empty_, legacy);
+      RuntimeEnabledFeatures::LayoutNGEnabled() && !style->ForceLegacyLayout()
+          ? new LayoutNGText(nullptr, StringImpl::empty_)
+          : new LayoutText(nullptr, StringImpl::empty_);
   text->SetDocumentForAnonymous(&doc);
   text->SetStyle(std::move(style));
   return text;
@@ -200,12 +201,9 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   if (!old_style && text_autosizer)
     text_autosizer->Record(this);
 
-  // |NeedsFullLayout| includes changes in fonts, which require reshape.
-  // TODO(kojii): Not all |NeedsFullLayout| properties require re-shape.
-  if (diff.NeedsFullLayout()) {
-    valid_ng_items_ = false;
-    SetNeedsCollectInlines();
-  }
+  // TODO(layout-dev): This is only really needed for style changes that affect
+  // how text is rendered. Font, text-decoration, etc.
+  valid_ng_items_ = false;
 }
 
 void LayoutText::RemoveAndDestroyTextBoxes() {
@@ -231,8 +229,8 @@ void LayoutText::WillBeDestroyed() {
     delete secure_text_timer;
 
   if (!node_holder_.is_empty) {
-    if (auto* manager = GetContentCaptureManager())
-      manager->OnLayoutTextWillBeDestroyed(node_holder_);
+    DCHECK(GetContentCaptureManager());
+    GetContentCaptureManager()->OnLayoutTextWillBeDestroyed(node_holder_);
     node_holder_.text_holder.reset();
     node_holder_.is_empty = true;
   }
@@ -286,12 +284,14 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     for (const NGPaintFragment* fragment : fragments) {
-      const auto& text_fragment =
-          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
       // to match the legacy output.
+      // TODO(xiaochengh): We need to report boxes of ::before/after text, which
+      // |NGOffsetMapping| doesn't support.
       for (const NGOffsetMappingUnit& unit :
            mapping->GetMappingUnitsForTextContentOffsetRange(
                text_fragment.StartOffset(), text_fragment.EndOffset())) {
@@ -311,21 +311,10 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
 
         // Compute start of the legacy text box.
-        if (unit.AssociatedNode()) {
-          // In case of |text_| comes from DOM node.
-          const base::Optional<unsigned> box_start =
-              CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
-          DCHECK(box_start.has_value());
-          results.push_back(TextBoxInfo{rect, *box_start, box_length});
-          continue;
-        }
-        // Handle CSS generated content, e.g. ::before/::after
-        const NGOffsetMappingUnit* const mapping_unit =
-            mapping->GetLastMappingUnit(clamped_start);
-        DCHECK(mapping_unit) << this << " at " << clamped_start;
-        const unsigned dom_offset =
-            mapping_unit->ConvertTextContentToLastDOMOffset(clamped_start);
-        results.push_back(TextBoxInfo{rect, dom_offset, box_length});
+        const base::Optional<unsigned> box_start =
+            CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
+        DCHECK(box_start.has_value());
+        results.push_back(TextBoxInfo{rect, box_start.value(), box_length});
       }
     }
     return results;
@@ -610,8 +599,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     if (UNLIKELY(HasFlippedBlocksWritingMode()))
       block_for_flipping = ContainingBlock();
     for (const NGPaintFragment* fragment : fragments) {
-      const auto& text_fragment =
-          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
       if (start > text_fragment.EndOffset() ||
           end < text_fragment.StartOffset())
         continue;
@@ -1579,7 +1568,7 @@ UChar32 LayoutText::FirstCharacterAfterWhitespaceCollapsing() const {
   }
   if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
     const StringView text =
-        To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment()).Text();
+        ToNGPhysicalTextFragment(paint_fragment->PhysicalFragment()).Text();
     return text.length() ? text.CodepointAt(0) : 0;
   }
   return 0;
@@ -1592,7 +1581,7 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
   }
   if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
     const StringView text =
-        To<NGPhysicalTextFragment>(
+        ToNGPhysicalTextFragment(
             paint_fragment->LastForSameLayoutObject()->PhysicalFragment())
             .Text();
     return text.length() ? text.CodepointAt(text.length() - 1) : 0;
@@ -1618,12 +1607,12 @@ FloatPoint LayoutText::FirstRunOrigin() const {
 bool LayoutText::CanOptimizeSetText() const {
   // If we have only one line of text and "contain: layout size" we can avoid
   // doing a layout and only paint in the SetText() operation.
-  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(Parent());
-  return parent_block_flow && Parent()->ShouldApplyLayoutContainment() &&
+  return Parent()->IsLayoutBlockFlow() &&
+         Parent()->ShouldApplyLayoutContainment() &&
          Parent()->ShouldApplySizeContainment() &&
          // If we have "text-overflow: ellipsis" we need to check if we need or
          // not ellipsis in the new text and recompute its position.
-         !parent_block_flow->ShouldTruncateOverflowingText() &&
+         !ToLayoutBlockFlow(Parent())->ShouldTruncateOverflowingText() &&
          !PreviousSibling() && !NextSibling() && FirstTextBox() &&
          FirstTextBox() == LastTextBox() &&
          // If "line-height" is "normal" we might need to recompute the
@@ -1675,8 +1664,9 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   if (!force && Equal(text_.Impl(), text.get()))
     return;
 
-  // Check that we are replacing the whole text.
-  if (offset == 0 && len == TextLength() && CanOptimizeSetText()) {
+  if (CanOptimizeSetText() &&
+      // Check that we are replacing the whole text.
+      offset == 0 && len == TextLength()) {
     const ComputedStyle* style_to_use =
         FirstTextBox()->GetLineLayoutItem().Style(
             FirstTextBox()->IsFirstLineStyle());
@@ -1900,7 +1890,6 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
     text_autosizer->Record(this);
 
   valid_ng_items_ = false;
-  SetNeedsCollectInlines();
 }
 
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
@@ -2455,7 +2444,8 @@ scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
     if (!fragments.IsEmpty() &&
         fragments.IsInLayoutNGInlineFormattingContext()) {
       has_abstract_inline_text_box_ = true;
-      return NGAbstractInlineTextBox::GetOrCreate(fragments.front());
+      return NGAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
+                                                  **fragments.begin());
     }
   }
   return LegacyAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),

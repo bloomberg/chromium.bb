@@ -9,7 +9,6 @@ found in the LICENSE file.
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/bower_components/polymer/polymer.html">
 <link rel="import" href="/dashboard/spa/memory-components.html">
-<script src="/dashboard/spa/import-module.js">
 
 <test-fixture id="test">
   <template>
@@ -67,7 +66,6 @@ setup(() => {
 
 suite('memory-components', function() {
   test('select', async function() {
-    await importModule('./cp-checkbox.js');
     const memoryComponents = fixture('test');
     await cp.afterRender();
     let state = memoryComponents.getState().test;

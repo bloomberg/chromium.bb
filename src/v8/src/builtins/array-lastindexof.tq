@@ -58,8 +58,9 @@ namespace array_lastindexof {
     return -1;
   }
 
-  transitioning macro
-  GetFromIndex(context: Context, length: Number, arguments: Arguments): Number {
+  macro GetFromIndex(
+      context: Context, length: Number,
+      arguments: constexpr Arguments): Number {
     // 4. If fromIndex is present, let n be ? ToInteger(fromIndex);
     //    else let n be len - 1.
     const n: Number = arguments.length < 2 ?

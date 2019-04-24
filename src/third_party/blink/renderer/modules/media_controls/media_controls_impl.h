@@ -63,7 +63,6 @@ class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
 class MediaControlScrubbingMessageElement;
 class MediaControlTextTrackListElement;
-class MediaControlsTextTrackManager;
 class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
 class MediaControlVolumeControlContainerElement;
@@ -130,8 +129,13 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Text track related methods exposed to components handling closed captions.
   void ToggleTextTrackList();
+  void ShowTextTrackAtIndex(unsigned);
+  void DisableShowingTextTracks();
   bool TextTrackListIsWanted();
-  MediaControlsTextTrackManager& GetTextTrackManager();
+
+  // Returns the label for the track when a valid track is passed in and "Off"
+  // when the parameter is null.
+  String GetTextTrackLabel(TextTrack*) const;
 
   // Methods related to the overflow menu.
   void OpenOverflowMenu();
@@ -158,7 +162,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Accessors for UI elements.
   const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
-  const MediaControlRemainingTimeDisplayElement& RemainingTimeDisplay() const;
   MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
 
   void Trace(blink::Visitor*) override;
@@ -279,9 +282,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void ElementSizeChangedTimerFired(TimerBase*);
 
-  // Update any visible indicators of the current time.
-  void UpdateTimeIndicators();
-
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_effectiveWidth and m_effectiveHeight are
   // current.
@@ -338,8 +338,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnPlay();
   void OnPlaying();
   void OnPause();
-  void OnSeeking();
-  void OnSeeked();
   void OnTextTracksAddedOrRemoved();
   void OnTextTracksChanged();
   void OnError();
@@ -424,8 +422,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Timer to delay showing the volume slider to avoid accidental triggering
   // of the slider
   TaskRunnerTimer<MediaControlsImpl> volume_slider_wanted_timer_;
-
-  Member<MediaControlsTextTrackManager> text_track_manager_;
 
   bool is_test_mode_ = false;
 

@@ -5,38 +5,38 @@
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/script/module_record_resolver.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
 
 namespace blink {
 
 namespace {
 
-class EmptyModuleRecordResolver final : public ModuleRecordResolver {
+class EmptyScriptModuleResolver final : public ScriptModuleResolver {
  public:
-  EmptyModuleRecordResolver() = default;
+  EmptyScriptModuleResolver() = default;
 
   // We ignore {Unr,R}egisterModuleScript() calls caused by
   // ModuleScript::CreateForTest().
   void RegisterModuleScript(const ModuleScript*) override {}
   void UnregisterModuleScript(const ModuleScript*) override {}
 
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ModuleRecord Resolve(const String& specifier,
-                       const ModuleRecord& referrer,
+  ScriptModule Resolve(const String& specifier,
+                       const ScriptModule& referrer,
                        ExceptionState&) override {
     NOTREACHED();
-    return ModuleRecord();
+    return ScriptModule();
   }
 };
 
 }  // namespace
 
 DummyModulator::DummyModulator()
-    : resolver_(MakeGarbageCollected<EmptyModuleRecordResolver>()) {}
+    : resolver_(MakeGarbageCollected<EmptyScriptModuleResolver>()) {}
 
 DummyModulator::~DummyModulator() = default;
 
@@ -68,7 +68,7 @@ bool DummyModulator::BuiltInModuleEnabled(blink::layered_api::Module) const {
 
 void DummyModulator::BuiltInModuleUseCount(blink::layered_api::Module) const {}
 
-ModuleRecordResolver* DummyModulator::GetModuleRecordResolver() {
+ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
   return resolver_.Get();
 }
 
@@ -138,18 +138,18 @@ void DummyModulator::ClearIsAcquiringImportMaps() {
 }
 
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
-    ModuleRecord) const {
+    ScriptModule) const {
   NOTREACHED();
   return ModuleImportMeta(String());
 }
 
-ScriptValue DummyModulator::InstantiateModule(ModuleRecord) {
+ScriptValue DummyModulator::InstantiateModule(ScriptModule) {
   NOTREACHED();
   return ScriptValue();
 }
 
-Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
-    ModuleRecord) {
+Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromScriptModule(
+    ScriptModule) {
   NOTREACHED();
   return Vector<ModuleRequest>();
 }

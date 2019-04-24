@@ -26,7 +26,6 @@ cr.define('nux', function() {
 
   /** @interface */
   class NuxSetAsDefaultProxy {
-    /** @return {!Promise<!nux.DefaultBrowserInfo>} */
     requestDefaultBrowserState() {}
     setAsDefault() {}
     recordPageShown() {}
@@ -41,7 +40,7 @@ cr.define('nux', function() {
   class NuxSetAsDefaultProxyImpl {
     /** @override */
     requestDefaultBrowserState() {
-      return cr.sendWithPromise('requestDefaultBrowserState');
+      chrome.send('requestDefaultBrowserState');
     }
 
     /** @override */

@@ -27,6 +27,7 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/common/tab_switching_time_callback.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -92,18 +93,14 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    bool record_presentation_time,
-    base::TimeTicks tab_switch_start_time) {
+    bool record_presentation_time) {
   // Cancel any pending frame eviction and unpause it if paused.
   frame_eviction_state_ = FrameEvictionState::kNotStarted;
 
   frame_evictor_->SetVisible(true);
-  if (record_presentation_time && compositor_ &&
-      !tab_switch_start_time.is_null()) {
+  if (record_presentation_time && compositor_) {
     compositor_->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.BeginTimeRecording(
-            tab_switch_start_time, true /* has_saved_frames */,
-            base::TimeTicks::Now()));
+        CreateTabSwitchingTimeRecorder(base::TimeTicks::Now()));
   }
 
   // Use the default deadline to synchronize web content with browser UI.
@@ -364,7 +361,7 @@ void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
 
 void DelegatedFrameHost::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
   client_->OnBeginFrame(args.frame_time);
@@ -489,6 +486,11 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 // DelegatedFrameHost, ContextFactoryObserver implementation:
 
 void DelegatedFrameHost::OnLostSharedContext() {}
+
+void DelegatedFrameHost::OnLostVizProcess() {
+  if (HasSavedFrame())
+    frame_evictor_->OnSurfaceDiscarded();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:

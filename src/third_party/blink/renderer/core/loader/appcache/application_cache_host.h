@@ -53,6 +53,10 @@ class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public WebApplicationCacheHostClient {
  public:
+  static ApplicationCacheHost* Create(DocumentLoader* loader) {
+    return MakeGarbageCollected<ApplicationCacheHost>(loader);
+  }
+
   explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
@@ -64,18 +68,15 @@ class CORE_EXPORT ApplicationCacheHost final
     CacheInfo(const KURL& manifest,
               double creation_time,
               double update_time,
-              int64_t response_sizes,
-              int64_t padding_sizes)
+              long long size)
         : manifest_(manifest),
           creation_time_(creation_time),
           update_time_(update_time),
-          response_sizes_(response_sizes),
-          padding_sizes_(padding_sizes) {}
+          size_(size) {}
     KURL manifest_;
     double creation_time_;
     double update_time_;
-    int64_t response_sizes_;
-    int64_t padding_sizes_;
+    long long size_;
   };
 
   struct ResourceInfo {
@@ -86,24 +87,21 @@ class CORE_EXPORT ApplicationCacheHost final
                  bool is_fallback,
                  bool is_foreign,
                  bool is_explicit,
-                 int64_t response_size,
-                 int64_t padding_size)
+                 long long size)
         : resource_(resource),
           is_master_(is_master),
           is_manifest_(is_manifest),
           is_fallback_(is_fallback),
           is_foreign_(is_foreign),
           is_explicit_(is_explicit),
-          response_size_(response_size),
-          padding_size_(padding_size) {}
+          size_(size) {}
     KURL resource_;
     bool is_master_;
     bool is_manifest_;
     bool is_fallback_;
     bool is_foreign_;
     bool is_explicit_;
-    int64_t response_size_;
-    int64_t padding_size_;
+    long long size_;
   };
 
   typedef Vector<ResourceInfo> ResourceInfoList;
@@ -115,9 +113,7 @@ class CORE_EXPORT ApplicationCacheHost final
   // willStartLoadingMainResource if it's for frame resource or
   // willStartLoadingResource for subresource requests.
   void WillStartLoading(ResourceRequest&);
-  void WillStartLoadingMainResource(DocumentLoader*,
-                                    const KURL&,
-                                    const String& method);
+  void WillStartLoadingMainResource(const KURL&, const String&);
 
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);

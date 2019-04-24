@@ -20,14 +20,10 @@ void Action::ProcessAction(ActionDelegate* delegate,
   InternalProcessAction(delegate, std::move(callback));
 }
 
-void Action::UpdateProcessedAction(ProcessedActionStatusProto status_proto) {
-  UpdateProcessedAction(ClientStatus(status_proto));
-}
-
-void Action::UpdateProcessedAction(const ClientStatus& status) {
+void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
   // Safety check in case process action is run twice.
   *processed_action_proto_->mutable_action() = proto_;
-  status.FillProto(processed_action_proto_.get());
+  processed_action_proto_->set_status(status);
 }
 
 // static
@@ -108,12 +104,6 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kShowInfoBox:
       out << "ShowInfoBox";
-      break;
-    case ActionProto::ActionInfoCase::kExpectNavigation:
-      out << "ExpectNavigation";
-      break;
-    case ActionProto::ActionInfoCase::kWaitForNavigation:
-      out << "WaitForNavigation";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

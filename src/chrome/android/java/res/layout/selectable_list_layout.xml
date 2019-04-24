@@ -3,16 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <!-- This view provides a background for the toolbar when the page's background
-         is visible through the lateral margins of the search view -->
-    <View
-        android:id="@+id/action_bar_bg"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height_no_shadow"
-        android:background="@color/toolbar_background_primary" />
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ViewStub
         android:id="@+id/action_bar_stub"
@@ -39,15 +30,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone" >
-            <org.chromium.chrome.browser.widget.TextViewWithCompoundDrawables
+            <TextView
                 android:id="@+id/empty_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="3dp"
                 android:visibility="gone"
-                android:textAppearance="@style/TextAppearance.BlackDisabledText1"
-                app:chromeDrawableTint="@color/light_icon_color"/>
+                android:textAppearance="@style/TextAppearance.BlackDisabledText1" />
         </FrameLayout>
 
         <org.chromium.chrome.browser.widget.LoadingView

@@ -31,7 +31,7 @@ const GrGLubyte* simpleGetStringi(GrGLenum name, GrGLuint index) {
 
 DEF_TEST(GrGLExtensionsTest_remove, reporter) {
     GrGLExtensions ext;
-    ext.init(kGL_GrGLStandard,
+    ext.init(kNone_GrGLStandard,
              &simpleGetString,
              &simpleGetStringi,
              &simpleGetIntegerv,

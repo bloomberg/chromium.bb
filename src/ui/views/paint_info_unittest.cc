@@ -114,9 +114,9 @@ void VerifyPixelSizesAreSameAsDIPSize(const PaintInfos& info_list) {
 
 class PaintInfoTest : public ::testing::Test {
  public:
-  PaintInfoTest() = default;
+  PaintInfoTest() {}
 
-  ~PaintInfoTest() override = default;
+  ~PaintInfoTest() override {}
 
   //  ___________
   // |     1     |

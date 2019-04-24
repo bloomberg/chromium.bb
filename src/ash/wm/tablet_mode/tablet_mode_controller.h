@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -23,7 +22,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -62,8 +61,7 @@ class ASH_EXPORT TabletModeController
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
-      public ui::InputDeviceEventObserver,
-      public KioskNextShellObserver {
+      public ui::InputDeviceEventObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -141,9 +139,6 @@ class ASH_EXPORT TabletModeController
   // ui::InputDeviceEventObserver:
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
-
-  // KioskNextShellObserver:
-  void OnKioskNextEnabled() override;
 
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
@@ -301,9 +296,6 @@ class ASH_EXPORT TabletModeController
 
   // Counts of the tab drag from top when splitview is active.
   int tab_drag_in_splitview_count_ = 0;
-
-  // Tracks KioskNext state separately to simplify testing.
-  bool kiosk_next_enabled_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to

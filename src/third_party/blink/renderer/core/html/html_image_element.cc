@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -73,6 +74,10 @@ using namespace html_names;
 class HTMLImageElement::ViewportChangeListener final
     : public MediaQueryListListener {
  public:
+  static ViewportChangeListener* Create(HTMLImageElement* element) {
+    return MakeGarbageCollected<ViewportChangeListener>(element);
+  }
+
   explicit ViewportChangeListener(HTMLImageElement* element)
       : element_(element) {}
 
@@ -92,7 +97,7 @@ class HTMLImageElement::ViewportChangeListener final
 
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     : HTMLElement(kImgTag, document),
-      image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),
+      image_loader_(HTMLImageLoader::Create(this)),
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
       layout_disposition_(LayoutDisposition::kPrimaryContent),
@@ -183,22 +188,22 @@ void HTMLImageElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else if (name == kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else if (name == kBorderAttr) {
     ApplyBorderAttributeToStyle(value, style);
   } else if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
   } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kValignAttr) {
-    AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyID::kVerticalAlign, value);
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                            value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
@@ -262,7 +267,7 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
 
   if (intrinsic_sizing_viewport_dependant) {
     if (!listener_)
-      listener_ = MakeGarbageCollected<ViewportChangeListener>(this);
+      listener_ = ViewportChangeListener::Create(this);
 
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
   } else if (listener_) {
@@ -306,19 +311,18 @@ void HTMLImageElement::ParseAttribute(
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kWarning, message));
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     }
 
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsLayoutImage())
       ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
-  } else if (name == kLoadingAttr &&
+  } else if (name == kLoadAttr &&
              EqualIgnoringASCIICase(params.new_value, "eager") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else if (name == kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+             origin_trials::PriorityHintsEnabled(&GetDocument())) {
     // We only need to keep track of usage here, as the communication of the
     // |importance| attribute to the loading pipeline takes place in
     // ImageLoader.
@@ -388,24 +392,23 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style,
-                                                   LegacyLayout legacy) {
+LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
   const ContentData* content_data = style.GetContentData();
   if (content_data && content_data->IsImage()) {
     const StyleImage* content_image =
-        To<ImageContentData>(content_data)->GetImage();
+        ToImageContentData(content_data)->GetImage();
     bool error_occurred = content_image && content_image->CachedImage() &&
                           content_image->CachedImage()->ErrorOccurred();
     if (!error_occurred)
-      return LayoutObject::CreateObject(this, style, legacy);
+      return LayoutObject::CreateObject(this, style);
   }
 
   switch (layout_disposition_) {
     case LayoutDisposition::kFallbackContent:
-      return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+      return LayoutObjectFactory::CreateBlockFlow(*this, style);
     case LayoutDisposition::kPrimaryContent: {
       LayoutImage* image = new LayoutImage(this);
-      image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
+      image->SetImageResource(LayoutImageResource::Create());
       image->SetImageDevicePixelRatio(image_device_pixel_ratio_);
       return image;
     }
@@ -477,7 +480,7 @@ void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
 
 unsigned HTMLImageElement::width() {
   if (InActiveDocument())
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
@@ -498,7 +501,7 @@ unsigned HTMLImageElement::width() {
 
 unsigned HTMLImageElement::height() {
   if (InActiveDocument())
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
@@ -635,7 +638,7 @@ void HTMLImageElement::setWidth(unsigned value) {
 }
 
 int HTMLImageElement::x() const {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;
@@ -646,7 +649,7 @@ int HTMLImageElement::x() const {
 }
 
 int HTMLImageElement::y() const {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;
@@ -884,14 +887,13 @@ bool HTMLImageElement::IsInlineStyleDimensionsSmall(
     const CSSPropertyValueSet* property_set) {
   if (!property_set)
     return false;
-  const CSSValue* height =
-      property_set->GetPropertyCSSValue(CSSPropertyID::kHeight);
-  const CSSValue* width =
-      property_set->GetPropertyCSSValue(CSSPropertyID::kWidth);
-  const auto* width_prim = DynamicTo<CSSPrimitiveValue>(width);
-  const auto* height_prim = DynamicTo<CSSPrimitiveValue>(height);
-  if (!width_prim || !height_prim)
+  const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
+  const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+  if (!height || !height->IsPrimitiveValue() || !width ||
+      !width->IsPrimitiveValue())
     return false;
+  const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
+  const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
   return height_prim->IsPx() &&
          (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
          width_prim->IsPx() &&

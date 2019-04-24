@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
   void AttachLayoutTree(AttachContext&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
 

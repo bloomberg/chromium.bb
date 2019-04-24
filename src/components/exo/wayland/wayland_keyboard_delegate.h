@@ -72,11 +72,8 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
   // Returns the corresponding key given a dom code.
   uint32_t DomCodeToKey(ui::DomCode code) const;
 
-  // Returns a set of Xkb modififers given the current |modifier_flags_|.
-  uint32_t ModifierFlagsToXkbModifiers();
-
-  // Sends the current |modifier_flags_| to the client.
-  void SendKeyboardModifiers();
+  // Returns a set of Xkb modififers given a set of modifier flags.
+  uint32_t ModifierFlagsToXkbModifiers(int modifier_flags);
 
 #if defined(OS_CHROMEOS)
   // Send the named keyboard layout to the client.
@@ -99,10 +96,6 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
   std::unique_ptr<xkb_context, ui::XkbContextDeleter> xkb_context_;
   std::unique_ptr<xkb_keymap, ui::XkbKeymapDeleter> xkb_keymap_;
   std::unique_ptr<xkb_state, ui::XkbStateDeleter> xkb_state_;
-
-  // The delegate will keep its clients updated with these modifiers. For CrOS
-  // we treat numlock as always on.
-  int modifier_flags_ = ui::EF_NUM_LOCK_ON;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDelegate);
 #endif

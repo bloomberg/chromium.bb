@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "components/login/screens/screen_context.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -34,10 +35,21 @@ class HIDDetectionScreen : public BaseScreen,
                            public device::BluetoothDevice::PairingDelegate,
                            public device::mojom::InputDeviceManagerClient {
  public:
+  static const char kContextKeyKeyboardState[];
+  static const char kContextKeyMouseState[];
+  static const char kContextKeyNumKeysEnteredExpected[];
+  static const char kContextKeyNumKeysEnteredPinCode[];
+  static const char kContextKeyPinCode[];
+  static const char kContextKeyMouseDeviceName[];
+  static const char kContextKeyKeyboardDeviceName[];
+  static const char kContextKeyKeyboardLabel[];
+  static const char kContextKeyContinueButtonEnabled[];
+
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
-  HIDDetectionScreen(HIDDetectionView* view,
+  HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
+                     HIDDetectionView* view,
                      const base::RepeatingClosure& exit_callback);
   ~HIDDetectionScreen() override;
 
@@ -187,7 +199,7 @@ class HIDDetectionScreen : public BaseScreen,
   void SendKeyboardDeviceNotification();
 
   // Helper method. Sets device name or placeholder if the name is empty.
-  void SetKeyboardDeviceName(const std::string& name);
+  void SetKeyboardDeviceName_(const std::string& name);
 
   scoped_refptr<device::BluetoothAdapter> GetAdapterForTesting();
   void SetAdapterInitialPoweredForTesting(bool powered);

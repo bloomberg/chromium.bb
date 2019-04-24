@@ -36,7 +36,7 @@ bool OnMessageLoopForInterceptorRemoval() {
 
 }  // namespace
 
-URLRequestFilter* URLRequestFilter::shared_instance_ = nullptr;
+URLRequestFilter* URLRequestFilter::shared_instance_ = NULL;
 
 // static
 URLRequestFilter* URLRequestFilter::GetInstance() {
@@ -114,9 +114,9 @@ URLRequestJob* URLRequestFilter::MaybeInterceptRequest(
     URLRequest* request,
     NetworkDelegate* network_delegate) const {
   DCHECK(base::MessageLoopCurrentForIO::Get());
-  URLRequestJob* job = nullptr;
+  URLRequestJob* job = NULL;
   if (!request->url().is_valid())
-    return nullptr;
+    return NULL;
 
   // Check the hostname map first.
   const std::string hostname = request->url().host();
@@ -149,7 +149,7 @@ URLRequestFilter::URLRequestFilter() : hit_count_(0) {
 
 URLRequestFilter::~URLRequestFilter() {
   DCHECK(OnMessageLoopForInterceptorRemoval());
-  URLRequestJobFactoryImpl::SetInterceptorForTesting(nullptr);
+  URLRequestJobFactoryImpl::SetInterceptorForTesting(NULL);
 }
 
 }  // namespace net

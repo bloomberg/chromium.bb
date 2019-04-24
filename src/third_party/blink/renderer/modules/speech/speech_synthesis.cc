@@ -153,7 +153,6 @@ void SpeechSynthesis::resume() {
 void SpeechSynthesis::FireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
                                 uint32_t char_index,
-                                uint32_t char_length,
                                 const String& name) {
   double millis;
   if (!GetElapsedTimeMillis(&millis))
@@ -162,7 +161,6 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
   SpeechSynthesisEventInit* init = SpeechSynthesisEventInit::Create();
   init->setUtterance(utterance);
   init->setCharIndex(char_index);
-  init->setCharLength(char_length);
   init->setElapsedTime(millis - (utterance->StartTime() * 1000.0));
   init->setName(name);
   utterance->DispatchEvent(*SpeechSynthesisEvent::Create(type, init));
@@ -206,7 +204,7 @@ void SpeechSynthesis::HandleSpeakingCompleted(
     // generic error.
     FireErrorEvent(utterance, 0, "synthesis-failed");
   } else {
-    FireEvent(event_type_names::kEnd, utterance, 0, 0, String());
+    FireEvent(event_type_names::kEnd, utterance, 0, String());
   }
 
   // Start the next utterance if we just finished one and one was pending.
@@ -217,8 +215,7 @@ void SpeechSynthesis::HandleSpeakingCompleted(
 void SpeechSynthesis::BoundaryEventOccurred(
     PlatformSpeechSynthesisUtterance* utterance,
     SpeechBoundary boundary,
-    unsigned char_index,
-    unsigned char_length) {
+    unsigned char_index) {
   DEFINE_STATIC_LOCAL(const String, word_boundary_string, ("word"));
   DEFINE_STATIC_LOCAL(const String, sentence_boundary_string, ("sentence"));
 
@@ -226,12 +223,12 @@ void SpeechSynthesis::BoundaryEventOccurred(
     case kSpeechWordBoundary:
       FireEvent(event_type_names::kBoundary,
                 static_cast<SpeechSynthesisUtterance*>(utterance->Client()),
-                char_index, char_length, word_boundary_string);
+                char_index, word_boundary_string);
       break;
     case kSpeechSentenceBoundary:
       FireEvent(event_type_names::kBoundary,
                 static_cast<SpeechSynthesisUtterance*>(utterance->Client()),
-                char_index, char_length, sentence_boundary_string);
+                char_index, sentence_boundary_string);
       break;
     default:
       NOTREACHED();
@@ -242,7 +239,7 @@ void SpeechSynthesis::DidStartSpeaking(
     PlatformSpeechSynthesisUtterance* utterance) {
   if (utterance->Client())
     FireEvent(event_type_names::kStart,
-              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0, 0,
+              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
 
@@ -251,7 +248,7 @@ void SpeechSynthesis::DidPauseSpeaking(
   is_paused_ = true;
   if (utterance->Client())
     FireEvent(event_type_names::kPause,
-              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0, 0,
+              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
 
@@ -260,7 +257,7 @@ void SpeechSynthesis::DidResumeSpeaking(
   is_paused_ = false;
   if (utterance->Client())
     FireEvent(event_type_names::kResume,
-              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0, 0,
+              static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
 

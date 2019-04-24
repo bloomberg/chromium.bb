@@ -105,8 +105,7 @@ void HttpEquiv::Process(Document& document,
     document.ParseDNSPrefetchControlHeader(content);
   } else if (EqualIgnoringASCIICase(equiv, "x-frame-options")) {
     document.AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
   } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCH)) {
@@ -184,8 +183,8 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
                                         Element* element) {
   UseCounter::Count(document, WebFeature::kMetaRefresh);
   if (!document.GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
-          "" /* nonce */, NullURL(), OrdinalNumber(),
+          ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
+          "" /* content */, "" /* nonce */, NullURL(), OrdinalNumber(),
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
                       WebFeature::kMetaRefreshWhenCSPBlocksInlineScript);
@@ -200,16 +199,15 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
   Deprecation::CountDeprecation(document, WebFeature::kMetaSetCookie);
 
   if (!document.GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
-          "" /* nonce */, NullURL(), OrdinalNumber(),
+          ContentSecurityPolicy::InlineType::kInlineScriptElement, element,
+          "" /* content */, "" /* nonce */, NullURL(), OrdinalNumber(),
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
                       WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);
   }
 
   document.AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kSecurity,
-      mojom::ConsoleMessageLevel::kError,
+      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
       String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",
                      content.Utf8().data())));
 }

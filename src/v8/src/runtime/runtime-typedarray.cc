@@ -60,6 +60,13 @@ RUNTIME_FUNCTION(Runtime_TypedArrayCopyElements) {
   return accessor->CopyElements(source, target, length);
 }
 
+RUNTIME_FUNCTION(Runtime_TypedArrayGetLength) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(JSTypedArray, holder, 0);
+  return holder->length();
+}
+
 RUNTIME_FUNCTION(Runtime_ArrayBufferViewWasDetached) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
@@ -112,34 +119,21 @@ RUNTIME_FUNCTION(Runtime_TypedArraySortFast) {
   // if array.[[ViewedArrayBuffer]] is detached(v8:4648)
   if (V8_UNLIKELY(array->WasDetached())) return *array;
 
-  size_t length = array->length();
+  size_t length = array->length_value();
   if (length <= 1) return *array;
 
   Handle<FixedTypedArrayBase> elements(
       FixedTypedArrayBase::cast(array->elements()), isolate);
   switch (array->type()) {
-#define TYPED_ARRAY_SORT(Type, type, TYPE, ctype)                          \
-  case kExternal##Type##Array: {                                           \
-    ctype* data = static_cast<ctype*>(elements->DataPtr());                \
-    if (kExternal##Type##Array == kExternalFloat64Array ||                 \
-        kExternal##Type##Array == kExternalFloat32Array) {                 \
-      if (COMPRESS_POINTERS_BOOL && alignof(ctype) > kTaggedSize) {        \
-        /* TODO(ishell, v8:8875): See UnalignedSlot<T> for details. */     \
-        std::sort(UnalignedSlot<ctype>(data),                              \
-                  UnalignedSlot<ctype>(data + length), CompareNum<ctype>); \
-      } else {                                                             \
-        std::sort(data, data + length, CompareNum<ctype>);                 \
-      }                                                                    \
-    } else {                                                               \
-      if (COMPRESS_POINTERS_BOOL && alignof(ctype) > kTaggedSize) {        \
-        /* TODO(ishell, v8:8875): See UnalignedSlot<T> for details. */     \
-        std::sort(UnalignedSlot<ctype>(data),                              \
-                  UnalignedSlot<ctype>(data + length));                    \
-      } else {                                                             \
-        std::sort(data, data + length);                                    \
-      }                                                                    \
-    }                                                                      \
-    break;                                                                 \
+#define TYPED_ARRAY_SORT(Type, type, TYPE, ctype)           \
+  case kExternal##Type##Array: {                            \
+    ctype* data = static_cast<ctype*>(elements->DataPtr()); \
+    if (kExternal##Type##Array == kExternalFloat64Array ||  \
+        kExternal##Type##Array == kExternalFloat32Array)    \
+      std::sort(data, data + length, CompareNum<ctype>);    \
+    else                                                    \
+      std::sort(data, data + length);                       \
+    break;                                                  \
   }
 
     TYPED_ARRAYS(TYPED_ARRAY_SORT)
@@ -187,7 +181,7 @@ RUNTIME_FUNCTION(Runtime_TypedArraySet) {
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, len,
                                      Object::ToLength(isolate, len));
 
-  if (uint_offset + len->Number() > target->length()) {
+  if (uint_offset + len->Number() > target->length_value()) {
     THROW_NEW_ERROR_RETURN_FAILURE(
         isolate, NewRangeError(MessageTemplate::kTypedArraySetSourceTooLarge));
   }

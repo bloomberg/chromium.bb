@@ -76,9 +76,6 @@ class AutofillWebDataService : public AutofillWebData,
   // Server profiles.
   WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) override;
-  void ConvertWalletAddressesAndUpdateWalletCards(
-      const std::string& app_locale,
-      const std::string& primary_account_email) override;
 
   WebDataServiceBase::Handle GetCountOfValuesContainedBetween(
       const base::Time& begin,
@@ -154,7 +151,7 @@ class AutofillWebDataService : public AutofillWebData,
   ~AutofillWebDataService() override;
 
   virtual void NotifyAutofillMultipleChangedOnUISequence();
-  virtual void NotifyAutofillAddressConversionCompletedOnUISequence();
+
   virtual void NotifySyncStartedOnUISequence(syncer::ModelType model_type);
 
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {

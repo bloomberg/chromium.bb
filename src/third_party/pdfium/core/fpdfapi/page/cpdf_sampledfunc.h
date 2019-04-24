@@ -11,9 +11,8 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_function.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/retain_ptr.h"
-
-class CPDF_StreamAcc;
 
 class CPDF_SampledFunc final : public CPDF_Function {
  public:
@@ -40,10 +39,7 @@ class CPDF_SampledFunc final : public CPDF_Function {
     return m_EncodeInfo;
   }
   uint32_t GetBitsPerSample() const { return m_nBitsPerSample; }
-
-#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
-  RetainPtr<CPDF_StreamAcc> GetSampleStream() const;
-#endif
+  RetainPtr<CPDF_StreamAcc> GetSampleStream() const { return m_pSampleStream; }
 
  private:
   std::vector<SampleEncodeInfo> m_EncodeInfo;

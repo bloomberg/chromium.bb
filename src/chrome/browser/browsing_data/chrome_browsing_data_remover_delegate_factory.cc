@@ -22,6 +22,10 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/buildflags/buildflags.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -60,13 +64,14 @@ ChromeBrowsingDataRemoverDelegateFactory::
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(WebHistoryServiceFactory::GetInstance());
 
+#if defined(OS_ANDROID)
+  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(extensions::ActivityLog::GetFactoryInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 #endif
-
-  // In Android, depends on offline_pages::OfflinePageModelFactory in
-  // SimpleDependencyManager.
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   DependsOn(SessionServiceFactory::GetInstance());

@@ -316,14 +316,14 @@ VectorFormat ScalarFormatFromLaneSize(int lanesize);
 VectorFormat VectorFormatHalfWidthDoubleLanes(VectorFormat vform);
 VectorFormat VectorFormatFillQ(VectorFormat vform);
 VectorFormat ScalarFormatFromFormat(VectorFormat vform);
-V8_EXPORT_PRIVATE unsigned RegisterSizeInBitsFromFormat(VectorFormat vform);
+unsigned RegisterSizeInBitsFromFormat(VectorFormat vform);
 unsigned RegisterSizeInBytesFromFormat(VectorFormat vform);
 int LaneSizeInBytesFromFormat(VectorFormat vform);
 unsigned LaneSizeInBitsFromFormat(VectorFormat vform);
 int LaneSizeInBytesLog2FromFormat(VectorFormat vform);
-V8_EXPORT_PRIVATE int LaneCountFromFormat(VectorFormat vform);
+int LaneCountFromFormat(VectorFormat vform);
 int MaxLaneCountFromFormat(VectorFormat vform);
-V8_EXPORT_PRIVATE bool IsVectorFormat(VectorFormat vform);
+bool IsVectorFormat(VectorFormat vform);
 int64_t MaxIntFromFormat(VectorFormat vform);
 int64_t MinIntFromFormat(VectorFormat vform);
 uint64_t MaxUintFromFormat(VectorFormat vform);
@@ -529,7 +529,7 @@ bool AreAliased(const CPURegister& reg1, const CPURegister& reg2,
 // same size, and are of the same type. The system stack pointer may be
 // specified. Arguments set to NoReg are ignored, as are any subsequent
 // arguments. At least one argument (reg1) must be valid (not NoCPUReg).
-V8_EXPORT_PRIVATE bool AreSameSizeAndType(
+bool AreSameSizeAndType(
     const CPURegister& reg1, const CPURegister& reg2 = NoCPUReg,
     const CPURegister& reg3 = NoCPUReg, const CPURegister& reg4 = NoCPUReg,
     const CPURegister& reg5 = NoCPUReg, const CPURegister& reg6 = NoCPUReg,
@@ -546,10 +546,9 @@ bool AreSameFormat(const VRegister& reg1, const VRegister& reg2,
 // consecutive in the register file. Arguments may be set to NoVReg, and if so,
 // subsequent arguments must also be NoVReg. At least one argument (reg1) must
 // be valid (not NoVReg).
-V8_EXPORT_PRIVATE bool AreConsecutive(const VRegister& reg1,
-                                      const VRegister& reg2,
-                                      const VRegister& reg3 = NoVReg,
-                                      const VRegister& reg4 = NoVReg);
+bool AreConsecutive(const VRegister& reg1, const VRegister& reg2,
+                    const VRegister& reg3 = NoVReg,
+                    const VRegister& reg4 = NoVReg);
 
 typedef VRegister FloatRegister;
 typedef VRegister DoubleRegister;
@@ -557,7 +556,7 @@ typedef VRegister Simd128Register;
 
 // -----------------------------------------------------------------------------
 // Lists of registers.
-class V8_EXPORT_PRIVATE CPURegList {
+class CPURegList {
  public:
   template <typename... CPURegisters>
   explicit CPURegList(CPURegister reg0, CPURegisters... regs)

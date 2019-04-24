@@ -10,7 +10,7 @@
 namespace v8 {
 namespace internal {
 
-class V8_EXPORT_PRIVATE Bignum {
+class Bignum {
  public:
   // 3584 = 128 * 28. We can represent 2^3584 > 10^1000 accurately.
   // This bignum can encode much bigger numbers, since it contains an

@@ -8,26 +8,19 @@ namespace media {
 
 mojom::PredictionFeatures MakeFeatures(VideoCodecProfile profile,
                                        gfx::Size video_size,
-                                       int frames_per_sec,
-                                       std::string key_system,
-                                       bool use_hw_secure_codecs) {
+                                       int frames_per_sec) {
   mojom::PredictionFeatures features;
   features.profile = profile;
   features.video_size = video_size;
   features.frames_per_sec = frames_per_sec;
-  features.key_system = key_system;
-  features.use_hw_secure_codecs = use_hw_secure_codecs;
   return features;
 }
 
 mojom::PredictionFeaturesPtr MakeFeaturesPtr(VideoCodecProfile profile,
                                              gfx::Size video_size,
-                                             int frames_per_sec,
-                                             std::string key_system,
-                                             bool use_hw_secure_codecs) {
+                                             int frames_per_sec) {
   mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New();
-  *features = MakeFeatures(profile, video_size, frames_per_sec, key_system,
-                           use_hw_secure_codecs);
+  *features = MakeFeatures(profile, video_size, frames_per_sec);
   return features;
 }
 

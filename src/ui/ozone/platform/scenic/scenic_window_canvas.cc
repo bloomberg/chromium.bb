@@ -4,8 +4,6 @@
 
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 
-#include <memory>
-
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"

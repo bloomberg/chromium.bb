@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -24,8 +23,7 @@ void SVGAnimatedHref::Trace(blink::Visitor* visitor) {
 SVGAnimatedHref::SVGAnimatedHref(SVGElement* context_element)
     : SVGAnimatedString(context_element, svg_names::kHrefAttr),
       xlink_href_(
-          MakeGarbageCollected<SVGAnimatedString>(context_element,
-                                                  xlink_names::kHrefAttr)) {}
+          SVGAnimatedString::Create(context_element, xlink_names::kHrefAttr)) {}
 
 void SVGAnimatedHref::AddToPropertyMap(SVGElement* element) {
   element->AddToPropertyMap(this);

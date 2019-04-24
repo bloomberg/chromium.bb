@@ -207,8 +207,7 @@ VisibilityTestData kTestParams[] = {
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest,
-                       DISABLED_TestEntryPoint) {
+IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest, TestEntryPoint) {
   StartPlayer();
   MaybePausePlayer();
   HideTab();

@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/completion_repeating_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -66,17 +66,18 @@ class FileStreamReader : public storage::FileStreamReader {
 
   // Initializes the reader by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.
-  void Initialize(base::OnceClosure pending_closure,
-                  net::Int64CompletionOnceCallback error_callback);
+  void Initialize(const base::Closure& pending_closure,
+                  const net::Int64CompletionCallback& error_callback);
 
   // Called when opening a file is completed with either a success or an error.
-  void OnOpenFileCompleted(base::OnceClosure pending_closure,
-                           net::Int64CompletionOnceCallback error_callback,
-                           base::File::Error result);
+  void OnOpenFileCompleted(
+      const base::Closure& pending_closure,
+      const net::Int64CompletionCallback& error_callback,
+      base::File::Error result);
 
   // Called when initialization is completed with either a success or an error.
-  void OnInitializeCompleted(base::OnceClosure pending_closure,
-                             net::Int64CompletionOnceCallback error_callback,
+  void OnInitializeCompleted(const base::Closure& pending_closure,
+                             const net::Int64CompletionCallback& error_callback,
                              std::unique_ptr<EntryMetadata> metadata,
                              base::File::Error result);
 
@@ -84,7 +85,7 @@ class FileStreamReader : public storage::FileStreamReader {
   // this may be called multiple times per single Read() call, as long as
   // |has_more| is set to true. |result| is set to success only if reading is
   // successful, and the file has not changed while reading.
-  void OnReadChunkReceived(const net::CompletionRepeatingCallback& callback,
+  void OnReadChunkReceived(const net::CompletionCallback& callback,
                            int chunk_length,
                            bool has_more,
                            base::File::Error result);
@@ -98,7 +99,7 @@ class FileStreamReader : public storage::FileStreamReader {
   // Same as Read(), but called after initializing is completed.
   void ReadAfterInitialized(scoped_refptr<net::IOBuffer> buffer,
                             int buffer_length,
-                            const net::CompletionRepeatingCallback& callback);
+                            const net::CompletionCallback& callback);
 
   // Same as GetLength(), but called after initializing is completed.
   void GetLengthAfterInitialized();

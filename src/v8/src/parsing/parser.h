@@ -32,6 +32,50 @@ class ParserTargetScope;
 class PendingCompilationErrorHandler;
 class PreparseData;
 
+class FunctionEntry {
+ public:
+  enum {
+    kStartPositionIndex,
+    kEndPositionIndex,
+    kNumParametersIndex,
+    kFlagsIndex,
+    kNumInnerFunctionsIndex,
+    kSize
+  };
+
+  explicit FunctionEntry(Vector<unsigned> backing)
+    : backing_(backing) { }
+
+  FunctionEntry() : backing_() { }
+
+  class LanguageModeField : public BitField<LanguageMode, 0, 1> {};
+  class UsesSuperPropertyField
+      : public BitField<bool, LanguageModeField::kNext, 1> {};
+
+  static uint32_t EncodeFlags(LanguageMode language_mode,
+                              bool uses_super_property) {
+    return LanguageModeField::encode(language_mode) |
+           UsesSuperPropertyField::encode(uses_super_property);
+  }
+
+  int start_pos() const { return backing_[kStartPositionIndex]; }
+  int end_pos() const { return backing_[kEndPositionIndex]; }
+  int num_parameters() const { return backing_[kNumParametersIndex]; }
+  LanguageMode language_mode() const {
+    return LanguageModeField::decode(backing_[kFlagsIndex]);
+  }
+  bool uses_super_property() const {
+    return UsesSuperPropertyField::decode(backing_[kFlagsIndex]);
+  }
+  int num_inner_functions() const { return backing_[kNumInnerFunctionsIndex]; }
+
+  bool is_valid() const { return !backing_.is_empty(); }
+
+ private:
+  Vector<unsigned> backing_;
+};
+
+
 // ----------------------------------------------------------------------------
 // JAVASCRIPT PARSING
 
@@ -93,36 +137,36 @@ struct ParserFormalParameters : FormalParametersBase {
 
 template <>
 struct ParserTypes<Parser> {
-  using Base = ParserBase<Parser>;
-  using Impl = Parser;
+  typedef ParserBase<Parser> Base;
+  typedef Parser Impl;
 
   // Return types for traversing functions.
-  using Block = v8::internal::Block*;
-  using BreakableStatement = v8::internal::BreakableStatement*;
-  using ClassLiteralProperty = ClassLiteral::Property*;
-  using ClassPropertyList = ZonePtrList<ClassLiteral::Property>*;
-  using Expression = v8::internal::Expression*;
-  using ExpressionList = ScopedPtrList<v8::internal::Expression>;
-  using FormalParameters = ParserFormalParameters;
-  using ForStatement = v8::internal::ForStatement*;
-  using FunctionLiteral = v8::internal::FunctionLiteral*;
-  using Identifier = const AstRawString*;
-  using IterationStatement = v8::internal::IterationStatement*;
-  using ObjectLiteralProperty = ObjectLiteral::Property*;
-  using ObjectPropertyList = ScopedPtrList<v8::internal::ObjectLiteralProperty>;
-  using Statement = v8::internal::Statement*;
-  using StatementList = ScopedPtrList<v8::internal::Statement>;
-  using Suspend = v8::internal::Suspend*;
+  typedef v8::internal::Block* Block;
+  typedef v8::internal::BreakableStatement* BreakableStatement;
+  typedef ClassLiteral::Property* ClassLiteralProperty;
+  typedef ZonePtrList<ClassLiteral::Property>* ClassPropertyList;
+  typedef v8::internal::Expression* Expression;
+  typedef ScopedPtrList<v8::internal::Expression> ExpressionList;
+  typedef ParserFormalParameters FormalParameters;
+  typedef v8::internal::ForStatement* ForStatement;
+  typedef v8::internal::FunctionLiteral* FunctionLiteral;
+  typedef const AstRawString* Identifier;
+  typedef v8::internal::IterationStatement* IterationStatement;
+  typedef ObjectLiteral::Property* ObjectLiteralProperty;
+  typedef ScopedPtrList<v8::internal::ObjectLiteralProperty> ObjectPropertyList;
+  typedef v8::internal::Statement* Statement;
+  typedef ScopedPtrList<v8::internal::Statement> StatementList;
+  typedef v8::internal::Suspend* Suspend;
 
   // For constructing objects returned by the traversing functions.
-  using Factory = AstNodeFactory;
+  typedef AstNodeFactory Factory;
 
   // Other implementation-specific functions.
-  using FuncNameInferrer = v8::internal::FuncNameInferrer;
-  using SourceRange = v8::internal::SourceRange;
-  using SourceRangeScope = v8::internal::SourceRangeScope;
-  using Target = ParserTarget;
-  using TargetScope = ParserTargetScope;
+  typedef v8::internal::FuncNameInferrer FuncNameInferrer;
+  typedef v8::internal::SourceRange SourceRange;
+  typedef v8::internal::SourceRangeScope SourceRangeScope;
+  typedef ParserTarget Target;
+  typedef ParserTargetScope TargetScope;
 };
 
 class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
@@ -300,8 +344,6 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
                              VariableKind kind, int beg_pos, int end_pos,
                              ZonePtrList<const AstRawString>* names);
   Variable* CreateSyntheticContextVariable(const AstRawString* synthetic_name);
-  Variable* CreatePrivateNameVariable(ClassScope* scope,
-                                      const AstRawString* name);
   FunctionLiteral* CreateInitializerFunction(
       const char* name, DeclarationScope* scope,
       ZonePtrList<ClassLiteral::Property>* fields);
@@ -316,15 +358,14 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
                           int class_token_pos, int end_pos);
   void DeclareClassVariable(const AstRawString* name, ClassInfo* class_info,
                             int class_token_pos);
-  void DeclareClassProperty(ClassScope* scope, const AstRawString* class_name,
+  void DeclareClassProperty(const AstRawString* class_name,
                             ClassLiteralProperty* property, bool is_constructor,
                             ClassInfo* class_info);
-  void DeclareClassField(ClassScope* scope, ClassLiteralProperty* property,
+  void DeclareClassField(ClassLiteralProperty* property,
                          const AstRawString* property_name, bool is_static,
                          bool is_computed_name, bool is_private,
                          ClassInfo* class_info);
-  Expression* RewriteClassLiteral(ClassScope* block_scope,
-                                  const AstRawString* name,
+  Expression* RewriteClassLiteral(Scope* block_scope, const AstRawString* name,
                                   ClassInfo* class_info, int pos, int end_pos);
   Statement* DeclareNative(const AstRawString* name, int pos);
 
@@ -411,7 +452,6 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   bool SkipFunction(const AstRawString* function_name, FunctionKind kind,
                     FunctionLiteral::FunctionType function_type,
                     DeclarationScope* function_scope, int* num_parameters,
-                    int* function_length,
                     ProducedPreparseData** produced_preparsed_scope_data);
 
   Block* BuildParameterInitializationBlock(
@@ -456,7 +496,7 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
     int pos_;
   };
 
-  using TemplateLiteralState = TemplateLiteral*;
+  typedef TemplateLiteral* TemplateLiteralState;
 
   TemplateLiteralState OpenTemplateLiteral(int pos);
   // "should_cook" means that the span can be "cooked": in tagged template
@@ -760,15 +800,6 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   Expression* ImportMetaExpression(int pos);
 
   Expression* ExpressionFromLiteral(Token::Value token, int pos);
-
-  V8_INLINE VariableProxy* ExpressionFromPrivateName(ClassScope* class_scope,
-                                                     const AstRawString* name,
-                                                     int start_position) {
-    VariableProxy* proxy = factory()->ast_node_factory()->NewVariableProxy(
-        name, NORMAL_VARIABLE, start_position);
-    class_scope->AddUnresolvedPrivateName(proxy);
-    return proxy;
-  }
 
   V8_INLINE VariableProxy* ExpressionFromIdentifier(
       const AstRawString* name, int start_position,

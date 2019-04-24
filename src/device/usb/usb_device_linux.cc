@@ -21,7 +21,8 @@
 #include "device/usb/usb_service.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/permission_broker/permission_broker_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
 #endif                             // defined(OS_CHROMEOS)
 
 namespace device {
@@ -48,8 +49,11 @@ UsbDeviceLinux::~UsbDeviceLinux() = default;
 
 void UsbDeviceLinux::CheckUsbAccess(ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  chromeos::PermissionBrokerClient::Get()->CheckPathAccess(device_path_,
-                                                           std::move(callback));
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
+  client->CheckPathAccess(device_path_,
+                          base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -58,13 +62,15 @@ void UsbDeviceLinux::Open(OpenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
 #if defined(OS_CHROMEOS)
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  chromeos::PermissionBrokerClient::Get()->OpenPath(
+  DCHECK(client) << "Could not get permission broker client.";
+  client->OpenPath(
       device_path_,
-      base::BindOnce(&UsbDeviceLinux::OnOpenRequestComplete, this,
-                     copyable_callback),
-      base::BindOnce(&UsbDeviceLinux::OnOpenRequestError, this,
-                     copyable_callback));
+      base::Bind(&UsbDeviceLinux::OnOpenRequestComplete, this,
+                 copyable_callback),
+      base::Bind(&UsbDeviceLinux::OnOpenRequestError, this, copyable_callback));
 #else
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       UsbService::CreateBlockingTaskRunner();

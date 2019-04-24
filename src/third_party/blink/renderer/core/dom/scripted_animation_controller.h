@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
@@ -45,6 +46,10 @@ class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollectedFinalized<ScriptedAnimationController>,
       public NameClient {
  public:
+  static ScriptedAnimationController* Create(Document* document) {
+    return MakeGarbageCollected<ScriptedAnimationController>(document);
+  }
+
   explicit ScriptedAnimationController(Document*);
   virtual ~ScriptedAnimationController() = default;
 

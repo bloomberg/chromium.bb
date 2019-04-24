@@ -109,7 +109,6 @@ fr{
         car{"caribe"}
         cay{"cayuga"}
         cch{"atsam"}
-        ccp{"changma kodha"}
         ce{"tchétchène"}
         ceb{"cebuano"}
         cgg{"kiga"}
@@ -678,7 +677,6 @@ fr{
         Egyd{"démotique égyptien"}
         Egyh{"hiératique égyptien"}
         Egyp{"hiéroglyphes égyptiens"}
-        Elym{"élymaïque"}
         Ethi{"éthiopique"}
         Geok{"géorgien khoutsouri"}
         Geor{"géorgien"}
@@ -696,7 +694,6 @@ fr{
         Hebr{"hébreu"}
         Hira{"hiragana"}
         Hmng{"pahawh hmong"}
-        Hmnp{"nyiakeng puachue hmong"}
         Hrkt{"katakana ou hiragana"}
         Hung{"ancien hongrois"}
         Inds{"indus"}
@@ -731,7 +728,6 @@ fr{
         Moon{"moon"}
         Mtei{"meitei mayek"}
         Mymr{"birman"}
-        Nand{"nandinagari"}
         Nkoo{"n’ko"}
         Ogam{"ogam"}
         Olck{"ol tchiki"}
@@ -776,7 +772,6 @@ fr{
         Ugar{"ougaritique"}
         Vaii{"vaï"}
         Visp{"parole visible"}
-        Wcho{"wantcho"}
         Xpeo{"cunéiforme persépolitain"}
         Xsux{"cunéiforme suméro-akkadien"}
         Yiii{"yi"}
@@ -922,7 +917,6 @@ fr{
             hant{"chiffres en chinois traditionnel"}
             hantfin{"chiffres financiers en chinois traditionnel"}
             hebr{"chiffres hébreux"}
-            hmnp{"chiffres nyiakeng puachue hmong"}
             jpan{"chiffres japonais"}
             jpanfin{"chiffres japonais financiers"}
             khmr{"chiffres khmers"}
@@ -943,7 +937,6 @@ fr{
             tibt{"chiffres tibétains"}
             traditional{"Chiffres traditionnels"}
             vaii{"Chiffres en vaï"}
-            wcho{"chiffres wantcho"}
         }
     }
     Variants{
@@ -977,7 +970,7 @@ fr{
         VALENCIA{"valencien"}
         WADEGILE{"Wade-Giles"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.91"}
     characterLabelPattern{
         all{"{0} — tout"}
         category-list{"{0} : {1}"}

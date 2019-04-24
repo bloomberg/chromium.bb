@@ -47,12 +47,12 @@ void AnimatedStyleBuilder::ApplyProperty(CSSPropertyID property,
   DCHECK(CSSProperty::Get(property).IsInterpolable());
 #endif
   switch (property) {
-    case CSSPropertyID::kOpacity:
+    case CSSPropertyOpacity:
       // Avoiding a value of 1 forces a layer to be created.
       style.SetOpacity(clampTo<float>(ToAnimatableDouble(value)->ToDouble(), 0,
                                       nextafterf(1, 0)));
       return;
-    case CSSPropertyID::kTransform: {
+    case CSSPropertyTransform: {
       const TransformOperations& operations =
           ToAnimatableTransform(value)->GetTransformOperations();
       // FIXME: This normalization (handling of 'none') should be performed at
@@ -68,7 +68,7 @@ void AnimatedStyleBuilder::ApplyProperty(CSSPropertyID property,
                              : operations.Zoom(destination_zoom / source_zoom));
       return;
     }
-    case CSSPropertyID::kFilter:
+    case CSSPropertyFilter:
       style.SetFilter(ToAnimatableFilterOperations(value)->Operations());
       return;
 

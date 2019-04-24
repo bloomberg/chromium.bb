@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -215,7 +216,8 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   }
 
   if (IsLameDuckActiveVersion()) {
-    if (active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+        active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
@@ -296,7 +298,8 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   }
 
   if (IsLameDuckActiveVersion()) {
-    if (should_activate_when_ready_ &&
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+        should_activate_when_ready_ &&
         active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as

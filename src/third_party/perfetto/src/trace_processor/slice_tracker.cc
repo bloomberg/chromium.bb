@@ -115,12 +115,8 @@ void SliceTracker::End(int64_t timestamp,
   auto* slices = context_->storage->mutable_nestable_slices();
   size_t slice_idx = stack.back();
 
-  // If we are trying to close mismatching slices (e.g., slices that began
-  // before tracing started), bail out.
-  if (cat && slices->cats()[slice_idx] != cat)
-    return;
-  if (name && slices->names()[slice_idx] != name)
-    return;
+  PERFETTO_CHECK(cat == 0 || slices->cats()[slice_idx] == cat);
+  PERFETTO_CHECK(name == 0 || slices->names()[slice_idx] == name);
 
   slices->set_duration(slice_idx, timestamp - slices->start_ns()[slice_idx]);
 
@@ -146,8 +142,8 @@ void SliceTracker::MaybeCloseStack(int64_t ts, SlicesStack* stack) {
     }
 
     if (check_only) {
-      PERFETTO_CHECK(ts >= start_ts);
-      PERFETTO_CHECK(dur == 0 || ts <= end_ts);
+      PERFETTO_DCHECK(ts >= start_ts);
+      PERFETTO_DCHECK(dur == 0 || ts <= end_ts);
       continue;
     }
 

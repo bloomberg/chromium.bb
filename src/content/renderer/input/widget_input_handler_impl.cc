@@ -53,26 +53,14 @@ WidgetInputHandlerImpl::~WidgetInputHandlerImpl() {}
 
 void WidgetInputHandlerImpl::SetAssociatedBinding(
     mojom::WidgetInputHandlerAssociatedRequest request) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  if (content::RenderThreadImpl::current()) {
-    blink::scheduler::WebThreadScheduler* scheduler =
-        content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
-    task_runner = scheduler->DeprecatedDefaultTaskRunner();
-  }
-  associated_binding_.Bind(std::move(request), std::move(task_runner));
+  associated_binding_.Bind(std::move(request));
   associated_binding_.set_connection_error_handler(
       base::BindOnce(&WidgetInputHandlerImpl::Release, base::Unretained(this)));
 }
 
 void WidgetInputHandlerImpl::SetBinding(
     mojom::WidgetInputHandlerRequest request) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  if (content::RenderThreadImpl::current()) {
-    blink::scheduler::WebThreadScheduler* scheduler =
-        content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
-    task_runner = scheduler->DeprecatedDefaultTaskRunner();
-  }
-  binding_.Bind(std::move(request), std::move(task_runner));
+  binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(
       base::BindOnce(&WidgetInputHandlerImpl::Release, base::Unretained(this)));
 }
@@ -97,11 +85,6 @@ void WidgetInputHandlerImpl::SetEditCommandsForNextKeyEvent(
 void WidgetInputHandlerImpl::CursorVisibilityChanged(bool visible) {
   RunOnMainThread(base::BindOnce(&RenderWidget::OnCursorVisibilityChange,
                                  render_widget_, visible));
-}
-
-void WidgetInputHandlerImpl::FallbackCursorModeToggled(bool is_on) {
-  RunOnMainThread(base::BindOnce(&RenderWidget::OnFallbackCursorModeToggled,
-                                 render_widget_, is_on));
 }
 
 void WidgetInputHandlerImpl::ImeSetComposition(

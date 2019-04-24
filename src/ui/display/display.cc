@@ -78,7 +78,8 @@ gfx::ColorSpace ForcedColorProfileStringToColorSpace(const std::string& value) {
     gfx::ColorSpace color_space(
         gfx::ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN,
         gfx::ColorSpace::TransferID::GAMMA24);
-    return gfx::ICCProfile::FromColorSpace(color_space).GetColorSpace();
+    return gfx::ICCProfile::FromParametricColorSpace(color_space)
+        .GetColorSpace();
   }
   LOG(ERROR) << "Invalid forced color profile: \"" << value << "\"";
   return gfx::ColorSpace::CreateSRGB();

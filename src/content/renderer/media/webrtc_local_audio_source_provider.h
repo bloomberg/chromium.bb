@@ -57,8 +57,7 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   static const size_t kWebAudioRenderBufferSize;
 
   explicit WebRtcLocalAudioSourceProvider(
-      const blink::WebMediaStreamTrack& track,
-      int context_sample_rate);
+      const blink::WebMediaStreamTrack& track);
   ~WebRtcLocalAudioSourceProvider() override;
 
   // blink::WebMediaStreamAudioSink implementation.

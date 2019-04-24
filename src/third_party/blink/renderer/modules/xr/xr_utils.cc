@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -32,7 +31,7 @@ std::unique_ptr<TransformationMatrix> DOMFloat32ArrayToTransformationMatrix(
 
   auto* data = m->Data();
 
-  return std::make_unique<TransformationMatrix>(
+  return TransformationMatrix::Create(
       static_cast<double>(data[0]), static_cast<double>(data[1]),
       static_cast<double>(data[2]), static_cast<double>(data[3]),
       static_cast<double>(data[4]), static_cast<double>(data[5]),

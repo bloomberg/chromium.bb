@@ -15,6 +15,8 @@ class HTMLInputElement;
 
 class AXRadioInput final : public AXLayoutObject {
  public:
+  static AXRadioInput* Create(LayoutObject*, AXObjectCacheImpl&);
+
   AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
   ~AXRadioInput() override = default;
 

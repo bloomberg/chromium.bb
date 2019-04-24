@@ -8,10 +8,8 @@ import org.objectweb.asm.ClassReader;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Checks classpaths (given as ClassLoaders) by reading the constant pool of the class file and
@@ -20,9 +18,8 @@ import java.util.TreeSet;
  * can't find the class with any given classpath.
  */
 public class ClassPathValidator {
-    // Map of missing .jar -> Missing class -> Classes that failed.
-    // TreeMap so that error messages have sorted list of jars.
-    private final Map<String, Map<String, Set<String>>> mErrors = new TreeMap<>();
+    private final Set<String> mClassPathMissingJars = new HashSet<>();
+    private int mNumClassPathErrors;
 
     static class ClassNotLoadedException extends ClassNotFoundException {
         private final String mClassName;
@@ -131,24 +128,13 @@ public class ClassPathValidator {
                 }
                 // Iterating through all jars that are in the full classpath but not the direct
                 // classpath to find which one provides the class we are looking for.
-                for (String jarPath : jarsOnlyInFullClassPath) {
+                for (String s : jarsOnlyInFullClassPath) {
                     try {
                         ClassLoader smallLoader =
-                                ByteCodeProcessor.loadJars(Collections.singletonList(jarPath));
+                                ByteCodeProcessor.loadJars(Collections.singletonList(s));
                         validateClass(smallLoader, e.getClassName());
-                        Map<String, Set<String>> failedClassesByMissingClass = mErrors.get(jarPath);
-                        if (failedClassesByMissingClass == null) {
-                            // TreeMap so that error messages have sorted list of classes.
-                            failedClassesByMissingClass = new TreeMap<>();
-                            mErrors.put(jarPath, failedClassesByMissingClass);
-                        }
-                        Set<String> failedClasses =
-                                failedClassesByMissingClass.get(e.getClassName());
-                        if (failedClasses == null) {
-                            failedClasses = new TreeSet<>();
-                            failedClassesByMissingClass.put(e.getClassName(), failedClasses);
-                        }
-                        failedClasses.add(classReader.getClassName());
+                        mClassPathMissingJars.add(s);
+                        mNumClassPathErrors++;
                         break;
                     } catch (ClassNotLoadedException f) {
                     }
@@ -157,11 +143,11 @@ public class ClassPathValidator {
         }
     }
 
-    public Map<String, Map<String, Set<String>>> getErrors() {
-        return mErrors;
+    public int getNumClassPathErrors() {
+        return mNumClassPathErrors;
     }
 
-    public boolean hasErrors() {
-        return !mErrors.isEmpty();
+    public Set<String> getClassPathMissingJars() {
+        return mClassPathMissingJars;
     }
 }

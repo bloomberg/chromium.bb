@@ -15,14 +15,25 @@ namespace blink {
 // compiled.
 class JSEventHandlerForContentAttribute final : public JSEventHandler {
  public:
-  JSEventHandlerForContentAttribute(
-      v8::Isolate* isolate,
-      DOMWrapperWorld& world,
+  static JSEventHandlerForContentAttribute* Create(
       const AtomicString& function_name,
-      const String& script_body,
+      const String& code,
       const String& source_url,
       const TextPosition& position,
-      HandlerType type = HandlerType::kEventHandler)
+      v8::Isolate* isolate,
+      DOMWrapperWorld& world,
+      HandlerType type = HandlerType::kEventHandler) {
+    return MakeGarbageCollected<JSEventHandlerForContentAttribute>(
+        isolate, world, function_name, code, source_url, position, type);
+  }
+
+  JSEventHandlerForContentAttribute(v8::Isolate* isolate,
+                                    DOMWrapperWorld& world,
+                                    const AtomicString& function_name,
+                                    const String& script_body,
+                                    const String& source_url,
+                                    const TextPosition& position,
+                                    HandlerType type)
       : JSEventHandler(type),
         did_compile_(false),
         function_name_(function_name),

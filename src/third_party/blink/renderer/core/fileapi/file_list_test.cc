@@ -10,7 +10,7 @@
 namespace blink {
 
 TEST(FileListTest, pathsForUserVisibleFiles) {
-  auto* const file_list = MakeGarbageCollected<FileList>();
+  FileList* const file_list = FileList::Create();
 
   // Native file.
   file_list->Append(File::Create("/native/path"));

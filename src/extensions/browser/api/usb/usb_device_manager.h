@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +35,7 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
    public:
     virtual void OnDeviceAdded(const device::mojom::UsbDeviceInfo&);
     virtual void OnDeviceRemoved(const device::mojom::UsbDeviceInfo&);
+    virtual void OnDeviceRemovedCleanup(const device::mojom::UsbDeviceInfo&);
     virtual void OnDeviceManagerConnectionError();
   };
 
@@ -59,21 +59,14 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   // Forward UsbDeviceManager methods.
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
   void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request);
-
-  const device::mojom::UsbDeviceInfo* GetDeviceInfo(const std::string& guid);
-  bool UpdateActiveConfig(const std::string& guid, uint8_t config_value);
+                 device::mojom::UsbDeviceRequest device_request,
+                 device::mojom::UsbDeviceClientPtr device_client);
 
 #if defined(OS_CHROMEOS)
   void CheckAccess(
       const std::string& guid,
       device::mojom::UsbDeviceManager::CheckAccessCallback callback);
 #endif  // defined(OS_CHROMEOS)
-
-  void EnsureConnectionWithDeviceManager();
-
-  void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
  private:
   friend class BrowserContextKeyedAPIFactory<UsbDeviceManager>;
@@ -83,6 +76,7 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "UsbDeviceManager"; }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -94,8 +88,8 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
 
+  void EnsureConnectionWithDeviceManager();
   void SetUpDeviceManagerConnection();
-  void InitDeviceList(std::vector<device::mojom::UsbDeviceInfoPtr> devices);
   void OnDeviceManagerConnectionError();
 
   // Broadcasts a device add or remove event for the given device.
@@ -109,11 +103,6 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
   int next_id_ = 0;
   std::map<std::string, int> guid_to_id_map_;
   std::map<int, std::string> id_to_guid_map_;
-
-  bool is_initialized_ = false;
-  base::queue<device::mojom::UsbDeviceManager::GetDevicesCallback>
-      pending_get_devices_requests_;
-  std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
 
   // Connection to |device_manager_instance_|.
   device::mojom::UsbDeviceManagerPtr device_manager_;

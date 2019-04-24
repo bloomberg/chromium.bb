@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "src/base/macros.h"
-#include "src/base/optional.h"
 #include "src/globals.h"
 #include "src/pointer-with-payload.h"
 
@@ -76,8 +75,8 @@ class PerThreadAssertScope {
 template <PerIsolateAssertType type, bool allow>
 class PerIsolateAssertScope {
  public:
-  V8_EXPORT_PRIVATE explicit PerIsolateAssertScope(Isolate* isolate);
-  V8_EXPORT_PRIVATE ~PerIsolateAssertScope();
+  explicit PerIsolateAssertScope(Isolate* isolate);
+  ~PerIsolateAssertScope();
 
   static bool IsAllowed(Isolate* isolate);
 
@@ -168,20 +167,10 @@ typedef PerThreadAssertScopeDebugOnly<CODE_DEPENDENCY_CHANGE_ASSERT, true>
     AllowCodeDependencyChange;
 
 class DisallowHeapAccess {
-  DisallowCodeDependencyChange no_dependency_change_;
+  DisallowHeapAllocation no_heap_allocation_;
   DisallowHandleAllocation no_handle_allocation_;
   DisallowHandleDereference no_handle_dereference_;
-  DisallowHeapAllocation no_heap_allocation_;
-};
-
-class DisallowHeapAccessIf {
- public:
-  explicit DisallowHeapAccessIf(bool condition) {
-    if (condition) maybe_disallow_.emplace();
-  }
-
- private:
-  base::Optional<DisallowHeapAccess> maybe_disallow_;
+  DisallowCodeDependencyChange no_dependency_change_;
 };
 
 // Per-isolate assert scopes.

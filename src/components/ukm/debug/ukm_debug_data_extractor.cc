@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -86,16 +85,11 @@ base::Value UkmDebugDataExtractor::GetStructuredData(
     return {};
 
   base::DictionaryValue ukm_data;
-
   ukm_data.SetKey("state", base::Value(ukm_service->recording_enabled_));
-  ukm_data.SetKey("client_id", base::Value(base::StringPrintf(
-                                   "%016" PRIx64, ukm_service->client_id_)));
+  ukm_data.SetKey("client_id", UkmDebugDataExtractor::UInt64AsPairOfInt(
+                                   ukm_service->client_id_));
   ukm_data.SetKey("session_id",
                   base::Value(static_cast<int>(ukm_service->session_id_)));
-
-  ukm_data.SetKey(
-      "is_sampling_enabled",
-      base::Value(static_cast<bool>(ukm_service->IsSamplingEnabled())));
 
   std::map<SourceId, SourceData> source_data;
   for (const auto& kv : ukm_service->recordings_.sources) {

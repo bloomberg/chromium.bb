@@ -22,7 +22,7 @@ namespace views {
 
 namespace {
 
-constexpr int64_t kTimeBeforeClearingMS = 1000;
+const int64_t kTimeBeforeClearingMS = 1000;
 
 }  // namespace
 
@@ -31,7 +31,8 @@ PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
       host_view_(host_view),
       tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
-PrefixSelector::~PrefixSelector() = default;
+PrefixSelector::~PrefixSelector() {
+}
 
 void PrefixSelector::OnViewBlur() {
   ClearText();
@@ -172,10 +173,6 @@ bool PrefixSelector::ShouldDoLearning() {
 void PrefixSelector::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
-void PrefixSelector::SetActiveCompositionForAccessibility(
-    const gfx::Range& range,
-    const base::string16& active_composition_text,
-    bool is_composition_committed) {}
 #endif
 
 void PrefixSelector::OnTextInput(const base::string16& text) {

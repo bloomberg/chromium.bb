@@ -8,8 +8,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/numerics/ranges.h"
-#include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/events/event.h"
@@ -30,7 +28,7 @@ namespace {
 
 class ScrollCornerView : public View {
  public:
-  ScrollCornerView() = default;
+  ScrollCornerView() {}
 
   void OnPaint(gfx::Canvas* canvas) override {
     ui::NativeTheme::ExtraParams ignored;
@@ -48,17 +46,23 @@ class ScrollCornerView : public View {
 // Returns true if any descendants of |view| have a layer (not including
 // |view|).
 bool DoesDescendantHaveLayer(View* view) {
-  return std::any_of(view->children().cbegin(), view->children().cend(),
-                     [](View* child) {
-                       return child->layer() || DoesDescendantHaveLayer(child);
-                     });
+  for (int i = 0; i < view->child_count(); ++i) {
+    View* child = view->child_at(i);
+    if (child->layer() || DoesDescendantHaveLayer(child))
+      return true;
+  }
+  return false;
 }
 
 // Returns the position for the view so that it isn't scrolled off the visible
 // region.
 int CheckScrollBounds(int viewport_size, int content_size, int current_pos) {
-  return base::ClampToRange(current_pos, 0,
-                            std::max(content_size - viewport_size, 0));
+  int max = std::max(content_size - viewport_size, 0);
+  if (current_pos < 0)
+    return 0;
+  if (current_pos > max)
+    return max;
+  return current_pos;
 }
 
 // Make sure the content is not scrolled out of bounds
@@ -112,12 +116,12 @@ int AdjustPosition(int current_position,
 class ScrollView::Viewport : public View {
  public:
   explicit Viewport(ScrollView* scroll_view) : scroll_view_(scroll_view) {}
-  ~Viewport() override = default;
+  ~Viewport() override {}
 
   const char* GetClassName() const override { return "ScrollView::Viewport"; }
 
   void ScrollRectToVisible(const gfx::Rect& rect) override {
-    if (children().empty() || !parent())
+    if (!has_children() || !parent())
       return;
 
     View* contents = child_at(0);
@@ -135,8 +139,6 @@ class ScrollView::Viewport : public View {
     scroll_view_->ScrollContentsRegionToBeVisible(scroll_rect);
   }
 
-  // TODO(https://crbug.com/947053): this override should not be necessary, but
-  // there are some assumptions that this calls Layout().
   void ChildPreferredSizeChanged(View* child) override {
     if (parent())
       parent()->Layout();
@@ -164,7 +166,9 @@ class ScrollView::Viewport : public View {
 };
 
 ScrollView::ScrollView()
-    : contents_viewport_(new Viewport(this)),
+    : contents_(nullptr),
+      contents_viewport_(new Viewport(this)),
+      header_(nullptr),
       header_viewport_(new Viewport(this)),
       horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
       vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
@@ -173,8 +177,11 @@ ScrollView::ScrollView()
       more_content_top_(std::make_unique<Separator>()),
       more_content_right_(std::make_unique<Separator>()),
       more_content_bottom_(std::make_unique<Separator>()),
+      min_height_(-1),
+      max_height_(-1),
+      hide_horizontal_scrollbar_(false),
       scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
-          ::features::kUiCompositorScrollWithLayers)) {
+          features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
   AddChildView(contents_viewport_);
@@ -242,7 +249,7 @@ ScrollView* ScrollView::GetScrollViewForContents(View* contents) {
   return scroll_view;
 }
 
-void ScrollView::SetContentsImpl(std::unique_ptr<View> a_view) {
+void ScrollView::SetContents(View* a_view) {
   // Protect against clients passing a contents view that has its own Layer.
   DCHECK(!a_view->layer());
   if (ScrollsWithLayers()) {
@@ -258,24 +265,16 @@ void ScrollView::SetContentsImpl(std::unique_ptr<View> a_view) {
         fills_opaquely = false;
     }
     a_view->SetPaintToLayer();
-    a_view->layer()->SetDidScrollCallback(base::BindRepeating(
-        &ScrollView::OnLayerScrolled, base::Unretained(this)));
+    a_view->layer()->SetDidScrollCallback(
+        base::Bind(&ScrollView::OnLayerScrolled, base::Unretained(this)));
     a_view->layer()->SetScrollable(contents_viewport_->bounds().size());
     a_view->layer()->SetFillsBoundsOpaquely(fills_opaquely);
   }
-  SetHeaderOrContents(contents_viewport_, std::move(a_view), &contents_);
+  SetHeaderOrContents(contents_viewport_, a_view, &contents_);
 }
 
-void ScrollView::SetContents(std::nullptr_t) {
-  SetContentsImpl(nullptr);
-}
-
-void ScrollView::SetHeaderImpl(std::unique_ptr<View> a_header) {
-  SetHeaderOrContents(header_viewport_, std::move(a_header), &header_);
-}
-
-void ScrollView::SetHeader(std::nullptr_t) {
-  SetHeaderImpl(nullptr);
+void ScrollView::SetHeader(View* header) {
+  SetHeaderOrContents(header_viewport_, header, &header_);
 }
 
 void ScrollView::SetBackgroundColor(SkColor color) {
@@ -361,17 +360,13 @@ int ScrollView::GetHeightForWidth(int width) const {
 }
 
 void ScrollView::Layout() {
-  // When horizontal scrollbar is disabled, it should not matter
-  // if its OverlapsContent matches vertical bar's.
-  if (!hide_horizontal_scrollbar_) {
 #if defined(OS_MACOSX)
-    // On Mac, scrollbars may update their style one at a time, so they may
-    // temporarily be of different types. Refuse to lay out at this point.
-    if (horiz_sb_->OverlapsContent() != vert_sb_->OverlapsContent())
-      return;
+  // On Mac, scrollbars may update their style one at a time, so they may
+  // temporarily be of different types. Refuse to lay out at this point.
+  if (horiz_sb_->OverlapsContent() != vert_sb_->OverlapsContent())
+    return;
 #endif
-    DCHECK_EQ(horiz_sb_->OverlapsContent(), vert_sb_->OverlapsContent());
-  }
+  DCHECK_EQ(horiz_sb_->OverlapsContent(), vert_sb_->OverlapsContent());
 
   if (focus_ring_)
     focus_ring_->Layout();
@@ -700,16 +695,15 @@ void ScrollView::UpdateViewportLayerForClipping() {
 }
 
 void ScrollView::SetHeaderOrContents(View* parent,
-                                     std::unique_ptr<View> new_view,
+                                     View* new_view,
                                      View** member) {
+  if (*member == new_view)
+    return;
+
   delete *member;
-  if (new_view.get())
-    *member = parent->AddChildView(std::move(new_view));
-  else
-    *member = nullptr;
-  // TODO(https://crbug.com/947053): this should call InvalidateLayout(), but
-  // there are some assumptions that it call Layout(). These assumptions should
-  // be updated.
+  *member = new_view;
+  if (*member)
+    parent->AddChildView(*member);
   Layout();
 }
 
@@ -959,7 +953,8 @@ VariableRowHeightScrollHelper::VariableRowHeightScrollHelper(
     Controller* controller) : controller_(controller) {
 }
 
-VariableRowHeightScrollHelper::~VariableRowHeightScrollHelper() = default;
+VariableRowHeightScrollHelper::~VariableRowHeightScrollHelper() {
+}
 
 int VariableRowHeightScrollHelper::GetPageScrollIncrement(
     ScrollView* scroll_view, bool is_horizontal, bool is_positive) {
@@ -1011,7 +1006,7 @@ VariableRowHeightScrollHelper::RowInfo
 
 FixedRowHeightScrollHelper::FixedRowHeightScrollHelper(int top_margin,
                                                        int row_height)
-    : VariableRowHeightScrollHelper(nullptr),
+    : VariableRowHeightScrollHelper(NULL),
       top_margin_(top_margin),
       row_height_(row_height) {
   DCHECK_GT(row_height, 0);

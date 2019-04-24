@@ -38,7 +38,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
 
   // DeviceOperation:
   void Start() override;
-  void Cancel() override;
 
  private:
   using ExcludeListIterator =
@@ -53,7 +52,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   const std::vector<uint8_t>& excluded_key_handle() const;
 
   size_t current_key_handle_index_ = 0;
-  bool canceled_ = false;
   base::WeakPtrFactory<U2fRegisterOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fRegisterOperation);

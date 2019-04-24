@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <algorithm>
 #include <memory>
 
@@ -21,7 +19,6 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -83,36 +80,30 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 #pragma mark - Public methods
 
-- (NSError*)addAutofillProfile:(const autofill::AutofillProfile&)profile {
+- (void)addAutofillProfile:(const autofill::AutofillProfile&)profile {
   _profiles.push_back(profile);
   size_t profile_count = [self personalDataManager]->GetProfiles().size();
   [self personalDataManager]->AddProfile(profile);
-  bool isProfileAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return profile_count <
-                   [self personalDataManager] -> GetProfiles().size();
-      });
-  if (!isProfileAdded) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
-        @"Failed to add profile.");
-  }
-  return nil;
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kPDMMaxDelaySeconds,
+                 ^bool() {
+                   return profile_count <
+                          [self personalDataManager]->GetProfiles().size();
+                 }),
+             @"Failed to add profile.");
 }
 
-- (NSError*)addCreditCard:(const autofill::CreditCard&)card {
+- (void)addCreditCard:(const autofill::CreditCard&)card {
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
-  bool isCreditCardAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return card_count <
-                   [self personalDataManager] -> GetCreditCards().size();
-      });
-  if (!isCreditCardAdded) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
-        @"Failed to add credit card.");
-  }
-  return nil;
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kPDMMaxDelaySeconds,
+                 ^bool() {
+                   return card_count <
+                          [self personalDataManager]->GetCreditCards().size();
+                 }),
+             @"Failed to add credit card.");
 }
 
 - (void)addServerCreditCard:(const autofill::CreditCard&)card {

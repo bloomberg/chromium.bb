@@ -81,10 +81,6 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
       GetDeviceInfosCallback result_callback,
       int retry_count,
       const std::vector<media::VideoCaptureDeviceInfo>& infos);
-  void OnDeviceInfosRequestDropped(
-      scoped_refptr<RefCountedVideoSourceProvider> service_connection,
-      GetDeviceInfosCallback result_callback,
-      int retry_count);
   void OnLostConnectionToSourceProvider();
   void OnServiceConnectionClosed(ReasonForDisconnect reason);
 

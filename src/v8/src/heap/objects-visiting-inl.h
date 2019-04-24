@@ -15,7 +15,6 @@
 #include "src/objects/free-space-inl.h"
 #include "src/objects/js-weak-refs-inl.h"
 #include "src/objects/oddball.h"
-#include "src/objects/ordered-hash-table.h"
 #include "src/wasm/wasm-objects.h"
 
 namespace v8 {

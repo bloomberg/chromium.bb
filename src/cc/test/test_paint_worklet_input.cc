@@ -10,8 +10,4 @@ gfx::SizeF TestPaintWorkletInput::GetSize() const {
   return container_size_;
 }
 
-int TestPaintWorkletInput::WorkletId() const {
-  return 1u;
-}
-
 }  // namespace cc

@@ -26,18 +26,18 @@ namespace dawn_native { namespace vulkan {
 
     class NativeSwapChainImpl {
       public:
-        using WSIContext = DawnWSIContextVulkan;
+        using WSIContext = dawnWSIContextVulkan;
 
         NativeSwapChainImpl(Device* device, VkSurfaceKHR surface);
         ~NativeSwapChainImpl();
 
-        void Init(DawnWSIContextVulkan* context);
-        DawnSwapChainError Configure(DawnTextureFormat format,
-                                     DawnTextureUsageBit,
+        void Init(dawnWSIContextVulkan* context);
+        dawnSwapChainError Configure(dawnTextureFormat format,
+                                     dawnTextureUsageBit,
                                      uint32_t width,
                                      uint32_t height);
-        DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture);
-        DawnSwapChainError Present();
+        dawnSwapChainError GetNextTexture(dawnSwapChainNextTexture* nextTexture);
+        dawnSwapChainError Present();
 
         dawn::TextureFormat GetPreferredFormat() const;
 

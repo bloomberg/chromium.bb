@@ -5,20 +5,19 @@ layout(location = 0) out vec4 FragColor;
 
 void main()
 {
-    vec4 _33;
+    bool _29;
     for (;;)
     {
-        if (counter == 10)
+        _29 = counter == 10;
+        if (_29)
         {
-            _33 = vec4(10.0);
             break;
         }
         else
         {
-            _33 = vec4(30.0);
             break;
         }
     }
-    FragColor = _33;
+    FragColor = mix(vec4(30.0), vec4(10.0), bvec4(_29));
 }
 

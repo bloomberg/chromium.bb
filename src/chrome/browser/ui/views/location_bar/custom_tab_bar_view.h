@@ -17,10 +17,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace views {
-class FlexLayout;
-}
-
 class CustomTabBarTitleOriginView;
 class BrowserView;
 
@@ -56,7 +52,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
 
   // LocationIconView::Delegate:
   content::WebContents* GetWebContents() override;
-  bool IsEditingOrEmpty() const override;
+  bool IsEditingOrEmpty() override;
   void OnLocationIconPressed(const ui::MouseEvent& event) override;
   void OnLocationIconDragged(const ui::MouseEvent& event) override;
   SkColor GetSecurityChipColor(
@@ -90,8 +86,6 @@ class CustomTabBarView : public views::AccessiblePaneView,
   LocationIconView* location_icon_view_ = nullptr;
   CustomTabBarTitleOriginView* title_origin_view_ = nullptr;
   ScopedObserver<TabStripModel, CustomTabBarView> tab_strip_model_observer_;
-
-  views::FlexLayout* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabBarView);
 };

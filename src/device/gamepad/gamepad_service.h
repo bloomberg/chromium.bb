@@ -44,9 +44,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // Returns the GamepadService singleton.
   static GamepadService* GetInstance();
 
-  // Sets the GamepadService instance. Exposed for tests.
-  static void SetInstance(GamepadService*);
-
   void StartUp(
       std::unique_ptr<service_manager::Connector> service_manager_connector);
 
@@ -122,6 +119,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   GamepadService(std::unique_ptr<device::GamepadDataFetcher> fetcher);
 
   virtual ~GamepadService();
+
+  static void SetInstance(GamepadService*);
 
   void OnUserGesture();
 

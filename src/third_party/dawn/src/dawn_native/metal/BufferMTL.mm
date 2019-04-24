@@ -31,7 +31,7 @@ namespace dawn_native { namespace metal {
     }
 
     Buffer::~Buffer() {
-        DestroyInternal();
+        DestroyImpl();
     }
 
     id<MTLBuffer> Buffer::GetMTLBuffer() {

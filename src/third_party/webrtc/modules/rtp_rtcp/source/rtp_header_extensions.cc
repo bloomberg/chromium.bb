@@ -727,6 +727,24 @@ size_t ColorSpaceExtension::WriteLuminance(uint8_t* data,
 }
 
 bool BaseRtpStringExtension::Parse(rtc::ArrayView<const uint8_t> data,
+                                   StringRtpHeaderExtension* str) {
+  if (data.empty() || data[0] == 0)  // Valid string extension can't be empty.
+    return false;
+  str->Set(data);
+  RTC_DCHECK(!str->empty());
+  return true;
+}
+
+bool BaseRtpStringExtension::Write(rtc::ArrayView<uint8_t> data,
+                                   const StringRtpHeaderExtension& str) {
+  RTC_DCHECK_EQ(data.size(), str.size());
+  RTC_DCHECK_GE(str.size(), 1);
+  RTC_DCHECK_LE(str.size(), StringRtpHeaderExtension::kMaxSize);
+  memcpy(data.data(), str.data(), str.size());
+  return true;
+}
+
+bool BaseRtpStringExtension::Parse(rtc::ArrayView<const uint8_t> data,
                                    std::string* str) {
   if (data.empty() || data[0] == 0)  // Valid string extension can't be empty.
     return false;
@@ -740,7 +758,7 @@ bool BaseRtpStringExtension::Parse(rtc::ArrayView<const uint8_t> data,
 
 bool BaseRtpStringExtension::Write(rtc::ArrayView<uint8_t> data,
                                    const std::string& str) {
-  if (str.size() > kMaxValueSizeBytes) {
+  if (str.size() > StringRtpHeaderExtension::kMaxSize) {
     return false;
   }
   RTC_DCHECK_EQ(data.size(), str.size());

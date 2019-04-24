@@ -91,7 +91,7 @@ void FormatBlockCommand::FormatRange(const Position& start,
   Node* node_after_insertion_position = outer_block;
   const EphemeralRange range(start, end_of_selection);
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (IsElementForFormatBlock(ref_element->TagQName()) &&
       CreateVisiblePosition(start).DeepEquivalent() ==
           StartOfBlock(CreateVisiblePosition(start)).DeepEquivalent() &&
@@ -114,7 +114,7 @@ void FormatBlockCommand::FormatRange(const Position& start,
                      editing_state);
     if (editing_state->IsAborted())
       return;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
   Position last_paragraph_in_block_node =
@@ -147,7 +147,7 @@ void FormatBlockCommand::FormatRange(const Position& start,
         ToHTMLElement(node_after_insertion_position)->getAttribute(kStyleAttr));
   }
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (was_end_of_paragraph &&
       !IsEndOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node)) &&

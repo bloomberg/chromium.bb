@@ -24,13 +24,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
-import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
@@ -53,9 +53,7 @@ import java.util.Map;
  * Unit tests for WebApkUpdateManager.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = {BackgroundShadowAsyncTask.class, CustomShadowAsyncTask.class,
-                ShadowUrlUtilities.class})
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class, ShadowUrlUtilities.class})
 public class WebApkUpdateManagerUnitTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -294,7 +292,7 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null),
-                false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null);
+                false /* forceNavigation */, false /* useTransparentSplash */, null);
     }
 
     /**
@@ -346,7 +344,7 @@ public class WebApkUpdateManagerUnitTest {
      *               succeeding.
      */
     private static void tryCompletingUpdate(TestWebApkUpdateManager updateManager,
-            WebappDataStorage storage, @WebApkInstallResult int result) throws Exception {
+            WebappDataStorage storage, @WebApkInstallResult int result) {
         // Emulate proto creation as always succeeding.
         Callback<Boolean> storeUpdateRequestCallback =
                 updateManager.getStoreUpdateRequestCallback();
@@ -360,7 +358,7 @@ public class WebApkUpdateManagerUnitTest {
         if (updateCallback == null) return;
 
         updateCallback.onResultFromNative(result, false /* relaxUpdates */);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowApplication.getInstance().runBackgroundTasks();
     }
 
     private static void writeRandomTextToFile(String path) {
@@ -399,7 +397,7 @@ public class WebApkUpdateManagerUnitTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         CommandLine.init(null);
 
@@ -413,7 +411,7 @@ public class WebApkUpdateManagerUnitTest {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
                 });
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowApplication.getInstance().runBackgroundTasks();
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
@@ -530,9 +528,10 @@ public class WebApkUpdateManagerUnitTest {
      * Test that the pending update file is deleted after update completes regardless of whether
      * update succeeded.
      */
-    @Ignore("https://crbug.com/937109")
+    // Test is flaky. See https://crbug.com/937109.
+    @Ignore
     @Test
-    public void testPendingUpdateFileDeletedAfterUpdateCompletion() throws Exception {
+    public void testPendingUpdateFileDeletedAfterUpdateCompletion() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
@@ -556,9 +555,10 @@ public class WebApkUpdateManagerUnitTest {
      * {@link WebApkUpdateManager#nativeStoreWebApkUpdateRequestToFile} creates the pending update
      * file but fails.
      */
-    @Ignore("https://crbug.com/937109")
+    // Test is flaky. See https://crbug.com/937109.
+    @Ignore
     @Test
-    public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() throws Exception {
+    public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
@@ -572,7 +572,7 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(new File(updateRequestPath).exists());
 
         updateManager.getStoreUpdateRequestCallback().onResult(false);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowApplication.getInstance().runBackgroundTasks();
 
         assertNull(storage.getPendingUpdateRequestPath());
         assertFalse(new File(updateRequestPath).exists());
@@ -900,7 +900,7 @@ public class WebApkUpdateManagerUnitTest {
      * there wasn't a previous request for this ShellAPK version.
      */
     @Test
-    public void testShellApkOutOfDate() throws Exception {
+    public void testShellApkOutOfDate() {
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(),
                 REQUEST_UPDATE_FOR_SHELL_APK_VERSION - 1);
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);

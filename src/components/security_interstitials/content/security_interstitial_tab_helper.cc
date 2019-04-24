@@ -37,9 +37,6 @@ void SecurityInterstitialTabHelper::DidFinishNavigation(
   if (it != blocking_pages_for_navigations_.end()) {
     blocking_pages_for_navigations_.erase(it);
   }
-
-  // Interstitials may change the visibility of the URL or other security state.
-  web_contents()->DidChangeVisibleSecurityState();
 }
 
 void SecurityInterstitialTabHelper::WebContentsDestroyed() {
@@ -122,8 +119,8 @@ void SecurityInterstitialTabHelper::OpenHelpCenter() {
 }
 
 void SecurityInterstitialTabHelper::OpenDiagnostic() {
-  HandleCommand(
-      security_interstitials::SecurityInterstitialCommand::CMD_OPEN_DIAGNOSTIC);
+  // SSL error pages do not implement this.
+  NOTREACHED();
 }
 
 void SecurityInterstitialTabHelper::Reload() {
@@ -162,8 +159,8 @@ void SecurityInterstitialTabHelper::OpenWhitepaper() {
 }
 
 void SecurityInterstitialTabHelper::ReportPhishingError() {
-  HandleCommand(security_interstitials::SecurityInterstitialCommand::
-                    CMD_REPORT_PHISHING_ERROR);
+  // SSL error pages do not implement this.
+  NOTREACHED();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityInterstitialTabHelper)

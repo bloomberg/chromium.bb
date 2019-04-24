@@ -2,10 +2,13 @@ description("This test passes if it doesn't trigger an ASSERT - crbug.com/254203
 
 window.jsTestIsAsync = true;
 
-var frameElem = document.getElementById('frame');
-function onDone() {
-  frameElem.removeEventListener('load', onDone);
-  frameElem.src = 'about:blank';
-  window.setTimeout(() => finishJSTest(), 0);
+function onDone()
+{
+  finishJSTest();
 }
-frameElem.addEventListener('load', onDone);
+
+var frameElem = document.getElementById('frame');
+frameElem.addEventListener('load', function() {
+    frameElem.src = 'about:blank';
+    window.setTimeout(onDone, 0);
+});

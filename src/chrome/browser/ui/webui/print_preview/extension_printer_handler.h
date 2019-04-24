@@ -25,6 +25,10 @@ namespace cloud_devices {
 class CloudDeviceDescription;
 }
 
+namespace device {
+class UsbDevice;
+}
+
 namespace gfx {
 class Size;
 }
@@ -94,7 +98,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   void OnUsbDevicesEnumerated(
       const AddedPrintersCallback& callback,
-      std::vector<device::mojom::UsbDeviceInfoPtr> devices);
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
   Profile* const profile_;
   GetPrintersDoneCallback done_callback_;

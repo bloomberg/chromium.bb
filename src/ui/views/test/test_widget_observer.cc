@@ -22,7 +22,7 @@ TestWidgetObserver::~TestWidgetObserver() {
 
 void TestWidgetObserver::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(widget_, widget);
-  widget_ = nullptr;
+  widget_ = NULL;
 }
 
 }  // namespace test

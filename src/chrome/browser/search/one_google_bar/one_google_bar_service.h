@@ -46,11 +46,6 @@ class OneGoogleBarService : public KeyedService {
 
   OneGoogleBarLoader* loader_for_testing() { return loader_.get(); }
 
-  std::string language_code() { return language_code_; }
-
-  // Used for testing.
-  void SetLanguageCodeForTesting(const std::string& language_code);
-
  private:
   class SigninObserver;
 
@@ -68,8 +63,6 @@ class OneGoogleBarService : public KeyedService {
   base::ObserverList<OneGoogleBarServiceObserver, true>::Unchecked observers_;
 
   base::Optional<OneGoogleBarData> one_google_bar_data_;
-
-  std::string language_code_;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_SERVICE_H_

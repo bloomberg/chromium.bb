@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/script/module_record_resolver.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
@@ -42,9 +42,9 @@ ModuleScript* ModuleScript::Create(
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScript", "Create");
 
-  ModuleRecordProduceCacheData* produce_cache_data = nullptr;
+  ScriptModuleProduceCacheData* produce_cache_data = nullptr;
 
-  ModuleRecord result = ModuleRecord::Compile(
+  ScriptModule result = ScriptModule::Compile(
       isolate, source_text.ToString(), source_url, base_url, options,
       start_position, exception_state, modulator->GetV8CacheOptions(),
       cache_handler, source_location_type, &produce_cache_data);
@@ -75,7 +75,7 @@ ModuleScript* ModuleScript::Create(
   // <spec step="9">For each string requested of
   // result.[[RequestedModules]]:</spec>
   for (const auto& requested :
-       modulator->ModuleRequestsFromModuleRecord(result)) {
+       modulator->ModuleRequestsFromScriptModule(result)) {
     // <spec step="9.1">Let url be the result of resolving a module specifier
     // given script's base URL and requested.</spec>
     //
@@ -103,7 +103,7 @@ ModuleScript* ModuleScript::Create(
 }
 
 ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
-                                          ModuleRecord record,
+                                          ScriptModule record,
                                           const KURL& base_url,
                                           const ScriptFetchOptions& options) {
   ParkableString dummy_source_text(String("").ReleaseImpl());
@@ -117,12 +117,12 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
 ModuleScript* ModuleScript::CreateInternal(
     const ParkableString& source_text,
     Modulator* modulator,
-    ModuleRecord result,
+    ScriptModule result,
     const KURL& source_url,
     const KURL& base_url,
     const ScriptFetchOptions& options,
     const TextPosition& start_position,
-    ModuleRecordProduceCacheData* produce_cache_data) {
+    ScriptModuleProduceCacheData* produce_cache_data) {
   // <spec step="6">Set script's parse error and error to rethrow to
   // null.</spec>
   //
@@ -139,19 +139,19 @@ ModuleScript* ModuleScript::CreateInternal(
 
   // Step 7, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.
-  modulator->GetModuleRecordResolver()->RegisterModuleScript(module_script);
+  modulator->GetScriptModuleResolver()->RegisterModuleScript(module_script);
 
   return module_script;
 }
 
 ModuleScript::ModuleScript(Modulator* settings_object,
-                           ModuleRecord record,
+                           ScriptModule record,
                            const KURL& source_url,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options,
                            const ParkableString& source_text,
                            const TextPosition& start_position,
-                           ModuleRecordProduceCacheData* produce_cache_data)
+                           ScriptModuleProduceCacheData* produce_cache_data)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
       source_text_(source_text),
@@ -170,13 +170,13 @@ ModuleScript::ModuleScript(Modulator* settings_object,
   record_.Set(isolate, record.NewLocal(isolate));
 }
 
-ModuleRecord ModuleScript::Record() const {
+ScriptModule ModuleScript::Record() const {
   if (record_.IsEmpty())
-    return ModuleRecord();
+    return ScriptModule();
 
   v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
   v8::HandleScope scope(isolate);
-  return ModuleRecord(isolate, record_.NewLocal(isolate), source_url_);
+  return ScriptModule(isolate, record_.NewLocal(isolate), source_url_);
 }
 
 bool ModuleScript::HasEmptyRecord() const {

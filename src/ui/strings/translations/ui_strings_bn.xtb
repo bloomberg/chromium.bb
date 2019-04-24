@@ -21,7 +21,6 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">এখন</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
-<translation id="1756116796893109054">ট্যাব পাঠানো হচ্ছে...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">পূর্ণচ্ছেদ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{১ মাস}one{# মাস}other{# মাস}}</translation>
@@ -35,7 +34,6 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
 <translation id="1938451708255335766">উইন্ডো স্ক্রিনের রেজোলিউশন অ্যাডজাস্ট করতে অ্যাপটি রিস্টার্ট করুন।</translation>
-<translation id="208586643495776849">আবার চেষ্টা করুন</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2168039046890040389">পৃষ্ঠা নিচে</translation>
@@ -53,14 +51,11 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ক্রমাঙ্কন সম্পূর্ণ হয়েছে</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
-<translation id="2573731672208488250">{HOURS,plural, =1{১ ঘণ্টার মধ্যে}one{# ঘণ্টার মধ্যে}other{# ঘণ্টার মধ্যে}}</translation>
 <translation id="2583543531130364912">আপনার টাচস্ক্রীন ক্রমাঙ্কন করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
-<translation id="2701330563083355633"><ph name="DEVICE_NAME" /> থেকে শেয়ার করা হয়েছে</translation>
 <translation id="2743387203779672305">ক্লিপবোর্ডে কপি করুন</translation>
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছর আগে}one{# বছর আগে}other{# বছর আগে}}</translation>
-<translation id="2907671656515444832">{DAYS,plural, =1{১ দিনের মধ্যে}one{# দিনের মধ্যে}other{# দিনের মধ্যে}}</translation>
 <translation id="2931838996092594335">ক্লিক করুন</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -101,7 +96,6 @@
 <translation id="4730374152663651037">ঘন ঘন ব্যবহার করা হয়</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{১ মাস বাকি}one{# মাস বাকি}other{# মাস বাকি}}</translation>
 <translation id="4841881773802181781">যোগ করা হচ্ছে</translation>
-<translation id="4881695831933465202">খুলুন</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{১ সেকেন্ড}one{# সেকেন্ড}other{# সেকেন্ড}}</translation>
 <translation id="4971687151119236543">মিডিয়া পূর্ববর্তী ট্র্যাক</translation>
 <translation id="5046499563572181734">এখানে আলতো চাপুন</translation>
@@ -109,8 +103,7 @@
 <translation id="5137751499640340777">Google অ্যাসিস্ট্যান্ট চালান</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">সম্পূর্ণ দেখার ত্রিভুজ</translation>
-<translation id="5278860589123563674">পাঠানো যায়নি</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">শেষ</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="5395308026110844773">ফোল্ডার তৈরি করতে <ph name="IN_PLACE_APP" />-এর উপরে <ph name="DRAGGED_APP_NAME" /> টেনে এনে ছেড়ে দিন।</translation>
 <translation id="5463830097259460683">ইমোজি ও প্রতীকগুলি</translation>
@@ -121,7 +114,6 @@
 <translation id="5613020302032141669">Left Arrow</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{১ দিন এবং }one{# দিন এবং }other{# দিন এবং }}</translation>
-<translation id="5866104238061687188">{YEARS,plural, =1{১ বছরের মধ্যে}one{# বছরের মধ্যে}other{# বছরের মধ্যে}}</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
@@ -153,6 +145,7 @@
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
 <translation id="6845383723252244143">ফোল্ডার বেছে নিন</translation>
 <translation id="6845533974506654842">টিপুন</translation>
+<translation id="686304767576508198">থেকে শেয়ার করা হয়েছে</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{১ ঘণ্টা বাকি}one{# ঘণ্টা বাকি}other{# ঘণ্টা বাকি}}</translation>
 <translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -177,7 +170,6 @@
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="7969046989155602842">কমান্ড</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{১টির বেশি অপঠিত বিজ্ঞপ্তি}one{#টির বেশি অপঠিত বিজ্ঞপ্তি}other{#টির বেশি অপঠিত বিজ্ঞপ্তি}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{১ মিনিটের মধ্যে}one{# মিনিটের মধ্যে}other{# মিনিটের মধ্যে}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
@@ -206,7 +198,6 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ফোল্ডার</translation>
 <translation id="883911313571074303">চিত্রের জন্য টিকা লিখুন</translation>
 <translation id="8841375032071747811">ফিরে যাওয়ার বোতাম</translation>
-<translation id="8876215549894133151">ফর্ম্যাট:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">শেল্ফ সবসময় লুকানো থাকবে</translation>
 <translation id="9002566407876343676">খুলুন</translation>

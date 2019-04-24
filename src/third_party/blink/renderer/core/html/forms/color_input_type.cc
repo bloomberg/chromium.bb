@@ -219,7 +219,7 @@ void ColorInputType::UpdateView() {
   if (!color_swatch)
     return;
 
-  color_swatch->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
+  color_swatch->SetInlineStyleProperty(CSSPropertyBackgroundColor,
                                        GetElement().value());
 }
 

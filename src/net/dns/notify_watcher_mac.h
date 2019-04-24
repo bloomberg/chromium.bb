@@ -5,17 +5,15 @@
 #ifndef NET_DNS_NOTIFY_WATCHER_MAC_H_
 #define NET_DNS_NOTIFY_WATCHER_MAC_H_
 
-#include <memory>
-
 #include "base/callback.h"
-#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_for_io.h"
 
 namespace net {
 
 // Watches for notifications from Libnotify and delivers them to a Callback.
 // After failure the watch is cancelled and will have to be restarted.
-class NotifyWatcherMac {
+class NotifyWatcherMac : public base::MessagePumpForIO::FdWatcher {
  public:
   // Called on received notification with true on success and false on error.
   typedef base::Callback<void(bool succeeded)> CallbackType;
@@ -23,7 +21,7 @@ class NotifyWatcherMac {
   NotifyWatcherMac();
 
   // When deleted, automatically cancels.
-  virtual ~NotifyWatcherMac();
+  ~NotifyWatcherMac() override;
 
   // Registers for notifications for |key|. Returns true if succeeds. If so,
   // will deliver asynchronous notifications and errors to |callback|.
@@ -33,13 +31,14 @@ class NotifyWatcherMac {
   void Cancel();
 
  private:
-  // Called by |watcher_| when |notify_fd_| can be read without blocking.
-  void OnFileCanReadWithoutBlocking();
+  // MessagePumpForIO::FdWatcher:
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int notify_fd_;
   int notify_token_;
   CallbackType callback_;
-  std::unique_ptr<base::FileDescriptorWatcher::Controller> watcher_;
+  base::MessagePumpForIO::FdWatchController watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifyWatcherMac);
 };

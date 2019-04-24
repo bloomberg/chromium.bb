@@ -69,9 +69,6 @@ class PendingExtensionManager {
   // Whether there is pending extension install from sync.
   bool HasPendingExtensionFromSync() const;
 
-  // Whether there is pending extension install from policy.
-  bool HasPendingExtensionFromPolicy() const;
-
   // Notifies the manager that we are reinstalling the policy force-installed
   // extension with |id| because we detected corruption in the current copy.
   void ExpectPolicyReinstallForCorruption(const ExtensionId& id);

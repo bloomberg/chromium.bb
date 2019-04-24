@@ -34,43 +34,38 @@ static_assert(kFallbackAudioLatencyMs >= 0,
 static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
               "Fallback audio latency exceeds maximum.");
 
-MediaStreamAudioSource::MediaStreamAudioSource(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool is_local_source,
-    bool disable_local_echo)
+MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source,
+                                               bool disable_local_echo)
     : is_local_source_(is_local_source),
       disable_local_echo_(disable_local_echo),
       is_stopped_(false),
-      task_runner_(std::move(task_runner)),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::MediaStreamAudioSource("
            << (is_local_source_ ? "local" : "remote") << " source)";
 }
 
-MediaStreamAudioSource::MediaStreamAudioSource(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool is_local_source)
-    : MediaStreamAudioSource(std::move(task_runner),
-                             is_local_source,
-                             false /* disable_local_echo */) {}
+MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
+    : MediaStreamAudioSource(is_local_source, false /* disable_local_echo */) {}
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << " is being destroyed.";
 }
 
 // static
 MediaStreamAudioSource* MediaStreamAudioSource::From(
-    const WebMediaStreamSource& source) {
-  if (source.IsNull() || source.GetType() != WebMediaStreamSource::kTypeAudio) {
+    const blink::WebMediaStreamSource& source) {
+  if (source.IsNull() ||
+      source.GetType() != blink::WebMediaStreamSource::kTypeAudio) {
     return nullptr;
   }
   return static_cast<MediaStreamAudioSource*>(source.GetPlatformSource());
 }
 
 bool MediaStreamAudioSource::ConnectToTrack(
-    const WebMediaStreamTrack& blink_track) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+    const blink::WebMediaStreamTrack& blink_track) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!blink_track.IsNull());
 
   // Sanity-check that there is not already a MediaStreamAudioTrack instance
@@ -91,7 +86,7 @@ bool MediaStreamAudioSource::ConnectToTrack(
 
   // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
   // to the WebMediaStreamTrack.
-  WebMediaStreamTrack mutable_blink_track = blink_track;
+  blink::WebMediaStreamTrack mutable_blink_track = blink_track;
   mutable_blink_track.SetPlatformTrack(
       CreateMediaStreamAudioTrack(blink_track.Id().Utf8()));
 
@@ -117,7 +112,7 @@ media::AudioParameters MediaStreamAudioSource::GetAudioParameters() const {
 }
 
 bool MediaStreamAudioSource::RenderToAssociatedSinkEnabled() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return device().matched_output_device_id.has_value();
 }
 
@@ -126,8 +121,8 @@ void* MediaStreamAudioSource::GetClassIdentifier() const {
 }
 
 void MediaStreamAudioSource::DoChangeSource(
-    const MediaStreamDevice& new_device) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+    const blink::MediaStreamDevice& new_device) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (is_stopped_)
     return;
@@ -137,25 +132,25 @@ void MediaStreamAudioSource::DoChangeSource(
 
 std::unique_ptr<MediaStreamAudioTrack>
 MediaStreamAudioSource::CreateMediaStreamAudioTrack(const std::string& id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return std::unique_ptr<MediaStreamAudioTrack>(
       new MediaStreamAudioTrack(is_local_source()));
 }
 
 bool MediaStreamAudioSource::EnsureSourceIsStarted() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::EnsureSourceIsStarted()";
   return true;
 }
 
 void MediaStreamAudioSource::EnsureSourceIsStopped() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::EnsureSourceIsStopped()";
 }
 
 void MediaStreamAudioSource::ChangeSourceImpl(
-    const MediaStreamDevice& new_device) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+    const blink::MediaStreamDevice& new_device) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::ChangeSourceImpl()";
   NOTIMPLEMENTED();
 }
@@ -174,13 +169,13 @@ void MediaStreamAudioSource::DeliverDataToTracks(
 }
 
 void MediaStreamAudioSource::DoStopSource() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   EnsureSourceIsStopped();
   is_stopped_ = true;
 }
 
 void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   const bool did_remove_last_track = deliverer_.RemoveConsumer(track);
   DVLOG(1) << "Removed MediaStreamAudioTrack@" << track
@@ -189,7 +184,7 @@ void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {
   // The W3C spec requires a source automatically stop when the last track is
   // stopped.
   if (!is_stopped_ && did_remove_last_track)
-    WebPlatformMediaStreamSource::StopSource();
+    blink::WebPlatformMediaStreamSource::StopSource();
 }
 
 void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
@@ -198,14 +193,16 @@ void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
   // Stop source when error occurs.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebPlatformMediaStreamSource::StopSource, GetWeakPtr()));
+      base::BindOnce(&blink::WebPlatformMediaStreamSource::StopSource,
+                     GetWeakPtr()));
 }
 
 void MediaStreamAudioSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamAudioSource::SetMutedState state=" << muted_state;
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebPlatformMediaStreamSource::SetSourceMuted,
-                                GetWeakPtr(), muted_state));
+      FROM_HERE,
+      base::BindOnce(&blink::WebPlatformMediaStreamSource::SetSourceMuted,
+                     GetWeakPtr(), muted_state));
 }
 
 base::SingleThreadTaskRunner* MediaStreamAudioSource::GetTaskRunner() const {

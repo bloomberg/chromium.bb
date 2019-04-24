@@ -11,7 +11,6 @@
 #include "src/roots.h"
 #include "src/thread-local-top.h"
 #include "src/utils.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace v8 {
 namespace internal {

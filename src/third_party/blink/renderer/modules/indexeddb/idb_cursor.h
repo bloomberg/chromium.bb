@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -51,6 +52,12 @@ class IDBCursor : public ScriptWrappable {
   using Source = IDBObjectStoreOrIDBIndex;
 
   static mojom::IDBCursorDirection StringToDirection(const String& mode_string);
+
+  static IDBCursor* Create(std::unique_ptr<WebIDBCursor>,
+                           mojom::IDBCursorDirection,
+                           IDBRequest*,
+                           const Source&,
+                           IDBTransaction*);
 
   IDBCursor(std::unique_ptr<WebIDBCursor>,
             mojom::IDBCursorDirection,

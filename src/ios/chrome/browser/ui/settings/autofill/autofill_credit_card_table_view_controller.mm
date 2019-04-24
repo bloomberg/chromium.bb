@@ -107,7 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self loadModel];
 }
 
@@ -377,7 +377,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         if (![strongSelf localCreditCardsExist] && strongSelf.editing) {
           [strongSelf setEditing:NO animated:YES];
         }
-        [strongSelf updateUIForEditState];
+        [strongSelf updateEditButton];
         strongSelf.deletionInProgress = NO;
       }];
 }
@@ -393,7 +393,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setEditing:NO animated:YES];
   }
 
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self reloadData];
 }
 

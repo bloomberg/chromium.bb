@@ -92,7 +92,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -106,8 +105,6 @@ namespace {
 int g_frontend_operation_counter = 0;
 
 class FrontendOperationScope {
-  STACK_ALLOCATED();
-
  public:
   FrontendOperationScope() { ++g_frontend_operation_counter; }
   ~FrontendOperationScope() { --g_frontend_operation_counter; }
@@ -228,12 +225,15 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
     return;
   }
 
-  StyleGeneratedImage* gen_image = To<StyleGeneratedImage>(style_image);
+  StyleGeneratedImage* gen_image = ToStyleGeneratedImage(style_image);
   CSSValue* image_css = gen_image->CssValue();
-  if (auto* gradient = DynamicTo<cssvalue::CSSGradientValue>(image_css)) {
+  if (image_css->IsGradientValue()) {
+    cssvalue::CSSGradientValue* gradient =
+        cssvalue::ToCSSGradientValue(image_css);
     BlendWithColorsFromGradient(gradient, colors, found_non_transparent_color,
                                 found_opaque_color, layout_object);
   }
+  return;
 }
 
 // Get the background colors behind the given rect in the given document, by
@@ -1129,10 +1129,11 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   if (!response.isSuccess())
     return response;
 
-  auto* computed_style_info =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  CSSComputedStyleDeclaration* computed_style_info =
+      CSSComputedStyleDeclaration::Create(node, true);
   *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
-  for (CSSPropertyID property_id : CSSPropertyIDList()) {
+  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
     const CSSProperty& property_class =
         CSSProperty::Get(resolveCSSPropertyID(property_id));
     if (!property_class.IsEnabled() || property_class.IsShorthand() ||
@@ -1177,8 +1178,9 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
     auto fragments = NGPaintFragment::InlineFragmentsFor(layout_object);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (const NGPaintFragment* fragment : fragments) {
-        const auto& text_fragment =
-            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+        DCHECK(fragment->PhysicalFragment().IsText());
+        const NGPhysicalTextFragment& text_fragment =
+            ToNGPhysicalTextFragment(fragment->PhysicalFragment());
         const ShapeResultView* shape_result = text_fragment.TextShapeResult();
         if (!shape_result)
           continue;
@@ -1961,8 +1963,7 @@ protocol::CSS::StyleSheetOrigin InspectorCSSAgent::DetectOrigin(
     Document* owner_document) {
   DCHECK(page_style_sheet);
 
-  if (!page_style_sheet->ownerNode() && page_style_sheet->href().IsEmpty() &&
-      !page_style_sheet->IsConstructed())
+  if (!page_style_sheet->ownerNode() && page_style_sheet->href().IsEmpty())
     return protocol::CSS::StyleSheetOriginEnum::UserAgent;
 
   if (page_style_sheet->ownerNode() &&
@@ -2061,7 +2062,7 @@ InspectorCSSAgent::BuildObjectForAttributesStyle(Element* element) {
   if (!mutable_attribute_style)
     return nullptr;
 
-  InspectorStyle* inspector_style = MakeGarbageCollected<InspectorStyle>(
+  InspectorStyle* inspector_style = InspectorStyle::Create(
       mutable_attribute_style->EnsureCSSStyleDeclaration(), nullptr, nullptr);
   return inspector_style->BuildObjectForStyle();
 }
@@ -2189,7 +2190,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     return Response::Error("Elements is pseudo");
 
   CSSPropertyID property = cssPropertyID(property_name);
-  if (!isValidCSSPropertyID(property))
+  if (!property)
     return Response::Error("Invalid property name");
 
   Document* owner_document = element->ownerDocument();
@@ -2260,7 +2261,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
                                (force_important ? " !important" : "") + ";";
     if (!style_text.IsEmpty() && !style_text.StripWhiteSpace().EndsWith(';'))
       new_property_text = ";" + new_property_text;
-    style_text = style_text + new_property_text;
+    style_text.append(new_property_text);
     change_range.start = body_range.end;
     change_range.end = body_range.end + new_property_text.length();
   } else {
@@ -2368,8 +2369,8 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
     }
   }
 
-  auto* computed_style_info =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
+  CSSComputedStyleDeclaration* computed_style_info =
+      CSSComputedStyleDeclaration::Create(element, true);
   const CSSValue* font_size =
       computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSize());
   *computed_font_size = font_size->CssText();

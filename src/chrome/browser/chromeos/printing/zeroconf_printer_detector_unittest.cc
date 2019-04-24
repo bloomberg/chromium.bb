@@ -71,6 +71,9 @@ PrinterDetector::DetectedPrinter MakeExpectedPrinter(const std::string& name,
   net::IPAddress ip_address = GetIPAddressFor(name);
   int port = GetPortFor(name);
   bool ssl = flags & kFlagSSL;
+  printer.set_effective_uri(
+      base::StringPrintf("ipp%s://%s:%d/%s_rp", ssl ? "s" : "",
+                         ip_address.ToString().c_str(), port, name.c_str()));
   printer.set_uri(base::StringPrintf("ipp%s://%s.local:%d/%s_rp",
                                      ssl ? "s" : "", name.c_str(), port,
                                      name.c_str()));
@@ -285,7 +288,8 @@ class FakeServiceDiscoveryDeviceLister : public ServiceDiscoveryDeviceLister {
   DeferringDelegate deferring_delegate_;
 };
 
-class ZeroconfPrinterDetectorTest : public testing::Test {
+class ZeroconfPrinterDetectorTest : public testing::Test,
+                                    public PrinterDetector::Observer {
  public:
   ZeroconfPrinterDetectorTest() {
     auto* runner = scoped_task_environment_.GetMainThreadTaskRunner().get();
@@ -320,8 +324,7 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
     // keep the lister fakes accessible after ownership is transferred into the
     // detector.
     listers_.clear();
-    detector_->RegisterPrintersFoundCallback(base::BindRepeating(
-        &ZeroconfPrinterDetectorTest::OnPrintersFound, base::Unretained(this)));
+    detector_->AddObserver(this);
     ipp_lister_->SetDelegate(detector_.get());
     ipps_lister_->SetDelegate(detector_.get());
     ippe_lister_->SetDelegate(detector_.get());
@@ -369,6 +372,7 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
 
   void ExpectPrinterEq(const PrinterDetector::DetectedPrinter& expected,
                        const PrinterDetector::DetectedPrinter& actual) {
+    EXPECT_EQ(expected.printer.effective_uri(), actual.printer.effective_uri());
     EXPECT_EQ(expected.printer.uri(), actual.printer.uri());
     // We don't have a good way to directly check for an expected id.
     EXPECT_EQ(expected.printer.uuid(), actual.printer.uuid());
@@ -386,9 +390,9 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
               actual.ppd_search_data.make_and_model);
   }
 
-  // PrinterDetector callback.
+  // PrinterDetector::Observer callback.
   void OnPrintersFound(
-      const std::vector<PrinterDetector::DetectedPrinter>& printers) {
+      const std::vector<PrinterDetector::DetectedPrinter>& printers) override {
     printers_found_callbacks_.push_back(printers);
   }
 

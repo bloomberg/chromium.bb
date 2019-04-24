@@ -14,7 +14,7 @@ namespace content {
 namespace {
 
 const blink::WebGestureDevice kDefaultGestureDevice =
-    blink::WebGestureDevice::kTouchscreen;
+    blink::kWebGestureDeviceTouchscreen;
 
 blink::WebGestureEvent Build(WebInputEvent::Type type) {
   blink::WebGestureEvent event =

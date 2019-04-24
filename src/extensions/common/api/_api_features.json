@@ -85,9 +85,6 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -104,9 +101,6 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -230,7 +224,6 @@
         "chrome://media-router/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
-        "chrome://password-change/*",
         "chrome://assistant-optin/*"
       ]
     }
@@ -269,9 +262,6 @@
       "chrome://extensions/*",
       "chrome://extensions-frame/*",
       "chrome://chrome/extensions/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -284,11 +274,6 @@
     "dependencies": [],
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "management.installReplacementWebApp": {
-    "dependencies": ["manifest:replacement_web_app"],
-    "channel": "dev",
-    "extension_types": ["extension"]
   },
   "management.uninstallSelf": {
     "dependencies": [],
@@ -309,9 +294,6 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
       "chrome://welcome/*"
@@ -396,9 +378,6 @@
       "chrome://oobe/*",
       "chrome://internet-config-dialog/*",
       "chrome://internet-detail-dialog/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -436,14 +415,13 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page",
-      "extension_service_worker"
+      "web_page"
     ],
     "matches": ["<all_urls>"]
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"]
   },
   "runtime.getURL": {
     "contexts": [
@@ -471,8 +449,7 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
+      "content_script"
     ]
   },
   "runtime.onConnectNative": {
@@ -504,7 +481,7 @@
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"]
   },
   "serial": {
     "dependencies": ["permission:serial"],
@@ -542,9 +519,6 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -595,6 +569,13 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
+  "types.private": {
+    // preferencesPrivate is the only API that uses types.private.
+    // If any other APIs need it then they'll need to be added in
+    // separate rules.
+    "dependencies": ["permission:preferencesPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
@@ -609,12 +590,12 @@
   },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"]
   },
   "webRequestInternal": [{
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"]
   }, {
     // webview uses webRequestInternal API.
     "channel": "stable",
@@ -628,7 +609,6 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
-      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],
@@ -648,7 +628,6 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
-      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],

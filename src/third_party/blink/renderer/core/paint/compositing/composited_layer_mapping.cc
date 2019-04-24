@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -188,23 +189,6 @@ static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
   return FloatPoint(constraints.GetOffsetForStickyPosition(constraints_map));
 }
 
-static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
-                                        const LayoutObject& layout_object) {
-  int min_border_width = std::min(
-      layout_object.StyleRef().BorderTopWidth(),
-      std::min(layout_object.StyleRef().BorderLeftWidth(),
-               std::min(layout_object.StyleRef().BorderRightWidth(),
-                        layout_object.StyleRef().BorderBottomWidth())));
-
-  bool could_obscure_decorations =
-      (paint_layer.GetScrollableArea() &&
-       paint_layer.GetScrollableArea()->UsesCompositedScrolling()) ||
-      layout_object.IsCanvas() || layout_object.IsVideo();
-
-  return could_obscure_decorations && layout_object.StyleRef().HasOutline() &&
-         layout_object.StyleRef().OutlineOffset() < -min_border_width;
-}
-
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       pending_update_scope_(kGraphicsLayerUpdateNone),
@@ -250,7 +234,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
 std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
     CompositingReasons reasons,
     SquashingDisallowedReasons squashing_disallowed_reasons) {
-  auto graphics_layer = std::make_unique<GraphicsLayer>(*this);
+  std::unique_ptr<GraphicsLayer> graphics_layer = GraphicsLayer::Create(*this);
 
   graphics_layer->SetCompositingReasons(reasons);
   graphics_layer->SetSquashingDisallowedReasons(squashing_disallowed_reasons);
@@ -267,7 +251,7 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
       CreateGraphicsLayer(owning_layer_.GetCompositingReasons(),
                           owning_layer_.GetSquashingDisallowedReasons());
 
-  graphics_layer_->SetHitTestable(true);
+  UpdateHitTestableWithoutDrawsContent(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
@@ -293,6 +277,11 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   scrolling_layer_ = nullptr;
   scrolling_contents_layer_ = nullptr;
+}
+
+void CompositedLayerMapping::UpdateHitTestableWithoutDrawsContent(
+    const bool& should_hit_test) {
+  graphics_layer_->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void CompositedLayerMapping::UpdateOpacity(const ComputedStyle& style) {
@@ -779,10 +768,17 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     layer_config_changed = true;
 
   // If the outline needs to draw over the composited scrolling contents layer
-  // or scrollbar layers (or video or webgl) it needs to be drawn into a
-  // separate layer.
+  // or scrollbar layers it needs to be drawn into a separate layer.
+  int min_border_width = std::min(
+      layout_object.StyleRef().BorderTopWidth(),
+      std::min(layout_object.StyleRef().BorderLeftWidth(),
+               std::min(layout_object.StyleRef().BorderRightWidth(),
+                        layout_object.StyleRef().BorderBottomWidth())));
   bool needs_decoration_outline_layer =
-      NeedsDecorationOutlineLayer(owning_layer_, layout_object);
+      owning_layer_.GetScrollableArea() &&
+      owning_layer_.GetScrollableArea()->UsesCompositedScrolling() &&
+      layout_object.StyleRef().HasOutline() &&
+      layout_object.StyleRef().OutlineOffset() < -min_border_width;
 
   if (UpdateDecorationOutlineLayer(needs_decoration_outline_layer))
     layer_config_changed = true;
@@ -1317,8 +1313,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   if (new_position != old_position && !is_iframe_doc) {
     graphics_layer_->SetPosition(new_position);
 
-    if (RuntimeEnabledFeatures::JankTrackingEnabled(
-            &layout_object.GetDocument())) {
+    if (origin_trials::JankTrackingEnabled(&layout_object.GetDocument())) {
       LocalFrameView* frame_view = layout_object.View()->GetFrameView();
       frame_view->GetJankTracker().NotifyCompositedLayerMoved(
           OwningLayer(), FloatRect(old_position, FloatSize(old_size)),
@@ -1337,11 +1332,6 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   // layers.
   bool contents_visible = owning_layer_.HasVisibleContent() ||
                           HasVisibleNonCompositingDescendant(&owning_layer_);
-  // TODO(sunxd): Investigate and possibly implement computing hit test regions
-  // in PaintTouchActionRects code path, so that cc has correct pointer-events
-  // information.
-  // For now, there is no need to set graphics_layer_'s hit testable bit here,
-  // because it is always hit testable from cc's perspective.
   graphics_layer_->SetContentsVisible(contents_visible);
 
   // In BGPT mode, we do not need to update the backface visibility here, as it
@@ -1711,14 +1701,21 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
 
-  auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
-  scrolling_coordinator->UpdateCompositedScrollOffset(scrollable_area);
-
-  if (gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
+  FloatPoint scroll_position =
+      owning_layer_.GetScrollableArea()->ScrollPosition();
+  DoubleSize scrolling_contents_offset(
+      overflow_clip_rect.Location().X() - scroll_position.X(),
+      overflow_clip_rect.Location().Y() - scroll_position.Y());
+  // The scroll offset change is compared using floating point so that
+  // fractional scroll offset change can be propagated to compositor.
+  if (scrolling_contents_offset != scrolling_contents_offset_ ||
+      gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {
+    auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
     scrolling_coordinator->ScrollableAreaScrollLayerDidChange(scrollable_area);
     scrolling_contents_layer_->SetPosition(FloatPoint());
   }
+  scrolling_contents_offset_ = scrolling_contents_offset;
 
   scrolling_contents_layer_->SetSize(gfx::Size(scroll_size));
 
@@ -1925,8 +1922,8 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   // paints content, regardless of whether the descendant content is a hit test)
   // but an exhaustive check of descendants that paint hit tests would be too
   // expensive.
-  bool paints_hit_test =
-      has_painted_content || GetLayoutObject().HasEffectiveAllowedTouchAction();
+  bool paints_hit_test = has_painted_content ||
+                         GetLayoutObject().HasEffectiveWhitelistedTouchAction();
   graphics_layer_->SetPaintsHitTest(paints_hit_test);
 
   if (scrolling_layer_) {
@@ -2175,9 +2172,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
-    bool h_bar_visible = h_bar && !layer->HasContentsLayer();
-    layer->SetDrawsContent(h_bar_visible);
-    layer->SetHitTestable(h_bar_visible);
+    layer->SetDrawsContent(h_bar && !layer->HasContentsLayer());
   }
 
   if (GraphicsLayer* layer = LayerForVerticalScrollbar()) {
@@ -2190,9 +2185,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
-    bool v_bar_visible = v_bar && !layer->HasContentsLayer();
-    layer->SetDrawsContent(v_bar_visible);
-    layer->SetHitTestable(v_bar_visible);
+    layer->SetDrawsContent(v_bar && !layer->HasContentsLayer());
   }
 
   if (GraphicsLayer* layer = LayerForScrollCorner()) {
@@ -2203,7 +2196,6 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
         ToIntSize(scroll_corner_and_resizer.Location()));
     layer->SetSize(gfx::Size(scroll_corner_and_resizer.Size()));
     layer->SetDrawsContent(!scroll_corner_and_resizer.IsEmpty());
-    layer->SetHitTestable(!scroll_corner_and_resizer.IsEmpty());
   }
 }
 
@@ -2394,7 +2386,7 @@ bool CompositedLayerMapping::UpdateForegroundLayer(
     if (!foreground_layer_) {
       foreground_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForForeground);
-      foreground_layer_->SetHitTestable(true);
+      foreground_layer_->SetHitTestableWithoutDrawsContent(true);
       layer_changed = true;
     }
   } else if (foreground_layer_) {
@@ -2482,13 +2474,12 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       scrolling_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContainer);
       scrolling_layer_->SetDrawsContent(false);
-      scrolling_layer_->SetHitTestable(false);
       scrolling_layer_->SetMasksToBounds(true);
 
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContents);
-      scrolling_contents_layer_->SetHitTestable(true);
+      scrolling_contents_layer_->SetHitTestableWithoutDrawsContent(true);
 
       auto element_id = scrollable_area->GetCompositorElementId();
       scrolling_contents_layer_->SetElementId(element_id);
@@ -2594,26 +2585,15 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   if (!scrolling_coordinator)
     return;
 
-  // When blink generates property trees, the layer position constraints are
-  // not set on cc::Layer because they are only used by the cc property tree
-  // builder.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
-  }
+  scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
 
   bool is_fixed_container =
       owning_layer_.GetLayoutObject().CanContainFixedPositionObjects();
   bool resized_by_url_bar =
       owning_layer_.GetLayoutObject().IsLayoutView() &&
       owning_layer_.Compositor()->IsRootScrollerAncestor();
-  // These values are only used by the cc property tree builder and are not
-  // needed when blink generates property trees.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    graphics_layer_->SetIsContainerForFixedPositionLayers(is_fixed_container);
-    graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
-  }
+  graphics_layer_->SetIsContainerForFixedPositionLayers(is_fixed_container);
+  graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
   // Fixed-pos descendants inherits the space that has all CSS property applied,
   // including perspective, overflow scroll/clip. Thus we also mark every layers
   // below the main graphics layer so transforms implemented by them don't get
@@ -2621,13 +2601,8 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   ApplyToGraphicsLayers(
       this,
       [is_fixed_container, resized_by_url_bar](GraphicsLayer* layer) {
-        // These values are only used by the cc property tree builder and are
-        // not needed when blink generates property trees.
-        if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-            !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-          layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
-          layer->SetIsResizedByBrowserControls(resized_by_url_bar);
-        }
+        layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
+        layer->SetIsResizedByBrowserControls(resized_by_url_bar);
         // TODO(pdr): This prevents clipping and should not be needed, but
         // CaptureScreenshotTest.CaptureScreenshotArea depends on this.
         if (resized_by_url_bar)
@@ -2645,7 +2620,6 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
       squashing_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForSquashingContents);
       squashing_layer_->SetDrawsContent(true);
-      squashing_layer_->SetHitTestable(true);
       layers_changed = true;
     }
 
@@ -2790,9 +2764,6 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
 }
 
 bool CompositedLayerMapping::ContainsPaintedContent() const {
-  if (CompositedBounds().IsEmpty())
-    return false;
-
   if (GetLayoutObject().IsImage() && IsDirectlyCompositedImage())
     return false;
 
@@ -2968,13 +2939,6 @@ GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
     host = overflow_controls_host_layer_.get();
   host->RemoveFromParent();
   return host;
-}
-
-GraphicsLayer* CompositedLayerMapping::DetachLayerForDecorationOutline() {
-  if (!decoration_outline_layer_.get())
-    return nullptr;
-  decoration_outline_layer_->RemoveFromParent();
-  return decoration_outline_layer_.get();
 }
 
 GraphicsLayer* CompositedLayerMapping::ParentForSublayers() const {

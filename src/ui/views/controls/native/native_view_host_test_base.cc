@@ -24,9 +24,11 @@ class NativeViewHostTestBase::NativeViewHostTesting : public NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostTesting);
 };
 
-NativeViewHostTestBase::NativeViewHostTestBase() = default;
+NativeViewHostTestBase::NativeViewHostTestBase() : host_destroyed_count_(0) {
+}
 
-NativeViewHostTestBase::~NativeViewHostTestBase() = default;
+NativeViewHostTestBase::~NativeViewHostTestBase() {
+}
 
 void NativeViewHostTestBase::TearDown() {
   DestroyTopLevel();
@@ -34,7 +36,7 @@ void NativeViewHostTestBase::TearDown() {
 }
 
 void NativeViewHostTestBase::CreateTopLevel() {
-  toplevel_ = std::make_unique<Widget>();
+  toplevel_.reset(new Widget);
   Widget::InitParams toplevel_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -42,7 +44,7 @@ void NativeViewHostTestBase::CreateTopLevel() {
 }
 
 void NativeViewHostTestBase::CreateTestingHost() {
-  host_ = std::make_unique<NativeViewHostTesting>(this);
+  host_.reset(new NativeViewHostTesting(this));
 }
 
 Widget* NativeViewHostTestBase::CreateChildForHost(

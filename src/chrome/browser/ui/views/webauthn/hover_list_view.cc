@@ -100,12 +100,11 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
   DCHECK(model_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  auto item_container = std::make_unique<views::View>();
-  item_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+  item_container_ = new views::View();
+  item_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       0 /* betweeen_child_spacing */));
 
-  item_container_ = item_container.get();
   AddSeparatorAsChild(item_container_);
 
   for (const auto item_tag : model_->GetItemTags()) {
@@ -119,7 +118,7 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
   }
 
   scroll_view_ = new views::ScrollView();
-  scroll_view_->SetContents(std::move(item_container));
+  scroll_view_->SetContents(item_container_);
   AddChildView(scroll_view_);
   scroll_view_->ClipHeightTo(GetPreferredViewHeight(),
                              GetPreferredViewHeight());

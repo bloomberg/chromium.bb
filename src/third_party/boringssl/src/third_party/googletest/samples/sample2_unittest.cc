@@ -28,6 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // A sample program demonstrating using Google C++ testing framework.
+//
+// Author: wan@google.com (Zhanyong Wan)
+
 
 // This sample shows how to write a more complex unit test for a class
 // that has multiple member functions.
@@ -66,7 +69,7 @@ TEST(MyString, DefaultConstructor) {
   // we have to live with this fact.
   //
   // </TechnicalDetails>
-  EXPECT_STREQ(nullptr, s.c_string());
+  EXPECT_STREQ(NULL, s.c_string());
 
   EXPECT_EQ(0u, s.Length());
 }
@@ -101,7 +104,7 @@ TEST(MyString, Set) {
   EXPECT_EQ(0, strcmp(s.c_string(), kHelloString));
 
   // Can we set the MyString to NULL?
-  s.Set(nullptr);
-  EXPECT_STREQ(nullptr, s.c_string());
+  s.Set(NULL);
+  EXPECT_STREQ(NULL, s.c_string());
 }
 }  // namespace

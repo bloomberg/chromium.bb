@@ -40,12 +40,10 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 StylePropertySerializer::CSSPropertyValueSetForSerializer::
     CSSPropertyValueSetForSerializer(const CSSPropertyValueSet& properties)
     : property_set_(&properties),
-      all_index_(property_set_->FindPropertyIndex(CSSPropertyID::kAll)),
+      all_index_(property_set_->FindPropertyIndex(CSSPropertyAll)),
       need_to_expand_all_(false) {
   if (!HasAllProperty())
     return;
@@ -67,7 +65,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
     }
     if (!isCSSPropertyIDWithName(property.Id()))
       continue;
-    longhand_property_used_.set(GetCSSPropertyIDIndex(property.Id()));
+    longhand_property_used_.set(property.Id() - firstCSSProperty);
   }
 }
 
@@ -81,7 +79,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyCount()
     const {
   if (!HasExpandedAllProperty())
     return property_set_->PropertyCount();
-  return kIntLastCSSProperty - kIntFirstCSSProperty + 1;
+  return lastCSSProperty - firstCSSProperty + 1;
 }
 
 StylePropertySerializer::PropertyValueForSerializer
@@ -92,13 +90,13 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
         property_set_->PropertyAt(index));
 
   CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
+      static_cast<CSSPropertyID>(index + firstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
   if (longhand_property_used_.test(index)) {
-    int real_index = property_set_->FindPropertyIndex(property_id);
-    DCHECK_NE(real_index, -1);
+    int index = property_set_->FindPropertyIndex(property_id);
+    DCHECK_NE(index, -1);
     return StylePropertySerializer::PropertyValueForSerializer(
-        property_set_->PropertyAt(real_index));
+        property_set_->PropertyAt(index));
   }
 
   CSSPropertyValueSet::PropertyReference property =
@@ -118,16 +116,16 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   if (!need_to_expand_all_) {
     CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(index);
-    if (property.Property().IDEquals(CSSPropertyID::kAll) ||
+    if (property.Property().IDEquals(CSSPropertyAll) ||
         !property.Property().IsAffectedByAll())
       return true;
     if (!isCSSPropertyIDWithName(property.Id()))
       return false;
-    return longhand_property_used_.test(GetCSSPropertyIDIndex(property.Id()));
+    return longhand_property_used_.test(property.Id() - firstCSSProperty);
   }
 
   CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
+      static_cast<CSSPropertyID>(index + firstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
   const CSSProperty& property_class =
       CSSProperty::Get(resolveCSSPropertyID(property_id));
@@ -135,8 +133,7 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   // Since "all" is expanded, we don't need to process "all".
   // We should not process expanded shorthands (e.g. font, background,
   // and so on) either.
-  if (property_class.IsShorthand() ||
-      property_class.IDEquals(CSSPropertyID::kAll))
+  if (property_class.IsShorthand() || property_class.IDEquals(CSSPropertyAll))
     return false;
 
   // The all property is a shorthand that resets all CSS properties except
@@ -153,7 +150,7 @@ int StylePropertySerializer::CSSPropertyValueSetForSerializer::
   CSSPropertyID property_id = property.PropertyID();
   if (!HasExpandedAllProperty())
     return property_set_->FindPropertyIndex(property_id);
-  return GetCSSPropertyIDIndex(property_id);
+  return property_id - firstCSSProperty;
 }
 
 const CSSValue*
@@ -179,11 +176,12 @@ StylePropertySerializer::StylePropertySerializer(
 String StylePropertySerializer::GetCustomPropertyText(
     const PropertyValueForSerializer& property,
     bool is_not_first_decl) const {
-  DCHECK_EQ(property.Property().PropertyID(), CSSPropertyID::kVariable);
+  DCHECK_EQ(property.Property().PropertyID(), CSSPropertyVariable);
   StringBuilder result;
   if (is_not_first_decl)
     result.Append(' ');
-  const auto* value = To<CSSCustomPropertyDeclaration>(property.Value());
+  const CSSCustomPropertyDeclaration* value =
+      ToCSSCustomPropertyDeclaration(property.Value());
   SerializeIdentifier(value->GetName(), result, is_not_first_decl);
   result.Append(':');
   if (!value->Value())
@@ -237,10 +235,10 @@ String StylePropertySerializer::AsText() const {
            property_class.IsDescriptor());
 
     switch (property_id) {
-      case CSSPropertyID::kVariable:
+      case CSSPropertyVariable:
         result.Append(GetCustomPropertyText(property, num_decls++));
         continue;
-      case CSSPropertyID::kAll:
+      case CSSPropertyAll:
         result.Append(GetPropertyText(property_class,
                                       property.Value()->CssText(),
                                       property.IsImportant(), num_decls++));
@@ -248,7 +246,7 @@ String StylePropertySerializer::AsText() const {
       default:
         break;
     }
-    if (longhand_serialized.test(GetCSSPropertyIDIndex(property_id)))
+    if (longhand_serialized.test(property_id - firstCSSProperty))
       continue;
 
     Vector<StylePropertyShorthand, 4> shorthands;
@@ -261,7 +259,7 @@ String StylePropertySerializer::AsText() const {
         continue;
 
       CSSPropertyID shorthand_property = shorthand.id();
-      int shorthand_property_index = GetCSSPropertyIDIndex(shorthand_property);
+      int shorthand_property_index = shorthand_property - firstCSSProperty;
       // We already tried serializing as this shorthand
       if (shorthand_appeared.test(shorthand_property_index))
         continue;
@@ -269,8 +267,8 @@ String StylePropertySerializer::AsText() const {
       shorthand_appeared.set(shorthand_property_index);
       bool serialized_other_longhand = false;
       for (unsigned i = 0; i < shorthand.length(); i++) {
-        if (longhand_serialized.test(GetCSSPropertyIDIndex(
-                shorthand.properties()[i]->PropertyID()))) {
+        if (longhand_serialized.test(shorthand.properties()[i]->PropertyID() -
+                                     firstCSSProperty)) {
           serialized_other_longhand = true;
           break;
         }
@@ -287,8 +285,8 @@ String StylePropertySerializer::AsText() const {
                                     num_decls++));
       serialized_as_shorthand = true;
       for (unsigned i = 0; i < shorthand.length(); i++) {
-        longhand_serialized.set(
-            GetCSSPropertyIDIndex(shorthand.properties()[i]->PropertyID()));
+        longhand_serialized.set(shorthand.properties()[i]->PropertyID() -
+                                firstCSSProperty);
       }
       break;
     }
@@ -316,28 +314,28 @@ String StylePropertySerializer::AsText() const {
 // special-casing
 static bool AllowInitialInShorthand(CSSPropertyID property_id) {
   switch (property_id) {
-    case CSSPropertyID::kBackground:
-    case CSSPropertyID::kBorder:
-    case CSSPropertyID::kBorderTop:
-    case CSSPropertyID::kBorderRight:
-    case CSSPropertyID::kBorderBottom:
-    case CSSPropertyID::kBorderLeft:
-    case CSSPropertyID::kOutline:
-    case CSSPropertyID::kColumnRule:
-    case CSSPropertyID::kColumns:
-    case CSSPropertyID::kFlex:
-    case CSSPropertyID::kFlexFlow:
-    case CSSPropertyID::kGridColumn:
-    case CSSPropertyID::kGridRow:
-    case CSSPropertyID::kGridArea:
-    case CSSPropertyID::kGap:
-    case CSSPropertyID::kListStyle:
-    case CSSPropertyID::kOffset:
-    case CSSPropertyID::kTextDecoration:
-    case CSSPropertyID::kWebkitMarginCollapse:
-    case CSSPropertyID::kWebkitMask:
-    case CSSPropertyID::kWebkitTextEmphasis:
-    case CSSPropertyID::kWebkitTextStroke:
+    case CSSPropertyBackground:
+    case CSSPropertyBorder:
+    case CSSPropertyBorderTop:
+    case CSSPropertyBorderRight:
+    case CSSPropertyBorderBottom:
+    case CSSPropertyBorderLeft:
+    case CSSPropertyOutline:
+    case CSSPropertyColumnRule:
+    case CSSPropertyColumns:
+    case CSSPropertyFlex:
+    case CSSPropertyFlexFlow:
+    case CSSPropertyGridColumn:
+    case CSSPropertyGridRow:
+    case CSSPropertyGridArea:
+    case CSSPropertyGap:
+    case CSSPropertyListStyle:
+    case CSSPropertyOffset:
+    case CSSPropertyTextDecoration:
+    case CSSPropertyWebkitMarginCollapse:
+    case CSSPropertyWebkitMask:
+    case CSSPropertyWebkitTextEmphasis:
+    case CSSPropertyWebkitTextStroke:
       return true;
     default:
       return false;
@@ -379,8 +377,9 @@ String StylePropertySerializer::CommonShorthandChecks(
       }
     }
     if (success) {
-      if (const auto* substitution_value =
-              DynamicTo<CSSPendingSubstitutionValue>(longhands[0])) {
+      if (longhands[0]->IsPendingSubstitutionValue()) {
+        const CSSPendingSubstitutionValue* substitution_value =
+            ToCSSPendingSubstitutionValue(longhands[0]);
         if (substitution_value->ShorthandPropertyId() != shorthand.id())
           return g_empty_string;
         return substitution_value->ShorthandValue()->CssText();
@@ -414,158 +413,158 @@ String StylePropertySerializer::SerializeShorthand(
     return result;
 
   switch (property_id) {
-    case CSSPropertyID::kAnimation:
+    case CSSPropertyAnimation:
       return GetLayeredShorthandValue(animationShorthand());
-    case CSSPropertyID::kBorderSpacing:
+    case CSSPropertyBorderSpacing:
       return Get2Values(borderSpacingShorthand());
-    case CSSPropertyID::kBackgroundPosition:
+    case CSSPropertyBackgroundPosition:
       return GetLayeredShorthandValue(backgroundPositionShorthand());
-    case CSSPropertyID::kBackgroundRepeat:
+    case CSSPropertyBackgroundRepeat:
       return BackgroundRepeatPropertyValue();
-    case CSSPropertyID::kBackground:
+    case CSSPropertyBackground:
       return GetLayeredShorthandValue(backgroundShorthand());
-    case CSSPropertyID::kBorder:
+    case CSSPropertyBorder:
       return BorderPropertyValue(borderWidthShorthand(), borderStyleShorthand(),
                                  borderColorShorthand());
-    case CSSPropertyID::kBorderImage:
+    case CSSPropertyBorderImage:
       return BorderImagePropertyValue();
-    case CSSPropertyID::kBorderTop:
+    case CSSPropertyBorderTop:
       return GetShorthandValue(borderTopShorthand());
-    case CSSPropertyID::kBorderRight:
+    case CSSPropertyBorderRight:
       return GetShorthandValue(borderRightShorthand());
-    case CSSPropertyID::kBorderBottom:
+    case CSSPropertyBorderBottom:
       return GetShorthandValue(borderBottomShorthand());
-    case CSSPropertyID::kBorderLeft:
+    case CSSPropertyBorderLeft:
       return GetShorthandValue(borderLeftShorthand());
-    case CSSPropertyID::kBorderBlock:
+    case CSSPropertyBorderBlock:
       return BorderPropertyValue(borderBlockWidthShorthand(),
                                  borderBlockStyleShorthand(),
                                  borderBlockColorShorthand());
-    case CSSPropertyID::kBorderBlockColor:
+    case CSSPropertyBorderBlockColor:
       return Get2Values(borderBlockColorShorthand());
-    case CSSPropertyID::kBorderBlockStyle:
+    case CSSPropertyBorderBlockStyle:
       return Get2Values(borderBlockStyleShorthand());
-    case CSSPropertyID::kBorderBlockWidth:
+    case CSSPropertyBorderBlockWidth:
       return Get2Values(borderBlockWidthShorthand());
-    case CSSPropertyID::kBorderBlockStart:
+    case CSSPropertyBorderBlockStart:
       return GetShorthandValue(borderBlockStartShorthand());
-    case CSSPropertyID::kBorderBlockEnd:
+    case CSSPropertyBorderBlockEnd:
       return GetShorthandValue(borderBlockEndShorthand());
-    case CSSPropertyID::kBorderInline:
+    case CSSPropertyBorderInline:
       return BorderPropertyValue(borderInlineWidthShorthand(),
                                  borderInlineStyleShorthand(),
                                  borderInlineColorShorthand());
-    case CSSPropertyID::kBorderInlineColor:
+    case CSSPropertyBorderInlineColor:
       return Get2Values(borderInlineColorShorthand());
-    case CSSPropertyID::kBorderInlineStyle:
+    case CSSPropertyBorderInlineStyle:
       return Get2Values(borderInlineStyleShorthand());
-    case CSSPropertyID::kBorderInlineWidth:
+    case CSSPropertyBorderInlineWidth:
       return Get2Values(borderInlineWidthShorthand());
-    case CSSPropertyID::kBorderInlineStart:
+    case CSSPropertyBorderInlineStart:
       return GetShorthandValue(borderInlineStartShorthand());
-    case CSSPropertyID::kBorderInlineEnd:
+    case CSSPropertyBorderInlineEnd:
       return GetShorthandValue(borderInlineEndShorthand());
-    case CSSPropertyID::kOutline:
+    case CSSPropertyOutline:
       return GetShorthandValue(outlineShorthand());
-    case CSSPropertyID::kBorderColor:
+    case CSSPropertyBorderColor:
       return Get4Values(borderColorShorthand());
-    case CSSPropertyID::kBorderWidth:
+    case CSSPropertyBorderWidth:
       return Get4Values(borderWidthShorthand());
-    case CSSPropertyID::kBorderStyle:
+    case CSSPropertyBorderStyle:
       return Get4Values(borderStyleShorthand());
-    case CSSPropertyID::kColumnRule:
+    case CSSPropertyColumnRule:
       return GetShorthandValue(columnRuleShorthand());
-    case CSSPropertyID::kColumns:
+    case CSSPropertyColumns:
       return GetShorthandValue(columnsShorthand());
-    case CSSPropertyID::kFlex:
+    case CSSPropertyFlex:
       return GetShorthandValue(flexShorthand());
-    case CSSPropertyID::kFlexFlow:
+    case CSSPropertyFlexFlow:
       return GetShorthandValue(flexFlowShorthand());
-    case CSSPropertyID::kGridColumn:
+    case CSSPropertyGridColumn:
       return GetShorthandValue(gridColumnShorthand(), " / ");
-    case CSSPropertyID::kGridRow:
+    case CSSPropertyGridRow:
       return GetShorthandValue(gridRowShorthand(), " / ");
-    case CSSPropertyID::kGridArea:
+    case CSSPropertyGridArea:
       return GetShorthandValue(gridAreaShorthand(), " / ");
-    case CSSPropertyID::kGap:
+    case CSSPropertyGap:
       return GetShorthandValue(gapShorthand());
-    case CSSPropertyID::kInset:
+    case CSSPropertyInset:
       return Get4Values(insetShorthand());
-    case CSSPropertyID::kInsetBlock:
+    case CSSPropertyInsetBlock:
       return Get2Values(insetBlockShorthand());
-    case CSSPropertyID::kInsetInline:
+    case CSSPropertyInsetInline:
       return Get2Values(insetInlineShorthand());
-    case CSSPropertyID::kPlaceContent:
+    case CSSPropertyPlaceContent:
       return Get2Values(placeContentShorthand());
-    case CSSPropertyID::kPlaceItems:
+    case CSSPropertyPlaceItems:
       return Get2Values(placeItemsShorthand());
-    case CSSPropertyID::kPlaceSelf:
+    case CSSPropertyPlaceSelf:
       return Get2Values(placeSelfShorthand());
-    case CSSPropertyID::kFont:
+    case CSSPropertyFont:
       return FontValue();
-    case CSSPropertyID::kFontVariant:
+    case CSSPropertyFontVariant:
       return FontVariantValue();
-    case CSSPropertyID::kMargin:
+    case CSSPropertyMargin:
       return Get4Values(marginShorthand());
-    case CSSPropertyID::kMarginBlock:
+    case CSSPropertyMarginBlock:
       return Get2Values(marginBlockShorthand());
-    case CSSPropertyID::kMarginInline:
+    case CSSPropertyMarginInline:
       return Get2Values(marginInlineShorthand());
-    case CSSPropertyID::kOffset:
+    case CSSPropertyOffset:
       return OffsetValue();
-    case CSSPropertyID::kWebkitMarginCollapse:
+    case CSSPropertyWebkitMarginCollapse:
       return GetShorthandValue(webkitMarginCollapseShorthand());
-    case CSSPropertyID::kOverflow:
+    case CSSPropertyOverflow:
       return Get2Values(overflowShorthand());
-    case CSSPropertyID::kOverscrollBehavior:
+    case CSSPropertyOverscrollBehavior:
       return GetShorthandValue(overscrollBehaviorShorthand());
-    case CSSPropertyID::kPadding:
+    case CSSPropertyPadding:
       return Get4Values(paddingShorthand());
-    case CSSPropertyID::kPaddingBlock:
+    case CSSPropertyPaddingBlock:
       return Get2Values(paddingBlockShorthand());
-    case CSSPropertyID::kPaddingInline:
+    case CSSPropertyPaddingInline:
       return Get2Values(paddingInlineShorthand());
-    case CSSPropertyID::kTextDecoration:
+    case CSSPropertyTextDecoration:
       return GetShorthandValue(textDecorationShorthand());
-    case CSSPropertyID::kTransition:
+    case CSSPropertyTransition:
       return GetLayeredShorthandValue(transitionShorthand());
-    case CSSPropertyID::kListStyle:
+    case CSSPropertyListStyle:
       return GetShorthandValue(listStyleShorthand());
-    case CSSPropertyID::kWebkitMaskPosition:
+    case CSSPropertyWebkitMaskPosition:
       return GetLayeredShorthandValue(webkitMaskPositionShorthand());
-    case CSSPropertyID::kWebkitMaskRepeat:
+    case CSSPropertyWebkitMaskRepeat:
       return GetLayeredShorthandValue(webkitMaskRepeatShorthand());
-    case CSSPropertyID::kWebkitMask:
+    case CSSPropertyWebkitMask:
       return GetLayeredShorthandValue(webkitMaskShorthand());
-    case CSSPropertyID::kWebkitTextEmphasis:
+    case CSSPropertyWebkitTextEmphasis:
       return GetShorthandValue(webkitTextEmphasisShorthand());
-    case CSSPropertyID::kWebkitTextStroke:
+    case CSSPropertyWebkitTextStroke:
       return GetShorthandValue(webkitTextStrokeShorthand());
-    case CSSPropertyID::kMarker: {
+    case CSSPropertyMarker: {
       if (const CSSValue* value =
               property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerStart()))
         return value->CssText();
       return String();
     }
-    case CSSPropertyID::kBorderRadius:
+    case CSSPropertyBorderRadius:
       return Get4Values(borderRadiusShorthand());
-    case CSSPropertyID::kScrollPadding:
+    case CSSPropertyScrollPadding:
       return Get4Values(scrollPaddingShorthand());
-    case CSSPropertyID::kScrollPaddingBlock:
+    case CSSPropertyScrollPaddingBlock:
       return Get2Values(scrollPaddingBlockShorthand());
-    case CSSPropertyID::kScrollPaddingInline:
+    case CSSPropertyScrollPaddingInline:
       return Get2Values(scrollPaddingInlineShorthand());
-    case CSSPropertyID::kScrollMargin:
+    case CSSPropertyScrollMargin:
       return Get4Values(scrollMarginShorthand());
-    case CSSPropertyID::kScrollMarginBlock:
+    case CSSPropertyScrollMarginBlock:
       return Get2Values(scrollMarginBlockShorthand());
-    case CSSPropertyID::kScrollMarginInline:
+    case CSSPropertyScrollMarginInline:
       return Get2Values(scrollMarginInlineShorthand());
-    case CSSPropertyID::kPageBreakAfter:
+    case CSSPropertyPageBreakAfter:
       return PageBreakPropertyValue(pageBreakAfterShorthand());
-    case CSSPropertyID::kPageBreakBefore:
+    case CSSPropertyPageBreakBefore:
       return PageBreakPropertyValue(pageBreakBeforeShorthand());
-    case CSSPropertyID::kPageBreakInside:
+    case CSSPropertyPageBreakInside:
       return PageBreakPropertyValue(pageBreakInsideShorthand());
     default:
       return String();
@@ -576,29 +575,28 @@ String StylePropertySerializer::SerializeShorthand(
 // a percentage value can be parsed as a keyword, and if so, serialize it as
 // that keyword.
 const CSSValue* GetFontStretchKeyword(const CSSValue* font_stretch_value) {
-  if (IsA<CSSIdentifierValue>(font_stretch_value))
+  if (font_stretch_value->IsIdentifierValue())
     return font_stretch_value;
-  if (auto* primitive_value =
-          DynamicTo<CSSPrimitiveValue>(font_stretch_value)) {
-    double value = primitive_value->GetDoubleValue();
+  if (font_stretch_value->IsPrimitiveValue()) {
+    double value = ToCSSPrimitiveValue(font_stretch_value)->GetDoubleValue();
     if (value == 50)
-      return CSSIdentifierValue::Create(CSSValueID::kUltraCondensed);
+      return CSSIdentifierValue::Create(CSSValueUltraCondensed);
     if (value == 62.5)
-      return CSSIdentifierValue::Create(CSSValueID::kExtraCondensed);
+      return CSSIdentifierValue::Create(CSSValueExtraCondensed);
     if (value == 75)
-      return CSSIdentifierValue::Create(CSSValueID::kCondensed);
+      return CSSIdentifierValue::Create(CSSValueCondensed);
     if (value == 87.5)
-      return CSSIdentifierValue::Create(CSSValueID::kSemiCondensed);
+      return CSSIdentifierValue::Create(CSSValueSemiCondensed);
     if (value == 100)
-      return CSSIdentifierValue::Create(CSSValueID::kNormal);
+      return CSSIdentifierValue::Create(CSSValueNormal);
     if (value == 112.5)
-      return CSSIdentifierValue::Create(CSSValueID::kSemiExpanded);
+      return CSSIdentifierValue::Create(CSSValueSemiExpanded);
     if (value == 125)
-      return CSSIdentifierValue::Create(CSSValueID::kExpanded);
+      return CSSIdentifierValue::Create(CSSValueExpanded);
     if (value == 150)
-      return CSSIdentifierValue::Create(CSSValueID::kExtraExpanded);
+      return CSSIdentifierValue::Create(CSSValueExtraExpanded);
     if (value == 200)
-      return CSSIdentifierValue::Create(CSSValueID::kUltraExpanded);
+      return CSSIdentifierValue::Create(CSSValueUltraExpanded);
   }
   return nullptr;
 }
@@ -611,30 +609,30 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   DCHECK_NE(found_property_index, -1);
 
   const CSSValue* val = property_set_.PropertyAt(found_property_index).Value();
-  if (property.IDEquals(CSSPropertyID::kFontStretch)) {
+  if (property.IDEquals(CSSPropertyFontStretch)) {
     const CSSValue* keyword = GetFontStretchKeyword(val);
     if (!keyword)
       return false;
     val = keyword;
   }
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
+  if (val->IsIdentifierValue() &&
+      ToCSSIdentifierValue(val)->GetValueID() == CSSValueNormal)
     return true;
 
   char prefix = '\0';
   switch (property.PropertyID()) {
-    case CSSPropertyID::kFontStyle:
+    case CSSPropertyFontStyle:
       break;  // No prefix.
-    case CSSPropertyID::kFontFamily:
-    case CSSPropertyID::kFontStretch:
-    case CSSPropertyID::kFontVariantCaps:
-    case CSSPropertyID::kFontVariantLigatures:
-    case CSSPropertyID::kFontVariantNumeric:
-    case CSSPropertyID::kFontVariantEastAsian:
-    case CSSPropertyID::kFontWeight:
+    case CSSPropertyFontFamily:
+    case CSSPropertyFontStretch:
+    case CSSPropertyFontVariantCaps:
+    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric:
+    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyFontWeight:
       prefix = ' ';
       break;
-    case CSSPropertyID::kLineHeight:
+    case CSSPropertyLineHeight:
       prefix = '/';
       break;
     default:
@@ -647,8 +645,9 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   String value;
   // In the font-variant shorthand a "none" ligatures value needs to be
   // expanded.
-  if (property.IDEquals(CSSPropertyID::kFontVariantLigatures) &&
-      identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
+  if (property.IDEquals(CSSPropertyFontVariantLigatures) &&
+      val->IsIdentifierValue() &&
+      ToCSSIdentifierValue(val)->GetValueID() == CSSValueNone) {
     value =
         "no-common-ligatures no-discretionary-ligatures "
         "no-historical-ligatures no-contextual";
@@ -698,24 +697,15 @@ String StylePropertySerializer::FontValue() const {
   const CSSValue* ligatures_value = font_variant_ligatures_property.Value();
   const CSSValue* numeric_value = font_variant_numeric_property.Value();
   const CSSValue* east_asian_value = font_variant_east_asian_property.Value();
-
-  auto* ligatures_identifier_value =
-      DynamicTo<CSSIdentifierValue>(ligatures_value);
-  if ((ligatures_identifier_value &&
-       ligatures_identifier_value->GetValueID() != CSSValueID::kNormal) ||
-      ligatures_value->IsValueList())
-    return g_empty_string;
-
-  auto* numeric_identifier_value = DynamicTo<CSSIdentifierValue>(numeric_value);
-  if ((numeric_identifier_value &&
-       numeric_identifier_value->GetValueID() != CSSValueID::kNormal) ||
-      numeric_value->IsValueList())
-    return g_empty_string;
-
-  auto* east_asian_identifier_value =
-      DynamicTo<CSSIdentifierValue>(east_asian_value);
-  if ((east_asian_identifier_value &&
-       east_asian_identifier_value->GetValueID() != CSSValueID::kNormal) ||
+  if ((ligatures_value->IsIdentifierValue() &&
+       ToCSSIdentifierValue(ligatures_value)->GetValueID() != CSSValueNormal) ||
+      ligatures_value->IsValueList() ||
+      (numeric_value->IsIdentifierValue() &&
+       ToCSSIdentifierValue(numeric_value)->GetValueID() != CSSValueNormal) ||
+      numeric_value->IsValueList() ||
+      (east_asian_value->IsIdentifierValue() &&
+       ToCSSIdentifierValue(east_asian_value)->GetValueID() !=
+           CSSValueNormal) ||
       east_asian_value->IsValueList())
     return g_empty_string;
 
@@ -723,10 +713,9 @@ String StylePropertySerializer::FontValue() const {
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStyle(), result);
 
   const CSSValue* val = font_variant_caps_property.Value();
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
-  if (identifier_value &&
-      (identifier_value->GetValueID() != CSSValueID::kSmallCaps &&
-       identifier_value->GetValueID() != CSSValueID::kNormal))
+  if (val->IsIdentifierValue() &&
+      (ToCSSIdentifierValue(val)->GetValueID() != CSSValueSmallCaps &&
+       ToCSSIdentifierValue(val)->GetValueID() != CSSValueNormal))
     return g_empty_string;
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
 
@@ -892,7 +881,7 @@ String StylePropertySerializer::GetLayeredShorthandValue(
   for (unsigned i = 0; i < size; i++) {
     values[i] = property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
     if (values[i]->IsBaseValueList()) {
-      const CSSValueList* value_list = To<CSSValueList>(values[i].Get());
+      const CSSValueList* value_list = ToCSSValueList(values[i]);
       num_layers = std::max(num_layers, value_list->length());
     }
   }
@@ -914,15 +903,15 @@ String StylePropertySerializer::GetLayeredShorthandValue(
 
       // Get a CSSValue for this property and layer.
       if (values[property_index]->IsBaseValueList()) {
-        const auto* property_values =
-            To<CSSValueList>(values[property_index].Get());
+        const CSSValueList* property_values =
+            ToCSSValueList(values[property_index]);
         // There might not be an item for this layer for this property.
         if (layer < property_values->length())
           value = &property_values->Item(layer);
       } else if ((layer == 0 &&
-                  !property->IDEquals(CSSPropertyID::kBackgroundColor)) ||
+                  !property->IDEquals(CSSPropertyBackgroundColor)) ||
                  (layer == num_layers - 1 &&
-                  property->IDEquals(CSSPropertyID::kBackgroundColor))) {
+                  property->IDEquals(CSSPropertyBackgroundColor))) {
         // Singletons except background color belong in the 0th layer.
         // Background color belongs in the last layer.
         value = values[property_index];
@@ -932,45 +921,42 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         continue;
 
       // Special case for background-repeat.
-      if (property->IDEquals(CSSPropertyID::kBackgroundRepeatX) ||
-          property->IDEquals(CSSPropertyID::kWebkitMaskRepeatX)) {
+      if (property->IDEquals(CSSPropertyBackgroundRepeatX) ||
+          property->IDEquals(CSSPropertyWebkitMaskRepeatX)) {
         DCHECK(shorthand.properties()[property_index + 1]->IDEquals(
-                   CSSPropertyID::kBackgroundRepeatY) ||
+                   CSSPropertyBackgroundRepeatY) ||
                shorthand.properties()[property_index + 1]->IDEquals(
-                   CSSPropertyID::kWebkitMaskRepeatY));
-        auto* value_list =
-            DynamicTo<CSSValueList>(values[property_index + 1].Get());
+                   CSSPropertyWebkitMaskRepeatY));
         const CSSValue& y_value =
-            value_list ? value_list->Item(layer) : *values[property_index + 1];
+            values[property_index + 1]->IsValueList()
+                ? ToCSSValueList(values[property_index + 1])->Item(layer)
+                : *values[property_index + 1];
 
         // FIXME: At some point we need to fix this code to avoid returning an
         // invalid shorthand, since some longhand combinations are not
         // serializable into a single shorthand.
-        if (!IsA<CSSIdentifierValue>(value) ||
-            !IsA<CSSIdentifierValue>(y_value))
+        if (!value->IsIdentifierValue() || !y_value.IsIdentifierValue())
           continue;
 
-        CSSValueID x_id = To<CSSIdentifierValue>(value)->GetValueID();
-        CSSValueID y_id = To<CSSIdentifierValue>(y_value).GetValueID();
+        CSSValueID x_id = ToCSSIdentifierValue(value)->GetValueID();
+        CSSValueID y_id = ToCSSIdentifierValue(y_value).GetValueID();
         // Maybe advance propertyIndex to look at the next CSSValue in the list
         // for the checks below.
         if (x_id == y_id) {
           use_single_word_shorthand = true;
           property = shorthand.properties()[++property_index];
-        } else if (x_id == CSSValueID::kRepeat &&
-                   y_id == CSSValueID::kNoRepeat) {
+        } else if (x_id == CSSValueRepeat && y_id == CSSValueNoRepeat) {
           use_repeat_x_shorthand = true;
           property = shorthand.properties()[++property_index];
-        } else if (x_id == CSSValueID::kNoRepeat &&
-                   y_id == CSSValueID::kRepeat) {
+        } else if (x_id == CSSValueNoRepeat && y_id == CSSValueRepeat) {
           use_repeat_y_shorthand = true;
           property = shorthand.properties()[++property_index];
         }
       }
 
       if (!value->IsInitialValue()) {
-        if (property->IDEquals(CSSPropertyID::kBackgroundSize) ||
-            property->IDEquals(CSSPropertyID::kWebkitMaskSize)) {
+        if (property->IDEquals(CSSPropertyBackgroundSize) ||
+            property->IDEquals(CSSPropertyWebkitMaskSize)) {
           if (found_position_ycss_property || found_position_xcss_property)
             layer_result.Append(" / ");
           else
@@ -983,20 +969,20 @@ String StylePropertySerializer::GetLayeredShorthandValue(
 
         if (use_repeat_x_shorthand) {
           use_repeat_x_shorthand = false;
-          layer_result.Append(getValueName(CSSValueID::kRepeatX));
+          layer_result.Append(getValueName(CSSValueRepeatX));
         } else if (use_repeat_y_shorthand) {
           use_repeat_y_shorthand = false;
-          layer_result.Append(getValueName(CSSValueID::kRepeatY));
+          layer_result.Append(getValueName(CSSValueRepeatY));
         } else {
           if (use_single_word_shorthand)
             use_single_word_shorthand = false;
           layer_result.Append(value->CssText());
         }
-        if (property->IDEquals(CSSPropertyID::kBackgroundPositionX) ||
-            property->IDEquals(CSSPropertyID::kWebkitMaskPositionX))
+        if (property->IDEquals(CSSPropertyBackgroundPositionX) ||
+            property->IDEquals(CSSPropertyWebkitMaskPositionX))
           found_position_xcss_property = true;
-        if (property->IDEquals(CSSPropertyID::kBackgroundPositionY) ||
-            property->IDEquals(CSSPropertyID::kWebkitMaskPositionY)) {
+        if (property->IDEquals(CSSPropertyBackgroundPositionY) ||
+            property->IDEquals(CSSPropertyWebkitMaskPositionY)) {
           found_position_ycss_property = true;
           // background-position is a special case. If only the first offset is
           // specified, the second one defaults to "center", not the same value.
@@ -1089,24 +1075,24 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
                                         const CSSValue& repeat_ycss_value) {
   // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
   DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, initial_repeat_value,
-                      (CSSIdentifierValue::Create(CSSValueID::kRepeat)));
+                      (CSSIdentifierValue::Create(CSSValueRepeat)));
   const CSSIdentifierValue& repeat_x =
       repeat_xcss_value.IsInitialValue()
           ? *initial_repeat_value
-          : To<CSSIdentifierValue>(repeat_xcss_value);
+          : ToCSSIdentifierValue(repeat_xcss_value);
   const CSSIdentifierValue& repeat_y =
       repeat_ycss_value.IsInitialValue()
           ? *initial_repeat_value
-          : To<CSSIdentifierValue>(repeat_ycss_value);
+          : ToCSSIdentifierValue(repeat_ycss_value);
   CSSValueID repeat_x_value_id = repeat_x.GetValueID();
   CSSValueID repeat_y_value_id = repeat_y.GetValueID();
   if (repeat_x_value_id == repeat_y_value_id) {
     builder.Append(repeat_x.CssText());
-  } else if (repeat_x_value_id == CSSValueID::kNoRepeat &&
-             repeat_y_value_id == CSSValueID::kRepeat) {
+  } else if (repeat_x_value_id == CSSValueNoRepeat &&
+             repeat_y_value_id == CSSValueRepeat) {
     builder.Append("repeat-y");
-  } else if (repeat_x_value_id == CSSValueID::kRepeat &&
-             repeat_y_value_id == CSSValueID::kNoRepeat) {
+  } else if (repeat_x_value_id == CSSValueRepeat &&
+             repeat_y_value_id == CSSValueNoRepeat) {
     builder.Append("repeat-x");
   } else {
     builder.Append(repeat_x.CssText());
@@ -1121,19 +1107,23 @@ String StylePropertySerializer::BackgroundRepeatPropertyValue() const {
   const CSSValue& repeat_y =
       *property_set_.GetPropertyCSSValue(GetCSSPropertyBackgroundRepeatY());
 
-  const auto* repeat_x_list = DynamicTo<CSSValueList>(repeat_x);
+  const CSSValueList* repeat_x_list = nullptr;
   int repeat_x_length = 1;
-  if (repeat_x_list)
+  if (repeat_x.IsValueList()) {
+    repeat_x_list = &ToCSSValueList(repeat_x);
     repeat_x_length = repeat_x_list->length();
-  else if (!repeat_x.IsIdentifierValue())
+  } else if (!repeat_x.IsIdentifierValue()) {
     return String();
+  }
 
-  const auto* repeat_y_list = DynamicTo<CSSValueList>(repeat_y);
+  const CSSValueList* repeat_y_list = nullptr;
   int repeat_y_length = 1;
-  if (repeat_y_list)
+  if (repeat_y.IsValueList()) {
+    repeat_y_list = &ToCSSValueList(repeat_y);
     repeat_y_length = repeat_y_list->length();
-  else if (!repeat_y.IsIdentifierValue())
+  } else if (!repeat_y.IsIdentifierValue()) {
     return String();
+  }
 
   size_t shorthand_length =
       lowestCommonMultiple(repeat_x_length, repeat_y_length);
@@ -1157,12 +1147,12 @@ String StylePropertySerializer::PageBreakPropertyValue(
     const StylePropertyShorthand& shorthand) const {
   const CSSValue* value =
       property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
-  CSSValueID value_id = To<CSSIdentifierValue>(value)->GetValueID();
+  CSSValueID value_id = ToCSSIdentifierValue(value)->GetValueID();
   // https://drafts.csswg.org/css-break/#page-break-properties
-  if (value_id == CSSValueID::kPage)
+  if (value_id == CSSValuePage)
     return "always";
-  if (value_id == CSSValueID::kAuto || value_id == CSSValueID::kLeft ||
-      value_id == CSSValueID::kRight || value_id == CSSValueID::kAvoid)
+  if (value_id == CSSValueAuto || value_id == CSSValueLeft ||
+      value_id == CSSValueRight || value_id == CSSValueAvoid)
     return value->CssText();
   return String();
 }

@@ -96,7 +96,7 @@ class VRTestHook {
   virtual void DetachCurrentThread() = 0;
 };
 
-class ServiceTestHook {
+class TestHookRegistration {
  public:
   virtual void SetTestHook(VRTestHook*) = 0;
 };

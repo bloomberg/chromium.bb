@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_component_transfer_element.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -45,28 +44,15 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
     const QualifiedName& tag_name,
     Document& document)
     : SVGElement(tag_name, document),
-      table_values_(MakeGarbageCollected<SVGAnimatedNumberList>(
-          this,
-          svg_names::kTableValuesAttr)),
-      slope_(MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                     svg_names::kSlopeAttr,
-                                                     1)),
+      table_values_(
+          SVGAnimatedNumberList::Create(this, svg_names::kTableValuesAttr)),
+      slope_(SVGAnimatedNumber::Create(this, svg_names::kSlopeAttr, 1)),
       intercept_(
-          MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                  svg_names::kInterceptAttr,
-                                                  0.0f)),
-      amplitude_(
-          MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                  svg_names::kAmplitudeAttr,
-                                                  1)),
-      exponent_(
-          MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                  svg_names::kExponentAttr,
-                                                  1)),
-      offset_(MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                      svg_names::kOffsetAttr,
-                                                      0.0f)),
-      type_(MakeGarbageCollected<SVGAnimatedEnumeration<ComponentTransferType>>(
+          SVGAnimatedNumber::Create(this, svg_names::kInterceptAttr, 0.0f)),
+      amplitude_(SVGAnimatedNumber::Create(this, svg_names::kAmplitudeAttr, 1)),
+      exponent_(SVGAnimatedNumber::Create(this, svg_names::kExponentAttr, 1)),
+      offset_(SVGAnimatedNumber::Create(this, svg_names::kOffsetAttr, 0.0f)),
+      type_(SVGAnimatedEnumeration<ComponentTransferType>::Create(
           this,
           svg_names::kTypeAttr,
           FECOMPONENTTRANSFER_TYPE_IDENTITY)) {

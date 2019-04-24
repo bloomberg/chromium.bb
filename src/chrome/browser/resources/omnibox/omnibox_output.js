@@ -14,9 +14,6 @@ cr.define('omnibox_output', function() {
    */
   let ResultsDetails;
 
-  /** @typedef {Array<{key: string, value: string}>} */
-  let KeyValuePair;
-
   /** @param {!Element} element*/
   function clearChildren(element) {
     while (element.firstChild) {
@@ -823,11 +820,11 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OutputAdditionalInfoProperty extends OutputJsonProperty {
+  class OutputKeyValueTuplesProperty extends OutputJsonProperty {
     /** @private @override */
     render_() {
       clearChildren(this.pre_);
-      this.tuples_.forEach(({key, value}) => {
+      this.value.forEach(({key, value}) => {
         this.pre_.appendChild(
             OutputJsonProperty.renderJsonWord(key + ': ', ['key']));
         this.pre_.appendChild(
@@ -837,16 +834,8 @@ cr.define('omnibox_output', function() {
 
     /** @override @return {string} */
     get text() {
-      return this.tuples_.reduce(
+      return this.value.reduce(
           (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
-    }
-
-    /** @private @return {!KeyValuePair} */
-    get tuples_() {
-      return [
-        .../** @type {!KeyValuePair} */ (this.value),
-        {key: 'document_type', value: this.values_[1]}
-      ];
     }
   }
 
@@ -1078,7 +1067,7 @@ cr.define('omnibox_output', function() {
     new Column(
         ['Additional Info'], '', 'additionalInfo', false,
         'Additional Info\nProvider-specific information about the result.',
-        ['additionalInfo', 'documentType'], OutputAdditionalInfoProperty)
+        ['additionalInfo'], OutputKeyValueTuplesProperty)
   ];
 
   /** @type {!Column} */
@@ -1108,7 +1097,7 @@ cr.define('omnibox_output', function() {
   customElements.define(
       'output-json-property', OutputJsonProperty, {extends: 'td'});
   customElements.define(
-      'output-additional-info-property', OutputAdditionalInfoProperty,
+      'output-key-value-tuple-property', OutputKeyValueTuplesProperty,
       {extends: 'td'});
   customElements.define(
       'output-url-property', OutputUrlProperty, {extends: 'td'});

@@ -31,7 +31,7 @@ bool IsListValuedProperty(const CSSProperty& property,
   // in all cases. See https://github.com/w3c/css-houdini-drafts/issues/823
   // For now we only consider a custom property list-valued if it has a single
   // syntax component that is repeatable (e.g. <length>+).
-  if (property.IDEquals(CSSPropertyID::kVariable) && registration) {
+  if (property.IDEquals(CSSPropertyVariable) && registration) {
     const auto& components = registration->Syntax().Components();
     return components.size() == 1 && components[0].IsRepeatable();
   }
@@ -72,8 +72,7 @@ const CSSVariableReferenceValue* CreateVariableReferenceValue(
   CSSParserTokenRange range(tokens);
   scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
       range, false, false, context.BaseURL(), context.Charset());
-  return MakeGarbageCollected<CSSVariableReferenceValue>(variable_data,
-                                                         context);
+  return CSSVariableReferenceValue::Create(variable_data, context);
 }
 
 const CSSVariableReferenceValue* CreateVariableReferenceValue(
@@ -111,7 +110,7 @@ const CSSValue* StyleValueToCSSValue(
     const PropertyRegistration* registration,
     const CSSStyleValue& style_value,
     const ExecutionContext& execution_context) {
-  DCHECK_EQ(property.IDEquals(CSSPropertyID::kVariable),
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
 
   const CSSSyntaxComponent* syntax_component = nullptr;
@@ -124,9 +123,9 @@ const CSSValue* StyleValueToCSSValue(
   }
 
   if (style_value.GetType() == CSSStyleValue::kUnknownType &&
-      // Registered custom properties must enter the CSSPropertyID::kVariable
+      // Registered custom properties must enter the CSSPropertyVariable
       // switch-case below, for proper parsing according to registered syntax.
-      !(property_id == CSSPropertyID::kVariable && registration)) {
+      !(property_id == CSSPropertyVariable && registration)) {
     return CSSParser::ParseSingleValue(
         property.PropertyID(), style_value.toString(),
         CSSParserContext::Create(execution_context));
@@ -136,7 +135,7 @@ const CSSValue* StyleValueToCSSValue(
   // TODO(https://crbug.com/545324): Move this into a method on
   // CSSProperty when there are more of these cases.
   switch (property_id) {
-    case CSSPropertyID::kVariable:
+    case CSSPropertyVariable:
       if (registration &&
           style_value.GetType() != CSSStyleValue::kUnparsedType) {
         CSSParserContext* context = CSSParserContext::Create(execution_context);
@@ -145,20 +144,20 @@ const CSSValue* StyleValueToCSSValue(
         return CreateVariableReferenceValue(string, *context);
       }
       break;
-    case CSSPropertyID::kBorderBottomLeftRadius:
-    case CSSPropertyID::kBorderBottomRightRadius:
-    case CSSPropertyID::kBorderTopLeftRadius:
-    case CSSPropertyID::kBorderTopRightRadius: {
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderTopRightRadius: {
       // level 1 only accept single <length-percentages>, but border-radius-*
       // expects pairs.
       const auto* value = style_value.ToCSSValue();
       if (value->IsPrimitiveValue()) {
-        return MakeGarbageCollected<CSSValuePair>(
-            value, value, CSSValuePair::kDropIdenticalValues);
+        return CSSValuePair::Create(value, value,
+                                    CSSValuePair::kDropIdenticalValues);
       }
       break;
     }
-    case CSSPropertyID::kContain: {
+    case CSSPropertyContain: {
       // level 1 only accepts single values, which are stored internally
       // as a single element list.
       const auto* value = style_value.ToCSSValue();
@@ -170,16 +169,16 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
-    case CSSPropertyID::kFontVariantEastAsian:
-    case CSSPropertyID::kFontVariantLigatures:
-    case CSSPropertyID::kFontVariantNumeric: {
+    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric: {
       // level 1 only accept single keywords, but font-variant-* store
       // them as a list
       if (const auto* value =
-              DynamicTo<CSSIdentifierValue>(style_value.ToCSSValue())) {
+              ToCSSIdentifierValueOrNull(style_value.ToCSSValue())) {
         // 'none' and 'normal' are stored as a single value
-        if (value->GetValueID() == CSSValueID::kNone ||
-            value->GetValueID() == CSSValueID::kNormal) {
+        if (value->GetValueID() == CSSValueNone ||
+            value->GetValueID() == CSSValueNormal) {
           break;
         }
 
@@ -189,7 +188,7 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
-    case CSSPropertyID::kGridAutoFlow: {
+    case CSSPropertyGridAutoFlow: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();
       // single keywords are wrapped in a list.
@@ -200,7 +199,7 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
-    case CSSPropertyID::kOffsetRotate: {
+    case CSSPropertyOffsetRotate: {
       // level 1 only accepts single values, which are stored internally
       // as a single element list.
       const auto* value = style_value.ToCSSValue();
@@ -212,35 +211,33 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
-    case CSSPropertyID::kPaintOrder: {
+    case CSSPropertyPaintOrder: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();
       // only 'normal' is stored as an identifier, the other keywords are
       // wrapped in a list.
-      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-      if (identifier_value && !value->IsCSSWideKeyword() &&
-          identifier_value->GetValueID() != CSSValueID::kNormal) {
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
+          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNormal) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;
       }
       break;
     }
-    case CSSPropertyID::kTextDecorationLine: {
+    case CSSPropertyTextDecorationLine: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();
       // only 'none' is stored as an identifier, the other keywords are
       // wrapped in a list.
-      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-      if (identifier_value && !value->IsCSSWideKeyword() &&
-          identifier_value->GetValueID() != CSSValueID::kNone) {
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
+          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNone) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;
       }
       break;
     }
-    case CSSPropertyID::kTextIndent: {
+    case CSSPropertyTextIndent: {
       // level 1 only accepts single values, which are stored internally
       // as a single element list.
       const auto* value = style_value.ToCSSValue();
@@ -251,8 +248,8 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
-    case CSSPropertyID::kTransitionProperty:
-    case CSSPropertyID::kTouchAction: {
+    case CSSPropertyTransitionProperty:
+    case CSSPropertyTouchAction: {
       // level 1 only accepts single keywords, which are stored internally
       // as a single element list
       const auto* value = style_value.ToCSSValue();
@@ -277,7 +274,7 @@ const CSSValue* CoerceStyleValueOrString(
     const CSSStyleValueOrString& value,
     const ExecutionContext& execution_context) {
   DCHECK(!IsListValuedProperty(property, registration));
-  DCHECK_EQ(property.IDEquals(CSSPropertyID::kVariable),
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
 
   if (value.IsCSSStyleValue()) {
@@ -306,7 +303,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
     const HeapVector<CSSStyleValueOrString>& values,
     const ExecutionContext& execution_context) {
   DCHECK(IsListValuedProperty(property, registration));
-  DCHECK_EQ(property.IDEquals(CSSPropertyID::kVariable),
+  DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
   if (values.IsEmpty())
     return nullptr;
@@ -319,7 +316,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
   if (style_values.IsEmpty())
     return nullptr;
 
-  if (property.IDEquals(CSSPropertyID::kVariable) && registration) {
+  if (property.IDEquals(CSSPropertyVariable) && registration) {
     CSSParserContext* context = CSSParserContext::Create(execution_context);
     return CreateVariableReferenceValue(property, custom_property_name,
                                         *registration, style_values, *context);
@@ -347,7 +344,7 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
                            const HeapVector<CSSStyleValueOrString>& values,
                            ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyID::kInvalid) {
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
   }
@@ -381,14 +378,13 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  AtomicString custom_property_name = (property_id == CSSPropertyID::kVariable)
+  AtomicString custom_property_name = (property_id == CSSPropertyVariable)
                                           ? AtomicString(property_name)
                                           : g_null_atom;
 
   const PropertyRegistration* registration = nullptr;
 
-  if (property_id == CSSPropertyID::kVariable &&
-      IsA<Document>(execution_context)) {
+  if (property_id == CSSPropertyVariable && IsA<Document>(execution_context)) {
     const PropertyRegistry* registry =
         To<Document>(*execution_context).GetPropertyRegistry();
     if (registry) {
@@ -412,7 +408,7 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  if (property_id == CSSPropertyID::kVariable)
+  if (property_id == CSSPropertyVariable)
     SetCustomProperty(custom_property_name, *result);
   else
     SetProperty(property_id, *result);
@@ -427,14 +423,14 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
-  if (property_id == CSSPropertyID::kInvalid) {
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
   }
 
   const CSSProperty& property = CSSProperty::Get(property_id);
 
-  if (property_id == CSSPropertyID::kVariable) {
+  if (property_id == CSSPropertyVariable) {
     AtomicString custom_property_name(property_name);
 
     const PropertyRegistration* registration =
@@ -488,20 +484,20 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
   CSSValueList* current_value = nullptr;
   if (const CSSValue* css_value = GetProperty(property_id)) {
-    current_value = To<CSSValueList>(css_value)->Copy();
+    DCHECK(css_value->IsValueList());
+    current_value = ToCSSValueList(css_value)->Copy();
   } else {
     current_value = CssValueListForPropertyID(property_id);
   }
 
   const CSSValue* result = CoerceStyleValuesOrStrings(
       property, g_null_atom, nullptr, values, *execution_context);
-  const auto* result_value_list = DynamicTo<CSSValueList>(result);
-  if (!result_value_list) {
+  if (!result || !result->IsValueList()) {
     exception_state.ThrowTypeError("Invalid type for property");
     return;
   }
 
-  for (const auto& value : *result_value_list) {
+  for (const auto& value : *ToCSSValueList(result)) {
     current_value->Append(*value);
   }
 
@@ -511,12 +507,12 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 void StylePropertyMap::remove(const String& property_name,
                               ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyID::kInvalid) {
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid property name: " + property_name);
     return;
   }
 
-  if (property_id == CSSPropertyID::kVariable) {
+  if (property_id == CSSPropertyVariable) {
     RemoveCustomProperty(AtomicString(property_name));
   } else {
     RemoveProperty(property_id);

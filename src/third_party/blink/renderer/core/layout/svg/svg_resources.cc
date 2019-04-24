@@ -172,7 +172,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       ClipPathOperation* clip_path_operation = computed_style.ClipPath();
       if (clip_path_operation->GetType() == ClipPathOperation::REFERENCE) {
         const ReferenceClipPathOperation& clip_path_reference =
-            To<ReferenceClipPathOperation>(*clip_path_operation);
+            ToReferenceClipPathOperation(*clip_path_operation);
         EnsureResources(resources).SetClipper(
             CastResource<LayoutSVGResourceClipper>(
                 clip_path_reference.Resource()));
@@ -183,11 +183,12 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       const FilterOperations& filter_operations = computed_style.Filter();
       if (filter_operations.size() == 1) {
         const FilterOperation& filter_operation = *filter_operations.at(0);
-        if (const auto* reference_filter_operation =
-                DynamicTo<ReferenceFilterOperation>(filter_operation)) {
+        if (filter_operation.GetType() == FilterOperation::REFERENCE) {
+          const auto& reference_filter_operation =
+              ToReferenceFilterOperation(filter_operation);
           EnsureResources(resources).SetFilter(
               CastResource<LayoutSVGResourceFilter>(
-                  reference_filter_operation->Resource()));
+                  reference_filter_operation.Resource()));
         }
       }
     }
@@ -464,7 +465,7 @@ void SVGResources::SetClipper(LayoutSVGResourceClipper* clipper) {
   DCHECK_EQ(clipper->ResourceType(), kClipperResourceType);
 
   if (!clipper_filter_masker_data_)
-    clipper_filter_masker_data_ = std::make_unique<ClipperFilterMaskerData>();
+    clipper_filter_masker_data_ = ClipperFilterMaskerData::Create();
 
   clipper_filter_masker_data_->clipper = clipper;
 }
@@ -476,7 +477,7 @@ void SVGResources::SetFilter(LayoutSVGResourceFilter* filter) {
   DCHECK_EQ(filter->ResourceType(), kFilterResourceType);
 
   if (!clipper_filter_masker_data_)
-    clipper_filter_masker_data_ = std::make_unique<ClipperFilterMaskerData>();
+    clipper_filter_masker_data_ = ClipperFilterMaskerData::Create();
 
   clipper_filter_masker_data_->filter = filter;
 }
@@ -488,7 +489,7 @@ void SVGResources::SetMarkerStart(LayoutSVGResourceMarker* marker_start) {
   DCHECK_EQ(marker_start->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
-    marker_data_ = std::make_unique<MarkerData>();
+    marker_data_ = MarkerData::Create();
 
   marker_data_->marker_start = marker_start;
 }
@@ -500,7 +501,7 @@ void SVGResources::SetMarkerMid(LayoutSVGResourceMarker* marker_mid) {
   DCHECK_EQ(marker_mid->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
-    marker_data_ = std::make_unique<MarkerData>();
+    marker_data_ = MarkerData::Create();
 
   marker_data_->marker_mid = marker_mid;
 }
@@ -512,7 +513,7 @@ void SVGResources::SetMarkerEnd(LayoutSVGResourceMarker* marker_end) {
   DCHECK_EQ(marker_end->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
-    marker_data_ = std::make_unique<MarkerData>();
+    marker_data_ = MarkerData::Create();
 
   marker_data_->marker_end = marker_end;
 }
@@ -524,7 +525,7 @@ void SVGResources::SetMasker(LayoutSVGResourceMasker* masker) {
   DCHECK_EQ(masker->ResourceType(), kMaskerResourceType);
 
   if (!clipper_filter_masker_data_)
-    clipper_filter_masker_data_ = std::make_unique<ClipperFilterMaskerData>();
+    clipper_filter_masker_data_ = ClipperFilterMaskerData::Create();
 
   clipper_filter_masker_data_->masker = masker;
 }
@@ -534,7 +535,7 @@ void SVGResources::SetFill(LayoutSVGResourcePaintServer* fill) {
     return;
 
   if (!fill_stroke_data_)
-    fill_stroke_data_ = std::make_unique<FillStrokeData>();
+    fill_stroke_data_ = FillStrokeData::Create();
 
   fill_stroke_data_->fill = fill;
 }
@@ -544,7 +545,7 @@ void SVGResources::SetStroke(LayoutSVGResourcePaintServer* stroke) {
     return;
 
   if (!fill_stroke_data_)
-    fill_stroke_data_ = std::make_unique<FillStrokeData>();
+    fill_stroke_data_ = FillStrokeData::Create();
 
   fill_stroke_data_->stroke = stroke;
 }
@@ -613,7 +614,7 @@ void SVGResources::UpdateClipPathFilterMask(SVGElement& element,
                                             const ComputedStyle& style) {
   const bool had_client = element.GetSVGResourceClient();
   if (auto* reference_clip =
-          DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
+          ToReferenceClipPathOperationOrNull(style.ClipPath()))
     reference_clip->AddClient(element.EnsureSVGResourceClient());
   if (style.HasFilter())
     style.Filter().AddClient(element.EnsureSVGResourceClient());
@@ -631,7 +632,7 @@ void SVGResources::ClearClipPathFilterMask(SVGElement& element,
   if (!client)
     return;
   if (auto* old_reference_clip =
-          DynamicTo<ReferenceClipPathOperation>(style->ClipPath()))
+          ToReferenceClipPathOperationOrNull(style->ClipPath()))
     old_reference_clip->RemoveClient(*client);
   if (style->HasFilter())
     style->Filter().RemoveClient(*client);

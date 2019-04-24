@@ -19,7 +19,6 @@ static_library("browser") {
   deps = [
     "//components/language/core/browser",
     "//components/search_engines:search_engines",
-    "//components/ukm/content",
     "//content/public/browser",
     "//content/public/common",
     "//net",

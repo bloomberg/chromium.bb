@@ -31,16 +31,11 @@ class PrefetchRequestFetcherTest : public PrefetchRequestTestBase {
   PrefetchRequestStatus RunFetcherWithHttpError(net::HttpStatusCode http_error);
   PrefetchRequestStatus RunFetcherWithData(const std::string& response_data,
                                            std::string* data_received);
-  PrefetchRequestStatus RunFetcherWithHttpErrorAndData(
-      net::HttpStatusCode http_error,
-      const std::string& response_data);
-  void SetEmptyRequest(bool empty_request) { empty_request_ = empty_request; }
 
  private:
   PrefetchRequestStatus RunFetcher(
       base::OnceCallback<void(void)> respond_callback,
       std::string* data_received);
-  bool empty_request_;
 };
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithNetError(
@@ -73,24 +68,13 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithData(
                     data_received);
 }
 
-PrefetchRequestStatus
-PrefetchRequestFetcherTest::RunFetcherWithHttpErrorAndData(
-    net::HttpStatusCode http_error,
-    const std::string& response_data) {
-  std::string data_received;
-  return RunFetcher(
-      base::BindOnce(&PrefetchRequestTestBase::RespondWithHttpErrorAndData,
-                     base::Unretained(this), http_error, response_data),
-      &data_received);
-}
-
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
   std::unique_ptr<PrefetchRequestFetcher> fetcher =
       PrefetchRequestFetcher::CreateForPost(
-          kTestURL, kTestMessage, /*testing_header_value=*/"", empty_request_,
+          kTestURL, kTestMessage, /*testing_header_value=*/"",
           shared_url_loader_factory(), callback.Get());
 
   PrefetchRequestStatus status;
@@ -142,15 +126,6 @@ TEST_F(PrefetchRequestFetcherTest, HttpErrors) {
             RunFetcherWithHttpError(net::HTTP_SERVICE_UNAVAILABLE));
   EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_GATEWAY_TIMEOUT));
-
-  SetEmptyRequest(false);
-  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS,
-            RunFetcherWithHttpErrorAndData(net::HTTP_FORBIDDEN,
-                                           "request forbidden by OPS"));
-  SetEmptyRequest(true);
-  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendForbiddenByOPS,
-            RunFetcherWithHttpErrorAndData(net::HTTP_FORBIDDEN,
-                                           "request forbidden by OPS"));
 }
 
 TEST_F(PrefetchRequestFetcherTest, EmptyResponse) {
@@ -160,17 +135,8 @@ TEST_F(PrefetchRequestFetcherTest, EmptyResponse) {
   EXPECT_TRUE(data.empty());
 }
 
-TEST_F(PrefetchRequestFetcherTest, EmptyRequestSuccess) {
+TEST_F(PrefetchRequestFetcherTest, Success) {
   std::string data;
-  SetEmptyRequest(true);
-  EXPECT_EQ(PrefetchRequestStatus::kEmptyRequestSuccess,
-            RunFetcherWithData("Any data.", &data));
-  EXPECT_FALSE(data.empty());
-}
-
-TEST_F(PrefetchRequestFetcherTest, NonEmptyRequestSuccess) {
-  std::string data;
-  SetEmptyRequest(false);
   EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             RunFetcherWithData("Any data.", &data));
   EXPECT_FALSE(data.empty());

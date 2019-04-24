@@ -29,7 +29,7 @@ class V8_EXPORT_PRIVATE StateValuesCache {
 
  private:
   static const size_t kMaxInputCount = 8;
-  using WorkingBuffer = std::array<Node*, kMaxInputCount>;
+  typedef std::array<Node*, kMaxInputCount> WorkingBuffer;
 
   struct NodeKey {
     Node* node;

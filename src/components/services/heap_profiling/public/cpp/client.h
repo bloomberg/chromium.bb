@@ -8,10 +8,12 @@
 #include "base/memory/weak_ptr.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace heap_profiling {
 
 class SamplingProfilerWrapper;
+class SenderPipe;
 
 // The Client listens on the interface for a StartProfiling message. On
 // receiving the message, it begins profiling the current process.
@@ -24,6 +26,7 @@ class Client : public mojom::ProfilingClient {
 
   // mojom::ProfilingClient overrides:
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
+  void FlushMemlogPipe(uint32_t barrier_id) override;
   void RetrieveHeapProfile(RetrieveHeapProfileCallback callback) override;
 
   void BindToInterface(mojom::ProfilingClientRequest request);
@@ -39,9 +42,12 @@ class Client : public mojom::ProfilingClient {
   // has a chance to figure out which one to keep.
   mojo::BindingSet<mojom::ProfilingClient> bindings_;
 
-  bool started_profiling_{false};
+  bool started_profiling_;
+
   std::unique_ptr<SamplingProfilerWrapper> sampling_profiler_;
-  base::WeakPtrFactory<Client> weak_factory_{this};
+  std::unique_ptr<SenderPipe> sender_pipe_;
+
+  base::WeakPtrFactory<Client> weak_factory_;
 };
 
 }  // namespace heap_profiling

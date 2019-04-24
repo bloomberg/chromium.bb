@@ -28,10 +28,6 @@ void RefCountedVideoSourceProvider::ShutdownServiceAsap() {
   device_factory_provider_->ShutdownServiceAsap();
 }
 
-void RefCountedVideoSourceProvider::SetRetryCount(int32_t count) {
-  device_factory_provider_->SetRetryCount(count);
-}
-
 void RefCountedVideoSourceProvider::ReleaseProviderForTesting() {
   source_provider_.reset();
 }

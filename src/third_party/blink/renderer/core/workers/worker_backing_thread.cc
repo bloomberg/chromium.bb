@@ -56,8 +56,12 @@ void MemoryPressureNotificationToWorkerThreadIsolates(
   WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(level);
 }
 
+void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode rail_mode) {
+  WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(rail_mode);
+}
+
 WorkerBackingThread::WorkerBackingThread(const ThreadCreationParams& params)
-    : backing_thread_(std::make_unique<WebThreadSupportingGC>(params)) {}
+    : backing_thread_(WebThreadSupportingGC::Create(params)) {}
 
 WorkerBackingThread::~WorkerBackingThread() = default;
 
@@ -67,19 +71,20 @@ void WorkerBackingThread::InitializeOnBackingThread(
   backing_thread_->InitializeOnThread();
 
   DCHECK(!isolate_);
-  ThreadScheduler* scheduler = BackingThread().PlatformThread().Scheduler();
   isolate_ = V8PerIsolateData::Initialize(
-      scheduler->V8TaskRunner(),
+      backing_thread_->PlatformThread().Scheduler()->V8TaskRunner(),
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot);
-  scheduler->SetV8Isolate(isolate_);
   AddWorkerIsolate(isolate_);
   V8Initializer::InitializeWorker(isolate_);
 
   ThreadState::Current()->RegisterTraceDOMWrappers(
-      isolate_, V8GCController::TraceDOMWrappers);
+      isolate_, V8GCController::TraceDOMWrappers,
+      ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableMarkingVisitor::PerformCleanup);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
-        isolate_, std::make_unique<V8IdleTaskRunner>(scheduler));
+        isolate_, std::make_unique<V8IdleTaskRunner>(
+                      BackingThread().PlatformThread().Scheduler()));
   }
   Platform::Current()->DidStartWorkerThread();
 
@@ -100,7 +105,6 @@ void WorkerBackingThread::InitializeOnBackingThread(
 
 void WorkerBackingThread::ShutdownOnBackingThread() {
   DCHECK(backing_thread_->IsCurrentThread());
-  BackingThread().PlatformThread().Scheduler()->SetV8Isolate(nullptr);
   Platform::Current()->WillStopWorkerThread();
 
   V8PerIsolateData::WillBeDestroyed(isolate_);
@@ -117,6 +121,14 @@ void WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(
   MutexLocker lock(IsolatesMutex());
   for (v8::Isolate* isolate : Isolates())
     isolate->MemoryPressureNotification(level);
+}
+
+// static
+void WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(
+    v8::RAILMode rail_mode) {
+  MutexLocker lock(IsolatesMutex());
+  for (v8::Isolate* isolate : Isolates())
+    isolate->SetRAILMode(rail_mode);
 }
 
 }  // namespace blink

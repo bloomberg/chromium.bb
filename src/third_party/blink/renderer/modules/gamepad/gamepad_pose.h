@@ -5,13 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_POSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_POSE_H_
 
+#include "device/gamepad/public/cpp/gamepad.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/member.h"
-
-namespace device {
-class GamepadPose;
-}
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -19,6 +17,8 @@ class GamepadPose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static GamepadPose* Create() { return MakeGarbageCollected<GamepadPose>(); }
+
   GamepadPose();
 
   bool hasOrientation() const { return has_orientation_; }

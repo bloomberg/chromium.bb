@@ -27,7 +27,7 @@ protected:
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup, 0, nullptr);
+        pass.SetBindGroup(0, bindGroup);
         pass.Dispatch(1, 1, 1);
         pass.EndPass();
         return encoder.Finish();
@@ -68,13 +68,9 @@ TEST_P(BindGroupTests, ReusedBindGroupSingleSubmit) {
     dawn::ShaderModule module =
         utils::CreateShaderModule(device, dawn::ShaderStage::Compute, shader);
     dawn::ComputePipelineDescriptor cpDesc;
+    cpDesc.module = module;
+    cpDesc.entryPoint = "main";
     cpDesc.layout = pl;
-
-    dawn::PipelineStageDescriptor computeStage;
-    computeStage.module = module;
-    computeStage.entryPoint = "main";
-    cpDesc.computeStage = &computeStage;
-
     dawn::ComputePipeline cp = device.CreateComputePipeline(&cpDesc);
 
     dawn::BufferDescriptor bufferDesc;
@@ -159,7 +155,7 @@ TEST_P(BindGroupTests, ReusedUBO) {
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
@@ -237,6 +233,7 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     samplerDescriptor.lodMinClamp = kLodMin;
     samplerDescriptor.lodMaxClamp = kLodMax;
     samplerDescriptor.compareFunction = dawn::CompareFunction::Never;
+    samplerDescriptor.borderColor = dawn::BorderColor::TransparentBlack;
 
     dawn::Sampler sampler = device.CreateSampler(&samplerDescriptor);
 
@@ -251,7 +248,7 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     descriptor.mipLevelCount = 1;
     descriptor.usage = dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
     dawn::Texture texture = device.CreateTexture(&descriptor);
-    dawn::TextureView textureView = texture.CreateDefaultView();
+    dawn::TextureView textureView = texture.CreateDefaultTextureView();
 
     int width = kRTSize, height = kRTSize;
     int widthInBytes = width * sizeof(RGBA8);
@@ -278,7 +275,7 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
@@ -373,8 +370,8 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroups[0], 0, nullptr);
-    pass.SetBindGroup(1, bindGroups[1], 0, nullptr);
+    pass.SetBindGroup(0, bindGroups[0]);
+    pass.SetBindGroup(1, bindGroups[1]);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
@@ -448,10 +445,10 @@ TEST_P(BindGroupTests, DrawTwiceInSamePipelineWithFourBindGroupSets)
     dawn::BindGroup bindGroup = utils::MakeBindGroup(
         device, layout, { { 0, uniformBuffer, 0, sizeof(color) } });
 
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
-    pass.SetBindGroup(1, bindGroup, 0, nullptr);
-    pass.SetBindGroup(2, bindGroup, 0, nullptr);
-    pass.SetBindGroup(3, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
+    pass.SetBindGroup(1, bindGroup);
+    pass.SetBindGroup(2, bindGroup);
+    pass.SetBindGroup(3, bindGroup);
     pass.Draw(3, 1, 0, 0);
 
     pass.SetPipeline(pipeline);

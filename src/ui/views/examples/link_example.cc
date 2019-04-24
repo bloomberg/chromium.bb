@@ -15,7 +15,8 @@ namespace examples {
 LinkExample::LinkExample() : ExampleBase("Link") {
 }
 
-LinkExample::~LinkExample() = default;
+LinkExample::~LinkExample() {
+}
 
 void LinkExample::CreateExampleView(View* container) {
   link_ = new Link(base::ASCIIToUTF16("Click me!"));

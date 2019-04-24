@@ -36,10 +36,6 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
-  // Discard reference to URLRequestContext and inform observers of shutdown.
-  // Must be called before destruction. May only be called on IO thread.
-  void ShutDown();
-
  protected:
   ~WebViewURLRequestContextGetter() override;
 
@@ -53,9 +49,6 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
-
-  // Used to ensure GetURLRequestContext() returns nullptr during shut down.
-  bool is_shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewURLRequestContextGetter);
 };

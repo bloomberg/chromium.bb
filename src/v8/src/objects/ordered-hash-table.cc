@@ -15,7 +15,7 @@ namespace internal {
 
 template <class Derived, int entrysize>
 Handle<Derived> OrderedHashTable<Derived, entrysize>::Allocate(
-    Isolate* isolate, int capacity, AllocationType allocation) {
+    Isolate* isolate, int capacity, PretenureFlag pretenure) {
   // Capacity must be a power of two, since we depend on being able
   // to divide and multiple by 2 (kLoadFactor) to derive capacity
   // from number of buckets. If we decide to change kLoadFactor
@@ -28,8 +28,7 @@ Handle<Derived> OrderedHashTable<Derived, entrysize>::Allocate(
   int num_buckets = capacity / kLoadFactor;
   Handle<FixedArray> backing_store = isolate->factory()->NewFixedArrayWithMap(
       Derived::GetMapRootIndex(),
-      HashTableStartIndex() + num_buckets + (capacity * kEntrySize),
-      allocation);
+      HashTableStartIndex() + num_buckets + (capacity * kEntrySize), pretenure);
   Handle<Derived> table = Handle<Derived>::cast(backing_store);
   for (int i = 0; i < num_buckets; ++i) {
     table->set(HashTableStartIndex() + i, Smi::FromInt(kNotFound));
@@ -74,8 +73,7 @@ Handle<Derived> OrderedHashTable<Derived, entrysize>::Clear(
 
   Handle<Derived> new_table =
       Allocate(isolate, kMinCapacity,
-               Heap::InYoungGeneration(*table) ? AllocationType::kYoung
-                                               : AllocationType::kOld);
+               Heap::InYoungGeneration(*table) ? NOT_TENURED : TENURED);
 
   table->SetNextTable(*new_table);
   table->SetNumberOfDeletedElements(kClearedTableSentinel);
@@ -190,10 +188,9 @@ Handle<Derived> OrderedHashTable<Derived, entrysize>::Rehash(
     Isolate* isolate, Handle<Derived> table, int new_capacity) {
   DCHECK(!table->IsObsolete());
 
-  Handle<Derived> new_table =
-      Derived::Allocate(isolate, new_capacity,
-                        Heap::InYoungGeneration(*table) ? AllocationType::kYoung
-                                                        : AllocationType::kOld);
+  Handle<Derived> new_table = Derived::Allocate(
+      isolate, new_capacity,
+      Heap::InYoungGeneration(*table) ? NOT_TENURED : TENURED);
   int nof = table->NumberOfElements();
   int nod = table->NumberOfDeletedElements();
   int new_buckets = new_table->NumberOfBuckets();
@@ -322,8 +319,8 @@ Handle<OrderedHashMap> OrderedHashMap::Add(Isolate* isolate,
 }
 
 template <>
-V8_EXPORT_PRIVATE int OrderedHashTable<OrderedNameDictionary, 3>::FindEntry(
-    Isolate* isolate, Object key) {
+int OrderedHashTable<OrderedNameDictionary, 3>::FindEntry(Isolate* isolate,
+                                                          Object key) {
   DisallowHeapAllocation no_gc;
 
   DCHECK(key->IsUniqueName());
@@ -406,67 +403,67 @@ Handle<OrderedNameDictionary> OrderedNameDictionary::DeleteEntry(
 }
 
 Handle<OrderedHashSet> OrderedHashSet::Allocate(Isolate* isolate, int capacity,
-                                                AllocationType allocation) {
+                                                PretenureFlag pretenure) {
   return OrderedHashTable<OrderedHashSet, 1>::Allocate(isolate, capacity,
-                                                       allocation);
+                                                       pretenure);
 }
 
 Handle<OrderedHashMap> OrderedHashMap::Allocate(Isolate* isolate, int capacity,
-                                                AllocationType allocation) {
+                                                PretenureFlag pretenure) {
   return OrderedHashTable<OrderedHashMap, 2>::Allocate(isolate, capacity,
-                                                       allocation);
+                                                       pretenure);
 }
 
 Handle<OrderedNameDictionary> OrderedNameDictionary::Allocate(
-    Isolate* isolate, int capacity, AllocationType allocation) {
+    Isolate* isolate, int capacity, PretenureFlag pretenure) {
   Handle<OrderedNameDictionary> table =
       OrderedHashTable<OrderedNameDictionary, 3>::Allocate(isolate, capacity,
-                                                           allocation);
+                                                           pretenure);
   table->SetHash(PropertyArray::kNoHashSentinel);
   return table;
 }
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashSet>
+template Handle<OrderedHashSet>
 OrderedHashTable<OrderedHashSet, 1>::EnsureGrowable(
     Isolate* isolate, Handle<OrderedHashSet> table);
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashSet>
-OrderedHashTable<OrderedHashSet, 1>::Shrink(Isolate* isolate,
-                                            Handle<OrderedHashSet> table);
+template Handle<OrderedHashSet> OrderedHashTable<OrderedHashSet, 1>::Shrink(
+    Isolate* isolate, Handle<OrderedHashSet> table);
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashSet>
-OrderedHashTable<OrderedHashSet, 1>::Clear(Isolate* isolate,
-                                           Handle<OrderedHashSet> table);
+template Handle<OrderedHashSet> OrderedHashTable<OrderedHashSet, 1>::Clear(
+    Isolate* isolate, Handle<OrderedHashSet> table);
 
-template V8_EXPORT_PRIVATE bool OrderedHashTable<OrderedHashSet, 1>::HasKey(
-    Isolate* isolate, OrderedHashSet table, Object key);
+template bool OrderedHashTable<OrderedHashSet, 1>::HasKey(Isolate* isolate,
+                                                          OrderedHashSet table,
+                                                          Object key);
 
-template V8_EXPORT_PRIVATE bool OrderedHashTable<OrderedHashSet, 1>::Delete(
-    Isolate* isolate, OrderedHashSet table, Object key);
+template bool OrderedHashTable<OrderedHashSet, 1>::Delete(Isolate* isolate,
+                                                          OrderedHashSet table,
+                                                          Object key);
 
-template V8_EXPORT_PRIVATE int OrderedHashTable<OrderedHashSet, 1>::FindEntry(
-    Isolate* isolate, Object key);
+template int OrderedHashTable<OrderedHashSet, 1>::FindEntry(Isolate* isolate,
+                                                            Object key);
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashMap>
+template Handle<OrderedHashMap>
 OrderedHashTable<OrderedHashMap, 2>::EnsureGrowable(
     Isolate* isolate, Handle<OrderedHashMap> table);
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashMap>
-OrderedHashTable<OrderedHashMap, 2>::Shrink(Isolate* isolate,
-                                            Handle<OrderedHashMap> table);
+template Handle<OrderedHashMap> OrderedHashTable<OrderedHashMap, 2>::Shrink(
+    Isolate* isolate, Handle<OrderedHashMap> table);
 
-template V8_EXPORT_PRIVATE Handle<OrderedHashMap>
-OrderedHashTable<OrderedHashMap, 2>::Clear(Isolate* isolate,
-                                           Handle<OrderedHashMap> table);
+template Handle<OrderedHashMap> OrderedHashTable<OrderedHashMap, 2>::Clear(
+    Isolate* isolate, Handle<OrderedHashMap> table);
 
-template V8_EXPORT_PRIVATE bool OrderedHashTable<OrderedHashMap, 2>::HasKey(
-    Isolate* isolate, OrderedHashMap table, Object key);
+template bool OrderedHashTable<OrderedHashMap, 2>::HasKey(Isolate* isolate,
+                                                          OrderedHashMap table,
+                                                          Object key);
 
-template V8_EXPORT_PRIVATE bool OrderedHashTable<OrderedHashMap, 2>::Delete(
-    Isolate* isolate, OrderedHashMap table, Object key);
+template bool OrderedHashTable<OrderedHashMap, 2>::Delete(Isolate* isolate,
+                                                          OrderedHashMap table,
+                                                          Object key);
 
-template V8_EXPORT_PRIVATE int OrderedHashTable<OrderedHashMap, 2>::FindEntry(
-    Isolate* isolate, Object key);
+template int OrderedHashTable<OrderedHashMap, 2>::FindEntry(Isolate* isolate,
+                                                            Object key);
 
 template Handle<OrderedNameDictionary>
 OrderedHashTable<OrderedNameDictionary, 3>::Shrink(
@@ -478,24 +475,25 @@ OrderedHashTable<OrderedNameDictionary, 3>::EnsureGrowable(
 
 template <>
 Handle<SmallOrderedHashSet>
-SmallOrderedHashTable<SmallOrderedHashSet>::Allocate(
-    Isolate* isolate, int capacity, AllocationType allocation) {
-  return isolate->factory()->NewSmallOrderedHashSet(capacity, allocation);
+SmallOrderedHashTable<SmallOrderedHashSet>::Allocate(Isolate* isolate,
+                                                     int capacity,
+                                                     PretenureFlag pretenure) {
+  return isolate->factory()->NewSmallOrderedHashSet(capacity, pretenure);
 }
 
 template <>
 Handle<SmallOrderedHashMap>
-SmallOrderedHashTable<SmallOrderedHashMap>::Allocate(
-    Isolate* isolate, int capacity, AllocationType allocation) {
-  return isolate->factory()->NewSmallOrderedHashMap(capacity, allocation);
+SmallOrderedHashTable<SmallOrderedHashMap>::Allocate(Isolate* isolate,
+                                                     int capacity,
+                                                     PretenureFlag pretenure) {
+  return isolate->factory()->NewSmallOrderedHashMap(capacity, pretenure);
 }
 
 template <>
 Handle<SmallOrderedNameDictionary>
 SmallOrderedHashTable<SmallOrderedNameDictionary>::Allocate(
-    Isolate* isolate, int capacity, AllocationType allocation) {
-  return isolate->factory()->NewSmallOrderedNameDictionary(capacity,
-                                                           allocation);
+    Isolate* isolate, int capacity, PretenureFlag pretenure) {
+  return isolate->factory()->NewSmallOrderedNameDictionary(capacity, pretenure);
 }
 
 template <class Derived>
@@ -574,16 +572,6 @@ MaybeHandle<SmallOrderedHashSet> SmallOrderedHashSet::Add(
   return table;
 }
 
-bool SmallOrderedHashSet::Delete(Isolate* isolate, SmallOrderedHashSet table,
-                                 Object key) {
-  return SmallOrderedHashTable<SmallOrderedHashSet>::Delete(isolate, table,
-                                                            key);
-}
-
-bool SmallOrderedHashSet::HasKey(Isolate* isolate, Handle<Object> key) {
-  return SmallOrderedHashTable<SmallOrderedHashSet>::HasKey(isolate, key);
-}
-
 MaybeHandle<SmallOrderedHashMap> SmallOrderedHashMap::Add(
     Isolate* isolate, Handle<SmallOrderedHashMap> table, Handle<Object> key,
     Handle<Object> value) {
@@ -618,20 +606,9 @@ MaybeHandle<SmallOrderedHashMap> SmallOrderedHashMap::Add(
   return table;
 }
 
-bool SmallOrderedHashMap::Delete(Isolate* isolate, SmallOrderedHashMap table,
-                                 Object key) {
-  return SmallOrderedHashTable<SmallOrderedHashMap>::Delete(isolate, table,
-                                                            key);
-}
-
-bool SmallOrderedHashMap::HasKey(Isolate* isolate, Handle<Object> key) {
-  return SmallOrderedHashTable<SmallOrderedHashMap>::HasKey(isolate, key);
-}
-
 template <>
-int V8_EXPORT_PRIVATE
-SmallOrderedHashTable<SmallOrderedNameDictionary>::FindEntry(Isolate* isolate,
-                                                             Object key) {
+int SmallOrderedHashTable<SmallOrderedNameDictionary>::FindEntry(
+    Isolate* isolate, Object key) {
   DisallowHeapAllocation no_gc;
   DCHECK(key->IsUniqueName());
   Name raw_key = Name::cast(key);
@@ -755,8 +732,7 @@ Handle<Derived> SmallOrderedHashTable<Derived>::Rehash(Isolate* isolate,
 
   Handle<Derived> new_table = SmallOrderedHashTable<Derived>::Allocate(
       isolate, new_capacity,
-      Heap::InYoungGeneration(*table) ? AllocationType::kYoung
-                                      : AllocationType::kOld);
+      Heap::InYoungGeneration(*table) ? NOT_TENURED : TENURED);
   int nof = table->NumberOfElements();
   int nod = table->NumberOfDeletedElements();
   int new_entry = 0;
@@ -862,50 +838,42 @@ int SmallOrderedHashTable<Derived>::FindEntry(Isolate* isolate, Object key) {
   return kNotFound;
 }
 
-template bool EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE)
-    SmallOrderedHashTable<SmallOrderedHashSet>::HasKey(Isolate* isolate,
-                                                       Handle<Object> key);
-template V8_EXPORT_PRIVATE Handle<SmallOrderedHashSet>
+template bool SmallOrderedHashTable<SmallOrderedHashSet>::HasKey(
+    Isolate* isolate, Handle<Object> key);
+template Handle<SmallOrderedHashSet>
 SmallOrderedHashTable<SmallOrderedHashSet>::Rehash(
     Isolate* isolate, Handle<SmallOrderedHashSet> table, int new_capacity);
-template V8_EXPORT_PRIVATE Handle<SmallOrderedHashSet>
+template Handle<SmallOrderedHashSet>
 SmallOrderedHashTable<SmallOrderedHashSet>::Shrink(
     Isolate* isolate, Handle<SmallOrderedHashSet> table);
-template V8_EXPORT_PRIVATE MaybeHandle<SmallOrderedHashSet>
+template MaybeHandle<SmallOrderedHashSet>
 SmallOrderedHashTable<SmallOrderedHashSet>::Grow(
     Isolate* isolate, Handle<SmallOrderedHashSet> table);
-template V8_EXPORT_PRIVATE void
-SmallOrderedHashTable<SmallOrderedHashSet>::Initialize(Isolate* isolate,
-                                                       int capacity);
-template V8_EXPORT_PRIVATE bool
-SmallOrderedHashTable<SmallOrderedHashSet>::Delete(Isolate* isolate,
-                                                   SmallOrderedHashSet table,
-                                                   Object key);
+template void SmallOrderedHashTable<SmallOrderedHashSet>::Initialize(
+    Isolate* isolate, int capacity);
 
-template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE) bool SmallOrderedHashTable<
-    SmallOrderedHashMap>::HasKey(Isolate* isolate, Handle<Object> key);
-template V8_EXPORT_PRIVATE Handle<SmallOrderedHashMap>
+template bool SmallOrderedHashTable<SmallOrderedHashMap>::HasKey(
+    Isolate* isolate, Handle<Object> key);
+template Handle<SmallOrderedHashMap>
 SmallOrderedHashTable<SmallOrderedHashMap>::Rehash(
     Isolate* isolate, Handle<SmallOrderedHashMap> table, int new_capacity);
-template V8_EXPORT_PRIVATE Handle<SmallOrderedHashMap>
+template Handle<SmallOrderedHashMap>
 SmallOrderedHashTable<SmallOrderedHashMap>::Shrink(
     Isolate* isolate, Handle<SmallOrderedHashMap> table);
-template V8_EXPORT_PRIVATE MaybeHandle<SmallOrderedHashMap>
+template MaybeHandle<SmallOrderedHashMap>
 SmallOrderedHashTable<SmallOrderedHashMap>::Grow(
     Isolate* isolate, Handle<SmallOrderedHashMap> table);
-template V8_EXPORT_PRIVATE void
-SmallOrderedHashTable<SmallOrderedHashMap>::Initialize(Isolate* isolate,
-                                                       int capacity);
+template void SmallOrderedHashTable<SmallOrderedHashMap>::Initialize(
+    Isolate* isolate, int capacity);
 
-template V8_EXPORT_PRIVATE bool
-SmallOrderedHashTable<SmallOrderedHashMap>::Delete(Isolate* isolate,
-                                                   SmallOrderedHashMap table,
-                                                   Object key);
+template bool SmallOrderedHashTable<SmallOrderedHashMap>::Delete(
+    Isolate* isolate, SmallOrderedHashMap table, Object key);
+template bool SmallOrderedHashTable<SmallOrderedHashSet>::Delete(
+    Isolate* isolate, SmallOrderedHashSet table, Object key);
 
-template V8_EXPORT_PRIVATE void
-SmallOrderedHashTable<SmallOrderedNameDictionary>::Initialize(Isolate* isolate,
-                                                              int capacity);
-template V8_EXPORT_PRIVATE Handle<SmallOrderedNameDictionary>
+template void SmallOrderedHashTable<SmallOrderedNameDictionary>::Initialize(
+    Isolate* isolate, int capacity);
+template Handle<SmallOrderedNameDictionary>
 SmallOrderedHashTable<SmallOrderedNameDictionary>::Shrink(
     Isolate* isolate, Handle<SmallOrderedNameDictionary> table);
 
@@ -919,13 +887,13 @@ Handle<HeapObject> OrderedHashTableHandler<SmallTable, LargeTable>::Allocate(
   return LargeTable::Allocate(isolate, capacity);
 }
 
-template V8_EXPORT_PRIVATE Handle<HeapObject>
+template Handle<HeapObject>
 OrderedHashTableHandler<SmallOrderedHashSet, OrderedHashSet>::Allocate(
     Isolate* isolate, int capacity);
-template V8_EXPORT_PRIVATE Handle<HeapObject>
+template Handle<HeapObject>
 OrderedHashTableHandler<SmallOrderedHashMap, OrderedHashMap>::Allocate(
     Isolate* isolate, int capacity);
-template V8_EXPORT_PRIVATE Handle<HeapObject>
+template Handle<HeapObject>
 OrderedHashTableHandler<SmallOrderedNameDictionary,
                         OrderedNameDictionary>::Allocate(Isolate* isolate,
                                                          int capacity);

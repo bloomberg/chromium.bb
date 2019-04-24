@@ -41,12 +41,9 @@ Polymer({
 
     /**
      * Authentication token provided by lock-screen-password-prompt-dialog.
+     * @private
      */
-    authToken: {
-      type: String,
-      value: '',
-      notify: true,
-    },
+    authToken_: String,
 
     /**
      * writeUma_ is a function that handles writing uma stats. It may be
@@ -184,12 +181,12 @@ Polymer({
    */
   onScreenLockChange_: function(event) {
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
-    if (!this.authToken) {
+    if (!this.authToken_) {
       console.error('Screen lock changed with expired token.');
       target.checked = !target.checked;
       return;
     }
-    this.setLockScreenEnabled(this.authToken, target.checked);
+    this.setLockScreenEnabled(this.authToken_, target.checked);
   },
 
   /**

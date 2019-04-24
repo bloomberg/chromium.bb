@@ -18,8 +18,7 @@ namespace blink {
 
 class SourceListDirectiveTest : public testing::Test {
  public:
-  SourceListDirectiveTest()
-      : csp(MakeGarbageCollected<ContentSecurityPolicy>()) {}
+  SourceListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
 
  protected:
   struct Source {
@@ -46,7 +45,7 @@ class SourceListDirectiveTest : public testing::Test {
         SecurityOrigin::Create(secure_url));
     Document* document = Document::CreateForTest();
     document->SetSecurityOrigin(secure_origin);
-    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     return csp;
   }

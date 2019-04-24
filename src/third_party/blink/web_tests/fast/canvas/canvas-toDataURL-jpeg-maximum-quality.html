@@ -3,8 +3,10 @@ The letters in the right image should be crisp and non-blurry like the letters i
 <img id="result">
 
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
 var image = new Image();
 image.onload = function() {

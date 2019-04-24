@@ -88,11 +88,11 @@ scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
       http_body = form_data->FlattenToString();
   }
 
-  auto report_details = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> report_details = JSONObject::Create();
   report_details->SetString("request-url", xss_info.original_url_);
   report_details->SetString("request-body", http_body);
 
-  auto report_object = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> report_object = JSONObject::Create();
   report_object->SetObject("xss-report", std::move(report_details));
 
   return EncodedFormData::Create(report_object->ToJSONString().Utf8().data());
@@ -106,8 +106,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
                                    : WebFeature::kXSSAuditorBlockedScript);
 
   document_->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kJavaScript,
-      mojom::ConsoleMessageLevel::kError, xss_info.BuildConsoleError()));
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+      xss_info.BuildConsoleError()));
 
   LocalFrame* local_frame = document_->GetFrame();
   FrameLoader& frame_loader = local_frame->Loader();
@@ -124,8 +124,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
   }
 
   if (xss_info.did_block_entire_page_) {
-    local_frame->Client()->LoadErrorPage(
-        ResourceError::BlockedByXSSAuditorErrorCode());
+    local_frame->GetNavigationScheduler().SchedulePageBlock(
+        document_, ResourceError::BlockedByXSSAuditorErrorCode());
   }
 }
 

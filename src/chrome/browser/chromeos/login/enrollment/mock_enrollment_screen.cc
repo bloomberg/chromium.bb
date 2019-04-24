@@ -7,9 +7,10 @@
 namespace chromeos {
 
 MockEnrollmentScreen::MockEnrollmentScreen(
+    BaseScreenDelegate* base_screen_delegate,
     EnrollmentScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : EnrollmentScreen(view, exit_callback) {}
+    : EnrollmentScreen(base_screen_delegate, view, exit_callback) {}
 
 void MockEnrollmentScreen::ExitScreen(Result screen_result) {
   exit_callback()->Run(screen_result);

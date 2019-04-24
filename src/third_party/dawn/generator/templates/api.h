@@ -48,12 +48,13 @@
 {% endfor %}
 
 // Custom types depending on the target language
-typedef uint64_t DawnCallbackUserdata;
-typedef void (*DawnDeviceErrorCallback)(const char* message, DawnCallbackUserdata userdata);
-typedef void (*DawnBufferMapReadCallback)(DawnBufferMapAsyncStatus status, const void* data, uint64_t dataLength, DawnCallbackUserdata userdata);
-typedef void (*DawnBufferMapWriteCallback)(DawnBufferMapAsyncStatus status, void* data, uint64_t dataLength, DawnCallbackUserdata userdata);
-typedef void (*DawnFenceOnCompletionCallback)(DawnFenceCompletionStatus status,
-                                              DawnCallbackUserdata userdata);
+typedef uint64_t dawnCallbackUserdata;
+typedef void (*dawnDeviceErrorCallback)(const char* message, dawnCallbackUserdata userdata);
+typedef void (*dawnBuilderErrorCallback)(dawnBuilderErrorStatus status, const char* message, dawnCallbackUserdata userdata1, dawnCallbackUserdata userdata2);
+typedef void (*dawnBufferMapReadCallback)(dawnBufferMapAsyncStatus status, const void* data, uint32_t dataLength, dawnCallbackUserdata userdata);
+typedef void (*dawnBufferMapWriteCallback)(dawnBufferMapAsyncStatus status, void* data, uint32_t dataLength, dawnCallbackUserdata userdata);
+typedef void (*dawnFenceOnCompletionCallback)(dawnFenceCompletionStatus status,
+                                              dawnCallbackUserdata userdata);
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,7 +73,7 @@ extern "C" {
 
 {% endfor %}
 
-struct DawnProcTable_s {
+struct dawnProcTable_s {
     {% for type in by_category["object"] %}
         {% for method in native_methods(type) %}
             {{as_cProc(type.name, method.name)}} {{as_varName(type.name, method.name)}};
@@ -80,12 +81,12 @@ struct DawnProcTable_s {
 
     {% endfor %}
 };
-typedef struct DawnProcTable_s DawnProcTable;
+typedef struct dawnProcTable_s dawnProcTable;
 
-// Stuff below is for convenience and will forward calls to a static DawnProcTable.
+// Stuff below is for convenience and will forward calls to a static dawnProcTable.
 
-// Set which DawnProcTable will be used
-DAWN_EXPORT void dawnSetProcs(const DawnProcTable* procs);
+// Set which dawnProcTable will be used
+DAWN_EXPORT void dawnSetProcs(const dawnProcTable* procs);
 
 {% for type in by_category["object"] %}
     // Methods of {{type.name.CamelCase()}}

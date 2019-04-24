@@ -78,7 +78,9 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   }
   // Finally, remove nulls
   std::vector<Task *>::iterator it;
-  it = std::remove(tasks_.begin(), tasks_.end(), static_cast<Task*>(NULL));
+  it = std::remove(tasks_.begin(),
+                   tasks_.end(),
+                   reinterpret_cast<Task *>(NULL));
 
   tasks_.erase(it, tasks_.end());
   tasks_running_ = false;

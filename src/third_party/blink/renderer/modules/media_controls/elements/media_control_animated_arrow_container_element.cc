@@ -19,8 +19,7 @@ MediaControlAnimatedArrowContainerElement::AnimatedArrow::AnimatedArrow(
 
 void MediaControlAnimatedArrowContainerElement::AnimatedArrow::HideInternal() {
   DCHECK(!hidden_);
-  svg_container_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                         CSSValueID::kNone);
+  svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
   hidden_ = true;
 }
 
@@ -29,7 +28,7 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::ShowInternal() {
   hidden_ = false;
 
   if (svg_container_) {
-    svg_container_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+    svg_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
     return;
   }
 
@@ -73,7 +72,7 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::Trace(
 
 MediaControlAnimatedArrowContainerElement::
     MediaControlAnimatedArrowContainerElement(MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls),
+    : MediaControlDivElement(media_controls, kMediaIgnore),
       left_jump_arrow_(nullptr),
       right_jump_arrow_(nullptr) {
   EnsureUserAgentShadowRoot();

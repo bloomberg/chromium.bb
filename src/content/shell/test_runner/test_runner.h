@@ -41,6 +41,7 @@ class Arguments;
 }
 
 namespace test_runner {
+
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class SpellCheckClient;
@@ -86,9 +87,9 @@ class TestRunner : public WebTestRunner {
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
   bool ShouldDumpSelectionRect() const override;
-  bool CanDumpPixelsFromRenderer() const override;
-  void DumpPixelsAsync(
-      content::RenderView* render_view,
+  // Returns true if the browser should capture the pixels instead.
+  bool DumpPixelsAsync(
+      blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) override;
@@ -135,19 +136,17 @@ class TestRunner : public WebTestRunner {
   bool animation_requires_raster() const { return animation_requires_raster_; }
   void SetAnimationRequiresRaster(bool do_raster);
 
-  // Add |frame| to the set of loading frames.
-  //
-  // Note: Only one renderer process is really tracking the loading frames. This
-  //       is the first to observe one. Both local and remote frames are tracked
-  //       by this process.
-  void AddLoadingFrame(blink::WebFrame* frame);
+  // To be called when |frame| starts loading - TestRunner will check if there
+  // is currently no top-loading-frame being tracked and if so, then it will
+  // start tracking |frame| as the top-loading-frame.
+  void tryToSetTopLoadingFrame(blink::WebFrame* frame);
 
-  // Remove |frame| from the set of loading frames.
-  //
-  // When there are no more loading frames, this potentially finishes the test,
-  // unless testRunner.waitUntilDone() was called and/or there are pending load
-  // requests in WorkQueue.
-  void RemoveLoadingFrame(blink::WebFrame* frame);
+  // To be called when |frame| finishes loading - TestRunner will check if
+  // |frame| is currently tracked as the top-loading-frame, if yes, stop
+  // top-loading-frame tracking, and potentially finish the test (unless
+  // testRunner.waitUntilDone() was called and/or there are pending load
+  // requests in WorkQueue).
+  void tryToClearTopLoadingFrame(blink::WebFrame*);
 
   blink::WebFrame* mainFrame() const;
   void policyDelegateDone();
@@ -557,8 +556,8 @@ class TestRunner : public WebTestRunner {
   WebTestDelegate* delegate_;
   blink::WebView* main_view_;
 
-  // This is non empty when a load is in progress.
-  std::vector<blink::WebFrame*> loading_frames_;
+  // This is non-0 IFF a load is in progress.
+  blink::WebFrame* top_loading_frame_;
 
   // WebContentSettingsClient mock object.
   std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;

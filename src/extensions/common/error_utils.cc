@@ -64,6 +64,14 @@ std::string ErrorUtils::FormatErrorMessage(base::StringPiece format,
   return FormatErrorMessageInternal(format, {s1, s2, s3});
 }
 
+std::string ErrorUtils::FormatErrorMessage(base::StringPiece format,
+                                           base::StringPiece s1,
+                                           base::StringPiece s2,
+                                           base::StringPiece s3,
+                                           base::StringPiece s4) {
+  return FormatErrorMessageInternal(format, {s1, s2, s3, s4});
+}
+
 base::string16 ErrorUtils::FormatErrorMessageUTF16(base::StringPiece format,
                                                    base::StringPiece s1) {
   return base::UTF8ToUTF16(FormatErrorMessageInternal(format, {s1}));
@@ -80,6 +88,15 @@ base::string16 ErrorUtils::FormatErrorMessageUTF16(base::StringPiece format,
                                                    base::StringPiece s2,
                                                    base::StringPiece s3) {
   return base::UTF8ToUTF16(FormatErrorMessageInternal(format, {s1, s2, s3}));
+}
+
+base::string16 ErrorUtils::FormatErrorMessageUTF16(base::StringPiece format,
+                                                   base::StringPiece s1,
+                                                   base::StringPiece s2,
+                                                   base::StringPiece s3,
+                                                   base::StringPiece s4) {
+  return base::UTF8ToUTF16(
+      FormatErrorMessageInternal(format, {s1, s2, s3, s4}));
 }
 
 }  // namespace extensions

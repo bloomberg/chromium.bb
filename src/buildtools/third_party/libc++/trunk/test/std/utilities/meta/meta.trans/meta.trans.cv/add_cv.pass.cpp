@@ -17,9 +17,9 @@
 template <class T, class U>
 void test_add_cv_imp()
 {
-    ASSERT_SAME_TYPE(const volatile U, typename std::add_cv<T>::type);
+    static_assert((std::is_same<typename std::add_cv<T>::type, const volatile U>::value), "");
 #if TEST_STD_VER > 11
-    ASSERT_SAME_TYPE(const volatile U,        std::add_cv_t<T>);
+    static_assert((std::is_same<std::add_cv_t<T>, U>::value), "");
 #endif
 }
 

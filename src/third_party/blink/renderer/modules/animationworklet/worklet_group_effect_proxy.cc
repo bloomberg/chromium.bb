@@ -6,12 +6,10 @@
 
 namespace blink {
 
-WorkletGroupEffectProxy::WorkletGroupEffectProxy(
-    const std::vector<base::Optional<TimeDelta>>& local_times) {
-  DCHECK_GE(local_times.size(), 1u);
-  for (auto& local_time : local_times) {
-    effects_.push_back(MakeGarbageCollected<EffectProxy>(local_time));
-  }
+WorkletGroupEffectProxy::WorkletGroupEffectProxy(int num_effects)
+    : effects_(num_effects) {
+  for (int i = 0; i < num_effects; ++i)
+    effects_[i] = MakeGarbageCollected<EffectProxy>();
 }
 
 void WorkletGroupEffectProxy::Trace(blink::Visitor* visitor) {

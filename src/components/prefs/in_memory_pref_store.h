@@ -49,7 +49,6 @@ class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
   void OnStoreDeletionFromDisk() override {}
-  bool IsInMemoryPrefStore() const override;
 
  protected:
   ~InMemoryPrefStore() override;

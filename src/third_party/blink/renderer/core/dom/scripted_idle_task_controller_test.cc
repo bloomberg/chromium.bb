@@ -63,15 +63,11 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
 
   void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
 
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
+  void AddRAILModeObserver(scheduler::WebRAILModeObserver*) override {}
 
   scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
-
-  void SetV8Isolate(v8::Isolate* isolate) override {}
 
   void RunIdleTask() { std::move(idle_task_).Run(TimeTicks()); }
   bool HasIdleTask() const { return !!idle_task_; }

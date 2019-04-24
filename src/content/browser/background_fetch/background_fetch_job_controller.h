@@ -47,11 +47,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
                               blink::mojom::BackgroundFetchFailureReason,
                               ErrorCallback)>;
   using ProgressCallback = base::RepeatingCallback<void(
-      const std::string& unique_id,
-      const blink::mojom::BackgroundFetchRegistrationData&)>;
-  using RequestStartedCallback =
-      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              const BackgroundFetchRequestInfo*)>;
+      const blink::mojom::BackgroundFetchRegistration&)>;
   using RequestFinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
                               scoped_refptr<BackgroundFetchRequestInfo>)>;
@@ -84,9 +80,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   uint64_t GetInProgressDownloadedBytes();
   uint64_t GetInProgressUploadedBytes();
 
-  // Returns a blink::mojom::BackgroundFetchRegistrationDataPtr object
+  // Returns a blink::mojom::BackgroundFetchRegistrationPtr object
   // created with member fields.
-  blink::mojom::BackgroundFetchRegistrationDataPtr NewRegistrationData() const;
+  blink::mojom::BackgroundFetchRegistrationPtr NewRegistration() const;
 
   const BackgroundFetchRegistrationId& registration_id() const {
     return registration_id_;
@@ -114,10 +110,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
              ErrorCallback callback);
 
   // Request processing.
-  void PopNextRequest(RequestStartedCallback request_started_callback,
-                      RequestFinishedCallback request_finished_callback);
+  void PopNextRequest(RequestFinishedCallback request_finished_callback);
   void DidPopNextRequest(
-      RequestStartedCallback request_started_callback,
       RequestFinishedCallback request_finished_callback,
       blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info);

@@ -62,15 +62,14 @@ int GrRenderTargetProxy::maxWindowRectangles(const GrCaps& caps) const {
     return this->glRTFBOIDIs0() ? 0 : caps.maxWindowRectangles();
 }
 
-bool GrRenderTargetProxy::instantiate(GrResourceProvider* resourceProvider,
-                                      bool dontForceNoPendingIO) {
+bool GrRenderTargetProxy::instantiate(GrResourceProvider* resourceProvider) {
     if (LazyState::kNot != this->lazyInstantiationState()) {
         return false;
     }
     static constexpr GrSurfaceDescFlags kDescFlags = kRenderTarget_GrSurfaceFlag;
 
     if (!this->instantiateImpl(resourceProvider, fSampleCnt, fNeedsStencil, kDescFlags,
-                               GrMipMapped::kNo, nullptr, dontForceNoPendingIO)) {
+                               GrMipMapped::kNo, nullptr)) {
         return false;
     }
     SkASSERT(fTarget->asRenderTarget());
@@ -79,12 +78,10 @@ bool GrRenderTargetProxy::instantiate(GrResourceProvider* resourceProvider,
 }
 
 sk_sp<GrSurface> GrRenderTargetProxy::createSurface(GrResourceProvider* resourceProvider) const {
-    SkASSERT(resourceProvider->explicitlyAllocateGPUResources());
-
     static constexpr GrSurfaceDescFlags kDescFlags = kRenderTarget_GrSurfaceFlag;
 
     sk_sp<GrSurface> surface = this->createSurfaceImpl(resourceProvider, fSampleCnt, fNeedsStencil,
-                                                       kDescFlags, GrMipMapped::kNo, true);
+                                                       kDescFlags, GrMipMapped::kNo);
     if (!surface) {
         return nullptr;
     }

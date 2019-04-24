@@ -26,9 +26,9 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
+#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/video/mjpeg_decode_accelerator.h"
+#include "media/video/jpeg_decode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -237,7 +237,7 @@ enum ClientState {
   CS_ERROR,
 };
 
-class JpegClient : public MjpegDecodeAccelerator::Client {
+class JpegClient : public JpegDecodeAccelerator::Client {
  public:
   // JpegClient takes ownership of |note|.
   JpegClient(
@@ -250,10 +250,10 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   void PrepareMemory(int32_t bitstream_buffer_id);
   bool GetSoftwareDecodeResult(int32_t bitstream_buffer_id);
 
-  // MjpegDecodeAccelerator::Client implementation.
+  // JpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t bitstream_buffer_id) override;
   void NotifyError(int32_t bitstream_buffer_id,
-                   MjpegDecodeAccelerator::Error error) override;
+                   JpegDecodeAccelerator::Error error) override;
 
   // Accessors.
   media::test::ClientStateNotification<ClientState>* note() const {
@@ -301,7 +301,7 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   // potentially uses other members in the JpegClient instance. For example,
   // as decode tasks finish in a new thread spawned by |decoder_|, |hw_out_shm_|
   // can be accessed.
-  std::unique_ptr<MjpegDecodeAccelerator> decoder_;
+  std::unique_ptr<JpegDecodeAccelerator> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
@@ -321,7 +321,7 @@ void JpegClient::CreateJpegDecoder() {
   decoder_ = nullptr;
 
   auto jda_factories =
-      GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories();
+      GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories();
   if (jda_factories.empty()) {
     LOG(ERROR) << "JpegDecodeAccelerator not supported on this platform.";
     SetState(CS_ERROR);
@@ -373,7 +373,7 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
 }
 
 void JpegClient::NotifyError(int32_t bitstream_buffer_id,
-                             MjpegDecodeAccelerator::Error error) {
+                             JpegDecodeAccelerator::Error error) {
   LOG(ERROR) << "Notifying of error " << error << " for buffer id "
              << bitstream_buffer_id;
   SetState(CS_ERROR);

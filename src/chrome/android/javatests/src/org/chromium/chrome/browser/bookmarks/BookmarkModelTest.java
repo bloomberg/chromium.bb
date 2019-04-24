@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -23,7 +24,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,17 +51,23 @@ public class BookmarkModelTest {
 
     @Before
     public void setUp() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
-            mBookmarkModel = new BookmarkModel(profile);
-            mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Profile profile = Profile.getLastUsedProfile();
+                mBookmarkModel = new BookmarkModel(profile);
+                mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting();
+            }
         });
 
         BookmarkTestUtil.waitForBookmarkModelLoaded();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mMobileNode = mBookmarkModel.getMobileFolderId();
-            mDesktopNode = mBookmarkModel.getDesktopFolderId();
-            mOtherNode = mBookmarkModel.getOtherFolderId();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mMobileNode = mBookmarkModel.getMobileFolderId();
+                mDesktopNode = mBookmarkModel.getDesktopFolderId();
+                mOtherNode = mBookmarkModel.getOtherFolderId();
+            }
         });
     }
 
@@ -241,9 +247,12 @@ public class BookmarkModelTest {
             final String url) {
         final AtomicReference<BookmarkId> result = new AtomicReference<BookmarkId>();
         final Semaphore semaphore = new Semaphore(0);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            result.set(mBookmarkModel.addBookmark(parent, index, title, url));
-            semaphore.release();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                result.set(mBookmarkModel.addBookmark(parent, index, title, url));
+                semaphore.release();
+            }
         });
         try {
             if (semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {

@@ -100,7 +100,7 @@ class TextInputClientMacTest : public testing::Test {
  private:
   friend class ScopedTestingThread;
 
-  // ThreadPool is used by RenderWidgetHostImpl constructor.
+  // TaskScheduler is used by RenderWidgetHostImpl constructor.
   TestBrowserThreadBundle thread_bundle_;
 
   TestBrowserContext browser_context_;

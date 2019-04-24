@@ -182,15 +182,6 @@ TEST(SerializeConstructWithSpread) {
       "}; f(); return f;");
 }
 
-TEST(SerializeConstructSuper) {
-  CheckForSerializedInlinee(
-      "class A {};"
-      "class B extends A { constructor() { super(); } };"
-      "function f() {"
-      "  new B(); return A;"
-      "}; f(); return f;");
-}
-
 TEST(SerializeConditionalJump) {
   CheckForSerializedInlinee(
       "function g(callee) { callee(); };"

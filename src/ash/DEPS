@@ -21,7 +21,6 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/wallpaper",
-  "+dbus",
   "+extensions/common/constants.h",
   "+gpu/config",
   "+media",
@@ -60,27 +59,25 @@ include_rules = [
   "+chromeos/audio",
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/constants",
-  # TODO(https://crbug.com/940810): Eliminate this.
-  "+chromeos/dbus/audio",
+  "+chromeos/dbus/dbus_thread_manager.h",
+  "+chromeos/dbus/fake_power_manager_client.h",
+  "+chromeos/dbus/fake_session_manager_client.h",
   "+chromeos/dbus/hammerd",
-  # TODO(https://crbug.com/644348): Eliminate this.
-  "+chromeos/dbus/power",
   "+chromeos/dbus/power_manager",
-  # TODO(https://crbug.com/644355): Eliminate this.
-  "+chromeos/dbus/shill",
+  "+chromeos/dbus/power_manager_client.h",
+  "+chromeos/dbus/power_policy_controller.h",
+  "+chromeos/dbus/session_manager_client.h",
+  "+chromeos/dbus/shill_device_client.h",
   "+chromeos/dbus/system_clock",
-  # TODO(https://crbug.com/644355): Eliminate this.
+  # TODO(jamescook): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,
   "+chromeos/services/assistant/test_support",
   "+chromeos/services/multidevice_setup/public",
-  # TODO(https://crbug.com/644361): Eliminate this.
+  # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/strings",
   "+chromeos/system",
-
-  # ui/base/idle depends on SessionManagerClient so disallow it.
-  "-ui/base/idle"
 
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"

@@ -24,8 +24,10 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
   }
 
   return PaintShader::MakeImage(
-      tile_image_, IsRepeatX() ? SkTileMode::kRepeat : SkTileMode::kDecal,
-      IsRepeatY() ? SkTileMode::kRepeat : SkTileMode::kDecal, &local_matrix);
+      tile_image_,
+      IsRepeatX() ? SkShader::kRepeat_TileMode : SkShader::kDecal_TileMode,
+      IsRepeatY() ? SkShader::kRepeat_TileMode : SkShader::kDecal_TileMode,
+      &local_matrix);
 }
 
 bool ImagePattern::IsTextureBacked() const {

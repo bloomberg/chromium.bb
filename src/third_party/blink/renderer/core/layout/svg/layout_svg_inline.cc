@@ -83,8 +83,8 @@ FloatRect LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
   return FloatRect();
 }
 
-LayoutRect LayoutSVGInline::VisualRectInDocument(VisualRectFlags flags) const {
-  return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View(), flags);
+LayoutRect LayoutSVGInline::VisualRectInDocument() const {
+  return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View());
 }
 
 void LayoutSVGInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,

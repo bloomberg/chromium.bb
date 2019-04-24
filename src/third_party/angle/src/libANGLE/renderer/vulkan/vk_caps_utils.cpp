@@ -56,12 +56,6 @@ void RendererVk::ensureCapsInitialized() const
     // TODO(geofflang): Support GL_OES_EGL_image_external_essl3. http://anglebug.com/2668
     mNativeExtensions.eglImageExternalEssl3 = false;
 
-    mNativeExtensions.memoryObject   = true;
-    mNativeExtensions.memoryObjectFd = getFeatures().supportsExternalMemoryFd;
-
-    mNativeExtensions.semaphore   = true;
-    mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd;
-
     // TODO: Enable this always and emulate instanced draws if any divisor exceeds the maximum
     // supported.  http://anglebug.com/2672
     mNativeExtensions.instancedArraysANGLE = mMaxVertexAttribDivisor > 1;
@@ -74,8 +68,7 @@ void RendererVk::ensureCapsInitialized() const
     // We use secondary command buffers almost everywhere and they require a feature to be
     // able to execute in the presence of queries.  As a result, we won't support queries
     // unless that feature is available.
-    mNativeExtensions.occlusionQueryBoolean =
-        vk::CommandBuffer::SupportsQueries(mPhysicalDeviceFeatures);
+    mNativeExtensions.occlusionQueryBoolean = mPhysicalDeviceFeatures.inheritedQueries;
 
     // From the Vulkan specs:
     // > The number of valid bits in a timestamp value is determined by the
@@ -93,9 +86,6 @@ void RendererVk::ensureCapsInitialized() const
         mNativeExtensions.textureFilterAnisotropic
             ? mPhysicalDeviceProperties.limits.maxSamplerAnisotropy
             : 0.0f;
-
-    // Vulkan natively supports non power-of-two textures
-    mNativeExtensions.textureNPOT = true;
 
     // TODO(lucferron): Eventually remove everything above this line in this function as the caps
     // get implemented.
@@ -203,8 +193,6 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxVaryingVectors =
         (mPhysicalDeviceProperties.limits.maxVertexOutputComponents / 4) - kReservedVaryingCount;
     mNativeCaps.maxVertexOutputComponents = mNativeCaps.maxVaryingVectors * 4;
-
-    mNativeCaps.subPixelBits = mPhysicalDeviceProperties.limits.subPixelPrecisionBits;
 }
 
 namespace egl_vk
@@ -265,7 +253,7 @@ egl::Config GenerateDefaultConfig(const RendererVk *renderer,
     config.bindToTextureRGBA  = colorFormat.format == GL_RGBA || colorFormat.format == GL_BGRA_EXT;
     config.colorBufferType    = EGL_RGB_BUFFER;
     config.configCaveat       = EGL_NONE;
-    config.conformant         = es2Support | es3Support;
+    config.conformant         = 0;
     config.depthSize          = depthStencilFormat.depthBits;
     config.stencilSize        = depthStencilFormat.stencilBits;
     config.level              = 0;

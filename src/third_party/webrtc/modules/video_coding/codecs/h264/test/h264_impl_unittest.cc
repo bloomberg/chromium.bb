@@ -18,6 +18,7 @@
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_decoder.h"
 #include "api/video_codecs/video_encoder.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "common_video/test/utilities.h"
 #include "media/base/codec.h"
@@ -64,13 +65,15 @@ class TestH264Impl : public VideoCodecUnitTest {
 
 TEST_F(TestH264Impl, MAYBE_EncodeDecode) {
   VideoFrame* input_frame = NextInputFrame();
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, encoder_->Encode(*input_frame, nullptr));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            encoder_->Encode(*input_frame, nullptr, nullptr));
   EncodedImage encoded_frame;
   CodecSpecificInfo codec_specific_info;
   ASSERT_TRUE(WaitForEncodedFrame(&encoded_frame, &codec_specific_info));
   // First frame should be a key frame.
-  encoded_frame._frameType = VideoFrameType::kVideoFrameKey;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, decoder_->Decode(encoded_frame, false, 0));
+  encoded_frame._frameType = kVideoFrameKey;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            decoder_->Decode(encoded_frame, false, nullptr, 0));
   std::unique_ptr<VideoFrame> decoded_frame;
   absl::optional<uint8_t> decoded_qp;
   ASSERT_TRUE(WaitForDecodedFrame(&decoded_frame, &decoded_qp));
@@ -90,13 +93,14 @@ TEST_F(TestH264Impl, MAYBE_EncodeDecode) {
 
 TEST_F(TestH264Impl, MAYBE_DecodedQpEqualsEncodedQp) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            encoder_->Encode(*NextInputFrame(), nullptr));
+            encoder_->Encode(*NextInputFrame(), nullptr, nullptr));
   EncodedImage encoded_frame;
   CodecSpecificInfo codec_specific_info;
   ASSERT_TRUE(WaitForEncodedFrame(&encoded_frame, &codec_specific_info));
   // First frame should be a key frame.
-  encoded_frame._frameType = VideoFrameType::kVideoFrameKey;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, decoder_->Decode(encoded_frame, false, 0));
+  encoded_frame._frameType = kVideoFrameKey;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            decoder_->Decode(encoded_frame, false, nullptr, 0));
   std::unique_ptr<VideoFrame> decoded_frame;
   absl::optional<uint8_t> decoded_qp;
   ASSERT_TRUE(WaitForDecodedFrame(&decoded_frame, &decoded_qp));
@@ -107,7 +111,8 @@ TEST_F(TestH264Impl, MAYBE_DecodedQpEqualsEncodedQp) {
 
 TEST_F(TestH264Impl, MAYBE_EncodedColorSpaceEqualsInputColorSpace) {
   VideoFrame* input_frame = NextInputFrame();
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, encoder_->Encode(*input_frame, nullptr));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            encoder_->Encode(*input_frame, nullptr, nullptr));
   EncodedImage encoded_frame;
   CodecSpecificInfo codec_specific_info;
   ASSERT_TRUE(WaitForEncodedFrame(&encoded_frame, &codec_specific_info));
@@ -122,7 +127,7 @@ TEST_F(TestH264Impl, MAYBE_EncodedColorSpaceEqualsInputColorSpace) {
           .build();
 
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            encoder_->Encode(input_frame_w_color_space, nullptr));
+            encoder_->Encode(input_frame_w_color_space, nullptr, nullptr));
   ASSERT_TRUE(WaitForEncodedFrame(&encoded_frame, &codec_specific_info));
   ASSERT_TRUE(encoded_frame.ColorSpace());
   EXPECT_EQ(*encoded_frame.ColorSpace(), color_space);
@@ -130,14 +135,15 @@ TEST_F(TestH264Impl, MAYBE_EncodedColorSpaceEqualsInputColorSpace) {
 
 TEST_F(TestH264Impl, MAYBE_DecodedColorSpaceEqualsEncodedColorSpace) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            encoder_->Encode(*NextInputFrame(), nullptr));
+            encoder_->Encode(*NextInputFrame(), nullptr, nullptr));
   EncodedImage encoded_frame;
   CodecSpecificInfo codec_specific_info;
   ASSERT_TRUE(WaitForEncodedFrame(&encoded_frame, &codec_specific_info));
   // Add color space to encoded frame.
   ColorSpace color_space = CreateTestColorSpace(/*with_hdr_metadata=*/false);
   encoded_frame.SetColorSpace(color_space);
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, decoder_->Decode(encoded_frame, false, 0));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            decoder_->Decode(encoded_frame, false, nullptr, 0));
   std::unique_ptr<VideoFrame> decoded_frame;
   absl::optional<uint8_t> decoded_qp;
   ASSERT_TRUE(WaitForDecodedFrame(&decoded_frame, &decoded_qp));

@@ -95,7 +95,7 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   void NotifyGestureEvent();
 
   // Overridden from views::WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   bool ShouldAdvanceFocusToTopLevelWidget() const override;
 
   // Overridden from views::ButtonListener:

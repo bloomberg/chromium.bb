@@ -9,7 +9,7 @@
   // encode their request headers in their pixels. Fun stuff!
   promise_test(() =>
     loadImageInWindow(
-      "https://{{host}}:{{ports[https][0]}}/common/security-features/subresource/image.py",
+      "https://{{host}}:{{ports[https][0]}}/referrer-policy/generic/subresource/image.py",
       [],
       window)
     .then(img => {
@@ -23,9 +23,7 @@
         assert_header_equals(got, {
           "dest": "image",
           "site": "same-origin",
-          // Note that we're using `undefined` here, as opposed to "" elsewhere because of the way
-          // that `image.py` encodes data.
-          "user": undefined,
+          "user": "?F",
           "mode": "cors", // Because `loadImageInWindow` tacks on `crossorigin`
         });
       }),
@@ -33,7 +31,7 @@
 
   promise_test(() =>
     loadImageInWindow(
-      "https://{{hosts[][www]}}:{{ports[https][0]}}/common/security-features/subresource/image.py",
+      "https://{{hosts[][www]}}:{{ports[https][0]}}/referrer-policy/generic/subresource/image.py",
       [],
       window)
     .then(img => {
@@ -47,9 +45,7 @@
         assert_header_equals(got, {
           "dest": "image",
           "site": "same-site",
-          // Note that we're using `undefined` here, as opposed to "" elsewhere because of the way
-          // that `image.py` encodes data.
-          "user": undefined,
+          "user": "?F",
           "mode": "cors", // Because `loadImageInWindow` tacks on `crossorigin`
         });
       }),
@@ -57,7 +53,7 @@
 
   promise_test(() =>
     loadImageInWindow(
-      "https://{{hosts[alt][www]}}:{{ports[https][0]}}/common/security-features/subresource/image.py",
+      "https://{{hosts[alt][www]}}:{{ports[https][0]}}/referrer-policy/generic/subresource/image.py",
       [],
       window)
     .then(img => {
@@ -71,9 +67,7 @@
         assert_header_equals(got, {
           "dest": "image",
           "site": "cross-site",
-          // Note that we're using `undefined` here, as opposed to "" elsewhere because of the way
-          // that `image.py` encodes data.
-          "user": undefined,
+          "user": "?F",
           "mode": "cors", // Because `loadImageInWindow` tacks on `crossorigin`
         });
       }),

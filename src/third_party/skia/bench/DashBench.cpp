@@ -144,7 +144,8 @@ static void make_unit_star(SkPath* path, int n) {
     path->moveTo(0, -SK_Scalar1);
     for (int i = 1; i < n; i++) {
         rad += drad;
-        path->lineTo(SkScalarCos(rad), SkScalarSin(rad));
+        SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
+        path->lineTo(cosV, sinV);
     }
     path->close();
 }

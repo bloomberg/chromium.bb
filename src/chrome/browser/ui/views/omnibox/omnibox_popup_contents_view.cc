@@ -157,7 +157,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     OmniboxResultView* result_view = new OmniboxResultView(this, i);
     result_view->SetVisible(false);
-    AddChildView(result_view);
+    AddChildViewAt(result_view, static_cast<int>(i));
   }
 }
 

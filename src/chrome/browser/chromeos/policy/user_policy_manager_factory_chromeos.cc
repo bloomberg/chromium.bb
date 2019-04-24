@@ -30,13 +30,13 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/arc/arc_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -136,7 +136,9 @@ UserPolicyManagerFactoryChromeOS::CreateForProfile(
 UserPolicyManagerFactoryChromeOS::UserPolicyManagerFactoryChromeOS()
     : BrowserContextKeyedBaseFactory(
           "UserCloudPolicyManagerChromeOS",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SchemaRegistryServiceFactory::GetInstance());
+}
 
 UserPolicyManagerFactoryChromeOS::~UserPolicyManagerFactoryChromeOS() {}
 
@@ -341,9 +343,10 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(
-          chromeos::CryptohomeClient::Get(),
-          chromeos::SessionManagerClient::Get(), background_task_runner,
-          account_id, policy_key_dir, is_active_directory);
+          chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+          background_task_runner, account_id, policy_key_dir,
+          is_active_directory);
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -363,7 +366,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
                        MetricUserPolicyChromeOSSessionAbortType::
                            kInitWithActiveDirectoryManagement),
         std::move(store), std::move(external_data_manager));
-    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
+    manager->Init(
+        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
 
     active_directory_managers_[profile] = manager.get();
     return std::move(manager);
@@ -387,7 +391,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       manager->EnableWildcardLoginCheck(account_id.GetUserEmail());
     }
 
-    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
+    manager->Init(
+        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
                      g_browser_process->shared_url_loader_factory());

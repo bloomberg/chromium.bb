@@ -579,20 +579,41 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
             match_rects[0]);
 }
 
-TEST_F(TextFinderTest, ScopeWithTimeouts) {
-  // Make a long string.
-  String search_pattern("abc");
-  StringBuilder text;
-  // Make 4 substrings "abc" in text.
-  for (int i = 0; i < 100; ++i) {
-    if (i == 1 || i == 10 || i == 50 || i == 90) {
-      text.Append(search_pattern);
-    } else {
-      text.Append('a');
-    }
+class TextFinderFakeTimerTest : public TextFinderTest {
+ protected:
+  void SetUp() override {
+    time_elapsed_ = 0.0;
+    original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
   }
 
-  GetDocument().body()->SetInnerHTMLFromString(text.ToString());
+  void TearDown() override {
+    SetTimeFunctionsForTesting(original_time_function_);
+  }
+
+ private:
+  static double ReturnMockTime() {
+    time_elapsed_ += 1.0;
+    return time_elapsed_;
+  }
+
+  TimeFunction original_time_function_;
+  static double time_elapsed_;
+};
+
+double TextFinderFakeTimerTest::time_elapsed_;
+
+TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
+  // Make a long string.
+  String text(Vector<UChar>(100));
+  text.Fill('a');
+  String search_pattern("abc");
+  // Make 4 substrings "abc" in text.
+  text.insert(search_pattern, 1);
+  text.insert(search_pattern, 10);
+  text.insert(search_pattern, 50);
+  text.insert(search_pattern, 90);
+
+  GetDocument().body()->SetInnerHTMLFromString(text);
   GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;

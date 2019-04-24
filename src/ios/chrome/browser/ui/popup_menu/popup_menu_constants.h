@@ -36,8 +36,6 @@ extern NSString* const kToolsMenuOtherDevicesId;
 extern NSString* const kToolsMenuHistoryId;
 // Report an issue item accessibility Identifier.
 extern NSString* const kToolsMenuReportAnIssueId;
-// Translate item accessibility Identifier.
-extern NSString* const kToolsMenuTranslateId;
 // Find in Page item accessibility Identifier.
 extern NSString* const kToolsMenuFindInPageId;
 // Request desktop item accessibility Identifier.

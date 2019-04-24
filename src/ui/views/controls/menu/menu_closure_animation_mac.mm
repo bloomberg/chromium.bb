@@ -28,7 +28,7 @@ MenuClosureAnimationMac::MenuClosureAnimationMac(MenuItemView* item,
       menu_(menu),
       step_(AnimationStep::kStart) {}
 
-MenuClosureAnimationMac::~MenuClosureAnimationMac() = default;
+MenuClosureAnimationMac::~MenuClosureAnimationMac() {}
 
 void MenuClosureAnimationMac::Start() {
   DCHECK_EQ(step_, AnimationStep::kStart);

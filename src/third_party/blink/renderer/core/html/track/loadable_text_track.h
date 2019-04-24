@@ -36,6 +36,10 @@ class HTMLTrackElement;
 
 class LoadableTextTrack final : public TextTrack {
  public:
+  static LoadableTextTrack* Create(HTMLTrackElement* track) {
+    return MakeGarbageCollected<LoadableTextTrack>(track);
+  }
+
   explicit LoadableTextTrack(HTMLTrackElement*);
   ~LoadableTextTrack() override;
 

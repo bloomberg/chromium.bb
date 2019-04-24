@@ -18,13 +18,8 @@
     <script src="../js/sound.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/gallerybutton.js"></script>
-    <script src="../js/models/filenamer.js"></script>
     <script src="../js/models/gallery.js"></script>
-    <script src="../js/models/filesystem.js"></script>
-    <script src="../js/mojo/mojo_bindings_lite.js"></script>
-    <script src="../js/mojo/image_capture.mojom-lite.js"></script>
-    <script src="../js/mojo/cros_image_capture.mojom-lite.js"></script>
-    <script src="../js/mojo/imagecapture.js"></script>
+    <script src="../js/models/file_system.js"></script>
     <script src="../js/views/view.js"></script>
     <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
@@ -33,7 +28,6 @@
     <script src="../js/views/camera/preview.js"></script>
     <script src="../js/views/camera/recordtime.js"></script>
     <script src="../js/views/camera/timertick.js"></script>
-    <script src="../js/views/camera/modes.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
     <script src="../js/views/settings.js"></script>
@@ -55,37 +49,9 @@
                   tabindex="-1" hidden></object>
         </div>
       </div>
-      <div id="modes-group" class="buttons right-stripe">
-        <label class="mode-item" tabindex="-1">
-          <input type="radio" name="mode"
-               data-mode="video-mode" tabindex="0"
-               i18n-aria="switch_record_video_button">
-          <span i18n-content="label_switch_record_video_button"
-                tabindex="-1"></span>
-        </label>
-        <label class="mode-item" tabindex="-1">
-          <input type="radio" name="mode"
-               data-mode="photo-mode" tabindex="0"
-               i18n-aria="switch_take_photo_button">
-          <span i18n-content="label_switch_take_photo_button"
-                tabindex="-1"></span>
-        </label>
-        <label class="mode-item" tabindex="-1">
-          <input type="radio" name="mode"
-               data-mode="square-mode" tabindex="0"
-               i18n-aria="switch_take_square_photo_button">
-          <span i18n-content="label_switch_take_square_photo_button"
-                tabindex="-1"></span>
-        </label>
-        <label class="mode-item" tabindex="-1">
-          <input type="radio" name="mode"
-               data-mode="portrait-mode" tabindex="0"
-               i18n-aria="switch_take_portrait_photo_button">
-          <span i18n-content="label_switch_take_portrait_photo_button"
-                tabindex="-1"></span>
-        </label>
-      </div>
-      <div id="shutters-group" class="buttons right-stripe circle">
+      <div class="actions-group buttons circle">
+        <button id="switch-takephoto" tabindex="0"
+                i18n-label="switch_take_photo_button"></button>
         <button id="start-recordvideo" class="shutter" tabindex="0"
                 i18n-label="record_video_start_button"></button>
         <button id="stop-recordvideo" class="shutter" tabindex="0"
@@ -94,6 +60,8 @@
                 i18n-label="take_photo_button"></button>
         <button id="stop-takephoto" class="shutter" tabindex="0"
                 i18n-label="take_photo_cancel_button"></button>
+        <button id="switch-recordvideo" tabindex="0"
+                i18n-label="switch_record_video_button"></button>
       </div>
       <div class="top-stripe right-stripe buttons">
         <input type="checkbox" id="toggle-mic" tabindex="0"
@@ -104,7 +72,7 @@
         <button id="open-settings" tabindex="0"
                 i18n-label="settings_button" aria-haspopup="true"></button>
       </div>
-      <div id="options-group" class="left-stripe buttons">
+      <div class="left-stripe options-group buttons">
         <input type="checkbox" id="toggle-mirror" tabindex="0"
                i18n-label="toggle_mirror_button" data-state="mirror" checked>
         <input type="checkbox" id="toggle-grid" tabindex="0"
@@ -122,7 +90,7 @@
         <button id="gallery-enter" tabindex="0"
                 i18n-label="gallery_button" hidden></button>
       </div>
-      <div class="top-stripe horizontal-center-stripe" id="record-time" hidden>
+      <div class="top-stripe" id="record-time" hidden>
         <div class="icon"></div>
         <div id="record-time-msg"></div>
       </div>

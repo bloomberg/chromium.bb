@@ -133,7 +133,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   if (NameIsDefined(name) || V0NameIsDefined(name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "the name \"" + name + "\" has already been used with this registry");
+        "this name has already been used with this registry");
     return nullptr;
   }
 
@@ -323,8 +323,8 @@ ScriptPromise CustomElementRegistry::whenDefined(
   ScriptPromiseResolver* resolver = when_defined_promise_map_.at(name);
   if (resolver)
     return resolver->Promise();
-  auto* new_resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* new_resolver =
+      ScriptPromiseResolver::Create(script_state);
   when_defined_promise_map_.insert(name, new_resolver);
   return new_resolver->Promise();
 }

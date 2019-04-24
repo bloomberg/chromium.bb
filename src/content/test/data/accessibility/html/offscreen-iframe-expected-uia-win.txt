@@ -1,7 +1,0 @@
-region
-++document
-++++group
-++++++document
-++++++++document
-++++++++++group Name='iframe_onscreen'
-++++++++++group Name='iframe_offscreen'

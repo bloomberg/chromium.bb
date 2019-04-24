@@ -25,8 +25,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -44,10 +44,8 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListene
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.policy.test.annotations.Policies;
 
@@ -111,62 +109,65 @@ public class PreferencesTest {
                         SearchEnginePreference.class.getName());
 
         // Set the second search engine as the default using TemplateUrlService.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
-            pref.setValueForTesting("1");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
+                pref.setValueForTesting("1");
 
-            // Ensure that the second search engine in the list is selected.
-            Assert.assertNotNull(pref);
-            Assert.assertEquals("1", pref.getValueForTesting());
+                // Ensure that the second search engine in the list is selected.
+                Assert.assertNotNull(pref);
+                Assert.assertEquals("1", pref.getValueForTesting());
 
-            // Simulate selecting the third search engine, ensure that TemplateUrlService is
-            // updated, and location permission granted by default for the new engine.
-            String keyword2 = pref.setValueForTesting("2");
-            TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-            Assert.assertEquals(
-                    keyword2, templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
-            Assert.assertEquals(
-                    ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
+                // Simulate selecting the third search engine, ensure that TemplateUrlService is
+                // updated, and location permission granted by default for the new engine.
+                String keyword2 = pref.setValueForTesting("2");
+                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+                Assert.assertEquals(keyword2,
+                        templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
+                Assert.assertEquals(
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
 
-            // Simulate selecting the fourth search engine and but set a blocked permission
-            // first and ensure that location permission is NOT granted.
-            String keyword3 = pref.getKeywordFromIndexForTesting(3);
-            String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.BLOCK, false);
-            keyword3 = pref.setValueForTesting("3");
-            Assert.assertEquals(keyword3,
-                    TemplateUrlService.getInstance()
-                            .getDefaultSearchEngineTemplateUrl()
-                            .getKeyword());
-            Assert.assertEquals(
-                    ContentSettingValues.BLOCK, locationPermissionForSearchEngine(keyword3));
-            Assert.assertEquals(
-                    ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword2));
+                // Simulate selecting the fourth search engine and but set a blocked permission
+                // first and ensure that location permission is NOT granted.
+                String keyword3 = pref.getKeywordFromIndexForTesting(3);
+                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSettingValues.BLOCK, false);
+                keyword3 = pref.setValueForTesting("3");
+                Assert.assertEquals(keyword3,
+                        TemplateUrlService.getInstance()
+                                .getDefaultSearchEngineTemplateUrl()
+                                .getKeyword());
+                Assert.assertEquals(
+                        ContentSettingValues.BLOCK, locationPermissionForSearchEngine(keyword3));
+                Assert.assertEquals(
+                        ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword2));
 
-            // Make sure a pre-existing ALLOW value does not get deleted when switching away
-            // from a search engine. For this to work we need to change the DSE's content
-            // setting to allow for search engine 3 before changing to search engine 2.
-            // Otherwise the block setting will cause the content setting for search engine 2
-            // to be reset when we switch to it.
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.ALLOW, false);
-            keyword2 = pref.getKeywordFromIndexForTesting(2);
-            url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.ALLOW, false);
-            keyword2 = pref.setValueForTesting("2");
-            Assert.assertEquals(keyword2,
-                    TemplateUrlService.getInstance()
-                            .getDefaultSearchEngineTemplateUrl()
-                            .getKeyword());
+                // Make sure a pre-existing ALLOW value does not get deleted when switching away
+                // from a search engine. For this to work we need to change the DSE's content
+                // setting to allow for search engine 3 before changing to search engine 2.
+                // Otherwise the block setting will cause the content setting for search engine 2
+                // to be reset when we switch to it.
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSettingValues.ALLOW, false);
+                keyword2 = pref.getKeywordFromIndexForTesting(2);
+                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSettingValues.ALLOW, false);
+                keyword2 = pref.setValueForTesting("2");
+                Assert.assertEquals(keyword2,
+                        TemplateUrlService.getInstance()
+                                .getDefaultSearchEngineTemplateUrl()
+                                .getKeyword());
 
-            Assert.assertEquals(
-                    ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
-            pref.setValueForTesting("3");
-            Assert.assertEquals(
-                    ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
+                Assert.assertEquals(
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
+                pref.setValueForTesting("3");
+                Assert.assertEquals(
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
+            }
         });
     }
 
@@ -175,12 +176,15 @@ public class PreferencesTest {
     @Feature({"Preferences"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     public void testSearchEnginePreference_DisabledIfNoDefaultSearchEngine() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Unable to initialize process: " + e);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                            .handleSynchronousStartup();
+                } catch (ProcessInitException e) {
+                    Assert.fail("Unable to initialize process: " + e);
+                }
             }
         });
 
@@ -207,10 +211,14 @@ public class PreferencesTest {
                 return searchEnginePref.getFragment();
             }
         }));
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ManagedPreferenceDelegate managedPrefDelegate =
-                    mainPreferences.getManagedPreferenceDelegateForTest();
-            Assert.assertTrue(managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ManagedPreferenceDelegate managedPrefDelegate =
+                        mainPreferences.getManagedPreferenceDelegateForTest();
+                Assert.assertTrue(
+                        managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
+            }
         });
     }
 
@@ -234,28 +242,34 @@ public class PreferencesTest {
                         SearchEnginePreference.class.getName());
 
         // Set the first search engine as the default using TemplateUrlService.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
-            pref.setValueForTesting("0");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
+                pref.setValueForTesting("0");
+            }
         });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Ensure that the first search engine in the list is selected.
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
-            Assert.assertNotNull(pref);
-            Assert.assertEquals("0", pref.getValueForTesting());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Ensure that the first search engine in the list is selected.
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
+                Assert.assertNotNull(pref);
+                Assert.assertEquals("0", pref.getValueForTesting());
 
-            // Simulate selecting a search engine that uses HTTP.
-            int index = indexOfFirstHttpSearchEngine(pref);
-            String keyword = pref.setValueForTesting(Integer.toString(index));
+                // Simulate selecting a search engine that uses HTTP.
+                int index = indexOfFirstHttpSearchEngine(pref);
+                String keyword = pref.setValueForTesting(Integer.toString(index));
 
-            TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-            Assert.assertEquals(
-                    keyword, templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
-            Assert.assertEquals(
-                    ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword));
+                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+                Assert.assertEquals(keyword,
+                        templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
+                Assert.assertEquals(
+                        ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword));
+            }
         });
     }
 
@@ -277,17 +291,20 @@ public class PreferencesTest {
     private void ensureTemplateUrlServiceLoaded() throws Exception {
         // Make sure the template_url_service is loaded.
         final CallbackHelper onTemplateUrlServiceLoadedHelper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            if (TemplateUrlService.getInstance().isLoaded()) {
-                onTemplateUrlServiceLoadedHelper.notifyCalled();
-            } else {
-                TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
-                    @Override
-                    public void onTemplateUrlServiceLoaded() {
-                        onTemplateUrlServiceLoadedHelper.notifyCalled();
-                    }
-                });
-                TemplateUrlService.getInstance().load();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                if (TemplateUrlService.getInstance().isLoaded()) {
+                    onTemplateUrlServiceLoadedHelper.notifyCalled();
+                } else {
+                    TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
+                        @Override
+                        public void onTemplateUrlServiceLoaded() {
+                            onTemplateUrlServiceLoadedHelper.notifyCalled();
+                        }
+                    });
+                    TemplateUrlService.getInstance().load();
+                }
             }
         });
         onTemplateUrlServiceLoadedHelper.waitForCallback(0);
@@ -360,7 +377,7 @@ public class PreferencesTest {
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
     public void testSavePasswordsPreferences_ManagedAndDisabled() throws ExecutionException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             try {
                 ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             } catch (ProcessInitException e) {
@@ -385,23 +402,34 @@ public class PreferencesTest {
     private void assertFontSizePrefs(final boolean expectedForceEnableZoom,
             final float expectedFontScale) {
         final Context targetContext = InstrumentationRegistry.getTargetContext();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance();
-            Assert.assertEquals(expectedForceEnableZoom, fontSizePrefs.getForceEnableZoom());
-            Assert.assertEquals(expectedFontScale, fontSizePrefs.getFontScaleFactor(), 0.001f);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance(targetContext);
+                Assert.assertEquals(expectedForceEnableZoom, fontSizePrefs.getForceEnableZoom());
+                Assert.assertEquals(expectedFontScale, fontSizePrefs.getFontScaleFactor(), 0.001f);
+            }
         });
     }
 
     private static void userSetTextScale(final AccessibilityPreferences accessibilityPref,
             final SeekBarPreference textScalePref, final float textScale) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { accessibilityPref.onPreferenceChange(textScalePref, textScale); });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                accessibilityPref.onPreferenceChange(textScalePref, textScale);
+            }
+        });
     }
 
     private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
             final SeekBarLinkedCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled);
+            }
+        });
     }
 
     private static Preference waitForPreference(final PreferenceFragment prefFragment,
@@ -413,7 +441,7 @@ public class PreferencesTest {
             }
         });
 
-        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Preference>() {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Preference>() {
             @Override
             public Preference call() throws Exception {
                 return prefFragment.findPreference(preferenceKey);

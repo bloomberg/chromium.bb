@@ -85,8 +85,6 @@ HeapVector<Member<PaymentMethodData>> BuildPaymentMethodDataForTest();
 
 payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest();
 
-payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest();
-
 void MakePaymentRequestOriginSecure(Document&);
 
 class PaymentRequestMockFunctionScope {

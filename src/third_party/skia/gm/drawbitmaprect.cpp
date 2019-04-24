@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
 #include "SkColorPriv.h"
@@ -14,8 +16,7 @@
 #include "SkMathPriv.h"
 #include "SkShader.h"
 #include "SkSurface.h"
-#include "ToolUtils.h"
-#include "gm.h"
+
 
 static SkBitmap make_chessbm(int w, int h) {
     SkBitmap bm;
@@ -34,7 +35,7 @@ static SkBitmap make_chessbm(int w, int h) {
 static sk_sp<SkImage> makebm(SkCanvas* origCanvas, SkBitmap* resultBM, int w, int h) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(w, h);
 
-    auto      surface(ToolUtils::makeSurface(origCanvas, info));
+    auto surface(sk_tool_utils::makeSurface(origCanvas, info));
     SkCanvas* canvas = surface->getCanvas();
 
     canvas->clear(SK_ColorTRANSPARENT);
@@ -67,7 +68,7 @@ static sk_sp<SkImage> makebm(SkCanvas* origCanvas, SkBitmap* resultBM, int w, in
                         pt, radius,
                         colors, pos,
                         SK_ARRAY_COUNT(colors),
-                        SkTileMode::kRepeat,
+                        SkShader::kRepeat_TileMode,
                         0, &mat));
         canvas->drawRect(rect, paint);
         rect.inset(wScalar / 8, hScalar / 8);
@@ -171,7 +172,7 @@ protected:
         blackPaint.setColor(SK_ColorBLACK);
         blackPaint.setAntiAlias(true);
 
-        SkFont font(ToolUtils::create_portable_typeface(), titleHeight);
+        SkFont font(sk_tool_utils::create_portable_typeface(), titleHeight);
 
         SkString title;
         title.printf("Bitmap size: %d x %d", gBmpSize, gBmpSize);

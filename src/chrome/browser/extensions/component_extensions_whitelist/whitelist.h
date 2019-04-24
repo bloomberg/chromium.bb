@@ -42,12 +42,6 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id);
 // Checks using resource ID of manifest.
 bool IsComponentExtensionWhitelisted(int manifest_resource_id);
 
-#if defined(OS_CHROMEOS)
-// Checks using extension id for sign in profile.
-bool IsComponentExtensionWhitelistedForSignInProfile(
-    const std::string& extension_id);
-#endif
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_COMPONENT_EXTENSIONS_WHITELIST_WHITELIST_H_

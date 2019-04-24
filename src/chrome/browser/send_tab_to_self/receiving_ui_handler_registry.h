@@ -33,7 +33,7 @@ class ReceivingUiHandlerRegistry {
 
   // Returns all the handlers to perform UI updates for the platform.
   // Called by the SendTabToSelfClientService.
-  const std::vector<std::unique_ptr<ReceivingUiHandler>>& GetHandlers() const;
+  std::vector<std::unique_ptr<ReceivingUiHandler>>& GetHandlers();
 
  private:
   friend struct base::DefaultSingletonTraits<ReceivingUiHandlerRegistry>;

@@ -282,9 +282,8 @@ class ComputedStyle : public ComputedStyleBase,
     // flat tree in the presence of display:contents.
     kDisplayAffectingDescendantStyles,
   };
-  CORE_EXPORT static Difference ComputeDifference(
-      const ComputedStyle* old_style,
-      const ComputedStyle* new_style);
+  static Difference ComputeDifference(const ComputedStyle* old_style,
+                                      const ComputedStyle* new_style);
 
   // Returns true if the ComputedStyle change requires a LayoutObject re-attach.
   static bool NeedsReattachLayoutTree(const ComputedStyle* old_style,
@@ -318,8 +317,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleContentAlignmentData ResolvedJustifyContent(
       const StyleContentAlignmentData& normal_behaviour) const;
 
-  CORE_EXPORT StyleDifference
-  VisualInvalidationDiff(const Document&, const ComputedStyle&) const;
+  StyleDifference VisualInvalidationDiff(const Document&,
+                                         const ComputedStyle&) const;
 
   CORE_EXPORT void InheritFrom(const ComputedStyle& inherit_parent,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
@@ -887,7 +886,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // List style properties.
   // list-style-image
-  CORE_EXPORT StyleImage* ListStyleImage() const;
+  StyleImage* ListStyleImage() const;
   void SetListStyleImage(StyleImage*);
 
   // quotes
@@ -1153,7 +1152,7 @@ class ComputedStyle : public ComputedStyleBase,
   void RemoveVariable(const AtomicString&, bool is_inherited_property);
 
   // Handles both inherited and non-inherited variables
-  CORE_EXPORT CSSVariableData* GetVariable(const AtomicString&) const;
+  CSSVariableData* GetVariable(const AtomicString&) const;
 
   CSSVariableData* GetVariable(const AtomicString&,
                                bool is_inherited_property) const;
@@ -1370,7 +1369,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Will-change utility functions.
   bool HasWillChangeCompositingHint() const;
   bool HasWillChangeOpacityHint() const {
-    return WillChangeProperties().Contains(CSSPropertyID::kOpacity);
+    return WillChangeProperties().Contains(CSSPropertyOpacity);
   }
   bool HasWillChangeTransformHint() const;
 
@@ -1430,33 +1429,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin utility functions.
-  void SetMarginTop(const Length& v) {
-    if (MarginTop() != v) {
-      if (!v.IsZero())
-        SetMayHaveMargin();
-      MutableMarginTopInternal() = v;
-    }
-  }
-  void SetMarginRight(const Length& v) {
-    if (MarginRight() != v) {
-      if (!v.IsZero())
-        SetMayHaveMargin();
-      MutableMarginRightInternal() = v;
-    }
-  }
-  void SetMarginBottom(const Length& v) {
-    if (MarginBottom() != v) {
-      if (!v.IsZero())
-        SetMayHaveMargin();
-      MutableMarginBottomInternal() = v;
-    }
-  }
-  void SetMarginLeft(const Length& v) {
-    if (MarginLeft() != v) {
-      if (!v.IsZero())
-        SetMayHaveMargin();
-      MutableMarginLeftInternal() = v;
-    }
+  bool HasMargin() const {
+    return !MarginLeft().IsZero() || !MarginRight().IsZero() ||
+           !MarginTop().IsZero() || !MarginBottom().IsZero();
   }
   bool HasMarginBeforeQuirk() const { return MarginBefore().Quirk(); }
   bool HasMarginAfterQuirk() const { return MarginAfter().Quirk(); }
@@ -1492,35 +1467,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Padding utility functions.
-  void SetPaddingTop(const Length& v) {
-    if (PaddingTop() != v) {
-      if (!v.IsZero())
-        SetMayHavePadding();
-      MutablePaddingTopInternal() = v;
-    }
-  }
-  void SetPaddingRight(const Length& v) {
-    if (PaddingRight() != v) {
-      if (!v.IsZero())
-        SetMayHavePadding();
-      MutablePaddingRightInternal() = v;
-    }
-  }
-  void SetPaddingBottom(const Length& v) {
-    if (PaddingBottom() != v) {
-      if (!v.IsZero())
-        SetMayHavePadding();
-      MutablePaddingBottomInternal() = v;
-    }
-  }
-  void SetPaddingLeft(const Length& v) {
-    if (PaddingLeft() != v) {
-      if (!v.IsZero())
-        SetMayHavePadding();
-      MutablePaddingLeftInternal() = v;
-    }
-  }
-
   const Length& PaddingBefore() const {
     return PhysicalPaddingToLogical().Before();
   }
@@ -1536,6 +1482,10 @@ class ComputedStyle : public ComputedStyleBase,
   }
   const Length& PaddingUnder() const {
     return PhysicalPaddingToLogical().Under();
+  }
+  bool HasPadding() const {
+    return !PaddingLeft().IsZero() || !PaddingRight().IsZero() ||
+           !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
     SetPaddingTop(Length::Fixed());
@@ -1993,8 +1943,7 @@ class ComputedStyle : public ComputedStyleBase,
                             bool override_existing_colors);
   void ClearAppliedTextDecorations();
   void RestoreParentTextDecorations(const ComputedStyle& parent_style);
-  CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
-      const;
+  const Vector<AppliedTextDecoration>& AppliedTextDecorations() const;
   TextDecoration TextDecorationsInEffect() const;
 
   // Overflow utility functions.
@@ -2012,6 +1961,10 @@ class ComputedStyle : public ComputedStyleBase,
     DCHECK(OverflowX() != EOverflow::kVisible || OverflowX() == OverflowY());
     return OverflowX() == EOverflow::kVisible;
   }
+  bool IsOverflowPaged() const {
+    return OverflowY() == EOverflow::kWebkitPagedX ||
+           OverflowY() == EOverflow::kWebkitPagedY;
+  }
 
   bool IsDisplayTableRowOrColumnType() const {
     return Display() == EDisplay::kTableRow ||
@@ -2027,6 +1980,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool HasAutoVerticalScroll() const {
     return OverflowY() == EOverflow::kAuto ||
+           OverflowY() == EOverflow::kWebkitPagedY ||
            OverflowY() == EOverflow::kOverlay;
   }
 
@@ -2260,6 +2214,16 @@ class ComputedStyle : public ComputedStyleBase,
   bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
     return !IsLeftToRightDirection() && IsHorizontalWritingMode();
   }
+  bool HasInlinePaginationAxis() const {
+    // If the pagination axis is parallel with the writing mode inline axis,
+    // columns may be laid out along the inline axis, just like for regular
+    // multicol. Otherwise, we need to lay out along the block axis.
+    if (IsOverflowPaged()) {
+      return (OverflowY() == EOverflow::kWebkitPagedX) ==
+             IsHorizontalWritingMode();
+    }
+    return false;
+  }
 
   // Border utility functions.
   bool BorderObscuresBackground() const;
@@ -2335,10 +2299,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
-
-  ColorScheme GetColorScheme() const {
-    return DarkColorScheme() ? ColorScheme::kDark : ColorScheme::kLight;
-  }
 
  private:
   void SetVisitedLinkBackgroundColor(const StyleColor& v) {

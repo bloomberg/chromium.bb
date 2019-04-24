@@ -133,17 +133,20 @@ public class NativePageFactory {
      * @param url The URL to be handled.
      * @param candidatePage A NativePage to be reused if it matches the url, or null.
      * @param tab The Tab that will show the page.
+     * @param tabModelSelector The TabModelSelector containing the tab.
      * @param activity The activity used to create the views for the page.
      * @return A NativePage showing the specified url or null.
      */
-    public static NativePage createNativePageForURL(
-            String url, NativePage candidatePage, Tab tab, ChromeActivity activity) {
-        return createNativePageForURL(url, candidatePage, tab, activity, tab.isIncognito());
+    public static NativePage createNativePageForURL(String url, NativePage candidatePage,
+            Tab tab, TabModelSelector tabModelSelector, ChromeActivity activity) {
+        return createNativePageForURL(url, candidatePage, tab, tabModelSelector, activity,
+                tab.isIncognito());
     }
 
     @VisibleForTesting
-    static NativePage createNativePageForURL(String url, NativePage candidatePage, Tab tab,
-            ChromeActivity activity, boolean isIncognito) {
+    static NativePage createNativePageForURL(String url, NativePage candidatePage,
+            Tab tab, TabModelSelector tabModelSelector, ChromeActivity activity,
+            boolean isIncognito) {
         NativePage page;
 
         switch (nativePageType(url, candidatePage, isIncognito)) {
@@ -153,8 +156,7 @@ public class NativePageFactory {
                 page = candidatePage;
                 break;
             case NativePageType.NTP:
-                page = sNativePageBuilder.buildNewTabPage(
-                        activity, tab, TabModelSelector.from(tab));
+                page = sNativePageBuilder.buildNewTabPage(activity, tab, tabModelSelector);
                 break;
             case NativePageType.BOOKMARKS:
                 page = sNativePageBuilder.buildBookmarksPage(activity, tab);
@@ -207,7 +209,7 @@ public class NativePageFactory {
         @Override
         public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
             if (incognito && !mTab.isIncognito()) {
-                TabModelSelector.from(mTab).openNewTab(urlParams,
+                mTab.getTabModelSelector().openNewTab(urlParams,
                         TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
                         /* incognito = */ true);
                 return TabLoadStatus.DEFAULT_PAGE_LOAD;
@@ -233,7 +235,7 @@ public class NativePageFactory {
 
         @Override
         public boolean isVisible() {
-            return mTab == TabModelSelector.from(mTab).getCurrentTab();
+            return mTab == mTab.getTabModelSelector().getCurrentTab();
         }
     }
 }

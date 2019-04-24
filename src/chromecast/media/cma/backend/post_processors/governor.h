@@ -25,16 +25,18 @@ namespace media {
 // Input volumes > |VOLUME_TO_CLAMP| will be attenuated by |CLAMP_MULTIPLIER|.
 class Governor : public AudioPostProcessor2 {
  public:
-  Governor(const std::string& config, int input_channels);
+  Governor(const std::string& config, int channels);
   ~Governor() override;
 
-  // AudioPostProcessor2 implementation:
-  bool SetConfig(const Config& config) override;
-  const Status& GetStatus() override;
-  void ProcessFrames(float* data,
-                     int frames,
-                     float cast_volume,
-                     float volume_dbfs) override;
+  // AudioPostProcessor implementation:
+  bool SetSampleRate(int sample_rate) override;
+  int ProcessFrames(float* data,
+                    int frames,
+                    float cast_volume,
+                    float volume_dbfs) override;
+  int GetRingingTimeInFrames() override;
+  int NumOutputChannels() override;
+  float* GetOutputBuffer() override;
   bool UpdateParameters(const std::string& message) override;
 
   void SetSlewTimeMsForTest(int slew_time_ms);
@@ -42,11 +44,13 @@ class Governor : public AudioPostProcessor2 {
  private:
   float GetGovernorMultiplier();
 
-  Status status_;
+  int channels_;
+  int sample_rate_;
   float volume_;
   double onset_volume_;
   double clamp_multiplier_;
   SlewVolume slew_volume_;
+  float* data_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Governor);
 };

@@ -23,8 +23,6 @@
 #define KEY_SPACE_SIZE 65536
 #define RESLIST_MAX_INT_VECTOR 2048
 
-#include <functional>
-
 #include "unicode/utypes.h"
 #include "unicode/unistr.h"
 #include "unicode/ures.h"
@@ -38,9 +36,7 @@
 
 U_CDECL_BEGIN
 
-class PathFilter;
 class PseudoListResource;
-class ResKeyPath;
 
 struct ResFile {
     ResFile()
@@ -216,19 +212,6 @@ struct SResource {
     void write(UNewDataMemory *mem, uint32_t *byteOffset);
     virtual void handleWrite(UNewDataMemory *mem, uint32_t *byteOffset);
 
-    /**
-     * Applies the given filter with the given base path to this resource.
-     * Removes child resources rejected by the filter recursively.
-     * 
-     * @param bundle Needed in order to access the key for this and child resources.
-     */
-    virtual void applyFilter(const PathFilter& filter, ResKeyPath& path, const SRBRoot* bundle);
-
-    /**
-     * Calls the given function for every key ID present in this tree.
-     */
-    virtual void collectKeys(std::function<void(int32_t)> collector) const;
-
     int8_t   fType;     /* nominal type: fRes (when != 0xffffffff) may use subtype */
     UBool    fWritten;  /* res_write() can exit early */
     uint32_t fRes;      /* resource item word; RES_BOGUS=0xffffffff if not known yet */
@@ -248,10 +231,7 @@ public:
               fCount(0), fFirst(NULL) {}
     virtual ~ContainerResource();
 
-    void handlePreflightStrings(SRBRoot *bundle, UHashtable *stringSet, UErrorCode &errorCode) override;
-
-    void collectKeys(std::function<void(int32_t)> collector) const override;
-
+    virtual void handlePreflightStrings(SRBRoot *bundle, UHashtable *stringSet, UErrorCode &errorCode);
 protected:
     void writeAllRes16(SRBRoot *bundle);
     void preWriteAllRes(uint32_t *byteOffset);
@@ -274,11 +254,9 @@ public:
 
     void add(SResource *res, int linenumber, UErrorCode &errorCode);
 
-    void handleWrite16(SRBRoot *bundle) override;
-    void handlePreWrite(uint32_t *byteOffset) override;
-    void handleWrite(UNewDataMemory *mem, uint32_t *byteOffset) override;
-
-    void applyFilter(const PathFilter& filter, ResKeyPath& path, const SRBRoot* bundle) override;
+    virtual void handleWrite16(SRBRoot *bundle);
+    virtual void handlePreWrite(uint32_t *byteOffset);
+    virtual void handleWrite(UNewDataMemory *mem, uint32_t *byteOffset);
 
     int8_t fTableType;  // determined by table_write16() for table_preWrite() & table_write()
     SRBRoot *fRoot;

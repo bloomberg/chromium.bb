@@ -31,10 +31,7 @@ bool FakeSyncableService::syncing() const {
   return syncing_;
 }
 
-void FakeSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
-  std::move(done).Run();
-}
-
+// SyncableService implementation.
 SyncMergeResult FakeSyncableService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,

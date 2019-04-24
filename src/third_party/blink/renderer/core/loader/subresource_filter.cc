@@ -126,12 +126,11 @@ void SubresourceFilter::ReportLoad(
       // Display console message for actually blocked resource. For a
       // resource with |load_policy| as kWouldDisallow, we will be logging a
       // document wide console message, so no need to log it here.
-      // TODO: Consider logging this as a kIntervention for showing
+      // TODO: Consider logging this as a kInterventionMessageSource for showing
       // warning in Lighthouse.
       if (subresource_filter_->ShouldLogToConsole()) {
         execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kError,
+            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
             GetErrorStringForDisallowedLoad(resource_url)));
       }
       FALLTHROUGH;

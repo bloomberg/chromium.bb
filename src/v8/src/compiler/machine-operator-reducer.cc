@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "src/compiler/machine-operator-reducer.h"
-#include <cmath>
 
 #include "src/base/bits.h"
 #include "src/base/division-by-constant.h"
@@ -174,8 +173,8 @@ Reduction MachineOperatorReducer::Reduce(Node* node) {
       Int32BinopMatcher m(node);
       if (m.right().Is(0)) return Replace(m.left().node());  // x ror 0 => x
       if (m.IsFoldable()) {                                  // K ror K => K
-        return ReplaceInt32(base::bits::RotateRight32(m.left().Value(),
-                                                      m.right().Value() & 31));
+        return ReplaceInt32(
+            base::bits::RotateRight32(m.left().Value(), m.right().Value()));
       }
       break;
     }
@@ -324,7 +323,7 @@ Reduction MachineOperatorReducer::Reduce(Node* node) {
     case IrOpcode::kFloat32Sub: {
       Float32BinopMatcher m(node);
       if (allow_signalling_nan_ && m.right().Is(0) &&
-          (std::copysign(1.0, m.right().Value()) > 0)) {
+          (copysign(1.0, m.right().Value()) > 0)) {
         return Replace(m.left().node());  // x - 0 => x
       }
       if (m.right().IsNaN()) {  // x - NaN => NaN

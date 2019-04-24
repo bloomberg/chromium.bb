@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -23,7 +22,7 @@ class BrowserContext;
 
 namespace arc {
 
-class SelectFileDialogHolder;
+class SelectFileDialogScriptExecutor;
 
 // Exposed for testing.
 extern const char kScriptClickOk[];
@@ -55,41 +54,43 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
                           void* params) override;
   void FileSelectionCanceled(void* params) override;
 
+  void SetSelectFileDialogForTesting(ui::SelectFileDialog* dialog);
+  void SetDialogScriptExecutorForTesting(
+      SelectFileDialogScriptExecutor* dialog_script_executor);
+
  private:
   friend class ArcSelectFilesHandlerTest;
 
   void FilesSelectedInternal(const std::vector<base::FilePath>& files,
                              void* params);
 
-  void SetDialogHolderForTesting(
-      std::unique_ptr<SelectFileDialogHolder> dialog_holder);
-
   Profile* const profile_;
 
   mojom::FileSystemHost::SelectFilesCallback callback_;
-  std::unique_ptr<SelectFileDialogHolder> dialog_holder_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  scoped_refptr<SelectFileDialogScriptExecutor> dialog_script_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSelectFilesHandler);
 };
 
-// Wrapper for SelectFileDialogExtension.
-// Since it is not easy to create a mock class for SelectFileDialogExtension,
-// this class is replaced with a mock class instead in unit tests.
-class SelectFileDialogHolder {
+// Helper class for executing JavaScript on a given SelectFileDialog.
+class SelectFileDialogScriptExecutor
+    : public base::RefCounted<SelectFileDialogScriptExecutor> {
  public:
-  explicit SelectFileDialogHolder(ui::SelectFileDialog::Listener* listener);
-  virtual ~SelectFileDialogHolder();
-
-  virtual void SelectFile(ui::SelectFileDialog::Type type,
-                          const base::FilePath& default_path,
-                          const ui::SelectFileDialog::FileTypeInfo* file_types);
+  explicit SelectFileDialogScriptExecutor(
+      ui::SelectFileDialog* select_file_dialog);
 
   virtual void ExecuteJavaScript(
       const std::string& script,
-      content::RenderFrameHost::JavaScriptResultCallback callback);
+      const content::RenderFrameHost::JavaScriptResultCallback& callback);
+
+ protected:
+  friend class base::RefCounted<SelectFileDialogScriptExecutor>;
+
+  virtual ~SelectFileDialogScriptExecutor();
 
  private:
-  scoped_refptr<SelectFileDialogExtension> select_file_dialog_;
+  ui::SelectFileDialog* select_file_dialog_;
 };
 
 }  // namespace arc

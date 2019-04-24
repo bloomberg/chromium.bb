@@ -8,14 +8,12 @@
 #include "base/macros.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_load_stats.h"
+#include "content/renderer/loader/url_response_body_consumer.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
-
-// static
-constexpr uint32_t NavigationBodyLoader::kMaxNumConsumedBytesInTask;
 
 // static
 void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
@@ -140,7 +138,6 @@ void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void NavigationBodyLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle handle) {
   DCHECK(!has_received_body_handle_);
-  DCHECK(!has_received_completion_);
   has_received_body_handle_ = true;
   has_seen_end_of_data_ = false;
   handle_ = std::move(handle);
@@ -174,7 +171,7 @@ void NavigationBodyLoader::StartLoadingBody(
   client_ = client;
 
   NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
-                                 head_, content::PREVIEWS_OFF);
+                                 head_);
 
   if (use_isolated_code_cache) {
     code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
@@ -255,9 +252,11 @@ void NavigationBodyLoader::ReadFromDataPipe() {
       NotifyCompletionIfAppropriate();
       return;
     }
-    DCHECK_LE(num_bytes_consumed, kMaxNumConsumedBytesInTask);
-    available =
-        std::min(available, kMaxNumConsumedBytesInTask - num_bytes_consumed);
+    DCHECK_LE(num_bytes_consumed,
+              URLResponseBodyConsumer::kMaxNumConsumedBytesInTask);
+    available = std::min(available,
+                         URLResponseBodyConsumer::kMaxNumConsumedBytesInTask -
+                             num_bytes_consumed);
     if (available == 0) {
       // We've already consumed many bytes in this task. Defer the remaining
       // to the next task.

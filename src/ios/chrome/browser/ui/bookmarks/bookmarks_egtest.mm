@@ -41,6 +41,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -254,8 +255,6 @@ id<GREYMatcher> SearchIconButton() {
         onElementWithMatcher:grey_accessibilityID(
                                  kPopupMenuToolsMenuTableViewId)]
         assertWithMatcher:grey_notNil()];
-    // After veryfing, close the ToolsMenu by tapping on its button.
-    [ChromeEarlGreyUI openToolsMenu];
   } else {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(
@@ -435,7 +434,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-- (void)testBookmarkContextBarInSingleSelectionModes {
+- (void)testBookmarkContextBarInVariousSelectionModes {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -561,29 +560,6 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                    [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-
-  // Cancel edit mode
-  [BookmarksTestCase closeContextBarEditMode];
-
-  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                                    newFolderEnabled:YES];
-}
-
-- (void)testBookmarkContextBarInMultipleSelectionModes {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeUIToolbarIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
 
   // Multi select URL and folders.
   [[EarlGrey
@@ -2104,7 +2080,14 @@ id<GREYMatcher> SearchIconButton() {
 
 // Verify the Open All functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
-- (void)FLAKY_testContextMenuForMultipleURLOpenAll {
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  testContextMenuForMultipleURLOpenAll
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  FLAKY_testContextMenuForMultipleURLOpenAll
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAll {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -2147,7 +2130,14 @@ id<GREYMatcher> SearchIconButton() {
 
 // Verify the Open All in Incognito functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
-- (void)FLAKY_testContextMenuForMultipleURLOpenAllInIncognito {
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  testContextMenuForMultipleURLOpenAllInIncognito
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  FLAKY_testContextMenuForMultipleURLOpenAllInIncognito
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAllInIncognito {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];

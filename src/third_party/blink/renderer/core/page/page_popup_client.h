@@ -82,6 +82,7 @@ class CORE_EXPORT PagePopupClient {
   // Helper functions to be used in PagePopupClient::writeDocument().
   static void AddString(const String&, SharedBuffer*);
   static void AddJavaScriptString(const String&, SharedBuffer*);
+  static void AddHTMLString(const String&, SharedBuffer*);
   static void AddProperty(const char* name, const String& value, SharedBuffer*);
   static void AddProperty(const char* name, int value, SharedBuffer*);
   static void AddProperty(const char* name, unsigned value, SharedBuffer*);

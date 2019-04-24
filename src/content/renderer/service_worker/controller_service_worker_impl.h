@@ -19,6 +19,7 @@ namespace content {
 
 class ServiceWorkerContextClient;
 
+// S13nServiceWorker:
 // An instance of this class is created on the service worker thread
 // when ServiceWorkerContextClient's WorkerContextData is created.
 // This implements blink::mojom::ControllerServiceWorker and its Mojo endpoint
@@ -28,8 +29,8 @@ class ServiceWorkerContextClient;
 // Fetch events via the Mojo endpoints.
 //
 // TODO(kinuko): Implement self-killing timer, that does something similar to
-// what ServiceWorkerVersion::StopWorkerIfIdle did in the browser process in
-// the non-S13n codepath.
+// what ServiceWorkerVersion::StopWorkerIfIdle does in the browser process in
+// non-S13n code.
 class ControllerServiceWorkerImpl
     : public blink::mojom::ControllerServiceWorker {
  public:
@@ -54,8 +55,6 @@ class ControllerServiceWorkerImpl
   // and by the controllees.
   mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
-  // This should never be null because |context_client_| owns |this|.
-  // TODO(falken): Make this a raw pointer.
   base::WeakPtr<ServiceWorkerContextClient> context_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

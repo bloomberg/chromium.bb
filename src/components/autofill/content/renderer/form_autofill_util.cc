@@ -1061,7 +1061,8 @@ void ForEachMatchingFormFieldCommon(
         // field is not skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
-        element->UserHasEditedTheField() &&
+        (element->UserHasEditedTheField() ||
+         !base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)) &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()) &&
         (!element->HasAttribute(*kValue) ||
          element->GetAttribute(*kValue) != element->Value()) &&
@@ -1073,6 +1074,7 @@ void ForEachMatchingFormFieldCommon(
     // Check if we should autofill/preview/clear a select element or leave it.
     if (!force_override && !is_initiating_element &&
         IsSelectElement(*element) && element->UserHasEditedTheField() &&
+        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields) &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()))
       continue;
 
@@ -1422,7 +1424,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
-  form->url = GetCanonicalOriginForDocument(document);
+  form->origin = GetCanonicalOriginForDocument(document);
   if (IsAutofillFieldMetadataEnabled() && !document.Body().IsNull()) {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "PasswordManager.ButtonTitlePerformance.NoFormTag");
@@ -1802,7 +1804,7 @@ bool WebFormElementToFormData(
 
   form->name = GetFormIdentifier(form_element);
   form->unique_renderer_id = form_element.UniqueRendererFormId();
-  form->url = GetCanonicalOriginForDocument(frame->GetDocument());
+  form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
   if (IsAutofillFieldMetadataEnabled()) {
     SCOPED_UMA_HISTOGRAM_TIMER(

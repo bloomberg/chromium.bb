@@ -131,9 +131,7 @@ std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
 //  b. clicking on an omnibox suggestion brought up by typing a keyword
 //  c. clicking on a bookmark or opening a bookmark app
 //  d. a custom search engine keyword search (e.g. Wikipedia search box added as
-//  search engine)
-//  e. an automatically generated top level navigation (e.g. command line
-//  navigation, in product help link).
+//  search engine).
 bool IsEngagementNavigation(ui::PageTransition transition) {
   return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
          ui::PageTransitionCoreTypeIs(transition,
@@ -141,9 +139,7 @@ bool IsEngagementNavigation(ui::PageTransition transition) {
          ui::PageTransitionCoreTypeIs(transition,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
          ui::PageTransitionCoreTypeIs(transition,
-                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED) ||
-         ui::PageTransitionCoreTypeIs(transition,
-                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 }
 
 }  // namespace
@@ -477,7 +473,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
   // purposes.
   //
   // The profile and its KeyedServices are normally destroyed before the
-  // ThreadPool shuts down background threads, so the task needs to hold a
+  // TaskScheduler shuts down background threads, so the task needs to hold a
   // strong reference to HostContentSettingsMap (which supports outliving the
   // profile), and needs to avoid using any members of SiteEngagementService
   // (which does not). See https://crbug.com/900022.

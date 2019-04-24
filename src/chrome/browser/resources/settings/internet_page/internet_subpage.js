@@ -609,7 +609,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onTetherEnabledChange_: function(event) {
+  onTetherEnabledTap_: function(event) {
     this.fire('device-enabled-toggled', {
       enabled: !this.deviceIsEnabled_(this.tetherDeviceState),
       type: CrOnc.Type.TETHER,

@@ -6,6 +6,7 @@
 #define CC_LAYERS_SCROLLBAR_LAYER_IMPL_BASE_H_
 
 #include "base/containers/flat_set.h"
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
@@ -18,9 +19,6 @@ class LayerTreeImpl;
 
 class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
  public:
-  ScrollbarLayerImplBase(const ScrollbarLayerImplBase&) = delete;
-  ScrollbarLayerImplBase& operator=(const ScrollbarLayerImplBase&) = delete;
-
   ElementId scroll_element_id() const { return scroll_element_id_; }
   void SetScrollElementId(ElementId scroll_element_id);
 
@@ -66,10 +64,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   virtual LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const;
 
-  virtual gfx::Rect BackButtonRect() const;
-  virtual gfx::Rect ForwardButtonRect() const;
-  virtual ScrollbarPart IdentifyScrollbarPart(
-      const gfx::PointF position_in_widget) const;
   // Only PaintedOverlayScrollbar(Aura Overlay Scrollbar) need to know
   // tickmarks's state.
   virtual bool HasFindInPageTickmarks() const;
@@ -109,6 +103,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   FRIEND_TEST_ALL_PREFIXES(ScrollbarLayerTest,
                            ScrollElementIdPushedAcrossCommit);
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerImplBase);
 };
 
 using ScrollbarSet = base::flat_set<ScrollbarLayerImplBase*>;

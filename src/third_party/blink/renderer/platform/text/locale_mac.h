@@ -32,16 +32,15 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LOCALE_MAC_H_
 
 #include <memory>
-
-#include "base/mac/scoped_nsobject.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-@class NSCalendar;
-@class NSDateFormatter;
-@class NSLocale;
+OBJC_CLASS NSCalendar;
+OBJC_CLASS NSDateFormatter;
+OBJC_CLASS NSLocale;
 
 namespace blink {
 
@@ -70,17 +69,17 @@ class PLATFORM_EXPORT LocaleMac : public Locale {
 
  private:
   explicit LocaleMac(NSLocale*);
-  base::scoped_nsobject<NSDateFormatter> ShortDateFormatter();
+  RetainPtr<NSDateFormatter> ShortDateFormatter();
   void InitializeLocaleData() override;
 
-  base::scoped_nsobject<NSLocale> locale_;
-  base::scoped_nsobject<NSCalendar> gregorian_calendar_;
+  RetainPtr<NSLocale> locale_;
+  RetainPtr<NSCalendar> gregorian_calendar_;
   Vector<String> week_day_short_labels_;
   Vector<String> month_labels_;
-  base::scoped_nsobject<NSDateFormatter> TimeFormatter();
-  base::scoped_nsobject<NSDateFormatter> ShortTimeFormatter();
-  base::scoped_nsobject<NSDateFormatter> DateTimeFormatterWithSeconds();
-  base::scoped_nsobject<NSDateFormatter> DateTimeFormatterWithoutSeconds();
+  RetainPtr<NSDateFormatter> TimeFormatter();
+  RetainPtr<NSDateFormatter> ShortTimeFormatter();
+  RetainPtr<NSDateFormatter> DateTimeFormatterWithSeconds();
+  RetainPtr<NSDateFormatter> DateTimeFormatterWithoutSeconds();
 
   String date_format_;
   String month_format_;

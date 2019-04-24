@@ -67,7 +67,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) ConvertingModel : public Model {
   ~ConvertingModel() override;
 
   // Model
-  TargetHistogram PredictDistribution(const FeatureVector& instance) override;
+  TargetDistribution PredictDistribution(
+      const FeatureVector& instance) override;
 
  private:
   std::unique_ptr<OneHotConverter> converter_;

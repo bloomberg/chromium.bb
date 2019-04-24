@@ -5,19 +5,32 @@
 #ifndef IOS_CHROME_TEST_SCOPED_EG_SYNCHRONIZATION_DISABLER_H_
 #define IOS_CHROME_TEST_SCOPED_EG_SYNCHRONIZATION_DISABLER_H_
 
-#import <Foundation/Foundation.h>
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/macros.h"
 
 // Disables EarlGrey synchronization in constructor and returns back to the
 // original value in destructor.
 class ScopedSynchronizationDisabler {
  public:
-  ScopedSynchronizationDisabler();
-  ~ScopedSynchronizationDisabler();
+  ScopedSynchronizationDisabler()
+      : saved_eg_synchronization_enabled_value_(GetEgSynchronizationEnabled()) {
+    SetEgSynchronizationEnabled(NO);
+  }
+  ~ScopedSynchronizationDisabler() {
+    SetEgSynchronizationEnabled(saved_eg_synchronization_enabled_value_);
+  }
 
  private:
-  static bool GetEgSynchronizationEnabled();
-  static void SetEgSynchronizationEnabled(BOOL flag);
+  static bool GetEgSynchronizationEnabled() {
+    return [[GREYConfiguration sharedInstance]
+        boolValueForConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
+  static void SetEgSynchronizationEnabled(BOOL flag) {
+    [[GREYConfiguration sharedInstance]
+            setValue:@(flag)
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 
   BOOL saved_eg_synchronization_enabled_value_ = NO;
 

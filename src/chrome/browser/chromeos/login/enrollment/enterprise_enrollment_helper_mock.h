@@ -25,7 +25,8 @@ class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
                void(ActiveDirectoryJoinDelegate* ad_join_delegate,
                     const policy::EnrollmentConfig& enrollment_config,
                     const std::string& enrolling_user_domain));
-  MOCK_METHOD1(EnrollUsingAuthCode, void(const std::string& auth_code));
+  MOCK_METHOD2(EnrollUsingAuthCode,
+               void(const std::string& auth_code, bool fetch_additional_token));
   MOCK_METHOD1(EnrollUsingToken, void(const std::string& token));
   MOCK_METHOD1(EnrollUsingEnrollmentToken, void(const std::string& token));
   MOCK_METHOD0(EnrollUsingAttestation, void());

@@ -33,8 +33,8 @@ class SkiaPokemonwikiDesktopPageSet(story.StorySet):
       archive_data_file='data/skia_pokemonwiki_desktop.json')
 
     urls_list = [
-      # go/skia-skps-3-19
-      'https://pokemondb.net/pokedex/all',
+      # Why: http://code.google.com/p/chromium/issues/detail?id=136555
+      'http://en.wikipedia.org/wiki/List_of_Pok%C3%A9mon',
     ]
 
     for url in urls_list:

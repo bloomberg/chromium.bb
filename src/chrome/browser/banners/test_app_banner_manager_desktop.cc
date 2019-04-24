@@ -30,18 +30,12 @@ TestAppBannerManagerDesktop* TestAppBannerManagerDesktop::CreateForWebContents(
   return result;
 }
 
-void TestAppBannerManagerDesktop::WaitForInstallableCheckTearDown() {
-  base::RunLoop run_loop;
-  tear_down_quit_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
-}
-
 bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
   DCHECK(IsExperimentalAppBannersEnabled());
 
   if (!installable_.has_value()) {
     base::RunLoop run_loop;
-    installable_quit_closure_ = run_loop.QuitClosure();
+    quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
   bool installable = *installable_;
@@ -56,26 +50,20 @@ void TestAppBannerManagerDesktop::OnDidGetManifest(
   // AppBannerManagerDesktop does not call |OnDidPerformInstallableCheck| to
   // complete the installability check in this case, instead it early exits
   // with failure.
-  if (!result.errors.empty())
+  if (result.error_code != NO_ERROR_DETECTED)
     SetInstallable(false);
 }
 void TestAppBannerManagerDesktop::OnDidPerformInstallableCheck(
     const InstallableData& result) {
   AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
-  SetInstallable(result.errors.empty());
-}
-
-void TestAppBannerManagerDesktop::ResetCurrentPageData() {
-  AppBannerManagerDesktop::ResetCurrentPageData();
-  if (tear_down_quit_closure_)
-    std::move(tear_down_quit_closure_).Run();
+  SetInstallable(result.error_code == NO_ERROR_DETECTED);
 }
 
 void TestAppBannerManagerDesktop::SetInstallable(bool installable) {
   DCHECK(!installable_.has_value());
   installable_ = installable;
-  if (installable_quit_closure_)
-    std::move(installable_quit_closure_).Run();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 }  // namespace banners

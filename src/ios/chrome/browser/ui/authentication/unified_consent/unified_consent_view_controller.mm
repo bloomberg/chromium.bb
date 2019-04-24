@@ -59,12 +59,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 @property(nonatomic, strong) NSLayoutConstraint* noIdentityConstraint;
 // Constraint when identityPickerView is visible.
 @property(nonatomic, strong) NSLayoutConstraint* withIdentityConstraint;
-// Constraint for the maximum height of the header view (also used to hide the
-// the header view if needed).
-@property(nonatomic, strong) NSLayoutConstraint* headerViewMaxHeightConstraint;
-// Constraint for the proportiortional size of the header view.
-@property(nonatomic, strong)
-    NSLayoutConstraint* headerViewProportionalHeightConstraint;
 // Settings link controller.
 @property(nonatomic, strong) LabelLinkController* settingsLinkController;
 // Label related to customize sync text.
@@ -154,6 +148,8 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   // areas (like the status bar).
   UIView* imageBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
   imageBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+  imageBackgroundView.backgroundColor =
+      UIColorFromRGB(kAuthenticationHeaderBackgroundColor);
   [container addSubview:imageBackgroundView];
 
   // Header image.
@@ -161,7 +157,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   headerImageView.translatesAutoresizingMaskIntoConstraints = NO;
   headerImageView.image = [UIImage imageNamed:kAuthenticationHeaderImageName];
   headerImageView.contentMode = UIViewContentModeScaleAspectFit;
-  headerImageView.clipsToBounds = YES;
   [container addSubview:headerImageView];
 
   // Title.
@@ -227,6 +222,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
     @"VSeparatorText" : @(kVerticalSeparatorTextMargin),
     @"VTextMargin" : @(kVerticalTextMargin),
     @"SeparatorHeight" : @(kAuthenticationSeparatorHeight),
+    @"HeaderHeight" : @(kAuthenticationHeaderImageHeight),
     @"HeaderTitleMargin" : @(kAuthenticationHeaderTitleMargin),
   };
   NSArray* constraints = @[
@@ -246,25 +242,14 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
     @"V:[synctitle]-[syncsubtitle]-(VBetweenText)-[separator]",
     @"V:[separator]-(VSeparatorText)-[customizesync]-(VTextMargin)-|",
     // Size constraints.
+    @"V:[header(HeaderHeight)]",
     @"V:[separator(SeparatorHeight)]",
   ];
   ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
-
-  // Adding constraints for header image.
-  AddSameCenterXConstraint(self.view, headerImageView);
-  // |headerView| fills 20% of |view|, capped at
-  // |kAuthenticationHeaderImageHeight|.
-  self.headerViewProportionalHeightConstraint = [headerImageView.heightAnchor
-      constraintEqualToAnchor:self.view.heightAnchor
-                   multiplier:0.2];
-  self.headerViewProportionalHeightConstraint.priority =
-      UILayoutPriorityDefaultHigh;
-  self.headerViewProportionalHeightConstraint.active = YES;
-  self.headerViewMaxHeightConstraint = [headerImageView.heightAnchor
-      constraintLessThanOrEqualToConstant:kAuthenticationHeaderImageHeight];
-  self.headerViewMaxHeightConstraint.active = YES;
-  [self updateHeaderViewConstraints];
-
+  // Header image horizonatally centered.
+  [headerImageView.centerXAnchor
+      constraintEqualToAnchor:self.view.centerXAnchor]
+      .active = YES;
   // Adding constraints with or without identity.
   self.noIdentityConstraint =
       [syncTitleLabel.topAnchor constraintEqualToAnchor:title.bottomAnchor
@@ -272,12 +257,10 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   self.withIdentityConstraint = [syncTitleLabel.topAnchor
       constraintEqualToAnchor:self.identityPickerView.bottomAnchor
                      constant:kVerticalTextMargin];
-
   // Adding constraints for the container.
   id<LayoutGuideProvider> safeArea = self.view.safeAreaLayoutGuide;
   [container.widthAnchor constraintEqualToAnchor:safeArea.widthAnchor].active =
       YES;
-
   // Adding constraints for |imageBackgroundView|.
   AddSameCenterXConstraint(self.view, imageBackgroundView);
   [imageBackgroundView.widthAnchor
@@ -306,6 +289,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   [self.delegate unifiedConsentViewControllerViewDidAppear:self];
 }
 
+// Updates the scroll view content inset, used by pre iOS 11.
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -316,11 +300,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
         [self updateScrollViewAndImageBackgroundView];
       }
                       completion:nil];
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  [self updateHeaderViewConstraints];
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
@@ -418,17 +397,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 - (void)sendDidReachBottomIfReached {
   if (self.isScrolledToBottom) {
     [self.delegate unifiedConsentViewControllerDidReachBottom:self];
-  }
-}
-
-// Updates the header view constraints based on the height class traits of
-// |view|.
-- (void)updateHeaderViewConstraints {
-  if (IsCompactHeight(self)) {
-    self.headerViewMaxHeightConstraint.constant = 0;
-  } else {
-    self.headerViewMaxHeightConstraint.constant =
-        kAuthenticationHeaderImageHeight;
   }
 }
 

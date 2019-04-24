@@ -59,9 +59,6 @@ class PrefetchDownloader {
 
   // Called when a download fails.
   virtual void OnDownloadFailed(const std::string& download_id) = 0;
-
-  // Returns the maximum number of downloads allowed.
-  virtual int GetMaxConcurrentDownloads() = 0;
 };
 
 }  // namespace offline_pages

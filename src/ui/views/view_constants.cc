@@ -6,8 +6,8 @@
 
 namespace views {
 
-constexpr int kAutoscrollSize = 10;
-constexpr int kAutoscrollRowTimerMS = 200;
-constexpr int kDropBetweenPixels = 5;
+const int kAutoscrollSize = 10;
+const int kAutoscrollRowTimerMS = 200;
+const int kDropBetweenPixels = 5;
 
 }  // namespace views

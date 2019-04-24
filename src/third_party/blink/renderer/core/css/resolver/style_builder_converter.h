@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
-#include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/core/style/named_grid_lines_map.h"
@@ -52,7 +51,6 @@
 #include "third_party/blink/renderer/platform/text/tab_size.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -263,13 +261,7 @@ class StyleBuilderConverter {
                                                                const CSSValue&);
   static const CSSValue& ConvertRegisteredPropertyValue(
       const StyleResolverState&,
-      const CSSValue&,
-      const String& base_url,
-      const WTF::TextEncoding&);
-
-  static scoped_refptr<CSSVariableData> ConvertRegisteredPropertyVariableData(
-      const CSSValue&,
-      bool is_animation_tainted);
+      const CSSValue&);
 
  private:
   static const CSSToLengthConversionData& CssToLengthConversionData(
@@ -279,7 +271,7 @@ class StyleBuilderConverter {
 template <typename T>
 T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
-  return To<CSSPrimitiveValue>(value).ComputeLength<T>(
+  return ToCSSPrimitiveValue(value).ComputeLength<T>(
       CssToLengthConversionData(state));
 }
 
@@ -287,29 +279,29 @@ template <typename T>
 T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
                                       const CSSValue& value) {
   T flags = static_cast<T>(0);
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
+  if (value.IsIdentifierValue() &&
+      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
     return flags;
-  for (auto& flag_value : To<CSSValueList>(value))
-    flags |= To<CSSIdentifierValue>(*flag_value).ConvertTo<T>();
+  for (auto& flag_value : ToCSSValueList(value))
+    flags |= ToCSSIdentifierValue(*flag_value).ConvertTo<T>();
   return flags;
 }
 
 template <typename T>
 T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
                                           const CSSValue& value) {
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    CSSValueID value_id = identifier_value->GetValueID();
-    if (value_id == CSSValueID::kThin)
+  if (value.IsIdentifierValue()) {
+    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+    if (value_id == CSSValueThin)
       return 1;
-    if (value_id == CSSValueID::kMedium)
+    if (value_id == CSSValueMedium)
       return 3;
-    if (value_id == CSSValueID::kThick)
+    if (value_id == CSSValueThick)
       return 5;
     NOTREACHED();
     return 0;
   }
-  const auto& primitive_value = To<CSSPrimitiveValue>(value);
+  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
   // FIXME: We are moving to use the full page zoom implementation to handle
   // high-dpi.  In that case specyfing a border-width of less than 1px would
   // result in a border that is one device pixel thick.  With this change that
@@ -327,22 +319,22 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
 Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
                                                     const CSSValue& value) {
-  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
-    Length length = StyleBuilderConverter::ConvertLength(state, pair->Second());
-    if (To<CSSIdentifierValue>(pair->First()).GetValueID() == cssValueFor0)
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    Length length = StyleBuilderConverter::ConvertLength(state, pair.Second());
+    if (ToCSSIdentifierValue(pair.First()).GetValueID() == cssValueFor0)
       return length;
-    DCHECK_EQ(To<CSSIdentifierValue>(pair->First()).GetValueID(),
-              cssValueFor100);
+    DCHECK_EQ(ToCSSIdentifierValue(pair.First()).GetValueID(), cssValueFor100);
     return length.SubtractFromOneHundredPercent();
   }
 
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    switch (identifier_value->GetValueID()) {
+  if (value.IsIdentifierValue()) {
+    switch (ToCSSIdentifierValue(value).GetValueID()) {
       case cssValueFor0:
         return Length::Percent(0);
       case cssValueFor100:
         return Length::Percent(100);
-      case CSSValueID::kCenter:
+      case CSSValueCenter:
         return Length::Percent(50);
       default:
         NOTREACHED();
@@ -350,15 +342,15 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
   }
 
   return StyleBuilderConverter::ConvertLength(state,
-                                              To<CSSPrimitiveValue>(value));
+                                              ToCSSPrimitiveValue(value));
 }
 
 template <CSSValueID IdForNone>
 AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
                                                   const CSSValue& value) {
-  if (auto* string_value = DynamicTo<CSSStringValue>(value))
-    return AtomicString(string_value->Value());
-  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), IdForNone);
+  if (value.IsStringValue())
+    return AtomicString(ToCSSStringValue(value).Value());
+  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), IdForNone);
   return g_null_atom;
 }
 

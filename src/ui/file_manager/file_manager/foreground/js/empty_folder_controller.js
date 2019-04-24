@@ -101,7 +101,9 @@ EmptyFolderController.prototype.update_ = function() {
     const query = this.directoryModel_.getLastSearchQuery();
     let html = '';
     if (query) {
-      html = strf('SEARCH_NO_MATCHING_FILES_HTML', util.htmlEscape(query));
+      html = strf(
+          'SEARCH_NO_MATCHING_FILES_HTML',
+          util.htmlEscape(query));
     } else {
       html = str('EMPTY_FOLDER');
     }

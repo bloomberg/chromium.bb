@@ -71,7 +71,7 @@ namespace {
 
 inline int EncodeComputedEntry(ClassBoilerplate::ValueKind value_kind,
                                unsigned key_index) {
-  using Flags = ClassBoilerplate::ComputedEntryFlags;
+  typedef ClassBoilerplate::ComputedEntryFlags Flags;
   int flags = Flags::ValueKindBits::encode(value_kind) |
               Flags::KeyIndexBits::encode(key_index);
   return flags;
@@ -255,15 +255,9 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
           }
         }
       } else {
-        // Overwrite existing value if it was defined before the computed one
-        // (AccessorInfo "length" property is always defined before).
-        DCHECK_IMPLIES(!existing_value->IsSmi(),
-                       existing_value->IsAccessorInfo());
-        DCHECK_IMPLIES(!existing_value->IsSmi(),
-                       AccessorInfo::cast(existing_value)->name() ==
-                           *isolate->factory()->length_string());
-        if (!existing_value->IsSmi() ||
-            Smi::ToInt(existing_value) < key_index) {
+        // Overwrite existing value if it was defined before the computed one.
+        int existing_value_index = Smi::ToInt(existing_value);
+        if (existing_value_index < key_index) {
           PropertyDetails details(kData, DONT_ENUM, PropertyCellType::kNoCell,
                                   enum_order);
           dictionary->DetailsAtPut(isolate, entry, details);
@@ -275,7 +269,6 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
                                         ? ACCESSOR_GETTER
                                         : ACCESSOR_SETTER;
       if (existing_value->IsAccessorPair()) {
-        // Update respective component of existing AccessorPair.
         AccessorPair current_pair = AccessorPair::cast(existing_value);
 
         int existing_component_index =
@@ -285,7 +278,6 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
         }
 
       } else {
-        // Overwrite existing value with new AccessorPair.
         Handle<AccessorPair> pair(isolate->factory()->NewAccessorPair());
         pair->set(component, value);
         PropertyDetails details(kAccessor, DONT_ENUM, PropertyCellType::kNoCell,

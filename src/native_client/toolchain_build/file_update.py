@@ -8,8 +8,6 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
-from __future__ import print_function
-
 import fnmatch
 import os
 import optparse
@@ -34,7 +32,7 @@ def Mkdir(path):
 
 def Rmdir(path):
   if os.path.exists(path):
-    print("Removing: " + path)
+    print "Removing: " + path
     shutil.rmtree(path)
 
 
@@ -72,7 +70,7 @@ def UpdateText(dstpath, text):
 
 def UpdateFile(srcpath, dstpath, verbose=False):
   if verbose:
-    print('%s -> %s\n' % (dstpath, srcpath))
+    print '%s -> %s\n' % (dstpath, srcpath)
   shutil.copy(srcpath, dstpath)
 
 
@@ -110,7 +108,7 @@ def UpdateFromTo(src, dst, paterns=['*'], filters=[]):
     return CopyOrLinkNewer(src, dst)
 
   if not os.path.isdir(src):
-    print("SRC does not exist, skipping: " + src)
+    print "SRC does not exist, skipping: " + src
     return False
 
   pathlen = len(os.path.abspath(src))
@@ -136,7 +134,7 @@ def UpdateFromTo(src, dst, paterns=['*'], filters=[]):
       if not AcceptMatch(srcpath, paterns, filters):
         continue
       if CopyOrLinkNewer(srcpath, dstpath):
-        print("  %s -> %s" % (srcpath, dstpath))
+        print "  %s -> %s" % (srcpath, dstpath)
         modified = True
 
     for filename in dirs:
@@ -146,7 +144,7 @@ def UpdateFromTo(src, dst, paterns=['*'], filters=[]):
       if os.path.islink(srcpath):
         if CopyOrLinkNewer(srcpath, dstpath):
           modified = True
-          print("  %s -> %s" % (srcpath, dstpath))
+          print "  %s -> %s" % (srcpath, dstpath)
   if modified:
-    print("Update From To %s -> %s" % (src, dst))
+    print "Update From To %s -> %s" % (src, dst)
   return modified

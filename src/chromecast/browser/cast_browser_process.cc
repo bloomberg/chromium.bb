@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chromecast/browser/cast_browser_context.h"
-#include "chromecast/browser/cast_content_browser_client.h"
-#include "chromecast/browser/cast_network_contexts.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/tts/tts_controller.h"
@@ -50,15 +48,6 @@ CastBrowserProcess::CastBrowserProcess()
 
 CastBrowserProcess::~CastBrowserProcess() {
   DCHECK_EQ(g_instance, this);
-
-  // TODO(halliwell): investigate having the state that's owned in
-  // CastContentBrowserClient (and its internal derived class) be owned in
-  // another class that's destructed by this point.
-  if (cast_content_browser_client_) {
-    cast_content_browser_client_->cast_network_contexts()
-        ->OnPrefServiceShutdown();
-  }
-
   if (pref_service_)
     pref_service_->CommitPendingWrite();
   g_instance = NULL;
@@ -151,10 +140,5 @@ void CastBrowserProcess::SetWebViewFactory(
   web_view_factory_ = web_view_factory;
 }
 
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-void CastBrowserProcess::AccessibilityStateChanged(bool enabled) {
-  cast_service_->AccessibilityStateChanged(enabled);
-}
-#endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 }  // namespace shell
 }  // namespace chromecast

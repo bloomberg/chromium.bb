@@ -22,6 +22,9 @@ _FULL_BINHOST = 'FULL_BINHOST'
 # The list of packages to upload for the dev-install tool.  This path is
 # relative to the /build/$BOARD sysroot.
 _BINHOST_PACKAGE_FILE = 'build/dev-install/package.installable'
+PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
+                            'chromeos/binhost')
+PUBLIC_BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
 
 
 def _AddPackagesForPrebuilt(filename):
@@ -138,9 +141,9 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
   extra_args.extend(['--upload', 'gs://chromeos-prebuilt'])
   if private_bucket:
     extra_args.extend(['--private', '--binhost-conf-dir',
-                       constants.PRIVATE_BINHOST_CONF_DIR])
+                       PRIVATE_BINHOST_CONF_DIR])
   else:
-    extra_args.extend(['--binhost-conf-dir', constants.PUBLIC_BINHOST_CONF_DIR])
+    extra_args.extend(['--binhost-conf-dir', PUBLIC_BINHOST_CONF_DIR])
 
   if version is not None:
     extra_args.extend(['--set-version', version])

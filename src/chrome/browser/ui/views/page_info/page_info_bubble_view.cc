@@ -40,6 +40,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -72,7 +73,7 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -428,8 +429,7 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state) {
+    const security_state::SecurityInfo& security_info) {
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   if (url.SchemeIs(content::kChromeUIScheme) ||
@@ -442,8 +442,7 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
   }
 
   return new PageInfoBubbleView(anchor_view, anchor_rect, parent_view, profile,
-                                web_contents, url, security_level,
-                                visible_security_state);
+                                web_contents, url, security_info);
 }
 
 PageInfoBubbleView::PageInfoBubbleView(
@@ -453,8 +452,7 @@ PageInfoBubbleView::PageInfoBubbleView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state)
+    const security_state::SecurityInfo& security_info)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
@@ -526,7 +524,7 @@ PageInfoBubbleView::PageInfoBubbleView(
 
   presenter_.reset(new PageInfo(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, security_level, visible_security_state));
+      web_contents, url, security_info));
 }
 
 void PageInfoBubbleView::WebContentsDestroyed() {
@@ -682,7 +680,7 @@ void PageInfoBubbleView::SetPermissionInfo(
   // case that can be recovered from by closing & reopening the bubble.
   // TODO(patricialor): Investigate removing callsites to this method other than
   // the constructor.
-  if (!permissions_view_->children().empty())
+  if (permissions_view_->has_children())
     return;
 
   views::GridLayout* layout = permissions_view_->SetLayoutManager(
@@ -904,7 +902,7 @@ void PageInfoBubbleView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
   permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
     bool is_enterprise_password) const {
@@ -998,13 +996,11 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   }
 }
 
-void ShowPageInfoDialogImpl(
-    Browser* browser,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    security_state::SecurityLevel security_level,
-    const security_state::VisibleSecurityState& visible_security_state,
-    bubble_anchor_util::Anchor anchor) {
+void ShowPageInfoDialogImpl(Browser* browser,
+                            content::WebContents* web_contents,
+                            const GURL& virtual_url,
+                            const security_state::SecurityInfo& security_info,
+                            bubble_anchor_util::Anchor anchor) {
   AnchorConfiguration configuration =
       GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
@@ -1013,8 +1009,7 @@ void ShowPageInfoDialogImpl(
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,
-          browser->profile(), web_contents, virtual_url, security_level,
-          visible_security_state);
+          browser->profile(), web_contents, virtual_url, security_info);
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
   bubble->GetWidget()->Show();

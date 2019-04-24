@@ -127,8 +127,7 @@ bool GrSurfaceProxyPriv::AttachStencilIfNeeded(GrResourceProvider* resourceProvi
 sk_sp<GrSurface> GrSurfaceProxy::createSurfaceImpl(GrResourceProvider* resourceProvider,
                                                    int sampleCnt, bool needsStencil,
                                                    GrSurfaceDescFlags descFlags,
-                                                   GrMipMapped mipMapped,
-                                                   bool forceNoPendingIO) const {
+                                                   GrMipMapped mipMapped) const {
     SkASSERT(GrSurfaceProxy::LazyState::kNot == this->lazyInstantiationState());
     SkASSERT(!fTarget);
     GrSurfaceDesc desc;
@@ -142,7 +141,8 @@ sk_sp<GrSurface> GrSurfaceProxy::createSurfaceImpl(GrResourceProvider* resourceP
     desc.fSampleCnt = sampleCnt;
 
     GrResourceProvider::Flags resourceProviderFlags = GrResourceProvider::Flags::kNone;
-    if ((fSurfaceFlags & GrInternalSurfaceFlags::kNoPendingIO) || forceNoPendingIO) {
+    if ((fSurfaceFlags & GrInternalSurfaceFlags::kNoPendingIO) ||
+        resourceProvider->explicitlyAllocateGPUResources()) {
         // The explicit resource allocator requires that any resources it pulls out of the
         // cache have no pending IO.
         resourceProviderFlags = GrResourceProvider::Flags::kNoPendingIO;
@@ -223,8 +223,7 @@ void GrSurfaceProxy::assign(sk_sp<GrSurface> surface) {
 
 bool GrSurfaceProxy::instantiateImpl(GrResourceProvider* resourceProvider, int sampleCnt,
                                      bool needsStencil, GrSurfaceDescFlags descFlags,
-                                     GrMipMapped mipMapped, const GrUniqueKey* uniqueKey,
-                                     bool dontForceNoPendingIO) {
+                                     GrMipMapped mipMapped, const GrUniqueKey* uniqueKey) {
     SkASSERT(LazyState::kNot == this->lazyInstantiationState());
     if (fTarget) {
         if (uniqueKey && uniqueKey->isValid()) {
@@ -234,7 +233,7 @@ bool GrSurfaceProxy::instantiateImpl(GrResourceProvider* resourceProvider, int s
     }
 
     sk_sp<GrSurface> surface = this->createSurfaceImpl(resourceProvider, sampleCnt, needsStencil,
-                                                       descFlags, mipMapped, !dontForceNoPendingIO);
+                                                       descFlags, mipMapped);
     if (!surface) {
         return false;
     }
@@ -433,11 +432,8 @@ bool GrSurfaceProxyPriv::doLazyInstantiation(GrResourceProvider* resourceProvide
                                                         fProxy->asTextureProxy()->getUniqueKey());
     }
 
-    bool syncKey = true;
     if (!surface) {
-        auto result = fProxy->fLazyInstantiateCallback(resourceProvider);
-        surface = std::move(result.fSurface);
-        syncKey = result.fKeyMode == GrSurfaceProxy::LazyInstantiationKeyMode::kSynced;
+        surface = fProxy->fLazyInstantiateCallback(resourceProvider);
     }
     if (GrSurfaceProxy::LazyInstantiationType::kSingleUse == fProxy->fLazyInstantiationType) {
         fProxy->fLazyInstantiateCallback = nullptr;
@@ -466,19 +462,14 @@ bool GrSurfaceProxyPriv::doLazyInstantiation(GrResourceProvider* resourceProvide
     }
 
     if (GrTextureProxy* texProxy = fProxy->asTextureProxy()) {
-        texProxy->setTargetKeySync(syncKey);
-        if (syncKey) {
-            const GrUniqueKey& key = texProxy->getUniqueKey();
-            if (key.isValid()) {
-                if (!surface->asTexture()->getUniqueKey().isValid()) {
-                    // If 'surface' is newly created, attach the unique key
-                    resourceProvider->assignUniqueKeyToResource(key, surface.get());
-                } else {
-                    // otherwise we had better have reattached to a cached version
-                    SkASSERT(surface->asTexture()->getUniqueKey() == key);
-                }
+        const GrUniqueKey& key = texProxy->getUniqueKey();
+        if (key.isValid()) {
+            if (!surface->asTexture()->getUniqueKey().isValid()) {
+                // If 'surface' is newly created, attach the unique key
+                resourceProvider->assignUniqueKeyToResource(key, surface.get());
             } else {
-                SkASSERT(!surface->getUniqueKey().isValid());
+                // otherwise we had better have reattached to a cached version
+                SkASSERT(surface->asTexture()->getUniqueKey() == key);
             }
         }
     }

@@ -12,9 +12,7 @@
 #define MODULES_VIDEO_CODING_CODECS_TEST_VIDEOCODEC_TEST_STATS_IMPL_H_
 
 #include <stddef.h>
-
 #include <map>
-#include <string>
 #include <vector>
 
 #include "api/test/videocodec_test_stats.h"  // NOLINT(build/include)
@@ -29,24 +27,26 @@ class VideoCodecTestStatsImpl : public VideoCodecTestStats {
   ~VideoCodecTestStatsImpl() override;
 
   // Creates a FrameStatistics for the next frame to be processed.
-  void AddFrame(const FrameStatistics& frame_stat);
+  void AddFrame(const FrameStatistics& frame_stat) override;
 
   // Returns the FrameStatistics corresponding to |frame_number| or |timestamp|.
-  FrameStatistics* GetFrame(size_t frame_number, size_t spatial_idx);
-  FrameStatistics* GetFrameWithTimestamp(size_t timestamp, size_t spatial_idx);
+  FrameStatistics* GetFrame(size_t frame_number, size_t spatial_idx) override;
+  FrameStatistics* GetFrameWithTimestamp(size_t timestamp,
+                                         size_t spatial_idx) override;
 
-  // Implements VideoCodecTestStats.
-  std::vector<FrameStatistics> GetFrameStatistics() override;
   std::vector<VideoStatistics> SliceAndCalcLayerVideoStatistic(
       size_t first_frame_num,
       size_t last_frame_num) override;
 
-  VideoStatistics SliceAndCalcAggregatedVideoStatistic(size_t first_frame_num,
-                                                       size_t last_frame_num);
+  VideoStatistics SliceAndCalcAggregatedVideoStatistic(
+      size_t first_frame_num,
+      size_t last_frame_num) override;
 
-  size_t Size(size_t spatial_idx);
+  void PrintFrameStatistics() override;
 
-  void Clear();
+  size_t Size(size_t spatial_idx) override;
+
+  void Clear() override;
 
  private:
   VideoCodecTestStats::FrameStatistics AggregateFrameStatistic(

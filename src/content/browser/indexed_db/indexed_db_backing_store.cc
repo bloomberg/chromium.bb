@@ -513,14 +513,12 @@ bool IndexCursorOptions(
 }  // namespace
 
 IndexedDBBackingStore::IndexedDBBackingStore(
-    Mode backing_store_mode,
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const FilePath& blob_path,
     std::unique_ptr<LevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner)
-    : backing_store_mode_(backing_store_mode),
-      indexed_db_factory_(indexed_db_factory),
+    : indexed_db_factory_(indexed_db_factory),
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
@@ -529,10 +527,6 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       active_blob_registry_(this),
       committing_transaction_count_(0),
       weak_factory_(this) {
-  if (backing_store_mode == Mode::kInMemory) {
-    indexed_db_factory_ = nullptr;
-    blob_path_ = FilePath();
-  }
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
@@ -1728,7 +1722,7 @@ Status IndexedDBBackingStore::CleanUpBlobJournal(
   s = journal_transaction->Commit();
   // Notify blob files cleaned even if commit fails, as files could still be
   // deleted. |indexed_db_factory_| is null for in-memory backing stores.
-  if (!is_incognito())
+  if (indexed_db_factory_)
     indexed_db_factory_->BlobFilesCleaned(origin_);
   return s;
 }

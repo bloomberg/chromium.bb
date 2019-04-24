@@ -9,7 +9,8 @@
 
 namespace views {
 
-LayoutManager::~LayoutManager() = default;
+LayoutManager::~LayoutManager() {
+}
 
 void LayoutManager::Installed(View* host) {
 }

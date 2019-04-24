@@ -25,10 +25,9 @@ void ColumnBalancer::Traverse() {
 }
 
 void ColumnBalancer::TraverseSubtree(const LayoutBox& box) {
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(box);
-  if (box.ChildrenInline() && layout_block_flow) {
+  if (box.ChildrenInline() && box.IsLayoutBlockFlow()) {
     // Look for breaks between lines.
-    TraverseLines(*layout_block_flow);
+    TraverseLines(ToLayoutBlockFlow(box));
   }
 
   // Look for breaks between and inside block-level children. Even if this is a
@@ -121,9 +120,9 @@ void ColumnBalancer::TraverseChildren(const LayoutObject& object) {
                             previous_break_after_value);
     // Unless the child is unsplittable, or if the child establishes an inner
     // multicol container, we descend into its subtree for further examination.
-    auto* chlid_block_flow = DynamicTo<LayoutBlockFlow>(child_box);
     if (child_box.GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
-        (!chlid_block_flow || !chlid_block_flow->MultiColumnFlowThread())) {
+        (!child_box.IsLayoutBlockFlow() ||
+         !ToLayoutBlockFlow(child_box).MultiColumnFlowThread())) {
       // We need to get to the border edge before processing content inside
       // this child. If the child is floated, we're currently at the margin
       // edge.
@@ -211,12 +210,11 @@ void InitialColumnHeightFinder::ExamineBoxAfterEntering(
   }
   // Need to examine inner multicol containers to find their tallest unbreakable
   // piece of content.
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(box);
-  if (!layout_block_flow)
+  if (!box.IsLayoutBlockFlow())
     return;
   LayoutMultiColumnFlowThread* inner_flow_thread =
-      layout_block_flow->MultiColumnFlowThread();
-  if (!inner_flow_thread)
+      ToLayoutBlockFlow(box).MultiColumnFlowThread();
+  if (!inner_flow_thread || inner_flow_thread->IsLayoutPagedFlowThread())
     return;
   LayoutUnit offset_in_inner_flow_thread =
       FlowThreadOffset() -
@@ -435,12 +433,11 @@ void MinimumSpaceShortageFinder::ExamineBoxAfterEntering(
   }
 
   // If this is an inner multicol container, look for space shortage inside it.
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(box);
-  if (!layout_block_flow)
+  if (!box.IsLayoutBlockFlow())
     return;
   LayoutMultiColumnFlowThread* flow_thread =
-      layout_block_flow->MultiColumnFlowThread();
-  if (!flow_thread)
+      ToLayoutBlockFlow(box).MultiColumnFlowThread();
+  if (!flow_thread || flow_thread->IsLayoutPagedFlowThread())
     return;
   for (const LayoutMultiColumnSet* column_set =
            flow_thread->FirstMultiColumnSet();

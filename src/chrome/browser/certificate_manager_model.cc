@@ -383,8 +383,10 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    certificate_provider_service_->GetCertificates(base::BindOnce(
-        &CertsSourceExtensions::DidGetCerts, weak_ptr_factory_.GetWeakPtr()));
+    certificate_provider_service_->GetCertificates(
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&CertsSourceExtensions::DidGetCerts,
+                           weak_ptr_factory_.GetWeakPtr())));
   }
 
   bool SetCertTrust(CERTCertificate* cert,

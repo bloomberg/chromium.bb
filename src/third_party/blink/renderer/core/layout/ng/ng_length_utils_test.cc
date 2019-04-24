@@ -40,50 +40,31 @@ class NGLengthUtilsTest : public testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::Create(); }
 
-  LayoutUnit ResolveMainInlineLength(
+  LayoutUnit ResolveInlineLength(
       const Length& length,
-      const base::Optional<MinMaxSize>& sizes = base::nullopt) {
-    NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
-    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
-                                ComputePadding(constraint_space, *style_);
-
-    return ::blink::ResolveMainInlineLength(constraint_space, *style_,
-                                            border_padding, sizes, length);
-  }
-
-  LayoutUnit ResolveMinInlineLength(
-      const Length& length,
+      LengthResolveType type = LengthResolveType::kContentSize,
       LengthResolvePhase phase = LengthResolvePhase::kLayout,
       const base::Optional<MinMaxSize>& sizes = base::nullopt) {
     NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMinInlineLength(
-        constraint_space, *style_, border_padding, sizes, length, phase);
+    return ::blink::ResolveInlineLength(
+        constraint_space, *style_, border_padding, sizes, length, type, phase);
   }
 
-  LayoutUnit ResolveMaxInlineLength(
+  LayoutUnit ResolveBlockLength(
       const Length& length,
+      LengthResolveType type = LengthResolveType::kContentSize,
       LengthResolvePhase phase = LengthResolvePhase::kLayout,
-      const base::Optional<MinMaxSize>& sizes = base::nullopt) {
+      LayoutUnit content_size = LayoutUnit()) {
     NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMaxInlineLength(
-        constraint_space, *style_, border_padding, sizes, length, phase);
-  }
-
-  LayoutUnit ResolveMainBlockLength(const Length& length,
-                                    LayoutUnit content_size = LayoutUnit()) {
-    NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
-    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
-                                ComputePadding(constraint_space, *style_);
-
-    return ::blink::ResolveMainBlockLength(constraint_space, *style_,
-                                           border_padding, length, content_size,
-                                           LengthResolvePhase::kLayout);
+    return ::blink::ResolveBlockLength(constraint_space, *style_,
+                                       border_padding, length, content_size,
+                                       type, phase);
   }
 
   LayoutUnit ComputeBlockSizeForFragment(
@@ -124,45 +105,57 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
 };
 
 TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
-  EXPECT_EQ(LayoutUnit(60), ResolveMainInlineLength(Length::Percent(30)));
-  EXPECT_EQ(LayoutUnit(150), ResolveMainInlineLength(Length::Fixed(150)));
-  EXPECT_EQ(LayoutUnit(0), ResolveMinInlineLength(
-                               Length::Auto(), LengthResolvePhase::kIntrinsic));
-  EXPECT_EQ(LayoutUnit(200), ResolveMainInlineLength(Length::Auto()));
-  EXPECT_EQ(LayoutUnit(200), ResolveMainInlineLength(Length::FillAvailable()));
+  EXPECT_EQ(LayoutUnit(60), ResolveInlineLength(Length::Percent(30)));
+  EXPECT_EQ(LayoutUnit(150), ResolveInlineLength(Length::Fixed(150)));
+  EXPECT_EQ(LayoutUnit(0),
+            ResolveInlineLength(Length::Auto(), LengthResolveType::kMinSize,
+                                LengthResolvePhase::kIntrinsic));
+  EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length::Auto()));
+  EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length::FillAvailable()));
 
-  EXPECT_EQ(LayoutUnit::Max(),
-            ResolveMaxInlineLength(Length::Percent(30),
-                                   LengthResolvePhase::kIntrinsic));
-  EXPECT_EQ(LayoutUnit::Max(),
-            ResolveMaxInlineLength(Length::FillAvailable(),
-                                   LengthResolvePhase::kIntrinsic));
+  EXPECT_EQ(
+      LayoutUnit::Max(),
+      ResolveInlineLength(Length::Percent(30), LengthResolveType::kMaxSize,
+                          LengthResolvePhase::kIntrinsic));
+  EXPECT_EQ(
+      LayoutUnit::Max(),
+      ResolveInlineLength(Length::FillAvailable(), LengthResolveType::kMaxSize,
+                          LengthResolvePhase::kIntrinsic));
   MinMaxSize sizes;
   sizes.min_size = LayoutUnit(30);
   sizes.max_size = LayoutUnit(40);
-  EXPECT_EQ(LayoutUnit(30),
-            ResolveMainInlineLength(Length::MinContent(), sizes));
-  EXPECT_EQ(LayoutUnit(40),
-            ResolveMainInlineLength(Length::MaxContent(), sizes));
-  EXPECT_EQ(LayoutUnit(40),
-            ResolveMainInlineLength(Length::FitContent(), sizes));
+  EXPECT_EQ(
+      LayoutUnit(30),
+      ResolveInlineLength(Length::MinContent(), LengthResolveType::kContentSize,
+                          LengthResolvePhase::kLayout, sizes));
+  EXPECT_EQ(
+      LayoutUnit(40),
+      ResolveInlineLength(Length::MaxContent(), LengthResolveType::kContentSize,
+                          LengthResolvePhase::kLayout, sizes));
+  EXPECT_EQ(
+      LayoutUnit(40),
+      ResolveInlineLength(Length::FitContent(), LengthResolveType::kContentSize,
+                          LengthResolvePhase::kLayout, sizes));
   sizes.max_size = LayoutUnit(800);
-  EXPECT_EQ(LayoutUnit(200),
-            ResolveMainInlineLength(Length::FitContent(), sizes));
+  EXPECT_EQ(
+      LayoutUnit(200),
+      ResolveInlineLength(Length::FitContent(), LengthResolveType::kContentSize,
+                          LengthResolvePhase::kLayout, sizes));
 
 #if DCHECK_IS_ON()
   // This should fail a DCHECK.
-  EXPECT_DEATH_IF_SUPPORTED(ResolveMainInlineLength(Length::FitContent()), "");
+  EXPECT_DEATH_IF_SUPPORTED(ResolveInlineLength(Length::FitContent()), "");
 #endif
 }
 
 TEST_F(NGLengthUtilsTest, testResolveBlockLength) {
-  EXPECT_EQ(LayoutUnit(90), ResolveMainBlockLength(Length::Percent(30)));
-  EXPECT_EQ(LayoutUnit(150), ResolveMainBlockLength(Length::Fixed(150)));
-  EXPECT_EQ(LayoutUnit(0), ResolveMainBlockLength(Length::Auto()));
-  EXPECT_EQ(LayoutUnit(300), ResolveMainBlockLength(Length::FillAvailable()));
+  EXPECT_EQ(LayoutUnit(90), ResolveBlockLength(Length::Percent(30)));
+  EXPECT_EQ(LayoutUnit(150), ResolveBlockLength(Length::Fixed(150)));
+  EXPECT_EQ(LayoutUnit(0), ResolveBlockLength(Length::Auto()));
+  EXPECT_EQ(LayoutUnit(300), ResolveBlockLength(Length::FillAvailable()));
 
-  EXPECT_EQ(LayoutUnit(300), ResolveMainBlockLength(Length::FillAvailable()));
+  EXPECT_EQ(LayoutUnit(0), ResolveBlockLength(Length::Auto()));
+  EXPECT_EQ(LayoutUnit(300), ResolveBlockLength(Length::FillAvailable()));
 }
 
 TEST_F(NGLengthUtilsTest, testComputeContentContribution) {

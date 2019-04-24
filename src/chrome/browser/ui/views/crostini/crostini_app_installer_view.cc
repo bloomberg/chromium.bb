@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_app_installer_view.h"
 
-#include <memory>
-#include <utility>
-
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -68,15 +65,15 @@ CrostiniAppInstallerView::CrostiniAppInstallerView(
       IDS_CROSTINI_APP_INSTALL_DIALOG_PACKAGE_TEXT,
       base::UTF8ToUTF16(package_info_.version), description);
 
-  auto message_label = std::make_unique<views::Label>(message);
-  message_label->SetMultiLine(true);
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message_label_ = new views::Label(message);
+  message_label_->SetMultiLine(true);
+  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   views::ScrollView* scroll_view = new views::ScrollView;
   scroll_view->set_draw_overflow_indicator(true);
   scroll_view->ClipHeightTo(crostini::kMinScrollHeight,
                             crostini::kMaxScrollHeight);
-  message_label_ = scroll_view->SetContents(std::move(message_label));
+  scroll_view->SetContents(message_label_);
 
   AddChildView(scroll_view);
 }

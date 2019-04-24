@@ -176,7 +176,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         } else {
             showAndroidControls(false);
         }
-        TabFullscreenHandler.updateEnabledState(mTab);
+        mTab.updateFullscreenEnabledState();
     }
 
     /**

@@ -33,8 +33,6 @@ using SquashingDisallowedReasons = unsigned;
   V(MaskMismatch)
 
 class PLATFORM_EXPORT SquashingDisallowedReason {
-  DISALLOW_NEW();
-
  private:
   // This contains ordinal values for squashing disallowed reasons and will be
   // used to generate the squashing disallowed reason bits.

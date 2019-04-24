@@ -178,43 +178,36 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
   StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
   switch (GetType()) {
     case kStyle:
-      rule =
-          MakeGarbageCollected<CSSStyleRule>(To<StyleRule>(self), parent_sheet);
+      rule = CSSStyleRule::Create(To<StyleRule>(self), parent_sheet);
       break;
     case kPage:
-      rule = MakeGarbageCollected<CSSPageRule>(To<StyleRulePage>(self),
-                                               parent_sheet);
+      rule = CSSPageRule::Create(To<StyleRulePage>(self), parent_sheet);
       break;
     case kFontFace:
-      rule = MakeGarbageCollected<CSSFontFaceRule>(To<StyleRuleFontFace>(self),
-                                                   parent_sheet);
+      rule = CSSFontFaceRule::Create(To<StyleRuleFontFace>(self), parent_sheet);
       break;
     case kMedia:
-      rule = MakeGarbageCollected<CSSMediaRule>(To<StyleRuleMedia>(self),
-                                                parent_sheet);
+      rule = CSSMediaRule::Create(To<StyleRuleMedia>(self), parent_sheet);
       break;
     case kSupports:
-      rule = MakeGarbageCollected<CSSSupportsRule>(To<StyleRuleSupports>(self),
-                                                   parent_sheet);
+      rule = CSSSupportsRule::Create(To<StyleRuleSupports>(self), parent_sheet);
       break;
     case kImport:
-      rule = MakeGarbageCollected<CSSImportRule>(To<StyleRuleImport>(self),
-                                                 parent_sheet);
+      rule = CSSImportRule::Create(To<StyleRuleImport>(self), parent_sheet);
       break;
     case kKeyframes:
-      rule = MakeGarbageCollected<CSSKeyframesRule>(
-          To<StyleRuleKeyframes>(self), parent_sheet);
+      rule =
+          CSSKeyframesRule::Create(To<StyleRuleKeyframes>(self), parent_sheet);
       break;
     case kNamespace:
-      rule = MakeGarbageCollected<CSSNamespaceRule>(
-          To<StyleRuleNamespace>(self), parent_sheet);
+      rule =
+          CSSNamespaceRule::Create(To<StyleRuleNamespace>(self), parent_sheet);
       break;
     case kViewport:
-      rule = MakeGarbageCollected<CSSViewportRule>(To<StyleRuleViewport>(self),
-                                                   parent_sheet);
+      rule = CSSViewportRule::Create(To<StyleRuleViewport>(self), parent_sheet);
       break;
     case kFontFeatureValues:
-      rule = MakeGarbageCollected<CSSFontFeatureValuesRule>(
+      rule = CSSFontFeatureValuesRule::Create(
           To<StyleRuleFontFeatureValues>(self), parent_sheet);
       break;
     case kKeyframe:

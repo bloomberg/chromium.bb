@@ -96,7 +96,7 @@ void LayoutAnalyzer::Pop(const LayoutObject& o) {
 }
 
 std::unique_ptr<TracedValue> LayoutAnalyzer::ToTracedValue() {
-  auto traced_value(std::make_unique<TracedValue>());
+  std::unique_ptr<TracedValue> traced_value(TracedValue::Create());
   for (size_t i = 0; i < kNumCounters; ++i) {
     if (counters_[i] > 0) {
       traced_value->SetIntegerWithCopiedName(

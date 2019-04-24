@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_utterance.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -39,8 +38,7 @@ SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
                                                    const String& text)
     : ContextClient(context),
-      platform_utterance_(
-          MakeGarbageCollected<PlatformSpeechSynthesisUtterance>(this)) {
+      platform_utterance_(PlatformSpeechSynthesisUtterance::Create(this)) {
   platform_utterance_->SetText(text);
 }
 

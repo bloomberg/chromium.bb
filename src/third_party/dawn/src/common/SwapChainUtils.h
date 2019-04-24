@@ -18,19 +18,19 @@
 #include "dawn/dawn_wsi.h"
 
 template <typename T>
-DawnSwapChainImplementation CreateSwapChainImplementation(T* swapChain) {
-    DawnSwapChainImplementation impl = {};
+dawnSwapChainImplementation CreateSwapChainImplementation(T* swapChain) {
+    dawnSwapChainImplementation impl = {};
     impl.userData = swapChain;
     impl.Init = [](void* userData, void* wsiContext) {
         auto* ctx = reinterpret_cast<typename T::WSIContext*>(wsiContext);
         reinterpret_cast<T*>(userData)->Init(ctx);
     };
     impl.Destroy = [](void* userData) { delete reinterpret_cast<T*>(userData); };
-    impl.Configure = [](void* userData, DawnTextureFormat format, DawnTextureUsageBit allowedUsage,
+    impl.Configure = [](void* userData, dawnTextureFormat format, dawnTextureUsageBit allowedUsage,
                         uint32_t width, uint32_t height) {
         return reinterpret_cast<T*>(userData)->Configure(format, allowedUsage, width, height);
     };
-    impl.GetNextTexture = [](void* userData, DawnSwapChainNextTexture* nextTexture) {
+    impl.GetNextTexture = [](void* userData, dawnSwapChainNextTexture* nextTexture) {
         return reinterpret_cast<T*>(userData)->GetNextTexture(nextTexture);
     };
     impl.Present = [](void* userData) { return reinterpret_cast<T*>(userData)->Present(); };

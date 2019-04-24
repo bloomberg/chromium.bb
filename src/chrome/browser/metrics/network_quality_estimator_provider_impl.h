@@ -38,7 +38,7 @@ class NetworkQualityEstimatorProviderImpl
   // estimate. May be null.
   base::RepeatingCallback<void(net::EffectiveConnectionType)> callback_;
 
-  THREAD_CHECKER(thread_checker_);
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<NetworkQualityEstimatorProviderImpl> weak_ptr_factory_;
 

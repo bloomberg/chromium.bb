@@ -31,16 +31,22 @@
         }
     </style>
 
-    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script>
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
+
         function repaintTest()
         {
             document.querySelector(".before").classList.remove("before");
+            if (window.testRunner)
+                testRunner.notifyDone();
         }
     </script>
 </head>
 
-<body onload="runAfterLayoutAndPaint(repaintTest, true)">
+<body onload="repaintTest()">
 
     <div class="blur">
         <div class="box"></div>

@@ -69,14 +69,14 @@ void RemoveFormatCommand::DoApply(EditingState* editing_state) {
   // Get the default style for this editable root, it's the style that we'll
   // give the content that we're operating on.
   Element* root = selection.RootEditableElement();
-  EditingStyle* default_style = MakeGarbageCollected<EditingStyle>(root);
+  EditingStyle* default_style = EditingStyle::Create(root);
 
   // We want to remove everything but transparent background.
   // FIXME: We shouldn't access style().
-  default_style->Style()->SetProperty(CSSPropertyID::kBackgroundColor,
-                                      CSSValueID::kTransparent);
+  default_style->Style()->SetProperty(CSSPropertyBackgroundColor,
+                                      CSSValueTransparent);
 
-  ApplyCommandToComposite(MakeGarbageCollected<ApplyStyleCommand>(
+  ApplyCommandToComposite(ApplyStyleCommand::Create(
                               GetDocument(), default_style,
                               IsElementForRemoveFormatCommand, GetInputType()),
                           editing_state);

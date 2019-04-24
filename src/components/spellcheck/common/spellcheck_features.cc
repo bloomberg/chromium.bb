@@ -9,13 +9,6 @@
 
 namespace spellcheck {
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-
-const base::Feature kSpellingServiceRestApi{"SpellingServiceRestApi",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 
 // Enables/disables Android spellchecker.

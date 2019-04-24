@@ -261,7 +261,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       uint32_t length;
       if (!ReadUint32(&length))
         return nullptr;
-      auto* file_list = MakeGarbageCollected<FileList>();
+      FileList* file_list = FileList::Create();
       for (uint32_t i = 0; i < length; i++) {
         if (File* file = ReadFile())
           file_list->Append(file);
@@ -276,7 +276,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       uint32_t length;
       if (!ReadUint32(&length))
         return nullptr;
-      auto* file_list = MakeGarbageCollected<FileList>();
+      FileList* file_list = FileList::Create();
       for (uint32_t i = 0; i < length; i++) {
         if (File* file = ReadFileIndex())
           file_list->Append(file);
@@ -499,7 +499,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           index >= serialized_script_value_->MojoHandles().size()) {
         return nullptr;
       }
-      return MakeGarbageCollected<MojoHandle>(
+      return MojoHandle::Create(
           std::move(serialized_script_value_->MojoHandles()[index]));
     }
     case kOffscreenCanvasTransferTag: {

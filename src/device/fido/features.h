@@ -24,10 +24,6 @@ extern const base::Feature kWebAuthProxyCryptotoken;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPINSupport;
 
-// Enable support for resident keys.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthResidentKeys;
-
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

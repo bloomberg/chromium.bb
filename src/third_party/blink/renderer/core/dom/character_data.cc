@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -103,15 +102,10 @@ void CharacterData::insertData(unsigned offset,
     return;
   }
 
-  String current_data = this->data();
-  StringBuilder new_str;
-  new_str.ReserveCapacity(data.length() + current_data.length());
-  new_str.Append(StringView(current_data, 0, offset));
-  new_str.Append(data);
-  new_str.Append(StringView(current_data, offset));
+  String new_str = this->data();
+  new_str.insert(data, offset);
 
-  SetDataAndUpdate(new_str.ToString(), offset, 0, data.length(),
-                   kUpdateFromNonParser);
+  SetDataAndUpdate(new_str, offset, 0, data.length(), kUpdateFromNonParser);
 
   GetDocument().DidInsertText(*this, offset, data.length());
 }
@@ -149,13 +143,10 @@ void CharacterData::deleteData(unsigned offset,
                            exception_state))
     return;
 
-  String current_data = this->data();
-  StringBuilder new_str;
-  new_str.ReserveCapacity(current_data.length() - real_count);
-  new_str.Append(StringView(current_data, 0, offset));
-  new_str.Append(StringView(current_data, offset + real_count));
-  SetDataAndUpdate(new_str.ToString(), offset, real_count, 0,
-                   kUpdateFromNonParser);
+  String new_str = data();
+  new_str.Remove(offset, real_count);
+
+  SetDataAndUpdate(new_str, offset, real_count, 0, kUpdateFromNonParser);
 
   GetDocument().DidRemoveText(*this, offset, real_count);
 }
@@ -169,14 +160,11 @@ void CharacterData::replaceData(unsigned offset,
                            exception_state))
     return;
 
-  String current_data = this->data();
-  StringBuilder new_str;
-  new_str.ReserveCapacity(data.length() + current_data.length() - real_count);
-  new_str.Append(StringView(current_data, 0, offset));
-  new_str.Append(data);
-  new_str.Append(StringView(current_data, offset + real_count));
+  String new_str = this->data();
+  new_str.Remove(offset, real_count);
+  new_str.insert(data, offset);
 
-  SetDataAndUpdate(new_str.ToString(), offset, real_count, data.length(),
+  SetDataAndUpdate(new_str, offset, real_count, data.length(),
                    kUpdateFromNonParser);
 
   // update DOM ranges

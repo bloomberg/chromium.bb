@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include <atomic>
 
-#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_device/include/audio_device_defines.h"
 #include "rtc_base/buffer.h"
 #include "rtc_base/critical_section.h"
@@ -76,7 +75,7 @@ class AudioDeviceBuffer {
     int16_t max_play_level = 0;
   };
 
-  explicit AudioDeviceBuffer(TaskQueueFactory* task_queue_factory);
+  AudioDeviceBuffer();
   virtual ~AudioDeviceBuffer();
 
   int32_t RegisterAudioCallback(AudioTransport* audio_callback);

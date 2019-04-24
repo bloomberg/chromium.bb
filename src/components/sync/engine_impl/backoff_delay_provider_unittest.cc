@@ -9,8 +9,6 @@
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/polling_constants.h"
-#include "net/base/net_errors.h"
-#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -40,8 +38,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::FromDefaults());
   ModelNeutralState state;
-  state.last_get_key_result =
-      SyncerError::HttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+  state.last_get_key_result = SyncerError(SyncerError::SYNC_SERVER_ERROR);
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
@@ -52,7 +49,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result =
-      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED);
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
@@ -85,7 +82,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result =
-      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED);
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE);
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
@@ -98,8 +95,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::WithShortInitialRetryOverride());
   ModelNeutralState state;
-  state.last_get_key_result =
-      SyncerError::HttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+  state.last_get_key_result = SyncerError(SyncerError::SYNC_SERVER_ERROR);
   EXPECT_EQ(kInitialBackoffShortRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 

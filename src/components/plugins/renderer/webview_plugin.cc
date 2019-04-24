@@ -69,7 +69,10 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
   WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
   // Loading may synchronously access |delegate| which could be
   // uninitialized just yet, so load in another task.
-  plugin->GetTaskRunner()->PostTask(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      plugin->web_view_helper_.main_frame()->GetTaskRunner(
+          blink::TaskType::kInternalDefault);
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&WebViewPlugin::LoadHTML,
                      plugin->weak_factory_.GetWeakPtr(), html_data, url));
@@ -118,8 +121,7 @@ bool WebViewPlugin::Initialize(WebPluginContainer* container) {
 
   old_title_ = container_->GetElement().GetAttribute("title");
 
-  // Propagate device scale and zoom level to inner webview to load the correct
-  // resources when images have a "srcset" attribute.
+  // Propagate device scale and zoom level to inner webview.
   web_view()->SetDeviceScaleFactor(container_->DeviceScaleFactor());
   web_view()->SetZoomLevel(
       blink::WebView::ZoomFactorToZoomLevel(container_->PageZoomFactor()));
@@ -169,7 +171,15 @@ void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
 
   canvas->save();
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
-  web_view()->PaintContent(canvas, paint_rect);
+
+  // Apply inverse device scale factor, as the outer webview has already
+  // applied it, and the inner webview will apply it again.
+  SkScalar inverse_scale =
+      SkFloatToScalar(1.0 / container_->DeviceScaleFactor());
+  canvas->scale(inverse_scale, inverse_scale);
+
+  web_view()->MainFrameWidget()->PaintContent(canvas, paint_rect);
+
   canvas->restore();
 }
 
@@ -189,7 +199,7 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
 
   // Plugin updates are forbidden during Blink layout. Therefore,
   // UpdatePluginForNewGeometry must be posted to a task to run asynchronously.
-  GetTaskRunner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebViewPlugin::UpdatePluginForNewGeometry,
                      weak_factory_.GetWeakPtr(), window_rect, unobscured_rect));
@@ -363,10 +373,8 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Object> global = context->Global();
 
-  global
-      ->Set(context, gin::StringToV8(isolate, "plugin"),
-            plugin_->delegate_->GetV8Handle(isolate))
-      .Check();
+  global->Set(gin::StringToV8(isolate, "plugin"),
+              plugin_->delegate_->GetV8Handle(isolate));
 }
 
 void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
@@ -402,9 +410,4 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // Run the lifecycle now so that it is clean.
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kOther);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> WebViewPlugin::GetTaskRunner() {
-  return web_view_helper_.main_frame()->GetTaskRunner(
-      blink::TaskType::kInternalDefault);
 }

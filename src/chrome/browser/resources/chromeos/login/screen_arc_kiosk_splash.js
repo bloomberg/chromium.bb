@@ -22,6 +22,7 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
     onBeforeShow: function(data) {
       this.updateApp(data['appInfo']);
 
+      Oobe.getInstance().headerHidden = true;
       Oobe.getInstance().solidBackground = true;
     },
 

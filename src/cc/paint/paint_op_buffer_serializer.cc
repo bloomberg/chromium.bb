@@ -5,7 +5,6 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 
 #include "base/bind.h"
-#include "base/trace_event/trace_event.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "ui/gfx/skia_util.h"
 
@@ -84,8 +83,6 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
       can_use_lcd_text_(can_use_lcd_text),
       context_supports_distance_field_text_(
           context_supports_distance_field_text),
-      max_texture_size_(max_texture_size),
-      max_texture_bytes_(max_texture_bytes),
       text_blob_canvas_(kMaxExtent,
                         kMaxExtent,
                         ComputeSurfaceProps(can_use_lcd_text),
@@ -317,9 +314,8 @@ bool PaintOpBufferSerializer::SerializeOpWithFlags(
     uint8_t alpha) {
   // We use a null |image_provider| here because images are decoded during
   // serialization.
-  const ScopedRasterFlags scoped_flags(&flags_op->flags, nullptr,
-                                       options->canvas->getTotalMatrix(),
-                                       max_texture_size_, alpha);
+  const ScopedRasterFlags scoped_flags(
+      &flags_op->flags, nullptr, options->canvas->getTotalMatrix(), alpha);
   const PaintFlags* flags_to_serialize = scoped_flags.flags();
   if (!flags_to_serialize)
     return true;
@@ -332,9 +328,6 @@ bool PaintOpBufferSerializer::SerializeOp(
     const PaintOp* op,
     const PaintOp::SerializeOptions& options,
     const PlaybackParams& params) {
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "PaintOpBufferSerializer::SerializeOp", "op",
-               PaintOpTypeToString(op->GetType()));
   if (!valid_)
     return false;
 

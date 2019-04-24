@@ -8,14 +8,12 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
-
-class V8BlinkAudioWorkletProcessCallback;
-class V8BlinkAudioWorkletProcessorConstructor;
 
 // Represents a JavaScript class definition registered in the
 // AudioWorkletGlobalScope. After the registration, a definition class contains
@@ -29,23 +27,20 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
       public NameClient {
  public:
   static AudioWorkletProcessorDefinition* Create(
+      v8::Isolate*,
       const String& name,
-      V8BlinkAudioWorkletProcessorConstructor* constructor,
-      V8BlinkAudioWorkletProcessCallback* process);
+      v8::Local<v8::Object> constructor,
+      v8::Local<v8::Function> process);
 
-  explicit AudioWorkletProcessorDefinition(
-      const String& name,
-      V8BlinkAudioWorkletProcessorConstructor* constructor,
-      V8BlinkAudioWorkletProcessCallback* process);
-  ~AudioWorkletProcessorDefinition();
+  AudioWorkletProcessorDefinition(v8::Isolate*,
+                                  const String& name,
+                                  v8::Local<v8::Object> constructor,
+                                  v8::Local<v8::Function> process);
+  virtual ~AudioWorkletProcessorDefinition();
 
   const String& GetName() const { return name_; }
-  V8BlinkAudioWorkletProcessorConstructor* ConstructorFunction() const {
-    return constructor_;
-  }
-  V8BlinkAudioWorkletProcessCallback* ProcessFunction() const {
-    return process_;
-  }
+  v8::Local<v8::Object> ConstructorLocal(v8::Isolate*);
+  v8::Local<v8::Function> ProcessLocal(v8::Isolate*);
   void SetAudioParamDescriptors(
       const HeapVector<Member<AudioParamDescriptor>>&);
   const Vector<String> GetAudioParamDescriptorNames() const;
@@ -56,8 +51,11 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   bool IsSynchronized() const { return is_synchronized_; }
   void MarkAsSynchronized() { is_synchronized_ = true; }
 
-  void Trace(blink::Visitor* visitor);
-
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(constructor_);
+    visitor->Trace(process_);
+    visitor->Trace(audio_param_descriptors_);
+  }
   const char* NameInHeapSnapshot() const override {
     return "AudioWorkletProcessorDefinition";
   }
@@ -68,8 +66,8 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
 
   // The definition is per global scope. The active instance of
   // |AudioProcessorWorklet| should be passed into these to perform JS function.
-  Member<V8BlinkAudioWorkletProcessorConstructor> constructor_;
-  Member<V8BlinkAudioWorkletProcessCallback> process_;
+  TraceWrapperV8Reference<v8::Object> constructor_;
+  TraceWrapperV8Reference<v8::Function> process_;
 
   HeapVector<Member<AudioParamDescriptor>> audio_param_descriptors_;
 };

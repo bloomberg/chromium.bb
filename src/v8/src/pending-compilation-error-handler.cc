@@ -142,8 +142,9 @@ void PendingCompilationErrorHandler::ThrowPendingError(Isolate* isolate,
 
 Handle<String> PendingCompilationErrorHandler::FormatErrorMessageForTest(
     Isolate* isolate) const {
-  return MessageFormatter::Format(isolate, error_details_.message(),
-                                  error_details_.ArgumentString(isolate));
+  return MessageFormatter::FormatMessage(
+      isolate, error_details_.message(),
+      error_details_.ArgumentString(isolate));
 }
 
 }  // namespace internal

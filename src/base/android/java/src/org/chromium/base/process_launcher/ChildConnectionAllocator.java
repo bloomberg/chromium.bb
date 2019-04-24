@@ -40,12 +40,12 @@ public class ChildConnectionAllocator {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
-            return new ChildProcessConnection(context, serviceName, bindToCaller,
-                    bindAsExternalService, serviceBundle, null /* instanceName */);
+            return new ChildProcessConnection(
+                    context, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
         }
     }
 
-    // Delay between the call to freeConnection and the connection actually beeing freed.
+    // Delay between the call to freeConnection and the connection actually beeing   freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
     // The handler of the thread on which all interations should happen.
@@ -225,7 +225,7 @@ public class ChildConnectionAllocator {
         return connection;
     }
 
-    /** Free connection allocated by this allocator. */
+    /** Frees a connection and notifies listeners. */
     private void free(ChildProcessConnection connection) {
         assert isRunningOnLauncherThread();
 

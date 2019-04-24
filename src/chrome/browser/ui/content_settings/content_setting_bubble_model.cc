@@ -669,8 +669,15 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   if (!managed_by_user)
     set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 
-  // The user can only load Flash dynamically if not on the BLOCK setting.
-  if (setting != CONTENT_SETTING_BLOCK) {
+  // The user cannot manually run Flash on the BLOCK setting when either holds:
+  //  - The setting is from Policy. User cannot override admin intent.
+  //  - HTML By Default is on - Flash has been hidden from the plugin list, so
+  //    it's impossible to dynamically run the nonexistent plugin.
+  bool run_blocked =
+      setting == CONTENT_SETTING_BLOCK &&
+      (!managed_by_user || PluginUtils::ShouldPreferHtmlOverPlugins(map));
+
+  if (!run_blocked) {
     set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
     // Disable the "Run all plugins this time" link if the user already clicked
     // on the link and ran all plugins.

@@ -136,7 +136,7 @@ class FakeServerHelperAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       jlong fake_server,
       const base::android::JavaParamRef<jstring>& id,
-      const base::android::JavaParamRef<jstring>& client_tag_hash);
+      const base::android::JavaParamRef<jstring>& client_defined_unique_tag);
 
   // Simulates a dashboard stop and clear.
   void ClearServerData(JNIEnv* env,

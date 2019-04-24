@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_string.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -54,7 +53,7 @@ class SVGAnimatedString : public ScriptWrappable,
                     const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGString>(context_element,
                                        attribute_name,
-                                       MakeGarbageCollected<SVGString>()) {}
+                                       SVGString::Create()) {}
 
   virtual String baseVal();
   virtual void setBaseVal(const String&, ExceptionState&);

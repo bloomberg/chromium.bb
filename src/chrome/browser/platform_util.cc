@@ -68,8 +68,4 @@ void OpenItem(Profile* profile,
                                           full_path, item_type, callback));
 }
 
-bool IsBrowserLockedFullscreen(const Browser* browser) {
-  return false;
-}
-
 }  // namespace platform_util

@@ -70,9 +70,8 @@ public class NotificationConstants {
 
     /**
      * Unique identifier for the persistent notification displayed while a Trusted Web Activity is
-     * in foreground. No longer used.
+     * in foreground.
      */
-    @SuppressWarnings("unused")
     public static final int NOTIFICATION_ID_TWA_PERSISTENT = 6;
 
     /**
@@ -110,7 +109,6 @@ public class NotificationConstants {
     public static final String GROUP_MEDIA_REMOTE = "MediaRemote";
     public static final String GROUP_SYNC = "Sync";
     public static final String GROUP_WEBAPK = "WebApk";
-    public static final String GROUP_SEND_TAB_TO_SELF = "SendTabToSelf";
 
     // Web notification group names are set dynamically as this prefix + notification origin.
     // For example, 'Web:chromium.org' for a notification from chromium.org.

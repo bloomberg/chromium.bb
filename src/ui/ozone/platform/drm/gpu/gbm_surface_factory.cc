@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
 #include <gbm.h>
-#include <memory>
+
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -242,18 +242,27 @@ GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle) {
+    const gfx::NativePixmapHandle& handle) {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  DCHECK_GE(num_planes, handle.planes.size());
+  DCHECK_GE(num_planes, handle.fds.size());
   if (handle.planes.size() != num_planes) {
     return nullptr;
   }
 
+  std::vector<base::ScopedFD> scoped_fds;
+  for (auto& fd : handle.fds) {
+    scoped_fds.emplace_back(fd.fd);
+  }
+  std::vector<gfx::NativePixmapPlane> planes;
+  for (const auto& plane : handle.planes) {
+    planes.push_back(plane);
+  }
 
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;
-  drm_thread_proxy_->CreateBufferFromHandle(
-      widget, size, format, std::move(handle), &buffer, &framebuffer);
+  drm_thread_proxy_->CreateBufferFromFds(widget, size, format,
+                                         std::move(scoped_fds), planes, &buffer,
+                                         &framebuffer);
   if (!buffer)
     return nullptr;
   return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),
@@ -265,7 +274,7 @@ GbmSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle) {
+    const gfx::NativePixmapHandle& handle) {
   // Query the external service (if available), whether it recognizes this
   // NativePixmapHandle, and whether it can provide a corresponding NativePixmap
   // backing it. If so, the handle is consumed. Otherwise, the handle remains
@@ -276,8 +285,7 @@ GbmSurfaceFactory::CreateNativePixmapFromHandle(
       return protected_pixmap;
   }
 
-  return CreateNativePixmapFromHandleInternal(widget, size, format,
-                                              std::move(handle));
+  return CreateNativePixmapFromHandleInternal(widget, size, format, handle);
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -285,11 +293,10 @@ GbmSurfaceFactory::CreateNativePixmapForProtectedBufferHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle) {
+    const gfx::NativePixmapHandle& handle) {
   // Create a new NativePixmap without querying the external service for any
   // existing mappings.
-  return CreateNativePixmapFromHandleInternal(widget, size, format,
-                                              std::move(handle));
+  return CreateNativePixmapFromHandleInternal(widget, size, format, handle);
 }
 
 void GbmSurfaceFactory::SetGetProtectedNativePixmapDelegate(

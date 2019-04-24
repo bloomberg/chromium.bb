@@ -63,6 +63,8 @@ enum class WritingDirection;
 
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
  public:
+  static Editor* Create(LocalFrame&);
+
   explicit Editor(LocalFrame&);
   ~Editor();
 

@@ -66,6 +66,10 @@ class SystemTrayClientTest : public InProcessBrowserTest {
 using SystemTrayClientEnterpriseTest = policy::DevicePolicyCrosBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
+  // Mark the device as enterprise managed.
+  policy::DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy("example.com");
+  content::RunAllPendingInMessageLoop();
+
   // Connect to ash.
   ash::mojom::SystemTrayTestApiPtr tray_test_api;
   content::ServiceManagerConnection::GetForProcess()

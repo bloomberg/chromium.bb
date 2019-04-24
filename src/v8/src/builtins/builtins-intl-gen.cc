@@ -113,9 +113,8 @@ TF_BUILTIN(StringToLowerCaseIntl, IntlBuiltinsAssembler) {
 
     MachineType type_tagged = MachineType::AnyTagged();
 
-    Node* const result = CallCFunction(function_addr, type_tagged,
-                                       std::make_pair(type_tagged, src),
-                                       std::make_pair(type_tagged, dst));
+    Node* const result = CallCFunction2(type_tagged, type_tagged, type_tagged,
+                                        function_addr, src, dst);
 
     Return(result);
   }
@@ -132,10 +131,10 @@ TF_BUILTIN(StringToLowerCaseIntl, IntlBuiltinsAssembler) {
 }
 
 TF_BUILTIN(StringPrototypeToLowerCaseIntl, IntlBuiltinsAssembler) {
-  TNode<Object> maybe_string = CAST(Parameter(Descriptor::kReceiver));
-  TNode<Context> context = CAST(Parameter(Descriptor::kContext));
+  Node* const maybe_string = Parameter(Descriptor::kReceiver);
+  Node* const context = Parameter(Descriptor::kContext);
 
-  TNode<String> string =
+  Node* const string =
       ToThisString(context, maybe_string, "String.prototype.toLowerCase");
 
   Return(CallBuiltin(Builtins::kStringToLowerCaseIntl, context, string));

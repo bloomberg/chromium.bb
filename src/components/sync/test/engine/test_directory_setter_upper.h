@@ -68,8 +68,6 @@ class TestDirectorySetterUpper {
 
   SyncEncryptionHandler* encryption_handler() { return &encryption_handler_; }
 
-  KeystoreKeysHandler* keystore_keys_handler() { return &encryption_handler_; }
-
   syncable::TestTransactionObserver* transaction_observer() {
     return test_transaction_observer_.get();
   }

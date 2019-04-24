@@ -65,8 +65,6 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   static scoped_refptr<CachedMetadata> CreateFromSerializedData(
       const uint8_t* data,
       size_t);
-  static scoped_refptr<CachedMetadata> CreateFromSerializedData(
-      Vector<uint8_t> data);
 
   ~CachedMetadata() = default;
 
@@ -89,7 +87,7 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   }
 
  private:
-  explicit CachedMetadata(Vector<uint8_t> data);
+  CachedMetadata(const uint8_t* data, wtf_size_t);
   CachedMetadata(uint32_t data_type_id, const uint8_t* data, wtf_size_t);
 
   // Since the serialization format supports random access, storing it in

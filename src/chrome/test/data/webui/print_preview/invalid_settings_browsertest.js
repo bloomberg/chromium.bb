@@ -98,9 +98,10 @@ cr.define('invalid_settings_browsertest', function() {
       });
       localDestinationInfos = [];
 
-      loadTimeData.overrideValues({isEnterpriseManaged: false});
       createPage(true);
 
+      page.activeUser = 'foo@chromium.org';
+      page.users = [page.activeUser];
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => cloudPrintInterface.setPrinter(printer));
     }
@@ -115,7 +116,6 @@ cr.define('invalid_settings_browsertest', function() {
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
         const overlayEl = previewArea.$$('.preview-area-overlay-layer');
         const messageEl = previewArea.$$('.preview-area-message');
-        assertEquals(print_preview_new.State.FATAL_ERROR, page.state);
 
         // Make sure the overlay is visible.
         assertFalse(overlayEl.classList.contains('invisible'));
@@ -153,26 +153,12 @@ cr.define('invalid_settings_browsertest', function() {
       const previewAreaEl = page.$.previewArea;
       const overlay = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
-      const sidebar = page.$$('print-preview-sidebar');
-      let printButton = null;
-      const destinationSettings =
-          sidebar.$$('print-preview-destination-settings');
+      const header = page.$$('print-preview-header');
+      const printButton = header.$$('.action-button');
 
-      return test_util.waitForRender(page)
-          .then(() => {
-            const parentElement =
-                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                sidebar.$$('print-preview-button-strip') :
-                sidebar.$$('print-preview-header');
-            printButton = parentElement.$$('.action-button');
-
-            return Promise.all([
-              print_preview.Model.whenReady(),
-              nativeLayer.whenCalled('getInitialSettings'),
-            ]);
-          })
+      return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
-            destinationSettings.destinationStore_.startLoadAllDestinations();
+            page.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
             return Promise.all([
               nativeLayer.whenCalled('getPrinterCapabilities'),
@@ -184,7 +170,6 @@ cr.define('invalid_settings_browsertest', function() {
             // FooDevice was set as an invalid printer.
             assertFalse(overlay.classList.contains('invisible'));
             assertTrue(messageEl.textContent.includes(expectedMessage));
-            assertEquals(print_preview_new.State.ERROR, page.state);
 
             // Verify that the print button is disabled
             assertTrue(printButton.disabled);
@@ -193,14 +178,15 @@ cr.define('invalid_settings_browsertest', function() {
             nativeLayer.reset();
 
             // Select a new destination
-            const barDestination =
-                destinationSettings.destinationStore_.destinations().find(
-                    d => d.id == 'BarDevice');
-            destinationSettings.destinationStore_.selectDestination(
-                barDestination);
+            const barDestination = page.destinationStore_.destinations().find(
+                d => d.id == 'BarDevice');
+            page.destinationStore_.selectDestination(barDestination);
 
             // Wait for the preview to be updated.
-            return nativeLayer.whenCalled('getPreview');
+            return Promise.all([
+              nativeLayer.whenCalled('getPrinterCapabilities'),
+              nativeLayer.whenCalled('getPreview')
+            ]);
           })
           .then(function() {
             // Message should be gone.
@@ -209,15 +195,14 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Has active print button and successfully 'prints', indicating
             assertFalse(printButton.disabled);
-            assertEquals(print_preview_new.State.READY, page.state);
             printButton.click();
             // This should result in a call to print.
             return nativeLayer.whenCalled('print');
           })
           .then(
               /**
-               * @param {string} printTicket The print ticket print() was
-               *     called for.
+               * @param {string} printTicket The print ticket print() was called
+               *     for.
                */
               function(printTicket) {
                 // Sanity check some printing argument values.
@@ -263,31 +248,19 @@ cr.define('invalid_settings_browsertest', function() {
       const previewAreaEl = page.$.previewArea;
       const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
-      const sidebar = page.$$('print-preview-sidebar');
-      let printButton = null;
-      const destinationSettings =
-          sidebar.$$('print-preview-destination-settings');
-      const scalingSettings = sidebar.$$('print-preview-scaling-settings')
+      const header = page.$$('print-preview-header');
+      const printButton = header.$$('.action-button');
+      const destinationSettings = page.$$('print-preview-destination-settings');
+      const scalingSettings = page.$$('print-preview-scaling-settings')
                                   .$$('print-preview-number-settings-section');
-      const layoutSettings = sidebar.$$('print-preview-layout-settings');
+      const layoutSettings = page.$$('print-preview-layout-settings');
 
-      return test_util.waitForRender(page)
-          .then(() => {
-            const parentElement =
-                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                sidebar.$$('print-preview-button-strip') :
-                sidebar.$$('print-preview-header');
-            printButton = parentElement.$$('.action-button');
-            return Promise.all([
-              print_preview.Model.whenReady(),
-              nativeLayer.whenCalled('getInitialSettings'),
-            ]);
-          })
+      return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
             // Set this to enable the scaling input.
             page.setSetting('customScaling', true);
 
-            destinationSettings.destinationStore_.startLoadCloudDestinations();
+            page.destinationStore_.startLoadCloudDestinations();
 
             // FooDevice will be selected since it is the most recently used
             // printer, so the invalid certificate error should be shown.
@@ -303,7 +276,7 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Verify the state is invalid and that some settings sections are
             // also disabled, so there is no way to regenerate the preview.
-            assertEquals(print_preview_new.State.ERROR, page.state);
+            assertEquals(print_preview_new.State.INVALID_PRINTER, page.state);
             assertTrue(layoutSettings.$$('select').disabled);
             assertTrue(scalingSettings.$$('cr-input').disabled);
 
@@ -315,15 +288,12 @@ cr.define('invalid_settings_browsertest', function() {
             nativeLayer.reset();
 
             // Select a new, valid cloud destination.
-            destinationSettings.destinationStore_.selectDestination(
-                validPrinter);
-
+            page.destinationStore_.selectDestination(validPrinter);
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function() {
             // Has active print button, indicating recovery from error state.
             assertFalse(printButton.disabled);
-            assertEquals(print_preview_new.State.READY, page.state);
 
             // Settings sections are now active.
             assertFalse(layoutSettings.$$('select').disabled);
@@ -332,8 +302,7 @@ cr.define('invalid_settings_browsertest', function() {
             // The destination select dropdown should still be enabled.
             assertFalse(destinationSettings.$.destinationSelect.disabled);
 
-            // Message text should have changed and overlay should be
-            // invisible.
+            // Message text should have changed and overlay should be invisible.
             assertFalse(messageEl.textContent.includes(expectedMessageStart));
             assertTrue(overlayEl.classList.contains('invisible'));
           });
@@ -358,49 +327,33 @@ cr.define('invalid_settings_browsertest', function() {
           const previewAreaEl = page.$.previewArea;
           const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
           const messageEl = previewAreaEl.$$('.preview-area-message');
-          const sidebar = page.$$('print-preview-sidebar');
-          let printButton = null;
-          const destinationSettings =
-              sidebar.$$('print-preview-destination-settings');
+          const header = page.$$('print-preview-header');
+          const printButton = header.$$('.action-button');
 
-          return test_util.waitForRender(page)
-              .then(() => {
-                const parentElement =
-                    loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                    sidebar.$$('print-preview-button-strip') :
-                    sidebar.$$('print-preview-header');
-                printButton = parentElement.$$('.action-button');
-                return Promise.all([
-                  print_preview.Model.whenReady(),
-                  nativeLayer.whenCalled('getInitialSettings'),
-                ]);
-              })
+          return nativeLayer.whenCalled('getInitialSettings')
               .then(function() {
                 // Start loading cloud destinations so that the printer
                 // capabilities arrive.
-                destinationSettings.destinationStore_
-                    .startLoadCloudDestinations();
+                page.destinationStore_.startLoadCloudDestinations();
                 return nativeLayer.whenCalled('getPreview');
               })
               .then(function() {
                 // Has active print button.
                 assertFalse(printButton.disabled);
-                assertEquals(print_preview_new.State.READY, page.state);
                 // No error message.
                 assertTrue(overlayEl.classList.contains('invisible'));
 
                 // Select the invalid destination and wait for the event.
                 const whenInvalid = test_util.eventToPromise(
-                    print_preview.DestinationStore.EventType.ERROR,
-                    destinationSettings.destinationStore_);
-                destinationSettings.destinationStore_.selectDestination(
-                    invalidPrinter);
+                    print_preview.DestinationStore.EventType
+                        .SELECTED_DESTINATION_UNSUPPORTED,
+                    page.destinationStore_);
+                page.destinationStore_.selectDestination(invalidPrinter);
                 return whenInvalid;
               })
               .then(function() {
                 // Should have error message.
                 assertFalse(overlayEl.classList.contains('invisible'));
-                assertEquals(print_preview_new.State.ERROR, page.state);
 
                 // Reset
                 nativeLayer.reset();
@@ -408,9 +361,8 @@ cr.define('invalid_settings_browsertest', function() {
                 // Reselect the valid cloud destination.
                 const whenSelected = test_util.eventToPromise(
                     print_preview.DestinationStore.EventType.DESTINATION_SELECT,
-                    destinationSettings.destinationStore_);
-                destinationSettings.destinationStore_.selectDestination(
-                    validPrinter);
+                    page.destinationStore_);
+                page.destinationStore_.selectDestination(validPrinter);
                 return whenSelected;
               })
               .then(function() {

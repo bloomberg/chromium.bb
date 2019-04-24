@@ -103,7 +103,7 @@ class V8_EXPORT_PRIVATE ConstantArrayBuilder final {
   void DiscardReservedEntry(OperandSize operand_size);
 
  private:
-  using index_t = uint32_t;
+  typedef uint32_t index_t;
 
   struct ConstantArraySlice;
 

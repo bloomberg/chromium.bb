@@ -36,9 +36,9 @@ enum HugeEnum : __uint128_t
 template <class T, class U>
 void test_make_signed()
 {
-    ASSERT_SAME_TYPE(U, typename std::make_signed<T>::type);
+    static_assert((std::is_same<typename std::make_signed<T>::type, U>::value), "");
 #if TEST_STD_VER > 11
-    ASSERT_SAME_TYPE(U, std::make_signed_t<T>);
+    static_assert((std::is_same<std::make_signed_t<T>, U>::value), "");
 #endif
 }
 

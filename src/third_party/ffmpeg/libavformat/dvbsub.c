@@ -25,7 +25,7 @@
 #include "rawdec.h"
 
 
-static int dvbsub_probe(const AVProbeData *p)
+static int dvbsub_probe(AVProbeData *p)
 {
     int i, j, k;
     const uint8_t *end = p->buf + p->buf_size;

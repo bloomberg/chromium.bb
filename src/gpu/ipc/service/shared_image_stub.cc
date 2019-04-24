@@ -8,7 +8,6 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/features.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
@@ -28,8 +27,7 @@ SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel->client_id(),
                                                  route_id),
-              sequence_)),
-      weak_factory_(this) {
+              sequence_)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "gpu::SharedImageStub", channel_->task_runner());
 }
@@ -38,29 +36,11 @@ SharedImageStub::~SharedImageStub() {
   channel_->scheduler()->DestroySequence(sequence_);
   sync_point_client_state_->Destroy();
   if (factory_ && factory_->HasImages()) {
-    bool have_context = MakeContextCurrent();
+    bool have_context = MakeContextCurrentAndCreateFactory();
     factory_->DestroyAllSharedImages(have_context);
   }
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-}
-
-std::unique_ptr<SharedImageStub> SharedImageStub::Create(GpuChannel* channel,
-                                                         int32_t route_id) {
-  auto stub = base::WrapUnique(new SharedImageStub(channel, route_id));
-  ContextResult result = stub->MakeContextCurrentAndCreateFactory();
-  if (result == ContextResult::kSuccess)
-    return stub;
-
-  // If it's not a transient failure, treat it as fatal.
-  if (result != ContextResult::kTransientFailure)
-    return nullptr;
-
-  // For transient failure, retry once to create a shared context state and
-  // hence factory again.
-  if (stub->MakeContextCurrentAndCreateFactory() != ContextResult::kSuccess)
-    return nullptr;
-  return stub;
 }
 
 bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
@@ -91,7 +71,7 @@ void SharedImageStub::OnCreateSharedImage(
     return;
   }
 
-  if (!MakeContextCurrent()) {
+  if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
   }
@@ -122,7 +102,7 @@ void SharedImageStub::OnCreateSharedImageWithData(
     return;
   }
 
-  if (!MakeContextCurrent()) {
+  if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
   }
@@ -180,7 +160,7 @@ void SharedImageStub::OnCreateGMBSharedImage(
     return;
   }
 
-  if (!MakeContextCurrent()) {
+  if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
   }
@@ -214,7 +194,7 @@ void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
     return;
   }
 
-  if (!MakeContextCurrent()) {
+  if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
   }
@@ -242,7 +222,7 @@ void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
     return;
   }
 
-  if (!MakeContextCurrent()) {
+  if (!MakeContextCurrentAndCreateFactory()) {
     OnError();
     return;
   }
@@ -269,11 +249,7 @@ void SharedImageStub::OnRegisterSharedImageUploadBuffer(
 
 bool SharedImageStub::MakeContextCurrent() {
   DCHECK(context_state_);
-
-  if (context_state_->context_lost()) {
-    LOG(ERROR) << "SharedImageStub: context already lost";
-    return false;
-  }
+  DCHECK(!context_state_->context_lost());
 
   // |factory_| never writes to the surface, so pass nullptr to
   // improve performance. https://crbug.com/457431
@@ -288,34 +264,41 @@ bool SharedImageStub::MakeContextCurrent() {
   }
 }
 
-ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
-  auto* channel_manager = channel_->gpu_channel_manager();
-  DCHECK(!context_state_);
-  ContextResult result;
-  context_state_ = channel_manager->GetSharedContextState(&result);
-  if (result != ContextResult::kSuccess) {
-    LOG(ERROR) << "SharedImageStub: unable to create context";
-    context_state_ = nullptr;
-    return result;
+bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
+  if (!factory_) {
+    auto* channel_manager = channel_->gpu_channel_manager();
+    DCHECK(!context_state_);
+    ContextResult result;
+    context_state_ = channel_manager->GetSharedContextState(&result);
+    if (result != ContextResult::kSuccess) {
+      LOG(ERROR) << "SharedImageStub: unable to create context";
+      return false;
+    }
+    DCHECK(context_state_);
+    DCHECK(!context_state_->context_lost());
+    if (!MakeContextCurrent())
+      return false;
+    gpu::GpuMemoryBufferFactory* gmb_factory =
+        channel_manager->gpu_memory_buffer_factory();
+    factory_ = std::make_unique<SharedImageFactory>(
+        channel_manager->gpu_preferences(),
+        channel_manager->gpu_driver_bug_workarounds(),
+        channel_manager->gpu_feature_info(), context_state_.get(),
+        channel_manager->mailbox_manager(),
+        channel_manager->shared_image_manager(),
+        gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this);
+    return true;
+  } else {
+    DCHECK(context_state_);
+    if (context_state_->context_lost()) {
+      LOG(ERROR) << "SharedImageStub: context already lost";
+      return false;
+    } else {
+      if (MakeContextCurrent())
+        return true;
+      return false;
+    }
   }
-  DCHECK(context_state_);
-  DCHECK(!context_state_->context_lost());
-  if (!MakeContextCurrent()) {
-    context_state_ = nullptr;
-    return ContextResult::kTransientFailure;
-  }
-
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      channel_manager->gpu_memory_buffer_factory();
-  factory_ = std::make_unique<SharedImageFactory>(
-      channel_manager->gpu_preferences(),
-      channel_manager->gpu_driver_bug_workarounds(),
-      channel_manager->gpu_feature_info(), context_state_.get(),
-      channel_manager->mailbox_manager(),
-      channel_manager->shared_image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
-      features::IsUsingSkiaRenderer());
-  return ContextResult::kSuccess;
 }
 
 void SharedImageStub::OnError() {
@@ -362,31 +345,6 @@ bool SharedImageStub::OnMemoryDump(
   }
 
   return factory_->OnMemoryDump(args, pmd, ClientId(), ClientTracingId());
-}
-
-SharedImageStub::SharedImageDestructionCallback
-SharedImageStub::GetSharedImageDestructionCallback(const Mailbox& mailbox) {
-  return base::BindOnce(&SharedImageStub::DestroySharedImage,
-                        weak_factory_.GetWeakPtr(), mailbox);
-}
-
-void SharedImageStub::DestroySharedImage(const Mailbox& mailbox,
-                                         const SyncToken& sync_token) {
-  // If there is no sync token, we don't need to wait.
-  if (!sync_token.HasData()) {
-    OnSyncTokenReleased(mailbox);
-    return;
-  }
-
-  auto done_cb = base::BindOnce(&SharedImageStub::OnSyncTokenReleased,
-                                weak_factory_.GetWeakPtr(), mailbox);
-  channel_->scheduler()->ScheduleTask(
-      gpu::Scheduler::Task(sequence_, std::move(done_cb),
-                           std::vector<gpu::SyncToken>({sync_token})));
-}
-
-void SharedImageStub::OnSyncTokenReleased(const Mailbox& mailbox) {
-  factory_->DestroySharedImage(mailbox);
 }
 
 }  // namespace gpu

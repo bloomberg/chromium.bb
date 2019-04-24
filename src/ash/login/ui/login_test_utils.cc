@@ -4,7 +4,6 @@
 
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_big_user_view.h"
-#include "base/containers/adapters.h"
 #include "base/strings/string_split.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
@@ -89,10 +88,14 @@ mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email) {
   return user;
 }
 
-bool HasFocusInAnyChildView(const views::View* view) {
-  return view->HasFocus() ||
-         std::any_of(view->children().cbegin(), view->children().cend(),
-                     [](const auto* v) { return HasFocusInAnyChildView(v); });
+bool HasFocusInAnyChildView(views::View* view) {
+  if (view->HasFocus())
+    return true;
+  for (int i = 0; i < view->child_count(); ++i) {
+    if (HasFocusInAnyChildView(view->child_at(i)))
+      return true;
+  }
+  return false;
 }
 
 bool TabThroughView(ui::test::EventGenerator* event_generator,
@@ -116,10 +119,11 @@ bool TabThroughView(ui::test::EventGenerator* event_generator,
 // Performs a DFS for the first button in the views hierarchy
 // The last child is on the top of the z layer stack
 views::View* FindTopButton(views::View* current_view) {
-  for (auto* child : base::Reversed(current_view->children())) {
+  for (int i = current_view->child_count() - 1; i >= 0; i--) {
+    views::View* child = current_view->child_at(i);
     if (views::Button::AsButton(child))
       return child;
-    if (!child->children().empty()) {
+    if (child->has_children()) {
       views::View* child_button = FindTopButton(child);
       if (child_button)
         return child_button;

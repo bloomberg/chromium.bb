@@ -7,6 +7,7 @@ sr_Latn_ME{
         CZ{"Češka Republika"}
         DE{"Njemačka"}
         KN{"Sveti Kits i Nevis"}
+        MK{"BJR Makedonija"}
         PM{"Sveti Pjer i Mikelon"}
         RE{"Reunion"}
         UM{"Manja udaljena ostrva SAD"}
@@ -14,8 +15,5 @@ sr_Latn_ME{
         VG{"Britanska Djevičanska Ostrva"}
         VI{"Američka Djevičanska Ostrva"}
     }
-    Countries%variant{
-        MK{"BJR Makedonija"}
-    }
-    Version{"2.1.47.82"}
+    Version{"2.1.44.88"}
 }

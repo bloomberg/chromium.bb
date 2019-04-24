@@ -28,6 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // A sample program demonstrating using Google C++ testing framework.
+//
+// Author: wan@google.com (Zhanyong Wan)
+
 
 // In this example, we use a more advanced feature of Google Test called
 // test fixture.
@@ -71,7 +74,7 @@ class QueueTestSmpl3 : public testing::Test {
   // virtual void SetUp() will be called before each test is run.  You
   // should define it if you need to initialize the variables.
   // Otherwise, this can be skipped.
-  void SetUp() override {
+  virtual void SetUp() {
     q1_.Enqueue(1);
     q2_.Enqueue(2);
     q2_.Enqueue(3);
@@ -99,8 +102,8 @@ class QueueTestSmpl3 : public testing::Test {
     ASSERT_EQ(q->Size(), new_q->Size());
 
     // Verifies the relationship between the elements of the two queues.
-    for (const QueueNode<int>*n1 = q->Head(), *n2 = new_q->Head();
-         n1 != nullptr; n1 = n1->next(), n2 = n2->next()) {
+    for ( const QueueNode<int> * n1 = q->Head(), * n2 = new_q->Head();
+          n1 != NULL; n1 = n1->next(), n2 = n2->next() ) {
       EXPECT_EQ(2 * n1->element(), n2->element());
     }
 
@@ -125,16 +128,16 @@ TEST_F(QueueTestSmpl3, DefaultConstructor) {
 // Tests Dequeue().
 TEST_F(QueueTestSmpl3, Dequeue) {
   int * n = q0_.Dequeue();
-  EXPECT_TRUE(n == nullptr);
+  EXPECT_TRUE(n == NULL);
 
   n = q1_.Dequeue();
-  ASSERT_TRUE(n != nullptr);
+  ASSERT_TRUE(n != NULL);
   EXPECT_EQ(1, *n);
   EXPECT_EQ(0u, q1_.Size());
   delete n;
 
   n = q2_.Dequeue();
-  ASSERT_TRUE(n != nullptr);
+  ASSERT_TRUE(n != NULL);
   EXPECT_EQ(2, *n);
   EXPECT_EQ(1u, q2_.Size());
   delete n;

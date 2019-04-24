@@ -7,7 +7,6 @@ import time
 from common import TestDriver
 from common import IntegrationTest
 from decorators import NotAndroid
-from decorators import ChromeVersionBeforeM
 from decorators import ChromeVersionEqualOrAfterM
 import json
 
@@ -27,7 +26,6 @@ class Smoke(IntegrationTest):
         self.assertNotHasChromeProxyViaHeader(response)
 
   # Ensure Chrome does not use DataSaver when holdback is enabled.
-  @ChromeVersionBeforeM(74)
   def testCheckPageWithHoldback(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
@@ -54,36 +52,6 @@ class Smoke(IntegrationTest):
       histogram = t.GetHistogram('DataReductionProxy.BypassTypePrimary', 5)
       self.assertEqual(histogram, {})
 
-  # Ensure Chrome does not use DataSaver when disabled via feature.
-  @ChromeVersionEqualOrAfterM(74)
-  def testCheckPageWithDataSaverFeatureDisabled(self):
-    with TestDriver() as t:
-      t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.AddChromeArg('--enable-features=NetworkService')
-      t.AddChromeArg(
-        '--disable-features=DataReductionProxyEnabledWithNetworkService')
-      t.LoadURL('http://check.googlezip.net/test.html')
-      responses = t.GetHTTPResponses()
-      self.assertNotEqual(0, len(responses))
-      num_chrome_proxy_request_headers = 0
-      num_chrome_proxy_response_headers = 0
-      for response in responses:
-        self.assertNotHasChromeProxyViaHeader(response)
-        if ('chrome-proxy' in response.request_headers):
-          num_chrome_proxy_request_headers += 1
-        if ('chrome-proxy' in response.response_headers):
-          num_chrome_proxy_response_headers += 1
-      self.assertEqual(num_chrome_proxy_request_headers, 0)
-      self.assertEqual(num_chrome_proxy_response_headers, 0)
-      self.assertEqual(t.GetHistogram(
-        'DataReductionProxy.ConfigService.FetchResponseCode'), {})
-      self.assertEqual(t.GetHistogram(
-        'DataReductionProxy.WarmupURL.FetchSuccessful'), {})
-      self.assertEqual(t.GetHistogram(
-        'DataReductionProxy.BlockTypePrimary'), {})
-      self.assertEqual(t.GetHistogram(
-        'DataReductionProxy.BypassTypePrimary'), {})
-
   # Ensure Chrome uses DataSaver in normal mode.
   def testCheckPageWithNormalMode(self):
     with TestDriver() as t:
@@ -93,7 +61,7 @@ class Smoke(IntegrationTest):
       self.assertNotEqual(0, len(responses))
       num_chrome_proxy_request_headers = 0
       for response in responses:
-        self.assertHasProxyHeaders(response)
+        self.assertHasChromeProxyViaHeader(response)
         if ('chrome-proxy' in response.request_headers):
           num_chrome_proxy_request_headers += 1
       t.SleepUntilHistogramHasEntry('PageLoad.Clients.DataReductionProxy.'
@@ -159,9 +127,7 @@ class Smoke(IntegrationTest):
         pid_in_page_count = 0
         page_id = ''
         for response in responses:
-          if not response.request_headers:
-            continue
-          self.assertHasProxyHeaders(response)
+          self.assertHasChromeProxyViaHeader(response)
           self.assertEqual(200, response.status)
           chrome_proxy_header = response.request_headers['chrome-proxy']
           chrome_proxy_directives = chrome_proxy_header.split(',')
@@ -194,7 +160,7 @@ class Smoke(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasProxyHeaders(response)
+        self.assertHasChromeProxyViaHeader(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

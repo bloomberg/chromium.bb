@@ -38,9 +38,9 @@ class ThreadCheckerClass : public ThreadChecker {
   ThreadCheckerClass() {}
 
   // Verifies that it was called on the same thread as the constructor.
-  void DoStuff() { RTC_DCHECK(IsCurrent()); }
+  void DoStuff() { RTC_DCHECK(CalledOnValidThread()); }
 
-  void Detach() { ThreadChecker::Detach(); }
+  void DetachFromThread() { ThreadChecker::DetachFromThread(); }
 
   static void MethodOnDifferentThreadImpl();
   static void DetachThenCallFromDifferentThreadImpl();
@@ -124,13 +124,13 @@ TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
   EXPECT_TRUE(delete_on_thread.has_been_deleted());
 }
 
-TEST(ThreadCheckerTest, Detach) {
+TEST(ThreadCheckerTest, DetachFromThread) {
   std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // Verify that DoStuff doesn't assert when called on a different thread after
-  // a call to Detach.
-  thread_checker_class->Detach();
+  // a call to DetachFromThread.
+  thread_checker_class->DetachFromThread();
   CallDoStuffOnThread call_on_thread(thread_checker_class.get());
 
   call_on_thread.Start();
@@ -166,8 +166,8 @@ void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
       new ThreadCheckerClass);
 
   // DoStuff doesn't assert when called on a different thread
-  // after a call to Detach.
-  thread_checker_class->Detach();
+  // after a call to DetachFromThread.
+  thread_checker_class->DetachFromThread();
   CallDoStuffOnThread call_on_thread(thread_checker_class.get());
 
   call_on_thread.Start();

@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -73,7 +74,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
   void EnsureAnimValUpdated();
 
  private:
-  Member<SVGElement> context_element_;
+  TraceWrapperMember<SVGElement> context_element_;
   Member<SVGAnimatedPropertyBase> binding_;
   PropertyIsAnimValType property_is_anim_val_;
 };

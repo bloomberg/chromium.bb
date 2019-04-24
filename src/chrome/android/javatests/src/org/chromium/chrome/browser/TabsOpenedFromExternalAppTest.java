@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -44,7 +45,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -214,7 +214,7 @@ public class TabsOpenedFromExternalAppTest {
         }
 
         final Tab originalTab = testRule.getActivity().getActivityTab();
-        TestThreadUtils.runOnUiThreadBlocking(() -> testRule.getActivity().onNewIntent(intent));
+        ThreadUtils.runOnUiThreadBlocking(() -> testRule.getActivity().onNewIntent(intent));
         if (createNewTab) {
             CriteriaHelper.pollUiThread(new Criteria("Failed to select different tab") {
                 @Override
@@ -447,8 +447,7 @@ public class TabsOpenedFromExternalAppTest {
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Window still has focus after pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
@@ -496,8 +495,7 @@ public class TabsOpenedFromExternalAppTest {
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Window still has focus after pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
@@ -539,8 +537,7 @@ public class TabsOpenedFromExternalAppTest {
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Window still has focus after pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
@@ -574,8 +571,7 @@ public class TabsOpenedFromExternalAppTest {
         // And pressing back should close Clank.
         Assert.assertTrue("Window does not have focus before pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Window still has focus after pressing back.",
                 mActivityTestRule.getActivity().hasWindowFocus());
@@ -716,10 +712,8 @@ public class TabsOpenedFromExternalAppTest {
     public void testBackgroundSvelteTabIsSelectedAfterClosingExternalTab() throws Exception {
         // Start up Chrome and immediately close its tab -- it gets in the way.
         mActivityTestRule.startMainActivityFromLauncher();
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) ()
-                        -> TabModelUtils.closeTabByIndex(
-                                mActivityTestRule.getActivity().getCurrentTabModel(), 0));
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> TabModelUtils.closeTabByIndex(
+                mActivityTestRule.getActivity().getCurrentTabModel(), 0));
         CriteriaHelper.pollUiThread(Criteria.equals(0,
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount()));
 
@@ -757,7 +751,7 @@ public class TabsOpenedFromExternalAppTest {
         final TestTabObserver observer = new TestTabObserver();
         mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
         Assert.assertNull(observer.mContextMenu);
-        final View view = TestThreadUtils.runOnUiThreadBlocking(
+        final View view = ThreadUtils.runOnUiThreadBlocking(
                 (Callable<View>) ()
                         -> mActivityTestRule.getActivity().getActivityTab().getContentView());
         TouchCommon.longPressView(view);
@@ -770,9 +764,9 @@ public class TabsOpenedFromExternalAppTest {
         mActivityTestRule.getActivity().getActivityTab().removeObserver(observer);
 
         // Select the "open in new tab" option.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> Assert.assertTrue(observer.mContextMenu.performIdentifierAction(
-                                R.id.contextmenu_open_in_new_tab, 0)));
+                        R.id.contextmenu_open_in_new_tab, 0)));
 
         // The second tab should open in the background.
         CriteriaHelper.pollUiThread(Criteria.equals(2,
@@ -780,8 +774,7 @@ public class TabsOpenedFromExternalAppTest {
 
         // Hitting "back" should close the tab, minimize Chrome, and select the background tab.
         // Confirm that the number of tabs is correct and that closing the tab didn't cause a crash.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         CriteriaHelper.pollUiThread(Criteria.equals(1,
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount()));
     }

@@ -14,14 +14,14 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
-class NativeExtensionBindingsSystem;
+class ExtensionBindingsSystem;
 class ScriptContext;
 
 // Implements custom bindings for the displaySource API.
 class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
  public:
   DisplaySourceCustomBindings(ScriptContext* context,
-                              NativeExtensionBindingsSystem* bindings_system);
+                              ExtensionBindingsSystem* bindings_system);
   ~DisplaySourceCustomBindings() override;
 
   // ObjectBackedNativeHandler:
@@ -59,7 +59,7 @@ class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
 
   std::map<int, std::unique_ptr<DisplaySourceSession>> session_map_;
 
-  NativeExtensionBindingsSystem* bindings_system_;
+  ExtensionBindingsSystem* bindings_system_;
 
   base::WeakPtrFactory<DisplaySourceCustomBindings> weak_factory_;
 

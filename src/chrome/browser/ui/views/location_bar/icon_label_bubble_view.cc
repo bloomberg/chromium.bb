@@ -17,20 +17,15 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 using MD = ui::MaterialDesignController;
@@ -124,18 +119,26 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
 // IconLabelBubbleView class
 
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
-    : LabelButton(nullptr, base::string16()),
+    : Button(nullptr),
+      image_(new views::ImageView()),
+      label_(new views::Label(base::string16(), {font_list})),
+      ink_drop_container_(new views::InkDropContainerView()),
       separator_view_(new SeparatorView(this)) {
-  SetFontList(font_list);
-  SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Disable separate hit testing for |image_|.  This prevents views treating
+  // |image_| as a separate mouse hover region from |this|.
+  image_->set_can_process_events_within_subtree(false);
+  AddChildView(image_);
+
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(label_);
 
   separator_view_->SetVisible(ShouldShowSeparator());
   AddChildView(separator_view_);
 
+  AddChildView(ink_drop_container_);
+  ink_drop_container_->SetVisible(false);
   set_ink_drop_visible_opacity(
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
-  set_ink_drop_highlight_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
 
   UpdateBorder();
 
@@ -159,22 +162,22 @@ void IconLabelBubbleView::InkDropRippleAnimationEnded(
 bool IconLabelBubbleView::ShouldShowLabel() const {
   if (slide_animation_.is_animating() || is_animation_paused_)
     return !IsShrinking() || (width() > image()->GetPreferredSize().width());
-  return label()->visible() && !label()->text().empty();
+  return label_->visible() && !label_->text().empty();
 }
 
-void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
-  SetAccessibleName(label_text);
-  label()->SetText(label_text);
+void IconLabelBubbleView::SetLabel(const base::string16& label) {
+  SetAccessibleName(label);
+  label_->SetText(label);
   separator_view_->SetVisible(ShouldShowSeparator());
   separator_view_->UpdateOpacity();
 }
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
-  LabelButton::SetImage(STATE_NORMAL, image_skia);
+  image_->SetImage(image_skia);
 }
 
 void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
-  label()->SetFontList(font_list);
+  label_->SetFontList(font_list);
 }
 
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
@@ -225,18 +228,21 @@ void IconLabelBubbleView::UpdateBorder() {
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
-  return GetSizeForLabelWidth(label()->GetPreferredSize().width());
+  return GetSizeForLabelWidth(label_->GetPreferredSize().width());
+}
+
+void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ink_drop_container_->SetBoundsRect(CalculateInkDropContainerBounds());
+  views::Button::OnBoundsChanged(previous_bounds);
 }
 
 void IconLabelBubbleView::Layout() {
-  ink_drop_container()->SetBoundsRect(GetLocalBounds());
-
   // We may not have horizontal room for both the image and the trailing
   // padding. When the view is expanding (or showing-label steady state), the
   // image. When the view is contracting (or hidden-label steady state), whittle
   // away at the trailing padding instead.
   int bubble_trailing_padding = GetEndPaddingWithSeparator();
-  int image_width = image()->GetPreferredSize().width();
+  int image_width = image_->GetPreferredSize().width();
   const int space_shortage = image_width + bubble_trailing_padding - width();
   if (space_shortage > 0) {
     if (ShouldShowLabel())
@@ -244,48 +250,64 @@ void IconLabelBubbleView::Layout() {
     else
       bubble_trailing_padding -= space_shortage;
   }
-  image()->SetBounds(GetInsets().left(), 0, image_width, height());
+  image_->SetBounds(GetInsets().left(), 0, image_width, height());
 
   // Compute the label bounds. The label gets whatever size is left over after
   // accounting for the preferred image width and padding amounts. Note that if
   // the label has zero size it doesn't actually matter what we compute its X
   // value to be, since it won't be visible.
-  const int label_x = image()->bounds().right() + GetInternalSpacing();
+  const int label_x = image_->bounds().right() + GetInternalSpacing();
   int label_width = std::max(0, width() - label_x - bubble_trailing_padding -
                                     GetWidthBetweenIconAndSeparator());
-  label()->SetBounds(label_x, 0, label_width, height());
+  label_->SetBounds(label_x, 0, label_width, height());
 
   // The separator should be the same height as the icons.
   const int separator_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  gfx::Rect separator_bounds(label()->bounds());
+  gfx::Rect separator_bounds(label_->bounds());
   separator_bounds.Inset(0, (separator_bounds.height() - separator_height) / 2);
 
   float separator_width =
       GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x = label()->text().empty() ? image()->bounds().right()
-                                            : label()->bounds().right();
+  int separator_x = label_->text().empty() ? image_->bounds().right()
+                                           : label_->bounds().right();
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
-  UpdateHighlightPath();
+  gfx::Rect ink_drop_bounds = CalculateInkDropContainerBounds();
+  ink_drop_container_->SetBoundsRect(ink_drop_bounds);
+
+  if (focus_ring() && !ink_drop_bounds.IsEmpty()) {
+    focus_ring()->Layout();
+    int radius = ink_drop_bounds.height() / 2;
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(GetMirroredRect(ink_drop_bounds)),
+                      radius, radius);
+    focus_ring()->SetPath(path);
+  }
 }
 
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   suppress_button_release_ = IsBubbleShowing();
-  return LabelButton::OnMousePressed(event);
+  return Button::OnMousePressed(event);
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
-  LabelButton::OnNativeThemeChanged(native_theme);
-
-  // LabelButton::OnNativeThemeChanged() sets a views::Background on the label
-  // under certain conditions. We don't want that, so unset the background.
-  label()->SetBackground(nullptr);
-
-  SetEnabledTextColors(GetTextColor());
-  label()->SetBackgroundColor(GetParentBackgroundColor());
+  label_->SetEnabledColor(GetTextColor());
+  label_->SetBackgroundColor(GetParentBackgroundColor());
   SchedulePaint();
+}
+
+void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_layer->SetBounds(ink_drop_container_->bounds());
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
+}
+
+void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
+  ResetInkDropMask();
+  separator_view_->UpdateOpacity();
 }
 
 std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
@@ -294,6 +316,36 @@ std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
   ink_drop->SetShowHighlightOnFocus(!focus_ring());
   ink_drop->AddObserver(this);
   return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
+    const {
+  gfx::Point center_point = GetInkDropCenterBasedOnLastEvent();
+  View::ConvertPointToTarget(this, ink_drop_container_, &center_point);
+  center_point.SetToMax(ink_drop_container_->origin());
+  center_point.SetToMin(ink_drop_container_->bounds().bottom_right());
+
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      ink_drop_container_->size(), center_point, GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
+}
+
+std::unique_ptr<views::InkDropHighlight>
+IconLabelBubbleView::CreateInkDropHighlight() const {
+  std::unique_ptr<views::InkDropHighlight> highlight =
+      CreateDefaultInkDropHighlight(
+          gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
+          ink_drop_container_->size());
+  highlight->set_visible_opacity(
+      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+  return highlight;
+}
+
+std::unique_ptr<views::InkDropMask> IconLabelBubbleView::CreateInkDropMask()
+    const {
+  return std::make_unique<views::RoundRectInkDropMask>(
+      ink_drop_container_->size(), gfx::Insets(),
+      ink_drop_container_->height() / 2.f);
 }
 
 bool IconLabelBubbleView::IsTriggerableEvent(const ui::Event& event) {
@@ -310,18 +362,18 @@ bool IconLabelBubbleView::ShouldUpdateInkDropOnClickCanceled() const {
 }
 
 void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
-  LabelButton::NotifyClick(event);
+  Button::NotifyClick(event);
   OnActivate(event);
 }
 
 void IconLabelBubbleView::OnFocus() {
   separator_view_->UpdateOpacity();
-  LabelButton::OnFocus();
+  Button::OnFocus();
 }
 
 void IconLabelBubbleView::OnBlur() {
   separator_view_->UpdateOpacity();
-  LabelButton::OnBlur();
+  Button::OnBlur();
 }
 
 void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
@@ -345,12 +397,6 @@ void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  LabelButton::GetAccessibleNodeData(node_data);
-  if (GetAccessibleName().empty())
-    node_data->SetNameExplicitlyEmpty();
-}
-
 void IconLabelBubbleView::OnTouchUiChanged() {
   UpdateBorder();
 
@@ -361,7 +407,7 @@ void IconLabelBubbleView::OnTouchUiChanged() {
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
-  gfx::Size size(image()->GetPreferredSize());
+  gfx::Size size(image_->GetPreferredSize());
   size.Enlarge(GetInsets().left() + GetWidthBetweenIconAndSeparator() +
                    GetEndPaddingWithSeparator(),
                GetInsets().height());
@@ -387,7 +433,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {
-  if (image()->GetPreferredSize().IsEmpty())
+  if (image_->GetPreferredSize().IsEmpty())
     return 0;
   return (MD::touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
 }
@@ -423,8 +469,8 @@ const char* IconLabelBubbleView::GetClassName() const {
 void IconLabelBubbleView::SetUpForInOutAnimation() {
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  label()->SetElideBehavior(gfx::NO_ELIDE);
-  label()->SetVisible(false);
+  label_->SetElideBehavior(gfx::NO_ELIDE);
+  label_->SetVisible(false);
   slide_animation_.SetSlideDuration(GetSlideDurationTime());
   slide_animation_.SetTweenType(kIconLabelBubbleTweenType);
   open_state_fraction_ = gfx::Tween::CalculateValue(
@@ -499,20 +545,9 @@ void IconLabelBubbleView::HideAnimation() {
   GetInkDrop()->SetShowHighlightOnFocus(false);
 }
 
-void IconLabelBubbleView::UpdateHighlightPath() {
-  gfx::Rect highlight_bounds = GetLocalBounds();
+gfx::Rect IconLabelBubbleView::CalculateInkDropContainerBounds() const {
+  gfx::Rect ink_drop_bounds = GetLocalBounds();
   if (ShouldShowSeparator())
-    highlight_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
-  highlight_bounds = GetMirroredRect(highlight_bounds);
-
-  const float corner_radius = highlight_bounds.height() / 2.f;
-  const SkRect rect = RectToSkRect(highlight_bounds);
-
-  SkPath path;
-  path.addRoundRect(rect, corner_radius, corner_radius);
-  SetProperty(views::kHighlightPathKey, new SkPath(path));
-  if (focus_ring()) {
-    focus_ring()->Layout();
-    focus_ring()->SchedulePaint();
-  }
+    ink_drop_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
+  return ink_drop_bounds;
 }

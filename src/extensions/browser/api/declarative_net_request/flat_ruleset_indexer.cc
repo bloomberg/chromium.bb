@@ -20,12 +20,8 @@ namespace flat_rule = url_pattern_index::flat;
 
 template <typename T>
 using FlatOffset = flatbuffers::Offset<T>;
-
-template <typename T>
-using FlatVectorOffset = FlatOffset<flatbuffers::Vector<FlatOffset<T>>>;
-
 using FlatStringOffset = FlatOffset<flatbuffers::String>;
-using FlatStringListOffset = FlatVectorOffset<flatbuffers::String>;
+using FlatStringListOffset = FlatOffset<flatbuffers::Vector<FlatStringOffset>>;
 
 // Writes to |builder| a flatbuffer vector of shared strings corresponding to
 // |vec| and returns the offset to it. If |vec| is empty, returns an empty
@@ -43,21 +39,23 @@ FlatStringListOffset BuildVectorOfSharedStrings(
   return builder->CreateVector(offsets);
 }
 
-std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
-CreateIndexBuilders(flatbuffers::FlatBufferBuilder* builder) {
-  std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
-      result(flat::ActionIndex_count);
-  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
-    result[i] =
-        std::make_unique<url_pattern_index::UrlPatternIndexBuilder>(builder);
+// Returns the RuleActionType corresponding to |indexed_rule|.
+dnr_api::RuleActionType GetRuleActionType(const IndexedRule& indexed_rule) {
+  if (indexed_rule.options & flat_rule::OptionFlag_IS_WHITELIST) {
+    DCHECK(indexed_rule.redirect_url.empty());
+    return dnr_api::RULE_ACTION_TYPE_ALLOW;
   }
-  return result;
+  if (!indexed_rule.redirect_url.empty())
+    return dnr_api::RULE_ACTION_TYPE_REDIRECT;
+  return dnr_api::RULE_ACTION_TYPE_BLOCK;
 }
 
 }  // namespace
 
 FlatRulesetIndexer::FlatRulesetIndexer()
-    : index_builders_(CreateIndexBuilders(&builder_)) {}
+    : blocking_index_builder_(&builder_),
+      allowing_index_builder_(&builder_),
+      redirect_index_builder_(&builder_) {}
 
 FlatRulesetIndexer::~FlatRulesetIndexer() = default;
 
@@ -66,11 +64,11 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
 
   ++indexed_rules_count_;
 
-  FlatStringListOffset domains_included_offset =
+  auto domains_included_offset =
       BuildVectorOfSharedStrings(&builder_, indexed_rule.domains);
-  FlatStringListOffset domains_excluded_offset =
+  auto domains_excluded_offset =
       BuildVectorOfSharedStrings(&builder_, indexed_rule.excluded_domains);
-  FlatStringOffset url_pattern_offset =
+  auto url_pattern_offset =
       builder_.CreateSharedString(indexed_rule.url_pattern);
 
   FlatOffset<flat_rule::UrlRule> offset = flat_rule::CreateUrlRule(
@@ -79,16 +77,13 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       indexed_rule.anchor_left, indexed_rule.anchor_right,
       domains_included_offset, domains_excluded_offset, url_pattern_offset,
       indexed_rule.id, indexed_rule.priority);
-
-  std::vector<UrlPatternIndexBuilder*> builders = GetBuilders(indexed_rule);
-  DCHECK(!builders.empty());
-  for (UrlPatternIndexBuilder* builder : builders)
-    builder->IndexUrlRule(offset);
+  const dnr_api::RuleActionType type = GetRuleActionType(indexed_rule);
+  GetBuilder(type)->IndexUrlRule(offset);
 
   // Store additional metadata required for a redirect rule.
-  if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
+  if (type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
     DCHECK(!indexed_rule.redirect_url.empty());
-    FlatStringOffset redirect_url_offset =
+    auto redirect_url_offset =
         builder_.CreateSharedString(indexed_rule.redirect_url);
     metadata_.push_back(flat::CreateUrlRuleMetadata(builder_, indexed_rule.id,
                                                     redirect_url_offset));
@@ -99,22 +94,18 @@ void FlatRulesetIndexer::Finish() {
   DCHECK(!finished_);
   finished_ = true;
 
-  std::vector<url_pattern_index::UrlPatternIndexOffset> index_offsets;
-  index_offsets.reserve(index_builders_.size());
-  for (const auto& builder : index_builders_)
-    index_offsets.push_back(builder->Finish());
-
-  FlatVectorOffset<url_pattern_index::flat::UrlPatternIndex>
-      index_vector_offset = builder_.CreateVector(index_offsets);
+  auto blocking_index_offset = blocking_index_builder_.Finish();
+  auto allowing_index_offset = allowing_index_builder_.Finish();
+  auto redirect_index_offset = redirect_index_builder_.Finish();
 
   // Store the extension metadata sorted by ID to support fast lookup through
   // binary search.
-  FlatVectorOffset<flat::UrlRuleMetadata> extension_metadata_offset =
+  auto extension_metadata_offset =
       builder_.CreateVectorOfSortedTables(&metadata_);
 
-  FlatOffset<flat::ExtensionIndexedRuleset> root_offset =
-      flat::CreateExtensionIndexedRuleset(builder_, index_vector_offset,
-                                          extension_metadata_offset);
+  auto root_offset = flat::CreateExtensionIndexedRuleset(
+      builder_, blocking_index_offset, allowing_index_offset,
+      redirect_index_offset, extension_metadata_offset);
   flat::FinishExtensionIndexedRulesetBuffer(builder_, root_offset);
 }
 
@@ -123,51 +114,19 @@ base::span<const uint8_t> FlatRulesetIndexer::GetData() {
   return base::make_span(builder_.GetBufferPointer(), builder_.GetSize());
 }
 
-std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>
-FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
-  switch (indexed_rule.action_type) {
+FlatRulesetIndexer::UrlPatternIndexBuilder* FlatRulesetIndexer::GetBuilder(
+    dnr_api::RuleActionType type) {
+  switch (type) {
     case dnr_api::RULE_ACTION_TYPE_BLOCK:
-      return {index_builders_[flat::ActionIndex_block].get()};
+      return &blocking_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
-      return {index_builders_[flat::ActionIndex_allow].get()};
+      return &allowing_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-      return {index_builders_[flat::ActionIndex_redirect].get()};
-    case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
-      return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
+      return &redirect_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_NONE:
-      break;
+      NOTREACHED();
   }
-  NOTREACHED();
-  return {};
-}
-
-std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>
-FlatRulesetIndexer::GetRemoveHeaderBuilders(
-    const std::set<dnr_api::RemoveHeaderType>& types) {
-  // A single "removeHeaders" JSON/indexed rule does still correspond to a
-  // single flatbuffer rule but can be stored in multiple indices.
-  DCHECK(!types.empty());
-  std::vector<UrlPatternIndexBuilder*> result;
-  for (dnr_api::RemoveHeaderType type : types) {
-    switch (type) {
-      case dnr_api::REMOVE_HEADER_TYPE_NONE:
-        NOTREACHED();
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        result.push_back(
-            index_builders_[flat::ActionIndex_remove_cookie_header].get());
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        result.push_back(
-            index_builders_[flat::ActionIndex_remove_referer_header].get());
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        result.push_back(
-            index_builders_[flat::ActionIndex_remove_set_cookie_header].get());
-        break;
-    }
-  }
-  return result;
+  return nullptr;
 }
 
 }  // namespace declarative_net_request

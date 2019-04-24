@@ -52,7 +52,7 @@ struct test_invoke_result<Fn(Args...), Ret>
     {
         static_assert(std::is_invocable<Fn, Args...>::value, "");
         static_assert(std::is_invocable_r<Ret, Fn, Args...>::value, "");
-        ASSERT_SAME_TYPE(Ret, typename std::invoke_result<Fn, Args...>::type);
+        static_assert((std::is_same<typename std::invoke_result<Fn, Args...>::type, Ret>::value), "");
     }
 };
 #endif
@@ -60,7 +60,7 @@ struct test_invoke_result<Fn(Args...), Ret>
 template <class T, class U>
 void test_result_of()
 {
-    ASSERT_SAME_TYPE(U, typename std::result_of<T>::type);
+    static_assert((std::is_same<typename std::result_of<T>::type, U>::value), "");
 #if TEST_STD_VER > 14
     test_invoke_result<T, U>::call();
 #endif

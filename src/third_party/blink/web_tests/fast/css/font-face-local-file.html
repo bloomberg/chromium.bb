@@ -4,6 +4,7 @@
 description('Local fonts should not be rejected by CORS');
 
 if (window.testRunner) {
+    testRunner.setAllowUniversalAccessFromFileURLs(false);
     testRunner.setAllowFileAccessFromFileURLs(false);
 }
 window.jsTestIsAsync = true;

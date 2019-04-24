@@ -39,7 +39,7 @@ ViewsTextServicesContextMenuBase::ViewsTextServicesContextMenuBase(
   }
 }
 
-ViewsTextServicesContextMenuBase::~ViewsTextServicesContextMenuBase() = default;
+ViewsTextServicesContextMenuBase::~ViewsTextServicesContextMenuBase() {}
 
 bool ViewsTextServicesContextMenuBase::SupportsCommand(int command_id) const {
   return command_id == IDS_CONTENT_CONTEXT_EMOJI;

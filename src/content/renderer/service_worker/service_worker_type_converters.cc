@@ -113,9 +113,7 @@ TypeConverter<blink::WebPaymentDetailsModifier,
   output.supported_method =
       blink::WebString::FromUTF8(input->method_data->supported_method);
 
-  // The total is optional in a modifier.
-  if (input->total)
-    output.total = mojo::ConvertTo<blink::WebPaymentItem>(input->total);
+  output.total = mojo::ConvertTo<blink::WebPaymentItem>(input->total);
 
   output.additional_display_items = blink::WebVector<blink::WebPaymentItem>(
       input->additional_display_items.size());

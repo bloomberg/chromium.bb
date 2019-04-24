@@ -11,151 +11,84 @@
 #ifndef MODULES_VIDEO_CAPTURE_MAIN_SOURCE_WINDOWS_SINK_FILTER_DS_H_
 #define MODULES_VIDEO_CAPTURE_MAIN_SOURCE_WINDOWS_SINK_FILTER_DS_H_
 
-#include <dshow.h>
+#include <streams.h>  // Include base DS filter header files
 
-#include <atomic>
-#include <memory>
-#include <vector>
-
-#include "modules/video_capture/video_capture_impl.h"
-#include "modules/video_capture/windows/help_functions_ds.h"
-#include "rtc_base/thread_annotations.h"
-#include "rtc_base/thread_checker.h"
+#include "modules/video_capture/video_capture_defines.h"
 
 namespace webrtc {
 namespace videocapturemodule {
-// forward declarations
+// forward declaration
+
 class CaptureSinkFilter;
-
-// Input pin for camera input
-// Implements IMemInputPin, IPin.
-class CaptureInputPin : public IMemInputPin, public IPin {
+/**
+ *     input pin for camera input
+ *
+ */
+class CaptureInputPin : public CBaseInputPin {
  public:
-  CaptureInputPin(CaptureSinkFilter* filter);
+  VideoCaptureCapability _requestedCapability;
+  VideoCaptureCapability _resultingCapability;
+  HANDLE _threadHandle;
 
-  HRESULT SetRequestedCapability(const VideoCaptureCapability& capability);
+  CaptureInputPin(IN TCHAR* szName,
+                  IN CaptureSinkFilter* pFilter,
+                  IN CCritSec* pLock,
+                  OUT HRESULT* pHr,
+                  IN LPCWSTR pszName);
+  ~CaptureInputPin() override;
 
-  // Notifications from the filter.
-  void OnFilterActivated();
-  void OnFilterDeactivated();
-
- protected:
-  virtual ~CaptureInputPin();
-
- private:
-  CaptureSinkFilter* Filter() const;
-
-  HRESULT AttemptConnection(IPin* receive_pin, const AM_MEDIA_TYPE* media_type);
-  std::vector<AM_MEDIA_TYPE*> DetermineCandidateFormats(
-      IPin* receive_pin,
-      const AM_MEDIA_TYPE* media_type);
-  void ClearAllocator(bool decommit);
-  HRESULT CheckDirection(IPin* pin) const;
-
-  // IUnknown
-  STDMETHOD(QueryInterface)(REFIID riid, void** ppv) override;
-
-  // clang-format off
-  // clang isn't sure what to do with the longer STDMETHOD() function
-  // declarations.
-
-  // IPin
-  STDMETHOD(Connect)(IPin* receive_pin,
-                     const AM_MEDIA_TYPE* media_type) override;
-  STDMETHOD(ReceiveConnection)(IPin* connector,
-                               const AM_MEDIA_TYPE* media_type) override;
-  STDMETHOD(Disconnect)() override;
-  STDMETHOD(ConnectedTo)(IPin** pin) override;
-  STDMETHOD(ConnectionMediaType)(AM_MEDIA_TYPE* media_type) override;
-  STDMETHOD(QueryPinInfo)(PIN_INFO* info) override;
-  STDMETHOD(QueryDirection)(PIN_DIRECTION* pin_dir) override;
-  STDMETHOD(QueryId)(LPWSTR* id) override;
-  STDMETHOD(QueryAccept)(const AM_MEDIA_TYPE* media_type) override;
-  STDMETHOD(EnumMediaTypes)(IEnumMediaTypes** types) override;
-  STDMETHOD(QueryInternalConnections)(IPin** pins, ULONG* count) override;
-  STDMETHOD(EndOfStream)() override;
-  STDMETHOD(BeginFlush)() override;
-  STDMETHOD(EndFlush)() override;
-  STDMETHOD(NewSegment)(REFERENCE_TIME start, REFERENCE_TIME stop,
-                        double rate) override;
-
-  // IMemInputPin
-  STDMETHOD(GetAllocator)(IMemAllocator** allocator) override;
-  STDMETHOD(NotifyAllocator)(IMemAllocator* allocator, BOOL read_only) override;
-  STDMETHOD(GetAllocatorRequirements)(ALLOCATOR_PROPERTIES* props) override;
-  STDMETHOD(Receive)(IMediaSample* sample) override;
-  STDMETHOD(ReceiveMultiple)(IMediaSample** samples, long count,
-                             long* processed) override;
-  STDMETHOD(ReceiveCanBlock)() override;
-  // clang-format on
-
-  rtc::ThreadChecker main_checker_;
-  rtc::ThreadChecker capture_checker_;
-
-  VideoCaptureCapability requested_capability_ RTC_GUARDED_BY(main_checker_);
-  // Accessed on the main thread when Filter()->IsStopped() (capture thread not
-  // running), otherwise accessed on the capture thread.
-  VideoCaptureCapability resulting_capability_;
-  DWORD capture_thread_id_ = 0;
-  rtc::scoped_refptr<IMemAllocator> allocator_ RTC_GUARDED_BY(main_checker_);
-  rtc::scoped_refptr<IPin> receive_pin_ RTC_GUARDED_BY(main_checker_);
-  std::atomic_bool flushing_{false};
-  std::atomic_bool runtime_error_{false};
-  // Holds a referenceless pointer to the owning filter, the name and
-  // direction of the pin. The filter pointer can be considered const.
-  PIN_INFO info_ = {};
-  AM_MEDIA_TYPE media_type_ RTC_GUARDED_BY(main_checker_) = {};
+  HRESULT GetMediaType(IN int iPos, OUT CMediaType* pmt) override;
+  HRESULT CheckMediaType(IN const CMediaType* pmt) override;
+  STDMETHODIMP Receive(IN IMediaSample*) override;
+  HRESULT SetMatchingMediaType(const VideoCaptureCapability& capability);
 };
 
-// Implement IBaseFilter (including IPersist and IMediaFilter).
-class CaptureSinkFilter : public IBaseFilter {
+class CaptureSinkFilter : public CBaseFilter {
  public:
-  CaptureSinkFilter(VideoCaptureImpl* capture_observer);
+  CaptureSinkFilter(const IN TCHAR* tszName,
+                    IN LPUNKNOWN punk,
+                    OUT HRESULT* phr,
+                    VideoCaptureExternal& captureObserver);
+  ~CaptureSinkFilter() override;
 
-  HRESULT SetRequestedCapability(const VideoCaptureCapability& capability);
+  //  --------------------------------------------------------------------
+  //  class methods
 
-  // Called on the capture thread.
-  void ProcessCapturedFrame(unsigned char* buffer,
+  void ProcessCapturedFrame(unsigned char* pBuffer,
                             size_t length,
-                            const VideoCaptureCapability& frame_info);
+                            const VideoCaptureCapability& frameInfo);
+  //  explicit receiver lock aquisition and release
+  void LockReceive() { m_crtRecv.Lock(); }
+  void UnlockReceive() { m_crtRecv.Unlock(); }
+  //  explicit filter lock aquisition and release
+  void LockFilter() { m_crtFilter.Lock(); }
+  void UnlockFilter() { m_crtFilter.Unlock(); }
+  void SetFilterGraph(IGraphBuilder* graph);  // Used if EVR
 
-  void NotifyEvent(long code, LONG_PTR param1, LONG_PTR param2);
-  bool IsStopped() const;
-
-  //  IUnknown
+  //  --------------------------------------------------------------------
+  //  COM interfaces
   STDMETHOD(QueryInterface)(REFIID riid, void** ppv) override;
+  STDMETHOD_(ULONG, AddRef)() override;
+  STDMETHOD_(ULONG, Release)() override;
 
-  // IPersist
-  STDMETHOD(GetClassID)(CLSID* clsid) override;
+  STDMETHOD(SetMatchingMediaType)(const VideoCaptureCapability& capability);
 
-  // IMediaFilter.
-  STDMETHOD(GetState)(DWORD msecs, FILTER_STATE* state) override;
-  STDMETHOD(SetSyncSource)(IReferenceClock* clock) override;
-  STDMETHOD(GetSyncSource)(IReferenceClock** clock) override;
+  //  --------------------------------------------------------------------
+  //  CBaseFilter methods
+  int GetPinCount() override;
+  CBasePin* GetPin(IN int Index) override;
   STDMETHOD(Pause)() override;
-  STDMETHOD(Run)(REFERENCE_TIME start) override;
   STDMETHOD(Stop)() override;
-
-  // IBaseFilter
-  STDMETHOD(EnumPins)(IEnumPins** pins) override;
-  STDMETHOD(FindPin)(LPCWSTR id, IPin** pin) override;
-  STDMETHOD(QueryFilterInfo)(FILTER_INFO* info) override;
-  STDMETHOD(JoinFilterGraph)(IFilterGraph* graph, LPCWSTR name) override;
-  STDMETHOD(QueryVendorInfo)(LPWSTR* vendor_info) override;
-
- protected:
-  virtual ~CaptureSinkFilter();
+  STDMETHOD(GetClassID)(OUT CLSID* pCLSID) override;
+  //  --------------------------------------------------------------------
+  //  class factory calls this
+  static CUnknown* CreateInstance(IN LPUNKNOWN punk, OUT HRESULT* phr);
 
  private:
-  rtc::ThreadChecker main_checker_;
-  const rtc::scoped_refptr<ComRefCount<CaptureInputPin>> input_pin_;
-  VideoCaptureImpl* const capture_observer_;
-  FILTER_INFO info_ RTC_GUARDED_BY(main_checker_) = {};
-  // Set/cleared in JoinFilterGraph. The filter must be stopped (no capture)
-  // at that time, so no lock is required. While the state is not stopped,
-  // the sink will be used from the capture thread.
-  IMediaEventSink* sink_ = nullptr;
-  FILTER_STATE state_ RTC_GUARDED_BY(main_checker_) = State_Stopped;
+  CCritSec m_crtFilter;  //  filter lock
+  CCritSec m_crtRecv;    //  receiver lock; always acquire before filter lock
+  CaptureInputPin* m_pInput;
+  VideoCaptureExternal& _captureObserver;
 };
 }  // namespace videocapturemodule
 }  // namespace webrtc

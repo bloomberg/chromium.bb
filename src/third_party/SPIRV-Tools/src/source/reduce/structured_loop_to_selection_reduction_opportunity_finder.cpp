@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/structured_loop_to_selection_reduction_opportunity_finder.h"
-
-#include "source/reduce/structured_loop_to_selection_reduction_opportunity.h"
+#include "structured_loop_to_selection_reduction_opportunity_finder.h"
+#include "structured_loop_to_selection_reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {
 
-using opt::IRContext;
+using namespace opt;
 
 namespace {
 const uint32_t kMergeNodeIndex = 0;
@@ -28,15 +27,16 @@ const uint32_t kContinueNodeIndex = 1;
 
 std::vector<std::unique_ptr<ReductionOpportunity>>
 StructuredLoopToSelectionReductionOpportunityFinder::GetAvailableOpportunities(
-    IRContext* context) const {
+    opt::IRContext* context) const {
   std::vector<std::unique_ptr<ReductionOpportunity>> result;
 
   std::set<uint32_t> merge_block_ids;
   for (auto& function : *context->module()) {
     for (auto& block : function) {
-      auto merge_block_id = block.MergeBlockIdIfAny();
-      if (merge_block_id) {
-        merge_block_ids.insert(merge_block_id);
+      auto merge_inst = block.GetMergeInst();
+      if (merge_inst) {
+        merge_block_ids.insert(
+            merge_inst->GetSingleWordOperand(kMergeNodeIndex));
       }
     }
   }
@@ -50,19 +50,11 @@ StructuredLoopToSelectionReductionOpportunityFinder::GetAvailableOpportunities(
         continue;
       }
 
-      uint32_t continue_block_id =
-          loop_merge_inst->GetSingleWordOperand(kContinueNodeIndex);
-
       // Check whether the loop construct's continue target is the merge block
       // of some structured control flow construct.  If it is, we cautiously do
       // not consider applying a transformation.
-      if (merge_block_ids.find(continue_block_id) != merge_block_ids.end()) {
-        continue;
-      }
-
-      // Check whether the loop header block is also the continue target. If it
-      // is, we cautiously do not consider applying a transformation.
-      if (block.id() == continue_block_id) {
+      if (merge_block_ids.find(loop_merge_inst->GetSingleWordOperand(
+              kContinueNodeIndex)) != merge_block_ids.end()) {
         continue;
       }
 

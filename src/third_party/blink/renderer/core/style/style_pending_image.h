@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -44,6 +43,10 @@ class ImageResourceObserver;
 // ComputedStyle after it has been returned from the style selector.
 class StylePendingImage final : public StyleImage {
  public:
+  static StylePendingImage* Create(const CSSValue& value) {
+    return MakeGarbageCollected<StylePendingImage>(value);
+  }
+
   explicit StylePendingImage(const CSSValue& value)
       : value_(const_cast<CSSValue*>(&value)) {
     is_pending_image_ = true;
@@ -59,16 +62,19 @@ class StylePendingImage final : public StyleImage {
   }
 
   CSSImageValue* CssImageValue() const {
-    return DynamicTo<CSSImageValue>(value_.Get());
+    return value_->IsImageValue() ? ToCSSImageValue(value_.Get()) : nullptr;
   }
   CSSPaintValue* CssPaintValue() const {
-    return DynamicTo<CSSPaintValue>(value_.Get());
+    return value_->IsPaintValue() ? ToCSSPaintValue(value_.Get()) : nullptr;
   }
   CSSImageGeneratorValue* CssImageGeneratorValue() const {
-    return DynamicTo<CSSImageGeneratorValue>(value_.Get());
+    return value_->IsImageGeneratorValue()
+               ? ToCSSImageGeneratorValue(value_.Get())
+               : nullptr;
   }
   CSSImageSetValue* CssImageSetValue() const {
-    return DynamicTo<CSSImageSetValue>(value_.Get());
+    return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get())
+                                     : nullptr;
   }
 
   FloatSize ImageSize(const Document&,
@@ -103,17 +109,12 @@ class StylePendingImage final : public StyleImage {
   Member<CSSValue> value_;
 };
 
-template <>
-struct DowncastTraits<StylePendingImage> {
-  static bool AllowFrom(const StyleImage& styleImage) {
-    return styleImage.IsPendingImage();
-  }
-};
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, IsPendingImage());
 
 inline bool StylePendingImage::IsEqual(const StyleImage& other) const {
   if (!other.IsPendingImage())
     return false;
-  const auto& other_pending = To<StylePendingImage>(other);
+  const auto& other_pending = ToStylePendingImage(other);
   return value_ == other_pending.value_;
 }
 

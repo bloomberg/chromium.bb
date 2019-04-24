@@ -13,9 +13,9 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
-#include "base/hash/sha1.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "content/public/browser/browser_context.h"
@@ -157,6 +157,7 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "808FA9BB3CD501D7801D1CD6D5A3DBA088FDD46F",
     "82FDBBF79F3517C3946BD89EAAF90C46DFDA4681",
     "83431421F759AE7A3BDAC00A4959D13095C65805",
+    "834BD6E8E9F59D388DBB264453EB08A5DE45ED03",
     "83B6C75264D5D2F81FDEFD681EDD2076DD8F0B9B",
     "88C372CE52E21560C17BFD52556E60D694E12CAC",
     "88F5F459139892C0F5DF3022676726BB3F01FB5C",

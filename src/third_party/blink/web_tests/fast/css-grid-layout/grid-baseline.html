@@ -50,13 +50,14 @@ before text
 after text
 </div>
 
-<!-- This grid has a baseline item, it's orthogonal but it still participates
-in baseline alignment. -->
+<!-- This grid has a baseline item, but it's orthogonal so it doesn't
+participate in baseline alignment. Instead, the baseline is the first grid
+item's baseline. -->
 <div>
 before text
 <div class="inline-grid" style="grid-auto-rows: 40px">
-    <div style="align-self: end">below</div>
-    <div style="align-self: baseline; margin-top: 20px; writing-mode: vertical-rl"></div>
+    <div style="align-self: end">baseline</div>
+    <div style="align-self: baseline; writing-mode: vertical-rl"></div>
     <div style="align-self: start">above</div>
 </div>
 after text
@@ -90,12 +91,12 @@ should align with the middle
 of the grey box
 </div>
 
-<!-- If there are no griditems, align to the bottom of the margin box. -->
+<!-- If there are no griditems, align to the bottom of the box. -->
 <div>
-should align below the bottom
-<div class="empty inline-grid" style="width: 30px; height: 30px">
+should align with the bottom
+<div class="inline-grid" style="width: 30px; height: 30px">
 </div>
-of the black line
+of the grey box
 </div>
 
 <div>

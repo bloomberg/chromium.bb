@@ -23,7 +23,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -40,7 +39,7 @@ class SSLHostStateDelegate;
 #if !defined(OS_ANDROID)
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
-}  // namespace content
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -50,10 +49,6 @@ namespace policy {
 class PolicyService;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
-}  // namespace policy
-
-namespace service_manager {
-class Service;
 }
 
 namespace storage {
@@ -63,7 +58,7 @@ class SpecialStoragePolicy;
 namespace sync_preferences {
 class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
-}  // namespace sync_preferences
+}
 
 class TestingProfile : public Profile {
  public:
@@ -292,9 +287,6 @@ class TestingProfile : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
 
   TestingProfile* AsTestingProfile() override;
 
@@ -332,8 +324,7 @@ class TestingProfile : public Profile {
   }
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
-  ProfileKey* GetProfileKey() const override;
-  policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
+  SimpleFactoryKey* GetSimpleFactoryKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -380,7 +371,7 @@ class TestingProfile : public Profile {
 
   // The key to index KeyedService instances created by
   // SimpleKeyedServiceFactory.
-  std::unique_ptr<ProfileKey> key_;
+  std::unique_ptr<SimpleFactoryKey> key_;
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_

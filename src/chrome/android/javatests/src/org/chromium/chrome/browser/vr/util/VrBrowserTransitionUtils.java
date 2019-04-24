@@ -12,6 +12,7 @@ import android.net.Uri;
 import org.junit.Assert;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +37,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
     public static boolean forceEnterVrBrowser() {
         Boolean result = false;
         try {
-            result = TestThreadUtils.runOnUiThreadBlocking(
+            result = ThreadUtils.runOnUiThreadBlocking(
                     () -> { return VrShellDelegate.enterVrIfNecessary(); });
         } catch (ExecutionException e) {
         }
@@ -61,7 +61,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      */
     public static Boolean isBackButtonEnabled() {
         final AtomicBoolean isBackButtonEnabled = new AtomicBoolean();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             isBackButtonEnabled.set(
                     TestVrShellDelegate.getVrShellForTesting().isBackButtonEnabled());
         });
@@ -73,7 +73,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      */
     public static Boolean isForwardButtonEnabled() {
         final AtomicBoolean isForwardButtonEnabled = new AtomicBoolean();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             isForwardButtonEnabled.set(
                     TestVrShellDelegate.getVrShellForTesting().isForwardButtonEnabled());
         });
@@ -84,7 +84,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      * Navigates the VR Browser back.
      */
     public static void navigateBack() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { TestVrShellDelegate.getVrShellForTesting().navigateBack(); });
     }
 
@@ -92,7 +92,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
      * Navigates the VR Browser forward.
      */
     public static void navigateForward() {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { TestVrShellDelegate.getVrShellForTesting().navigateForward(); });
     }
 
@@ -110,7 +110,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
         intent.addCategory(VrIntentDelegate.DAYDREAM_CATEGORY);
         VrModuleProvider.getIntentDelegate().setupVrIntent(intent);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { VrShellDelegate.getVrDaydreamApi().launchInVr(intent); });
     }
 
@@ -122,7 +122,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
                 new Intent(ContextUtils.getApplicationContext(), ChromeTabbedActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { ContextUtils.getApplicationContext().startActivity(intent); });
     }
 

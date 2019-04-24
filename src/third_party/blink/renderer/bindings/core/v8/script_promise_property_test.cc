@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -103,9 +102,9 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
 class ScriptPromisePropertyTestBase {
  public:
   ScriptPromisePropertyTestBase()
-      : page_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
+      : page_(DummyPageHolder::Create(IntSize(1, 1))) {
     v8::HandleScope handle_scope(GetIsolate());
-    other_script_state_ = MakeGarbageCollected<ScriptState>(
+    other_script_state_ = ScriptState::Create(
         v8::Context::New(GetIsolate()),
         DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), 1));
   }
@@ -289,8 +288,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   Persistent<GCObservation> observation;
   {
     ScriptState::Scope scope(MainScriptState());
-    observation = MakeGarbageCollected<GCObservation>(
-        Promise(DOMWrapperWorld::MainWorld()).V8Value());
+    observation =
+        GCObservation::Create(Promise(DOMWrapperWorld::MainWorld()).V8Value());
   }
 
   Gc();

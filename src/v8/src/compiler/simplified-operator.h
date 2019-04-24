@@ -306,11 +306,10 @@ class CheckMinusZeroParameters {
   VectorSlotPair feedback_;
 };
 
-V8_EXPORT_PRIVATE const CheckMinusZeroParameters& CheckMinusZeroParametersOf(
-    const Operator* op) V8_WARN_UNUSED_RESULT;
+const CheckMinusZeroParameters& CheckMinusZeroParametersOf(const Operator* op)
+    V8_WARN_UNUSED_RESULT;
 
-V8_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream&, const CheckMinusZeroParameters& params);
+std::ostream& operator<<(std::ostream&, const CheckMinusZeroParameters& params);
 
 size_t hash_value(const CheckMinusZeroParameters& params);
 
@@ -322,7 +321,7 @@ enum class CheckMapsFlag : uint8_t {
   kNone = 0u,
   kTryMigrateInstance = 1u << 0,  // Try instance migration.
 };
-using CheckMapsFlags = base::Flags<CheckMapsFlag>;
+typedef base::Flags<CheckMapsFlag> CheckMapsFlags;
 
 DEFINE_OPERATORS_FOR_FLAGS(CheckMapsFlags)
 
@@ -480,15 +479,15 @@ bool IsRestLengthOf(const Operator* op) V8_WARN_UNUSED_RESULT;
 
 class AllocateParameters {
  public:
-  AllocateParameters(Type type, AllocationType allocation_type)
-      : type_(type), allocation_type_(allocation_type) {}
+  AllocateParameters(Type type, PretenureFlag pretenure)
+      : type_(type), pretenure_(pretenure) {}
 
   Type type() const { return type_; }
-  AllocationType allocation_type() const { return allocation_type_; }
+  PretenureFlag pretenure() const { return pretenure_; }
 
  private:
   Type type_;
-  AllocationType allocation_type_;
+  PretenureFlag pretenure_;
 };
 
 bool IsCheckedWithFeedback(const Operator* op);
@@ -499,7 +498,7 @@ V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, AllocateParameters);
 
 bool operator==(AllocateParameters const&, AllocateParameters const&);
 
-AllocationType AllocationTypeOf(const Operator* op) V8_WARN_UNUSED_RESULT;
+PretenureFlag PretenureFlagOf(const Operator* op) V8_WARN_UNUSED_RESULT;
 
 Type AllocateTypeOf(const Operator* op) V8_WARN_UNUSED_RESULT;
 
@@ -541,7 +540,6 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* BooleanNot();
 
   const Operator* NumberEqual();
-  const Operator* NumberSameValue();
   const Operator* NumberLessThan();
   const Operator* NumberLessThanOrEqual();
   const Operator* NumberAdd();
@@ -654,8 +652,6 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* ChangeTaggedToUint32();
   const Operator* ChangeTaggedToFloat64();
   const Operator* ChangeTaggedToTaggedSigned();
-  const Operator* ChangeCompressedToTaggedSigned();
-  const Operator* ChangeTaggedToCompressedSigned();
   const Operator* ChangeInt31ToTaggedSigned();
   const Operator* ChangeInt32ToTagged();
   const Operator* ChangeInt64ToTagged();
@@ -681,6 +677,7 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* CheckHeapObject();
   const Operator* CheckIf(DeoptimizeReason deoptimize_reason,
                           const VectorSlotPair& feedback = VectorSlotPair());
+  const Operator* CheckInternalizedString();
   const Operator* CheckMaps(CheckMapsFlags, ZoneHandleSet<Map>,
                             const VectorSlotPair& = VectorSlotPair());
   const Operator* CheckNotTaggedHole();
@@ -688,10 +685,6 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* CheckReceiver();
   const Operator* CheckReceiverOrNullOrUndefined();
   const Operator* CheckSmi(const VectorSlotPair& feedback);
-  const Operator* CheckInternalizedString();
-  const Operator* CheckNonEmptyString();
-  const Operator* CheckNonEmptyOneByteString();
-  const Operator* CheckNonEmptyTwoByteString();
   const Operator* CheckString(const VectorSlotPair& feedback);
   const Operator* CheckSymbol();
 
@@ -716,14 +709,6 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
                                        const VectorSlotPair& feedback);
   const Operator* CheckedTaggedToTaggedPointer(const VectorSlotPair& feedback);
   const Operator* CheckedTaggedToTaggedSigned(const VectorSlotPair& feedback);
-  const Operator* CheckedCompressedToTaggedPointer(
-      const VectorSlotPair& feedback);
-  const Operator* CheckedCompressedToTaggedSigned(
-      const VectorSlotPair& feedback);
-  const Operator* CheckedTaggedToCompressedPointer(
-      const VectorSlotPair& feedback);
-  const Operator* CheckedTaggedToCompressedSigned(
-      const VectorSlotPair& feedback);
   const Operator* CheckedTruncateTaggedToWord32(CheckTaggedInputMode,
                                                 const VectorSlotPair& feedback);
   const Operator* CheckedUint32Div();
@@ -769,15 +754,13 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   const Operator* ArgumentsLength(int formal_parameter_count,
                                   bool is_rest_length);
 
-  const Operator* NewDoubleElements(AllocationType);
-  const Operator* NewSmiOrObjectElements(AllocationType);
+  const Operator* NewDoubleElements(PretenureFlag);
+  const Operator* NewSmiOrObjectElements(PretenureFlag);
 
   // new-arguments-elements arguments-frame, arguments-length
   const Operator* NewArgumentsElements(int mapped_count);
 
   // new-cons-string length, first, second
-  const Operator* NewConsOneByteString();
-  const Operator* NewConsTwoByteString();
   const Operator* NewConsString();
 
   // ensure-writable-fast-elements object, elements
@@ -790,10 +773,8 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
   // transition-elements-kind object, from-map, to-map
   const Operator* TransitionElementsKind(ElementsTransition transition);
 
-  const Operator* Allocate(Type type,
-                           AllocationType allocation = AllocationType::kYoung);
-  const Operator* AllocateRaw(
-      Type type, AllocationType allocation = AllocationType::kYoung);
+  const Operator* Allocate(Type type, PretenureFlag pretenure = NOT_TENURED);
+  const Operator* AllocateRaw(Type type, PretenureFlag pretenure = NOT_TENURED);
 
   const Operator* LoadFieldByIndex();
   const Operator* LoadField(FieldAccess const&);

@@ -601,7 +601,7 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
 int HeadlessShellMain(HINSTANCE instance,
                       sandbox::SandboxInterfaceInfo* sandbox_info) {
   base::CommandLine::Init(0, nullptr);
-#if defined(HEADLESS_USE_CRASHPAD)
+#if defined(HEADLESS_USE_CRASPHAD)
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           ::switches::kProcessType);
@@ -610,7 +610,7 @@ int HeadlessShellMain(HINSTANCE instance,
         *base::CommandLine::ForCurrentProcess(), base::FilePath(),
         ::switches::kProcessType, switches::kUserDataDir);
   }
-#endif  // defined(HEADLESS_USE_CRASHPAD)
+#endif  // defined(HEADLESS_USE_CRASPHAD)
   RunChildProcessIfNeeded(instance, sandbox_info);
   HeadlessBrowser::Options::Builder builder(0, nullptr);
   builder.SetInstance(instance);

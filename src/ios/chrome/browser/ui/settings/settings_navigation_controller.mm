@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -240,12 +239,7 @@ initWithRootViewController:(UIViewController*)rootViewController
   if (self) {
     mainBrowserState_ = browserState;
     delegate_ = delegate;
-    // When Unified Consent is enabled, |self.googleServicesSettingsCoordinator|
-    // is responsible to commit the sync changes. Thus sync changes only need to
-    // be explicitly committed by this navigation controller when Unified
-    // Consent is disabled.
-    shouldCommitSyncChangesOnDismissal_ =
-        !unified_consent::IsUnifiedConsentFeatureEnabled();
+    shouldCommitSyncChangesOnDismissal_ = YES;
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
   }
@@ -284,7 +278,7 @@ initWithRootViewController:(UIViewController*)rootViewController
   // existing settings.
   if (shouldCommitSyncChangesOnDismissal_) {
     SyncSetupServiceFactory::GetForBrowserState([self mainBrowserState])
-        ->PreUnityCommitChanges();
+        ->CommitChanges();
   }
 
   // Reset the delegate to prevent any queued transitions from attempting to
@@ -319,12 +313,12 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 #pragma mark - Private
 
-// Creates an autoreleased "Cancel" button that closes the settings when tapped.
+// Creates an autoreleased "X" button that closes the settings when tapped.
 - (UIBarButtonItem*)closeButton {
-  UIBarButtonItem* closeButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self
-                           action:@selector(closeSettings)];
+  UIBarButtonItem* closeButton =
+      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
+                                          target:self
+                                          action:@selector(closeSettings)];
   closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_CLOSE);
   return closeButton;
 }
@@ -334,7 +328,6 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (void)googleServicesSettingsCoordinatorDidRemove:
     (GoogleServicesSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.googleServicesSettingsCoordinator, coordinator);
-  [self.googleServicesSettingsCoordinator stop];
   self.googleServicesSettingsCoordinator = nil;
 }
 
@@ -395,8 +388,7 @@ initWithRootViewController:(UIViewController*)rootViewController
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self
-                        browserState:mainBrowserState_
-                                mode:GoogleServicesSettingsModeSettings];
+                        browserState:mainBrowserState_];
   self.googleServicesSettingsCoordinator.dispatcher =
       [delegate_ dispatcherForSettings];
   self.googleServicesSettingsCoordinator.navigationController = self;

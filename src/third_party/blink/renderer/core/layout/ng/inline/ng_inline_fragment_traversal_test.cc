@@ -21,8 +21,8 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
     const LayoutObject* layout_object = element->GetLayoutObject();
     DCHECK(layout_object) << element;
     DCHECK(layout_object->IsLayoutBlockFlow()) << element;
-    DCHECK(To<LayoutBlockFlow>(layout_object)->CurrentFragment()) << element;
-    return *To<LayoutBlockFlow>(layout_object)->CurrentFragment();
+    DCHECK(ToLayoutBlockFlow(layout_object)->CurrentFragment()) << element;
+    return *ToLayoutBlockFlow(layout_object)->CurrentFragment();
   }
 
   const NGPhysicalFragment& GetFragmentOfNode(
@@ -55,7 +55,7 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
     const auto& current = *iter++;                                           \
     EXPECT_TRUE(current.fragment->IsText()) << current.fragment->ToString(); \
     EXPECT_EQ(content,                                                       \
-              To<NGPhysicalTextFragment>(current.fragment.get())->Text());   \
+              ToNGPhysicalTextFragment(current.fragment.get())->Text());     \
   }
 
 TEST_F(NGInlineFragmentTraversalTest, DescendantsOf) {

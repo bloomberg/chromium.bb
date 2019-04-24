@@ -20,7 +20,7 @@ Polymer({
   /** @public */
   reset: function() {
     var inputs = this.getInputs_();
-    for (var i = 0; i < inputs.length; ++i) {
+    for (i = 0; i < inputs.length; ++i) {
       inputs[i].value = '';
       inputs[i].isInvalid = false;
     }
@@ -30,20 +30,14 @@ Polymer({
     this.fire('submit');
   },
 
-  /** @private */
   onButtonClicked_: function() {
     this.submit();
   },
 
-  /**
-   * @private
-   * @return {!Array<!Node>}
-   */
   getInputs_: function() {
     return Polymer.dom(this.$.inputs).getDistributedNodes();
   },
 
-  /** @private */
   onKeyDown_: function(e) {
     if (e.keyCode != 13 || this.$.button.disabled)
       return;
@@ -52,17 +46,12 @@ Polymer({
     this.onButtonClicked_();
   },
 
-  /**
-   * @private
-   * @return {!Array<!Element>}
-   */
   getControls_: function() {
     var controls = this.getInputs_();
     controls.push(this.$.button);
     return controls.concat(Polymer.dom(this).querySelectorAll('gaia-button'));
   },
 
-  /** @private */
   onDisabledChanged_: function(disabled) {
     this.getControls_().forEach(function(control) {
       control.disabled = disabled;

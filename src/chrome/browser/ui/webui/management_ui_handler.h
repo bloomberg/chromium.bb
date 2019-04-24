@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/common/url_constants.h"
@@ -24,7 +23,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if defined(OS_CHROMEOS)
 // Constants defining the IDs for the localized strings sent to the page as
 // load time data.
 extern const char kManagementLogUploadEnabled[];
@@ -32,8 +30,6 @@ extern const char kManagementReportActivityTimes[];
 extern const char kManagementReportHardwareStatus[];
 extern const char kManagementReportNetworkInterfaces[];
 extern const char kManagementReportUsers[];
-extern const char kManagementPrinting[];
-#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kCloudReportingExtensionId[];
@@ -81,6 +77,7 @@ class PolicyService;
 class Profile;
 
 // The JavaScript message handler for the chrome://management page.
+// TODO(ydago): Increase test coverage of this class
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 class ManagementUIHandler : public content::WebUIMessageHandler,
                             public extensions::ExtensionRegistryObserver,
@@ -92,35 +89,30 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   ManagementUIHandler();
   ~ManagementUIHandler() override;
 
-  static void Initialize(content::WebUI* web_ui,
-                         content::WebUIDataSource* source);
-
+  void InitializeManagementContextualStrings(
+      Profile* profile,
+      content::WebUIDataSource* web_data_source);
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  void SetManagedForTesting(bool managed) { managed_ = managed; }
-
-  static std::string GetAccountDomain(Profile* profile);
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
  protected:
-  // Protected for testing.
-  static void InitializeInternal(content::WebUI* web_ui,
-                                 content::WebUIDataSource* source,
-                                 Profile* profile);
   void AddExtensionReportingInfo(base::Value* report_sources);
 
-  base::DictionaryValue GetContextualManagedData(Profile* profile) const;
-  virtual policy::PolicyService* GetPolicyService() const;
+  virtual const policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
       const std::string& extensionId) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
-  void GetManagementStatus(Profile* profile, base::Value* status) const;
+  std::unique_ptr<base::DictionaryValue>
+  GetDataManagementContextualSourceUpdate(Profile* profile) const;
+
+  base::string16 GetEnterpriseManagementStatusString();
+
+  void HandleGetDeviceManagementStatus(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   void HandleGetDeviceReportingInfo(const base::ListValue* args);
@@ -132,7 +124,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
 #endif  // defined(OS_CHROMEOS)
 
-  void HandleGetContextualManagedData(const base::ListValue* args);
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

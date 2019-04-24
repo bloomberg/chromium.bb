@@ -11,10 +11,9 @@ tr.exportTo('cp', () => {
     }
 
     get url_() {
-      return `${SessionStateRequest.URL}?v2=true&sid=${this.sessionId_}`;
+      return `/short_uri?v2=true&sid=${this.sessionId_}`;
     }
   }
-  SessionStateRequest.URL = '/short_uri';
 
   return {SessionStateRequest};
 });

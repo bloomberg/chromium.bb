@@ -86,11 +86,12 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     : message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      drag_drop_client_(nullptr),
+      drag_drop_client_(NULL),
       should_animate_window_close_(false),
       pending_close_(false),
       has_non_client_view_(false),
-      tooltip_(nullptr) {}
+      tooltip_(NULL) {
+}
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
@@ -122,7 +123,7 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
                         GetWidget()->widget_delegate(),
                         native_widget_delegate_);
 
-  HWND parent_hwnd = nullptr;
+  HWND parent_hwnd = NULL;
   if (params.parent && params.parent->GetHost())
     parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
@@ -557,9 +558,6 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(
   window_enlargement_ =
       gfx::Vector2d(new_expanded.width() - expanded.width(),
                     new_expanded.height() - expanded.height());
-  // When |new_expanded| causes the window to be moved to a display with a
-  // different DSF, HWNDMessageHandler::OnDpiChanged() will be called and the
-  // window size will be scaled automatically.
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
@@ -934,8 +932,8 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
       POINT target_location(event->location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
       ScreenToClient(target->GetHWND(), &target_location);
-      ui::TouchEvent target_event(*event, static_cast<View*>(nullptr),
-                                  static_cast<View*>(nullptr));
+      ui::TouchEvent target_event(*event, static_cast<View*>(NULL),
+                                  static_cast<View*>(NULL));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
       target->SendEventToSink(&target_event);
@@ -977,7 +975,7 @@ bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
 
 void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   if (in_menu_loop) {
-    tooltip_disabler_ = std::make_unique<wm::ScopedTooltipDisabler>(window());
+    tooltip_disabler_.reset(new wm::ScopedTooltipDisabler(window()));
   } else {
     tooltip_disabler_.reset();
   }

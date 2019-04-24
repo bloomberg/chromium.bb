@@ -429,6 +429,27 @@ class Deoptimizer : public Malloced {
   static int ComputeSourcePositionFromBytecodeArray(SharedFunctionInfo shared,
                                                     BailoutId node_id);
 
+  struct JumpTableEntry : public ZoneObject {
+    inline JumpTableEntry(Address entry, const DeoptInfo& deopt_info,
+                          DeoptimizeKind kind, bool frame)
+        : label(),
+          address(entry),
+          deopt_info(deopt_info),
+          deopt_kind(kind),
+          needs_frame(frame) {}
+
+    bool IsEquivalentTo(const JumpTableEntry& other) const {
+      return address == other.address && deopt_kind == other.deopt_kind &&
+             needs_frame == other.needs_frame;
+    }
+
+    Label label;
+    Address address;
+    DeoptInfo deopt_info;
+    DeoptimizeKind deopt_kind;
+    bool needs_frame;
+  };
+
   static const char* MessageFor(DeoptimizeKind kind);
 
   int output_count() const { return output_count_; }
@@ -458,7 +479,7 @@ class Deoptimizer : public Malloced {
   static void DeoptimizeFunction(JSFunction function, Code code = Code());
 
   // Deoptimize all code in the given isolate.
-  V8_EXPORT_PRIVATE static void DeoptimizeAll(Isolate* isolate);
+  static void DeoptimizeAll(Isolate* isolate);
 
   // Deoptimizes all optimized code that has been previously marked
   // (via code->set_marked_for_deoptimization) and unlinks all functions that
@@ -489,7 +510,7 @@ class Deoptimizer : public Malloced {
     return OFFSET_OF(Deoptimizer, caller_frame_top_);
   }
 
-  V8_EXPORT_PRIVATE static int GetDeoptimizedCodeCount(Isolate* isolate);
+  static int GetDeoptimizedCodeCount(Isolate* isolate);
 
   static const int kNotDeoptimizationEntry = -1;
 

@@ -22,9 +22,10 @@ def _RunUseCounterChecks(input_api, output_api):
     largest_found_bucket = 0
     expected_max_bucket = 0
 
-    # Looking for a line like "case CSSPropertyID::kGrid: return 453;"
+    # Looking for a line like "case CSSPropertyGrid: return 453;"
     bucket_finder = input_api.re.compile(
-        r'case CSSPropertyID::k\w+:\s*return\s*(\d+);')
+        r'case CSSProperty\w*?:\s+?return (\d+);',
+        input_api.re.MULTILINE)
 
     # Looking for a line like "const int32 kMaximumCSSSampleId = 452;"
     expected_max_finder = input_api.re.compile(

@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -54,20 +53,20 @@
         </div>
         <div id="play-pause-volume-hangouts-controls">
           <span id="button-holder" dir="ltr">
-            <cr-icon-button
+            <paper-icon-button
                 id="route-play-pause-button"
                 hidden="[[!routeStatus.canPlayPause]]"
                 disabled="[[!routeStatus.canPlayPause]]"
-                iron-icon="[[getPlayPauseIcon_(routeStatus)]]"
+                icon="[[getPlayPauseIcon_(routeStatus)]]"
                 title="[[getPlayPauseTitle_(routeStatus)]]"
-                on-click="onPlayPause_"></cr-icon-button>
-            <cr-icon-button
+                on-click="onPlayPause_"></paper-icon-button>
+            <paper-icon-button
                 id="route-volume-button"
                 hidden="[[!routeStatus.canMute]]"
                 disabled="[[!routeStatus.canMute]]"
-                iron-icon="[[getMuteUnmuteIcon_(routeStatus)]]"
+                icon="[[getMuteUnmuteIcon_(routeStatus)]]"
                 title="[[getMuteUnmuteTitle_(routeStatus)]]"
-                on-click="onMuteUnmute_"></cr-icon-button>
+                on-click="onMuteUnmute_"></paper-icon-button>
           </span>
           <span id="volume-holder" hidden="[[!routeStatus.canSetVolume]]">
             <cr-slider
@@ -83,7 +82,8 @@
             <cr-checkbox
                 checked="[[hangoutsLocalPresent_]]"
                 id="hangouts-local-present-checkbox"
-                on-change="onHangoutsLocalPresentChange_">
+                on-change="onHangoutsLocalPresentChange_"
+                tabindex="0">
               <span id='hangouts-local-present-checkbox-title'>
                 [[i18n('hangoutsLocalPresentTitle')]]
               </span>

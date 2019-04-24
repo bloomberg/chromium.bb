@@ -113,7 +113,7 @@ class ThreadableLoader::DetachedClient final
       : self_keep_alive_(this), loader_(loader) {}
   ~DetachedClient() override {}
 
-  void DidFinishLoading(uint64_t identifier) override {
+  void DidFinishLoading(unsigned long identifier) override {
     self_keep_alive_.Clear();
   }
   void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
@@ -162,8 +162,8 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
 
   std::unique_ptr<ResourceRequest> preflight_request =
       std::make_unique<ResourceRequest>(request_url);
-  preflight_request->SetHttpMethod(http_names::kOPTIONS);
-  preflight_request->SetHttpHeaderField(http_names::kAccessControlRequestMethod,
+  preflight_request->SetHTTPMethod(http_names::kOPTIONS);
+  preflight_request->SetHTTPHeaderField(http_names::kAccessControlRequestMethod,
                                         request.HttpMethod());
   preflight_request->SetPriority(request.Priority());
   preflight_request->SetRequestContext(request.GetRequestContext());
@@ -174,14 +174,14 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
-    preflight_request->SetHttpHeaderField(
+    preflight_request->SetHTTPHeaderField(
         http_names::kAccessControlRequestExternal, "true");
   }
 
   const AtomicString request_headers =
       CreateAccessControlRequestHeadersHeader(request.HttpHeaderFields());
   if (request_headers != g_null_atom) {
-    preflight_request->SetHttpHeaderField(
+    preflight_request->SetHTTPHeaderField(
         http_names::kAccessControlRequestHeaders, request_headers);
   }
 
@@ -284,29 +284,52 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   if (should_bypass_service_worker)
     new_request.SetSkipServiceWorker(true);
 
+  // In S13nServiceWorker, if the controller service worker has no fetch event
+  // handler, it's skipped entirely, so we should treat that case the same as
+  // having no controller. In non-S13nServiceWorker, we can't do that since we
+  // don't know which service worker will handle the request since it's
+  // determined on the browser process and skipWaiting() can happen in the
+  // meantime.
+  //
+  // TODO(crbug.com/715640): When non-S13nServiceWorker is removed,
+  // is_controlled_by_service_worker is the same as
+  // ControllerServiceWorkerMode::kControlled, so this code can be simplified.
+  bool is_controlled_by_service_worker = false;
+  switch (resource_fetcher_->IsControlledByServiceWorker()) {
+    case blink::mojom::ControllerServiceWorkerMode::kControlled:
+      is_controlled_by_service_worker = true;
+      break;
+    case blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler:
+      if (ServiceWorkerUtils::IsServicificationEnabled())
+        is_controlled_by_service_worker = false;
+      else
+        is_controlled_by_service_worker = true;
+      break;
+    case blink::mojom::ControllerServiceWorkerMode::kNoController:
+      is_controlled_by_service_worker = false;
+      break;
+  }
+
   // Process the CORS protocol inside the ThreadableLoader for the
   // following cases:
   //
   // - When the request is sync or the protocol is unsupported since we can
   //   assume that any service worker (SW) is skipped for such requests by
   //   content/ code.
-  // - When |GetSkipServiceWorker()| is true, any SW will be skipped.
+  // - When |skip_service_worker| is true, any SW will be skipped.
   // - If we're not yet controlled by a SW, then we're sure that this
   //   request won't be intercepted by a SW. In case we end up with
   //   sending a CORS preflight request, the actual request to be sent later
   //   may be intercepted. This is taken care of in LoadPreflightRequest() by
-  //   setting |GetSkipServiceWorker()| to true.
+  //   setting |skip_service_worker| to true.
   //
   // From the above analysis, you can see that the request can never be
   // intercepted by a SW inside this if-block. It's because:
-  // - |GetSkipServiceWorker()| needs to be false, and
+  // - |skip_service_worker| needs to be false, and
   // - we're controlled by a SW at this point
   // to allow a SW to intercept the request. Even when the request gets issued
   // asynchronously after performing the CORS preflight, it doesn't get
   // intercepted since LoadPreflightRequest() sets the flag to kNone in advance.
-  const bool is_controlled_by_service_worker =
-      resource_fetcher_->IsControlledByServiceWorker() ==
-      blink::mojom::ControllerServiceWorkerMode::kControlled;
   if (!async_ || new_request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||
@@ -347,7 +370,7 @@ void ThreadableLoader::PrepareCrossOriginRequest(
   // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead use
   // ResourceRequest::referrer_. See https://crbug.com/850813.
   if (override_referrer_)
-    request.SetHttpReferrer(referrer_after_redirect_);
+    request.SetHTTPReferrer(referrer_after_redirect_);
 }
 
 void ThreadableLoader::LoadPreflightRequest(
@@ -558,7 +581,7 @@ bool ThreadableLoader::RedirectReceived(
       return client_->WillFollowRedirect(new_url, redirect_response);
 
     if (!actual_request_.IsNull()) {
-      ReportResponseReceived(resource->InspectorId(), redirect_response);
+      ReportResponseReceived(resource->Identifier(), redirect_response);
 
       HandlePreflightFailure(
           original_url,
@@ -599,8 +622,7 @@ bool ThreadableLoader::RedirectReceived(
       ThreadableLoaderClient* client = client_;
       Clear();
       ConsoleMessage* message = ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kNetwork,
-          mojom::ConsoleMessageLevel::kError,
+          kNetworkMessageSource, mojom::ConsoleMessageLevel::kError,
           "Failed to load resource: net::ERR_TOO_MANY_REDIRECTS",
           SourceLocation::Capture(original_url, 0, 0));
       execution_context_->AddConsoleMessage(message);
@@ -626,7 +648,7 @@ bool ThreadableLoader::RedirectReceived(
     }
 
     probe::DidReceiveCorsRedirectResponse(
-        execution_context_, resource->InspectorId(),
+        execution_context_, resource->Identifier(),
         GetDocument() && GetDocument()->GetFrame()
             ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
             : nullptr,
@@ -690,7 +712,7 @@ bool ThreadableLoader::RedirectReceived(
   // Add any request headers which we previously saved from the
   // original request.
   for (const auto& header : request_headers_)
-    cross_origin_request.SetHttpHeaderField(header.key, header.value);
+    cross_origin_request.SetHTTPHeaderField(header.key, header.value);
   cross_origin_request.SetReportUploadProgress(report_upload_progress_);
   MakeCrossOriginAccessRequest(cross_origin_request);
 
@@ -786,7 +808,7 @@ void ThreadableLoader::HandlePreflightResponse(
 }
 
 void ThreadableLoader::ReportResponseReceived(
-    uint64_t identifier,
+    unsigned long identifier,
     const ResourceResponse& response) {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   if (!frame)
@@ -812,13 +834,13 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
   if (out_of_blink_cors_ && !response.WasFetchedViaServiceWorker()) {
     DCHECK(actual_request_.IsNull());
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->InspectorId(), response);
+    client_->DidReceiveResponse(resource->Identifier(), response);
     return;
   }
 
   // Code path for legacy Blink CORS.
   if (!actual_request_.IsNull()) {
-    ReportResponseReceived(resource->InspectorId(), response);
+    ReportResponseReceived(resource->Identifier(), response);
     HandlePreflightResponse(response);
     return;
   }
@@ -830,7 +852,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
       // therefore fallback-to-network is handled in the browser process when
       // the ServiceWorker does not call respondWith().)
       DCHECK(!fallback_request_for_service_worker_.IsNull());
-      ReportResponseReceived(resource->InspectorId(), response);
+      ReportResponseReceived(resource->Identifier(), response);
       LoadFallbackRequestForServiceWorker();
       return;
     }
@@ -850,7 +872,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
     }
 
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->InspectorId(), response);
+    client_->DidReceiveResponse(resource->Identifier(), response);
     return;
   }
 
@@ -872,7 +894,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
         response.HttpHeaderFields(), fetch_credentials_mode_,
         *GetSecurityOrigin());
     if (access_error) {
-      ReportResponseReceived(resource->InspectorId(), response);
+      ReportResponseReceived(resource->Identifier(), response);
       DispatchDidFail(
           ResourceError(response.CurrentRequestUrl(), *access_error));
       return;
@@ -882,7 +904,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
   DCHECK_EQ(&response, &resource->GetResponse());
   resource->SetResponseType(response_tainting_);
   DCHECK_EQ(response.GetType(), response_tainting_);
-  client_->DidReceiveResponse(resource->InspectorId(), response);
+  client_->DidReceiveResponse(resource->Identifier(), response);
 }
 
 void ThreadableLoader::ResponseBodyReceived(Resource*, BytesConsumer& body) {
@@ -927,7 +949,13 @@ void ThreadableLoader::NotifyFinished(Resource* resource) {
 
   checker_.NotifyFinished(resource);
 
-  if (resource->ErrorOccurred()) {
+  // Don't throw an exception for failed sync local file loads.
+  // TODO(japhet): This logic has been moved around but unchanged since 2007.
+  // Tested by fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html
+  // Do we still need this?
+  bool is_sync_to_local_file = resource->Url().IsLocalFile() && !async_;
+
+  if (resource->ErrorOccurred() && !is_sync_to_local_file) {
     DispatchDidFail(resource->GetResourceError());
     return;
   }
@@ -945,7 +973,7 @@ void ThreadableLoader::NotifyFinished(Resource* resource) {
   // downloaded file.
   Persistent<Resource> protect = GetResource();
   Clear();
-  client->DidFinishLoading(resource->InspectorId());
+  client->DidFinishLoading(resource->Identifier());
 }
 
 void ThreadableLoader::DidTimeout(TimerBase* timer) {
@@ -1002,8 +1030,8 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
         *GetSecurityOrigin(), ResourceType::kRaw,
         resource_loader_options_.initiator_info.name);
     execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kError, std::move(message)));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        std::move(message)));
   }
   Resource* resource = GetResource();
   if (resource)

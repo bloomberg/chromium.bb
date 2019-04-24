@@ -542,7 +542,7 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
 
 TEST_F(UDPSocketTest, ServerGetLocalAddress) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(nullptr, NetLogSource());
+  UDPServerSocket server(NULL, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -557,7 +557,7 @@ TEST_F(UDPSocketTest, ServerGetLocalAddress) {
 
 TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(nullptr, NetLogSource());
+  UDPServerSocket server(NULL, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -566,13 +566,7 @@ TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   EXPECT_EQ(rv, ERR_SOCKET_NOT_CONNECTED);
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
-#define MAYBE_ClientSetDoNotFragment DISABLED_ClientSetDoNotFragment
-#else
-#define MAYBE_ClientSetDoNotFragment ClientSetDoNotFragment
-#endif
-TEST_F(UDPSocketTest, MAYBE_ClientSetDoNotFragment) {
+TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     UDPClientSocket client(DatagramSocket::DEFAULT_BIND, nullptr,
                            NetLogSource());
@@ -585,23 +579,16 @@ TEST_F(UDPSocketTest, MAYBE_ClientSetDoNotFragment) {
       return;
     EXPECT_THAT(rv, IsOk());
 
-    rv = client.SetDoNotFragment();
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
-    // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
-    EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#if defined(OS_MACOSX)
+    EXPECT_EQ(ERR_NOT_IMPLEMENTED, client.SetDoNotFragment());
 #else
+    rv = client.SetDoNotFragment();
     EXPECT_THAT(rv, IsOk());
 #endif
   }
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/945590): Re-enable after the breaking SDK change has landed.
-#define MAYBE_ServerSetDoNotFragment DISABLED_ServerSetDoNotFragment
-#else
-#define MAYBE_ServerSetDoNotFragment ServerSetDoNotFragment
-#endif
-TEST_F(UDPSocketTest, MAYBE_ServerSetDoNotFragment) {
+TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
   for (std::string ip : {"127.0.0.1", "::1"}) {
     IPEndPoint bind_address;
     ASSERT_TRUE(CreateUDPAddress(ip, 0, &bind_address));
@@ -613,11 +600,10 @@ TEST_F(UDPSocketTest, MAYBE_ServerSetDoNotFragment) {
       return;
     EXPECT_THAT(rv, IsOk());
 
-    rv = server.SetDoNotFragment();
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
-    // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
-    EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#if defined(OS_MACOSX)
+    EXPECT_EQ(ERR_NOT_IMPLEMENTED, server.SetDoNotFragment());
 #else
+    rv = server.SetDoNotFragment();
     EXPECT_THAT(rv, IsOk());
 #endif
   }
@@ -626,7 +612,7 @@ TEST_F(UDPSocketTest, MAYBE_ServerSetDoNotFragment) {
 // Close the socket while read is pending.
 TEST_F(UDPSocketTest, CloseWithPendingRead) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(nullptr, NetLogSource());
+  UDPServerSocket server(NULL, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -682,13 +668,7 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
 
 #if !defined(OS_FUCHSIA)
 // TODO(https://crbug.com/900709): SO_REUSEPORT doesn't work on Fuchsia.
-#if defined(OS_IOS)
-// TODO(https://crbug.com/947115): failing on device on iOS 12.2.
-#define MAYBE_SharedMulticastAddress DISABLED_SharedMulticastAddress
-#else
-#define MAYBE_SharedMulticastAddress SharedMulticastAddress
-#endif
-TEST_F(UDPSocketTest, MAYBE_SharedMulticastAddress) {
+TEST_F(UDPSocketTest, SharedMulticastAddress) {
   const char kGroup[] = "224.0.0.251";
 
   IPAddress group_ip;
@@ -1220,7 +1200,7 @@ TEST_F(UDPSocketTest, ReadWithSocketOptimization) {
 
   // Setup the server to listen.
   IPEndPoint server_address(IPAddress::IPv4Localhost(), 0 /* port */);
-  UDPServerSocket server(nullptr, NetLogSource());
+  UDPServerSocket server(NULL, NetLogSource());
   server.AllowAddressReuse();
   ASSERT_THAT(server.Listen(server_address), IsOk());
   // Get bound port.
@@ -1261,7 +1241,7 @@ TEST_F(UDPSocketTest, ReadWithSocketOptimizationTruncation) {
 
   // Setup the server to listen.
   IPEndPoint server_address(IPAddress::IPv4Localhost(), 0 /* port */);
-  UDPServerSocket server(nullptr, NetLogSource());
+  UDPServerSocket server(NULL, NetLogSource());
   server.AllowAddressReuse();
   ASSERT_THAT(server.Listen(server_address), IsOk());
   // Get bound port.

@@ -32,17 +32,14 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/no_destructor.h"
 #include "perfetto/base/unix_socket.h"
 #include "perfetto/base/utils.h"
 #include "src/profiling/memory/client.h"
 #include "src/profiling/memory/proc_utils.h"
 #include "src/profiling/memory/scoped_spinlock.h"
-#include "src/profiling/memory/unhooked_allocator.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 using perfetto::profiling::ScopedSpinlock;
-using perfetto::profiling::UnhookedAllocator;
 
 // This is so we can make an so that we can swap out with the existing
 // libc_malloc_hooks.so
@@ -57,7 +54,7 @@ using perfetto::profiling::UnhookedAllocator;
 extern "C" {
 
 bool HEAPPROFD_ADD_PREFIX(_initialize)(const MallocDispatch* malloc_dispatch,
-                                       bool* zygote_child,
+                                       int* malloc_zygote_child,
                                        const char* options);
 void HEAPPROFD_ADD_PREFIX(_finalize)();
 void HEAPPROFD_ADD_PREFIX(_dump_heap)(const char* file_name);
@@ -117,26 +114,14 @@ std::atomic<const MallocDispatch*> g_dispatch{nullptr};
 // This shared_ptr itself is protected by g_client_lock. Note that shared_ptr
 // handles are not thread-safe by themselves:
 // https://en.cppreference.com/w/cpp/memory/shared_ptr/atomic
-//
-// To avoid on-destruction re-entrancy issues, this shared_ptr needs to be
-// constructed with an allocator that uses the unhooked malloc & free functions.
-// See UnhookedAllocator.
-//
-// NoDestructor<> wrapper is used to avoid destructing the shared_ptr at program
-// exit. The rationale is:
-// * Avoiding the atexit destructor racing against other threads that are
-//   possibly running within the hooks.
-// * Making sure that atexit handlers running after this global's destructor
-//   can still safely enter the hooks.
-perfetto::base::NoDestructor<std::shared_ptr<perfetto::profiling::Client>>
-    g_client;
+std::shared_ptr<perfetto::profiling::Client> g_client;
 
 // Protects g_client, and serves as an external lock for sampling decisions (see
 // perfetto::profiling::Sampler).
 //
-// We rely on this atomic's destuction being a nop, as it is possible for the
-// hooks to attempt to acquire the spinlock after its destructor should have run
-// (technically a use-after-destruct scenario).
+// TODO(rsavitski): consider lifting Sampler into this global scope. Nesting
+// under client is not necessary (though it does highlight that their validity
+// is tied together).
 std::atomic<bool> g_client_lock{false};
 
 constexpr char kHeapprofdBinPath[] = "/system/bin/heapprofd";
@@ -145,42 +130,18 @@ const MallocDispatch* GetDispatch() {
   return g_dispatch.load(std::memory_order_relaxed);
 }
 
-int CloneWithoutSigchld() {
-  return clone(nullptr, nullptr, 0, nullptr);
-}
+// Note: android_mallopt(M_RESET_HOOKS) is mutually exclusive with initialize
+// (concurrent calls get discarded).
+void ShutdownLazy() {
+  ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
+  if (!g_client)  // other invocation already initiated shutdown
+    return;
 
-int ForklikeClone() {
-  return clone(nullptr, nullptr, SIGCHLD, nullptr);
-}
+  // Clear primary shared pointer, such that later hook invocations become nops.
+  g_client.reset();
 
-// Like daemon(), but using clone to avoid invoking pthread_atfork(3) handlers.
-int Daemonize() {
-  switch (ForklikeClone()) {
-    case -1:
-      PERFETTO_PLOG("Daemonize.clone");
-      return -1;
-      break;
-    case 0:
-      break;
-    default:
-      _exit(0);
-      break;
-  }
-  if (setsid() == -1) {
-    PERFETTO_PLOG("Daemonize.setsid");
-    return -1;
-  }
-  // best effort chdir & fd close
-  chdir("/");
-  int fd = open("/dev/null", O_RDWR, 0);
-  if (fd != -1) {
-    dup2(fd, STDIN_FILENO);
-    dup2(fd, STDOUT_FILENO);
-    dup2(fd, STDERR_FILENO);
-    if (fd > STDERR_FILENO)
-      close(fd);
-  }
-  return 0;
+  if (!android_mallopt(M_RESET_HOOKS, nullptr, 0))
+    PERFETTO_PLOG("Unpatching heapprofd hooks failed.");
 }
 
 std::string ReadSystemProperty(const char* key) {
@@ -211,7 +172,6 @@ bool ShouldForkPrivateDaemon() {
   // On development builds, we support both modes of profiling, depending on a
   // system property.
   if (build_type == "userdebug" || build_type == "eng") {
-    // Note: if renaming the property, also update system_property.cc
     std::string mode = ReadSystemProperty("heapprofd.userdebug.mode");
     return mode == "fork";
   }
@@ -220,21 +180,14 @@ bool ShouldForkPrivateDaemon() {
   return true;
 }
 
-std::shared_ptr<perfetto::profiling::Client> CreateClientForCentralDaemon(
-    UnhookedAllocator<perfetto::profiling::Client> unhooked_allocator) {
+std::shared_ptr<perfetto::profiling::Client> CreateClientForCentralDaemon() {
   PERFETTO_DLOG("Constructing client for central daemon.");
-  using perfetto::profiling::Client;
 
-  perfetto::base::Optional<perfetto::base::UnixSocketRaw> sock =
-      Client::ConnectToHeapprofd(perfetto::profiling::kHeapprofdSocketFile);
-  if (!sock)
-    return nullptr;
-  return Client::CreateAndHandshake(std::move(sock.value()),
-                                    unhooked_allocator);
+  return std::make_shared<perfetto::profiling::Client>(
+      perfetto::profiling::kHeapprofdSocketFile);
 }
 
-std::shared_ptr<perfetto::profiling::Client> CreateClientAndPrivateDaemon(
-    UnhookedAllocator<perfetto::profiling::Client> unhooked_allocator) {
+std::shared_ptr<perfetto::profiling::Client> CreateClientAndPrivateDaemon() {
   PERFETTO_DLOG("Setting up fork mode profiling.");
   perfetto::base::UnixSocketRaw parent_sock;
   perfetto::base::UnixSocketRaw child_sock;
@@ -252,38 +205,32 @@ std::shared_ptr<perfetto::profiling::Client> CreateClientAndPrivateDaemon(
   pid_t target_pid = getpid();
   std::string target_cmdline;
   if (!perfetto::profiling::GetCmdlineForPID(target_pid, &target_cmdline)) {
-    target_cmdline = "failed-to-read-cmdline";
-    PERFETTO_ELOG(
-        "Failed to read own cmdline, proceeding as this might be a by-pid "
-        "profiling request (which will still work).");
-  }
-
-  // Prepare arguments for heapprofd.
-  std::string pid_arg =
-      std::string("--exclusive-for-pid=") + std::to_string(target_pid);
-  std::string cmd_arg =
-      std::string("--exclusive-for-cmdline=") + target_cmdline;
-  std::string fd_arg =
-      std::string("--inherit-socket-fd=") + std::to_string(child_sock.fd());
-  const char* argv[] = {kHeapprofdBinPath, pid_arg.c_str(), cmd_arg.c_str(),
-                        fd_arg.c_str(), nullptr};
-
-  // Use fork-like clone to avoid invoking the host's pthread_atfork(3)
-  // handlers. Also avoid sending the current process a SIGCHILD to further
-  // reduce our interference.
-  pid_t clone_pid = CloneWithoutSigchld();
-  if (clone_pid == -1) {
-    PERFETTO_PLOG("Failed to clone.");
+    PERFETTO_ELOG("Failed to read own cmdline.");
     return nullptr;
   }
-  if (clone_pid == 0) {  // child
-    // Daemonize clones again, terminating the calling thread (i.e. the direct
+
+  pid_t fork_pid = fork();
+  if (fork_pid == -1) {
+    PERFETTO_PLOG("Failed to fork.");
+    return nullptr;
+  }
+  if (fork_pid == 0) {  // child
+    // daemon() forks again, terminating the calling thread (i.e. the direct
     // child of the original process). So the rest of this codepath will be
-    // executed in a new reparented process.
-    if (Daemonize() == -1) {
+    // executed in a (new) reparented process.
+    if (daemon(/*nochdir=*/0, /*noclose=*/0) == -1) {
       PERFETTO_PLOG("Daemonization failed.");
       _exit(1);
     }
+    std::string pid_arg =
+        std::string("--exclusive-for-pid=") + std::to_string(target_pid);
+    std::string cmd_arg =
+        std::string("--exclusive-for-cmdline=") + target_cmdline;
+    std::string fd_arg =
+        std::string("--inherit-socket-fd=") + std::to_string(child_sock.fd());
+    const char* argv[] = {kHeapprofdBinPath, pid_arg.c_str(), cmd_arg.c_str(),
+                          fd_arg.c_str(), nullptr};
+
     execv(kHeapprofdBinPath, const_cast<char**>(argv));
     PERFETTO_PLOG("Failed to execute private heapprofd.");
     _exit(1);
@@ -302,34 +249,14 @@ std::shared_ptr<perfetto::profiling::Client> CreateClientAndPrivateDaemon(
 
   // Wait on the immediate child to exit (allow for ECHILD in the unlikely case
   // we're in a process that has made its children unwaitable).
-  int unused = 0;
-  if (PERFETTO_EINTR(waitpid(clone_pid, &unused, __WCLONE)) == -1 &&
+  siginfo_t unused = {};
+  if (PERFETTO_EINTR(waitid(P_PID, fork_pid, &unused, WEXITED)) == -1 &&
       errno != ECHILD) {
-    PERFETTO_PLOG("Failed to waitpid on immediate child.");
+    PERFETTO_PLOG("Failed to waitid on immediate child.");
     return nullptr;
   }
 
-  return perfetto::profiling::Client::CreateAndHandshake(std::move(parent_sock),
-                                                         unhooked_allocator);
-}
-
-// Note: android_mallopt(M_RESET_HOOKS) is mutually exclusive with
-// heapprofd_initialize. Concurrent calls get discarded, which might be our
-// unpatching attempt if there is a concurrent re-initialization running due to
-// a new signal.
-//
-// Note: g_client can be reset by heapprofd_initialize without calling this
-// function.
-void ShutdownLazy() {
-  ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
-  if (!g_client.ref())  // other invocation already initiated shutdown
-    return;
-
-  // Clear primary shared pointer, such that later hook invocations become nops.
-  g_client.ref().reset();
-
-  if (!android_mallopt(M_RESET_HOOKS, nullptr, 0))
-    PERFETTO_PLOG("Unpatching heapprofd hooks failed.");
+  return std::make_shared<perfetto::profiling::Client>(std::move(parent_sock));
 }
 
 }  // namespace
@@ -345,54 +272,28 @@ void ShutdownLazy() {
 // (which is safe to block). If profiling is triggered at startup, then this
 // code runs synchronously.
 bool HEAPPROFD_ADD_PREFIX(_initialize)(const MallocDispatch* malloc_dispatch,
-                                       bool*,
+                                       int*,
                                        const char*) {
-  using ::perfetto::profiling::Client;
-
   // Table of pointers to backing implementation.
   g_dispatch.store(malloc_dispatch, std::memory_order_relaxed);
 
-  // TODO(fmayer): Check other destructions of client and make a decision
-  // whether we want to ban heap objects in the client or not.
-  std::shared_ptr<Client> old_client;
-  {
-    ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
+  ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
 
-    // Only reject concurrent session if the previous one is still active.
-    if (g_client.ref() && g_client.ref()->IsConnected()) {
-      PERFETTO_LOG("Rejecting concurrent profiling initialization.");
-      return true;  // success as we're in a valid state
-    }
-    old_client = g_client.ref();
-    g_client.ref().reset();
+  if (g_client) {
+    PERFETTO_LOG("Rejecting concurrent profiling initialization.");
+    return true;  // success as we're in a valid state
   }
 
-  old_client.reset();
+  std::shared_ptr<perfetto::profiling::Client> client =
+      ShouldForkPrivateDaemon() ? CreateClientAndPrivateDaemon()
+                                : CreateClientForCentralDaemon();
 
-  // The dispatch table never changes, so let the custom allocator retain the
-  // function pointers directly.
-  UnhookedAllocator<Client> unhooked_allocator(malloc_dispatch->malloc,
-                                               malloc_dispatch->free);
-
-  // These factory functions use heap objects, so we need to run them without
-  // the spinlock held.
-  std::shared_ptr<Client> client =
-      ShouldForkPrivateDaemon()
-          ? CreateClientAndPrivateDaemon(unhooked_allocator)
-          : CreateClientForCentralDaemon(unhooked_allocator);
-
-  if (!client) {
-    PERFETTO_LOG("heapprofd_client not initialized, not installing hooks.");
+  if (!client || !client->inited()) {
+    PERFETTO_LOG("Client not initialized, not installing hooks.");
     return false;
   }
-  PERFETTO_LOG("heapprofd_client initialized.");
-  {
-    ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
-    // This cannot have been set in the meantime. There are never two concurrent
-    // calls to this function, as Bionic uses atomics to guard against that.
-    PERFETTO_DCHECK(g_client.ref() == nullptr);
-    g_client.ref() = std::move(client);
-  }
+
+  g_client = std::move(client);
   return true;
 }
 
@@ -417,15 +318,15 @@ static void MaybeSampleAllocation(size_t size, void* addr) {
   std::shared_ptr<perfetto::profiling::Client> client;
   {
     ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
-    if (!g_client.ref())  // no active client (most likely shutting down)
+    if (!g_client)  // no active client (most likely shutting down)
       return;
 
-    sampled_alloc_sz = g_client.ref()->GetSampleSizeLocked(size);
+    sampled_alloc_sz = g_client->GetSampleSizeLocked(size);
     if (sampled_alloc_sz == 0)  // not sampling
       return;
 
-    client = g_client.ref();  // owning copy
-  }                           // unlock
+    client = g_client;  // owning copy
+  }                     // unlock
 
   if (!client->RecordMalloc(size, sampled_alloc_sz,
                             reinterpret_cast<uint64_t>(addr))) {
@@ -481,7 +382,7 @@ void HEAPPROFD_ADD_PREFIX(_free)(void* pointer) {
   std::shared_ptr<perfetto::profiling::Client> client;
   {
     ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
-    client = g_client.ref();  // owning copy (or empty)
+    client = g_client;  // owning copy (or empty)
   }
 
   if (client) {
@@ -508,9 +409,9 @@ void* HEAPPROFD_ADD_PREFIX(_realloc)(void* pointer, size_t size) {
     ScopedSpinlock s(&g_client_lock, ScopedSpinlock::Mode::Blocking);
     // If there is no active client, we still want to reach the backing realloc,
     // so keep going.
-    if (g_client.ref()) {
-      client = g_client.ref();  // owning copy
-      sampled_alloc_sz = g_client.ref()->GetSampleSizeLocked(size);
+    if (g_client) {
+      client = g_client;  // owning copy
+      sampled_alloc_sz = g_client->GetSampleSizeLocked(size);
     }
   }  // unlock
 

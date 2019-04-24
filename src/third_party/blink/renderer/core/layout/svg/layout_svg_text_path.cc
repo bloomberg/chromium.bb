@@ -105,8 +105,8 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
 
   path_start_offset *= offset_scale;
 
-  return std::make_unique<PathPositionMapper>(path_data, computed_path_length,
-                                              path_start_offset);
+  return PathPositionMapper::Create(path_data, computed_path_length,
+                                    path_start_offset);
 }
 
 }  // namespace blink

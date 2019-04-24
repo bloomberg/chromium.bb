@@ -43,7 +43,6 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fEmulateAbsIntFunction = false;
     fRewriteDoWhileLoops = false;
     fRemovePowWithConstantExponent = false;
-    fMustWriteToFragColor = false;
     fFlatInterpolationSupport = false;
     fPreferFlatInterpolation = false;
     fNoPerspectiveInterpolationSupport = false;
@@ -53,7 +52,6 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fFPManipulationSupport = false;
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
-    fHasLowFragmentPrecision = false;
     fUnsignedSupport = false;
     fBuiltinFMASupport = false;
 
@@ -118,7 +116,6 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Emulate abs(int) function", fEmulateAbsIntFunction);
     writer->appendBool("Rewrite do while loops", fRewriteDoWhileLoops);
     writer->appendBool("Rewrite pow with constant exponent", fRemovePowWithConstantExponent);
-    writer->appendBool("Must write to sk_FragColor [workaround]", fMustWriteToFragColor);
     writer->appendBool("Flat interpolation support", fFlatInterpolationSupport);
     writer->appendBool("Prefer flat interpolation", fPreferFlatInterpolation);
     writer->appendBool("No perspective interpolation support", fNoPerspectiveInterpolationSupport);
@@ -128,7 +125,6 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Floating point manipulation support", fFPManipulationSupport);
     writer->appendBool("float == fp32", fFloatIs32Bits);
     writer->appendBool("half == fp32", fHalfIs32Bits);
-    writer->appendBool("Has poor fragment precision", fHasLowFragmentPrecision);
     writer->appendBool("Builtin fma() support", fBuiltinFMASupport);
 
     writer->appendS32("Max FS Samplers", fMaxFragmentSamplers);
@@ -159,7 +155,6 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fEmulateAbsIntFunction);
         SkASSERT(!fRewriteDoWhileLoops);
         SkASSERT(!fRemovePowWithConstantExponent);
-        SkASSERT(!fMustWriteToFragColor);
     }
 #if GR_TEST_UTILS
     fDualSourceBlendingSupport = fDualSourceBlendingSupport && !options.fSuppressDualSourceBlending;

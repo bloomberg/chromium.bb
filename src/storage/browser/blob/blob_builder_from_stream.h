@@ -41,10 +41,9 @@ namespace storage {
 // Finally you can pass an |length_hint| to the constructor. If this is done,
 // the size is used for an initial space allocation, and if the size is too
 // large to fit in memory anyway, the entire blob will be stored on disk.
+// TODO(mek): Actually deal with length_hint.
 //
-// If this needs to be destroyed before building has finished, you should make
-// sure to call Abort() before destroying the instance. No blob will be created
-// in that case.
+// If destroyed before building has finished this will not create a blob.
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
  public:
   using ResultCallback =
@@ -60,8 +59,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
       blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       ResultCallback callback);
   ~BlobBuilderFromStream();
-
-  void Abort();
 
  private:
   class WritePipeToFileHelper;

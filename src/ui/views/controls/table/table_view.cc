@@ -125,13 +125,18 @@ struct TableView::GroupSortHelper {
   std::map<int, int> model_index_to_range_start;
 };
 
-TableView::VisibleColumn::VisibleColumn() = default;
+TableView::VisibleColumn::VisibleColumn() : x(0), width(0) {}
 
-TableView::VisibleColumn::~VisibleColumn() = default;
+TableView::VisibleColumn::~VisibleColumn() {}
 
-TableView::PaintRegion::PaintRegion() = default;
+TableView::PaintRegion::PaintRegion()
+    : min_row(0),
+      max_row(0),
+      min_column(0),
+      max_column(0) {
+}
 
-TableView::PaintRegion::~PaintRegion() = default;
+TableView::PaintRegion::~PaintRegion() {}
 
 // static
 const char TableView::kViewClassName[] = "TableView";
@@ -140,9 +145,18 @@ TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
                      bool single_selection)
-    : columns_(columns),
+    : model_(NULL),
+      columns_(columns),
+      active_visible_column_index_(-1),
+      header_(nullptr),
       table_type_(table_type),
-      single_selection_(single_selection) {
+      single_selection_(single_selection),
+      select_on_remove_(true),
+      observer_(NULL),
+      last_parent_width_(0),
+      layout_width_(0),
+      grouper_(NULL),
+      in_set_visible_column_width_(false) {
   constexpr int kTextContext = style::CONTEXT_TABLE_ROW;
   constexpr int kTextStyle = style::STYLE_PRIMARY;
   font_list_ = style::GetFont(kTextContext, kTextStyle);
@@ -164,17 +178,7 @@ TableView::TableView(ui::TableModel* model,
 
 TableView::~TableView() {
   if (model_)
-    model_->SetObserver(nullptr);
-}
-
-// static
-std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
-    std::unique_ptr<TableView> table) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
-  auto* table_ptr = table.get();
-  scroll_view->SetContents(std::move(table));
-  table_ptr->CreateHeaderIfNecessary(scroll_view.get());
-  return scroll_view;
+    model_->SetObserver(NULL);
 }
 
 // TODO: this doesn't support arbitrarily changing the model, rename this to
@@ -184,16 +188,25 @@ void TableView::SetModel(ui::TableModel* model) {
     return;
 
   if (model_)
-    model_->SetObserver(nullptr);
+    model_->SetObserver(NULL);
   model_ = model;
   selection_model_.Clear();
   if (model_)
     model_->SetObserver(this);
 }
 
+View* TableView::CreateParentIfNecessary() {
+  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
+  scroll_view->SetContents(this);
+  CreateHeaderIfNecessary();
+  if (header_)
+    scroll_view->SetHeader(header_);
+  return scroll_view;
+}
+
 void TableView::SetGrouper(TableGrouper* grouper) {
   grouper_ = grouper;
-  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
+  SortItemsAndUpdateMapping();
 }
 
 int TableView::RowCount() const {
@@ -267,7 +280,7 @@ void TableView::ToggleSortOrder(int visible_column_index) {
 
 void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   sort_descriptors_ = sort_descriptors;
-  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
+  SortItemsAndUpdateMapping();
   if (header_)
     header_->SchedulePaint();
 }
@@ -357,7 +370,7 @@ int TableView::ViewToModel(int view_index) const {
 void TableView::Layout() {
   // parent()->parent() is the scrollview. When its width changes we force
   // recalculating column sizes.
-  View* scroll_view = parent() ? parent()->parent() : nullptr;
+  View* scroll_view = parent() ? parent()->parent() : NULL;
   if (scroll_view) {
     const int scroll_view_width = scroll_view->GetContentsBounds().width();
     if (scroll_view_width != last_parent_width_) {
@@ -537,18 +550,14 @@ void TableView::OnGestureEvent(ui::GestureEvent* event) {
   SetSelectionModel(std::move(new_model));
 }
 
-base::string16 TableView::GetTooltipText(const gfx::Point& p) const {
-  const int row = p.y() / row_height_;
-  if (row < 0 || row >= RowCount() || visible_columns_.empty())
-    return base::string16();
+bool TableView::GetTooltipText(const gfx::Point& p,
+                               base::string16* tooltip) const {
+  return GetTooltipImpl(p, tooltip, NULL);
+}
 
-  const int x = GetMirroredXInView(p.x());
-  const int column = GetClosestVisibleColumnIndex(this, x);
-  if (x < visible_columns_[column].x ||
-      x > (visible_columns_[column].x + visible_columns_[column].width))
-    return base::string16();
-
-  return model_->GetText(ViewToModel(row), visible_columns_[column].column.id);
+bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
+                                     gfx::Point* loc) const {
+  return GetTooltipImpl(p, NULL, loc);
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -632,7 +641,7 @@ void TableView::OnModelChanged() {
 }
 
 void TableView::OnItemsChanged(int start, int length) {
-  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
+  SortItemsAndUpdateMapping();
 }
 
 void TableView::OnItemsAdded(int start, int length) {
@@ -643,7 +652,7 @@ void TableView::OnItemsAdded(int start, int length) {
 
 void TableView::OnItemsMoved(int old_start, int length, int new_start) {
   selection_model_.Move(old_start, new_start, length);
-  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
+  SortItemsAndUpdateMapping();
 }
 
 void TableView::OnItemsRemoved(int start, int length) {
@@ -695,9 +704,6 @@ gfx::Point TableView::GetKeyboardContextMenuLocation() {
 
 void TableView::OnPaint(gfx::Canvas* canvas) {
   // Don't invoke View::OnPaint so that we can render our own focus border.
-
-  if (sort_on_paint_)
-    SortItemsAndUpdateMapping(/*schedule_paint=*/false);
 
   canvas->DrawColor(GetNativeTheme()->GetSystemColor(
                         ui::NativeTheme::kColorId_TableBackground));
@@ -828,11 +834,13 @@ int TableView::GetCellElementSpacing() const {
 }
 
 void TableView::NumRowsChanged() {
-  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
+  SortItemsAndUpdateMapping();
   PreferredSizeChanged();
+  SchedulePaint();
+  UpdateVirtualAccessibilityChildren();
 }
 
-void TableView::SortItemsAndUpdateMapping(bool schedule_paint) {
+void TableView::SortItemsAndUpdateMapping() {
   if (!is_sorted()) {
     view_to_model_.clear();
     model_to_view_.clear();
@@ -856,9 +864,8 @@ void TableView::SortItemsAndUpdateMapping(bool schedule_paint) {
       model_to_view_[view_to_model_[i]] = i;
     model_->ClearCollator();
   }
+  SchedulePaint();
   UpdateVirtualAccessibilityChildren();
-  if (schedule_paint)
-    SchedulePaint();
 }
 
 int TableView::CompareRows(int model_row1, int model_row2) {
@@ -900,13 +907,13 @@ void TableView::AdjustCellBoundsForText(int visible_column_index,
   bounds->set_width(std::max(0, bounds->right() - cell_margin - text_x));
 }
 
-void TableView::CreateHeaderIfNecessary(ScrollView* scroll_view) {
+void TableView::CreateHeaderIfNecessary() {
   // Only create a header if there is more than one column or the title of the
   // only column is not empty.
   if (header_ || (columns_.size() == 1 && columns_[0].title.empty()))
     return;
 
-  header_ = scroll_view->SetHeader(std::make_unique<TableHeader>(this));
+  header_ = new TableHeader(this);
   UpdateVirtualAccessibilityChildren();
 }
 
@@ -1159,6 +1166,41 @@ GroupRange TableView::GetGroupRange(int model_index) const {
     range.length = 1;
   }
   return range;
+}
+
+bool TableView::GetTooltipImpl(const gfx::Point& location,
+                               base::string16* tooltip,
+                               gfx::Point* tooltip_origin) const {
+  const int row = location.y() / row_height_;
+  if (row < 0 || row >= RowCount() || visible_columns_.empty())
+    return false;
+
+  const int x = GetMirroredXInView(location.x());
+  const int column = GetClosestVisibleColumnIndex(this, x);
+  if (x < visible_columns_[column].x ||
+      x > (visible_columns_[column].x + visible_columns_[column].width))
+    return false;
+
+  const base::string16 text(model_->GetText(ViewToModel(row),
+                                      visible_columns_[column].column.id));
+  if (text.empty())
+    return false;
+
+  gfx::Rect cell_bounds(GetCellBounds(row, column));
+  AdjustCellBoundsForText(column, &cell_bounds);
+  const int right = std::min(GetVisibleBounds().right(), cell_bounds.right());
+  if (right > cell_bounds.x() &&
+      gfx::GetStringWidth(text, font_list_) <= (right - cell_bounds.x()))
+    return false;
+
+  if (tooltip)
+    *tooltip = text;
+  if (tooltip_origin) {
+    tooltip_origin->SetPoint(
+        cell_bounds.x(),
+        cell_bounds.y() + (row_height_ - font_list_.GetHeight()) / 2);
+  }
+  return true;
 }
 
 void TableView::UpdateVirtualAccessibilityChildren() {

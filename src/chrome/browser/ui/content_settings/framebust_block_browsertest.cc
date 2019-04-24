@@ -5,7 +5,6 @@
 #include <cstddef>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -47,7 +46,10 @@ const int kDisallowRadioButtonIndex = 1;
 class FramebustBlockBrowserTest : public InProcessBrowserTest,
                                   public UrlListManager::Observer {
  public:
-  FramebustBlockBrowserTest() = default;
+  FramebustBlockBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kFramebustingNeedsSameOriginOrUserGesture);
+  }
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -100,6 +102,7 @@ class FramebustBlockBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::Optional<GURL> clicked_url_;
   base::Optional<size_t> clicked_index_;
 
@@ -245,10 +248,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, SimpleFramebust_Blocked) {
 
   base::RunLoop block_waiter;
   blocked_url_added_closure_ = block_waiter.QuitClosure();
-  child->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(base::StringPrintf("window.top.location = '%s';",
-                                            redirect_url.spec().c_str())),
-      base::NullCallback());
+  child->ExecuteJavaScriptForTests(base::ASCIIToUTF16(base::StringPrintf(
+      "window.top.location = '%s';", redirect_url.spec().c_str())));
   block_waiter.Run();
   EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
                                   redirect_url));
@@ -277,10 +278,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
   GURL redirect_url = embedded_test_server()->GetURL("b.com", "/title1.html");
 
   content::TestNavigationObserver observer(GetWebContents());
-  child->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(base::StringPrintf("window.top.location = '%s';",
-                                            redirect_url.spec().c_str())),
-      base::NullCallback());
+  child->ExecuteJavaScriptForTests(base::ASCIIToUTF16(base::StringPrintf(
+      "window.top.location = '%s';", redirect_url.spec().c_str())));
   observer.Wait();
   EXPECT_TRUE(GetFramebustTabHelper()->blocked_urls().empty());
 }
@@ -309,10 +308,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
   GURL redirect_url = embedded_test_server()->GetURL("b.com", "/title1.html");
 
   content::TestNavigationObserver observer(GetWebContents());
-  child->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(base::StringPrintf("window.top.location = '%s';",
-                                            redirect_url.spec().c_str())),
-      base::NullCallback());
+  child->ExecuteJavaScriptForTests(base::ASCIIToUTF16(base::StringPrintf(
+      "window.top.location = '%s';", redirect_url.spec().c_str())));
   observer.Wait();
   EXPECT_TRUE(GetFramebustTabHelper()->blocked_urls().empty());
 }
@@ -335,10 +332,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
 
   base::RunLoop block_waiter;
   blocked_url_added_closure_ = block_waiter.QuitClosure();
-  child->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(base::StringPrintf("window.top.location = '%s';",
-                                            redirect_url.spec().c_str())),
-      base::NullCallback());
+  child->ExecuteJavaScriptForTests(base::ASCIIToUTF16(base::StringPrintf(
+      "window.top.location = '%s';", redirect_url.spec().c_str())));
   block_waiter.Run();
   EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
                                   redirect_url));

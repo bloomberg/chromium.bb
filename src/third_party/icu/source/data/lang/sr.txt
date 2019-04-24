@@ -83,7 +83,6 @@ sr{
         cad{"кадо"}
         car{"карипски"}
         cch{"атсам"}
-        ccp{"ccp"}
         ce{"чеченски"}
         ceb{"себуански"}
         cgg{"чига"}
@@ -849,7 +848,7 @@ sr{
         TARASK{"Тараскијевичка ортографија"}
         VALENCIA{"Валенцијска"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.43.94"}
     characterLabelPattern{
         all{"{0} — све"}
         category-list{"{0}: {1}"}

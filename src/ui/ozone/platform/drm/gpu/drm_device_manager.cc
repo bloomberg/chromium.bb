@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/file_descriptor_posix.h"

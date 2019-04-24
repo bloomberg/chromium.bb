@@ -74,7 +74,8 @@ class PDFDocTest : public testing::Test {
 TEST_F(PDFDocTest, FindBookmark) {
   {
     // No bookmark information.
-    ScopedFPDFWideString title = GetFPDFWideString(L"");
+    std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+        GetFPDFWideString(L"");
     EXPECT_EQ(nullptr, FPDFBookmark_Find(m_pDoc.get(), title.get()));
 
     title = GetFPDFWideString(L"Preface");
@@ -83,7 +84,8 @@ TEST_F(PDFDocTest, FindBookmark) {
   {
     // Empty bookmark tree.
     m_pRootObj->SetNewFor<CPDF_Dictionary>("Outlines");
-    ScopedFPDFWideString title = GetFPDFWideString(L"");
+    std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+        GetFPDFWideString(L"");
     EXPECT_EQ(nullptr, FPDFBookmark_Find(m_pDoc.get(), title.get()));
 
     title = GetFPDFWideString(L"Preface");
@@ -116,7 +118,8 @@ TEST_F(PDFDocTest, FindBookmark) {
                                           bookmarks[0].num);
 
     // Title with no match.
-    ScopedFPDFWideString title = GetFPDFWideString(L"Chapter 3");
+    std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+        GetFPDFWideString(L"Chapter 3");
     EXPECT_EQ(nullptr, FPDFBookmark_Find(m_pDoc.get(), title.get()));
 
     // Title with partial match only.
@@ -160,7 +163,8 @@ TEST_F(PDFDocTest, FindBookmark) {
                                           bookmarks[0].num);
 
     // Title with no match.
-    ScopedFPDFWideString title = GetFPDFWideString(L"Chapter 3");
+    std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+        GetFPDFWideString(L"Chapter 3");
     EXPECT_EQ(nullptr, FPDFBookmark_Find(m_pDoc.get(), title.get()));
 
     // Title with a match.
@@ -201,7 +205,8 @@ TEST_F(PDFDocTest, FindBookmark) {
                                           bookmarks[0].num);
 
     // Title with no match.
-    ScopedFPDFWideString title = GetFPDFWideString(L"Chapter 8");
+    std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+        GetFPDFWideString(L"Chapter 8");
     EXPECT_EQ(nullptr, FPDFBookmark_Find(m_pDoc.get(), title.get()));
 
     // Title with a match.

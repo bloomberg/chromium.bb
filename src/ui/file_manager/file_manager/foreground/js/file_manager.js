@@ -580,10 +580,14 @@ FileManager.prototype = /** @struct */ {
     assert(this.fileFilter_);
 
     this.scanController_ = new ScanController(
-        this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
-        this.commandHandler_, this.selectionHandler_);
+        this.directoryModel_,
+        this.ui_.listContainer,
+        this.spinnerController_,
+        this.commandHandler_,
+        this.selectionHandler_);
     this.sortMenuController_ = new SortMenuController(
-        this.ui_.sortButton, this.ui_.sortButtonToggleRipple,
+        this.ui_.sortButton,
+        this.ui_.sortButtonToggleRipple,
         assert(this.directoryModel_.getFileList()));
     this.gearMenuController_ = new GearMenuController(
         this.ui_.gearButton, this.ui_.gearButtonToggleRipple, this.ui_.gearMenu,
@@ -593,16 +597,19 @@ FileManager.prototype = /** @struct */ {
         this.ui_.selectionMenuButton,
         util.queryDecoratedElement('#file-context-menu', cr.ui.Menu));
     this.toolbarController_ = new ToolbarController(
-        this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
-        assert(this.ui_.locationLine), this.selectionHandler_,
+        this.ui_.toolbar,
+        this.ui_.dialogNavigationList,
+        this.ui_.listContainer,
+        assert(this.ui_.locationLine),
+        this.selectionHandler_,
         this.directoryModel_);
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder, this.directoryModel_, this.ui_.alertDialog);
     this.actionsController_ = new ActionsController(
         this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
         assert(this.folderShortcutsModel_),
-        this.fileBrowserBackground_.driveSyncHandler, this.selectionHandler_,
-        assert(this.ui_));
+        this.fileBrowserBackground_.driveSyncHandler,
+        this.selectionHandler_, assert(this.ui_));
     this.lastModifiedController_ = new LastModifiedController(
         this.ui_.listContainer.table, this.directoryModel_);
 
@@ -621,11 +628,16 @@ FileManager.prototype = /** @struct */ {
         metadataBoxController, this.dialogType, assert(this.volumeManager_));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
-      this.importController_ = new importer.ImportController(
-          new importer.RuntimeControllerEnvironment(
-              this, assert(this.selectionHandler_)),
-          assert(this.mediaScanner_), assert(this.mediaImportHandler_),
-          new importer.RuntimeCommandWidget());
+      importer.importEnabled().then(
+          enabled => {
+            if (enabled) {
+              this.importController_ = new importer.ImportController(
+                  new importer.RuntimeControllerEnvironment(
+                      this, assert(this.selectionHandler_)),
+                  assert(this.mediaScanner_), assert(this.mediaImportHandler_),
+                  new importer.RuntimeCommandWidget());
+            }
+          });
     }
 
     assert(this.fileFilter_);
@@ -633,19 +645,28 @@ FileManager.prototype = /** @struct */ {
     assert(this.appStateController_);
     assert(this.taskController_);
     this.mainWindowComponent_ = new MainWindowComponent(
-        this.dialogType, this.ui_, this.volumeManager_, this.directoryModel_,
-        this.fileFilter_, this.selectionHandler_, this.namingController_,
-        this.appStateController_, this.taskController_);
+        this.dialogType,
+        this.ui_,
+        this.volumeManager_,
+        this.directoryModel_,
+        this.fileFilter_,
+        this.selectionHandler_,
+        this.namingController_,
+        this.appStateController_,
+        this.taskController_);
 
     this.initDataTransferOperations_();
 
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
-    this.ui_.initBanners(new Banners(
-        this.directoryModel_, this.volumeManager_, this.document_,
-        // Whether to show any welcome banner.
-        this.dialogType === DialogType.FULL_PAGE));
+    this.ui_.initBanners(
+        new Banners(
+            this.directoryModel_,
+            this.volumeManager_,
+            this.document_,
+            // Whether to show any welcome banner.
+            this.dialogType === DialogType.FULL_PAGE));
 
     this.ui_.attachFilesTooltip();
 
@@ -825,8 +846,7 @@ FileManager.prototype = /** @struct */ {
     } else {
       // Used by the select dialog only.
       const json = location.search ?
-          JSON.parse(decodeURIComponent(location.search.substr(1))) :
-          {};
+          JSON.parse(decodeURIComponent(location.search.substr(1))) : {};
       this.launchParams_ = new LaunchParam(json instanceof Object ? json : {});
     }
 
@@ -842,8 +862,8 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.startInitBackgroundPage_ = function() {
     return new Promise(resolve => {
       metrics.startInterval('Load.InitBackgroundPage');
-      chrome.runtime.getBackgroundPage(
-          /** @type {function(Window=)} */ (opt_backgroundPage => {
+      chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
+          opt_backgroundPage => {
             assert(opt_backgroundPage);
             this.backgroundPage_ =
                 /** @type {!BackgroundWindow} */ (opt_backgroundPage);
@@ -859,8 +879,10 @@ FileManager.prototype = /** @struct */ {
                   this.fileBrowserBackground_.fileOperationManager;
               this.mediaImportHandler_ =
                   this.fileBrowserBackground_.mediaImportHandler;
-              this.mediaScanner_ = this.fileBrowserBackground_.mediaScanner;
-              this.historyLoader_ = this.fileBrowserBackground_.historyLoader;
+              this.mediaScanner_ =
+                  this.fileBrowserBackground_.mediaScanner;
+              this.historyLoader_ =
+                  this.fileBrowserBackground_.historyLoader;
               this.crostini_ = this.fileBrowserBackground_.crostini;
               metrics.recordInterval('Load.InitBackgroundPage');
               resolve();
@@ -902,14 +924,13 @@ FileManager.prototype = /** @struct */ {
     // Record stats of dialog types. New values must NOT be inserted into the
     // array enumerating the types. It must be in sync with
     // FileDialogType enum in tools/metrics/histograms/histogram.xml.
-    metrics.recordEnum('Create', this.dialogType, [
-      DialogType.SELECT_FOLDER,
-      DialogType.SELECT_UPLOAD_FOLDER,
-      DialogType.SELECT_SAVEAS_FILE,
-      DialogType.SELECT_OPEN_FILE,
-      DialogType.SELECT_OPEN_MULTI_FILE,
-      DialogType.FULL_PAGE,
-    ]);
+    metrics.recordEnum('Create', this.dialogType,
+        [DialogType.SELECT_FOLDER,
+         DialogType.SELECT_UPLOAD_FOLDER,
+         DialogType.SELECT_SAVEAS_FILE,
+         DialogType.SELECT_OPEN_FILE,
+         DialogType.SELECT_OPEN_MULTI_FILE,
+         DialogType.FULL_PAGE]);
 
     // Create the metadata cache.
     assert(this.volumeManager_);
@@ -943,16 +964,23 @@ FileManager.prototype = /** @struct */ {
 
     const table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
-        table, this.metadataModel_, this.volumeManager_, this.historyLoader_,
+        table,
+        this.metadataModel_,
+        this.volumeManager_,
+        this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);
     const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
-        grid, this.metadataModel_, this.volumeManager_, this.historyLoader_);
+        grid,
+        this.metadataModel_,
+        this.volumeManager_,
+        this.historyLoader_);
 
     this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
-        assertInstanceof(table, FileTable), assertInstanceof(grid, FileGrid),
+        assertInstanceof(table, FileTable),
+        assertInstanceof(grid, FileGrid),
         new LocationLine(
             queryRequiredElement('#location-breadcrumbs', dom),
             this.volumeManager_));
@@ -994,13 +1022,14 @@ FileManager.prototype = /** @struct */ {
     // we want to update grid/list view when it changes.
     this.historyLoader_.addHistoryLoadedListener(
         /**
-         * @param {!importer.ImportHistory} history
-         * @this {FileManager}
-         */
+        * @param {!importer.ImportHistory} history
+        * @this {FileManager}
+        */
         history => {
           this.importHistory_ = history;
           history.addObserver(this.onHistoryChangedBound_);
         });
+
   };
 
   /**
@@ -1015,14 +1044,16 @@ FileManager.prototype = /** @struct */ {
     util.isChildEntry(event.entry, this.getCurrentDirectoryEntry())
         .then(
             /**
-             * @param {boolean} isChild
-             */
+            * @param {boolean} isChild
+            */
             isChild => {
               if (isChild) {
                 this.ui_.listContainer.grid.updateListItemsMetadata(
-                    'import-history', [event.entry]);
+                    'import-history',
+                    [event.entry]);
                 this.ui_.listContainer.table.updateListItemsMetadata(
-                    'import-history', [event.entry]);
+                    'import-history',
+                    [event.entry]);
               }
             });
   };
@@ -1032,7 +1063,8 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initFileList_ = function() {
-    const singleSelection = this.dialogType == DialogType.SELECT_OPEN_FILE ||
+    const singleSelection =
+        this.dialogType == DialogType.SELECT_OPEN_FILE ||
         this.dialogType == DialogType.SELECT_FOLDER ||
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
@@ -1044,8 +1076,8 @@ FileManager.prototype = /** @struct */ {
         singleSelection, this.fileFilter_, this.metadataModel_,
         this.volumeManager_, this.fileOperationManager_);
 
-    this.folderShortcutsModel_ =
-        new FolderShortcutsDataModel(this.volumeManager_);
+    this.folderShortcutsModel_ = new FolderShortcutsDataModel(
+        this.volumeManager_);
 
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
@@ -1053,8 +1085,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.ui_.listContainer), assert(this.metadataModel_),
         assert(this.volumeManager_), this.launchParams_.allowedPaths);
 
-    this.directoryModel_.getFileListSelection().addEventListener(
-        'change',
+    this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
 
@@ -1063,7 +1094,8 @@ FileManager.prototype = /** @struct */ {
     this.initDirectoryTree_();
 
     this.ui_.listContainer.listThumbnailLoader = new ListThumbnailLoader(
-        this.directoryModel_, assert(this.thumbnailModel_),
+        this.directoryModel_,
+        assert(this.thumbnailModel_),
         this.volumeManager_);
     this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();
     this.ui_.listContainer.emptyDataModel =
@@ -1080,7 +1112,9 @@ FileManager.prototype = /** @struct */ {
 
     // Create metadata update controller.
     this.metadataUpdateController_ = new MetadataUpdateController(
-        this.ui_.listContainer, this.directoryModel_, this.metadataModel_,
+        this.ui_.listContainer,
+        this.directoryModel_,
+        this.metadataModel_,
         this.fileMetadataFormatter_);
 
     // Create naming controller.
@@ -1098,24 +1132,34 @@ FileManager.prototype = /** @struct */ {
 
     // Create search controller.
     this.searchController_ = new SearchController(
-        this.ui_.searchBox, assert(this.ui_.locationLine), this.directoryModel_,
-        this.volumeManager_, assert(this.taskController_));
+        this.ui_.searchBox,
+        assert(this.ui_.locationLine),
+        this.directoryModel_,
+        this.volumeManager_,
+        assert(this.taskController_));
 
     // Create directory tree naming controller.
     this.directoryTreeNamingController_ = new DirectoryTreeNamingController(
-        this.directoryModel_, assert(this.ui_.directoryTree),
+        this.directoryModel_,
+        assert(this.ui_.directoryTree),
         this.ui_.alertDialog);
 
     // Create spinner controller.
-    this.spinnerController_ =
-        new SpinnerController(this.ui_.listContainer.spinner);
+    this.spinnerController_ = new SpinnerController(
+        this.ui_.listContainer.spinner);
     this.spinnerController_.blink();
 
     // Create dialog action controller.
     this.dialogActionController_ = new DialogActionController(
-        this.dialogType, this.ui_.dialogFooter, this.directoryModel_,
-        this.metadataModel_, this.volumeManager_, this.fileFilter_,
-        this.namingController_, this.selectionHandler_, this.launchParams_);
+        this.dialogType,
+        this.ui_.dialogFooter,
+        this.directoryModel_,
+        this.metadataModel_,
+        this.volumeManager_,
+        this.fileFilter_,
+        this.namingController_,
+        this.selectionHandler_,
+        this.launchParams_);
   };
 
   /**
@@ -1127,10 +1171,12 @@ FileManager.prototype = /** @struct */ {
     const fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
     this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
-    DirectoryTree.decorate(
-        directoryTree, assert(this.directoryModel_),
-        assert(this.volumeManager_), assert(this.metadataModel_),
-        assert(this.fileOperationManager_), fakeEntriesVisible);
+    DirectoryTree.decorate(directoryTree,
+                           assert(this.directoryModel_),
+                           assert(this.volumeManager_),
+                           assert(this.metadataModel_),
+                           assert(this.fileOperationManager_),
+                           fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
         fakeEntriesVisible &&
@@ -1145,12 +1191,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.directoryModel_));
 
     this.ui_.initDirectoryTree(directoryTree);
-    this.crostini_.setEnabled(
-        constants.DEFAULT_CROSTINI_VM,
-        loadTimeData.getBoolean('CROSTINI_ENABLED'));
-    this.crostini_.setEnabled(
-        constants.PLUGIN_VM, loadTimeData.getBoolean('PLUGIN_VM_ENABLED'));
-    this.setupCrostini_();
+    this.setCrostiniEnabled_(loadTimeData.getBoolean('CROSTINI_ENABLED'));
     chrome.fileManagerPrivate.onCrostiniChanged.addListener(
         this.onCrostiniChanged_.bind(this));
 
@@ -1161,13 +1202,14 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * Setup crostini 'Linux files'.
+   * Check if crostini is enabled to create linuxFilesItem.
+   * @param {boolean} enabled
    * @private
    */
-  FileManager.prototype.setupCrostini_ = function() {
+  FileManager.prototype.setCrostiniEnabled_ = function(enabled) {
+    this.crostini_.setEnabled(enabled);
     // Setup Linux files fake root.
-    this.directoryTree.dataModel.linuxFilesItem =
-        this.crostini_.isEnabled(constants.DEFAULT_CROSTINI_VM) ?
+    this.directoryTree.dataModel.linuxFilesItem = enabled ?
         new NavigationModelFakeItem(
             str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
             new FakeEntry(
@@ -1177,61 +1219,36 @@ FileManager.prototype = /** @struct */ {
     // Redraw the tree to ensure 'Linux files' is added/removed.
     this.directoryTree.redraw(false);
 
+    if (!enabled) {
+      return;
+    }
+
     // Load any existing shared paths.
     // Only observe firstForSession when using full-page FilesApp.
     // I.e., don't show toast in a dialog.
-    let showToast = false;
-    const getSharedPaths = (vmName) => {
-      return new Promise(resolve => {
-        if (!this.crostini_.isEnabled(vmName)) {
-          return resolve(0);
-        }
-        chrome.fileManagerPrivate.getCrostiniSharedPaths(
-            this.dialogType === DialogType.FULL_PAGE, vmName,
-            (entries, firstForSession) => {
-              showToast = showToast || firstForSession;
-              for (let i = 0; i < entries.length; i++) {
-                this.crostini_.registerSharedPath(vmName, entries[i]);
-              }
-              resolve(entries.length);
-            });
-      });
-    };
-
-    const toast = (count, msgSingle, msgPlural, action, subPage, umaItem) => {
-      if (!showToast || count == 0) {
-        return;
-      }
-      this.ui_.toast.show(
-          count == 1 ? str(msgSingle) : strf(msgPlural, count), {
-            text: str(action),
-            callback: () => {
-              chrome.fileManagerPrivate.openSettingsSubpage(subPage);
-              CommandHandler.recordMenuItemSelected(umaItem);
-            }
-          });
-    };
-
-    Promise
-        .all([
-          getSharedPaths(constants.DEFAULT_CROSTINI_VM),
-          getSharedPaths(constants.PLUGIN_VM)
-        ])
-        .then(([crostiniShareCount, pluginVmShareCount]) => {
-          toast(
-              crostiniShareCount, 'FOLDER_SHARED_WITH_CROSTINI',
-              'FOLDER_SHARED_WITH_CROSTINI_PLURAL',
-              'MANAGE_LINUX_SHARING_BUTTON_LABEL', 'crostini/sharedPaths',
-              CommandHandler.MenuCommandsForUMA
-                  .MANAGE_LINUX_SHARING_TOAST_STARTUP);
-          // TODO(crbug.com/949356): UX to provide guidance for what to do
-          // when we have shared paths with both Linux and Plugin VM.
-          toast(
-              pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
-              'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL',
-              'MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL', 'pluginVm/sharedPaths',
-              CommandHandler.MenuCommandsForUMA
-                  .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        this.dialogType === DialogType.FULL_PAGE,
+        (entries, firstForSession) => {
+          for (let i = 0; i < entries.length; i++) {
+            this.crostini_.registerSharedPath(entries[i]);
+          }
+          // Show 'Manage sharing' toast the first time FilesApp is opened.
+          if (firstForSession && entries.length >= 1) {
+            this.ui_.toast.show(
+                entries.length == 1 ?
+                    str('FOLDER_SHARED_WITH_CROSTINI') :
+                    strf('FOLDER_SHARED_WITH_CROSTINI_PLURAL', entries.length),
+                {
+                  text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
+                  callback: () => {
+                    chrome.fileManagerPrivate.openSettingsSubpage(
+                        'crostini/sharedPaths');
+                    CommandHandler.recordMenuItemSelected(
+                        CommandHandler.MenuCommandsForUMA
+                            .MANAGE_LINUX_SHARING_TOAST_STARTUP);
+                  }
+                });
+          }
         });
   };
 
@@ -1241,11 +1258,9 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.onCrostiniChanged_ = function(event) {
     if (event.eventType === 'enable') {
-      this.crostini_.setEnabled(event.vmName, true);
-      this.setupCrostini_();
+      this.setCrostiniEnabled_(true);
     } else if (event.eventType === 'disable') {
-      this.crostini_.setEnabled(event.vmName, false);
-      this.setupCrostini_();
+      this.setCrostiniEnabled_(false);
     }
   };
 
@@ -1397,7 +1412,8 @@ FileManager.prototype = /** @struct */ {
     // a file, or in case of a fallback of the current directory, then try to
     // resolve again using the target name.
     queue.run((callback) => {
-      if (selectionEntry || !nextCurrentDirEntry ||
+      if (selectionEntry ||
+          !nextCurrentDirEntry ||
           !this.launchParams_.targetName) {
         callback();
         return;
@@ -1443,7 +1459,9 @@ FileManager.prototype = /** @struct */ {
       }
       // Finish setup current directory.
       this.finishSetupCurrentDirectory_(
-          nextCurrentDirEntry, selectionEntry, this.launchParams_.targetName);
+          nextCurrentDirEntry,
+          selectionEntry,
+          this.launchParams_.targetName);
       callback();
     });
   };
@@ -1508,7 +1526,8 @@ FileManager.prototype = /** @struct */ {
       this.volumeManager_.dispose();
     }
     if (this.fileTransferController_) {
-      for (let i = 0; i < this.fileTransferController_.pendingTaskIds.length;
+      for (let i = 0;
+           i < this.fileTransferController_.pendingTaskIds.length;
            i++) {
         const taskId = this.fileTransferController_.pendingTaskIds[i];
         const item =

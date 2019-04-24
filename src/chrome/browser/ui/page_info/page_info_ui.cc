@@ -13,6 +13,8 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,7 +38,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #endif
 
@@ -186,11 +188,20 @@ ContentSetting GetEffectiveSetting(Profile* profile,
   if (effective_setting == CONTENT_SETTING_DEFAULT)
     effective_setting = default_setting;
 
-  // Display the UI string for ASK instead of DETECT for Flash.
-  // TODO(tommycli): Just migrate the actual content setting to ASK.
-  if (effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
-    effective_setting = CONTENT_SETTING_ASK;
+#if BUILDFLAG(ENABLE_PLUGINS)
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
+      host_content_settings_map, type, effective_setting);
 
+  // Display the UI string for ASK instead of DETECT for HTML5 by Default.
+  // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
+  // is removed, just migrate the actual content setting to ASK.
+  if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
+      effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+    effective_setting = CONTENT_SETTING_ASK;
+  }
+#endif
   return effective_setting;
 }
 
@@ -277,12 +288,12 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
       return CreateSecurityDescriptionForPasswordReuse(
           /*is_enterprise_password=*/false);
 #endif
     case PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
       return CreateSecurityDescriptionForPasswordReuse(
           /*is_enterprise_password=*/true);
 #endif

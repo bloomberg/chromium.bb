@@ -247,9 +247,9 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
 void WebViewPermissionHelper::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    base::OnceCallback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback) {
   web_view_permission_helper_delegate_->CanDownload(url, request_method,
-                                                    std::move(callback));
+                                                    callback);
 }
 
 void WebViewPermissionHelper::RequestPointerLockPermission(

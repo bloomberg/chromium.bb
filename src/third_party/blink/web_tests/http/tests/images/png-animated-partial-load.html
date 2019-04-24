@@ -1,7 +1,9 @@
 <img style="background: green" >
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
+}
 
 function loadAndStall()
 {

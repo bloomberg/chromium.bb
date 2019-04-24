@@ -89,7 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       @"block_popups_settings_view_controller";
 
   [self populateExceptionsList];
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self loadModel];
   self.tableView.allowsSelection = NO;
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
@@ -185,7 +185,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the rest of the UI.
   [self setEditing:NO animated:YES];
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self layoutSections:[_disablePopupsSetting value]];
 }
 
@@ -200,7 +200,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the rest of the UI.
   [self setEditing:NO animated:YES];
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self layoutSections:switchView.on];
 }
 

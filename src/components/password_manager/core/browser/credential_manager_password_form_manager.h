@@ -46,10 +46,10 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       std::unique_ptr<FormFetcher> form_fetcher);
   ~CredentialManagerPasswordFormManager() override;
 
-  // FormFetcher::Consumer:
-  void OnFetchCompleted() override;
+  void ProcessMatches(
+      const std::vector<const autofill::PasswordForm*>& non_federated,
+      size_t filtered_count) override;
 
-  // PasswordFormManagerForUI:
   metrics_util::CredentialSourceType GetCredentialSource() override;
 
  private:

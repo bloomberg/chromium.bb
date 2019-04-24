@@ -6,6 +6,7 @@
 #define CC_BASE_HISTOGRAMS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -91,11 +92,6 @@ CC_BASE_EXPORT const char* GetClientNameForMetrics();
 
 class CC_BASE_EXPORT ScopedUMAHistogramAreaTimerBase {
  public:
-  ScopedUMAHistogramAreaTimerBase(const ScopedUMAHistogramAreaTimerBase&) =
-      delete;
-  ScopedUMAHistogramAreaTimerBase& operator=(
-      const ScopedUMAHistogramAreaTimerBase&) = delete;
-
   void AddArea(const base::CheckedNumeric<int>& area) { area_ += area; }
   void SetArea(const base::CheckedNumeric<int>& area) { area_ = area; }
 
@@ -119,6 +115,7 @@ class CC_BASE_EXPORT ScopedUMAHistogramAreaTimerBase {
   base::CheckedNumeric<int> area_;
 
   friend class ScopedUMAHistogramAreaTimerBaseTest;
+  DISALLOW_COPY_AND_ASSIGN(ScopedUMAHistogramAreaTimerBase);
 };
 
 }  // namespace cc

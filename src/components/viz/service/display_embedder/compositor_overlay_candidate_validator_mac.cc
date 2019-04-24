@@ -26,10 +26,6 @@ bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorMac::NeedsSurfaceOccludingDamageRect() {
-  return false;
-}
-
 void CompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
     OverlayCandidateList* surfaces) {}
 

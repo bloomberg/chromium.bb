@@ -180,7 +180,8 @@ bool IsClientNGPaintFragmentForObject(const DisplayItemClient& client,
   // TODO(crbug.com/880519): This hack only makes current invalidation tracking
   // web tests pass with LayoutNG. More work is needed if we want to launch
   // the invalidation tracking feature.
-  return &client == object.PaintFragment();
+  return object.IsLayoutBlockFlow() &&
+         &client == ToLayoutBlockFlow(object).PaintFragment();
 }
 }  // namespace
 
@@ -297,15 +298,15 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   if (!full_invalidation && !object_.ShouldInvalidateSelection())
     return reason;
 
-  IntRect old_selection_rect = object_.SelectionVisualRect();
-  IntRect new_selection_rect;
+  LayoutRect old_selection_rect = object_.SelectionVisualRect();
+  LayoutRect new_selection_rect;
 #if DCHECK_IS_ON()
   FindVisualRectNeedingUpdateScope finder(object_, context_, old_selection_rect,
                                           new_selection_rect);
 #endif
   if (context_.NeedsVisualRectUpdate(object_)) {
-    new_selection_rect = context_.MapLocalRectToVisualRect(
-        object_, object_.LocalSelectionRect());
+    new_selection_rect = object_.LocalSelectionRect();
+    context_.MapLocalRectToVisualRect(object_, new_selection_rect);
   } else {
     new_selection_rect = old_selection_rect;
   }
@@ -318,7 +319,8 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   // See layout_selection.cc SetShouldInvalidateIfNeeded for more detail.
   if (object_.IsSVGText())
     return PaintInvalidationReason::kSelection;
-  auto invalidation_rect = UnionRect(new_selection_rect, old_selection_rect);
+  const LayoutRect invalidation_rect =
+      UnionRect(new_selection_rect, old_selection_rect);
   if (invalidation_rect.IsEmpty())
     return reason;
 
@@ -334,16 +336,16 @@ ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (IsFullPaintInvalidationReason(reason))
     return reason;
 
-  auto local_rect = object_.PartialInvalidationLocalRect();
-  if (local_rect.IsEmpty())
+  auto rect = object_.PartialInvalidationLocalRect();
+  if (rect.IsEmpty())
     return reason;
 
-  auto visual_rect = context_.MapLocalRectToVisualRect(object_, local_rect);
-  if (visual_rect.IsEmpty())
+  context_.MapLocalRectToVisualRect(object_, rect);
+  if (rect.IsEmpty())
     return reason;
 
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
-      UnionRect(object_.PartialInvalidationVisualRect(), visual_rect));
+      UnionRect(object_.PartialInvalidationVisualRect(), rect));
 
   return PaintInvalidationReason::kRectangle;
 }

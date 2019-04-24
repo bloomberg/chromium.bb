@@ -108,7 +108,6 @@ lt{
         car{"karibų"}
         cay{"kaijūgų"}
         cch{"atsamų"}
-        ccp{"Čakma"}
         ce{"čečėnų"}
         ceb{"sebuanų"}
         cgg{"čigų"}
@@ -736,6 +735,7 @@ lt{
         Merc{"Merojitų rankraštinis"}
         Mero{"meroitik"}
         Mlym{"malajalių"}
+        Modi{"Modi"}
         Mong{"mongolų"}
         Moon{"mūn"}
         Mroo{"Mro"}
@@ -1023,7 +1023,7 @@ lt{
         VALENCIA{"Valenciečiai"}
         WADEGILE{"Wade-Giles Romanization"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.44.91"}
     characterLabelPattern{
         all{"{0} – visi"}
         category-list{"{0}: {1}"}

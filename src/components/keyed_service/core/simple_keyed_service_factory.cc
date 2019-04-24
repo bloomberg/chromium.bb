@@ -27,10 +27,11 @@ void SimpleKeyedServiceFactory::SetTestingFactory(
 
 KeyedService* SimpleKeyedServiceFactory::SetTestingFactoryAndUse(
     SimpleFactoryKey* key,
+    PrefService* prefs,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return KeyedServiceFactory::SetTestingFactoryAndUse(
-      key,
+      key, prefs,
       base::BindRepeating(
           [](const TestingFactory& testing_factory, void* context) {
             return testing_factory.Run(static_cast<SimpleFactoryKey*>(context));
@@ -41,45 +42,45 @@ KeyedService* SimpleKeyedServiceFactory::SetTestingFactoryAndUse(
 SimpleKeyedServiceFactory::SimpleKeyedServiceFactory(
     const char* name,
     SimpleDependencyManager* manager)
-    : KeyedServiceFactory(name, manager, SIMPLE) {}
+    : KeyedServiceFactory(name, manager) {}
 
 SimpleKeyedServiceFactory::~SimpleKeyedServiceFactory() {}
 
 KeyedService* SimpleKeyedServiceFactory::GetServiceForKey(SimpleFactoryKey* key,
+                                                          PrefService* prefs,
                                                           bool create) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return KeyedServiceFactory::GetServiceForContext(key, create);
+  return KeyedServiceFactory::GetServiceForContext(key, prefs, create);
 }
 
 SimpleFactoryKey* SimpleKeyedServiceFactory::GetKeyToUse(
     SimpleFactoryKey* key) const {
+  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Safe default for Incognito mode: no service.
-  if (key->IsOffTheRecord())
+  if (key->is_off_the_record())
     return nullptr;
 
   return key;
 }
 
 void SimpleKeyedServiceFactory::SimpleContextShutdown(SimpleFactoryKey* key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   KeyedServiceFactory::ContextShutdown(key);
 }
 
 void SimpleKeyedServiceFactory::SimpleContextDestroyed(SimpleFactoryKey* key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   KeyedServiceFactory::ContextDestroyed(key);
 }
 
 std::unique_ptr<KeyedService>
-SimpleKeyedServiceFactory::BuildServiceInstanceFor(void* context) const {
-  return BuildServiceInstanceFor(static_cast<SimpleFactoryKey*>(context));
+SimpleKeyedServiceFactory::BuildServiceInstanceFor(void* context,
+                                                   void* side_parameter) const {
+  return BuildServiceInstanceFor(static_cast<SimpleFactoryKey*>(context),
+                                 static_cast<PrefService*>(side_parameter));
 }
 
 bool SimpleKeyedServiceFactory::IsOffTheRecord(void* context) const {
-  return static_cast<SimpleFactoryKey*>(context)->IsOffTheRecord();
+  return static_cast<SimpleFactoryKey*>(context)->is_off_the_record();
 }
 
 void* SimpleKeyedServiceFactory::GetContextToUse(void* context) const {

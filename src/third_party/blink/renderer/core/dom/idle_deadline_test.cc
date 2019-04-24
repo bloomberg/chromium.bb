@@ -56,15 +56,11 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
 
   void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
 
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
+  void AddRAILModeObserver(scheduler::WebRAILModeObserver*) override {}
 
   scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
-
-  void SetV8Isolate(v8::Isolate* isolate) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineScheduler);
@@ -81,17 +77,17 @@ class IdleDeadlineTest : public testing::Test {
 };
 
 TEST_F(IdleDeadlineTest, DeadlineInFuture) {
-  auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(1.25),
-      IdleDeadline::CallbackType::kCalledWhenIdle);
+  IdleDeadline* deadline =
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
 TEST_F(IdleDeadlineTest, DeadlineInPast) {
-  auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(0.75),
-      IdleDeadline::CallbackType::kCalledWhenIdle);
+  IdleDeadline* deadline =
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(0.75),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
@@ -99,9 +95,9 @@ TEST_F(IdleDeadlineTest, YieldForHighPriorityWork) {
   MockIdleDeadlineScheduler scheduler;
   ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
-  auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(1.25),
-      IdleDeadline::CallbackType::kCalledWhenIdle);
+  IdleDeadline* deadline =
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 

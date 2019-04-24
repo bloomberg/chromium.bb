@@ -30,7 +30,7 @@ class ModuleScriptTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleScriptTestModulator() override = default;
 
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
     return Vector<ModuleRequest>();
   }
 
@@ -47,6 +47,11 @@ class ModuleScriptTestModulator final : public DummyModulator {
 
 class MockCachedMetadataSender : public CachedMetadataSender {
  public:
+  static std::unique_ptr<MockCachedMetadataSender> Create() {
+    return base::WrapUnique(
+        new ::testing::StrictMock<MockCachedMetadataSender>);
+  }
+
   MockCachedMetadataSender() = default;
 
   MOCK_METHOD2(Send, void(const uint8_t*, size_t));
@@ -117,7 +122,8 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
       MakeGarbageCollected<ModuleScriptTestModulator>(scope.GetScriptState());
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
-  auto sender = std::make_unique<MockCachedMetadataSender>();
+  std::unique_ptr<MockCachedMetadataSender> sender =
+      MockCachedMetadataSender::Create();
   MockCachedMetadataSender* sender_ptr = sender.get();
   SingleCachedMetadataHandler* cache_handler =
       MakeGarbageCollected<ScriptCachedMetadataHandler>(UTF8Encoding(),

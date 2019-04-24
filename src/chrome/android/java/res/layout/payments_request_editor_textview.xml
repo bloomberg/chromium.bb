@@ -5,7 +5,6 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -15,8 +14,7 @@
     <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/text_input_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:errorTextAppearance="@style/TextAppearance.ErrorCaption">
+        android:layout_height="wrap_content">
 
         <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <AutoCompleteTextView

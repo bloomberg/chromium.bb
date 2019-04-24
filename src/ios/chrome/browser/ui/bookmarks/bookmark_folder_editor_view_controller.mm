@@ -177,10 +177,12 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
   if (self.editingExistingFolder) {
     // Add Cancel Button.
-    UIBarButtonItem* cancelItem = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                             target:self
-                             action:@selector(cancel)];
+    UIBarButtonItem* cancelItem =
+        [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
+                                            target:self
+                                            action:@selector(cancel)];
+    cancelItem.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_CANCEL_BUTTON_LABEL);
     cancelItem.accessibilityIdentifier = @"Cancel";
     self.navigationItem.leftBarButtonItem = cancelItem;
 

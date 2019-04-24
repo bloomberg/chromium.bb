@@ -7,21 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/block_types.h"
-
 // Delegate to handle InfobarBanner actions.
 @protocol InfobarBannerDelegate
 
 // Called when the InfobarBanner button was pressed.
-- (void)bannerInfobarButtonWasPressed:(UIButton*)sender;
+- (void)bannerInfobarButtonWasPressed:(UIViewController*)sender;
 
-// Asks the delegate to dismiss the InfobarBanner. |completion| will always run.
-- (void)dismissInfobarBanner:(id)sender
-                    animated:(BOOL)animated
-                  completion:(ProceduralBlock)completion;
+// Asks the delegate to dismiss the InfobarBanner.
+- (void)dismissInfobarBanner:(UIViewController*)sender;
 
-// Asks the delegate to present the InfobarModal for this InfobarBanner.
-- (void)presentInfobarModalFromBanner;
+// Asks the delegate to to present the InfobarModal for this InfobarBanner.
+- (void)presentInfobarModal;
 
 @end
 

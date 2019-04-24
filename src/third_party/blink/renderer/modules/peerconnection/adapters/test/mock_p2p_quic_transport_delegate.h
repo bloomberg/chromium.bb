@@ -16,10 +16,8 @@ class MockP2PQuicTransportDelegate
   // P2PQuicTransport::Delegate overrides.
   MOCK_METHOD0(OnRemoteStopped, void());
   MOCK_METHOD2(OnConnectionFailed, void(const std::string&, bool));
-  MOCK_METHOD1(OnConnected, void(P2PQuicNegotiatedParams));
+  MOCK_METHOD0(OnConnected, void());
   MOCK_METHOD1(OnStream, void(P2PQuicStream*));
-  MOCK_METHOD1(OnReceivedDatagram, void(Vector<uint8_t> datagram));
-  MOCK_METHOD0(OnDatagramSent, void());
 };
 
 }  // namespace blink

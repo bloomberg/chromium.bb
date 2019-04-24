@@ -5,6 +5,7 @@
 #include "services/device/generic_sensor/platform_sensor_linux.h"
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/platform_sensor_reader_linux.h"
 
@@ -27,18 +28,21 @@ PlatformSensorLinux::PlatformSensorLinux(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
     PlatformSensorProvider* provider,
-    const SensorInfoLinux* sensor_device)
+    const SensorInfoLinux* sensor_device,
+    scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner)
     : PlatformSensor(type, reading_buffer, provider),
       default_configuration_(
           PlatformSensorConfiguration(sensor_device->device_frequency)),
       reporting_mode_(sensor_device->reporting_mode),
+      polling_thread_task_runner_(std::move(polling_thread_task_runner)),
       weak_factory_(this) {
   sensor_reader_ = SensorReader::Create(
-      *sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
+      sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
 }
 
 PlatformSensorLinux::~PlatformSensorLinux() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  polling_thread_task_runner_->DeleteSoon(FROM_HERE, sensor_reader_.release());
 }
 
 mojom::ReportingMode PlatformSensorLinux::GetReportingMode() {
@@ -66,13 +70,18 @@ void PlatformSensorLinux::NotifyPlatformSensorError() {
 bool PlatformSensorLinux::StartSensor(
     const PlatformSensorConfiguration& configuration) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  sensor_reader_->StartFetchingData(configuration);
+  polling_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SensorReader::StartFetchingData,
+                     base::Unretained(sensor_reader_.get()), configuration));
   return true;
 }
 
 void PlatformSensorLinux::StopSensor() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  sensor_reader_->StopFetchingData();
+  polling_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SensorReader::StopFetchingData,
+                                base::Unretained(sensor_reader_.get())));
 }
 
 bool PlatformSensorLinux::CheckSensorConfiguration(

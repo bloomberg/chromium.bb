@@ -37,13 +37,11 @@ FakeProducer::~FakeProducer() = default;
 void FakeProducer::Connect(
     const char* socket_name,
     base::TaskRunner* task_runner,
-    std::function<void()> on_setup_data_source_instance,
     std::function<void()> on_create_data_source_instance) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
   task_runner_ = task_runner;
   endpoint_ = ProducerIPCClient::Connect(
       socket_name, this, "android.perfetto.FakeProducer", task_runner);
-  on_setup_data_source_instance_ = std::move(on_setup_data_source_instance);
   on_create_data_source_instance_ = std::move(on_create_data_source_instance);
 }
 
@@ -60,9 +58,7 @@ void FakeProducer::OnDisconnect() {
 }
 
 void FakeProducer::SetupDataSource(DataSourceInstanceID,
-                                   const DataSourceConfig&) {
-  task_runner_->PostTask(on_setup_data_source_instance_);
-}
+                                   const DataSourceConfig&) {}
 
 void FakeProducer::StartDataSource(DataSourceInstanceID,
                                    const DataSourceConfig& source_config) {

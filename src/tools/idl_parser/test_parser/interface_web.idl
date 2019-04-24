@@ -77,15 +77,7 @@ interface mixin IFaceMixin {
  *    Arguments()
  *    Type()
  *      PrimitiveType(void)
- *  Attribute(baz)
- *    Type()
- *      PrimitiveType(long)
- *    ExtAttributes()
- *      ExtAttribute(XAttr)
  *  Attribute(bar)
- *    Type()
- *      StringType(DOMString)
- *  Attribute(readonlyAttr)
  *    READONLY: True
  *    Type()
  *      StringType(DOMString)
@@ -93,9 +85,7 @@ interface mixin IFaceMixin {
 interface mixin IFaceMixin {
   const double pi = 3.14159;
   void foo();
-  [XAttr] attribute long baz;
-  attribute DOMString bar;
-  readonly attribute DOMString readonlyAttr;
+  readonly attribute DOMString bar;
 };
 
 /** TREE
@@ -615,6 +605,12 @@ interface MyIFaceArgumentWithAnnotatedType2 {
  *        Error(Unexpected ,.)
  */
 [ Exposed(Window, Worker) ] interface InterfaceExposedError { };
+
+/** TREE
+ *Implements(Foo)
+ *  REFERENCE: Bar
+ */
+Foo implements Bar;
 
 /** TREE
  *Includes(Foo)

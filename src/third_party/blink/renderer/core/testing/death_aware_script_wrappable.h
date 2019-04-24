@@ -7,6 +7,7 @@
 
 #include <signal.h>
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ class InObjectContainer {
   virtual void Trace(Visitor* visitor) { visitor->Trace(dependency_); }
 
  private:
-  Member<DeathAwareScriptWrappable> dependency_;
+  TraceWrapperMember<DeathAwareScriptWrappable> dependency_;
 };
 
 }  // namespace internal
@@ -41,7 +42,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
   static bool has_died_;
 
  public:
-  typedef Member<DeathAwareScriptWrappable> Wrapper;
+  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
 
   static DeathAwareScriptWrappable* Create() {
     return MakeGarbageCollected<DeathAwareScriptWrappable>();

@@ -31,9 +31,8 @@ void EmitWarningMayBeBlocked(const String& url, Document& document) {
       "confirmed in a subsequent console message. "
       "See https://www.chromestatus.com/feature/5718547946799104 "
       "for more details.";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
   DVLOG(1) << message.Utf8().data();
 }
 
@@ -43,9 +42,8 @@ void EmitWarningNotBlocked(const String& url, Document& document) {
       ", invoked via document.write was NOT BLOCKED on this page load, but MAY "
       "be blocked by the browser in future page loads with poor network "
       "connectivity.";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 void EmitErrorBlocked(const String& url, Document& document) {
@@ -55,20 +53,19 @@ void EmitErrorBlocked(const String& url, Document& document) {
       url +
       ", invoked via document.write was BLOCKED by the browser due to poor "
       "network connectivity. ";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kIntervention,
-                             mojom::ConsoleMessageLevel::kError, message));
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kInterventionMessageSource, mojom::ConsoleMessageLevel::kError, message));
 }
 
 void AddWarningHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHttpHeaderField(
+  params->MutableResourceRequest().AddHTTPHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>; "
       "level=\"warning\"");
 }
 
 void AddHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHttpHeaderField(
+  params->MutableResourceRequest().AddHTTPHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>");
 }

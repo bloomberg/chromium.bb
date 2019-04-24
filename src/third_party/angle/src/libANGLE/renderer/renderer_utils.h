@@ -28,7 +28,6 @@ namespace gl
 {
 struct FormatType;
 struct InternalFormat;
-class State;
 }  // namespace gl
 
 namespace egl
@@ -287,8 +286,6 @@ angle::Result GetVertexRangeInfo(const gl::Context *context,
                                  GLint baseVertex,
                                  GLint *startVertexOut,
                                  size_t *vertexCountOut);
-
-gl::Rectangle ClipRectToScissor(const gl::State &glState, const gl::Rectangle &rect, bool invertY);
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_RENDERER_UTILS_H_

@@ -11,18 +11,15 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/common/content_export.h"
-#include "content/common/tab_switch_time_recorder.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -83,6 +80,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // ui::ContextFactoryObserver implementation.
   void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
   void ResetFallbackToFirstNavigationSurface();
 
@@ -90,7 +88,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -111,8 +110,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
-                bool record_presentation_time,
-                base::TimeTicks tab_switch_start_time = base::TimeTicks());
+                bool record_presentation_time);
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,
                     cc::DeadlinePolicy deadline_policy);
@@ -255,8 +253,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // actual web content frame has been evicted. This will be reset when a new
   // compositor frame is submitted.
   std::unique_ptr<ui::Layer> stale_content_layer_;
-
-  TabSwitchTimeRecorder tab_switch_time_recorder_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 

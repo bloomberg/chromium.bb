@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -153,8 +152,7 @@ class DirectoryLoader {
   LoadCallbackMap pending_load_callback_;
 
   // Set of the running feed fetcher for the fast fetch.
-  std::set<std::unique_ptr<FeedFetcher>, base::UniquePtrComparator>
-      fast_fetch_feed_fetcher_set_;
+  std::set<std::unique_ptr<FeedFetcher>> fast_fetch_feed_fetcher_set_;
 
   // The root entry path for changes being loaded by this directory loader.
   // Can be a team drive root entry or for the users default corpus will be the

@@ -51,7 +51,8 @@ class GcpReauthCredentialTest : public ::testing::Test {
 };
 
 void GcpReauthCredentialTest::SetUp() {
-  InitializeRegistryOverrideForTesting(&registry_override_);
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
 }
 
 TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {

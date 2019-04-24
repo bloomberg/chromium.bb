@@ -11,7 +11,6 @@ import android.os.SystemClock;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -54,8 +53,8 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public boolean shouldPreferLightweightFre(Intent intent) {
-        // We cannot use getWebApkPackageName() because
-        // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
+        // We cannot use getWebApkPackageName() because {@link WebappActivity#preInflationStartup()}
+        // may not have been called yet.
         String webApkPackageName =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
 
@@ -73,12 +72,6 @@ public class WebApkActivity extends WebappActivity {
     public void onResume() {
         super.onResume();
         mStartTime = SystemClock.elapsedRealtime();
-    }
-
-    @Override
-    public void onResumeWithNative() {
-        super.onResumeWithNative();
-        AppHooks.get().setDisplayModeForActivity(getWebappInfo().displayMode(), this);
     }
 
     @Override
@@ -123,36 +116,13 @@ public class WebApkActivity extends WebappActivity {
         if (mWebApkSplashscreenMetrics != null) {
             mWebApkSplashscreenMetrics = null;
         }
-
-        // The common case is to be connected to just one WebAPK's services. For the sake of
-        // simplicity disconnect from the services of all WebAPKs.
-        ChromeWebApkHost.disconnectFromAllServices(true /* waitForPendingWork */);
-
         super.onDestroyInternal();
     }
 
     @Override
-    protected boolean handleBackPressed() {
-        if (super.handleBackPressed()) return true;
-
-        if (getWebappInfo().isSplashProvidedByWebApk()) {
-            // When the WebAPK provides the splash screen, the splash screen activity is stacked
-            // underneath the WebAPK. The splash screen finishes itself in
-            // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a
-            // frame of the splash screen drawn prior to the splash screen activity finishing
-            // itself. There are no glitches when the activity stack is finished via
-            // {@link ActivityManager.AppTask#finishAndRemoveTask()}.
-            WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(this);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void performPreInflationStartup() {
+    public void preInflationStartup() {
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
-        // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
+        // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
             // If there is a saved instance state, then the intent (and its stored timestamp) might
@@ -163,7 +133,7 @@ public class WebApkActivity extends WebappActivity {
                 mWebApkSplashscreenMetrics.trackSplashscreenMetrics(shellLaunchTimestampMs);
             }
         }
-        super.performPreInflationStartup();
+        super.preInflationStartup();
     }
 
     @Override

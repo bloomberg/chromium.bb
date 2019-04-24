@@ -216,11 +216,11 @@ void JSONBasicValue::WriteJSON(StringBuilder* output) const {
 std::unique_ptr<JSONValue> JSONBasicValue::Clone() const {
   switch (GetType()) {
     case kTypeDouble:
-      return std::make_unique<JSONBasicValue>(double_value_);
+      return JSONBasicValue::Create(double_value_);
     case kTypeInteger:
-      return std::make_unique<JSONBasicValue>(integer_value_);
+      return JSONBasicValue::Create(integer_value_);
     case kTypeBoolean:
-      return std::make_unique<JSONBasicValue>(bool_value_);
+      return JSONBasicValue::Create(bool_value_);
     default:
       NOTREACHED();
   }
@@ -238,25 +238,25 @@ void JSONString::WriteJSON(StringBuilder* output) const {
 }
 
 std::unique_ptr<JSONValue> JSONString::Clone() const {
-  return std::make_unique<JSONString>(string_value_);
+  return JSONString::Create(string_value_);
 }
 
 JSONObject::~JSONObject() = default;
 
 void JSONObject::SetBoolean(const String& name, bool value) {
-  SetValue(name, std::make_unique<JSONBasicValue>(value));
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
 void JSONObject::SetInteger(const String& name, int value) {
-  SetValue(name, std::make_unique<JSONBasicValue>(value));
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
 void JSONObject::SetDouble(const String& name, double value) {
-  SetValue(name, std::make_unique<JSONBasicValue>(value));
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
 void JSONObject::SetString(const String& name, const String& value) {
-  SetValue(name, std::make_unique<JSONString>(value));
+  SetValue(name, JSONString::Create(value));
 }
 
 void JSONObject::SetValue(const String& name,
@@ -384,7 +384,7 @@ void JSONObject::PrettyWriteJSONInternal(StringBuilder* output,
 }
 
 std::unique_ptr<JSONValue> JSONObject::Clone() const {
-  auto result = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> result = JSONObject::Create();
   for (const String& key : order_) {
     Dictionary::const_iterator value = data_.find(key);
     DCHECK(value != data_.end() && value->value);
@@ -444,7 +444,7 @@ void JSONArray::PrettyWriteJSONInternal(StringBuilder* output,
 }
 
 std::unique_ptr<JSONValue> JSONArray::Clone() const {
-  auto result = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> result = JSONArray::Create();
   for (const std::unique_ptr<JSONValue>& value : data_)
     result->PushValue(value->Clone());
   return std::move(result);
@@ -453,19 +453,19 @@ std::unique_ptr<JSONValue> JSONArray::Clone() const {
 JSONArray::JSONArray() : JSONValue(kTypeArray) {}
 
 void JSONArray::PushBoolean(bool value) {
-  data_.push_back(std::make_unique<JSONBasicValue>(value));
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
 void JSONArray::PushInteger(int value) {
-  data_.push_back(std::make_unique<JSONBasicValue>(value));
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
 void JSONArray::PushDouble(double value) {
-  data_.push_back(std::make_unique<JSONBasicValue>(value));
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
 void JSONArray::PushString(const String& value) {
-  data_.push_back(std::make_unique<JSONString>(value));
+  data_.push_back(JSONString::Create(value));
 }
 
 void JSONArray::PushValue(std::unique_ptr<JSONValue> value) {

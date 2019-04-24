@@ -22,21 +22,21 @@ namespace {
 class FakeNavigableContentsFactoryTest : public testing::Test {
  public:
   FakeNavigableContentsFactoryTest() {
-    factory_.BindReceiver(remote_factory_.BindNewPipeAndPassReceiver());
+    factory_.BindRequest(mojo::MakeRequest(&factory_proxy_));
   }
 
   ~FakeNavigableContentsFactoryTest() override = default;
 
   FakeNavigableContentsFactory& factory() { return factory_; }
 
-  mojom::NavigableContentsFactory* remote_factory() {
-    return remote_factory_.get();
+  mojom::NavigableContentsFactory* factory_proxy() const {
+    return factory_proxy_.get();
   }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
 
-  mojo::Remote<mojom::NavigableContentsFactory> remote_factory_;
+  mojom::NavigableContentsFactoryPtr factory_proxy_;
   FakeNavigableContentsFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNavigableContentsFactoryTest);
@@ -96,7 +96,7 @@ class NavigationObserver : public NavigableContentsObserver {
 };
 
 TEST_F(FakeNavigableContentsFactoryTest, BasicNavigation) {
-  NavigableContents contents(remote_factory());
+  NavigableContents contents(factory_proxy());
   FakeNavigableContents contents_impl;
   factory().WaitForAndBindNextContentsRequest(&contents_impl);
 
@@ -113,11 +113,11 @@ TEST_F(FakeNavigableContentsFactoryTest, BasicNavigation) {
 }
 
 TEST_F(FakeNavigableContentsFactoryTest, MultipleClients) {
-  NavigableContents contents1(remote_factory());
+  NavigableContents contents1(factory_proxy());
   FakeNavigableContents contents1_impl;
   factory().WaitForAndBindNextContentsRequest(&contents1_impl);
 
-  NavigableContents contents2(remote_factory());
+  NavigableContents contents2(factory_proxy());
   FakeNavigableContents contents2_impl;
   factory().WaitForAndBindNextContentsRequest(&contents2_impl);
 
@@ -143,7 +143,7 @@ TEST_F(FakeNavigableContentsFactoryTest, MultipleClients) {
 }
 
 TEST_F(FakeNavigableContentsFactoryTest, CustomHeaders) {
-  NavigableContents contents(remote_factory());
+  NavigableContents contents(factory_proxy());
   FakeNavigableContents contents_impl;
   factory().WaitForAndBindNextContentsRequest(&contents_impl);
 

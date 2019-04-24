@@ -12,75 +12,72 @@ class Commands {
   constructor(switchAccess) {
     /**
      * SwitchAccess reference.
+     *
      * @private {SwitchAccessInterface}
      */
     this.switchAccess_ = switchAccess;
 
     /**
-     * A map from command name to the function binding for the command.
-     * @private {!Map<!SAConstants.Command, !function(): void>}
+     * A map from command name to the default key code and function binding for
+     * the command.
+     *
+     * @private {!Object<string, {keyCode: string, callback:function(): void}>}
      */
     this.commandMap_ = this.buildCommandMap_();
+  }
 
-    /**
-     * A map from the command name to the default key code for the command.
-     * @private {!Map<!SAConstants.Command, number>}
-     */
-    this.defaultKeyCodeMap_ = this.buildDefaultKeyCodeMap_();
+  /**
+   * Return a list of the names of all user commands.
+   *
+   * @return {!Array<string>}
+   */
+  getCommands() {
+    return Object.keys(this.commandMap_);
   }
 
   /**
    * Return the default key code for a command.
-   * @param {!SAConstants.Command} command
+   *
+   * @param {string} command
    * @return {number}
    */
   getDefaultKeyCodeFor(command) {
-    return this.defaultKeyCodeMap_.get(command);
+    return this.commandMap_[command]['defaultKeyCode'];
   }
 
   /**
    * Run the function binding for the specified command.
-   * @param {!SAConstants.Command} command
+   *
+   * @param {string} command
    */
   runCommand(command) {
-    this.commandMap_.get(command)();
+    this.commandMap_[command]['binding']();
   }
 
   /**
-   * Build a map from command name to the function binding for the command.
-   * @return {!Map<!SAConstants.Command, !function(): void>}
+   * Build the object that maps from command name to the default key code and
+   * function binding for the command.
+   *
+   * @return {!Object<string, {keyCode: string, callback: function(): void}>}
    */
   buildCommandMap_() {
-    return new Map([
-      [
-        SAConstants.Command.MENU,
-        this.switchAccess_.enterMenu.bind(this.switchAccess_)
-      ],
-      [
-        SAConstants.Command.NEXT,
-        this.switchAccess_.moveForward.bind(this.switchAccess_)
-      ],
-      [
-        SAConstants.Command.PREVIOUS,
-        this.switchAccess_.moveBackward.bind(this.switchAccess_)
-      ],
-      [
-        SAConstants.Command.SELECT,
-        this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
-      ]
-    ]);
-  }
-
-  /**
-   * Build a map from command name to the default key code for the command.
-   * @return {!Map<!SAConstants.Command, number>}
-   */
-  buildDefaultKeyCodeMap_() {
-    return new Map([
-      [SAConstants.Command.MENU, '1'.charCodeAt(0)],
-      [SAConstants.Command.NEXT, '3'.charCodeAt(0)],
-      [SAConstants.Command.PREVIOUS, '2'.charCodeAt(0)],
-      [SAConstants.Command.SELECT, '0'.charCodeAt(0)]
-    ]);
+    return {
+      'next': {
+        'defaultKeyCode': 51, /* '3' key */
+        'binding': this.switchAccess_.moveForward.bind(this.switchAccess_)
+      },
+      'previous': {
+        'defaultKeyCode': 50, /* '2' key */
+        'binding': this.switchAccess_.moveBackward.bind(this.switchAccess_)
+      },
+      'select': {
+        'defaultKeyCode': 49, /* '1' key */
+        'binding': this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
+      },
+      'menu': {
+        'defaultKeyCode': 52, /* '4' key */
+        'binding': this.switchAccess_.enterMenu.bind(this.switchAccess_)
+      }
+    };
   }
 }

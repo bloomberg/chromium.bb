@@ -7,9 +7,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/gpu/GrContextOptions.h"
 
@@ -17,8 +16,7 @@ namespace gpu {
 namespace raster {
 
 class GPU_GLES2_EXPORT GrShaderCache
-    : public GrContextOptions::PersistentCache,
-      public base::trace_event::MemoryDumpProvider {
+    : public GrContextOptions::PersistentCache {
  public:
   class GPU_GLES2_EXPORT Client {
    public:
@@ -48,10 +46,6 @@ class GPU_GLES2_EXPORT GrShaderCache
   void CacheClientIdOnDisk(int32_t client_id);
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   size_t num_cache_entries() const { return store_.size(); }
   size_t curr_size_bytes_for_testing() const { return curr_size_bytes_; }

@@ -22,7 +22,6 @@
 #include "api/rtp_sender_interface.h"
 #include "api/scoped_refptr.h"
 #include "rtc_base/ref_count.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -37,7 +36,7 @@ enum class RtpTransceiverDirection {
 // Structure for initializing an RtpTransceiver in a call to
 // PeerConnectionInterface::AddTransceiver.
 // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit
-struct RTC_EXPORT RtpTransceiverInit final {
+struct RtpTransceiverInit final {
   RtpTransceiverInit();
   RtpTransceiverInit(const RtpTransceiverInit&);
   ~RtpTransceiverInit();

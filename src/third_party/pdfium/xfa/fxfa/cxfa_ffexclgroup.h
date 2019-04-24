@@ -18,7 +18,7 @@ class CXFA_FFExclGroup final : public CXFA_FFWidget {
   // CXFA_FFWidget
   void RenderWidget(CXFA_Graphics* pGS,
                     const CFX_Matrix& matrix,
-                    HighlightOption highlight) override;
+                    uint32_t dwStatus) override;
 };
 
 #endif  // XFA_FXFA_CXFA_FFEXCLGROUP_H_

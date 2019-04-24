@@ -123,8 +123,8 @@ mojom::ConsentStatus AssistantViewDelegateImpl::GetConsentStatus() const {
 }
 
 void AssistantViewDelegateImpl::GetNavigableContentsFactoryForView(
-    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  assistant_controller_->GetNavigableContentsFactory(std::move(receiver));
+    content::mojom::NavigableContentsFactoryRequest request) {
+  assistant_controller_->GetNavigableContentsFactory(std::move(request));
 }
 
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {

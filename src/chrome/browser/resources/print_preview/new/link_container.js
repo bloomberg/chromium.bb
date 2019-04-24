@@ -17,7 +17,6 @@ Polymer({
     shouldShowSystemDialogLink_: {
       type: Boolean,
       computed: 'computeShouldShowSystemDialogLink_(appKioskMode, destination)',
-      reflectToAttribute: true,
     },
 
     /** @private {boolean} */

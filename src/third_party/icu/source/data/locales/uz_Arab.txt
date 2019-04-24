@@ -15,7 +15,6 @@ uz_Arab{
                 exponential{"×۱۰^"}
                 group{"٬"}
                 percentSign{"٪"}
-                timeSeparator{":"}
             }
         }
         default{"arabext"}
@@ -29,7 +28,7 @@ uz_Arab{
         }
         native{"arabext"}
     }
-    Version{"2.1.47.82"}
+    Version{"2.1.38.69"}
     calendar{
         gregorian{
             dayNames{

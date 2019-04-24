@@ -42,7 +42,6 @@ class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
       override;
 
   // MockXRDeviceHookBase
-  void TerminateDeviceServiceProcessForTesting();
   unsigned int ConnectController(
       const device::ControllerFrameData& initial_data);
   void UpdateController(unsigned int index,
@@ -60,7 +59,7 @@ class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
 
  private:
   mojo::Binding<device_test::mojom::XRTestHook> binding_;
-  device_test::mojom::XRServiceTestHookPtr service_test_hook_;
+  device_test::mojom::XRTestHookRegistrationPtr test_hook_registration_;
 };
 
 #endif  // CHROME_BROWSER_VR_TEST_MOCK_XR_DEVICE_HOOK_BASE_H_

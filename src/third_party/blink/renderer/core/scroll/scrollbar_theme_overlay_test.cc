@@ -136,7 +136,7 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

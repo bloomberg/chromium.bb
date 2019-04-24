@@ -22,6 +22,7 @@ class CommonHeader;
 // Receiver Estimated Max Bitrate (REMB) (draft-alvestrand-rmcat-remb).
 class Remb : public Psfb {
  public:
+  static constexpr uint8_t kFeedbackMessageType = Psfb::kAfbMessageType;
   static constexpr size_t kMaxNumberOfSsrcs = 0xff;
 
   Remb();

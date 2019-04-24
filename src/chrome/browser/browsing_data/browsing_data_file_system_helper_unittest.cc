@@ -66,13 +66,12 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
   BrowsingDataFileSystemHelperTest() {
     profile_.reset(new TestingProfile());
-    auto* file_system_context =
-        BrowserContext::GetDefaultStoragePartition(profile_.get())
-            ->GetFileSystemContext();
-    helper_ = BrowsingDataFileSystemHelper::Create(file_system_context);
+
+    helper_ = BrowsingDataFileSystemHelper::Create(
+        BrowserContext::GetDefaultStoragePartition(profile_.get())->
+            GetFileSystemContext());
     content::RunAllTasksUntilIdle();
-    canned_helper_ =
-        new CannedBrowsingDataFileSystemHelper(file_system_context);
+    canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   ~BrowsingDataFileSystemHelperTest() override {
     // Avoid memory leaks.

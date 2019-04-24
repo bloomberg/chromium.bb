@@ -45,6 +45,7 @@ using chrome_test_util::SettingsDoneButton;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+using web::test::ElementSelector;
 
 namespace {
 
@@ -586,7 +587,7 @@ void TapSuppressDialogsButton() {
 
   [[EarlGrey selectElementWithMatcher:webViewMatcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        [ElementSelector selectorWithElementID:kLinkID],
+                        ElementSelector::ElementSelectorId(kLinkID),
                         true /* menu should appear */)];
 
   // Tap on the "Open In New Tab" button.

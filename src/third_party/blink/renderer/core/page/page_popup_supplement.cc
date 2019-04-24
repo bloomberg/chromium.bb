@@ -38,8 +38,7 @@ PagePopupSupplement::PagePopupSupplement(LocalFrame& frame,
                                          PagePopup& popup,
                                          PagePopupClient* popup_client)
     : Supplement<LocalFrame>(frame),
-      controller_(
-          MakeGarbageCollected<PagePopupController>(popup, popup_client)) {
+      controller_(PagePopupController::Create(popup, popup_client)) {
   DCHECK(popup_client);
 }
 

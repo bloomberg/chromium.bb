@@ -40,8 +40,9 @@ struct GlobalScopeCreationParams;
 
 class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
  public:
-  DedicatedWorkerThread(ExecutionContext* parent_execution_context,
-                        DedicatedWorkerObjectProxy&);
+  static std::unique_ptr<DedicatedWorkerThread> Create(
+      ExecutionContext* parent_execution_context,
+      DedicatedWorkerObjectProxy&);
   ~DedicatedWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
@@ -55,6 +56,8 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
  private:
   friend class DedicatedWorkerThreadForTest;
 
+  DedicatedWorkerThread(ExecutionContext* parent_execution_context,
+                        DedicatedWorkerObjectProxy&);
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 

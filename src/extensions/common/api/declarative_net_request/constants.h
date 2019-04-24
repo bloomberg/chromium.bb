@@ -35,7 +35,6 @@ extern const char kExcludedResourceTypesKey[];
 extern const char kDomainTypeKey[];
 extern const char kRuleActionTypeKey[];
 extern const char kRedirectUrlKey[];
-extern const char kRemoveHeadersListKey[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

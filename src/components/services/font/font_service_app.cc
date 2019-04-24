@@ -21,6 +21,10 @@
 #include "components/services/font/ppapi_fontconfig_matching.h"  // nogncheck
 #endif
 
+#if defined(OS_LINUX)
+#include "base/test/fontconfig_util_linux.h"
+#endif
+
 static_assert(
     static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
         static_cast<uint32_t>(font_service::mojom::TypefaceSlant::ROMAN),
@@ -99,8 +103,6 @@ void FontServiceApp::OnBindInterface(
 void FontServiceApp::MatchFamilyName(const std::string& family_name,
                                      mojom::TypefaceStylePtr requested_style,
                                      MatchFamilyNameCallback callback) {
-  TRACE_EVENT0("fonts", "FontServiceApp::MatchFamilyName");
-
   SkFontConfigInterface::FontIdentity result_identity;
   SkString result_family;
   SkFontStyle result_style;
@@ -141,8 +143,6 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
 
 void FontServiceApp::OpenStream(uint32_t id_number,
                                 OpenStreamCallback callback) {
-  TRACE_EVENT0("fonts", "FontServiceApp::OpenStream");
-
   DCHECK_LT(id_number, static_cast<uint32_t>(paths_.size()));
   base::File file;
   if (id_number < static_cast<uint32_t>(paths_.size())) {
@@ -156,8 +156,6 @@ void FontServiceApp::FallbackFontForCharacter(
     uint32_t character,
     const std::string& locale,
     FallbackFontForCharacterCallback callback) {
-  TRACE_EVENT0("fonts", "FontServiceApp::FallbackFontForCharacter");
-
   auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
   int index = FindOrAddPath(SkString(fallback_font.filename.data()));
 
@@ -177,8 +175,6 @@ void FontServiceApp::FontRenderStyleForStrike(
     bool is_italic,
     float device_scale_factor,
     FontRenderStyleForStrikeCallback callback) {
-  TRACE_EVENT0("fonts", "FontServiceApp::FontRenderStyleForStrike");
-
   gfx::FontRenderParamsQuery query;
 
   query.device_scale_factor = device_scale_factor;
@@ -208,9 +204,6 @@ void FontServiceApp::FontRenderStyleForStrike(
 void FontServiceApp::MatchFontByPostscriptNameOrFullFontName(
     const std::string& family,
     MatchFontByPostscriptNameOrFullFontNameCallback callback) {
-  TRACE_EVENT0("fonts",
-               "FontServiceApp::MatchFontByPostscriptNameOrFullFontName");
-
   base::Optional<FontConfigLocalMatching::FontConfigMatchResult> match_result =
       FontConfigLocalMatching::FindFontByPostscriptNameOrFullFontName(family);
   if (match_result) {
@@ -233,8 +226,6 @@ void FontServiceApp::MatchFontWithFallback(
     uint32_t charset,
     uint32_t fallbackFamilyType,
     MatchFontWithFallbackCallback callback) {
-  TRACE_EVENT0("fonts", "FontServiceApp::MatchFontWithFallback");
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   base::File matched_font_file;
   int font_file_descriptor = MatchFontFaceWithFallback(
@@ -253,8 +244,6 @@ void FontServiceApp::CreateSelf(mojom::FontServiceRequest request) {
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {
-  TRACE_EVENT1("fonts", "FontServiceApp::FindOrAddPath", "path",
-               TRACE_STR_COPY(path.c_str()));
   int count = paths_.size();
   for (int i = 0; i < count; ++i) {
     if (path == paths_[i])

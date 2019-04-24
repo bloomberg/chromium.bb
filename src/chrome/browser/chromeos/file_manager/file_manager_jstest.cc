@@ -74,10 +74,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
   RunGeneratedTest("/background/js/media_import_handler_unittest.html");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MountMetricsTest) {
-  RunGeneratedTest("/background/js/mount_metrics_unittest.html");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
   RunGeneratedTest("/background/js/task_queue_unittest.html");
 }

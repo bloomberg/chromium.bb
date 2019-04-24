@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/learning_helper.h"
@@ -125,8 +124,7 @@ void VideoDecodePerfHistory::GetPerfInfo(mojom::PredictionFeaturesPtr features,
 
   VideoDecodeStatsDB::VideoDescKey video_key =
       VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-          features->profile, features->video_size, features->frames_per_sec,
-          features->key_system, features->use_hw_secure_codecs);
+          features->profile, features->video_size, features->frames_per_sec);
 
   db_->GetDecodeStats(
       video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForRequest,
@@ -209,7 +207,6 @@ VideoDecodePerfHistory::SaveCallback VideoDecodePerfHistory::GetSaveCallback() {
 }
 
 void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
-                                            learning::FeatureValue origin,
                                             bool is_top_frame,
                                             mojom::PredictionFeatures features,
                                             mojom::PredictionTargets targets,
@@ -233,22 +230,21 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
-        source_id, origin, is_top_frame, std::move(features),
-        std::move(targets), player_id, std::move(save_done_cb)));
+        source_id, is_top_frame, std::move(features), std::move(targets),
+        player_id, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
 
   VideoDecodeStatsDB::VideoDescKey video_key =
       VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-          features.profile, features.video_size, features.frames_per_sec,
-          features.key_system, features.use_hw_secure_codecs);
+          features.profile, features.video_size, features.frames_per_sec);
   VideoDecodeStatsDB::DecodeStatsEntry new_stats(
       targets.frames_decoded, targets.frames_dropped,
       targets.frames_power_efficient);
 
   if (learning_helper_)
-    learning_helper_->AppendStats(video_key, origin, new_stats);
+    learning_helper_->AppendStats(video_key, new_stats);
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(
@@ -325,11 +321,6 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   builder.SetVideo_FramesPerSecond(video_key.frame_rate);
   builder.SetVideo_NaturalHeight(video_key.size.height());
   builder.SetVideo_NaturalWidth(video_key.size.width());
-
-  if (!video_key.key_system.empty()) {
-    builder.SetVideo_EME_KeySystem(GetKeySystemIntForUKM(video_key.key_system));
-    builder.SetVideo_EME_UseHwSecureCodecs(video_key.use_hw_secure_codecs);
-  }
 
   bool past_is_smooth = false;
   bool past_is_efficient = false;

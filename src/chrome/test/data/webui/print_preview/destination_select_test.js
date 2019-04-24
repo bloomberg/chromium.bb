@@ -21,7 +21,7 @@ cr.define('destination_select_test', function() {
   const suiteName = 'DestinationSelectTests';
   suite(suiteName, function() {
     /** @type {?PrintPreviewAppElement} */
-    let destinationSettings = null;
+    let page = null;
 
     /** @type {?PrintPreview.NativeLayerStub} */
     let nativeLayer = null;
@@ -63,41 +63,30 @@ cr.define('destination_select_test', function() {
       nativeLayer.setLocalDestinations(localDestinations);
       print_preview.NativeLayer.setInstance(nativeLayer);
       const cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
       cloudDestinations.forEach(cloudDestination => {
         cloudPrintInterface.setPrinter(cloudDestination);
       });
       PolymerTest.clearBody();
-      const model = document.createElement('print-preview-model');
-      document.body.appendChild(model);
-
-      destinationSettings =
-          document.createElement('print-preview-destination-settings');
-      destinationSettings.destination = null;
-      destinationSettings.settings = model.settings;
-      test_util.fakeDataBind(model, destinationSettings, 'settings');
-      document.body.appendChild(destinationSettings);
-      const whenCapabilitiesReady = test_util.eventToPromise(
-          print_preview.DestinationStore.EventType
-              .SELECTED_DESTINATION_CAPABILITIES_READY,
-          destinationSettings.destinationStore_);
-      destinationSettings.destinationStore_.addEventListener(
+      page = document.createElement('print-preview-app');
+      document.body.appendChild(page);
+      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
+      page.destinationStore_.addEventListener(
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           function() {
             numPrintersSelected++;
           });
-      destinationSettings.cloudPrintInterface = cloudPrintInterface;
-      destinationSettings.appKioskMode = initialSettings.isInAppKioskMode;
-      const recentDestinations = initialSettings.serializedAppStateStr ?
-          JSON.parse(initialSettings.serializedAppStateStr).recentDestinations :
-          [];
-      destinationSettings.setSetting('recentDestinations', recentDestinations);
-      destinationSettings.initDestinationStore(
-          initialSettings.printerName,
-          initialSettings.serializedDefaultDestinationSelectionRulesStr);
-      destinationSettings.disabled = false;
-      return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
-        nativeLayer.whenCalled('getPrinterCapabilities'), whenCapabilitiesReady
-      ]);
+      const whenCapabilitiesReady = test_util.eventToPromise(
+          print_preview.DestinationStore.EventType
+              .SELECTED_DESTINATION_CAPABILITIES_READY,
+          page.destinationStore_);
+
+      return nativeLayer.whenCalled('getInitialSettings').then(() => {
+        return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
+          nativeLayer.whenCalled('getPrinterCapabilities'),
+          whenCapabilitiesReady
+        ]);
+      });
     }
 
     /**
@@ -108,6 +97,7 @@ cr.define('destination_select_test', function() {
      * @return {!Promise} Promise that resolves when checks are complete.
      */
     function assertPrinterDisplay(printerName, disabled) {
+      const destinationSettings = page.$$('print-preview-destination-settings');
       const destinationSelect = destinationSettings.$.destinationSelect;
 
       Polymer.dom.flush();
@@ -140,7 +130,7 @@ cr.define('destination_select_test', function() {
       return setInitialSettings().then(function(args) {
         assertEquals('ID1', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
-        assertEquals('ID1', destinationSettings.destination.id);
+        assertEquals('ID1', page.destination_.id);
         return assertPrinterDisplay('One', false);
       });
     });
@@ -165,13 +155,12 @@ cr.define('destination_select_test', function() {
             // recent.
             assertEquals('ID1', args.destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, args.type);
-            assertEquals('ID1', destinationSettings.destination.id);
+            assertEquals('ID1', page.destination_.id);
             return assertPrinterDisplay('One', false);
           })
           .then(function() {
             // Verify the correct printers are marked as recent in the store.
-            const reportedPrinters =
-                destinationSettings.destinationStore_.destinations();
+            const reportedPrinters = page.destinationStore_.destinations();
             destinations.forEach((destination, index) => {
               const match = reportedPrinters.find((reportedPrinter) => {
                 return reportedPrinter.id == destination.id;
@@ -202,12 +191,18 @@ cr.define('destination_select_test', function() {
             // recent.
             assertEquals('ID1', args.destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, args.type);
-            assertEquals('ID1', destinationSettings.destination.id);
+            assertEquals('ID1', page.destination_.id);
+
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(previewArgs) {
+            const ticket = JSON.parse(previewArgs.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals('ID1', ticket.deviceName);
 
             // The other recent destinations should be prefetched, but only one
             // should have been selected so there was only one preview request.
-            const reportedPrinters =
-                destinationSettings.destinationStore_.destinations();
+            const reportedPrinters = page.destinationStore_.destinations();
             assertEquals(4, reportedPrinters.length);
             destinations.forEach((destination, index) => {
               assertEquals(
@@ -231,7 +226,7 @@ cr.define('destination_select_test', function() {
         // the rules.
         assertEquals('ID4', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
-        assertEquals('ID4', destinationSettings.destination.id);
+        assertEquals('ID4', page.destination_.id);
         return assertPrinterDisplay('Four', false);
       });
     });
@@ -242,9 +237,6 @@ cr.define('destination_select_test', function() {
      * destinations.
      */
     test(assert(TestNames.SystemDefaultPrinterPolicy), function() {
-      // Set the policy in loadTimeData.
-      loadTimeData.overrideValues({useSystemDefaultPrinter: true});
-
       // Setup some recent destinations to ensure they are not selected.
       const recentDestinations = [];
       destinations.slice(0, 3).forEach(destination => {
@@ -263,12 +255,12 @@ cr.define('destination_select_test', function() {
             test_util.eventToPromise(
                 print_preview.DestinationStore.EventType
                     .SELECTED_DESTINATION_CAPABILITIES_READY,
-                destinationSettings.destinationStore_),
+                page.destinationStore_),
           ])
           .then(function(argsArray) {
             // Need to load FooDevice as the printer, since it is the system
             // default.
-            assertEquals('FooDevice', destinationSettings.destination.id);
+            assertEquals('FooDevice', page.destination_.id);
             assertPrinterDisplay('FooName', false);
           });
     });
@@ -289,7 +281,7 @@ cr.define('destination_select_test', function() {
         // Should have loaded the first destination as the selected printer.
         assertEquals(destinations[0].id, args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
-        assertEquals(destinations[0].id, destinationSettings.destination.id);
+        assertEquals(destinations[0].id, page.destination_.id);
         return assertPrinterDisplay(destinations[0].displayName, false);
       });
     });
@@ -311,11 +303,13 @@ cr.define('destination_select_test', function() {
           .all([
             setInitialSettings(true),
             test_util.eventToPromise(
-                print_preview.DestinationStore.EventType.ERROR,
-                destinationSettings.destinationStore_),
+                print_preview.DestinationStore.EventType.NO_DESTINATIONS_FOUND,
+                page.destinationStore_),
           ])
           .then(function() {
-            assertEquals(null, destinationSettings.destination);
+            assertEquals(null, page.destination_);
+            const destinationSettings =
+                page.$$('print-preview-destination-settings');
             assertTrue(destinationSettings.$$('.throbber-container').hidden);
             const destinationSelect = destinationSettings.$.destinationSelect;
             assertFalse(destinationSelect.hidden);
@@ -340,9 +334,10 @@ cr.define('destination_select_test', function() {
       });
 
       return setInitialSettings().then(function(args) {
+        assertEquals(print_preview_new.State.READY, page.state);
         assertEquals('FooDevice', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
-        assertEquals('FooDevice', destinationSettings.destination.id);
+        assertEquals('FooDevice', page.destination_.id);
         return assertPrinterDisplay('FooName', false);
       });
     });
@@ -363,15 +358,17 @@ cr.define('destination_select_test', function() {
       print_preview.DestinationStore.AUTO_SELECT_TIMEOUT_ = 0;
       return setInitialSettings()
           .then(function() {
+            assertEquals(print_preview_new.State.READY, page.state);
             assertPrinterDisplay('Save as PDF', false);
             // Simulate setting a bad ticket value.
-            destinationSettings.disabled = true;
+            page.$.state.transitTo(print_preview_new.State.INVALID_TICKET);
             return new Promise(resolve => setTimeout(resolve));
           })
           .then(function() {
             // Should still have Save as PDF. Dropdown is disabled due to
             // invalid ticket.
             assertPrinterDisplay('Save as PDF', true);
+            assertEquals(print_preview_new.State.INVALID_TICKET, page.state);
           });
     });
 
@@ -408,13 +405,20 @@ cr.define('destination_select_test', function() {
             // was most recent.
             assertEquals(
                 print_preview.Destination.GooglePromotedId.DOCS,
-                destinationSettings.destination.id);
+                page.destination_.id);
             assertPrinterDisplay('Save to Google Drive', false);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(previewArgs) {
+            const ticket = JSON.parse(previewArgs.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.DOCS,
+                ticket.deviceName);
 
             // Only the other cloud destination for the same user account should
             // have been prefetched.
-            const loadedPrinters =
-                destinationSettings.destinationStore_.destinations();
+            const loadedPrinters = page.destinationStore_.destinations();
             assertEquals(3, loadedPrinters.length);
             cloudDestinations.forEach((destination) => {
               assertEquals(

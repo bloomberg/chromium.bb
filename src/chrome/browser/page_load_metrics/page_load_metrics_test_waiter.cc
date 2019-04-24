@@ -124,11 +124,18 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
 }
 
 void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
-    content::RenderFrameHost* rfh,
+    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    HandleResourceUpdate(resource);
+    auto it = page_resources_.find(resource->request_id);
+    if (it != page_resources_.end()) {
+      it->second = resource.Clone();
+    } else {
+      page_resources_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(resource->request_id),
+                              std::forward_as_tuple(resource->Clone()));
+    }
     if (resource->is_complete) {
       current_complete_resources_++;
       if (!resource->was_fetched_via_cache)
@@ -279,11 +286,11 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnResourceDataUseObserved(
-        content::RenderFrameHost* rfh,
+        FrameTreeNodeId frame_tree_node_id,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) {
   if (waiter_)
-    waiter_->OnResourceDataUseObserved(rfh, resources);
+    waiter_->OnResourceDataUseObserved(frame_tree_node_id, resources);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(

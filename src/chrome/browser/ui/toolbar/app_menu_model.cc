@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -42,7 +43,6 @@
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -206,7 +206,9 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
-  AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
+
+  if (extensions::util::IsNewBookmarkAppsEnabled())
+    AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
@@ -310,8 +312,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
 bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
-    DCHECK(app_menu_icon_controller_);
-    *icon = gfx::Image(app_menu_icon_controller_->GetIconImage(false));
+    *icon = UpgradeDetector::GetInstance()->GetIcon();
     return true;
   }
   return false;
@@ -764,7 +765,12 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
+  if (send_tab_to_self::ShouldOfferFeature(browser_)) {
+    AddItemWithStringId(IDC_SEND_TO_MY_DEVICES, IDS_SEND_TO_MY_DEVICES);
+  }
+
+  if (extensions::util::IsNewBookmarkAppsEnabled() &&
+      banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     const extensions::Extension* pwa =
         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)
             ? extensions::util::GetPwaForSecureActiveTab(browser_)
@@ -836,10 +842,6 @@ void AppMenuModel::Build() {
 }
 
 bool AppMenuModel::CreateActionToolbarOverflowMenu() {
-  // The extensions menu replaces the 3-dot menu entry.
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    return false;
-
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
   // browser_->window() can return null during startup, and

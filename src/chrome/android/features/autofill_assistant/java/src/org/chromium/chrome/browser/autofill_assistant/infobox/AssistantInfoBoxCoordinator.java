@@ -17,14 +17,13 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 public class AssistantInfoBoxCoordinator {
     private final View mView;
-    private AssistantInfoBoxViewBinder mViewBinder;
 
     public AssistantInfoBoxCoordinator(Context context, AssistantInfoBoxModel model) {
         mView = LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_info_box, /* root= */ null);
         ViewHolder viewHolder = new ViewHolder(context, mView);
-        mViewBinder = new AssistantInfoBoxViewBinder(context);
-        PropertyModelChangeProcessor.create(model, viewHolder, mViewBinder);
+        AssistantInfoBoxViewBinder viewBinder = new AssistantInfoBoxViewBinder(context);
+        PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
 
         // InfoBox view is initially hidden.
         setVisible(false);
@@ -40,14 +39,6 @@ public class AssistantInfoBoxCoordinator {
                 }
             }
         });
-    }
-
-    /**
-     * Explicitly clean up.
-     */
-    public void destroy() {
-        mViewBinder.destroy();
-        mViewBinder = null;
     }
 
     /**

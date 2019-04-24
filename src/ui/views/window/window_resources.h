@@ -11,7 +11,7 @@ class ImageSkia;
 
 namespace views {
 
-using FramePartImage = int;
+typedef int FramePartImage;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowResources
@@ -23,7 +23,7 @@ using FramePartImage = int;
 //
 class WindowResources {
  public:
-  virtual ~WindowResources() = default;
+  virtual ~WindowResources() {}
 
   virtual gfx::ImageSkia* GetPartImage(FramePartImage part) const = 0;
 };

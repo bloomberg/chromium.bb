@@ -4,8 +4,6 @@
 
 # This script shows cpu count to specify capacity of action pool.
 
-from __future__ import print_function
-
 import multiprocessing
 import sys
 
@@ -15,7 +13,7 @@ def main():
   except:
     cpu_count = 1
 
-  print(cpu_count)
+  print cpu_count
   return 0
 
 

@@ -27,7 +27,7 @@ class CONTENT_EXPORT ResourceLoaderDelegate {
  public:
   virtual std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      const net::AuthChallengeInfo& auth_info) = 0;
+      net::AuthChallengeInfo* auth_info) = 0;
 
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) = 0;

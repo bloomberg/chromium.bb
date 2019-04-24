@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -30,7 +31,6 @@ import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)
@@ -54,8 +54,12 @@ public class ClientManagerTest {
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
         RequestThrottler.purgeAllEntriesForTesting(context);
         mClientManager = new ClientManager();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.clearCachedVerificationsForTesting());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OriginVerifier.clearCachedVerificationsForTesting();
+            }
+        });
     }
 
     @Test
@@ -179,18 +183,21 @@ public class ClientManagerTest {
         // Should always start with no origin.
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // With no prepopulated origins, this verification should fail.
-            cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
-            Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // With no prepopulated origins, this verification should fail.
+                cm.verifyAndInitializeWithPostMessageOriginForSession(
+                        mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-            // If there is a prepopulated origin, we should get a synchronous verification.
-            OriginVerifier.addVerificationOverride(
-                    ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
-                    CustomTabsService.RELATION_USE_AS_ORIGIN);
-            cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                // If there is a prepopulated origin, we should get a synchronous verification.
+                OriginVerifier.addVerificationOverride(
+                        ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
+                        CustomTabsService.RELATION_USE_AS_ORIGIN);
+                cm.verifyAndInitializeWithPostMessageOriginForSession(
+                        mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            }
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -200,15 +207,18 @@ public class ClientManagerTest {
             }
         });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
-            Assert.assertEquals(
-                    IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
+                Assert.assertEquals(
+                        IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
 
-            // initializeWithPostMessageOriginForSession should override without checking
-            // origin.
-            cm.initializeWithPostMessageOriginForSession(mSession, null);
-            Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+                // initializeWithPostMessageOriginForSession should override without checking
+                // origin.
+                cm.initializeWithPostMessageOriginForSession(mSession, null);
+                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+            }
         });
     }
 
@@ -228,7 +238,7 @@ public class ClientManagerTest {
         cm.verifyAndInitializeWithPostMessageOriginForSession(
                 mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             // Prepopulated origins should depend on the relation used.
             OriginVerifier.addVerificationOverride(
                     ContextUtils.getApplicationContext().getPackageName(), origin,
@@ -240,7 +250,7 @@ public class ClientManagerTest {
         cm.verifyAndInitializeWithPostMessageOriginForSession(
                 mSession, origin, CustomTabsService.RELATION_HANDLE_ALL_URLS);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
             Assert.assertEquals(
                     IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
@@ -261,21 +271,24 @@ public class ClientManagerTest {
         // Should always start with no origin.
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Origin origin = new Origin(HTTP_URL);
-            // With no prepopulated origins, this verification should fail.
-            cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
-            Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Origin origin = new Origin(HTTP_URL);
+                // With no prepopulated origins, this verification should fail.
+                cm.verifyAndInitializeWithPostMessageOriginForSession(
+                        mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
+                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-            // Even if there is a prepopulated origin, non-https origins should get an early
-            // return with false.
-            OriginVerifier.addVerificationOverride(
-                    ContextUtils.getApplicationContext().getPackageName(), origin,
-                    CustomTabsService.RELATION_USE_AS_ORIGIN);
-            cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
-            Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+                // Even if there is a prepopulated origin, non-https origins should get an early
+                // return with false.
+                OriginVerifier.addVerificationOverride(
+                        ContextUtils.getApplicationContext().getPackageName(), origin,
+                        CustomTabsService.RELATION_USE_AS_ORIGIN);
+                cm.verifyAndInitializeWithPostMessageOriginForSession(
+                        mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
+                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+            }
         });
     }
 

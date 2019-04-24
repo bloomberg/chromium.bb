@@ -30,8 +30,7 @@ inline SVGTSpanElement::SVGTSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-LayoutObject* SVGTSpanElement::CreateLayoutObject(const ComputedStyle&,
-                                                  LegacyLayout) {
+LayoutObject* SVGTSpanElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTSpan(this);
 }
 

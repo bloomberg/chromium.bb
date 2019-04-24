@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -28,7 +29,6 @@ import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -69,7 +69,20 @@ public class InterceptNavigationDelegateTest {
     private ChromeActivity mActivity;
     private List<NavigationParams> mNavParamHistory = new ArrayList<>();
     private List<ExternalNavigationParams> mExternalNavParamHistory = new ArrayList<>();
+    private TestInterceptNavigationDelegate mInterceptNavigationDelegate;
     private EmbeddedTestServer mTestServer;
+
+    class TestInterceptNavigationDelegate extends InterceptNavigationDelegateImpl {
+        TestInterceptNavigationDelegate() {
+            super(new TestExternalNavigationHandler(), mActivity.getActivityTab());
+        }
+
+        @Override
+        public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
+            mNavParamHistory.add(navigationParams);
+            return super.shouldIgnoreNavigation(navigationParams);
+        }
+    }
 
     class TestExternalNavigationHandler extends ExternalNavigationHandler {
         public TestExternalNavigationHandler() {
@@ -98,17 +111,13 @@ public class InterceptNavigationDelegateTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
-        final Tab tab = mActivity.getActivityTab();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(tab) {
-                @Override
-                public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-                    mNavParamHistory.add(navigationParams);
-                    return super.shouldIgnoreNavigation(navigationParams);
-                }
-            };
-            delegate.setExternalNavigationHandler(new TestExternalNavigationHandler());
-            InterceptNavigationDelegateImpl.initDelegateForTesting(tab, delegate);
+        mInterceptNavigationDelegate = new TestInterceptNavigationDelegate();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Tab tab = mActivity.getActivityTab();
+                tab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
+            }
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }

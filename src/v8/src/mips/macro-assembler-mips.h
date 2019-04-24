@@ -91,7 +91,9 @@ inline MemOperand CFunctionArgumentOperand(int index) {
 
 class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
  public:
-  using TurboAssemblerBase::TurboAssemblerBase;
+  template <typename... Args>
+  explicit TurboAssembler(Args&&... args)
+      : TurboAssemblerBase(std::forward<Args>(args)...) {}
 
   // Activation support.
   void EnterFrame(StackFrame::Type type);
@@ -329,8 +331,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void CallRecordWriteStub(Register object, Register address,
                            RememberedSetAction remembered_set_action,
                            SaveFPRegsMode fp_mode, Address wasm_target);
-  void CallEphemeronKeyBarrier(Register object, Register address,
-                               SaveFPRegsMode fp_mode);
 
   // Push multiple registers on the stack.
   // Registers are saved in numerical order, with higher numbered registers
@@ -549,10 +549,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Int64Lowering instructions
   void AddPair(Register dst_low, Register dst_high, Register left_low,
                Register left_high, Register right_low, Register right_high,
-               Register scratch1, Register scratch2);
-
-  void AddPair(Register dst_low, Register dst_high, Register left_low,
-               Register left_high, int32_t imm,
                Register scratch1, Register scratch2);
 
   void SubPair(Register dst_low, Register dst_high, Register left_low,
@@ -904,7 +900,9 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 // MacroAssembler implements a collection of frequently used macros.
 class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
  public:
-  using TurboAssembler::TurboAssembler;
+  template <typename... Args>
+  explicit MacroAssembler(Args&&... args)
+      : TurboAssembler(std::forward<Args>(args)...) {}
 
   // Swap two registers.  If the scratch register is omitted then a slightly
   // less efficient form using xor instead of mov is emitted.

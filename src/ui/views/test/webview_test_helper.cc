@@ -10,8 +10,8 @@
 namespace views {
 
 WebViewTestHelper::WebViewTestHelper() {
-  test_content_client_initializer_ =
-      std::make_unique<content::TestContentClientInitializer>();
+  test_content_client_initializer_.reset(
+      new content::TestContentClientInitializer());
 
   // Setup to register a new RenderViewHost factory which manufactures
   // mock render process hosts. This ensures that we never create a 'real'
@@ -19,6 +19,7 @@ WebViewTestHelper::WebViewTestHelper() {
   test_content_client_initializer_->CreateTestRenderViewHosts();
 }
 
-WebViewTestHelper::~WebViewTestHelper() = default;
+WebViewTestHelper::~WebViewTestHelper() {
+}
 
 }  // namespace views

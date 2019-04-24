@@ -29,9 +29,8 @@ Persistence.WorkspaceSettingsTab = class extends UI.VBox {
 
     this._fileSystemsListContainer = this.containerElement.createChild('div', '');
 
-    const addButton = UI.createTextButton(ls`Add folder\u2026`, this._addFileSystemClicked.bind(this));
-    this.containerElement.appendChild(addButton);
-    this.setDefaultFocusedElement(addButton);
+    this.containerElement.appendChild(
+        UI.createTextButton(Common.UIString('Add folder\u2026'), this._addFileSystemClicked.bind(this)));
 
     /** @type {!Map<string, !Element>} */
     this._elementByPath = new Map();

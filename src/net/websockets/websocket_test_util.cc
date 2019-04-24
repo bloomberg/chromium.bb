@@ -259,7 +259,7 @@ void WebSocketTestURLRequestContextHost::SetProxyConfig(
 }
 
 int DummyConnectDelegate::OnAuthRequired(
-    const AuthChallengeInfo& auth_info,
+    scoped_refptr<AuthChallengeInfo> auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
     const IPEndPoint& host_port_pair,
     base::OnceCallback<void(const AuthCredentials*)> callback,

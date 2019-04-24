@@ -13,7 +13,7 @@ namespace internal {
 
 class MarkBit {
  public:
-  using CellType = uint32_t;
+  typedef uint32_t CellType;
   STATIC_ASSERT(sizeof(CellType) == sizeof(base::Atomic32));
 
   inline MarkBit(CellType* cell, CellType mask) : cell_(cell), mask_(mask) {}

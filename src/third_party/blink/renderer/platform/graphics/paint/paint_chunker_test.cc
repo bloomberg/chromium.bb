@@ -19,7 +19,7 @@ class PaintChunkerTest : public testing::Test {
  protected:
   class TestDisplayItemClient : public DisplayItemClient {
     String DebugName() const final { return "Test"; }
-    IntRect VisualRect() const final { return IntRect(); }
+    LayoutRect VisualRect() const final { return LayoutRect(); }
   };
   TestDisplayItemClient client_;
 };

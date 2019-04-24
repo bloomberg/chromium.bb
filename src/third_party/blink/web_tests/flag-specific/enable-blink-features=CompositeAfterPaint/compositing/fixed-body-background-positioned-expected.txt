@@ -14,8 +14,7 @@
     {
       "name": "LayoutBlockFlow HTML",
       "position": [100, 100],
-      "bounds": [640, 440],
-      "backgroundColor": "#00000080",
+      "bounds": [640, 3500],
       "transform": 1
     }
   ],

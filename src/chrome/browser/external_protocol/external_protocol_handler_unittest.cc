@@ -11,12 +11,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FakeExternalProtocolHandlerWorker
@@ -75,7 +71,8 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   void RunExternalProtocolDialog(const GURL& url,
-                                 content::WebContents* web_contents,
+                                 int render_process_host_id,
+                                 int routing_id,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {
     EXPECT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
@@ -129,10 +126,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
   ExternalProtocolHandlerTest() : delegate_(run_loop_.QuitClosure()) {}
 
   void SetUp() override {
-    profile_ = std::make_unique<TestingProfile>();
-    rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
-    web_contents_ = content::WebContentsTester::CreateTestWebContents(
-        profile_.get(), nullptr);
+    profile_.reset(new TestingProfile());
   }
 
   void TearDown() override {
@@ -160,10 +154,8 @@ class ExternalProtocolHandlerTest : public testing::Test {
     ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    int process_id = web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    int routing_id = web_contents_->GetRenderViewHost()->GetRoutingID();
-    ExternalProtocolHandler::LaunchUrl(url, process_id, routing_id,
-                                       ui::PAGE_TRANSITION_LINK, true);
+    ExternalProtocolHandler::LaunchUrl(url, 0, 0, ui::PAGE_TRANSITION_LINK,
+                                       true);
     run_loop_.Run();
     ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 
@@ -178,8 +170,6 @@ class ExternalProtocolHandlerTest : public testing::Test {
   FakeExternalProtocolHandlerDelegate delegate_;
 
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
-  std::unique_ptr<content::WebContents> web_contents_;
 };
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeDefault) {

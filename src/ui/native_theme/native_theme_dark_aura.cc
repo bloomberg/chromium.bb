@@ -22,16 +22,15 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_WindowBackground:
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
-    case kColorId_BubbleFooterBackground:
       return SK_ColorBLACK;
 
     // Button
     case kColorId_ButtonEnabledColor:
-      return gfx::kGoogleGrey200;
+      return SK_ColorWHITE;
     case kColorId_ProminentButtonFocusedColor:
-      return gfx::kGoogleBlue400;
+      return gfx::kGoogleBlue500;
     case kColorId_ProminentButtonColor:
-      return gfx::kGoogleBlue300;
+      return gfx::kGoogleBlue600;
 
     // Label
     case kColorId_LabelEnabledColor:

@@ -200,7 +200,7 @@ struct DefaultHashImpl;
 
 template <typename T>
 struct DefaultHashImpl<T, true> {
-  using Hash = IntHash<T>;
+  using Hash = IntHash<typename std::make_unsigned<T>::type>;
 };
 
 // Canonical implementation of DefaultHash.

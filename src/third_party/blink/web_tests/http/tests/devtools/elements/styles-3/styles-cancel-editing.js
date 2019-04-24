@@ -16,7 +16,7 @@
   var treeElement;
   var section;
 
-  async function step1() {
+  function step1() {
     ElementsTestRunner.dumpSelectedElementStyles(true);
     treeElement = ElementsTestRunner.getElementStylePropertyTreeItem('color');
 
@@ -26,14 +26,20 @@
 
     // Update incrementally, do not commit.
     treeElement.valueElement.textContent = 'green';
-    await treeElement.kickFreeFlowStyleEditForTest();
+    treeElement.kickFreeFlowStyleEditForTest();
 
     // Cancel editing.
     treeElement.valueElement.firstChild.select();
-    treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Escape'));
-    await ElementsTestRunner.waitForStyleAppliedPromise();
+    ElementsTestRunner.waitForStyleApplied(onStyleApplied);
 
-    ElementsTestRunner.selectNodeWithId('other', step2);
+    function onStyleApplied() {
+      treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Escape'));
+      ElementsTestRunner.waitForStyleApplied(onStyleReverted);
+    }
+
+    function onStyleReverted() {
+      ElementsTestRunner.selectNodeWithId('other', step2);
+    }
   }
 
   function step2() {

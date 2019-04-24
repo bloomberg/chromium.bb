@@ -10,7 +10,6 @@ jumbo_component("native_theme") {
   sources = [
     "caption_style.cc",
     "caption_style.h",
-    "caption_style_mac.mm",
     "caption_style_win.cc",
     "common_theme.cc",
     "common_theme.h",
@@ -60,7 +59,6 @@ jumbo_component("native_theme") {
     libs = [
       "CoreGraphics.framework",
       "AppKit.framework",
-      "MediaAccessibility.framework",
     ]
   }
 }

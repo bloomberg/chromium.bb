@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/websocket.h"
+#include "net/base/completion_callback.h"
 
 namespace base {
 class WaitableEvent;

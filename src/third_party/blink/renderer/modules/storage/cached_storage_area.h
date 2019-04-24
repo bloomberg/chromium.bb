@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_CACHED_STORAGE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_CACHED_STORAGE_AREA_H_
 
-#include "base/trace_event/memory_dump_provider.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -30,8 +29,7 @@ namespace blink {
 // objects.
 class MODULES_EXPORT CachedStorageArea
     : public mojom::blink::StorageAreaObserver,
-      public RefCounted<CachedStorageArea>,
-      public base::trace_event::MemoryDumpProvider {
+      public RefCounted<CachedStorageArea> {
  public:
   // Instances of this class are used to identify the "source" of any changes
   // made to this storage area, as well as to dispatch any incoming change
@@ -125,10 +123,6 @@ class MODULES_EXPORT CachedStorageArea
                   const String& source) override;
   void AllDeleted(const String& source) override;
   void ShouldSendOldValueOnMutations(bool value) override;
-
-  // base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Common helper for KeyAdded() and KeyChanged()
   void KeyAddedOrChanged(const Vector<uint8_t>& key,

@@ -243,7 +243,9 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
 
 class WebSocketDeflateStreamTest : public ::testing::Test {
  public:
-  WebSocketDeflateStreamTest() : mock_stream_(nullptr), predictor_(nullptr) {}
+  WebSocketDeflateStreamTest()
+      : mock_stream_(NULL),
+        predictor_(NULL) {}
   ~WebSocketDeflateStreamTest() override = default;
 
   void SetUp() override {

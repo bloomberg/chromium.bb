@@ -162,9 +162,7 @@ void AddEvent(NetLog* net_log) {
 class NetLogTestThread : public base::SimpleThread {
  public:
   NetLogTestThread()
-      : base::SimpleThread("NetLogTest"),
-        net_log_(nullptr),
-        start_event_(nullptr) {}
+      : base::SimpleThread("NetLogTest"), net_log_(NULL), start_event_(NULL) {}
 
   // We'll wait for |start_event| to be triggered before calling a subclass's
   // subclass's RunTestThread() function.

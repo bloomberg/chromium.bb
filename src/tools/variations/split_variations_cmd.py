@@ -363,9 +363,6 @@ def VariationsCmdToStrings(data):
 def SplitVariationsCmd(results):
   """Splits internal representation of commandline switches into two.
 
-  This function can be called recursively when bisecting a set of experiments
-  until one is identified to be responsble for a certain browser behavior.
-
   The commandline switches come from chrome://version/?show-variations-cmd.
   """
   enable_features = results.get(_ENABLE_FEATURES_SWITCH_NAME, [])
@@ -386,10 +383,7 @@ def SplitVariationsCmd(results):
 
 
 def SplitVariationsCmdFromString(input_string):
-  """Splits commandline switches.
-
-  This function can be called recursively when bisecting a set of experiments
-  until one is identified to be responsble for a certain browser behavior.
+  """Splits commandline switches into two.
 
   Same as SplitVariationsCmd(), except data comes from a string rather than
   an internal representation.
@@ -398,37 +392,31 @@ def SplitVariationsCmdFromString(input_string):
       input_string: Variations string to be split.
 
   Returns:
-      If input can be split, returns a list of two strings, each is half of
-      the input variations cmd; otherwise, returns a list of one string.
+      A list of two strings, each is half of the variations cmd.
   """
   data = ParseVariationsCmdFromString(input_string)
   splits = SplitVariationsCmd(data)
   results = []
   for split in splits:
     cmd_list = VariationsCmdToStrings(split)
-    if cmd_list:
-      results.append(' '.join(cmd_list))
+    results.append(' '.join(cmd_list))
   return results
 
 
 def SplitVariationsCmdFromFile(input_filename, output_dir=None):
-  """Splits commandline switches.
-
-  This function can be called recursively when bisecting a set of experiments
-  until one is identified to be responsble for a certain browser behavior.
+  """Splits commandline switches into two.
 
   Same as SplitVariationsCmd(), except data comes from a file rather than
   an internal representation.
 
   Args:
       input_filename: Variations file to be split.
-      output_dir: Folder to output the split variations file(s). If None,
+      output_dir: Folder to output the two split variations files. If None,
           output to the same folder as the input_filename. If the folder
           doesn't exist, it will be created.
 
   Returns:
-      If input can be split, returns a list of two output filenames;
-      otherwise, returns a list of one output filename.
+      A list of two output file names.
   """
   with open(input_filename, 'r') as f:
     input_string = f.read().replace('\n', ' ')

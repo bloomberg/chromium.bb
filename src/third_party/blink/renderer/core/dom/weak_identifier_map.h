@@ -38,10 +38,6 @@ class WeakIdentifierMap final
     return result;
   }
 
-  static IdentifierType ExistingIdentifier(T* object) {
-    return Instance().object_to_identifier_.at(object);
-  }
-
   static T* Lookup(IdentifierType identifier) {
     return Instance().identifier_to_object_.at(identifier);
   }

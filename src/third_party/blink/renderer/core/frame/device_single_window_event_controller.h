@@ -22,7 +22,7 @@ class CORE_EXPORT DeviceSingleWindowEventController
  public:
   ~DeviceSingleWindowEventController() override;
 
-  // Inherited from PlatformEventController.
+  // Inherited from DeviceEventControllerBase.
   void DidUpdateData() override;
   void Trace(blink::Visitor*) override;
 

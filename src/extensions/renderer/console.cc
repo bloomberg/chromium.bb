@@ -45,7 +45,7 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
       GetScriptContextFromV8Context(info.GetIsolate()->GetCurrentContext());
 
   // TODO(devlin): Consider (D)CHECK(script_context)
-  const auto level = static_cast<blink::mojom::ConsoleMessageLevel>(
+  const auto level = static_cast<content::ConsoleMessageLevel>(
       info.Data().As<v8::Int32>()->Value());
   AddMessage(script_context, level, message);
 }
@@ -55,12 +55,12 @@ gin::WrapperInfo kWrapperInfo = {gin::kEmbedderNativeGin};
 }  // namespace
 
 void Fatal(ScriptContext* context, const std::string& message) {
-  AddMessage(context, blink::mojom::ConsoleMessageLevel::kError, message);
+  AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
   CheckWithMinidump(message);
 }
 
 void AddMessage(ScriptContext* script_context,
-                blink::mojom::ConsoleMessageLevel level,
+                content::ConsoleMessageLevel level,
                 const std::string& message) {
   if (!script_context) {
     LOG(WARNING) << "Could not log \"" << message
@@ -74,8 +74,25 @@ void AddMessage(ScriptContext* script_context,
     return;
   }
 
+  blink::mojom::ConsoleMessageLevel web_level =
+      blink::mojom::ConsoleMessageLevel::kInfo;
+  switch (level) {
+    case content::CONSOLE_MESSAGE_LEVEL_VERBOSE:
+      web_level = blink::mojom::ConsoleMessageLevel::kVerbose;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_INFO:
+      web_level = blink::mojom::ConsoleMessageLevel::kInfo;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_WARNING:
+      web_level = blink::mojom::ConsoleMessageLevel::kWarning;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_ERROR:
+      web_level = blink::mojom::ConsoleMessageLevel::kError;
+      break;
+  }
+
   blink::WebConsoleMessage web_console_message(
-      level, blink::WebString::FromUTF8(message));
+      web_level, blink::WebString::FromUTF8(message));
   blink::WebConsoleMessage::LogWebConsoleMessage(script_context->v8_context(),
                                                  web_console_message);
 }
@@ -88,17 +105,17 @@ v8::Local<v8::Object> AsV8Object(v8::Isolate* isolate) {
     templ = v8::ObjectTemplate::New(isolate);
     static const struct {
       const char* name;
-      blink::mojom::ConsoleMessageLevel level;
+      content::ConsoleMessageLevel level;
     } methods[] = {
-        {"debug", blink::mojom::ConsoleMessageLevel::kVerbose},
-        {"log", blink::mojom::ConsoleMessageLevel::kInfo},
-        {"warn", blink::mojom::ConsoleMessageLevel::kWarning},
-        {"error", blink::mojom::ConsoleMessageLevel::kError},
+        {"debug", content::CONSOLE_MESSAGE_LEVEL_VERBOSE},
+        {"log", content::CONSOLE_MESSAGE_LEVEL_INFO},
+        {"warn", content::CONSOLE_MESSAGE_LEVEL_WARNING},
+        {"error", content::CONSOLE_MESSAGE_LEVEL_ERROR},
     };
     for (const auto& method : methods) {
-      v8::Local<v8::FunctionTemplate> function = v8::FunctionTemplate::New(
-          isolate, BoundLogMethodCallback,
-          v8::Integer::New(isolate, static_cast<int>(method.level)));
+      v8::Local<v8::FunctionTemplate> function =
+          v8::FunctionTemplate::New(isolate, BoundLogMethodCallback,
+                                    v8::Integer::New(isolate, method.level));
       function->RemovePrototype();
       templ->Set(gin::StringToSymbol(isolate, method.name), function);
     }

@@ -32,13 +32,9 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/skia/include/core/SkSize.h"
-#include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGSize CGSize;
@@ -48,7 +44,17 @@ typedef struct CGSize CGSize;
 #endif
 #endif
 
+struct SkSize;
+
+namespace gfx {
+class SizeF;
+class Vector2dF;
+}  // namespace gfx
+
 namespace blink {
+
+class IntSize;
+class LayoutSize;
 
 class PLATFORM_EXPORT FloatSize {
   DISALLOW_NEW();
@@ -57,12 +63,11 @@ class PLATFORM_EXPORT FloatSize {
   constexpr FloatSize() : width_(0), height_(0) {}
   constexpr FloatSize(float width, float height)
       : width_(width), height_(height) {}
-  constexpr explicit FloatSize(const IntSize& s)
-      : FloatSize(s.Width(), s.Height()) {}
-  constexpr explicit FloatSize(const gfx::SizeF& s)
-      : FloatSize(s.width(), s.height()) {}
-  explicit FloatSize(const SkSize& s) : FloatSize(s.width(), s.height()) {}
-  // We also have conversion operator to FloatSize defined in LayoutSize.
+  explicit FloatSize(const gfx::SizeF&);
+  explicit FloatSize(const IntSize& size)
+      : width_(size.Width()), height_(size.Height()) {}
+  FloatSize(const SkSize&);
+  explicit FloatSize(const LayoutSize&);
 
   static FloatSize NarrowPrecision(double width, double height);
 
@@ -134,17 +139,13 @@ class PLATFORM_EXPORT FloatSize {
   operator CGSize() const;
 #endif
 
-  explicit operator SkSize() const { return SkSize::Make(width_, height_); }
+  operator SkSize() const;
   // Use this only for logical sizes, which can not be negative. Things that are
   // offsets instead, and can be negative, should use a gfx::Vector2dF.
-  constexpr explicit operator gfx::SizeF() const {
-    return gfx::SizeF(width_, height_);
-  }
+  explicit operator gfx::SizeF() const;
   // FloatSize is used as an offset, which can be negative, but gfx::SizeF can
   // not. The Vector2dF type is used for offsets instead.
-  constexpr explicit operator gfx::Vector2dF() const {
-    return gfx::Vector2dF(width_, height_);
-  }
+  explicit operator gfx::Vector2dF() const;
 
   String ToString() const;
 

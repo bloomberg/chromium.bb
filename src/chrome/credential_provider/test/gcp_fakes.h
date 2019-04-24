@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
@@ -26,9 +25,6 @@ class WaitableEvent;
 }
 
 namespace credential_provider {
-
-void InitializeRegistryOverrideForTesting(
-    registry_util::RegistryOverrideManager* registry_override);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,9 +68,6 @@ class FakeOSUserManager : public OSUserManager {
                              const wchar_t* username,
                              const wchar_t* password,
                              const wchar_t* old_password) override;
-  HRESULT SetUserPassword(const wchar_t* domain,
-                          const wchar_t* username,
-                          const wchar_t* password) override;
   HRESULT IsWindowsPasswordValid(const wchar_t* domain,
                                  const wchar_t* username,
                                  const wchar_t* password) override;
@@ -98,9 +91,6 @@ class FakeOSUserManager : public OSUserManager {
                           const wchar_t* username,
                           base::string16* fullname) override;
 
-  HRESULT ModifyUserAccessWithLogonHours(const wchar_t* domain,
-                                         const wchar_t* username,
-                                         bool allow) override;
   struct UserInfo {
     UserInfo(const wchar_t* domain,
              const wchar_t* password,
@@ -179,6 +169,7 @@ class FakeScopedLsaPolicy : public ScopedLsaPolicy {
                               wchar_t* value,
                               size_t length) override;
   HRESULT AddAccountRights(PSID sid, const wchar_t* right) override;
+  HRESULT RemoveAccountRights(PSID sid, const wchar_t* right) override;
   HRESULT RemoveAccount(PSID sid) override;
 
  private:
@@ -213,7 +204,7 @@ class FakeScopedUserProfileFactory {
 
 class FakeScopedUserProfile : public ScopedUserProfile {
  public:
-  HRESULT SaveAccountInfo(const base::Value& properties) override;
+  HRESULT SaveAccountInfo(const base::DictionaryValue& properties) override;
 
  private:
   friend class FakeScopedUserProfileFactory;
@@ -294,7 +285,9 @@ class FakeAssociatedUserValidator : public AssociatedUserValidator {
   explicit FakeAssociatedUserValidator(base::TimeDelta validation_timeout);
   ~FakeAssociatedUserValidator() override;
 
-  using AssociatedUserValidator::IsUserAccessBlocked;
+  // Returns whether the user should be locked out of sign in (only used in
+  // tests).
+  bool IsUserAccessBlocked(const base::string16& sid) const;
 
  private:
   AssociatedUserValidator* original_validator_ = nullptr;
@@ -311,8 +304,6 @@ class FakeInternetAvailabilityChecker : public InternetAvailabilityChecker {
   ~FakeInternetAvailabilityChecker() override;
 
   bool HasInternetConnection() override;
-  void SetHasInternetConnection(
-      HasInternetConnectionCheckType has_internet_connection);
 
  private:
   InternetAvailabilityChecker* original_checker_ = nullptr;

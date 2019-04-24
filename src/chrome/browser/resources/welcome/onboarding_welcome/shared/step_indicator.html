@@ -1,18 +1,17 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="navi_colors_css.html">
 
 <dom-module id="step-indicator">
   <template>
-    <style include="navi-colors-css">
+    <style>
       :host {
         align-items: center;
         display: flex;
       }
 
       span {
-        background: var(--navi-step-indicator-color);
+        background: var(--google-grey-200);
         border-radius: 50%;
         display: inline-block;
         height: 8px;
@@ -21,7 +20,8 @@
       }
 
       span.active {
-        @apply --navi-step-indicator-active;
+        background: var(--google-blue-600);
+        opacity: 0.5;
       }
     </style>
     <template is="dom-repeat" items="[[dots_]]">

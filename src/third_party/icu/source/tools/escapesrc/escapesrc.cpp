@@ -327,9 +327,6 @@ bool fixLine(int /*no*/, std::string &linestr) {
 
   // start from the end and find all u" cases
   size_t pos = len = linestr.size();
-  if(len>INT32_MAX/2) {
-    return true;
-  }
   while((pos>0) && (pos = linestr.rfind("u\"", pos)) != std::string::npos) {
     //printf("found doublequote at %d\n", pos);
     if(fixAt(linestr, pos)) return true;
@@ -394,19 +391,15 @@ int convert(const std::string &infile, const std::string &outfile) {
   while( getline( inf, linestr)) {
     no++;
     if(fixLine(no, linestr)) {
-      goto fail;
+      outf.close();
+      fprintf(stderr, "%s:%d: Fixup failed by %s\n", infile.c_str(), no, prog.c_str());
+      cleanup(outfile);
+      return 1;
     }
     outf << linestr << '\n';
   }
 
-  if(inf.eof()) {
-    return 0;
-  }
-fail:
-  outf.close();
-  fprintf(stderr, "%s:%d: Fixup failed by %s\n", infile.c_str(), no, prog.c_str());
-  cleanup(outfile);
-  return 1;
+  return 0;
 }
 
 /**

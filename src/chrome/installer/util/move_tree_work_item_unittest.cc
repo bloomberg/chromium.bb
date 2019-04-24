@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/installer/util/installer_util_test_common.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -387,10 +388,10 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
   CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(base::PathExists(from_file));
 
-  // Create a file hierarchy identical to the one in the source directory.
+  // // Create a file hierarchy identical to the one in the source directory.
   base::FilePath to_dir(temp_from_dir_.GetPath());
   to_dir = to_dir.AppendASCII("To_Dir");
-  ASSERT_TRUE(base::CopyDirectory(from_dir1, to_dir, true));
+  ASSERT_TRUE(installer::test::CopyFileHierarchy(from_dir1, to_dir));
 
   // Lock one of the files in the to destination directory to prevent moves.
   base::FilePath orig_to_file(

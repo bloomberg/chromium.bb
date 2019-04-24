@@ -26,12 +26,9 @@ import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.Fullscree
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
-import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -173,7 +170,7 @@ public class ChromeFullscreenManager
                     @Override
                     public void run() {
                         if (getTab() != null) {
-                            TabFullscreenHandler.updateEnabledState(getTab());
+                            getTab().updateFullscreenEnabledState();
                         } else if (!mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
                             setPositionsForTabToNonFullscreen();
                         }
@@ -301,7 +298,7 @@ public class ChromeFullscreenManager
                     // We should hide browser controls first.
                     mPendingFullscreenOptions = options;
                     mIsEnteringPersistentModeState = true;
-                    TabFullscreenHandler.updateEnabledState(tab);
+                    tab.updateFullscreenEnabledState();
                 }
             }
 
@@ -317,7 +314,7 @@ public class ChromeFullscreenManager
             public void onFullscreenExited(Tab tab) {
                 // At this point, browser controls are hidden. Show browser controls only if it's
                 // permitted.
-                TabBrowserControlsState.get(tab).update(BrowserControlsState.SHOWN, true);
+                tab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
             }
 
             @Override
@@ -326,8 +323,7 @@ public class ChromeFullscreenManager
                 // there is no touchscreen when browsing in VR, the toast doesn't have any useful
                 // information.
                 return !isOverlayVideoMode() && !VrModuleProvider.getDelegate().isInVr()
-                        && !VrModuleProvider.getDelegate().bootsToVr()
-                        && !FeatureUtilities.isNoTouchModeEnabled();
+                        && !VrModuleProvider.getDelegate().bootsToVr();
             }
         };
     }
@@ -650,7 +646,7 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
-        if (tab == null || TabBrowserControlsState.get(tab).canShow()) {
+        if (tab == null || tab.canShowBrowserControls()) {
             setPositionsForTab(0, 0, getTopControlsHeight());
         } else {
             setPositionsForTab(-getTopControlsHeight(), getBottomControlsHeight(), 0);

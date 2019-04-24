@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
@@ -49,15 +48,13 @@ namespace blink {
 void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     WorkerGlobalScope& worker,
     int type,
-    int64_t size,
+    long long size,
     V8FileSystemCallback* success_callback,
     V8ErrorCallback* error_callback) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
-  auto error_callback_wrapper =
-      AsyncCallbackHelper::ErrorCallback(error_callback);
-
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
-    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(&worker,
+                               ScriptErrorCallback::Wrap(error_callback),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
@@ -67,26 +64,25 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
   mojom::blink::FileSystemType file_system_type =
       static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
-    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(&worker,
+                               ScriptErrorCallback::Wrap(error_callback),
                                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  auto success_callback_wrapper =
-      AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
-
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size,
-      std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
-                                            std::move(error_callback_wrapper),
-                                            &worker, file_system_type),
+      FileSystemCallbacks::Create(
+          FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
+              success_callback),
+          ScriptErrorCallback::Wrap(error_callback), &worker, file_system_type),
       LocalFileSystem::kAsynchronous);
 }
 
 DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     WorkerGlobalScope& worker,
     int type,
-    int64_t size,
+    long long size,
     ExceptionState& exception_state) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
@@ -105,25 +101,17 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     return nullptr;
   }
 
-  auto* sync_helper = MakeGarbageCollected<FileSystemCallbacksSyncHelper>();
-
-  auto success_callback_wrapper =
-      WTF::Bind(&FileSystemCallbacksSyncHelper::OnSuccess,
-                WrapPersistentIfNeeded(sync_helper));
-  auto error_callback_wrapper =
-      WTF::Bind(&FileSystemCallbacksSyncHelper::OnError,
-                WrapPersistentIfNeeded(sync_helper));
-
-  auto callbacks = std::make_unique<FileSystemCallbacks>(
-      std::move(success_callback_wrapper), std::move(error_callback_wrapper),
+  FileSystemCallbacksSyncHelper* sync_helper =
+      FileSystemCallbacksSyncHelper::Create();
+  std::unique_ptr<FileSystemCallbacks> callbacks = FileSystemCallbacks::Create(
+      sync_helper->GetSuccessCallback(), sync_helper->GetErrorCallback(),
       &worker, file_system_type);
 
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size, std::move(callbacks),
       LocalFileSystem::kSynchronous);
   DOMFileSystem* file_system = sync_helper->GetResultOrThrow(exception_state);
-  return file_system ? MakeGarbageCollected<DOMFileSystemSync>(file_system)
-                     : nullptr;
+  return file_system ? DOMFileSystemSync::Create(file_system) : nullptr;
 }
 
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
@@ -133,12 +121,10 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
     V8ErrorCallback* error_callback) {
   KURL completed_url = worker.CompleteURL(url);
   ExecutionContext* secure_context = worker.GetExecutionContext();
-  auto error_callback_wrapper =
-      AsyncCallbackHelper::ErrorCallback(error_callback);
-
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem() ||
       !secure_context->GetSecurityOrigin()->CanRequest(completed_url)) {
-    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(&worker,
+                               ScriptErrorCallback::Wrap(error_callback),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
@@ -146,19 +132,17 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
   }
 
   if (!completed_url.IsValid()) {
-    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(&worker,
+                               ScriptErrorCallback::Wrap(error_callback),
                                base::File::FILE_ERROR_INVALID_URL);
     return;
   }
 
-  auto success_callback_wrapper =
-      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
-
   LocalFileSystem::From(worker)->ResolveURL(
       &worker, completed_url,
-      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
-                                            std::move(error_callback_wrapper),
-                                            &worker),
+      ResolveURICallbacks::Create(
+          ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
+          ScriptErrorCallback::Wrap(error_callback), &worker),
       LocalFileSystem::kAsynchronous);
 }
 
@@ -182,18 +166,10 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
     return nullptr;
   }
 
-  auto* sync_helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
-
-  auto success_callback_wrapper =
-      WTF::Bind(&EntryCallbacksSyncHelper::OnSuccess,
-                WrapPersistentIfNeeded(sync_helper));
-  auto error_callback_wrapper = WTF::Bind(&EntryCallbacksSyncHelper::OnError,
-                                          WrapPersistentIfNeeded(sync_helper));
-
+  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
   std::unique_ptr<ResolveURICallbacks> callbacks =
-      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
-                                            std::move(error_callback_wrapper),
-                                            &worker);
+      ResolveURICallbacks::Create(sync_helper->GetSuccessCallback(),
+                                  sync_helper->GetErrorCallback(), &worker);
 
   LocalFileSystem::From(worker)->ResolveURL(&worker, completed_url,
                                             std::move(callbacks),

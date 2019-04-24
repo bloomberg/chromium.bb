@@ -5,7 +5,6 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_mus.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -34,11 +33,7 @@ void MoveWindowToEnsureCaretNotInRect(aura::Window* window,
 
   // Calculate vertical window shift.
   const int top_y =
-      std::max(rect_in_screen.y() - original_window_bounds.height(),
-               display::Screen::GetScreen()
-                   ->GetDisplayNearestView(window)
-                   .work_area()
-                   .y());
+      std::max(rect_in_screen.y() - original_window_bounds.height(), 0);
 
   // No need to move the window up.
   if (top_y >= original_window_bounds.y())
@@ -60,12 +55,10 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    nullptr)
 
 void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
-  window->GetRootWindow()->ClearProperty(
-      aura::client::kEmbeddedWindowEnsureNotInRect);
-
   // Get restore bounds of the window
   gfx::Rect* vk_restore_bounds =
       window->GetProperty(kVirtualKeyboardRestoreBoundsKey);
+
   if (!vk_restore_bounds)
     return;
 
@@ -80,16 +73,6 @@ void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
 
 void EnsureWindowNotInRect(aura::Window* window,
                            const gfx::Rect& rect_in_screen) {
-  // If |window| is embedded, the move should happen at the embedding side.
-  if (auto* window_mus = aura::WindowMus::Get(window->GetRootWindow())) {
-    if (window_mus->window_mus_type() == aura::WindowMusType::EMBED) {
-      window->GetRootWindow()->SetProperty(
-          aura::client::kEmbeddedWindowEnsureNotInRect,
-          new gfx::Rect(rect_in_screen));
-      return;
-    }
-  }
-
   gfx::Rect original_window_bounds = window->GetBoundsInScreen();
   if (window->GetProperty(wm::kVirtualKeyboardRestoreBoundsKey)) {
     original_window_bounds =
@@ -106,39 +89,6 @@ void EnsureWindowNotInRect(aura::Window* window,
   }
 
   MoveWindowToEnsureCaretNotInRect(window, rect_in_screen);
-}
-
-EnsureWindowNotInRectHelper::EnsureWindowNotInRectHelper(
-    aura::Window* embedding_root)
-    : embedding_root_(embedding_root) {
-  embedding_root_->AddObserver(this);
-}
-
-EnsureWindowNotInRectHelper::~EnsureWindowNotInRectHelper() {
-  if (embedding_root_)
-    embedding_root_->RemoveObserver(this);
-}
-
-void EnsureWindowNotInRectHelper::OnWindowPropertyChanged(aura::Window* window,
-                                                          const void* key,
-                                                          intptr_t old) {
-  DCHECK_EQ(embedding_root_, window);
-
-  if (key != aura::client::kEmbeddedWindowEnsureNotInRect)
-    return;
-
-  aura::Window* top_level = embedding_root_->GetToplevelWindow();
-  gfx::Rect* rect_in_screen = embedding_root_->GetProperty(
-      aura::client::kEmbeddedWindowEnsureNotInRect);
-  if (rect_in_screen)
-    EnsureWindowNotInRect(top_level, *rect_in_screen);
-  else
-    RestoreWindowBoundsOnClientFocusLost(top_level);
-}
-
-void EnsureWindowNotInRectHelper::OnWindowDestroyed(aura::Window* window) {
-  DCHECK_EQ(embedding_root_, window);
-  embedding_root_ = nullptr;
 }
 
 }  // namespace wm

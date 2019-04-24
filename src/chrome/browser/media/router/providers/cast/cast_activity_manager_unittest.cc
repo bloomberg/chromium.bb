@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 
-#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,7 +28,6 @@
 using base::test::IsJson;
 using base::test::ParseJsonDeprecated;
 using testing::_;
-using testing::AnyNumber;
 using testing::IsEmpty;
 using testing::Not;
 using testing::Return;
@@ -109,11 +107,7 @@ class ClientPresentationConnection
   DISALLOW_COPY_AND_ASSIGN(ClientPresentationConnection);
 };
 
-// Test parameters are a boolean indicating whether the client connection should
-// be closed by a leave_session message, and the URL used to create the test
-// session.
-class CastActivityManagerTest
-    : public testing::TestWithParam<std::pair<bool, const char*>> {
+class CastActivityManagerTest : public testing::Test {
  public:
   CastActivityManagerTest()
       : data_decoder_service_(connector_factory_.RegisterInstance(
@@ -176,10 +170,10 @@ class CastActivityManagerTest
     EXPECT_CALL(
         *client_connection_,
         DidChangeState(blink::mojom::PresentationConnectionState::CONNECTED));
-    EXPECT_CALL(*client_connection_, OnMessage).RetiresOnSaturation();
+    EXPECT_CALL(*client_connection_, OnMessage(_));
   }
 
-  void LaunchSession(const char* sourceId = kSource1) {
+  void LaunchSession() {
     // MediaRouter is notified of new route.
     ExpectSingleRouteUpdate();
 
@@ -190,7 +184,7 @@ class CastActivityManagerTest
           launch_session_callback_ = std::move(callback);
         }));
 
-    auto source = CastMediaSource::FromMediaSourceId(sourceId);
+    auto source = CastMediaSource::FromMediaSourceId(kSource1);
     ASSERT_TRUE(source);
 
     // Callback will be invoked synchronously.
@@ -225,28 +219,25 @@ class CastActivityManagerTest
         route_->media_sink_id(),
         CastSession::From(sink_, *response.receiver_status));
     std::move(launch_session_callback_).Run(std::move(response));
-    EXPECT_CALL(*client_connection_, OnMessage).RetiresOnSaturation();
+    EXPECT_CALL(*client_connection_, OnMessage(_));
     ExpectSingleRouteUpdate();
     RunUntilIdle();
   }
 
   // Precondition: |LaunchSession()| must be called first.
   void LaunchSessionResponseFailure() {
-    // 3 things will happen:
+    // 2 things will happen:
     // (1) Route is removed
     // (2) Issue will be sent.
-    // (3) The PresentationConnection associated with the route will be closed
-    //     with error.
     cast_channel::LaunchSessionResponse response;
     response.result = cast_channel::LaunchSessionResponse::Result::kError;
     std::move(launch_session_callback_).Run(std::move(response));
 
-    EXPECT_CALL(mock_router_, OnIssue);
+    EXPECT_CALL(mock_router_, OnIssue(_));
     ExpectEmptyRouteUpdate();
     EXPECT_CALL(
         *client_connection_,
-        DidClose(
-            blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR));
+        DidChangeState(blink::mojom::PresentationConnectionState::TERMINATED));
     RunUntilIdle();
   }
 
@@ -267,7 +258,7 @@ class CastActivityManagerTest
                 : &CastActivityManagerTest::ExpectTerminateResultFailure,
             base::Unretained(this)));
     // Receiver action stop message is sent to SDK client.
-    EXPECT_CALL(*client_connection_, OnMessage);
+    EXPECT_CALL(*client_connection_, OnMessage(_));
     RunUntilIdle();
 
     std::move(stop_session_callback).Run(result);
@@ -277,7 +268,7 @@ class CastActivityManagerTest
   // not called.
   void TerminateNoSession() {
     // Stop session message not sent because session has not launched yet.
-    EXPECT_CALL(message_handler_, StopSession).Times(0);
+    EXPECT_CALL(message_handler_, StopSession(_, _, _, _)).Times(0);
     manager_->TerminateSession(
         route_->media_route_id(),
         base::BindOnce(&CastActivityManagerTest::ExpectTerminateResultSuccess,
@@ -326,7 +317,7 @@ class CastActivityManagerTest
 
   // Expect that OnRoutesUpdated() will not be called.
   void ExpectNoRouteUpdate() {
-    EXPECT_CALL(mock_router_, OnRoutesUpdated).Times(0);
+    EXPECT_CALL(mock_router_, OnRoutesUpdated(_, _, _, _)).Times(0);
   }
 
  protected:
@@ -374,7 +365,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
   LaunchSessionResponseSuccess();
 
   // Receiver action stop message is sent to SDK client.
-  EXPECT_CALL(*client_connection_, OnMessage);
+  EXPECT_CALL(*client_connection_, OnMessage(_));
 
   // Existing session will be terminated.
   cast_channel::ResultCallback stop_session_callback;
@@ -438,7 +429,7 @@ TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
 
   MediaRoute route;
   ExpectSingleRouteUpdate(&route);
-  EXPECT_CALL(*client_connection_, OnMessage);
+  EXPECT_CALL(*client_connection_, OnMessage(_));
 
   manager_->OnSessionAddedOrUpdated(sink_, *session);
   RunUntilIdle();
@@ -528,7 +519,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "theClientId");
   message_handler_.OnMessage(socket_, message);
-  EXPECT_CALL(*client_connection_, OnMessage);
+  EXPECT_CALL(*client_connection_, OnMessage(_));
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiverAllDestinations) {
@@ -540,7 +531,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiverAllDestinations) {
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "*");
   message_handler_.OnMessage(socket_, message);
-  EXPECT_CALL(*client_connection_, OnMessage);
+  EXPECT_CALL(*client_connection_, OnMessage(_));
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiverUnknownDestination) {
@@ -552,7 +543,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiverUnknownDestination) {
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "99999");
   message_handler_.OnMessage(socket_, message);
-  EXPECT_CALL(*client_connection_, OnMessage).Times(0);
+  EXPECT_CALL(*client_connection_, OnMessage(_)).Times(0);
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromClient) {
@@ -574,7 +565,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromClient) {
       })"));
 
   // An ACK message is sent back to client.
-  EXPECT_CALL(*client_connection_, OnMessage);
+  EXPECT_CALL(*client_connection_, OnMessage(_));
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromClientInvalidNamespace) {
@@ -613,7 +604,8 @@ TEST_F(CastActivityManagerTest, OnMediaStatusUpdatedWithPendingRequest) {
   LaunchSession();
   LaunchSessionResponseSuccess();
 
-  EXPECT_CALL(message_handler_, SendMediaRequest).WillOnce(Return(345));
+  EXPECT_CALL(message_handler_, SendMediaRequest(_, _, _, _))
+      .WillOnce(Return(345));
   client_connection_->SendMessageToMediaRouter(
       blink::mojom::PresentationConnectionMessage::NewMessage(R"({
         "type": "v2_message",
@@ -696,56 +688,5 @@ TEST_F(CastActivityManagerTest, SendMediaRequestToReceiver) {
         "sequenceNumber": 123
       })"));
 }
-
-TEST_P(CastActivityManagerTest, HandleLeaveSession) {
-  bool should_close;
-  const char* url;
-  std::tie(should_close, url) = GetParam();
-
-  LaunchSession(url);
-  LaunchSessionResponseSuccess();
-
-  // Called via CastSessionClient::SendMessageToClient.
-  EXPECT_CALL(*client_connection_, OnMessage).WillOnce([](auto msg) {
-    // Verify that an acknowlegement message was sent.
-    ASSERT_TRUE(msg->is_message());
-    EXPECT_THAT(msg->get_message(), IsJson(R"({
-          "clientId": "theClientId",
-          "message": null,
-          "timeoutMillis": 0,
-          "type": "leave_session",
-        })"));
-  });
-
-  if (should_close) {
-    // Called via CastSessionClient::CloseConnection via
-    // CastActivityRecord::HandleLeaveSession.
-    EXPECT_CALL(
-        *client_connection_,
-        DidClose(blink::mojom::PresentationConnectionCloseReason::CLOSED));
-  }
-
-  client_connection_->SendMessageToMediaRouter(
-      blink::mojom::PresentationConnectionMessage::NewMessage(R"({
-        "type": "leave_session",
-        "clientId": "theClientId",
-        "message": {}
-      })"));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    Urls,
-    CastActivityManagerTest,
-    testing::Values(
-        std::make_pair(true,
-                       "cast:ABCDEFGH?clientId=theClientId&autoJoinPolicy=tab_"
-                       "and_origin_scoped"),
-        std::make_pair(
-            true,
-            "cast:ABCDEFGH?clientId=theClientId&autoJoinPolicy=origin_scoped"),
-        std::make_pair(
-            false,
-            "cast:ABCDEFGH?clientId=theClientId&autoJoinPolicy=page_scoped"),
-        std::make_pair(false, "cast:ABCDEFGH?clientId=theClientId")));
 
 }  // namespace media_router

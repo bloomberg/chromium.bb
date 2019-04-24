@@ -27,6 +27,8 @@ class FileSystemDirectoryIterator : public DirectoryReaderBase {
   void Trace(Visitor*) override;
 
  private:
+  class EntriesCallbackHelper;
+  class ErrorCallbackHelper;
   void AddEntries(const EntryHeapVector& entries);
   void OnError(base::File::Error);
 

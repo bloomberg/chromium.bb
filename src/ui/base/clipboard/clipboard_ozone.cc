@@ -59,18 +59,18 @@ class ClipboardOzone::AsyncClipboardOzone {
     if (platform_clipboard_->IsSelectionOwner()) {
       auto it = offered_data_.find(mime_type);
       if (it == offered_data_.end())
-        return {};
+        return base::span<uint8_t>();
       return base::make_span(it->second.data(), it->second.size());
     }
 
-    Request request(RequestType::kRead);
-    request.requested_mime_type = mime_type;
-    PerformRequestAndWaitForResult(&request);
+    auto request = std::make_unique<Request>(RequestType::kRead);
+    request->requested_mime_type = mime_type;
+    ProcessRequestAndWaitForResult(request.get());
 
-    offered_data_ = std::move(request.data_map);
+    offered_data_ = std::move(request->data_map);
     auto it = offered_data_.find(mime_type);
     if (it == offered_data_.end())
-      return {};
+      return base::span<uint8_t>();
     return base::make_span(it->second.data(), it->second.size());
   }
 
@@ -83,15 +83,15 @@ class ClipboardOzone::AsyncClipboardOzone {
       return mime_types;
     }
 
-    Request request(RequestType::kGetMime);
-    PerformRequestAndWaitForResult(&request);
-    return request.mime_types;
+    auto request = std::make_unique<Request>(RequestType::kGetMime);
+    ProcessRequestAndWaitForResult(request.get());
+    return std::move(request->mime_types);
   }
 
   void OfferData() {
-    Request request(RequestType::kOffer);
-    request.data_map = offered_data_;
-    PerformRequestAndWaitForResult(&request);
+    auto request = std::make_unique<Request>(RequestType::kOffer);
+    request->data_map = offered_data_;
+    ProcessRequestAndWaitForResult(request.get());
 
     UpdateClipboardSequenceNumber();
   }
@@ -120,14 +120,14 @@ class ClipboardOzone::AsyncClipboardOzone {
   // A structure, which holds request data to process inquiries from
   // the ClipboardOzone.
   struct Request {
-    explicit Request(RequestType request_type) : type(request_type) {}
+    explicit Request(RequestType type) : current_type(type) {}
     ~Request() = default;
 
     // Describes the type of the request.
-    RequestType type;
+    RequestType current_type;
 
     // A closure that is used to signal the request is processed.
-    base::OnceClosure finish_closure;
+    base::OnceClosure request_closure;
 
     // Used for kRead and kOffer requests. It contains either data offered by
     // Chromium to a system clipboard or a read data offered by the system
@@ -143,46 +143,45 @@ class ClipboardOzone::AsyncClipboardOzone {
     std::vector<std::string> mime_types;
   };
 
-  void PerformRequestAndWaitForResult(Request* request) {
-    DCHECK(request);
+  void ProcessRequestAndWaitForResult(Request* request) {
     DCHECK(!abort_timer_.IsRunning());
     DCHECK(!pending_request_);
 
+    // TODO(https://crbug.com/913422): the implementation is known to be
+    // dangerous, and may cause blocks in ui thkRead. But base::Clipboard was
+    // designed to have synchrous APIs rather than asynchronous ones that at
+    // least two system clipboards on X11 and Wayland provide.
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    request->request_closure = run_loop.QuitClosure();
+
     pending_request_ = request;
-    switch (pending_request_->type) {
+    switch (pending_request_->current_type) {
       case (RequestType::kRead):
-        DispatchReadRequest(request);
+        ProcessReadRequest(request);
         break;
       case (RequestType::kOffer):
-        DispatchOfferRequest(request);
+        ProcessOfferRequest(request);
         break;
       case (RequestType::kGetMime):
-        DispatchGetMimeRequest(request);
+        ProcessGetMimeRequest(request);
         break;
     }
 
     if (!pending_request_)
       return;
 
-    // TODO(https://crbug.com/913422): the implementation is known to be
-    // dangerous, and may cause blocks in ui thread. But base::Clipboard was
-    // designed to have synchrous APIs rather than asynchronous ones that at
-    // least two system clipboards on X11 and Wayland provide.
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    request->finish_closure = run_loop.QuitClosure();
-
     // Set a timeout timer after which the request will be aborted.
     abort_timer_.Start(FROM_HERE, kRequestTimeoutMs, this,
-                       &AsyncClipboardOzone::AbortStalledRequest);
+                       &AsyncClipboardOzone::AbortStaledRequest);
     run_loop.Run();
   }
 
-  void AbortStalledRequest() {
-    if (pending_request_ && pending_request_->finish_closure)
-      std::move(pending_request_->finish_closure).Run();
+  void AbortStaledRequest() {
+    if (pending_request_)
+      std::move(pending_request_->request_closure).Run();
   }
 
-  void DispatchReadRequest(Request* request) {
+  void ProcessReadRequest(Request* request) {
     auto callback = base::BindOnce(&AsyncClipboardOzone::OnTextRead,
                                    weak_factory_.GetWeakPtr());
     DCHECK(platform_clipboard_);
@@ -190,7 +189,7 @@ class ClipboardOzone::AsyncClipboardOzone {
         request->requested_mime_type, &request->data_map, std::move(callback));
   }
 
-  void DispatchOfferRequest(Request* request) {
+  void ProcessOfferRequest(Request* request) {
     auto callback = base::BindOnce(&AsyncClipboardOzone::OnOfferDone,
                                    weak_factory_.GetWeakPtr());
     DCHECK(platform_clipboard_);
@@ -198,7 +197,7 @@ class ClipboardOzone::AsyncClipboardOzone {
                                             std::move(callback));
   }
 
-  void DispatchGetMimeRequest(Request* request) {
+  void ProcessGetMimeRequest(Request* request) {
     auto callback = base::BindOnce(&AsyncClipboardOzone::OnGotMimeTypes,
                                    weak_factory_.GetWeakPtr());
     DCHECK(platform_clipboard_);
@@ -206,8 +205,6 @@ class ClipboardOzone::AsyncClipboardOzone {
   }
 
   void OnTextRead(const base::Optional<std::vector<uint8_t>>& data) {
-    // |data| is already set in request's data_map, so just finish request
-    // processing.
     CompleteRequest();
   }
 
@@ -219,12 +216,10 @@ class ClipboardOzone::AsyncClipboardOzone {
   }
 
   void CompleteRequest() {
-    if (!pending_request_)
-      return;
     abort_timer_.Stop();
-    if (pending_request_->finish_closure)
-      std::move(pending_request_->finish_closure).Run();
+    auto closure = std::move(pending_request_->request_closure);
     pending_request_ = nullptr;
+    std::move(closure).Run();
   }
 
   void UpdateClipboardSequenceNumber() { ++clipboard_sequence_number_; }

@@ -158,7 +158,9 @@ enum PreShiftImmMode {
 
 class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
  public:
-  using TurboAssemblerBase::TurboAssemblerBase;
+  template <typename... Args>
+  explicit TurboAssembler(Args&&... args)
+      : TurboAssemblerBase(std::forward<Args>(args)...) {}
 
 #if DEBUG
   void set_allow_macro_instructions(bool value) {
@@ -746,8 +748,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void CallRecordWriteStub(Register object, Register address,
                            RememberedSetAction remembered_set_action,
                            SaveFPRegsMode fp_mode, Address wasm_target);
-  void CallEphemeronKeyBarrier(Register object, Register address,
-                               SaveFPRegsMode fp_mode);
 
   // Alternative forms of Push and Pop, taking a RegList or CPURegList that
   // specifies the registers that are to be pushed or popped. Higher-numbered
@@ -1279,7 +1279,9 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
 class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
  public:
-  using TurboAssembler::TurboAssembler;
+  template <typename... Args>
+  explicit MacroAssembler(Args&&... args)
+      : TurboAssembler(std::forward<Args>(args)...) {}
 
   // Instruction set functions ------------------------------------------------
   // Logical macros.
@@ -2081,7 +2083,7 @@ class InstructionAccurateScope {
 // original state, even if the lists were modified by some other means. Note
 // that this scope can be nested but the destructors need to run in the opposite
 // order as the constructors. We do not have assertions for this.
-class V8_EXPORT_PRIVATE UseScratchRegisterScope {
+class UseScratchRegisterScope {
  public:
   explicit UseScratchRegisterScope(TurboAssembler* tasm)
       : available_(tasm->TmpList()),
@@ -2092,7 +2094,7 @@ class V8_EXPORT_PRIVATE UseScratchRegisterScope {
     DCHECK_EQ(availablefp_->type(), CPURegister::kVRegister);
   }
 
-  V8_EXPORT_PRIVATE ~UseScratchRegisterScope();
+  ~UseScratchRegisterScope();
 
   // Take a register from the appropriate temps list. It will be returned
   // automatically when the scope ends.
@@ -2109,8 +2111,7 @@ class V8_EXPORT_PRIVATE UseScratchRegisterScope {
   VRegister AcquireSameSizeAs(const VRegister& reg);
 
  private:
-  V8_EXPORT_PRIVATE static CPURegister AcquireNextAvailable(
-      CPURegList* available);
+  static CPURegister AcquireNextAvailable(CPURegList* available);
 
   // Available scratch registers.
   CPURegList* available_;     // kRegister

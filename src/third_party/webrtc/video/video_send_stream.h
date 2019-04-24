@@ -23,7 +23,6 @@
 #include "rtc_base/critical_section.h"
 #include "rtc_base/event.h"
 #include "rtc_base/task_queue.h"
-#include "rtc_base/thread_checker.h"
 #include "video/send_delay_stats.h"
 #include "video/send_statistics_proxy.h"
 
@@ -57,6 +56,7 @@ class VideoSendStream : public webrtc::VideoSendStream {
       Clock* clock,
       int num_cpu_cores,
       ProcessThread* module_process_thread,
+      rtc::TaskQueue* worker_queue,
       TaskQueueFactory* task_queue_factory,
       CallStats* call_stats,
       RtpTransportControllerSendInterface* transport,
@@ -71,7 +71,7 @@ class VideoSendStream : public webrtc::VideoSendStream {
 
   ~VideoSendStream() override;
 
-  void DeliverRtcp(const uint8_t* packet, size_t length);
+  bool DeliverRtcp(const uint8_t* packet, size_t length);
 
   // webrtc::VideoSendStream implementation.
   void UpdateActiveSimulcastLayers(

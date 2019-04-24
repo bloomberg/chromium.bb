@@ -30,6 +30,8 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -504,7 +506,9 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
       base::RecordAction(
           base::UserMetricsAction("Accel_LockScreen_LockButton"));
     }
-    Shell::Get()->session_controller()->LockScreen();
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->RequestLockScreen();
   }
 
   lock_fail_timer_.Start(FROM_HERE, kLockFailTimeout, this,

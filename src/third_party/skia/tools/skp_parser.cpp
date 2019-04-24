@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "DebugCanvas.h"
+#include "SkDebugCanvas.h"
 #include "SkNullCanvas.h"
 #include "SkPicture.h"
 #include "SkStream.h"
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         return 3;
     }
     SkISize size = pic->cullRect().roundOut().size();
-    DebugCanvas debugCanvas(size.width(), size.height());
+    SkDebugCanvas debugCanvas(size.width(), size.height());
     pic->playback(&debugCanvas);
     std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
     UrlDataManager dataManager(SkString("data"));

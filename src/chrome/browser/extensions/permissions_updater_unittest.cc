@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -522,6 +523,10 @@ TEST_F(PermissionsUpdaterTest,
 
 TEST_F(PermissionsUpdaterTest,
        UpdatingRuntimeGrantedPermissionsWithRuntimePermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -573,6 +578,10 @@ TEST_F(PermissionsUpdaterTest,
 }
 
 TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   InitializeEmptyExtensionService();
 
   constexpr struct {
@@ -639,6 +648,10 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
 }
 
 TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   InitializeEmptyExtensionService();
 
   URLPattern chrome_favicon_pattern(Extension::kValidHostPermissionSchemes,
@@ -731,6 +744,9 @@ TEST_F(PermissionsUpdaterTest, ChromeFaviconIsNotARevokableHost) {
 // Tests runtime-granting permissions beyond what are explicitly requested by
 // the extension.
 TEST_F(PermissionsUpdaterTest, GrantingBroadRuntimePermissions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =

@@ -46,14 +46,23 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DOMFileSystemSync(DOMFileSystemBase*);
+  static DOMFileSystemSync* Create(ExecutionContext* context,
+                                   const String& name,
+                                   mojom::blink::FileSystemType type,
+                                   const KURL& root_url) {
+    return MakeGarbageCollected<DOMFileSystemSync>(context, name, type,
+                                                   root_url);
+  }
+
+  static DOMFileSystemSync* Create(DOMFileSystemBase*);
+
   DOMFileSystemSync(ExecutionContext*,
                     const String& name,
                     mojom::blink::FileSystemType,
                     const KURL& root_url);
   ~DOMFileSystemSync() override;
 
-  void ReportError(ErrorCallback, base::File::Error error) override;
+  void ReportError(ErrorCallbackBase*, base::File::Error error) override;
 
   DirectoryEntrySync* root();
 

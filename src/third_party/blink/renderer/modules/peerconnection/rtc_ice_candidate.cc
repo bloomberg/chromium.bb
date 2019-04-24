@@ -55,7 +55,8 @@ RTCIceCandidate* RTCIceCandidate::Create(
   if (candidate_init->hasSdpMid())
     sdp_mid = candidate_init->sdpMid();
 
-  base::Optional<uint16_t> sdp_m_line_index;
+  // TODO(crbug.com/614958): Change default value to -1.
+  uint16_t sdp_m_line_index = 0;
   if (candidate_init->hasSdpMLineIndex()) {
     sdp_m_line_index = candidate_init->sdpMLineIndex();
   } else {
@@ -64,7 +65,7 @@ RTCIceCandidate* RTCIceCandidate::Create(
   }
 
   return MakeGarbageCollected<RTCIceCandidate>(WebRTCICECandidate::Create(
-      candidate_init->candidate(), sdp_mid, std::move(sdp_m_line_index),
+      candidate_init->candidate(), sdp_mid, sdp_m_line_index,
       candidate_init->usernameFragment()));
 }
 
@@ -86,8 +87,9 @@ String RTCIceCandidate::sdpMid() const {
 }
 
 uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
-  is_null = !web_candidate_->SdpMLineIndex().has_value();
-  return is_null ? 0 : *web_candidate_->SdpMLineIndex();
+  // TODO(crbug.com/614958): Handle case when SdpMLineIndex has no value.
+  is_null = false;
+  return web_candidate_->SdpMLineIndex();
 }
 
 scoped_refptr<WebRTCICECandidate> RTCIceCandidate::WebCandidate() const {
@@ -145,8 +147,7 @@ ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* script_state) {
   V8ObjectBuilder result(script_state);
   result.AddString("candidate", web_candidate_->Candidate());
   result.AddString("sdpMid", web_candidate_->SdpMid());
-  if (web_candidate_->SdpMLineIndex())
-    result.AddNumber("sdpMLineIndex", *web_candidate_->SdpMLineIndex());
+  result.AddNumber("sdpMLineIndex", web_candidate_->SdpMLineIndex());
   return result.GetScriptValue();
 }
 

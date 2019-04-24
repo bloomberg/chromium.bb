@@ -5,7 +5,7 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -108,7 +108,7 @@ std::unique_ptr<DataReductionProxyThrottleManager> CreateManager(
 DataReductionProxyServer MakeCoreDrpServer(const std::string pac_string) {
   auto proxy_server = net::ProxyServer::FromPacString(pac_string);
   EXPECT_TRUE(proxy_server.is_valid());
-  return DataReductionProxyServer(proxy_server);
+  return DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE);
 }
 
 class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {

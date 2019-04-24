@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 namespace password_generation {
@@ -35,8 +36,14 @@ void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
 }
 
 bool IsPasswordGenerationEnabled() {
-  return base::FeatureList::IsEnabled(
-      autofill::features::kAutomaticPasswordGeneration);
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutomaticPasswordGeneration))
+    return true;
+
+  if (base::FeatureList::IsEnabled(::features::kExperimentalUi))
+    return true;
+
+  return false;
 }
 
 }  // namespace password_generation

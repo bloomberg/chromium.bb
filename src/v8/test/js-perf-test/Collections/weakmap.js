@@ -15,12 +15,7 @@ var MapBenchmark = new BenchmarkSuite('WeakMap', [1000], [
 ]);
 
 var MapBenchmark = new BenchmarkSuite('WeakMapSetGet-Large', [1e7], [
-  new Benchmark('Set-Get', false, true, 1, WeakMapSetGetLarge,
-                WeakMapSetupBaseLarge, WeakMapTearDown),
-]);
-
-var MapBenchmark = new BenchmarkSuite('WeakMapSet-Huge', [1e8], [
-  new Benchmark('Set-Get', false, true, 1, WeakMapSetHuge,
+  new Benchmark('Set-Get', false, false, 0, WeakMapSetGetLarge,
                 WeakMapSetupBaseLarge, WeakMapTearDown),
 ]);
 
@@ -97,7 +92,7 @@ function WeakMapGet() {
 
 function WeakMapDelete() {
   // This is run more than once per setup so we will end up deleting items
-  // more than once. Therefore, we do not check the return value of delete.
+  // more than once. Therefore, we do not the return value of delete.
   for (var i = 0; i < N; i++) {
     wm.delete(keys[i]);
   }
@@ -116,16 +111,5 @@ function WeakMapSetGetLarge() {
     if (wm.get(keys[i * 2 + 1]) !== undefined) {
       throw new Error();
     }
-  }
-}
-
-function WeakMapSetHuge() {
-  function Foo(i) {
-    this.x = i;
-  }
-  let obj;
-  for (let i = 0; i < LargeN; i++) {
-    obj = new Foo(i);         // Make sure we do not scalar-replace the object.
-    wm.set(obj, 1);
   }
 }

@@ -85,7 +85,7 @@ bool VTTParser::ParsePercentageValuePair(VTTScanner& value_scanner,
 VTTParser::VTTParser(VTTParserClient* client, Document& document)
     : document_(&document),
       state_(kInitial),
-      decoder_(std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+      decoder_(TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent,
           UTF8Encoding()))),
       current_start_time_(0),

@@ -87,8 +87,6 @@ class AX_EXPORT AXMode {
     return *this;
   }
 
-  std::string ToString() const;
-
  private:
   uint32_t flags_;
 };

@@ -18,7 +18,6 @@ goog.require('BrailleCommandHandler');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('DesktopAutomationHandler');
-goog.require('DownloadHandler');
 goog.require('FindHandler');
 goog.require('GestureCommandHandler');
 goog.require('LiveRegions');
@@ -150,7 +149,6 @@ Background = function() {
 
   CommandHandler.init();
   FindHandler.init();
-  DownloadHandler.init();
 
   Notifications.onStartup();
 

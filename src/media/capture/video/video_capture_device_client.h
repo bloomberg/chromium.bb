@@ -80,7 +80,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   void OnIncomingCapturedBufferExt(
       Buffer buffer,
       const VideoCaptureFormat& format,
-      const gfx::ColorSpace& color_space,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,

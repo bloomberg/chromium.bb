@@ -64,6 +64,10 @@ bool DefaultUserFlow::HandleLoginFailure(const AuthFailure& failure) {
 
 void DefaultUserFlow::HandleLoginSuccess(const UserContext& context) {}
 
+bool DefaultUserFlow::HandlePasswordChangeDetected() {
+  return false;
+}
+
 void DefaultUserFlow::HandleOAuthTokenStatusChange(
     user_manager::User::OAuthTokenStatus status) {}
 

@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
 
 namespace cc {
 
@@ -402,8 +401,7 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
 CompositorTimingHistory::CompositorTimingHistory(
     bool using_synchronous_renderer_compositor,
     UMACategory uma_category,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    CompositorFrameReportingController* compositor_frame_reporting_controller)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : using_synchronous_renderer_compositor_(
           using_synchronous_renderer_compositor),
       enabled_(false),
@@ -425,9 +423,7 @@ CompositorTimingHistory::CompositorTimingHistory(
       begin_main_frame_on_critical_path_(false),
       submit_ack_watchdog_enabled_(false),
       uma_reporter_(CreateUMAReporter(uma_category)),
-      rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      compositor_frame_reporting_controller_(
-          compositor_frame_reporting_controller) {}
+      rendering_stats_instrumentation_(rendering_stats_instrumentation) {}
 
 CompositorTimingHistory::~CompositorTimingHistory() = default;
 
@@ -563,14 +559,10 @@ void CompositorTimingHistory::DidCreateAndInitializeLayerTreeFrameSink() {
 }
 
 void CompositorTimingHistory::WillBeginImplFrame(
-    const viz::BeginFrameArgs& args,
     bool new_active_tree_is_likely,
+    base::TimeTicks frame_time,
+    viz::BeginFrameArgs::BeginFrameArgsType frame_type,
     base::TimeTicks now) {
-  viz::BeginFrameArgs::BeginFrameArgsType frame_type = args.type;
-  base::TimeTicks frame_time = args.frame_time;
-
-  compositor_frame_reporting_controller_->WillBeginImplFrame();
-
   // The check for whether a BeginMainFrame was sent anytime between two
   // BeginImplFrames protects us from not detecting a fast main thread that
   // does all it's work and goes idle in between BeginImplFrames.
@@ -613,8 +605,6 @@ void CompositorTimingHistory::WillBeginMainFrame(
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_frame_time_);
 
-  compositor_frame_reporting_controller_->WillBeginMainFrame();
-
   begin_main_frame_on_critical_path_ = on_critical_path;
   begin_main_frame_sent_time_ = Now();
   begin_main_frame_frame_time_ = main_frame_time;
@@ -631,7 +621,6 @@ void CompositorTimingHistory::BeginMainFrameStarted(
 }
 
 void CompositorTimingHistory::BeginMainFrameAborted() {
-  compositor_frame_reporting_controller_->BeginMainFrameAborted();
   SetBeginMainFrameCommittingContinuously(false);
   base::TimeTicks begin_main_frame_end_time = Now();
   DidBeginMainFrame(begin_main_frame_end_time);
@@ -646,7 +635,6 @@ void CompositorTimingHistory::NotifyReadyToCommit() {
 
 void CompositorTimingHistory::WillCommit() {
   DCHECK_NE(begin_main_frame_start_time_, base::TimeTicks());
-  compositor_frame_reporting_controller_->WillCommit();
   commit_start_time_ = Now();
 }
 
@@ -654,8 +642,6 @@ void CompositorTimingHistory::DidCommit() {
   DCHECK_EQ(base::TimeTicks(), pending_tree_main_frame_time_);
   DCHECK_EQ(pending_tree_creation_time_, base::TimeTicks());
   DCHECK_NE(commit_start_time_, base::TimeTicks());
-
-  compositor_frame_reporting_controller_->DidCommit();
 
   SetBeginMainFrameCommittingContinuously(true);
   base::TimeTicks begin_main_frame_end_time = Now();
@@ -736,7 +722,6 @@ void CompositorTimingHistory::WillInvalidateOnImplSide() {
   DCHECK(!pending_tree_is_impl_side_);
   DCHECK_EQ(pending_tree_creation_time_, base::TimeTicks());
 
-  compositor_frame_reporting_controller_->WillInvalidateOnImplSide();
   pending_tree_is_impl_side_ = true;
   pending_tree_creation_time_ = base::TimeTicks::Now();
 }
@@ -792,7 +777,6 @@ void CompositorTimingHistory::ReadyToActivate() {
 void CompositorTimingHistory::WillActivate() {
   DCHECK_EQ(base::TimeTicks(), activate_start_time_);
 
-  compositor_frame_reporting_controller_->WillActivate();
   activate_start_time_ = Now();
 
   // Its possible to activate the pending tree before it is ready for
@@ -812,7 +796,6 @@ void CompositorTimingHistory::WillActivate() {
 
 void CompositorTimingHistory::DidActivate() {
   DCHECK_NE(base::TimeTicks(), activate_start_time_);
-  compositor_frame_reporting_controller_->DidActivate();
   base::TimeDelta activate_duration = Now() - activate_start_time_;
 
   uma_reporter_->AddActivateDuration(activate_duration);
@@ -924,13 +907,8 @@ void CompositorTimingHistory::DidDraw(
 
 void CompositorTimingHistory::DidSubmitCompositorFrame() {
   DCHECK_EQ(base::TimeTicks(), submit_start_time_);
-  compositor_frame_reporting_controller_->DidSubmitCompositorFrame();
   submit_start_time_ = Now();
   submit_ack_watchdog_enabled_ = true;
-}
-
-void CompositorTimingHistory::DidNotProduceFrame() {
-  compositor_frame_reporting_controller_->DidNotProduceFrame();
 }
 
 void CompositorTimingHistory::DidReceiveCompositorFrameAck() {

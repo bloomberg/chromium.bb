@@ -9,13 +9,14 @@
 /* Tests text rendering with LCD and subpixel rendering turned on and off.
  */
 
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkPicture.h"
 #include "SkPictureImageFilter.h"
 #include "SkPictureRecorder.h"
 #include "SkSurface.h"
-#include "ToolUtils.h"
-#include "gm.h"
+
 
 class LcdTextGM : public skiagm::GM {
 public:
@@ -27,7 +28,9 @@ public:
 protected:
 
     SkString onShortName() {
-        return SkString("lcdtext");
+        SkString name("lcdtext");
+        name.append(sk_tool_utils::platform_font_manager());
+        return name;
     }
 
     SkISize onISize() { return SkISize::Make(640, 480); }

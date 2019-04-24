@@ -16,11 +16,10 @@
 #include "modules/desktop_capture/desktop_frame.h"
 #include "modules/desktop_capture/desktop_geometry.h"
 #include "rtc_base/constructor_magic.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
-class RTC_EXPORT MouseCursor {
+class MouseCursor {
  public:
   MouseCursor();
 

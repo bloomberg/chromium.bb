@@ -64,11 +64,7 @@ cr.define('settings', function() {
      */
     getNumFingerprints() {}
 
-    /**
-     * @param {string} authToken
-     */
-    startEnroll(authToken) {}
-
+    startEnroll() {}
     cancelCurrentEnroll() {}
 
     /**
@@ -116,8 +112,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    startEnroll(authToken) {
-      chrome.send('startEnroll', [authToken]);
+    startEnroll() {
+      chrome.send('startEnroll');
     }
 
     /** @override */

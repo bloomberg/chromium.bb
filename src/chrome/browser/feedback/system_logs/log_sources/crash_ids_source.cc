@@ -21,11 +21,8 @@ constexpr size_t kMaxCrashesCountToRetrieve = 10;
 // The length of the crash ID string.
 constexpr size_t kCrashIdStringSize = 16;
 
-// For recent crashes, which is for all reports, look back one hour.
+// We are only interested in crashes that took place within the last hour.
 constexpr base::TimeDelta kOneHourTimeDelta = base::TimeDelta::FromHours(1);
-
-// For all crashes, which is for only @google.com reports, look back 120 days.
-constexpr base::TimeDelta k120DaysTimeDelta = base::TimeDelta::FromDays(120);
 
 }  // namespace
 
@@ -53,19 +50,13 @@ void CrashIdsSource::Fetch(SysLogsSourceCallback callback) {
 void CrashIdsSource::OnUploadListAvailable() {
   pending_crash_list_loading_ = false;
 
-  // We generate two lists of crash IDs. One will be the crashes within the last
-  // hour, which is included in all feedback reports. The other is all of the
-  // crash IDs from the past 120 days, which is only included in feedback
-  // reports sent from @google.com accounts.
+  // Only get the IDs of crashes that occurred within the last hour (if any).
   std::vector<UploadList::UploadInfo> crashes;
   crash_upload_list_->GetUploads(kMaxCrashesCountToRetrieve, &crashes);
   const base::Time now = base::Time::Now();
   crash_ids_list_.clear();
   crash_ids_list_.reserve(kMaxCrashesCountToRetrieve *
                           (kCrashIdStringSize + 2));
-  all_crash_ids_list_.clear();
-  all_crash_ids_list_.reserve(kMaxCrashesCountToRetrieve *
-                              (kCrashIdStringSize + 2));
 
   // The feedback server expects the crash IDs to be a comma-separated list.
   for (const auto& crash_info : crashes) {
@@ -73,15 +64,10 @@ void CrashIdsSource::OnUploadListAvailable() {
         crash_info.state == UploadList::UploadInfo::State::Uploaded
             ? crash_info.upload_time
             : crash_info.capture_time;
-    base::TimeDelta time_diff = now - report_time;
-    if (time_diff < k120DaysTimeDelta) {
+    if (now - report_time < kOneHourTimeDelta) {
       const std::string& crash_id = crash_info.upload_id;
-      all_crash_ids_list_.append(all_crash_ids_list_.empty() ? crash_id
-                                                             : ", " + crash_id);
-      if (time_diff < kOneHourTimeDelta) {
-        crash_ids_list_.append(crash_ids_list_.empty() ? crash_id
-                                                       : ", " + crash_id);
-      }
+      crash_ids_list_.append(crash_ids_list_.empty() ? crash_id
+                                                     : ", " + crash_id);
     }
   }
 
@@ -91,11 +77,9 @@ void CrashIdsSource::OnUploadListAvailable() {
   pending_requests_.clear();
 }
 
-void CrashIdsSource::RespondWithCrashIds(SysLogsSourceCallback callback) {
+void CrashIdsSource::RespondWithCrashIds(SysLogsSourceCallback callback) const {
   auto response = std::make_unique<SystemLogsResponse>();
   (*response)[feedback::FeedbackReport::kCrashReportIdsKey] = crash_ids_list_;
-  (*response)[feedback::FeedbackReport::kAllCrashReportIdsKey] =
-      all_crash_ids_list_;
 
   // We must respond anyways.
   std::move(callback).Run(std::move(response));

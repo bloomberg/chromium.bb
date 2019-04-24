@@ -14,6 +14,11 @@ class ScriptPromiseResolver;
 
 class RTCVoidRequestScriptPromiseResolverImpl : public RTCVoidRequest {
  public:
+  static RTCVoidRequestScriptPromiseResolverImpl* Create(
+      ScriptPromiseResolver*,
+      const char* interface_name,
+      const char* property_name);
+
   RTCVoidRequestScriptPromiseResolverImpl(ScriptPromiseResolver*,
                                           const char* interface_name,
                                           const char* property_name);

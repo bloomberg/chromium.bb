@@ -303,10 +303,10 @@ void EventHandlerRegistry::NotifyHandlersChanged(
       handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
     if (auto* node = target->ToNode()) {
       if (auto* layout_object = node->GetLayoutObject()) {
-        layout_object->MarkEffectiveAllowedTouchActionChanged();
+        layout_object->MarkEffectiveWhitelistedTouchActionChanged();
         auto* continuation = layout_object->VirtualContinuation();
         while (continuation) {
-          continuation->MarkEffectiveAllowedTouchActionChanged();
+          continuation->MarkEffectiveWhitelistedTouchActionChanged();
           continuation = continuation->VirtualContinuation();
         }
       }
@@ -315,7 +315,7 @@ void EventHandlerRegistry::NotifyHandlersChanged(
       // invalidated because the layout view tracks the window's blocking
       // touch event rects.
       if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
-        layout_view->MarkEffectiveAllowedTouchActionChanged();
+        layout_view->MarkEffectiveWhitelistedTouchActionChanged();
     }
   }
 }

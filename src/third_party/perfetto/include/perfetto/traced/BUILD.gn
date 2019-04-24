@@ -22,7 +22,9 @@ source_set("traced") {
 source_set("sys_stats_counters") {
   deps = [
     "../../../gn:default_deps",
-    "../../../protos/perfetto/common:zero",
+  ]
+  public_deps = [
+    "../../../protos/perfetto/common:lite",
     "../base",
   ]
   sources = [

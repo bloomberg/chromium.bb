@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -21,8 +20,7 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
-#include "net/base/completion_once_callback.h"
-#include "net/base/completion_repeating_callback.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket.h"
@@ -75,16 +73,16 @@ class CompletionQueue {
   ~CompletionQueue() { CHECK_EQ(0u, cb_queue_.size()); }
 
   // Enqueues a pending completion callback.
-  void Push(net::CompletionOnceCallback cb) { cb_queue_.push(std::move(cb)); }
+  void Push(const net::CompletionCallback& cb) { cb_queue_.push(cb); }
   // Runs the next callback and removes it from the queue.
   void Pop(int rv) {
     CHECK_GT(cb_queue_.size(), 0u);
-    std::move(cb_queue_.front()).Run(rv);
+    cb_queue_.front().Run(rv);
     cb_queue_.pop();
   }
 
  private:
-  base::queue<net::CompletionOnceCallback> cb_queue_;
+  base::queue<net::CompletionCallback> cb_queue_;
   DISALLOW_COPY_AND_ASSIGN(CompletionQueue);
 };
 
@@ -141,12 +139,12 @@ class MockSocket : public cast_channel::CastTransportImpl::Channel {
   MOCK_METHOD3(Read,
                void(net::IOBuffer* buf,
                     int buf_len,
-                    const net::CompletionRepeatingCallback& callback));
+                    const net::CompletionCallback& callback));
 
   MOCK_METHOD3(Write,
                void(net::IOBuffer* buf,
                     int buf_len,
-                    const net::CompletionRepeatingCallback& callback));
+                    const net::CompletionCallback& callback));
 };
 
 class CastTransportTest : public testing::Test {
@@ -188,9 +186,9 @@ TEST_F(CastTransportTest, TestFullWriteAsync) {
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs)));
   EXPECT_CALL(write_handler, Complete(net::OK));
-  transport_->SendMessage(message,
-                          base::BindOnce(&CompleteHandler::Complete,
-                                         base::Unretained(&write_handler)));
+  transport_->SendMessage(
+      message,
+      base::Bind(&CompleteHandler::Complete, base::Unretained(&write_handler)));
   RunPendingTasks();
   socket_cbs.Pop(serialized_message.size());
   RunPendingTasks();
@@ -219,9 +217,9 @@ TEST_F(CastTransportTest, TestPartialWritesAsync) {
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs)));
 
-  transport_->SendMessage(message,
-                          base::BindOnce(&CompleteHandler::Complete,
-                                         base::Unretained(&write_handler)));
+  transport_->SendMessage(
+      message,
+      base::Bind(&CompleteHandler::Complete, base::Unretained(&write_handler)));
   RunPendingTasks();
   EXPECT_EQ(serialized_message, output);
   socket_cbs.Pop(1);
@@ -242,9 +240,9 @@ TEST_F(CastTransportTest, TestWriteFailureAsync) {
       .WillOnce(EnqueueCallback<2>(&socket_cbs));
   EXPECT_CALL(write_handler, Complete(net::ERR_FAILED));
   EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
-  transport_->SendMessage(message,
-                          base::BindOnce(&CompleteHandler::Complete,
-                                         base::Unretained(&write_handler)));
+  transport_->SendMessage(
+      message,
+      base::Bind(&CompleteHandler::Complete, base::Unretained(&write_handler)));
   RunPendingTasks();
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
   RunPendingTasks();

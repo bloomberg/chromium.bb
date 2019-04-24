@@ -11,9 +11,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
-#include "base/test/test_reg_util_win.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "components/download/quarantine/quarantine.h"
@@ -30,6 +30,12 @@ const char kDummySourceUrl[] = "https://example.com/foo";
 const char kDummyReferrerUrl[] = "https://example.com/referrer";
 const char kDummyClientGuid[] = "A1B69307-8FA2-4B6F-9181-EA06051A48A7";
 
+const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
+const base::FilePath::CharType kMotwStreamSuffix[] =
+    FILE_PATH_LITERAL(":Zone.Identifier");
+
+const char kTestData[] = "Hello world!";
+
 const char* const kUntrustedURLs[] = {
     "http://example.com/foo",
     "https://example.com/foo",
@@ -40,130 +46,15 @@ const char* const kUntrustedURLs[] = {
     "about:internet",
     ""};
 
-// Creates a non-empty file at |file_path|.
-bool CreateFile(const base::FilePath& file_path) {
-  constexpr char kTestData[] = "Hello world!";
-
-  return base::WriteFile(file_path, kTestData, base::size(kTestData)) ==
-         static_cast<int>(base::size(kTestData));
-}
-
-base::FilePath GetZoneIdentifierStreamPath(const base::FilePath& file_path) {
-  const base::FilePath::CharType kMotwStreamSuffix[] =
-      FILE_PATH_LITERAL(":Zone.Identifier");
-
-  return base::FilePath(file_path.value() + kMotwStreamSuffix);
-}
-
-// Reads the Zone.Identifier alternate data stream from |file_path| into
-// |contents|.
-bool GetZoneIdentifierStreamContents(const base::FilePath& file_path,
-                                     std::string* contents) {
-  DCHECK(contents);
-  return base::ReadFileToString(GetZoneIdentifierStreamPath(file_path),
-                                contents);
-}
-
-// Maps a domain and protocol to a zone.
-class ScopedZoneForSite {
- public:
-  enum ZoneIdentifierType : DWORD {
-    kMyComputer = 0,
-    kLocalIntranetZone = 1,
-    kTrustedSitesZone = 2,
-    kInternetZone = 3,
-    kRestrictedSitesZone = 4,
-  };
-
-  ScopedZoneForSite(const base::string16& domain,
-                    const base::string16& protocol,
-                    ZoneIdentifierType zone_identifier_type);
-  ~ScopedZoneForSite();
-
- private:
-  base::string16 domain_;
-  base::string16 protocol_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedZoneForSite);
-};
-
-ScopedZoneForSite::ScopedZoneForSite(const base::string16& domain,
-                                     const base::string16& protocol,
-                                     ZoneIdentifierType zone_identifier_type)
-    : domain_(domain), protocol_(protocol) {
-  base::string16 registry_path = base::StringPrintf(
-      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet "
-      L"Settings\\ZoneMap\\Domains\\%ls",
-      domain_.c_str());
-  base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_path.c_str(),
-                                 KEY_SET_VALUE);
-
-  EXPECT_EQ(registry_key.WriteValue(protocol_.c_str(), zone_identifier_type),
-            ERROR_SUCCESS);
-}
-
-ScopedZoneForSite::~ScopedZoneForSite() {
-  base::string16 registry_path = base::StringPrintf(
-      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet "
-      L"Settings\\ZoneMap\\Domains\\%ls",
-      domain_.c_str());
-  base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_path.c_str(),
-                                 KEY_SET_VALUE);
-  registry_key.DeleteValue(protocol_.c_str());
-}
-
-// Sets the internet Zone.Identifier alternate data stream for |file_path|.
-bool AddInternetZoneIdentifierDirectly(const base::FilePath& file_path) {
-  static const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
-  return base::WriteFile(GetZoneIdentifierStreamPath(file_path),
-                         kMotwForInternetZone,
-                         base::size(kMotwForInternetZone)) ==
-         static_cast<int>(base::size(kMotwForInternetZone));
-}
-
 }  // namespace
 
-class QuarantineWinTest : public ::testing::Test {
- public:
-  QuarantineWinTest() = default;
-  ~QuarantineWinTest() override = default;
-
-  void SetUp() override {
-    ASSERT_NO_FATAL_FAILURE(
-        registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
-    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-
-    scoped_zone_for_trusted_site_ = std::make_unique<ScopedZoneForSite>(
-        GetTrustedSite(), L"https",
-        ScopedZoneForSite::ZoneIdentifierType::kTrustedSitesZone);
-    scoped_zone_for_restricted_site_ = std::make_unique<ScopedZoneForSite>(
-        GetRestrictedSite(), L"https",
-        ScopedZoneForSite::ZoneIdentifierType::kRestrictedSitesZone);
-  }
-
-  base::FilePath GetTempDir() { return scoped_temp_dir_.GetPath(); }
-
-  const wchar_t* GetTrustedSite() { return L"thisisatrustedsite.com"; }
-
-  const wchar_t* GetRestrictedSite() { return L"thisisarestrictedsite.com"; }
-
- private:
-  registry_util::RegistryOverrideManager registry_override_;
-
-  base::ScopedTempDir scoped_temp_dir_;
-
-  // Due to caching, these sites zone must be set for all tests, so that the
-  // order the tests are run does not matter.
-  std::unique_ptr<ScopedZoneForSite> scoped_zone_for_trusted_site_;
-  std::unique_ptr<ScopedZoneForSite> scoped_zone_for_restricted_site_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuarantineWinTest);
-};
-
 // If the file is missing, the QuarantineFile() call should return FILE_MISSING.
-TEST_F(QuarantineWinTest, MissingFile) {
+TEST(QuarantineWinTest, MissingFile) {
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+
   EXPECT_EQ(QuarantineFileResult::FILE_MISSING,
-            QuarantineFile(GetTempDir().AppendASCII("does-not-exist.exe"),
+            QuarantineFile(test_dir.GetPath().AppendASCII("does-not-exist.exe"),
                            GURL(kDummySourceUrl), GURL(kDummyReferrerUrl),
                            kDummyClientGuid));
 }
@@ -173,28 +64,38 @@ TEST_F(QuarantineWinTest, MissingFile) {
 // verifies this behavior since the other tests in this suite would pass with a
 // false positive if local files are being annotated with the MOTW for the
 // internet zone.
-TEST_F(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   const char* const kLocalSourceURLs[] = {"http://localhost/foo",
                                           "file:///C:/some-local-dir/foo.exe"};
 
   for (const char* source_url : kLocalSourceURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
-
-    ASSERT_TRUE(CreateFile(test_file));
+    ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+              base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
     EXPECT_EQ(
         QuarantineFileResult::OK,
         QuarantineFile(test_file, GURL(source_url), GURL(), kDummyClientGuid));
 
-    std::string zone_identifier;
-    GetZoneIdentifierStreamContents(test_file, &zone_identifier);
+    std::string motw_contents;
+    base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents);
 
-    // No zone identifier for local source.
-    EXPECT_TRUE(zone_identifier.empty());
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (!motw_contents.empty()) {
+      LOG(WARNING) << "Unexpected zone marker for file " << test_file.value()
+                   << " Source URL:" << source_url;
+      if (motw_contents != kMotwForInternetZone)
+        LOG(WARNING) << "Zone marker contents: " << motw_contents;
+    }
 
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    base::DeleteFile(test_file, false);
   }
 }
 
@@ -202,206 +103,313 @@ TEST_F(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
 // The specific zone assigned to our dummy source URL depends on the local
 // configuration. But no sane configuration should be treating the dummy URL as
 // a trusted source for anything.
-TEST_F(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   for (const char* source_url : kUntrustedURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
-
-    ASSERT_TRUE(CreateFile(test_file));
+    ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+              base::WriteFile(test_file, kTestData, base::size(kTestData)));
     EXPECT_EQ(
         QuarantineFileResult::OK,
         QuarantineFile(test_file, GURL(source_url), GURL(), kDummyClientGuid));
+    std::string motw_contents;
+    ASSERT_TRUE(base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+    // The actual assigned zone could be anything. So only testing that there is
+    // a zone annotation.
+    EXPECT_FALSE(motw_contents.empty());
 
-    std::string zone_identifier;
-    ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-    // The actual assigned zone could be anything and the contents of the zone
-    // identifier depends on the version of Windows. So only testing that there
-    // is a zone annotation.
-    EXPECT_FALSE(zone_identifier.empty());
-
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (motw_contents != kMotwForInternetZone)
+      LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
+    base::DeleteFile(test_file, false);
   }
 }
 
-TEST_F(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   std::vector<std::string> unsafe_referrers(std::begin(kUntrustedURLs),
                                             std::end(kUntrustedURLs));
 
-  // Add one more test case.
   std::string huge_referrer = "http://example.com/";
   huge_referrer.append(INTERNET_MAX_URL_LENGTH * 2, 'a');
   unsafe_referrers.push_back(huge_referrer);
 
   for (const auto referrer_url : unsafe_referrers) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << referrer_url);
-
-    ASSERT_TRUE(CreateFile(test_file));
+    ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+              base::WriteFile(test_file, kTestData, base::size(kTestData)));
     EXPECT_EQ(QuarantineFileResult::OK,
               QuarantineFile(test_file, GURL("http://example.com/good"),
                              GURL(referrer_url), kDummyClientGuid));
+    std::string motw_contents;
+    ASSERT_TRUE(base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+    // The actual assigned zone could be anything. So only testing that there is
+    // a zone annotation.
+    EXPECT_FALSE(motw_contents.empty());
 
-    std::string zone_identifier;
-    ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-    // The actual assigned zone could be anything and the contents of the zone
-    // identifier depends on the version of Windows. So only testing that there
-    // is a zone annotation.
-    EXPECT_FALSE(zone_identifier.empty());
-
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (motw_contents != kMotwForInternetZone)
+      LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
+    base::DeleteFile(test_file, false);
   }
 }
 
 // An empty source URL should result in a file that's treated the same as one
 // downloaded from the internet.
-TEST_F(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
+TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, GURL(), GURL(), kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  // The actual assigned zone could be anything and the contents of the zone
-  // identifier depends on the version of Windows. So only testing that there is
-  // a zone annotation.
-  EXPECT_FALSE(zone_identifier.empty());
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  // The actual assigned zone could be anything. So only testing that there is a
+  // zone annotation.
+  EXPECT_FALSE(motw_contents.empty());
 }
 
 // Empty files aren't passed to AVScanFile. They are instead marked manually. If
 // the file is passed to AVScanFile, then there wouldn't be a MOTW attached to
 // it and the test would fail.
-TEST_F(QuarantineWinTest, EmptyFile) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
+TEST(QuarantineWinTest, EmptyFile) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
   ASSERT_EQ(0, base::WriteFile(test_file, "", 0u));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
                            kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  // The actual assigned zone could be anything and the contents of the zone
-  // identifier depends on the version of Windows. So only testing that there is
-  // a zone annotation.
-  EXPECT_FALSE(zone_identifier.empty());
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
 // If there is no client GUID supplied to the QuarantineFile() call, then rather
 // than invoking AVScanFile, the MOTW will be applied manually.  If the file is
 // passed to AVScanFile, then there wouldn't be a MOTW attached to it and the
 // test would fail.
-TEST_F(QuarantineWinTest, NoClientGuid) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
+TEST(QuarantineWinTest, NoClientGuid) {
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
                            std::string()));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  // The actual assigned zone could be anything and the contents of the zone
-  // identifier depends on the version of Windows. So only testing that there is
-  // a zone annotation.
-  EXPECT_FALSE(zone_identifier.empty());
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
 // URLs longer than INTERNET_MAX_URL_LENGTH are known to break URLMon. Such a
 // URL, when used as a source URL shouldn't break QuarantineFile() which should
 // mark the file as being from the internet zone as a safe fallback.
-TEST_F(QuarantineWinTest, SuperLongURL) {
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
+TEST(QuarantineWinTest, SuperLongURL) {
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   std::string source_url("http://example.com/");
   source_url.append(INTERNET_MAX_URL_LENGTH * 2, 'a');
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, GURL(source_url), GURL(), std::string()));
 
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  // The actual assigned zone could be anything and the contents of the zone
-  // identifier depends on the version of Windows. So only testing that there is
-  // a zone annotation.
-  EXPECT_FALSE(zone_identifier.empty());
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
-TEST_F(QuarantineWinTest, TrustedSite) {
-  // Test file path and source URL.
-  base::FilePath test_file = GetTempDir().AppendASCII("good.exe");
-  GURL source_url = GURL(
-      base::StringPrintf(L"https://%ls/folder/good.exe", GetTrustedSite()));
+// On domain-joined machines, the IAttachmentExecute code path is taken, and the
+// output depends on the Windows version.
+TEST(QuarantineWinTest, EnterpriseUserZoneIdentifier) {
+  base::win::ScopedDomainStateForTesting scoped_domain(true);
 
-  ASSERT_TRUE(CreateFile(test_file));
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
+
   EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+            QuarantineFile(test_file, GURL(kDummySourceUrl),
+                           GURL(kDummyReferrerUrl), kDummyClientGuid));
 
-  // No zone identifier.
-  std::string zone_identifier;
-  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+  // Read the zone identifier.
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  std::string expected = kMotwForInternetZone;
+  // On Win10, the MotW now contains the HostUrl and ReferrerUrl values.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
+                                       kDummyReferrerUrl, kDummySourceUrl));
+  }
+
+  EXPECT_EQ(motw_contents, expected);
 }
 
-TEST_F(QuarantineWinTest, RestrictedSite) {
-  // Test file path and source URL.
-  base::FilePath test_file = GetTempDir().AppendASCII("bad.exe");
-  GURL source_url = GURL(
-      base::StringPrintf(L"https://%ls/folder/bad.exe", GetRestrictedSite()));
+// When the InvokeAttachmentServices is disabled, the fallback code path that
+// manually sets the MotW is always invoked. The original fallback code only
+// sets the ZoneId value.
+TEST(QuarantineWinTest, DisableInvokeAttachmentServices) {
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
 
-  ASSERT_TRUE(CreateFile(test_file));
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled features.
+      {},
+      // Disabled features.
+      {kInvokeAttachmentServices});
 
-  // Files from a restricted site are deleted.
-  EXPECT_EQ(QuarantineFileResult::BLOCKED_BY_POLICY,
-            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
-  std::string zone_identifier;
-  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-}
-
-TEST_F(QuarantineWinTest, TrustedSite_AlreadyQuarantined) {
-  // Test file path and source URL.
-  base::FilePath test_file = GetTempDir().AppendASCII("good.exe");
-  GURL source_url = GURL(
-      base::StringPrintf(L"https://%ls/folder/good.exe", GetTrustedSite()));
-
-  ASSERT_TRUE(CreateFile(test_file));
-  // Ensure the file already contains a zone identifier.
-  ASSERT_TRUE(AddInternetZoneIdentifierDirectly(test_file));
   EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+            QuarantineFile(test_file, GURL(kDummySourceUrl),
+                           GURL(kDummyReferrerUrl), kDummyClientGuid));
 
-  // The existing zone identifier was not removed.
-  std::string zone_identifier;
-  EXPECT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+  // Read the zone identifier.
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
 
-  EXPECT_FALSE(zone_identifier.empty());
+  // Only the ZoneId is set.
+  std::string expected = kMotwForInternetZone;
+
+  EXPECT_EQ(motw_contents, expected);
 }
 
-TEST_F(QuarantineWinTest, RestrictedSite_AlreadyQuarantined) {
-  // Test file path and source URL.
-  base::FilePath test_file = GetTempDir().AppendASCII("bad.exe");
-  GURL source_url = GURL(
-      base::StringPrintf(L"https://%ls/folder/bad.exe", GetRestrictedSite()));
+// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled.
+TEST(QuarantineWinTest, AugmentedZoneIdentifier) {
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
 
-  ASSERT_TRUE(CreateFile(test_file));
-  // Ensure the file already contains a zone identifier.
-  ASSERT_TRUE(AddInternetZoneIdentifierDirectly(test_file));
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled features.
+      {kAugmentedZoneIdentifier},
+      // Disabled features.
+      {kInvokeAttachmentServices});
 
-  // Files from a restricted site are deleted.
-  EXPECT_EQ(QuarantineFileResult::BLOCKED_BY_POLICY,
-            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
-  std::string zone_identifier;
-  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, GURL(kDummySourceUrl),
+                           GURL(kDummyReferrerUrl), kDummyClientGuid));
+
+  // Read the zone identifier.
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+
+  // Only the ZoneId is set.
+  std::string expected = kMotwForInternetZone;
+  expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
+                                     kDummyReferrerUrl, kDummySourceUrl));
+
+  EXPECT_EQ(motw_contents, expected);
+}
+
+// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled
+// and no referrer is provided to the QuarantineFile() function.
+TEST(QuarantineWinTest, AugmentedZoneIdentifierNoReferrer) {
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled features.
+      {kAugmentedZoneIdentifier},
+      // Disabled features.
+      {kInvokeAttachmentServices});
+
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
+
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, GURL(kDummySourceUrl), GURL(),
+                           kDummyClientGuid));
+
+  // Read the zone identifier.
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+
+  // Only the ZoneId is set.
+  std::string expected = kMotwForInternetZone;
+  expected.append(base::StringPrintf("HostUrl=%s\r\n", kDummySourceUrl));
+
+  EXPECT_EQ(motw_contents, expected);
+}
+
+// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled
+// and no source is provided to the QuarantineFile() function.
+TEST(QuarantineWinTest, AugmentedZoneIdentifierNoSource) {
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled features.
+      {kAugmentedZoneIdentifier},
+      // Disabled features.
+      {kInvokeAttachmentServices});
+
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
+
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, GURL(), GURL(kDummyReferrerUrl),
+                           kDummyClientGuid));
+
+  // Read the zone identifier.
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+
+  // Only the ZoneId is set.
+  std::string expected = kMotwForInternetZone;
+  expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
+                                     kDummyReferrerUrl, "about:internet"));
+
+  EXPECT_EQ(motw_contents, expected);
 }
 
 }  // namespace download

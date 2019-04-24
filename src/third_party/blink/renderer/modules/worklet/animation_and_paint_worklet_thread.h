@@ -32,7 +32,7 @@ class MODULES_EXPORT AnimationAndPaintWorkletThread final
   void ClearWorkerBackingThread() override {}
 
   // This may block the main thread.
-  static void CollectAllGarbageForTesting();
+  static void CollectAllGarbage();
 
   static WorkletThreadHolder<AnimationAndPaintWorkletThread>*
   GetWorkletThreadHolderForTesting();

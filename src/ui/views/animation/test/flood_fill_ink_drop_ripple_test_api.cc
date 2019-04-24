@@ -20,7 +20,7 @@ FloodFillInkDropRippleTestApi::FloodFillInkDropRippleTestApi(
     FloodFillInkDropRipple* ink_drop_ripple)
     : InkDropRippleTestApi(ink_drop_ripple) {}
 
-FloodFillInkDropRippleTestApi::~FloodFillInkDropRippleTestApi() = default;
+FloodFillInkDropRippleTestApi::~FloodFillInkDropRippleTestApi() {}
 
 void FloodFillInkDropRippleTestApi::TransformPoint(float radius,
                                                    gfx::Point3F* point) {

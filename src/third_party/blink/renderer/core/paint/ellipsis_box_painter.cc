@@ -75,12 +75,9 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     // We should consider using the text node as the tracking node, instead of
     // the line layout item.
-    Node* node = ellipsis_box_.GetLineLayoutItem().GetNode();
-    if (node) {
-      PaintTimingDetector::NotifyTextPaint(
-          *node->GetLayoutObject(), paint_info.context.GetPaintController()
-                                        .CurrentPaintChunkProperties());
-    }
+    PaintTimingDetector::NotifyTextPaint(
+        ellipsis_box_.GetLineLayoutItem().GetNode(),
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 }
 

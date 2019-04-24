@@ -46,17 +46,6 @@ MATCHER_P(EqualsWebsiteEvent, other, "") {
 
 }  // namespace
 
-class MockUsageStatsDatabase : public UsageStatsDatabase {
- public:
-  MockUsageStatsDatabase(
-      std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db,
-      std::unique_ptr<ProtoDatabase<Suspension>> suspension_db,
-      std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db)
-      : UsageStatsDatabase(std::move(website_event_db),
-                           std::move(suspension_db),
-                           std::move(token_mapping_db)) {}
-};
-
 class UsageStatsDatabaseTest : public testing::Test {
  public:
   UsageStatsDatabaseTest() {
@@ -72,7 +61,7 @@ class UsageStatsDatabaseTest : public testing::Test {
     suspension_db_unowned_ = fake_suspension_db.get();
     token_mapping_db_unowned_ = fake_token_mapping_db.get();
 
-    usage_stats_database_ = std::make_unique<MockUsageStatsDatabase>(
+    usage_stats_database_ = std::make_unique<UsageStatsDatabase>(
         std::move(fake_website_event_db), std::move(fake_suspension_db),
         std::move(fake_token_mapping_db));
   }

@@ -8,9 +8,13 @@ en_150{
                 accountingFormat{"#,##0.00 ¤"}
                 currencyFormat{"#,##0.00 ¤"}
             }
+            symbols{
+                decimal{","}
+                group{"."}
+            }
         }
     }
-    Version{"2.1.47.69"}
+    Version{"2.1.38.69"}
     calendar{
         gregorian{
             DateTimePatterns{

@@ -14,23 +14,23 @@
 #include "SkColor.h"
 #include "SkPaint.h"
 
-static const char* get_tilemode_name(SkTileMode tilemode) {
+static const char* get_tilemode_name(SkShader::TileMode tilemode) {
     switch (tilemode) {
-        case SkTileMode::kClamp:
+        case SkShader::kClamp_TileMode:
             return "clamp";
-        case SkTileMode::kRepeat:
+        case SkShader::kRepeat_TileMode:
             return "repeat";
-        case SkTileMode::kMirror:
+        case SkShader::kMirror_TileMode:
             return "mirror";
-        case SkTileMode::kDecal:
-            return "decal";
+        default:
+            SkDEBUGFAIL("Unknown tilemode");
+            return "error";
     }
-    return "";
 }
 
 class HardStopGradientBench_ScaleNumColors : public Benchmark {
 public:
-    HardStopGradientBench_ScaleNumColors(SkTileMode tilemode, int count) {
+    HardStopGradientBench_ScaleNumColors(SkShader::TileMode tilemode, int count) {
         fName.printf("hardstop_scale_num_colors_%s_%03d_colors", get_tilemode_name(tilemode), count);
 
         fTileMode   = tilemode;
@@ -103,37 +103,37 @@ public:
 private:
     static const int kSize = 500;
 
-    SkTileMode  fTileMode;
-    SkString    fName;
-    int         fColorCount;
-    SkPaint     fPaint;
+    SkShader::TileMode  fTileMode;
+    SkString            fName;
+    int                 fColorCount;
+    SkPaint             fPaint;
 
     typedef Benchmark INHERITED;
 };
 
 // Clamp
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,   3);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,   4);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,   5);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,  10);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,  25);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp,  50);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kClamp, 100);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,   3);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,   4);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,   5);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,  10);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,  25);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode,  50);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kClamp_TileMode, 100);)
 
 // Repeat
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,   3);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,   4);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,   5);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,  10);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,  25);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat,  50);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kRepeat, 100);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,   3);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,   4);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,   5);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,  10);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,  25);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode,  50);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kRepeat_TileMode, 100);)
 
 // Mirror
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,   3);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,   4);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,   5);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,  10);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,  25);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror,  50);)
-DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkTileMode::kMirror, 100);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,   3);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,   4);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,   5);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,  10);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,  25);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode,  50);)
+DEF_BENCH(return new HardStopGradientBench_ScaleNumColors(SkShader::kMirror_TileMode, 100);)

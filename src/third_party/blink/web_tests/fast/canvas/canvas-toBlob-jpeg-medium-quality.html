@@ -1,8 +1,10 @@
 <canvas id="mycanvas"></canvas>
 <img id="result" onload="testDone()">
 <script type = 'text/javascript'>
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
 function testDone()
 {

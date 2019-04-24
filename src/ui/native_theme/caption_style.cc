@@ -16,9 +16,9 @@ CaptionStyle::~CaptionStyle() = default;
 // static
 CaptionStyle CaptionStyle::FromSpec(const std::string& spec) {
   CaptionStyle style;
-  base::Optional<base::Value> dict = base::JSONReader::Read(spec);
+  std::unique_ptr<base::Value> dict = base::JSONReader::ReadDeprecated(spec);
 
-  if (!dict.has_value() || !dict->is_dict())
+  if (!dict || !dict->is_dict())
     return style;
 
   if (const std::string* value = dict->FindStringKey("text-color"))
@@ -29,7 +29,7 @@ CaptionStyle CaptionStyle::FromSpec(const std::string& spec) {
   return style;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN)
 CaptionStyle CaptionStyle::FromSystemSettings() {
   return CaptionStyle();
 }

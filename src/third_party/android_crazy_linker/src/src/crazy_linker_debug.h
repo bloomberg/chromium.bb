@@ -33,28 +33,16 @@ namespace crazy {
 
 void Log(const char* location, const char* fmt, ...);
 void LogErrno(const char* location, const char* fmt, ...);
-void AssertionFailure(const char* location, const char* fmt, ...);
 
 #define LOG(...) ::crazy::Log(__PRETTY_FUNCTION__, __VA_ARGS__)
 #define LOG_ERRNO(...) ::crazy::LogErrno(__PRETTY_FUNCTION__, __VA_ARGS__)
 
-// NOTE: This form of ASSERT() that can be used within constexpr methods, inside
-// a comma operation, as in:
-//   return ASSERT(cond), <result>;
-// Which will be equivalent to:
-//   ASSERT(cond);
-//   return <result>;
-#define ASSERT(cond, ...)                                                \
-  (!(cond) ? ::crazy::AssertionFailure(__PRETTY_FUNCTION__, __VA_ARGS__) \
-           : (void)0)
-
-#else  // !CRAZY_DEBUG
+#else
 
 #define LOG(...) ((void)0)
 #define LOG_ERRNO(...) ((void)0)
-#define ASSERT(cond, ...) ((void)(cond))
 
-#endif  // !CRAZY_DEBUG
+#endif
 
 // Conditional logging.
 #define LOG_IF(cond, ...) \

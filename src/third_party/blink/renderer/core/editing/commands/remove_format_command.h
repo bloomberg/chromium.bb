@@ -32,6 +32,10 @@ namespace blink {
 
 class RemoveFormatCommand final : public CompositeEditCommand {
  public:
+  static RemoveFormatCommand* Create(Document& document) {
+    return MakeGarbageCollected<RemoveFormatCommand>(document);
+  }
+
   explicit RemoveFormatCommand(Document&);
 
  private:

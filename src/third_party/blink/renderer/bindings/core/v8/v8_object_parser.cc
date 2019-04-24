@@ -134,9 +134,9 @@ bool V8ObjectParser::ParseCSSPropertyList(
 
     for (const auto& property : properties) {
       CSSPropertyID property_id = cssPropertyID(property);
-      if (property_id == CSSPropertyID::kVariable) {
+      if (property_id == CSSPropertyVariable) {
         custom_properties->push_back(std::move(property));
-      } else if (property_id != CSSPropertyID::kInvalid) {
+      } else if (property_id != CSSPropertyInvalid) {
         native_properties->push_back(std::move(property_id));
       }
     }

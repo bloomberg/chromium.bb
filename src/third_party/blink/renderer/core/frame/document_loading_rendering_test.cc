@@ -256,7 +256,8 @@ TEST_F(DocumentLoadingRenderingTest,
   // script that touched offsetTop in the child frame.
   auto* child_frame =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
-  child_frame->contentDocument()->UpdateStyleAndLayout();
+  child_frame->contentDocument()
+      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   auto frame2 = Compositor().BeginFrame();
 
@@ -360,32 +361,32 @@ TEST_F(DocumentLoadingRenderingTest,
 
   // Still in the head, should not paint.
   main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=testHead.css>");
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Sheet is streaming in, but not ready yet.
   css_head_resource.Start();
   css_head_resource.Write("a { color: red; }");
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Body inserted but sheet is still pending so don't paint.
   main_resource.Write("<body>");
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Sheet finished and body inserted, ok to paint.
   css_head_resource.Finish();
-  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // In the body, should not stop painting.
   main_resource.Write("<link rel=stylesheet href=testBody.css>");
-  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // Finish loading the CSS resource (no change to painting).
   css_body_resource.Complete("a { color: red; }");
-  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // Finish the load, painting should stay enabled.
   main_resource.Finish();
-  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
 TEST_F(DocumentLoadingRenderingTest,
@@ -411,14 +412,14 @@ TEST_F(DocumentLoadingRenderingTest,
   import_resource.Start();
 
   // Import loader isn't finish, shoudn't paint.
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Pending imports should not block layout
   Element* element = GetDocument().getElementById("test");
   DOMRect* rect = element->getBoundingClientRect();
   EXPECT_TRUE(rect->width() > 0.f);
   EXPECT_TRUE(rect->height() > 0.f);
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   import_resource.Write("div { color: red; }");
   import_resource.Finish();
@@ -456,7 +457,7 @@ TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
     EXPECT_EQ(.5f, svg_style.StopOpacity());
   };
 
-  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
   recalc_and_check();
 
   main_resource.Write(
@@ -467,7 +468,7 @@ TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
       "document.head.appendChild(link);"
       "</script>");
 
-  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
   recalc_and_check();
 
   import_resource.Complete();

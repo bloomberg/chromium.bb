@@ -966,10 +966,9 @@ syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
       context->set_native_model_sync_state(IN_SYNC);
     } else {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-      UMA_HISTOGRAM_ENUMERATION(
-          "Sync.LocalModelOutOfSync",
-          ModelTypeToHistogramInt(syncer::BOOKMARKS),
-          static_cast<int>(syncer::ModelType::NUM_ENTRIES));
+      UMA_HISTOGRAM_ENUMERATION("Sync.LocalModelOutOfSync",
+                                ModelTypeToHistogramInt(syncer::BOOKMARKS),
+                                static_cast<int>(syncer::MODEL_TYPE_COUNT));
 
       // Clear version on bookmark model so that we only report error once.
       bookmark_model_->SetNodeSyncTransactionVersion(

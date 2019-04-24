@@ -51,7 +51,9 @@ class LineBreakIteratorPool final {
     return **pool;
   }
 
-  LineBreakIteratorPool() = default;
+  static std::unique_ptr<LineBreakIteratorPool> Create() {
+    return base::WrapUnique(new LineBreakIteratorPool);
+  }
 
   icu::BreakIterator* Take(const AtomicString& locale) {
     icu::BreakIterator* iterator = nullptr;
@@ -102,6 +104,8 @@ class LineBreakIteratorPool final {
   }
 
  private:
+  LineBreakIteratorPool() = default;
+
   static const size_t kCapacity = 4;
 
   typedef std::pair<AtomicString, icu::BreakIterator*> Entry;

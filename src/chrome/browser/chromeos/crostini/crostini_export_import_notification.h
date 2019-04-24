@@ -39,9 +39,6 @@ class CrostiniExportImportNotification
   virtual ~CrostiniExportImportNotification();
 
   void UpdateStatus(Status status, int progress_percent);
-  void set_message_failed(const base::string16& message) {
-    message_failed_ = message;
-  }
 
   // Getters for testing.
   Status get_status() { return status_; }
@@ -63,11 +60,11 @@ class CrostiniExportImportNotification
   Status status_ = Status::RUNNING;
   // Time when the operation started.  Used for estimating time remaining.
   base::Time started_ = base::Time::Now();
-  base::string16 title_running_;
-  base::string16 title_done_;
-  base::string16 message_done_;
-  base::string16 title_failed_;
-  base::string16 message_failed_;
+  int title_running_;
+  int title_done_;
+  int message_done_;
+  int title_failed_;
+  int message_failed_;
   std::unique_ptr<message_center::Notification> notification_;
   bool closed_ = false;
   base::WeakPtrFactory<CrostiniExportImportNotification> weak_ptr_factory_;

@@ -49,11 +49,6 @@ namespace dawn_native {
                     CopyTextureToBufferCmd* copy = commands->NextCommand<CopyTextureToBufferCmd>();
                     copy->~CopyTextureToBufferCmd();
                 } break;
-                case Command::CopyTextureToTexture: {
-                    CopyTextureToTextureCmd* copy =
-                        commands->NextCommand<CopyTextureToTextureCmd>();
-                    copy->~CopyTextureToTextureCmd();
-                } break;
                 case Command::Dispatch: {
                     DispatchCmd* dispatch = commands->NextCommand<DispatchCmd>();
                     dispatch->~DispatchCmd();
@@ -127,7 +122,7 @@ namespace dawn_native {
                     for (size_t i = 0; i < cmd->count; ++i) {
                         (&buffers[i])->~Ref<BufferBase>();
                     }
-                    commands->NextData<uint64_t>(cmd->count);
+                    commands->NextData<uint32_t>(cmd->count);
                     cmd->~SetVertexBuffersCmd();
                 } break;
             }
@@ -155,10 +150,6 @@ namespace dawn_native {
 
             case Command::CopyTextureToBuffer:
                 commands->NextCommand<CopyTextureToBufferCmd>();
-                break;
-
-            case Command::CopyTextureToTexture:
-                commands->NextCommand<CopyTextureToTextureCmd>();
                 break;
 
             case Command::Dispatch:
@@ -231,7 +222,7 @@ namespace dawn_native {
             case Command::SetVertexBuffers: {
                 auto* cmd = commands->NextCommand<SetVertexBuffersCmd>();
                 commands->NextData<Ref<BufferBase>>(cmd->count);
-                commands->NextData<uint64_t>(cmd->count);
+                commands->NextData<uint32_t>(cmd->count);
             } break;
         }
     }

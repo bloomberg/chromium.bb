@@ -20,8 +20,6 @@
 
 namespace blink {
 
-namespace {
-
 using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
                               const NGPhysicalLineBoxFragment*>;
 void GatherInlineContainerFragmentsFromLinebox(
@@ -33,7 +31,7 @@ void GatherInlineContainerFragmentsFromLinebox(
     if (!descendant.fragment->IsBox())
       continue;
     LayoutObject* key = descendant.fragment->GetLayoutObject();
-    // Key for inline is the continuation root if it exists.
+    // Key for inline is continuation root if it exists.
     if (key->IsLayoutInline() && key->GetNode())
       key = key->GetNode()->GetLayoutObject();
     auto it = inline_containing_block_map->find(key);
@@ -72,8 +70,6 @@ void GatherInlineContainerFragmentsFromLinebox(
   }
 }
 
-}  // namespace
-
 void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
   inline_break_tokens_.resize(0);
@@ -84,7 +80,7 @@ void NGBoxFragmentBuilder::RemoveChildren() {
 NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
   DCHECK(has_block_fragmentation_);
-  if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
+  if (child.IsInline()) {
     if (inline_break_tokens_.IsEmpty()) {
       // In some cases we may want to break before the first line, as a last
       // resort. We need a break token for that as well, so that the machinery
@@ -92,7 +88,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
       // formatting context, rather than concluding that we're done with the
       // whole thing.
       inline_break_tokens_.push_back(NGInlineBreakToken::Create(
-          *child_inline_node, /* style */ nullptr, /* item_index */ 0,
+          ToNGInlineNode(child), /* style */ nullptr, /* item_index */ 0,
           /* text_offset */ 0, NGInlineBreakToken::kDefault));
     }
     return *this;
@@ -132,7 +128,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
   // We need to resume at the right inline location in the next fragment, but
   // broken floats, which are resumed and positioned by the parent block layout
   // algorithm, need to be ignored by the inline layout algorithm.
-  To<NGInlineBreakToken>(inline_break_tokens_.back().get())->SetIgnoreFloats();
+  ToNGInlineBreakToken(inline_break_tokens_.back().get())->SetIgnoreFloats();
   return *this;
 }
 
@@ -262,12 +258,12 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
   return base::AdoptRef(new NGLayoutResult(status, this));
 }
 
-// Computes the geometry required for any inline containing blocks.
-// |inline_containing_block_map| is a map whose keys specify which inline
-// containing block geometry is required.
+// Finds InlineContainingBlockGeometry that define inline containing blocks.
+// |inline_containing_block_map| is a map whose keys specify which
+// inline containing blocks are required.
 void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
     InlineContainingBlockMap* inline_containing_block_map) {
-  if (inline_containing_block_map->IsEmpty())
+  if (!inline_containing_block_map->size())
     return;
 
   // This function has detailed knowledge of inline fragment tree structure,
@@ -275,15 +271,16 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
 
-  // std::pair.first points to the start linebox fragment.
-  // std::pair.second points to the end linebox fragment.
+  // std::pair.first points to start linebox fragment.
+  // std::pair.second points to ending linebox fragment.
   using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
                                 const NGPhysicalLineBoxFragment*>;
   HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
 
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
-      const auto* linebox = To<NGPhysicalLineBoxFragment>(children_[i].get());
+      const NGPhysicalLineBoxFragment* linebox =
+          ToNGPhysicalLineBoxFragment(children_[i].get());
       const NGPhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
           ToNGPhysicalSize(Size(), GetWritingMode()), linebox->Size());
@@ -291,7 +288,8 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
                                                 &containing_linebox_map,
                                                 linebox, linebox_offset);
     } else if (children_[i]->IsBox()) {
-      const auto* box_fragment = To<NGPhysicalBoxFragment>(children_[i].get());
+      const NGPhysicalBoxFragment* box_fragment =
+          ToNGPhysicalBoxFragment(children_[i].get());
       bool is_anonymous_container =
           box_fragment->GetLayoutObject() &&
           box_fragment->GetLayoutObject()->IsAnonymousBlock();
@@ -301,8 +299,9 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // split inlines. The inline container fragments might be inside
       // anonymous boxes. To find inline container fragments, traverse
       // lineboxes inside anonymous box.
-      // For more on this special case, see "css container is an inline, with
-      // inline splitting" comment in NGOutOfFlowLayoutPart::LayoutDescendant.
+      // For more on this special case, see "css container is an inline,
+      // with inline splitting" comment in
+      // NGOutOfFlowLayoutPart::LayoutDescendant.
       const NGPhysicalOffset box_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
           ToNGPhysicalSize(Size(), GetWritingMode()), box_fragment->Size());
@@ -310,7 +309,8 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // Traverse lineboxes of anonymous box.
       for (const auto& child : box_fragment->Children()) {
         if (child->IsLineBox()) {
-          const auto* linebox = To<NGPhysicalLineBoxFragment>(child.get());
+          const NGPhysicalLineBoxFragment* linebox =
+              ToNGPhysicalLineBoxFragment(child.get());
           const NGPhysicalOffset linebox_offset = child.Offset() + box_offset;
           GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                     &containing_linebox_map,

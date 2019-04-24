@@ -303,13 +303,13 @@ bool String::Equals(Isolate* isolate, Handle<String> one, Handle<String> two) {
 }
 
 Handle<String> String::Flatten(Isolate* isolate, Handle<String> string,
-                               AllocationType allocation) {
+                               PretenureFlag pretenure) {
   if (string->IsConsString()) {
     Handle<ConsString> cons = Handle<ConsString>::cast(string);
     if (cons->IsFlat()) {
       string = handle(cons->first(), isolate);
     } else {
-      return SlowFlatten(isolate, cons, allocation);
+      return SlowFlatten(isolate, cons, pretenure);
     }
   }
   if (string->IsThinString()) {
@@ -553,11 +553,11 @@ bool ExternalString::is_uncached() const {
 }
 
 Address ExternalString::resource_as_address() {
-  return READ_UINTPTR_FIELD(*this, kResourceOffset);
+  return *reinterpret_cast<Address*>(FIELD_ADDR(*this, kResourceOffset));
 }
 
 void ExternalString::set_address_as_resource(Address address) {
-  WRITE_UINTPTR_FIELD(*this, kResourceOffset, address);
+  *reinterpret_cast<Address*>(FIELD_ADDR(*this, kResourceOffset)) = address;
   if (IsExternalOneByteString()) {
     ExternalOneByteString::cast(*this)->update_data_cache();
   } else {
@@ -566,36 +566,27 @@ void ExternalString::set_address_as_resource(Address address) {
 }
 
 uint32_t ExternalString::resource_as_uint32() {
-  return static_cast<uint32_t>(READ_UINTPTR_FIELD(*this, kResourceOffset));
+  return static_cast<uint32_t>(
+      *reinterpret_cast<uintptr_t*>(FIELD_ADDR(*this, kResourceOffset)));
 }
 
 void ExternalString::set_uint32_as_resource(uint32_t value) {
-  WRITE_UINTPTR_FIELD(*this, kResourceOffset, value);
+  *reinterpret_cast<uintptr_t*>(FIELD_ADDR(*this, kResourceOffset)) = value;
   if (is_uncached()) return;
-  WRITE_UINTPTR_FIELD(*this, kResourceDataOffset, kNullAddress);
-}
-
-void ExternalString::DisposeResource() {
-  v8::String::ExternalStringResourceBase* resource =
-      reinterpret_cast<v8::String::ExternalStringResourceBase*>(
-          READ_UINTPTR_FIELD(*this, ExternalString::kResourceOffset));
-
-  // Dispose of the C++ object if it has not already been disposed.
-  if (resource != nullptr) {
-    resource->Dispose();
-    WRITE_UINTPTR_FIELD(*this, ExternalString::kResourceOffset, kNullAddress);
-  }
+  const char** data_field =
+      reinterpret_cast<const char**>(FIELD_ADDR(*this, kResourceDataOffset));
+  *data_field = nullptr;
 }
 
 const ExternalOneByteString::Resource* ExternalOneByteString::resource() {
-  return reinterpret_cast<Resource*>(
-      READ_UINTPTR_FIELD(*this, kResourceOffset));
+  return *reinterpret_cast<Resource**>(FIELD_ADDR(*this, kResourceOffset));
 }
 
 void ExternalOneByteString::update_data_cache() {
   if (is_uncached()) return;
-  WRITE_UINTPTR_FIELD(*this, kResourceDataOffset,
-                      reinterpret_cast<Address>(resource()->data()));
+  const char** data_field =
+      reinterpret_cast<const char**>(FIELD_ADDR(*this, kResourceDataOffset));
+  *data_field = resource()->data();
 }
 
 void ExternalOneByteString::SetResource(
@@ -609,8 +600,8 @@ void ExternalOneByteString::SetResource(
 
 void ExternalOneByteString::set_resource(
     const ExternalOneByteString::Resource* resource) {
-  WRITE_UINTPTR_FIELD(*this, kResourceOffset,
-                      reinterpret_cast<Address>(resource));
+  *reinterpret_cast<const Resource**>(FIELD_ADDR(*this, kResourceOffset)) =
+      resource;
   if (resource != nullptr) update_data_cache();
 }
 
@@ -624,14 +615,14 @@ uint16_t ExternalOneByteString::ExternalOneByteStringGet(int index) {
 }
 
 const ExternalTwoByteString::Resource* ExternalTwoByteString::resource() {
-  return reinterpret_cast<Resource*>(
-      READ_UINTPTR_FIELD(*this, kResourceOffset));
+  return *reinterpret_cast<Resource**>(FIELD_ADDR(*this, kResourceOffset));
 }
 
 void ExternalTwoByteString::update_data_cache() {
   if (is_uncached()) return;
-  WRITE_UINTPTR_FIELD(*this, kResourceDataOffset,
-                      reinterpret_cast<Address>(resource()->data()));
+  const uint16_t** data_field = reinterpret_cast<const uint16_t**>(
+      FIELD_ADDR(*this, kResourceDataOffset));
+  *data_field = resource()->data();
 }
 
 void ExternalTwoByteString::SetResource(
@@ -645,8 +636,8 @@ void ExternalTwoByteString::SetResource(
 
 void ExternalTwoByteString::set_resource(
     const ExternalTwoByteString::Resource* resource) {
-  WRITE_UINTPTR_FIELD(*this, kResourceOffset,
-                      reinterpret_cast<Address>(resource));
+  *reinterpret_cast<const Resource**>(FIELD_ADDR(*this, kResourceOffset)) =
+      resource;
   if (resource != nullptr) update_data_cache();
 }
 
@@ -750,11 +741,11 @@ SubStringRange::SubStringRange(String string,
 
 class SubStringRange::iterator final {
  public:
-  using iterator_category = std::forward_iterator_tag;
-  using difference_type = int;
-  using value_type = uc16;
-  using pointer = uc16*;
-  using reference = uc16&;
+  typedef std::forward_iterator_tag iterator_category;
+  typedef int difference_type;
+  typedef uc16 value_type;
+  typedef uc16* pointer;
+  typedef uc16& reference;
 
   iterator(const iterator& other) = default;
 

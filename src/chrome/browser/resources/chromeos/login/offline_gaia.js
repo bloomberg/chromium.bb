@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{
-  const DEFAULT_EMAIL_DOMAIN = '@gmail.com';
+Polymer((function() {
+  var DEFAULT_EMAIL_DOMAIN = '@gmail.com';
 
-  /** @enum */
-  const TRANSITION_TYPE = {FORWARD: 0, BACKWARD: 1, NONE: 2};
+  var TRANSITION_TYPE = {FORWARD: 0, BACKWARD: 1, NONE: 2};
 
-  Polymer({
+  return {
     is: 'offline-gaia',
 
     behaviors: [I18nBehavior, OobeDialogHostBehavior],
@@ -151,5 +150,5 @@
         this.fire('offline-gaia-cancel');
       }
     },
-  });
-}
+  };
+})());

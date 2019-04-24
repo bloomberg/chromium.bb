@@ -14,7 +14,6 @@
 
 #include <algorithm>
 
-#include "api/transport/field_trial_based_config.h"
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/constructor_magic.h"
@@ -96,14 +95,13 @@ RemoteBitrateEstimatorAbsSendTime::RemoteBitrateEstimatorAbsSendTime(
       observer_(observer),
       inter_arrival_(),
       estimator_(),
-      detector_(&field_trials_),
+      detector_(),
       incoming_bitrate_(kBitrateWindowMs, 8000),
       incoming_bitrate_initialized_(false),
       total_probes_received_(0),
       first_packet_time_ms_(-1),
       last_update_ms_(-1),
-      uma_recorded_(false),
-      remote_rate_(&field_trials_) {
+      uma_recorded_(false) {
   RTC_DCHECK(clock_);
   RTC_DCHECK(observer_);
   RTC_LOG(LS_INFO) << "RemoteBitrateEstimatorAbsSendTime: Instantiating.";

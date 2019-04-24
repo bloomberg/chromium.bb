@@ -82,7 +82,6 @@ GLTestAtlasTextRenderer::GLTestAtlasTextRenderer(std::unique_ptr<GLTestContext> 
     auto version = GrGLGetVersionFromString(versionStr);
     auto standard = GrGLGetStandardInUseFromString(versionStr);
     switch (standard) {
-        case kWebGL_GrGLStandard:
         case kNone_GrGLStandard:
             return;
         case kGLES_GrGLStandard:

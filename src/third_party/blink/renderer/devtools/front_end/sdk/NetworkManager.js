@@ -761,14 +761,13 @@ SDK.NetworkDispatcher = class {
    * @param {!Protocol.Network.ErrorReason=} responseErrorReason
    * @param {number=} responseStatusCode
    * @param {!Protocol.Network.Headers=} responseHeaders
-   * @param {!Protocol.Network.RequestId=} requestId
    */
   requestIntercepted(
       interceptionId, request, frameId, resourceType, isNavigationRequest, isDownload, redirectUrl, authChallenge,
-      responseErrorReason, responseStatusCode, responseHeaders, requestId) {
+      responseErrorReason, responseStatusCode, responseHeaders) {
     SDK.multitargetNetworkManager._requestIntercepted(new SDK.MultitargetNetworkManager.InterceptedRequest(
         this._manager.target().networkAgent(), interceptionId, request, frameId, resourceType, isNavigationRequest,
-        isDownload, redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders, requestId));
+        isDownload, redirectUrl, authChallenge, responseErrorReason, responseStatusCode, responseHeaders));
   }
 
   /**
@@ -859,7 +858,8 @@ SDK.NetworkDispatcher = class {
 
     if (shouldReportCorbBlocking) {
       const message = Common.UIString(
-          `Cross-Origin Read Blocking (CORB) blocked cross-origin response %s with MIME type %s. See https://www.chromestatus.com/feature/5629709824032768 for more details.`,
+          `Cross-Origin Read Blocking (CORB) blocked cross-origin response %s with MIME type %s. ` +
+              `See https://www.chromestatus.com/feature/5629709824032768 for more details.`,
           networkRequest.url(), networkRequest.mimeType);
       this._manager.dispatchEventToListeners(
           SDK.NetworkManager.Events.MessageGenerated,
@@ -868,18 +868,10 @@ SDK.NetworkDispatcher = class {
 
     if (Common.moduleSetting('monitoringXHREnabled').get() &&
         networkRequest.resourceType().category() === Common.resourceCategories.XHR) {
-      let message;
-      const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
-      if (failedToLoad) {
-        message = Common.UIString(
-            '%s failed loading: %s "%s".', networkRequest.resourceType().title(), networkRequest.requestMethod,
-            networkRequest.url());
-      } else {
-        message = Common.UIString(
-            '%s finished loading: %s "%s".', networkRequest.resourceType().title(), networkRequest.requestMethod,
-            networkRequest.url());
-      }
-
+      const message = Common.UIString(
+          (networkRequest.failed || networkRequest.hasErrorStatusCode()) ? '%s failed loading: %s "%s".' :
+                                                                           '%s finished loading: %s "%s".',
+          networkRequest.resourceType().title(), networkRequest.requestMethod, networkRequest.url());
       this._manager.dispatchEventToListeners(
           SDK.NetworkManager.Events.MessageGenerated,
           {message: message, requestId: networkRequest.requestId(), warning: false});
@@ -1245,11 +1237,10 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
    * @param {!Protocol.Network.ErrorReason=} responseErrorReason
    * @param {number=} responseStatusCode
    * @param {!Protocol.Network.Headers=} responseHeaders
-   * @param {!Protocol.Network.RequestId=} requestId
    */
   constructor(
       networkAgent, interceptionId, request, frameId, resourceType, isNavigationRequest, isDownload, redirectUrl,
-      authChallenge, responseErrorReason, responseStatusCode, responseHeaders, requestId) {
+      authChallenge, responseErrorReason, responseStatusCode, responseHeaders) {
     this._networkAgent = networkAgent;
     this._interceptionId = interceptionId;
     this._hasResponded = false;
@@ -1263,7 +1254,6 @@ SDK.MultitargetNetworkManager.InterceptedRequest = class {
     this.responseErrorReason = responseErrorReason;
     this.responseStatusCode = responseStatusCode;
     this.responseHeaders = responseHeaders;
-    this.requestId = requestId;
   }
 
   /**

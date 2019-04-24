@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/util/CRUILabel+AttributeUtils.h"
@@ -26,26 +27,6 @@
 #endif
 
 namespace {
-
-// An enum type to describe size classes.
-typedef NS_ENUM(NSInteger, SizeClassIdiom) {
-  COMPACT = 0,
-  REGULAR,
-  UNSPECIFIED,
-  SIZE_CLASS_COUNT = UNSPECIFIED,
-};
-
-// Returns the SizeClassIdiom corresponding with |size_class|.
-SizeClassIdiom GetSizeClassIdiom(UIUserInterfaceSizeClass size_class) {
-  switch (size_class) {
-    case UIUserInterfaceSizeClassCompact:
-      return COMPACT;
-    case UIUserInterfaceSizeClassRegular:
-      return REGULAR;
-    case UIUserInterfaceSizeClassUnspecified:
-      return UNSPECIFIED;
-  }
-}
 
 // Accessibility identifier for the checkbox button.
 NSString* const kUMAMetricsButtonAccessibilityIdentifier =
@@ -375,7 +356,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   // The image is centered and laid out below |titleLabel| as specified by
   // kImageTopPadding.
   CGSize imageViewSize = self.imageView.bounds.size;
-  CGFloat imageViewTopPadding = kImageTopPadding[[self heightSizeClassIdiom]];
+  CGFloat imageViewTopPadding = kImageTopPadding[self.cr_heightSizeClass];
   self.imageView.frame = AlignRectOriginAndSizeToPixels(CGRectMake(
       (CGRectGetWidth(self.containerView.bounds) - imageViewSize.width) / 2.0,
       CGRectGetMaxY(self.titleLabel.frame) + imageViewTopPadding,
@@ -443,7 +424,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   [_TOSLabelLinkController setLinkColor:UIColorFromRGB(kLinkColorRGB)];
 
   CGSize TOSLabelSize = [self.TOSLabel sizeThatFits:containerSize];
-  CGFloat TOSLabelTopPadding = kTOSLabelTopPadding[[self heightSizeClassIdiom]];
+  CGFloat TOSLabelTopPadding = kTOSLabelTopPadding[self.cr_heightSizeClass];
   self.TOSLabel.frame = AlignRectOriginAndSizeToPixels(
       CGRectMake((containerSize.width - TOSLabelSize.width) / 2.0,
                  CGRectGetMaxY(self.imageView.frame) + TOSLabelTopPadding,
@@ -455,14 +436,13 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   // button and below |TOSLabel| as specified by kOptInLabelPadding.
   CGSize checkBoxSize =
       [self.checkBoxButton imageForState:self.checkBoxButton.state].size;
-  CGFloat checkBoxPadding = kCheckBoxPadding[[self widthSizeClassIdiom]];
+  CGFloat checkBoxPadding = kCheckBoxPadding[self.cr_widthSizeClass];
   CGFloat optInLabelSidePadding = checkBoxSize.width + 2.0 * checkBoxPadding;
   CGSize optInLabelSize = [self.optInLabel
       sizeThatFits:CGSizeMake(CGRectGetWidth(self.containerView.bounds) -
                                   optInLabelSidePadding,
                               CGFLOAT_MAX)];
-  CGFloat optInLabelTopPadding =
-      kOptInLabelPadding[[self heightSizeClassIdiom]];
+  CGFloat optInLabelTopPadding = kOptInLabelPadding[self.cr_heightSizeClass];
   CGFloat optInLabelOriginX =
       base::i18n::IsRTL() ? 0.0f : optInLabelSidePadding;
   self.optInLabel.frame = AlignRectOriginAndSizeToPixels(
@@ -479,7 +459,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   // |optInLabel|.
   CGSize checkBoxSize =
       [self.checkBoxButton imageForState:self.checkBoxButton.state].size;
-  CGFloat checkBoxPadding = kCheckBoxPadding[[self widthSizeClassIdiom]];
+  CGFloat checkBoxPadding = kCheckBoxPadding[self.cr_widthSizeClass];
   CGSize checkBoxButtonSize =
       CGSizeMake(CGRectGetWidth(self.optInLabel.frame) + checkBoxSize.width +
                      2.0 * checkBoxPadding,
@@ -507,7 +487,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   CGSize containerViewSize = self.containerView.bounds.size;
   containerViewSize.height = CGRectGetMaxY(self.checkBoxButton.frame);
 
-  CGFloat padding = kOptInLabelPadding[[self heightSizeClassIdiom]];
+  CGFloat padding = kOptInLabelPadding[self.cr_heightSizeClass];
   CGFloat originY = fmin(
       (CGRectGetHeight(self.bounds) - containerViewSize.height) / 2.0,
       CGRectGetMinY(self.OKButton.frame) - padding - containerViewSize.height);
@@ -521,7 +501,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   // The OK button is laid out at the bottom of the view as specified by
   // kOKButtonBottomPadding.
   CGFloat OKButtonBottomPadding =
-      kOKButtonBottomPadding[[self widthSizeClassIdiom]];
+      kOKButtonBottomPadding[self.cr_widthSizeClass];
   CGSize OKButtonSize = self.OKButton.bounds.size;
   CGFloat bottomSafeArea = self.safeAreaInsets.bottom;
   self.OKButton.frame = AlignRectOriginAndSizeToPixels(
@@ -549,14 +529,14 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 
 - (void)configureTitleLabel {
   self.titleLabel.font = [[MDCTypography fontLoader]
-      regularFontOfSize:kTitleLabelFontSize[[self widthSizeClassIdiom]]];
+      regularFontOfSize:kTitleLabelFontSize[self.cr_widthSizeClass]];
 }
 
 - (void)configureImageView {
   CGFloat sideLength = self.imageView.image.size.width;
-  if ([self widthSizeClassIdiom] == COMPACT) {
+  if (self.cr_widthSizeClass == COMPACT) {
     sideLength = self.bounds.size.width * kAppLogoProportionMultiplier;
-  } else if ([self heightSizeClassIdiom] == COMPACT) {
+  } else if (self.cr_heightSizeClass == COMPACT) {
     sideLength = self.bounds.size.height * kAppLogoProportionMultiplier;
   }
   self.imageView.bounds = AlignRectOriginAndSizeToPixels(
@@ -566,20 +546,19 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 
 - (void)configureTOSLabel {
   self.TOSLabel.font = [[MDCTypography fontLoader]
-      regularFontOfSize:kTOSLabelFontSize[[self widthSizeClassIdiom]]];
-  self.TOSLabel.cr_lineHeight = kTOSLabelLineHeight[[self widthSizeClassIdiom]];
+      regularFontOfSize:kTOSLabelFontSize[self.cr_widthSizeClass]];
+  self.TOSLabel.cr_lineHeight = kTOSLabelLineHeight[self.cr_widthSizeClass];
 }
 
 - (void)configureOptInLabel {
   self.optInLabel.font = [[MDCTypography fontLoader]
-      regularFontOfSize:kOptInLabelFontSize[[self widthSizeClassIdiom]]];
-  self.optInLabel.cr_lineHeight =
-      kOptInLabelLineHeight[[self widthSizeClassIdiom]];
+      regularFontOfSize:kOptInLabelFontSize[self.cr_widthSizeClass]];
+  self.optInLabel.cr_lineHeight = kOptInLabelLineHeight[self.cr_widthSizeClass];
 }
 
 - (void)configureContainerView {
   CGFloat containerViewWidth =
-      [self widthSizeClassIdiom] == COMPACT
+      self.cr_widthSizeClass == COMPACT
           ? kContainerViewCompactWidthPercentage * CGRectGetWidth(self.bounds)
           : kContainerViewRegularWidth;
   self.containerView.frame =
@@ -588,30 +567,13 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 
 - (void)configureOKButton {
   UIFont* font = [[MDCTypography fontLoader]
-      mediumFontOfSize:kOKButtonTitleLabelFontSize[[self widthSizeClassIdiom]]];
+      mediumFontOfSize:kOKButtonTitleLabelFontSize[self.cr_widthSizeClass]];
   [self.OKButton setTitleFont:font forState:UIControlStateNormal];
   CGSize size = [self.OKButton
       sizeThatFits:CGSizeMake(CGFLOAT_MAX,
-                              kOKButtonHeight[[self widthSizeClassIdiom]])];
-  [self.OKButton
-      setBounds:CGRectMake(0, 0, size.width,
-                           kOKButtonHeight[[self widthSizeClassIdiom]])];
-}
-
-- (SizeClassIdiom)widthSizeClassIdiom {
-  UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
-  UIUserInterfaceSizeClass sizeClass = self.traitCollection.horizontalSizeClass;
-  if (sizeClass == UIUserInterfaceSizeClassUnspecified)
-    sizeClass = keyWindow.traitCollection.horizontalSizeClass;
-  return GetSizeClassIdiom(sizeClass);
-}
-
-- (SizeClassIdiom)heightSizeClassIdiom {
-  UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
-  UIUserInterfaceSizeClass sizeClass = self.traitCollection.verticalSizeClass;
-  if (sizeClass == UIUserInterfaceSizeClassUnspecified)
-    sizeClass = keyWindow.traitCollection.verticalSizeClass;
-  return GetSizeClassIdiom(sizeClass);
+                              kOKButtonHeight[self.cr_widthSizeClass])];
+  [self.OKButton setBounds:CGRectMake(0, 0, size.width,
+                                      kOKButtonHeight[self.cr_widthSizeClass])];
 }
 
 #pragma mark -

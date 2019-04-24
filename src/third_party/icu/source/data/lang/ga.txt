@@ -63,7 +63,6 @@ ga{
         bug{"Buiginis"}
         byn{"byn"}
         ca{"Catalóinis"}
-        ccp{"ccp"}
         ce{"Seisnis"}
         ceb{"Seabúáinis"}
         cgg{"cgg"}
@@ -854,7 +853,7 @@ ga{
         WADEGILE{"Rómhánú Wade-Giles"}
         XSISTEMO{"XSISTEMO"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.91"}
     characterLabelPattern{
         all{"{0} — Uile"}
         category-list{"{0}: {1}"}

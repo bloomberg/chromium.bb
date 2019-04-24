@@ -6,7 +6,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -113,8 +112,7 @@ class DelayLoadStartAndExecuteJavascript
       rfh_->ExecuteJavaScriptWithUserGestureForTests(
           base::UTF8ToUTF16(script_));
     } else {
-      rfh_->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script_),
-                                      base::NullCallback());
+      rfh_->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script_));
     }
     script_was_executed_ = true;
   }

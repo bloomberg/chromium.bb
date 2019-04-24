@@ -476,10 +476,7 @@ void InstructionSelector::VisitLoad(Node* node) {
     case MachineRepresentation::kSimd128:
       opcode = kArmVld1S128;
       break;
-    case MachineRepresentation::kCompressedSigned:   // Fall through.
-    case MachineRepresentation::kCompressedPointer:  // Fall through.
-    case MachineRepresentation::kCompressed:         // Fall through.
-    case MachineRepresentation::kWord64:             // Fall through.
+    case MachineRepresentation::kWord64:  // Fall through.
     case MachineRepresentation::kNone:
       UNREACHABLE();
       return;
@@ -526,8 +523,21 @@ void InstructionSelector::VisitStore(Node* node) {
       addressing_mode = kMode_Offset_RR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode =
-        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
+    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
+    switch (write_barrier_kind) {
+      case kNoWriteBarrier:
+        UNREACHABLE();
+        break;
+      case kMapWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsMap;
+        break;
+      case kPointerWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsPointer;
+        break;
+      case kFullWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsAny;
+        break;
+    }
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -559,10 +569,7 @@ void InstructionSelector::VisitStore(Node* node) {
       case MachineRepresentation::kSimd128:
         opcode = kArmVst1S128;
         break;
-      case MachineRepresentation::kCompressedSigned:   // Fall through.
-      case MachineRepresentation::kCompressedPointer:  // Fall through.
-      case MachineRepresentation::kCompressed:         // Fall through.
-      case MachineRepresentation::kWord64:             // Fall through.
+      case MachineRepresentation::kWord64:  // Fall through.
       case MachineRepresentation::kNone:
         UNREACHABLE();
         return;
@@ -1117,6 +1124,11 @@ void InstructionSelector::VisitWord32ReverseBytes(Node* node) {
 }
 
 void InstructionSelector::VisitWord32Popcnt(Node* node) { UNREACHABLE(); }
+
+void InstructionSelector::VisitSpeculationFence(Node* node) {
+  ArmOperandGenerator g(this);
+  Emit(kArmDsbIsb, g.NoOutput());
+}
 
 void InstructionSelector::VisitInt32Add(Node* node) {
   ArmOperandGenerator g(this);
@@ -2682,7 +2694,8 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
 // static
 MachineOperatorBuilder::Flags
 InstructionSelector::SupportedMachineOperatorFlags() {
-  MachineOperatorBuilder::Flags flags = MachineOperatorBuilder::kNoFlags;
+  MachineOperatorBuilder::Flags flags =
+      MachineOperatorBuilder::kSpeculationFence;
   if (CpuFeatures::IsSupported(SUDIV)) {
     // The sdiv and udiv instructions correctly return 0 if the divisor is 0,
     // but the fall-back implementation does not.

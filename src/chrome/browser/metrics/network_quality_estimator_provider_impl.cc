@@ -18,7 +18,7 @@ NetworkQualityEstimatorProviderImpl::NetworkQualityEstimatorProviderImpl()
 }
 
 NetworkQualityEstimatorProviderImpl::~NetworkQualityEstimatorProviderImpl() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (callback_) {
     g_browser_process->network_quality_tracker()
@@ -28,7 +28,7 @@ NetworkQualityEstimatorProviderImpl::~NetworkQualityEstimatorProviderImpl() {
 
 void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
     base::RepeatingCallback<void(net::EffectiveConnectionType)> callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!content::BrowserThread::IsThreadInitialized(
           content::BrowserThread::IO)) {
     // IO thread is not yet initialized. Try again in the next message pump.
@@ -65,7 +65,7 @@ void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
 
 void NetworkQualityEstimatorProviderImpl::AddEffectiveConnectionTypeObserverNow(
     base::RepeatingCallback<void(net::EffectiveConnectionType)> callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback_);
 
   callback_ = callback;
@@ -76,7 +76,7 @@ void NetworkQualityEstimatorProviderImpl::AddEffectiveConnectionTypeObserverNow(
 
 void NetworkQualityEstimatorProviderImpl::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   callback_.Run(type);
 }
 

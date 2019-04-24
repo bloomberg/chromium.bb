@@ -196,8 +196,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   }
 
   std::unique_ptr<IncrementLoadEventDelayCount> delay =
-      is_xsl_ ? std::make_unique<IncrementLoadEventDelayCount>(GetDocument())
-              : nullptr;
+      is_xsl_ ? IncrementLoadEventDelayCount::Create(GetDocument()) : nullptr;
   if (is_xsl_) {
     sheet_ = XSLStyleSheet::Create(this, resource->Url(),
                                    resource->GetResponse().ResponseUrl());

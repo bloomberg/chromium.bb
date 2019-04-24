@@ -1383,7 +1383,7 @@ _EBCDICSwapLFNL(UConverterSharedData *sharedData, UErrorCode *pErrorCode) {
     uprv_strcat(name, UCNV_SWAP_LFNL_OPTION_STRING);
 
     /* set the pointers */
-    icu::umtx_lock(NULL);
+    umtx_lock(NULL);
     if(mbcsTable->swapLFNLStateTable==NULL) {
         mbcsTable->swapLFNLStateTable=newStateTable;
         mbcsTable->swapLFNLFromUnicodeBytes=(uint8_t *)newResults;
@@ -1391,7 +1391,7 @@ _EBCDICSwapLFNL(UConverterSharedData *sharedData, UErrorCode *pErrorCode) {
 
         newStateTable=NULL;
     }
-    icu::umtx_unlock(NULL);
+    umtx_unlock(NULL);
 
     /* release the allocated memory if another thread beat us to it */
     if(newStateTable!=NULL) {
@@ -1919,9 +1919,9 @@ ucnv_MBCSOpen(UConverter *cnv,
         /* do this because double-checked locking is broken */
         UBool isCached;
 
-        icu::umtx_lock(NULL);
+        umtx_lock(NULL);
         isCached=mbcsTable->swapLFNLStateTable!=NULL;
-        icu::umtx_unlock(NULL);
+        umtx_unlock(NULL);
 
         if(!isCached) {
             if(!_EBCDICSwapLFNL(cnv->sharedData, pErrorCode)) {

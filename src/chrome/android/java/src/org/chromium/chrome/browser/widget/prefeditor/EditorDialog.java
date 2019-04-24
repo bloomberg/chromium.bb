@@ -211,7 +211,7 @@ public class EditorDialog
 
         // Cancel editing when the user hits the back arrow.
         toolbar.setNavigationContentDescription(R.string.cancel);
-        toolbar.setNavigationIcon(getTintedBackIcon());
+        toolbar.setNavigationIcon(getBlackTintedBackIcon());
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -622,8 +622,8 @@ public class EditorDialog
         return mDropdownFields;
     }
 
-    private Drawable getTintedBackIcon() {
+    private Drawable getBlackTintedBackIcon() {
         return TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_arrow_back_white_24dp, R.color.default_icon_color);
+                getContext(), R.drawable.ic_arrow_back_white_24dp, android.R.color.black);
     }
 }

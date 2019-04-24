@@ -7,10 +7,9 @@
 //===----------------------------------------------------------------------===//
 //
 // UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
-
-// Due to C++17 inline variables ASAN flags this test as containing an ODR
-// violation because Clock::is_steady is defined in both the dylib and this TU.
-// UNSUPPORTED: asan
+//
+// TODO: Remove this when filesystem gets integrated into the dylib
+// REQUIRES: c++filesystem
 
 // <chrono>
 

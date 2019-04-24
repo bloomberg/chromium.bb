@@ -18,10 +18,7 @@ BackgroundFetchTestServiceWorker::BackgroundFetchTestServiceWorker(
     EmbeddedWorkerTestHelper* helper)
     : FakeServiceWorker(helper) {}
 
-BackgroundFetchTestServiceWorker::~BackgroundFetchTestServiceWorker() {
-  if (delayed_closure_)
-    std::move(delayed_closure_).Run();
-}
+BackgroundFetchTestServiceWorker::~BackgroundFetchTestServiceWorker() = default;
 
 void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchAbortEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
@@ -61,10 +58,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchFailEvent(
         callback) {
   last_registration_ = std::move(registration);
 
-  if (delay_dispatch_) {
-    delayed_closure_ = base::BindOnce(
-        std::move(callback), blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-  } else if (fail_fetch_fail_event_) {
+  if (fail_fetch_fail_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
@@ -80,10 +74,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchSuccessEvent(
         callback) {
   last_registration_ = std::move(registration);
 
-  if (delay_dispatch_) {
-    delayed_closure_ = base::BindOnce(
-        std::move(callback), blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-  } else if (fail_fetched_event_) {
+  if (fail_fetched_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);

@@ -16,7 +16,6 @@
 #include "GrSimpleMeshDrawOpHelper.h"
 #include "GrVertexWriter.h"
 #include "SkBitmap.h"
-#include "SkGr.h"
 #include "SkLatticeIter.h"
 #include "SkMatrixPriv.h"
 #include "SkRect.h"
@@ -166,6 +165,7 @@ public:
 
         // setup bounds
         this->setTransformedBounds(patch.fDst, viewMatrix, HasAABloat::kNo, IsZeroArea::kNo);
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     const char* name() const override { return "NonAALatticeOp"; }
@@ -193,17 +193,15 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
         auto opaque = fPatches[0].fColor.isOpaque() && GrPixelConfigIsOpaque(fProxy->config())
                               ? GrProcessorAnalysisColor::Opaque::kYes
                               : GrProcessorAnalysisColor::Opaque::kNo;
         auto analysisColor = GrProcessorAnalysisColor(opaque);
-        auto result = fHelper.finalizeProcessors(caps, clip, fsaaType, clampType,
-                                                 GrProcessorAnalysisCoverage::kNone,
-                                                 &analysisColor);
+        auto result = fHelper.finalizeProcessors(
+                caps, clip, fsaaType, GrProcessorAnalysisCoverage::kNone, &analysisColor);
         analysisColor.isConstant(&fPatches[0].fColor);
-        fWideColor = SkPMColor4fNeedsWideColor(fPatches[0].fColor, clampType, caps);
         return result;
     }
 

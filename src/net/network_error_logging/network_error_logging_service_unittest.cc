@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/network_error_logging/mock_persistent_nel_store.h"
+#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -116,17 +116,11 @@ class TestReportingService : public ReportingService {
   DISALLOW_COPY_AND_ASSIGN(TestReportingService);
 };
 
-// The tests are parametrized on a boolean value which represents whether or not
-// to use a MockPersistentNELStore.
-class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
+class NetworkErrorLoggingServiceTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingServiceTest() {
-    if (GetParam()) {
-      store_ = std::make_unique<MockPersistentNELStore>();
-    } else {
-      store_.reset(nullptr);
-    }
-    service_ = NetworkErrorLoggingService::Create(store_.get());
+    service_ = NetworkErrorLoggingService::Create(
+        NetworkErrorLoggingDelegate::Create());
     CreateReportingService();
   }
 
@@ -188,7 +182,6 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
     return details;
   }
   NetworkErrorLoggingService* service() { return service_.get(); }
-  MockPersistentNELStore* store() { return store_.get(); }
   const std::vector<TestReportingService::Report>& reports() {
     return reporting_service_->reports();
   }
@@ -248,8 +241,6 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
   const GURL kReferrer_ = GURL("https://referrer.com/");
 
  private:
-  // |store_| needs to outlive |service_|.
-  std::unique_ptr<MockPersistentNELStore> store_;
   std::unique_ptr<NetworkErrorLoggingService> service_;
   std::unique_ptr<TestReportingService> reporting_service_;
 };
@@ -262,12 +253,12 @@ void ExpectDictDoubleValue(double expected_value,
   EXPECT_DOUBLE_EQ(expected_value, double_value) << key;
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, CreateService) {
+TEST_F(NetworkErrorLoggingServiceTest, CreateService) {
   // Service is created by default in the test fixture..
   EXPECT_TRUE(service());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, NoReportingService) {
+TEST_F(NetworkErrorLoggingServiceTest, NoReportingService) {
   DestroyReportingService();
 
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
@@ -275,13 +266,13 @@ TEST_P(NetworkErrorLoggingServiceTest, NoReportingService) {
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
+TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, JsonTooLong) {
+TEST_F(NetworkErrorLoggingServiceTest, JsonTooLong) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderTooLong_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
@@ -289,7 +280,7 @@ TEST_P(NetworkErrorLoggingServiceTest, JsonTooLong) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, JsonTooDeep) {
+TEST_F(NetworkErrorLoggingServiceTest, JsonTooDeep) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderTooDeep_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
@@ -297,7 +288,7 @@ TEST_P(NetworkErrorLoggingServiceTest, JsonTooDeep) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK));
@@ -332,7 +323,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, FailureReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
   static const std::string kHeaderFailureFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
@@ -369,7 +360,7 @@ TEST_P(NetworkErrorLoggingServiceTest, FailureReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, UnknownFailureReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, UnknownFailureReportQueued) {
   static const std::string kHeaderFailureFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
@@ -387,7 +378,7 @@ TEST_P(NetworkErrorLoggingServiceTest, UnknownFailureReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, UnknownCertFailureReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, UnknownCertFailureReportQueued) {
   static const std::string kHeaderFailureFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
@@ -406,7 +397,7 @@ TEST_P(NetworkErrorLoggingServiceTest, UnknownCertFailureReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
   static const std::string kHeaderFailureFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
@@ -443,7 +434,7 @@ TEST_P(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(
@@ -477,7 +468,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
+TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED, "GET",
@@ -511,7 +502,7 @@ TEST_P(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
+TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(
@@ -545,7 +536,7 @@ TEST_P(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
+TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_NAME_NOT_RESOLVED, "GET",
@@ -579,7 +570,7 @@ TEST_P(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK, "POST"));
@@ -608,7 +599,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, MaxAge0) {
+TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   EXPECT_EQ(1u, PolicyCount());
 
@@ -621,7 +612,7 @@ TEST_P(NetworkErrorLoggingServiceTest, MaxAge0) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessFraction0) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction0_);
 
   // Each network error has a 0% chance of being reported.  Fire off several and
@@ -633,7 +624,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessFraction0) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
   // Include a different value for failure_fraction to ensure that we copy the
   // right value into sampling_fraction.
   static const std::string kHeaderSuccessFractionHalf =
@@ -667,7 +658,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
   }
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, FailureFraction0) {
+TEST_F(NetworkErrorLoggingServiceTest, FailureFraction0) {
   static const std::string kHeaderFailureFraction0 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":0.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction0);
@@ -681,7 +672,7 @@ TEST_P(NetworkErrorLoggingServiceTest, FailureFraction0) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
+TEST_F(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
   // Include a different value for success_fraction to ensure that we copy the
   // right value into sampling_fraction.
   static const std::string kHeaderFailureFractionHalf =
@@ -713,7 +704,7 @@ TEST_P(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
   }
 }
 
-TEST_P(NetworkErrorLoggingServiceTest,
+TEST_F(NetworkErrorLoggingServiceTest,
        ExcludeSubdomainsDoesntMatchDifferentPort) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
 
@@ -723,7 +714,7 @@ TEST_P(NetworkErrorLoggingServiceTest,
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, ExcludeSubdomainsDoesntMatchSubdomain) {
+TEST_F(NetworkErrorLoggingServiceTest, ExcludeSubdomainsDoesntMatchSubdomain) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
 
   service()->OnRequest(
@@ -732,7 +723,7 @@ TEST_P(NetworkErrorLoggingServiceTest, ExcludeSubdomainsDoesntMatchSubdomain) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesDifferentPort) {
+TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesDifferentPort) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
 
   service()->OnRequest(
@@ -742,7 +733,7 @@ TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesDifferentPort) {
   EXPECT_EQ(kUrlDifferentPort_, reports()[0].url);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesSubdomain) {
+TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesSubdomain) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
 
   service()->OnRequest(
@@ -751,7 +742,7 @@ TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesSubdomain) {
   ASSERT_EQ(1u, reports().size());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest,
+TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsDoesntMatchSuperdomain) {
   service()->OnHeader(kOriginSubdomain_, kServerIP_, kHeaderIncludeSubdomains_);
 
@@ -760,7 +751,7 @@ TEST_P(NetworkErrorLoggingServiceTest,
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest,
+TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsDoesntReportConnectionError) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
 
@@ -770,7 +761,7 @@ TEST_P(NetworkErrorLoggingServiceTest,
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest,
+TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsDoesntReportApplicationError) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
 
@@ -780,7 +771,7 @@ TEST_P(NetworkErrorLoggingServiceTest,
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsDoesntReportSuccess) {
+TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsDoesntReportSuccess) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
 
   service()->OnRequest(MakeRequestDetails(kUrlSubdomain_, OK));
@@ -788,7 +779,7 @@ TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsDoesntReportSuccess) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest,
+TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsReportsSameOriginSuccess) {
   static const std::string kHeaderIncludeSubdomainsSuccess1 =
       "{\"report_to\":\"group\",\"max_age\":86400,"
@@ -801,7 +792,7 @@ TEST_P(NetworkErrorLoggingServiceTest,
   EXPECT_EQ(kUrl_, reports()[0].url);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
+TEST_F(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   EXPECT_EQ(1u, PolicyCount());
   EXPECT_TRUE(HasPolicyForOrigin(kOrigin_));
@@ -815,7 +806,7 @@ TEST_P(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, RemoveSomeBrowsingData) {
+TEST_F(NetworkErrorLoggingServiceTest, RemoveSomeBrowsingData) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   service()->OnHeader(kOriginDifferentHost_, kServerIP_, kHeader_);
   EXPECT_EQ(2u, PolicyCount());
@@ -839,7 +830,7 @@ TEST_P(NetworkErrorLoggingServiceTest, RemoveSomeBrowsingData) {
   ASSERT_EQ(1u, reports().size());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, Nested) {
+TEST_F(NetworkErrorLoggingServiceTest, Nested) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
 
   NetworkErrorLoggingService::RequestDetails details =
@@ -853,7 +844,7 @@ TEST_P(NetworkErrorLoggingServiceTest, Nested) {
             reports()[0].depth);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, NestedTooDeep) {
+TEST_F(NetworkErrorLoggingServiceTest, NestedTooDeep) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
 
   NetworkErrorLoggingService::RequestDetails details =
@@ -865,7 +856,7 @@ TEST_P(NetworkErrorLoggingServiceTest, NestedTooDeep) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, StatusAsValue) {
+TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
   // The expiration times will be bogus, but we need a reproducible value for
   // this test.
   base::SimpleTestClock clock;
@@ -937,7 +928,7 @@ TEST_P(NetworkErrorLoggingServiceTest, StatusAsValue) {
   EXPECT_EQ(*expected, actual);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, NoReportingService_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, NoReportingService_SignedExchange) {
   DestroyReportingService();
 
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
@@ -945,13 +936,13 @@ TEST_P(NetworkErrorLoggingServiceTest, NoReportingService_SignedExchange) {
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, NoPolicyForOrigin_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin_SignedExchange) {
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessFraction0_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0_SignedExchange) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction0_);
 
   // Each network error has a 0% chance of being reported.  Fire off several and
@@ -965,7 +956,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessFraction0_SignedExchange) {
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, SuccessReportQueued_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued_SignedExchange) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1_);
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       true, "ok", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
@@ -1011,7 +1002,7 @@ TEST_P(NetworkErrorLoggingServiceTest, SuccessReportQueued_SignedExchange) {
       sxg_body->FindKey(NetworkErrorLoggingService::kCertUrlKey)->GetList()[0]);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, FailureReportQueued_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued_SignedExchange) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kServerIP_));
@@ -1057,14 +1048,14 @@ TEST_P(NetworkErrorLoggingServiceTest, FailureReportQueued_SignedExchange) {
       sxg_body->FindKey(NetworkErrorLoggingService::kCertUrlKey)->GetList()[0]);
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, MismatchingSubdomain_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, MismatchingSubdomain_SignedExchange) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderIncludeSubdomains_);
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrlSubdomain_, kInnerUrl_, kCertUrl_, kServerIP_));
   EXPECT_TRUE(reports().empty());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, MismatchingIPAddress_SignedExchange) {
+TEST_F(NetworkErrorLoggingServiceTest, MismatchingIPAddress_SignedExchange) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kOtherServerIP_));
@@ -1073,7 +1064,7 @@ TEST_P(NetworkErrorLoggingServiceTest, MismatchingIPAddress_SignedExchange) {
 
 // When the max number of policies is exceeded, first try to remove expired
 // policies before evicting the least recently used unexpired policy.
-TEST_P(NetworkErrorLoggingServiceTest, EvictAllExpiredPoliciesFirst) {
+TEST_F(NetworkErrorLoggingServiceTest, EvictAllExpiredPoliciesFirst) {
   base::SimpleTestClock clock;
   service()->SetClockForTesting(&clock);
 
@@ -1097,7 +1088,7 @@ TEST_P(NetworkErrorLoggingServiceTest, EvictAllExpiredPoliciesFirst) {
   EXPECT_EQ(NetworkErrorLoggingService::kMaxPolicies - 100 + 1, PolicyCount());
 }
 
-TEST_P(NetworkErrorLoggingServiceTest, EvictLeastRecentlyUsedPolicy) {
+TEST_F(NetworkErrorLoggingServiceTest, EvictLeastRecentlyUsedPolicy) {
   base::SimpleTestClock clock;
   service()->SetClockForTesting(&clock);
 
@@ -1151,10 +1142,6 @@ TEST_P(NetworkErrorLoggingServiceTest, EvictLeastRecentlyUsedPolicy) {
   // specified max_age of 86400 seconds, so none of the policies expire during
   // this test.
 }
-
-INSTANTIATE_TEST_SUITE_P(NetworkErrorLoggingServiceStoreTest,
-                         NetworkErrorLoggingServiceTest,
-                         testing::Bool());
 
 }  // namespace
 }  // namespace net

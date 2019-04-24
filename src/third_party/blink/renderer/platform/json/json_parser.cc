@@ -468,10 +468,10 @@ Error BuildValue(Cursor<CharType>* cursor,
       *result = JSONValue::Null();
       break;
     case kBoolTrue:
-      *result = std::make_unique<JSONBasicValue>(true);
+      *result = JSONBasicValue::Create(true);
       break;
     case kBoolFalse:
-      *result = std::make_unique<JSONBasicValue>(false);
+      *result = JSONBasicValue::Create(false);
       break;
     case kNumber: {
       bool ok;
@@ -485,9 +485,9 @@ Error BuildValue(Cursor<CharType>* cursor,
       }
       if (base::IsValueInRangeForNumericType<int>(value) &&
           static_cast<int>(value) == value)
-        *result = std::make_unique<JSONBasicValue>(static_cast<int>(value));
+        *result = JSONBasicValue::Create(static_cast<int>(value));
       else
-        *result = std::make_unique<JSONBasicValue>(value);
+        *result = JSONBasicValue::Create(value);
       break;
     }
     case kStringLiteral: {
@@ -497,11 +497,11 @@ Error BuildValue(Cursor<CharType>* cursor,
         *cursor = token_start;
         return error;
       }
-      *result = std::make_unique<JSONString>(value);
+      *result = JSONString::Create(value);
       break;
     }
     case kArrayBegin: {
-      auto array = std::make_unique<JSONArray>();
+      std::unique_ptr<JSONArray> array = JSONArray::Create();
       Cursor<CharType> before_token = *cursor;
       error = ParseToken(cursor, end, &token, &token_start);
       if (error != Error::kNoError)
@@ -541,7 +541,7 @@ Error BuildValue(Cursor<CharType>* cursor,
       break;
     }
     case kObjectBegin: {
-      auto object = std::make_unique<JSONObject>();
+      std::unique_ptr<JSONObject> object = JSONObject::Create();
       error = ParseToken(cursor, end, &token, &token_start);
       if (error != Error::kNoError)
         return error;

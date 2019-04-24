@@ -30,11 +30,11 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
       views::BoxLayout::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  auto manage_link = std::make_unique<views::Link>(
+  manage_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_ARC_APPLICATION_INFO_MANAGE_LINK));
-  manage_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  manage_link->set_listener(this);
-  manage_link_ = AddChildView(std::move(manage_link));
+  manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  manage_link_->set_listener(this);
+  AddChildView(manage_link_);
 
   ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_prefs);

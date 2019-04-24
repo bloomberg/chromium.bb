@@ -41,7 +41,9 @@ if (window.eventSender) {
   eventSender.mouseMoveTo(centerX, centerY);
 
   // dragleave on #dropwrapper
-  setTimeout(() => { eventSender.keyDown('Escape'); }, 0);
+  setTimeout(() => {
+    eventSender.keyDown("Escape");
+  }, 0);
 }
 
 promise_test(() => {

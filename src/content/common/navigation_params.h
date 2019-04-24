@@ -7,14 +7,12 @@
 
 #include <stdint.h>
 
-#include <bitset>
 #include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
@@ -81,75 +79,35 @@ struct CONTENT_EXPORT InitiatorCSPInfo {
   base::Optional<CSPSource> initiator_self_source;
 };
 
-// Navigation type that affects the download decision and relevant metrics to be
-// reported at download-discovery time.
+// This enum controls how navigations behave when they turn into downloads.
+// Disallow options are enumerated to make metrics logging possible at
+// download-discovery time.
 //
 // This enum backs a histogram. Please keep enums.xml up to date with any
 // changes, and new entries should be appended at the end. Never re-arrange /
 // re-use values.
-enum class NavigationDownloadType {
-  // An entry reserved just for histogram. The client code is not expected to
-  // set or query this type in a policy.
-  kDefaultAllow = 0,
+enum class NavigationDownloadPolicy {
+  kAllow = 0,
+  kDisallowViewSource = 1,
+  kDisallowInterstitial = 2,
 
-  kViewSource = 1,
-  kInterstitial = 2,
+  // The navigation was initiated on a x-origin opener. Downloads should not be
+  // allowed.
+  kDisallowOpenerCrossOrigin = 5,
 
-  // The navigation was initiated on a x-origin opener.
-  kOpenerCrossOrigin = 5,
+  // Download should be prevented when the navigation occurs in an iframe with
+  // |kSandboxDownloads| flag set, and the runtime-enabled-feature
+  // |BlockingDownloadsInSandbox| is enabled.
+  kDisallowSandbox = 7,
 
-  // The navigation was initiated from or occurred in an iframe with
-  // |WebSandboxFlags::kDownloads| flag set and without user activation.
-  kSandboxNoGesture = 7,
-
-  // The navigation was initiated from or occurred in an ad frame without user
-  // activation.
-  kAdFrameNoGesture = 8,
-
-  // The navigation was initiated from or occurred in an ad frame with user
-  // activation.
-  kAdFrameGesture = 9,
-
-  kMaxValue = kAdFrameGesture
+  kMaxValue = kDisallowSandbox
 };
 
-// Stores the navigation types that may be of interest to the download-related
-// metrics to be reported at download-discovery time. Also controls how
-// navigations behave when they turn into downloads. By default, navigation is
-// allowed to become a download.
-struct CONTENT_EXPORT NavigationDownloadPolicy {
-  NavigationDownloadPolicy();
-  ~NavigationDownloadPolicy();
-  NavigationDownloadPolicy(const NavigationDownloadPolicy&);
+ResourceInterceptPolicy CONTENT_EXPORT
+GetResourceInterceptPolicy(NavigationDownloadPolicy policy);
 
-  // Stores |type| to |observed_types|.
-  void SetAllowed(NavigationDownloadType type);
-
-  // Stores |type| to both |observed_types| and |disallowed_types|.
-  void SetDisallowed(NavigationDownloadType type);
-
-  // Returns if |observed_types| contains |type|.
-  bool IsType(NavigationDownloadType type) const;
-
-  // Get the ResourceInterceptPolicy derived from |disallowed_types|.
-  ResourceInterceptPolicy GetResourceInterceptPolicy() const;
-
-  // Returns if download is allowed based on |disallowed_types|.
-  bool IsDownloadAllowed() const;
-
-  // Record the download policy to histograms from |observed_types|.
-  void RecordHistogram() const;
-
-  // A bitset of navigation types observed that may be of interest to the
-  // download-related metrics to be reported at download-discovery time.
-  std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
-      observed_types;
-
-  // A bitset of navigation types observed where if the navigation turns into
-  // a download, the download should be dropped.
-  std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
-      disallowed_types;
-};
+bool CONTENT_EXPORT
+IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
 
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
@@ -197,8 +155,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   FrameMsg_Navigate_Type::Value navigation_type =
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
 
-  // Governs how downloads are handled by this navigation.
-  NavigationDownloadPolicy download_policy;
+  // Enum which governs how downloads are handled by this navigation. By
+  // default, the navigation is allowed to become a download. Multiple values
+  // for disallowed downloads helps with metrics.
+  NavigationDownloadPolicy download_policy = NavigationDownloadPolicy::kAllow;
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
@@ -384,6 +344,11 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
+  // ID of the ServiceWorkerProviderHost pre-created by the browser.
+  // If this navigation has nothing to do with service workers for some reason
+  // like insecure origins etc., set to kInvalidServiceWorkerProviderId.
+  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
+
   // The AppCache host id to be used to identify this navigation.
   int appcache_host_id = blink::mojom::kAppCacheNoHostId;
 
@@ -396,12 +361,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // start it. `was_activated` will answer the former question while
   // `user_gesture` will answer the latter.
   WasActivatedOption was_activated = WasActivatedOption::kUnknown;
-
-  // A token that should be passed to the browser process in
-  // DidCommitProvisionalLoadParams.
-  // TODO(clamy): Remove this once NavigationClient has shipped and
-  // same-document browser-initiated navigations are properly handled as well.
-  base::UnguessableToken navigation_token;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

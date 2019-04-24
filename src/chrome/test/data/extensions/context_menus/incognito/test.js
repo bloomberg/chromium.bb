@@ -9,9 +9,11 @@ function onclick(info) {
   chrome.test.sendMessage("onclick fired " + incognitoStr);
 }
 
-chrome.contextMenus.create({title: "item " + incognitoStr,
-                            onclick: onclick}, function() {
-  if (!chrome.runtime.lastError) {
-    chrome.test.sendMessage("created item " + incognitoStr);
-  }
-});
+window.onload = function() {
+  chrome.contextMenus.create({title: "item " + incognitoStr,
+                              onclick: onclick}, function() {
+    if (!chrome.runtime.lastError) {
+      chrome.test.sendMessage("created item " + incognitoStr);
+    }
+  });
+};

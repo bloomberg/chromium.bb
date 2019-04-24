@@ -25,6 +25,7 @@ class CORE_EXPORT FetchHeaderList final
   };
 
   typedef std::pair<String, String> Header;
+  static FetchHeaderList* Create();
   FetchHeaderList* Clone() const;
 
   FetchHeaderList();

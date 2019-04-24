@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
 #include "content/public/browser/render_frame_host.h"
@@ -38,11 +39,10 @@ ArCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
 
 }  // namespace
 
-ArCoreJavaUtils::ArCoreJavaUtils(
-    base::RepeatingCallback<void(bool)> ar_module_installation_callback,
-    base::RepeatingCallback<void(bool)> ar_core_installation_callback)
-    : ar_module_installation_callback_(ar_module_installation_callback),
-      ar_core_installation_callback_(ar_core_installation_callback) {
+ArCoreJavaUtils::ArCoreJavaUtils(device::ArCoreDevice* arcore_device)
+    : arcore_device_(arcore_device) {
+  DCHECK(arcore_device_);
+
   JNIEnv* env = AttachCurrentThread();
   if (!env)
     return;
@@ -62,7 +62,8 @@ void ArCoreJavaUtils::OnRequestInstallSupportedArCoreResult(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     bool success) {
-  ar_core_installation_callback_.Run(success);
+  // TODO(crbug.com/893348): don't reach back into arcore device like this.
+  arcore_device_->OnRequestInstallSupportedArCoreResult(success);
 }
 
 bool ArCoreJavaUtils::CanRequestInstallArModule() {
@@ -102,7 +103,8 @@ void ArCoreJavaUtils::OnRequestInstallArModuleResult(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     bool success) {
-  ar_module_installation_callback_.Run(success);
+  // TODO(crbug.com/893348): don't reach back into arcore device like this.
+  arcore_device_->OnRequestInstallArModuleResult(success);
 }
 
 bool ArCoreJavaUtils::EnsureLoaded() {

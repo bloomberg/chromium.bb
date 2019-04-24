@@ -15,6 +15,7 @@ extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kDisableDesktopCaptureAudio[];
 extern const char kDisableExtensionsHttpThrottling[];
+extern const char kDisableTabForDesktopShare[];
 extern const char kEmbeddedExtensionOptions[];
 extern const char kEnableEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];

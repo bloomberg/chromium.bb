@@ -47,8 +47,7 @@ class ChromeAuthenticatorRequestDelegate
 
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id);
+      content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
 
 #if defined(OS_MACOSX)
@@ -57,8 +56,6 @@ class ChromeAuthenticatorRequestDelegate
 #endif  // defined(OS_MACOSX)
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
-
-  AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
@@ -84,17 +81,11 @@ class ChromeAuthenticatorRequestDelegate
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override;
-  bool SupportsResidentKeys() override;
-  void SelectAccount(
-      std::vector<device::AuthenticatorGetAssertionResponse> responses,
-      base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
-          callback) override;
   bool IsFocused() override;
   void UpdateLastTransportUsed(
       device::FidoTransportProtocol transport) override;
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
-  bool ShouldDisablePlatformAuthenticators() override;
 
   // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(
@@ -109,12 +100,10 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
-  bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
   void FinishCollectPIN() override;
-  void SetMightCreateResidentCredential(bool v) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
@@ -125,7 +114,6 @@ class ChromeAuthenticatorRequestDelegate
   const base::ListValue* GetPreviouslyPairedFidoBleDeviceIds() const;
 
   content::RenderFrameHost* const render_frame_host_;
-  const std::string relying_party_id_;
   AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
   // Holds ownership of AuthenticatorRequestDialogModel until
   // OnTransportAvailabilityEnumerated() is invoked, at which point the

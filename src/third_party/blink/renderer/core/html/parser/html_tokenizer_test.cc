@@ -15,8 +15,7 @@ namespace blink {
 // This is a regression test for crbug.com/619141
 TEST(HTMLTokenizerTest, ZeroOffsetAttributeNameRange) {
   HTMLParserOptions options;
-  std::unique_ptr<HTMLTokenizer> tokenizer =
-      std::make_unique<HTMLTokenizer>(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   HTMLToken token;
 
   SegmentedString input("<script ");

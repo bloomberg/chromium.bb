@@ -32,7 +32,7 @@ void CopylessPasteServer::GetEntities(GetEntitiesCallback callback) {
     return;
   }
   std::move(callback).Run(
-      CopylessPasteExtractor::Extract(*frame_->GetDocument()));
+      CopylessPasteExtractor::extract(*frame_->GetDocument()));
 }
 
 }  // namespace blink

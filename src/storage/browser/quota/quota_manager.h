@@ -277,7 +277,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   friend struct QuotaManagerDeleter;
 
   class EvictionRoundInfoHelper;
-  class UsageAndQuotaInfoGatherer;
+  class UsageAndQuotaHelper;
   class GetUsageInfoTask;
   class OriginDataDeleter;
   class HostDataDeleter;

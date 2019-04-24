@@ -89,7 +89,8 @@ AppDistributionProvider* ChromeBrowserProvider::GetAppDistributionProvider()
 }
 
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
-    ios::ChromeBrowserState* browser_state) const {
+    ios::ChromeBrowserState* browser_state,
+    id<UrlLoader> loader) const {
   return nil;
 }
 
@@ -98,10 +99,6 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
 }
 
 UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
-  return nullptr;
-}
-
-SpecialUserProvider* ChromeBrowserProvider::GetSpecialUserProvider() const {
   return nullptr;
 }
 

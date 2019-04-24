@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -169,10 +168,6 @@ void WebURLLoaderMock::SetDefersLoading(bool deferred) {
 
 void WebURLLoaderMock::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {}
-
-scoped_refptr<base::SingleThreadTaskRunner> WebURLLoaderMock::GetTaskRunner() {
-  return base::MakeRefCounted<scheduler::FakeTaskRunner>();
-}
 
 base::WeakPtr<WebURLLoaderMock> WebURLLoaderMock::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();

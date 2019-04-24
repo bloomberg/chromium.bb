@@ -22,7 +22,6 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
-#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -68,6 +67,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
@@ -164,6 +164,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     viz::ServerSharedBitmapManager* server_shared_bitmap_manager,
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
+      renderer_settings_(viz::CreateRendererSettings()),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       shared_worker_context_provider_factory_(
@@ -263,9 +264,10 @@ CreateOverlayCandidateValidator(
 
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
   DCHECK(ozone_platform);
-  auto& host_properties = ozone_platform->GetInitializedHostProperties();
+  ui::OverlayManagerOzone* overlay_manager =
+      ozone_platform->GetOverlayManager();
   if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
-      host_properties.supports_overlays) {
+      overlay_manager->SupportsOverlays()) {
     enable_overlay_flag = "single-fullscreen,single-on-top,underlay";
   }
   if (!enable_overlay_flag.empty()) {
@@ -437,8 +439,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  auto vsync_callback = base::BindRepeating(
-      &ui::Compositor::SetDisplayVSyncParameters, compositor);
+  BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
+      base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&
@@ -479,6 +481,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
               context_provider, data->surface_handle, std::move(vsync_callback),
               CreateOverlayCandidateValidator(compositor->widget()),
+              GL_TEXTURE_2D, GL_BGRA_EXT,
               display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
@@ -560,7 +563,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = std::make_unique<viz::Display>(
-      server_shared_bitmap_manager_, viz::CreateRendererSettings(),
+      server_shared_bitmap_manager_, renderer_settings_,
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler), compositor->task_runner());
   data->display_client =
@@ -877,8 +880,8 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool need_alpha_channel = false;
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = true;
-  bool support_grcontext = false;
+  bool support_raster_interface = false;
+  bool support_grcontext = true;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
@@ -890,14 +893,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
     shared_main_thread_contexts_->RemoveObserver(this);
     shared_main_thread_contexts_ = nullptr;
   }
-  return shared_main_thread_contexts_;
-}
-
-scoped_refptr<viz::RasterContextProvider>
-GpuProcessTransportFactory::SharedMainThreadRasterContextProvider() {
-  SharedMainThreadContextProvider();
-  DCHECK(!shared_main_thread_contexts_ ||
-         shared_main_thread_contexts_->RasterInterface());
   return shared_main_thread_contexts_;
 }
 

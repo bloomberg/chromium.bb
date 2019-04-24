@@ -16,7 +16,6 @@
 #include "SkTDynamicHash.h"
 #include "SkTMultiMap.h"
 
-class GrDeinstantiateProxyTracker;
 class GrResourceProvider;
 
 // Print out explicit allocation information
@@ -42,23 +41,26 @@ class GrResourceProvider;
  */
 class GrResourceAllocator {
 public:
-    GrResourceAllocator(GrResourceProvider* resourceProvider,
-                        GrDeinstantiateProxyTracker* tracker
-                        SkDEBUGCODE(, int numOpLists))
-            : fResourceProvider(resourceProvider)
-            , fDeinstantiateTracker(tracker)
-            SkDEBUGCODE(, fNumOpLists(numOpLists)) {
-    }
+    GrResourceAllocator(GrResourceProvider* resourceProvider)
+            : fResourceProvider(resourceProvider) {}
 
     ~GrResourceAllocator();
 
     unsigned int curOp() const { return fNumOps; }
     void incOps() { fNumOps++; }
+    unsigned int numOps() const { return fNumOps; }
 
     // Add a usage interval from 'start' to 'end' inclusive. This is usually used for renderTargets.
     // If an existing interval already exists it will be expanded to include the new range.
     void addInterval(GrSurfaceProxy*, unsigned int start, unsigned int end
                      SkDEBUGCODE(, bool isDirectDstRead = false));
+
+    // Add an interval that spans just the current op. Usually this is for texture uses.
+    // If an existing interval already exists it will be expanded to include the new operation.
+    void addInterval(GrSurfaceProxy* proxy
+                     SkDEBUGCODE(, bool isDirectDstRead = false)) {
+        this->addInterval(proxy, fNumOps, fNumOps SkDEBUGCODE(, isDirectDstRead));
+    }
 
     enum class AssignError {
         kNoError,
@@ -84,9 +86,6 @@ private:
 
     // Remove dead intervals from the active list
     void expire(unsigned int curIndex);
-
-    bool onOpListBoundary() const;
-    void forceIntermediateFlush(int* stopIndex);
 
     // These two methods wrap the interactions with the free pool
     void recycleSurface(sk_sp<GrSurface> surface);
@@ -120,10 +119,9 @@ private:
 #endif
         }
 
-        // Used when recycling an interval
         void resetTo(GrSurfaceProxy* proxy, unsigned int start, unsigned int end) {
             SkASSERT(proxy);
-            SkASSERT(!fProxy && !fNext);
+            SkASSERT(!fNext);
 
             fProxy = proxy;
             fProxyID = proxy->uniqueID().asUInt();
@@ -213,17 +211,16 @@ private:
     static const int kInitialArenaSize = 128 * sizeof(Interval);
 
     GrResourceProvider*          fResourceProvider;
-    GrDeinstantiateProxyTracker* fDeinstantiateTracker;
     FreePoolMultiMap             fFreePool;          // Recently created/used GrSurfaces
     IntvlHash                    fIntvlHash;         // All the intervals, hashed by proxyID
 
     IntervalList                 fIntvlList;         // All the intervals sorted by increasing start
     IntervalList                 fActiveIntvls;      // List of live intervals during assignment
-                                                     // (sorted by increasing end)
-    unsigned int                 fNumOps = 0;
+                                               // (sorted by increasing end)
+    unsigned int                 fNumOps = 1;        // op # 0 is reserved for uploads at the start
+                                               // of a flush
     SkTArray<unsigned int>       fEndOfOpListOpIndices;
     int                          fCurOpListIndex = 0;
-    SkDEBUGCODE(const int        fNumOpLists = -1;)
 
     SkDEBUGCODE(bool             fAssigned = false;)
 

@@ -28,7 +28,7 @@ namespace internal {
   V(ArraySingleArgumentConstructor)   \
   V(AsyncFunctionStackParameter)      \
   V(BigIntToI64)                      \
-  V(I64ToBigInt)                      \
+  V(BigIntToWasmI64)                  \
   V(BinaryOp)                         \
   V(CallForwardVarargs)               \
   V(CallFunctionTemplate)             \
@@ -46,7 +46,6 @@ namespace internal {
   V(ConstructWithSpread)              \
   V(ContextOnly)                      \
   V(CppBuiltinAdaptor)                \
-  V(EphemeronKeyBarrier)              \
   V(FastNewFunctionContext)           \
   V(FastNewObject)                    \
   V(FrameDropperTrampoline)           \
@@ -79,12 +78,10 @@ namespace internal {
   V(TypeConversionStackParameter)     \
   V(Typeof)                           \
   V(Void)                             \
-  V(WasmAtomicNotify)                 \
+  V(WasmAtomicWake)                   \
   V(WasmI32AtomicWait)                \
   V(WasmI64AtomicWait)                \
   V(WasmMemoryGrow)                   \
-  V(WasmTableGet)                     \
-  V(WasmTableSet)                     \
   V(WasmThrow)                        \
   BUILTIN_LIST_TFS(V)
 
@@ -729,16 +726,6 @@ class RecordWriteDescriptor final : public CallInterfaceDescriptor {
   DECLARE_DESCRIPTOR(RecordWriteDescriptor, CallInterfaceDescriptor)
 };
 
-class EphemeronKeyBarrierDescriptor final : public CallInterfaceDescriptor {
- public:
-  DEFINE_PARAMETERS_NO_CONTEXT(kObject, kSlotAddress, kFPMode)
-  DEFINE_PARAMETER_TYPES(MachineType::TaggedPointer(),  // kObject
-                         MachineType::Pointer(),        // kSlotAddress
-                         MachineType::TaggedSigned())   // kFPMode
-
-  DECLARE_DESCRIPTOR(EphemeronKeyBarrierDescriptor, CallInterfaceDescriptor)
-};
-
 class TypeConversionDescriptor final : public CallInterfaceDescriptor {
  public:
   DEFINE_PARAMETERS(kArgument)
@@ -1168,24 +1155,6 @@ class WasmMemoryGrowDescriptor final : public CallInterfaceDescriptor {
   DECLARE_DESCRIPTOR(WasmMemoryGrowDescriptor, CallInterfaceDescriptor)
 };
 
-class WasmTableGetDescriptor final : public CallInterfaceDescriptor {
- public:
-  DEFINE_PARAMETERS_NO_CONTEXT(kTableIndex, kEntryIndex)
-  DEFINE_RESULT_AND_PARAMETER_TYPES(MachineType::AnyTagged(),     // result 1
-                                    MachineType::TaggedSigned(),  // kTableIndex
-                                    MachineType::Int32())         // kEntryIndex
-  DECLARE_DESCRIPTOR(WasmTableGetDescriptor, CallInterfaceDescriptor)
-};
-
-class WasmTableSetDescriptor final : public CallInterfaceDescriptor {
- public:
-  DEFINE_PARAMETERS_NO_CONTEXT(kTableIndex, kEntryIndex, kValue)
-  DEFINE_PARAMETER_TYPES(MachineType::TaggedSigned(),  // kTableIndex
-                         MachineType::Int32(),         // kEntryIndex
-                         MachineType::AnyTagged())     // kValue
-  DECLARE_DESCRIPTOR(WasmTableSetDescriptor, CallInterfaceDescriptor)
-};
-
 class WasmThrowDescriptor final : public CallInterfaceDescriptor {
  public:
   DEFINE_PARAMETERS_NO_CONTEXT(kException)
@@ -1194,11 +1163,11 @@ class WasmThrowDescriptor final : public CallInterfaceDescriptor {
   DECLARE_DESCRIPTOR(WasmThrowDescriptor, CallInterfaceDescriptor)
 };
 
-class I64ToBigIntDescriptor final : public CallInterfaceDescriptor {
+class BigIntToWasmI64Descriptor final : public CallInterfaceDescriptor {
  public:
   DEFINE_PARAMETERS_NO_CONTEXT(kArgument)
   DEFINE_PARAMETER_TYPES(MachineType::Int64())  // kArgument
-  DECLARE_DESCRIPTOR(I64ToBigIntDescriptor, CallInterfaceDescriptor)
+  DECLARE_DESCRIPTOR(BigIntToWasmI64Descriptor, CallInterfaceDescriptor)
 };
 
 class BigIntToI64Descriptor final : public CallInterfaceDescriptor {
@@ -1209,13 +1178,13 @@ class BigIntToI64Descriptor final : public CallInterfaceDescriptor {
   DECLARE_DESCRIPTOR(BigIntToI64Descriptor, CallInterfaceDescriptor)
 };
 
-class WasmAtomicNotifyDescriptor final : public CallInterfaceDescriptor {
+class WasmAtomicWakeDescriptor final : public CallInterfaceDescriptor {
  public:
   DEFINE_PARAMETERS_NO_CONTEXT(kAddress, kCount)
   DEFINE_RESULT_AND_PARAMETER_TYPES(MachineType::Uint32(),  // result 1
                                     MachineType::Uint32(),  // kAddress
                                     MachineType::Uint32())  // kCount
-  DECLARE_DESCRIPTOR(WasmAtomicNotifyDescriptor, CallInterfaceDescriptor)
+  DECLARE_DESCRIPTOR(WasmAtomicWakeDescriptor, CallInterfaceDescriptor)
 };
 
 class WasmI32AtomicWaitDescriptor final : public CallInterfaceDescriptor {

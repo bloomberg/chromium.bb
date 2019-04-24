@@ -43,11 +43,13 @@ void ConfigureSliderViewStyle(views::View* slider_view) {
 UnifiedSliderBubbleController::UnifiedSliderBubbleController(
     UnifiedSystemTray* tray)
     : tray_(tray) {
+  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
   tray_->model()->AddObserver(this);
 }
 
 UnifiedSliderBubbleController::~UnifiedSliderBubbleController() {
+  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   tray_->model()->RemoveObserver(this);
   autoclose_.Stop();
@@ -94,7 +96,8 @@ void UnifiedSliderBubbleController::OnOutputNodeVolumeChanged(uint64_t node_id,
   ShowBubble(SLIDER_TYPE_VOLUME);
 }
 
-void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on) {
+void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on,
+                                                        bool system_adjust) {
   ShowBubble(SLIDER_TYPE_VOLUME);
 }
 
@@ -157,7 +160,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 
   TrayBubbleView::InitParams init_params;
 
-  init_params.shelf_alignment = tray_->shelf()->alignment();
+  init_params.anchor_alignment = tray_->GetAnchorAlignment();
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
   init_params.delegate = this;
@@ -167,9 +170,9 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
   // Decrease bottom and right insets to compensate for the adjustment of
   // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  init_params.insets =
+      gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
+                  kUnifiedMenuPadding - 1, kUnifiedMenuPadding - 1);
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
 

@@ -46,10 +46,8 @@ class WritableBuffer {
 class SendBuffer : public device::ReadOnlyBuffer {
  public:
   using SendCompleteCallback =
-      base::OnceCallback<void(uint32_t, device::mojom::SerialSendError)>;
-  SendBuffer(const uint8_t* buffer,
-             uint32_t size,
-             SendCompleteCallback callback);
+      base::OnceCallback<void(int, device::mojom::SerialSendError)>;
+  SendBuffer(const std::vector<uint8_t>& data, SendCompleteCallback callback);
   ~SendBuffer() override;
 
   const uint8_t* GetData() override;
@@ -58,8 +56,7 @@ class SendBuffer : public device::ReadOnlyBuffer {
   void DoneWithError(uint32_t bytes_read, int32_t error) override;
 
  private:
-  const uint8_t* data_;
-  uint32_t size_;
+  const std::vector<uint8_t> data_;
   SendCompleteCallback callback_;
 };
 
@@ -68,7 +65,7 @@ class SendBuffer : public device::ReadOnlyBuffer {
 class ReceiveBuffer : public device::WritableBuffer {
  public:
   using ReceiveCompleteCallback =
-      base::OnceCallback<void(uint32_t, device::mojom::SerialReceiveError)>;
+      base::OnceCallback<void(int, device::mojom::SerialReceiveError)>;
   ReceiveBuffer(char* buffer, uint32_t size, ReceiveCompleteCallback callback);
   ~ReceiveBuffer() override;
 

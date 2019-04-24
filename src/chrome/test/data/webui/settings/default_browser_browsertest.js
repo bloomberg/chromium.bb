@@ -29,7 +29,8 @@ cr.define('settings_default_browser', function() {
     /** @override */
     requestDefaultBrowserState() {
       this.methodCalled('requestDefaultBrowserState');
-      return Promise.resolve(this.defaultBrowserInfo_);
+      cr.webUIListenerCallback(
+          'browser-default-state-changed', this.defaultBrowserInfo_);
     }
 
     /** @override */
@@ -80,12 +81,12 @@ cr.define('settings_default_browser', function() {
         isUnknownError: false
       });
 
+      // TODO(scottchen): assert UI states instead of private variables.
       return initPage().then(function() {
-        Polymer.dom.flush();
-        assertTrue(!!page.$$('#canBeDefaultBrowser'));
-        assertTrue(!page.$$('#isDefault'));
-        assertTrue(!page.$$('#isSecondaryInstall'));
-        assertTrue(!page.$$('#isUnknownError'));
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertTrue(page.maySetDefaultBrowser_);
       });
     });
 
@@ -99,11 +100,10 @@ cr.define('settings_default_browser', function() {
       });
 
       return initPage().then(function() {
-        Polymer.dom.flush();
-        assertFalse(!!page.$$('#canBeDefaultBrowser'));
-        assertFalse(page.$$('#isDefault').hidden);
-        assertTrue(page.$$('#isSecondaryInstall').hidden);
-        assertTrue(page.$$('#isUnknownError').hidden);
+        assertTrue(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
       });
     });
 
@@ -116,11 +116,10 @@ cr.define('settings_default_browser', function() {
       });
 
       return initPage().then(function() {
-        Polymer.dom.flush();
-        assertFalse(!!page.$$('#canBeDefaultBrowser'));
-        assertTrue(page.$$('#isDefault').hidden);
-        assertFalse(page.$$('#isSecondaryInstall').hidden);
-        assertTrue(page.$$('#isUnknownError').hidden);
+        assertFalse(page.isDefault_);
+        assertTrue(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
       });
     });
 
@@ -133,11 +132,10 @@ cr.define('settings_default_browser', function() {
       });
 
       return initPage().then(function() {
-        Polymer.dom.flush();
-        assertFalse(!!page.$$('#canBeDefaultBrowser'));
-        assertTrue(page.$$('#isDefault').hidden);
-        assertTrue(page.$$('#isSecondaryInstall').hidden);
-        assertFalse(page.$$('#isUnknownError').hidden);
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertTrue(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
       });
     });
 
@@ -150,11 +148,10 @@ cr.define('settings_default_browser', function() {
       });
 
       return initPage().then(function() {
-        Polymer.dom.flush();
-        assertFalse(!!page.$$('#canBeDefaultBrowser'));
-        assertTrue(page.$$('#isDefault').hidden);
-        assertTrue(page.$$('#isSecondaryInstall').hidden);
-        assertFalse(page.$$('#isUnknownError').hidden);
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertTrue(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
       });
     });
   });

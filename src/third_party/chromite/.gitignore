@@ -22,9 +22,6 @@ cscope.out
 /.vimrc
 /.vscode/
 
-# CIPD installed binaries.
-/.cipd_bin/
-
 # Obsolete
 /virtualenv/
 /.venv/

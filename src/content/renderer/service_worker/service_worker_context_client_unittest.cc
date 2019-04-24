@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -71,8 +72,9 @@ struct ContextClientPipes {
 // is called on EmbeddedWorkerInstanceClientImpl so it can self-destruct.
 class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
  public:
-  explicit FakeWebEmbeddedWorker(ServiceWorkerContextClient* context_client)
-      : context_client_(context_client) {}
+  explicit FakeWebEmbeddedWorker(
+      std::unique_ptr<ServiceWorkerContextClient> context_client)
+      : context_client_(std::move(context_client)) {}
 
   void StartWorkerContext(const blink::WebEmbeddedWorkerStartData&) override {}
   void TerminateWorkerContext() override {
@@ -86,7 +88,7 @@ class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
                          mojo::ScopedInterfaceEndpointHandle) override {}
 
  private:
-  ServiceWorkerContextClient* context_client_;
+  std::unique_ptr<ServiceWorkerContextClient> context_client_;
 };
 
 class MockWebServiceWorkerContextProxy
@@ -114,22 +116,22 @@ class MockWebServiceWorkerContextProxy
   void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      blink::WebBackgroundFetchRegistration registration) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      blink::WebBackgroundFetchRegistration registration) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      blink::WebBackgroundFetchRegistration registration) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      blink::WebBackgroundFetchRegistration registration) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchCookieChangeEvent(
@@ -277,7 +279,16 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   void EnableServicification() {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
+    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  }
+
+  // Creates an empty struct to initialize ServiceWorkerProviderContext.
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
+  CreateProviderInfo() {
+    auto info = blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
+    info->provider_id = 10;  // dummy
+    return info;
   }
 
   // Creates an ContextClient, whose pipes are connected to |out_pipes|, then
@@ -305,22 +316,17 @@ class ServiceWorkerContextClientTest : public testing::Test {
         false /* is_script_streaming */,
         blink::mojom::RendererPreferences::New(),
         std::move(service_worker_request), std::move(controller_request),
-        embedded_worker_host_ptr.PassInterface(),
-        blink::mojom::ServiceWorkerProviderInfoForStartWorker::New(),
+        embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
         embedded_worker_instance_client,
         blink::mojom::EmbeddedWorkerStartTiming::New(),
         nullptr /* preference_watcher_request */,
         nullptr /* subresource_loaders */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-
     auto* context_client_raw = context_client.get();
+    context_client->SetReportDebugLogForTesting(false);
 
-    embedded_worker_instance_client->service_worker_context_client_ =
-        std::move(context_client);
-    context_client_raw->StartWorkerContext(
-        std::make_unique<FakeWebEmbeddedWorker>(context_client_raw),
-        blink::WebEmbeddedWorkerStartData());
-
+    embedded_worker_instance_client->worker_ =
+        std::make_unique<FakeWebEmbeddedWorker>(std::move(context_client));
     // TODO(falken): We should mock a worker thread task runner instead of
     // using GetSingleThreadTaskRunnerForTesting() again, since that's the
     // runner we used to mock the main thread when constructing the context

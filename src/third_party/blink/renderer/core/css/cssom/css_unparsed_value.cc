@@ -41,8 +41,8 @@ HeapVector<CSSUnparsedSegment> ParserTokenRangeToTokens(
   HeapVector<CSSUnparsedSegment> tokens;
   StringBuilder builder;
   while (!range.AtEnd()) {
-    if (range.Peek().FunctionId() == CSSValueID::kVar ||
-        range.Peek().FunctionId() == CSSValueID::kEnv) {
+    if (range.Peek().FunctionId() == CSSValueVar ||
+        range.Peek().FunctionId() == CSSValueEnv) {
       if (!builder.IsEmpty()) {
         tokens.push_back(CSSUnparsedSegment::FromString(builder.ToString()));
         builder.Clear();
@@ -116,16 +116,14 @@ bool CSSUnparsedValue::AnonymousIndexedSetter(unsigned index,
 
 const CSSValue* CSSUnparsedValue::ToCSSValue() const {
   if (tokens_.IsEmpty()) {
-    return MakeGarbageCollected<CSSVariableReferenceValue>(
-        CSSVariableData::Create());
+    return CSSVariableReferenceValue::Create(CSSVariableData::Create());
   }
 
   CSSTokenizer tokenizer(ToString());
   const auto tokens = tokenizer.TokenizeToEOF();
-  return MakeGarbageCollected<CSSVariableReferenceValue>(
-      CSSVariableData::Create(
-          CSSParserTokenRange(tokens), false /* is_animation_tainted */,
-          false /* needs_variable_resolution */, KURL(), WTF::TextEncoding()));
+  return CSSVariableReferenceValue::Create(CSSVariableData::Create(
+      CSSParserTokenRange(tokens), false /* is_animation_tainted */,
+      false /* needs_variable_resolution */, KURL(), WTF::TextEncoding()));
 }
 
 String CSSUnparsedValue::ToString() const {

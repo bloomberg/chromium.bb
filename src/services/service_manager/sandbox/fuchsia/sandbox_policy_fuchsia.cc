@@ -150,7 +150,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
 
   if (type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
-    options->clear_environment = false;
+    options->clear_environ = false;
     return;
   }
 
@@ -162,7 +162,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
 
   // Clear environmental variables to better isolate the child from
   // this process.
-  options->clear_environment = true;
+  options->clear_environ = true;
 
   // Don't clone anything by default.
   options->spawn_flags = 0;

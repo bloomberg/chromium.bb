@@ -102,10 +102,9 @@ void StyledMarkupAccumulator::AppendTextWithInlineStyle(
   if (inline_style) {
     // wrappingStyleForAnnotatedSerialization should have removed
     // -webkit-text-decorations-in-effect.
-    DCHECK(!ShouldAnnotate() ||
-           PropertyMissingOrEqualToNone(
-               inline_style->Style(),
-               CSSPropertyID::kWebkitTextDecorationsInEffect));
+    DCHECK(!ShouldAnnotate() || PropertyMissingOrEqualToNone(
+                                    inline_style->Style(),
+                                    CSSPropertyWebkitTextDecorationsInEffect));
     DCHECK(document_);
 
     result_.Append("<span style=\"");
@@ -186,7 +185,7 @@ void StyledMarkupAccumulator::WrapWithStyleNode(CSSPropertyValueSet* style) {
   // wrappingStyleForSerialization should have removed
   // -webkit-text-decorations-in-effect.
   DCHECK(PropertyMissingOrEqualToNone(
-      style, CSSPropertyID::kWebkitTextDecorationsInEffect));
+      style, CSSPropertyWebkitTextDecorationsInEffect));
   DCHECK(document_);
 
   StringBuilder open_tag;

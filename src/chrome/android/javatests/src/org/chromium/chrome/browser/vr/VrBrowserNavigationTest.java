@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -32,7 +33,6 @@ import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.RenderTestUtils;
@@ -47,7 +47,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -195,7 +194,7 @@ public class VrBrowserNavigationTest {
                 getUrl(Page.PAGE_2D_2), itemViews.get(0).getItem().getUrl());
 
         // Test that clicking on history items in VR works
-        TestThreadUtils.runOnUiThreadBlocking(() -> itemViews.get(0).onClick());
+        ThreadUtils.runOnUiThreadBlocking(() -> itemViews.get(0).onClick());
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
         assertState(mWebXrVrTestFramework.getCurrentWebContents(), Page.PAGE_2D_2,
@@ -488,7 +487,7 @@ public class VrBrowserNavigationTest {
                 mTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_LINK);
         Assert.assertTrue(
                 "Back button is disabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestRule.getActivity().getTabModelSelector().closeTab(tab); });
         Assert.assertFalse(
                 "Back button is enabled.", VrBrowserTransitionUtils.isBackButtonEnabled());
@@ -633,12 +632,12 @@ public class VrBrowserNavigationTest {
         enterFullscreenOrFail(mVrBrowserTestFramework.getCurrentWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 
         mVrBrowserTestFramework.simulateRendererKilled();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
         ChromeTabUtils.waitForTabPageLoaded(tab, TEST_PAGE_2D_URL);
         ChromeTabUtils.waitForInteractable(tab);
 
@@ -715,9 +714,9 @@ public class VrBrowserNavigationTest {
     public void testNewTabAutomaticallyOpenedWhenIncognitoClosed()
             throws InterruptedException, TimeoutException {
         VrBrowserTransitionUtils.forceExitVr();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             // Close the tab that's automatically open at test start.
-            TabModelSelector.from(mTestRule.getActivity().getActivityTab()).closeAllTabs();
+            mTestRule.getActivity().getActivityTab().getTabModelSelector().closeAllTabs();
             // Create an Incognito tab. Closing all tabs automatically goes to overview mode, but
             // appears to take some amount of time to do so. Instead of waiting until then and
             // creating through the menu item, just create an Incognito tab directly.

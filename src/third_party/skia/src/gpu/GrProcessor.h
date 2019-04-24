@@ -83,6 +83,7 @@ public:
         kEllipticalRRectEffect_ClassID,
         kGP_ClassID,
         kVertexColorSpaceBenchGP_ClassID,
+        kGrAAFillRRectOp_Processor_ClassID,
         kGrAARectEffect_ClassID,
         kGrAlphaThresholdFragmentProcessor_ClassID,
         kGrArithmeticFP_ClassID,
@@ -90,13 +91,12 @@ public:
         kGrBitmapTextGeoProc_ClassID,
         kGrBlurredEdgeFragmentProcessor_ClassID,
         kGrCCClipProcessor_ClassID,
+        kGrCCCoverageProcessor_ClassID,
         kGrCCPathProcessor_ClassID,
         kGrCircleBlurFragmentProcessor_ClassID,
         kGrCircleEffect_ClassID,
         kGrClampedGradientEffect_ClassID,
         kGrColorSpaceXformEffect_ClassID,
-        kGrComposeLerpEffect_ClassID,
-        kGrComposeLerpRedEffect_ClassID,
         kGrConfigConversionEffect_ClassID,
         kGrConicEffect_ClassID,
         kGrConstColorProcessor_ClassID,
@@ -110,9 +110,7 @@ public:
         kGrDitherEffect_ClassID,
         kGrDualIntervalGradientColorizer_ClassID,
         kGrEllipseEffect_ClassID,
-        kGrFillRRectOp_Processor_ClassID,
         kGrGaussianConvolutionFragmentProcessor_ClassID,
-        kGrGSCoverageProcessor_ClassID,
         kGrImprovedPerlinNoiseEffect_ClassID,
         kGrLightingEffect_ClassID,
         kGrLinearGradient_ClassID,
@@ -124,7 +122,6 @@ public:
         kGrMorphologyEffect_ClassID,
         kGrMixerEffect_ClassID,
         kGrOverdrawFragmentProcessor_ClassID,
-        kGrOverrideInputFragmentProcessor_ClassID,
         kGrPathProcessor_ClassID,
         kGrPerlinNoise2Effect_ClassID,
         kGrPipelineDynamicStateTestProcessor_ClassID,
@@ -148,7 +145,6 @@ public:
         kGrTwoPointConicalGradientLayout_ClassID,
         kGrUnpremulInputFragmentProcessor_ClassID,
         kGrUnrolledBinaryGradientColorizer_ClassID,
-        kGrVSCoverageProcessor_ClassID,
         kGrYUVtoRGBEffect_ClassID,
         kHighContrastFilterEffect_ClassID,
         kInstanceProcessor_ClassID,
@@ -162,7 +158,6 @@ public:
         kQuadPerEdgeAAGeometryProcessor_ClassID,
         kReplaceInputFragmentProcessor_ClassID,
         kRRectsGaussianEdgeFP_ClassID,
-        kSampleLocationsTestProcessor_ClassID,
         kSeriesFragmentProcessor_ClassID,
         kShaderPDXferProcessor_ClassID,
         kFwidthSquircleTestProcessor_ClassID,
@@ -192,20 +187,6 @@ public:
     SkString dumpInfo() const { return SkString("<Processor information unavailable>"); }
 #endif
 
-    /**
-     * Custom shader features provided by the framework. These require special handling when
-     * preparing shaders, so a processor must call setWillUseCustomFeature() from its constructor if
-     * it intends to use one.
-     */
-    enum class CustomFeatures {
-        kNone = 0,
-        kSampleLocations = 1 << 0,
-    };
-
-    GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(CustomFeatures);
-
-    CustomFeatures requestedFeatures() const { return fRequestedFeatures; }
-
     void* operator new(size_t size);
     void operator delete(void* target);
 
@@ -223,15 +204,12 @@ public:
 
 protected:
     GrProcessor(ClassID classID) : fClassID(classID) {}
+
+private:
     GrProcessor(const GrProcessor&) = delete;
     GrProcessor& operator=(const GrProcessor&) = delete;
 
-    void setWillUseCustomFeature(CustomFeatures feature) { fRequestedFeatures |= feature; }
-
-    const ClassID fClassID;
-    CustomFeatures fRequestedFeatures = CustomFeatures::kNone;
+    ClassID fClassID;
 };
-
-GR_MAKE_BITFIELD_CLASS_OPS(GrProcessor::CustomFeatures);
 
 #endif

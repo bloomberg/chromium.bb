@@ -17,52 +17,52 @@ base::Optional<double> NumberPropertyFunctions::GetNumber(
     const CSSProperty& property,
     const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyID::kFillOpacity:
+    case CSSPropertyFillOpacity:
       return style.FillOpacity();
-    case CSSPropertyID::kFlexGrow:
+    case CSSPropertyFlexGrow:
       return style.FlexGrow();
-    case CSSPropertyID::kFlexShrink:
+    case CSSPropertyFlexShrink:
       return style.FlexShrink();
-    case CSSPropertyID::kFloodOpacity:
+    case CSSPropertyFloodOpacity:
       return style.FloodOpacity();
-    case CSSPropertyID::kOpacity:
+    case CSSPropertyOpacity:
       return style.Opacity();
-    case CSSPropertyID::kOrder:
+    case CSSPropertyOrder:
       return style.Order();
-    case CSSPropertyID::kOrphans:
+    case CSSPropertyOrphans:
       return style.Orphans();
-    case CSSPropertyID::kShapeImageThreshold:
+    case CSSPropertyShapeImageThreshold:
       return style.ShapeImageThreshold();
-    case CSSPropertyID::kStopOpacity:
+    case CSSPropertyStopOpacity:
       return style.StopOpacity();
-    case CSSPropertyID::kStrokeMiterlimit:
+    case CSSPropertyStrokeMiterlimit:
       return style.StrokeMiterLimit();
-    case CSSPropertyID::kStrokeOpacity:
+    case CSSPropertyStrokeOpacity:
       return style.StrokeOpacity();
-    case CSSPropertyID::kWidows:
+    case CSSPropertyWidows:
       return style.Widows();
 
-    case CSSPropertyID::kFontSizeAdjust:
+    case CSSPropertyFontSizeAdjust:
       if (!style.HasFontSizeAdjust())
         return base::Optional<double>();
       return style.FontSizeAdjust();
-    case CSSPropertyID::kColumnCount:
+    case CSSPropertyColumnCount:
       if (style.HasAutoColumnCount())
         return base::Optional<double>();
       return style.ColumnCount();
-    case CSSPropertyID::kZIndex:
+    case CSSPropertyZIndex:
       if (style.HasAutoZIndex())
         return base::Optional<double>();
       return style.ZIndex();
 
-    case CSSPropertyID::kTextSizeAdjust: {
+    case CSSPropertyTextSizeAdjust: {
       const TextSizeAdjust& text_size_adjust = style.GetTextSizeAdjust();
       if (text_size_adjust.IsAuto())
         return base::Optional<double>();
       return text_size_adjust.Multiplier() * 100;
     }
 
-    case CSSPropertyID::kLineHeight: {
+    case CSSPropertyLineHeight: {
       const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
       if (!length.IsPercent())
@@ -82,38 +82,38 @@ base::Optional<double> NumberPropertyFunctions::GetNumber(
 double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
                                             double value) {
   switch (property.PropertyID()) {
-    case CSSPropertyID::kStrokeMiterlimit:
+    case CSSPropertyStrokeMiterlimit:
       return clampTo<float>(value, 1);
 
-    case CSSPropertyID::kFloodOpacity:
-    case CSSPropertyID::kStopOpacity:
-    case CSSPropertyID::kStrokeOpacity:
-    case CSSPropertyID::kShapeImageThreshold:
+    case CSSPropertyFloodOpacity:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyShapeImageThreshold:
       return clampTo<float>(value, 0, 1);
 
-    case CSSPropertyID::kFillOpacity:
-    case CSSPropertyID::kOpacity:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyOpacity:
       return clampTo<float>(value, 0, nextafterf(1, 0));
 
-    case CSSPropertyID::kFlexGrow:
-    case CSSPropertyID::kFlexShrink:
-    case CSSPropertyID::kFontSizeAdjust:
-    case CSSPropertyID::kLineHeight:
-    case CSSPropertyID::kTextSizeAdjust:
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+    case CSSPropertyFontSizeAdjust:
+    case CSSPropertyLineHeight:
+    case CSSPropertyTextSizeAdjust:
       return clampTo<float>(value, 0);
 
-    case CSSPropertyID::kOrphans:
-    case CSSPropertyID::kWidows:
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
       return clampTo<int16_t>(round(value), 1);
 
-    case CSSPropertyID::kColumnCount:
+    case CSSPropertyColumnCount:
       return clampTo<uint16_t>(round(value), 1);
 
-    case CSSPropertyID::kColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
       return clampTo<uint16_t>(round(value));
 
-    case CSSPropertyID::kOrder:
-    case CSSPropertyID::kZIndex:
+    case CSSPropertyOrder:
+    case CSSPropertyZIndex:
       return clampTo<int>(round(value));
 
     default:
@@ -127,52 +127,52 @@ bool NumberPropertyFunctions::SetNumber(const CSSProperty& property,
                                         double value) {
   DCHECK_EQ(value, ClampNumber(property, value));
   switch (property.PropertyID()) {
-    case CSSPropertyID::kFillOpacity:
+    case CSSPropertyFillOpacity:
       style.SetFillOpacity(value);
       return true;
-    case CSSPropertyID::kFlexGrow:
+    case CSSPropertyFlexGrow:
       style.SetFlexGrow(value);
       return true;
-    case CSSPropertyID::kFlexShrink:
+    case CSSPropertyFlexShrink:
       style.SetFlexShrink(value);
       return true;
-    case CSSPropertyID::kFloodOpacity:
+    case CSSPropertyFloodOpacity:
       style.SetFloodOpacity(value);
       return true;
-    case CSSPropertyID::kLineHeight:
+    case CSSPropertyLineHeight:
       style.SetLineHeight(Length::Percent(value * 100));
       return true;
-    case CSSPropertyID::kOpacity:
+    case CSSPropertyOpacity:
       style.SetOpacity(value);
       return true;
-    case CSSPropertyID::kOrder:
+    case CSSPropertyOrder:
       style.SetOrder(value);
       return true;
-    case CSSPropertyID::kOrphans:
+    case CSSPropertyOrphans:
       style.SetOrphans(value);
       return true;
-    case CSSPropertyID::kShapeImageThreshold:
+    case CSSPropertyShapeImageThreshold:
       style.SetShapeImageThreshold(value);
       return true;
-    case CSSPropertyID::kStopOpacity:
+    case CSSPropertyStopOpacity:
       style.SetStopOpacity(value);
       return true;
-    case CSSPropertyID::kStrokeMiterlimit:
+    case CSSPropertyStrokeMiterlimit:
       style.SetStrokeMiterLimit(value);
       return true;
-    case CSSPropertyID::kStrokeOpacity:
+    case CSSPropertyStrokeOpacity:
       style.SetStrokeOpacity(value);
       return true;
-    case CSSPropertyID::kColumnCount:
+    case CSSPropertyColumnCount:
       style.SetColumnCount(value);
       return true;
-    case CSSPropertyID::kTextSizeAdjust:
+    case CSSPropertyTextSizeAdjust:
       style.SetTextSizeAdjust(value / 100.);
       return true;
-    case CSSPropertyID::kWidows:
+    case CSSPropertyWidows:
       style.SetWidows(value);
       return true;
-    case CSSPropertyID::kZIndex:
+    case CSSPropertyZIndex:
       style.SetZIndex(value);
       return true;
     default:

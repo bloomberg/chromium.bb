@@ -63,11 +63,6 @@ bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorOzone::
-    NeedsSurfaceOccludingDamageRect() {
-  return true;
-}
-
 void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any

@@ -188,15 +188,14 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   // views::MenuButtonListener implementation.
-  void OnMenuButtonClicked(views::Button* source,
+  void OnMenuButtonClicked(views::MenuButton* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
     menu_runner_->RunMenuAt(source->GetWidget(), button_, bounds,
-                            views::MenuAnchorPosition::kTopLeft,
-                            ui::MENU_SOURCE_NONE);
+                            views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
   }
 
   // ViewEventTestBase implementation

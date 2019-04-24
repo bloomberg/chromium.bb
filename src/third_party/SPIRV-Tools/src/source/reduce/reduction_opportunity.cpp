@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/reduction_opportunity.h"
+#include "reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {

@@ -8,7 +8,6 @@
 #include <GLES2/gl2.h>
 
 #include "base/compiler_specific.h"
-#include "gpu/command_buffer/client/interface_base.h"
 
 namespace cc {
 class ClientTransferCacheEntry;
@@ -30,7 +29,7 @@ namespace gpu {
 namespace gles2 {
 
 // This class is the interface for all client side GL functions.
-class GLES2Interface : public InterfaceBase {
+class GLES2Interface {
  public:
   GLES2Interface() = default;
   virtual ~GLES2Interface() = default;

@@ -26,8 +26,10 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
@@ -69,6 +71,9 @@ public class SuggestionsBinder {
     boolean mShowThumbnail;
     boolean mHasVideoBadge;
     boolean mHasOfflineBadge;
+
+    @Nullable
+    private ImageFetcher.DownloadThumbnailRequest mThumbnailRequest;
 
     private SnippetArticle mSuggestion;
 
@@ -205,6 +210,9 @@ public class SuggestionsBinder {
     }
 
     private void setThumbnail() {
+        // If there's still a pending thumbnail fetch, cancel it.
+        cancelThumbnailFetch();
+
         // mThumbnailView's visibility is modified in updateFieldsVisibility().
         if (mThumbnailView.getVisibility() != View.VISIBLE) return;
 
@@ -214,24 +222,68 @@ public class SuggestionsBinder {
             return;
         }
 
+        if (mSuggestion.isDownload()) {
+            setDownloadThumbnail();
+            return;
+        }
+
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
         if (mIsContextual) {
             mThumbnailView.setImageResource(
                     R.drawable.contextual_suggestions_placeholder_thumbnail);
-        } else {
+        } else if (ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
             ColorDrawable colorDrawable =
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null
                                     ? mSuggestion.getThumbnailDominantColor()
                                     : ApiCompatibilityUtils.getColor(mThumbnailView.getResources(),
                                             R.color.thumbnail_placeholder_on_primary_bg));
             mThumbnailView.setImageDrawable(colorDrawable);
+        } else {
+            mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         }
         if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
 
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
                 mSuggestion, new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
+    }
+
+    private void setDownloadThumbnail() {
+        assert mSuggestion.isDownload();
+        if (!mSuggestion.isAssetDownload()) {
+            setThumbnailFromFileType(DownloadFilter.Type.PAGE);
+            return;
+        }
+
+        @DownloadFilter.Type
+        int fileType = DownloadFilter.fromMimeType(mSuggestion.getAssetDownloadMimeType());
+        if (fileType == DownloadFilter.Type.IMAGE) {
+            // For image downloads, attempt to fetch a thumbnail.
+            ImageFetcher.DownloadThumbnailRequest thumbnailRequest =
+                    mImageFetcher.makeDownloadThumbnailRequest(mSuggestion, mThumbnailSize);
+
+            Promise<Bitmap> thumbnailReceivedPromise = thumbnailRequest.getPromise();
+
+            if (thumbnailReceivedPromise.isFulfilled()) {
+                // If the thumbnail was cached, then it will be retrieved synchronously, the promise
+                // will be fulfilled and we can set the thumbnail immediately.
+                verifyBitmap(thumbnailReceivedPromise.getResult());
+                setThumbnail(ThumbnailGradient.createDrawableWithGradientIfNeeded(
+                        thumbnailReceivedPromise.getResult(), mCardContainerView.getResources()));
+
+                return;
+            }
+
+            mThumbnailRequest = thumbnailRequest;
+
+            // Queue a callback to be called after the thumbnail is retrieved asynchronously.
+            thumbnailReceivedPromise.then(new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
+        }
+
+        // Set a placeholder for the file type.
+        setThumbnailFromFileType(fileType);
     }
 
     private void setThumbnail(Drawable thumbnail) {
@@ -268,6 +320,13 @@ public class SuggestionsBinder {
         drawable.setBounds(0, 0, faviconSizePx, faviconSizePx);
         mPublisherTextView.setCompoundDrawablesRelative(drawable, null, null, null);
         mPublisherTextView.setVisibility(View.VISIBLE);
+    }
+
+    private void cancelThumbnailFetch() {
+        if (mThumbnailRequest != null) {
+            mThumbnailRequest.cancel();
+            mThumbnailRequest = null;
+        }
     }
 
     private void fadeThumbnailIn(Drawable thumbnail) {

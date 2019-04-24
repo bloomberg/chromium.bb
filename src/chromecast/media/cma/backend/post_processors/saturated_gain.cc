@@ -16,7 +16,9 @@ namespace chromecast {
 namespace media {
 
 namespace {
+const int kNoSampleRate = -1;
 
+// Configuration strings:
 const char kGainKey[] = "gain_db";
 
 float DbFsToScale(float db) {
@@ -26,10 +28,7 @@ float DbFsToScale(float db) {
 }  // namespace
 
 SaturatedGain::SaturatedGain(const std::string& config, int channels)
-    : last_volume_dbfs_(-1) {
-  status_.output_channels = channels;
-  status_.ringing_time_frames = 0;
-  status_.rendering_delay_frames = 0;
+    : channels_(channels), sample_rate_(kNoSampleRate), last_volume_dbfs_(-1) {
   auto config_dict = base::DictionaryValue::From(DeserializeFromJson(config));
   CHECK(config_dict) << "SaturatedGain config is not valid json: " << config;
   double gain_db;
@@ -40,23 +39,19 @@ SaturatedGain::SaturatedGain(const std::string& config, int channels)
 
 SaturatedGain::~SaturatedGain() = default;
 
-bool SaturatedGain::SetConfig(const AudioPostProcessor2::Config& config) {
-  status_.input_sample_rate = config.output_sample_rate;
-  slew_volume_.SetSampleRate(status_.input_sample_rate);
+bool SaturatedGain::SetSampleRate(int sample_rate) {
+  sample_rate_ = sample_rate;
+  slew_volume_.SetSampleRate(sample_rate);
   return true;
 }
 
-const AudioPostProcessor2::Status& SaturatedGain::GetStatus() {
-  return status_;
-}
-
-void SaturatedGain::ProcessFrames(float* data,
-                                  int frames,
-                                  float volume,
-                                  float volume_dbfs) {
+int SaturatedGain::ProcessFrames(float* data,
+                                 int frames,
+                                 float volume,
+                                 float volume_dbfs) {
   DCHECK(data);
 
-  status_.output_buffer = data;
+  data_ = data;
   if (volume_dbfs != last_volume_dbfs_) {
     last_volume_dbfs_ = volume_dbfs;
     // Don't apply more gain than attenuation.
@@ -64,7 +59,22 @@ void SaturatedGain::ProcessFrames(float* data,
     slew_volume_.SetVolume(effective_gain);
   }
 
-  slew_volume_.ProcessFMUL(false, data, frames, status_.output_channels, data);
+  slew_volume_.ProcessFMUL(false, data, frames, channels_, data);
+
+  return 0;  // No delay in this pipeline.
+}
+
+int SaturatedGain::GetRingingTimeInFrames() {
+  return 0;
+}
+
+int SaturatedGain::NumOutputChannels() {
+  return channels_;
+}
+
+float* SaturatedGain::GetOutputBuffer() {
+  DCHECK(data_);
+  return data_;
 }
 
 bool SaturatedGain::UpdateParameters(const std::string& message) {

@@ -8,29 +8,34 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/model/model_type_store.h"
 
 namespace syncer {
 
-class DeviceInfoSyncBridge;
-class MutableLocalDeviceInfoProvider;
+class LocalDeviceInfoProviderImpl;
 
 class DeviceInfoSyncServiceImpl : public DeviceInfoSyncService {
  public:
   // |local_device_info_provider| must not be null.
-  DeviceInfoSyncServiceImpl(OnceModelTypeStoreFactory model_type_store_factory,
-                            std::unique_ptr<MutableLocalDeviceInfoProvider>
-                                local_device_info_provider);
+  DeviceInfoSyncServiceImpl(
+      OnceModelTypeStoreFactory model_type_store_factory,
+      std::unique_ptr<LocalDeviceInfoProviderImpl> local_device_info_provider);
   ~DeviceInfoSyncServiceImpl() override;
 
   // DeviceInfoSyncService implementation.
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override;
   DeviceInfoTracker* GetDeviceInfoTracker() override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+  void InitLocalCacheGuid(const std::string& cache_guid,
+                          const std::string& session_name) override;
+  void ClearLocalCacheGuid() override;
 
  private:
-  std::unique_ptr<DeviceInfoSyncBridge> bridge_;
+  const std::unique_ptr<LocalDeviceInfoProviderImpl>
+      local_device_info_provider_;
+  DeviceInfoSyncBridge bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncServiceImpl);
 };

@@ -33,8 +33,8 @@ class VIEWS_EXPORT TooltipManager {
   // shown.
   static const char kGroupingPropertyKey[];
 
-  TooltipManager() = default;
-  virtual ~TooltipManager() = default;
+  TooltipManager() {}
+  virtual ~TooltipManager() {}
 
   // Returns the maximum width of the tooltip. |point| gives the location
   // the tooltip is to be displayed on in screen coordinates.

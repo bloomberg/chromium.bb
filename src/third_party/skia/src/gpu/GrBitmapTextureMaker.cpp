@@ -48,8 +48,12 @@ sk_sp<GrTextureProxy> GrBitmapTextureMaker::refOriginalTextureProxy(bool willBeM
     }
 
     if (!proxy) {
-        proxy = proxyProvider->createProxyFromBitmap(fBitmap, willBeMipped ? GrMipMapped::kYes
-                                                                           : GrMipMapped::kNo);
+        if (willBeMipped) {
+            proxy = proxyProvider->createMipMapProxyFromBitmap(fBitmap);
+        }
+        if (!proxy) {
+            proxy = GrUploadBitmapToTextureProxy(proxyProvider, fBitmap);
+        }
         if (proxy) {
             if (fOriginalKey.isValid()) {
                 proxyProvider->assignUniqueKeyToProxy(fOriginalKey, proxy.get());

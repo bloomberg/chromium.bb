@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace network {
 class NetworkQualityTracker;
 }
@@ -20,7 +24,7 @@ class GURL;
 class AndroidPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  AndroidPageLoadMetricsObserver();
+  explicit AndroidPageLoadMetricsObserver(content::WebContents* web_contents);
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -40,8 +44,10 @@ class AndroidPageLoadMetricsObserver
 
  protected:
   AndroidPageLoadMetricsObserver(
+      content::WebContents* web_contents,
       network::NetworkQualityTracker* network_quality_tracker)
-      : network_quality_tracker_(network_quality_tracker) {}
+      : web_contents_(web_contents),
+        network_quality_tracker_(network_quality_tracker) {}
 
   virtual void ReportNewNavigation();
 
@@ -68,6 +74,8 @@ class AndroidPageLoadMetricsObserver
                                         int64_t send_end_ms);
 
  private:
+  content::WebContents* web_contents_;
+
   bool did_dispatch_on_main_resource_ = false;
   int64_t navigation_id_ = -1;
 

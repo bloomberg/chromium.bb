@@ -6,8 +6,6 @@
 
 #include <cmath>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -29,7 +27,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/metrics_proto/translate_event.pb.h"
 #include "url/gurl.h"
 
@@ -322,13 +319,16 @@ void TranslateRankerImpl::FlushTranslateEvents(
 
 void TranslateRankerImpl::SendEventToUKM(
     const metrics::TranslateEventProto& event,
-    ukm::SourceId ukm_source_id) {
+    const GURL& url) {
   if (!ukm_recorder_) {
     DVLOG(3) << "No UKM service.";
     return;
   }
-
-  ukm::builders::Translate(ukm_source_id)
+  DVLOG(3) << "Sending event for url: " << url.spec();
+  ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(source_id, url);
+  // TODO(hamelphi): Remove hashing functions once UKM accepts strings metrics.
+  ukm::builders::Translate(source_id)
       .SetSourceLanguage(base::HashMetricName(event.source_language()))
       .SetTargetLanguage(base::HashMetricName(event.target_language()))
       .SetCountry(base::HashMetricName(event.country()))
@@ -343,12 +343,12 @@ void TranslateRankerImpl::SendEventToUKM(
 
 void TranslateRankerImpl::AddTranslateEvent(
     const metrics::TranslateEventProto& event,
-    ukm::SourceId ukm_source_id) {
+    const GURL& url) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (is_logging_enabled_) {
     DVLOG(3) << "Adding translate ranker event.";
-    if (ukm_source_id != ukm::kInvalidSourceId) {
-      SendEventToUKM(event, ukm_source_id);
+    if (url.is_valid()) {
+      SendEventToUKM(event, url);
     }
     event_cache_.push_back(event);
   }
@@ -365,19 +365,19 @@ bool TranslateRankerImpl::CheckModelLoaderForTesting() {
 
 void TranslateRankerImpl::RecordTranslateEvent(
     int event_type,
-    ukm::SourceId ukm_source_id,
+    const GURL& url,
     metrics::TranslateEventProto* translate_event) {
   DCHECK(metrics::TranslateEventProto::EventType_IsValid(event_type));
   translate_event->set_event_type(
       static_cast<metrics::TranslateEventProto::EventType>(event_type));
   translate_event->set_event_timestamp_sec(
       (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
-  AddTranslateEvent(*translate_event, ukm_source_id);
+  AddTranslateEvent(*translate_event, url);
 }
 
 bool TranslateRankerImpl::ShouldOverrideDecision(
     int event_type,
-    ukm::SourceId ukm_source_id,
+    const GURL& url,
     metrics::TranslateEventProto* translate_event) {
   DCHECK(metrics::TranslateEventProto::EventType_IsValid(event_type));
   if ((event_type == metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE &&
@@ -390,7 +390,7 @@ bool TranslateRankerImpl::ShouldOverrideDecision(
     DVLOG(3) << "Overriding decision of type: " << event_type;
     return true;
   } else {
-    RecordTranslateEvent(event_type, ukm_source_id, translate_event);
+    RecordTranslateEvent(event_type, url, translate_event);
     return false;
   }
 }

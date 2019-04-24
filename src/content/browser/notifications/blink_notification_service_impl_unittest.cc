@@ -35,10 +35,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
-#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
-#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using ::testing::Return;
@@ -53,8 +52,6 @@ const char kTestServiceWorkerUrl[] = "https://example.com/sw.js";
 const char kBadMessageImproperNotificationImage[] =
     "Received an unexpected message with image while notification images are "
     "disabled.";
-const char kBadMessageInvalidNotificationTriggerTimestamp[] =
-    "Received an invalid notification trigger timestamp.";
 
 SkBitmap CreateBitmap(int width, int height, SkColor color) {
   SkBitmap bitmap;
@@ -88,6 +85,8 @@ class MockNonPersistentNotificationListener
   mojo::Binding<blink::mojom::NonPersistentNotificationListener> binding_;
 };
 
+}  // anonymous namespace
+
 // This is for overriding the Platform Notification Service with a mock one.
 class NotificationBrowserClient : public TestContentBrowserClient {
  public:
@@ -95,16 +94,13 @@ class NotificationBrowserClient : public TestContentBrowserClient {
       MockPlatformNotificationService* mock_platform_service)
       : platform_notification_service_(mock_platform_service) {}
 
-  PlatformNotificationService* GetPlatformNotificationService(
-      BrowserContext* browser_context) override {
+  PlatformNotificationService* GetPlatformNotificationService() override {
     return platform_notification_service_;
   }
 
  private:
   MockPlatformNotificationService* platform_notification_service_;
 };
-
-}  // anonymous namespace
 
 class BlinkNotificationServiceImplTest : public ::testing::Test {
  public:
@@ -114,7 +110,6 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         embedded_worker_helper_(
             std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath())),
-        mock_platform_service_(&browser_context_),
         notification_browser_client_(&mock_platform_service_) {
     SetBrowserClientForTesting(&notification_browser_client_);
   }
@@ -381,6 +376,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   std::set<std::string> GetDisplayedNotifications() {
     base::RunLoop run_loop;
     mock_platform_service_.GetDisplayedNotifications(
+        &browser_context_,
         base::BindOnce(
             &BlinkNotificationServiceImplTest::DidGetDisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -893,32 +889,6 @@ TEST_F(BlinkNotificationServiceImplTest, NotCallingDisplayForTriggered) {
   RunAllTasksUntilIdle();
 
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
-}
-
-TEST_F(BlinkNotificationServiceImplTest, RejectsTriggerTimestampOverAYear) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
-
-  ASSERT_TRUE(bad_messages_.empty());
-
-  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
-
-  scoped_refptr<ServiceWorkerRegistration> registration;
-  RegisterServiceWorker(&registration);
-
-  base::Time timestamp = base::Time::Now() +
-                         blink::kMaxNotificationShowTriggerDelay +
-                         base::TimeDelta::FromDays(1);
-
-  blink::PlatformNotificationData scheduled_notification_data;
-  scheduled_notification_data.show_trigger_timestamp = timestamp;
-  blink::NotificationResources resources;
-
-  DisplayPersistentNotificationSync(registration->id(),
-                                    scheduled_notification_data, resources);
-
-  EXPECT_EQ(1u, bad_messages_.size());
-  EXPECT_EQ(kBadMessageInvalidNotificationTriggerTimestamp, bad_messages_[0]);
 }
 
 }  // namespace content

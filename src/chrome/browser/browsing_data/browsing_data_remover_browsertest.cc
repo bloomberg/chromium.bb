@@ -269,24 +269,20 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   net::CanonicalCookie cookie("APISID", std::string(), "." + google_url.host(),
                               "/", base::Time(), base::Time(), base::Time(),
-                              false, false, net::CookieSameSite::NO_RESTRICTION,
+                              false, false, net::CookieSameSite::DEFAULT_MODE,
                               net::COOKIE_PRIORITY_DEFAULT);
 
   bool success = false;
   base::RunLoop loop;
-  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
-      callback = base::BindLambdaForTesting(
-          [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
-            success =
-                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-            loop.Quit();
-          });
+  base::OnceCallback<void(bool)> callback =
+      base::BindLambdaForTesting([&success, &loop](bool s) {
+        success = s;
+        loop.Quit();
+      });
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
-  net::CookieOptions options;
-  options.set_include_httponly();
-  cookie_manager->SetCanonicalCookie(cookie, "https", options,
+  cookie_manager->SetCanonicalCookie(cookie, "https", true,
                                      std::move(callback));
   loop.Run();
   return success;
@@ -540,7 +536,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,
-        new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
+        new BrowsingDataAppCacheHelper(profile),
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
@@ -786,9 +782,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   {
     base::RunLoop run_loop;
     video_decode_perf_history->GetSaveCallback().Run(
-        ukm::kInvalidSourceId, media::learning::FeatureValue(0), kIsTopFrame,
-        prediction_features, prediction_targets, kPlayerId,
-        run_loop.QuitWhenIdleClosure());
+        ukm::kInvalidSourceId, kIsTopFrame, prediction_features,
+        prediction_targets, kPlayerId, run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 
@@ -1001,12 +996,21 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, SessionCookieDeletion) {
   TestSiteData("SessionCookie", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, LocalStorageDeletion) {
+// TODO(crbug.com/849238): This test is flaky on Mac (dbg) builds.
+#if defined(OS_MACOSX)
+#define MAYBE_LocalStorageDeletion DISABLED_LocalStorageDeletion
+#define MAYBE_LocalStorageIncognitoDeletion \
+  DISABLED_LocalStorageIncognitoDeletion
+#else
+#define MAYBE_LocalStorageDeletion LocalStorageDeletion
+#define MAYBE_LocalStorageIncognitoDeletion LocalStorageIncognitoDeletion
+#endif
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
+                       MAYBE_LocalStorageDeletion) {
   TestSiteData("LocalStorage", GetParam());
 }
-
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       LocalStorageIncognitoDeletion) {
+                       MAYBE_LocalStorageIncognitoDeletion) {
   UseIncognitoBrowser();
   TestSiteData("LocalStorage", GetParam());
 }
@@ -1346,18 +1350,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
 }
 
-// TODO(crbug.com/840080): Filesystem can't be deleted on exit correctly at the
-// moment.
+// TODO(crbug.com/840080, crbug.com/824533): Filesystem and
+// CacheStorage can't be deleted on exit correctly at the moment.
 // TODO(crbug.com/927312): LocalStorage deletion is flaky.
 const std::vector<std::string> kSessionOnlyStorageTestTypes{
     "Cookie",
     // "LocalStorage",
     // "FileSystem",
-    "SessionStorage",
-    "IndexedDb",
-    "WebSql",
-    "ServiceWorker",
-    "CacheStorage",
+    "SessionStorage", "IndexedDb", "WebSql", "ServiceWorker",
+    // "CacheStorage",
 };
 
 // Test that storage gets deleted if marked as SessionOnly.

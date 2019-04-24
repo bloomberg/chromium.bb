@@ -56,12 +56,6 @@ class UnifiedSliderButton : public TopShortcutButton {
   // Change the toggle state.
   void SetToggled(bool toggled);
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::ImageButton:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-
   // TopShortcutButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

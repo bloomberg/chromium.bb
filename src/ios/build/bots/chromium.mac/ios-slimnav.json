@@ -120,8 +120,7 @@
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
-      "shards": 3,
-      "xcode parallelization": true,
+      "shard size": 2,
       "xctest": true,
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
@@ -164,18 +163,6 @@
       "priority": 30
     },
     {
-      "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
-      ],
-      "device type": "iPad Air 2",
-      "os": "11.4",
-      "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
-      "priority": 30
-    },
-    {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
@@ -204,8 +191,7 @@
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
-      "shards": 3,
-      "xcode parallelization": true,
+      "shard size": 2,
       "device type": "iPad Air 2",
       "os": "12.1",
       "xctest": true,
@@ -249,18 +235,6 @@
       "pool": "Chrome",
       "priority": 30
     },
-      {
-      "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
-      ],
-      "device type": "iPad Air 2",
-      "os": "12.1",
-      "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
-      "priority": 30
-    },
     {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
@@ -292,8 +266,7 @@
       ],
       "device type": "iPhone X",
       "os": "11.4",
-      "shards": 3,
-      "xcode parallelization": true,
+      "shard size": 2,
       "xctest": true,
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
@@ -336,18 +309,6 @@
       "priority": 30
     },
     {
-      "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
-      ],
-      "device type": "iPhone X",
-      "os": "11.4",
-      "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
-      "priority": 30
-    },
-    {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
@@ -376,8 +337,7 @@
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
-      "shards": 3,
-      "xcode parallelization": true,
+      "shard size": 2,
       "device type": "iPhone X",
       "os": "12.1",
       "xctest": true,
@@ -413,18 +373,6 @@
       "app": "ios_chrome_settings_egtests",
       "test args": [
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
-      ],
-      "device type": "iPhone X",
-      "os": "12.1",
-      "xctest": true,
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
-      "priority": 30
-    },
-    {
-      "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
       "os": "12.1",

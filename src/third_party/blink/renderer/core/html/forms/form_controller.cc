@@ -197,8 +197,7 @@ class SavedFormState {
   USING_FAST_MALLOC(SavedFormState);
 
  public:
-  SavedFormState() : control_state_count_(0) {}
-
+  static std::unique_ptr<SavedFormState> Create();
   static std::unique_ptr<SavedFormState> Deserialize(const Vector<String>&,
                                                      wtf_size_t& index);
   void SerializeTo(Vector<String>&) const;
@@ -212,6 +211,8 @@ class SavedFormState {
   Vector<String> GetReferencedFilePaths() const;
 
  private:
+  SavedFormState() : control_state_count_(0) {}
+
   using FormElementStateMap = HashMap<FormElementKey,
                                       Deque<FormControlState>,
                                       FormElementKeyHash,
@@ -221,6 +222,10 @@ class SavedFormState {
 
   DISALLOW_COPY_AND_ASSIGN(SavedFormState);
 };
+
+std::unique_ptr<SavedFormState> SavedFormState::Create() {
+  return base::WrapUnique(new SavedFormState);
+}
 
 static bool IsNotFormControlTypeCharacter(UChar ch) {
   return ch != '-' && (ch > 'z' || ch < 'a');
@@ -320,6 +325,10 @@ class FormKeyGenerator final
     : public GarbageCollectedFinalized<FormKeyGenerator> {
 
  public:
+  static FormKeyGenerator* Create() {
+    return MakeGarbageCollected<FormKeyGenerator>();
+  }
+
   FormKeyGenerator() = default;
 
   void Trace(Visitor* visitor) { visitor->Trace(form_to_key_map_); }
@@ -440,7 +449,7 @@ Vector<String> DocumentState::ToStateVector() {
     }
     form_controls_dirty_ = false;
   }
-  auto* key_generator = MakeGarbageCollected<FormKeyGenerator>();
+  FormKeyGenerator* key_generator = FormKeyGenerator::Create();
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
   for (auto& control : form_controls_) {
@@ -450,7 +459,7 @@ Vector<String> DocumentState::ToStateVector() {
     SavedFormStateMap::AddResult result =
         state_map->insert(key_generator->FormKey(*control), nullptr);
     if (result.is_new_entry)
-      result.stored_value->value = std::make_unique<SavedFormState>();
+      result.stored_value->value = SavedFormState::Create();
     result.stored_value->value->AppendControlState(
         control->GetName(), ControlType(*control),
         control->SaveFormControlState());
@@ -499,7 +508,7 @@ FormControlState FormController::TakeStateForFormElement(
   if (saved_form_state_map_.IsEmpty())
     return FormControlState();
   if (!form_key_generator_)
-    form_key_generator_ = MakeGarbageCollected<FormKeyGenerator>();
+    form_key_generator_ = FormKeyGenerator::Create();
   SavedFormStateMap::iterator it =
       saved_form_state_map_.find(form_key_generator_->FormKey(control));
   if (it == saved_form_state_map_.end())

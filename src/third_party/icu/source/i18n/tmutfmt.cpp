@@ -224,7 +224,7 @@ TimeUnitFormat::parseObject(const UnicodeString& source,
                     if (temp.getType() == Formattable::kString) {
                         UnicodeString tmpString;
                         UErrorCode pStatus = U_ZERO_ERROR;
-                        getNumberFormatInternal().parse(temp.getString(tmpString), tmpNumber, pStatus);
+                        getNumberFormat().parse(temp.getString(tmpString), tmpNumber, pStatus);
                         if (U_FAILURE(pStatus)) {
                             continue;
                         }

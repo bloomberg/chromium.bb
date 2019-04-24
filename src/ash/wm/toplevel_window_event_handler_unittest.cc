@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_state.h"
@@ -103,8 +102,8 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
             .release();
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
-    aura::Window* parent = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), desks_util::GetActiveDeskContainerId());
+    aura::Window* parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                               kShellWindowId_DefaultContainer);
     parent->AddChild(w1);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();

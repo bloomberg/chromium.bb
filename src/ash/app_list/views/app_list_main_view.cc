@@ -103,7 +103,7 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
-  contents_view_->SetActiveState(ash::AppListState::kStateApps);
+  contents_view_->SetActiveState(ash::AppListState::kStateStart);
   contents_view_->GetAppsContainerView()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.

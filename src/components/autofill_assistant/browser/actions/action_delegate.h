@@ -16,7 +16,6 @@
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
-#include "third_party/icu/source/common/unicode/umachine.h"
 
 class GURL;
 
@@ -32,7 +31,6 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
-class ClientStatus;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -46,9 +44,9 @@ class ActionDelegate {
   // the action.
   virtual std::string GetStatusMessage() = 0;
 
-  // Checks one or more elements.
-  virtual void RunElementChecks(BatchElementChecker* checker,
-                                base::OnceCallback<void()> all_done) = 0;
+  // Create a helper for checking for multiple element existence or field
+  // values.
+  virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() = 0;
 
   // Wait for a short time for a given selector to appear.
   //
@@ -60,36 +58,24 @@ class ActionDelegate {
   //
   // TODO(crbug.com/806868): Consider embedding that wait right into
   // WebController and eliminate double-lookup.
-  virtual void ShortWaitForElement(const Selector& selector,
-                                   base::OnceCallback<void(bool)> callback) = 0;
+  virtual void ShortWaitForElementExist(
+      const Selector& selector,
+      base::OnceCallback<void(bool)> callback) = 0;
 
-  enum class SelectorPredicate {
-    // The selector matches elements
-    kMatches,
-
-    // The selector doesn't match any elements
-    kDoesntMatch
-  };
-
-  // Wait for up to |max_wait_time| for the element |selectors| to match
-  // element(s) on the page, then call |callback| with true if at least an
-  // element matched, false otherwise.
-  //
-  // |selector_predicate| specifies the condition that must be satisfied for
-  // WaitForDom to return successfully. It applies to the given |selector|.
+  // Wait for up to |max_wait_time| for the element |selectors| to be visible on
+  // the page, then call |callback| with true if the element was visible, false
+  // otherwise.
   //
   // If |allow_interrupt| interrupts can run while waiting.
-  virtual void WaitForDom(
+  virtual void WaitForElementVisible(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      SelectorPredicate selector_predicate,
       const Selector& selector,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.
-  virtual void ClickOrTapElement(
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void ClickOrTapElement(const Selector& selector,
+                                 base::OnceCallback<void(bool)> callback) = 0;
 
   // Ask user to select one of the given suggestions.
   //
@@ -97,7 +83,12 @@ class ActionDelegate {
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips) = 0;
+  //
+  // |on_terminate| is called if the prompt is terminated, by Autofill Assistant
+  // shutting down. The action should return immediately with client error
+  // USER_ABORTED_ACTION.
+  virtual void Prompt(std::unique_ptr<std::vector<Chip>> chips,
+                      base::OnceCallback<void()> on_terminate) = 0;
 
   // Remove all chips from the UI.
   virtual void CancelPrompt() = 0;
@@ -117,30 +108,26 @@ class ActionDelegate {
 
   // Fill the address form given by |selector| with the given address
   // |profile|. |profile| cannot be nullptr.
-  virtual void FillAddressForm(
-      const autofill::AutofillProfile* profile,
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void FillAddressForm(const autofill::AutofillProfile* profile,
+                               const Selector& selector,
+                               base::OnceCallback<void(bool)> callback) = 0;
 
   // Fill the card form given by |selector| with the given |card| and its
   // |cvc|. Return result asynchronously through |callback|.
-  virtual void FillCardForm(
-      std::unique_ptr<autofill::CreditCard> card,
-      const base::string16& cvc,
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
+                            const base::string16& cvc,
+                            const Selector& selector,
+                            base::OnceCallback<void(bool)> callback) = 0;
 
   // Select the option given by |selector| and the value of the option to be
   // picked.
-  virtual void SelectOption(
-      const Selector& selector,
-      const std::string& selected_option,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void SelectOption(const Selector& selector,
+                            const std::string& selected_option,
+                            base::OnceCallback<void(bool)> callback) = 0;
 
   // Focus on the element given by |selector|.
-  virtual void FocusElement(
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void FocusElement(const Selector& selector,
+                            base::OnceCallback<void(bool)> callback) = 0;
 
   // Sets selector of areas that can be manipulated:
   // - after the end of the script and before the beginning of the next script.
@@ -150,65 +137,34 @@ class ActionDelegate {
       const ElementAreaProto& touchable_element_area) = 0;
 
   // Highlight the element given by |selector|.
-  virtual void HighlightElement(
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
-
-  // Get the value of |selector| and return the result through |callback|. The
-  // returned value might be false, if the element cannot be found, true and the
-  // empty string in case of error or empty value.
-  virtual void GetFieldValue(
-      const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
+  virtual void HighlightElement(const Selector& selector,
+                                base::OnceCallback<void(bool)> callback) = 0;
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
   // attribute will be set directly.
-  virtual void SetFieldValue(
-      const Selector& selector,
-      const std::string& value,
-      bool simulate_key_presses,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void SetFieldValue(const Selector& selector,
+                             const std::string& value,
+                             bool simulate_key_presses,
+                             base::OnceCallback<void(bool)> callback) = 0;
 
   // Set the |value| of the |attribute| of the element given by |selector|.
-  virtual void SetAttribute(
-      const Selector& selector,
-      const std::vector<std::string>& attribute,
-      const std::string& value,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void SetAttribute(const Selector& selector,
+                            const std::vector<std::string>& attribute,
+                            const std::string& value,
+                            base::OnceCallback<void(bool)> callback) = 0;
 
-  // Sets the keyboard focus to |selector| and inputs the specified codepoints.
+  // Sets the keyboard focus to |selector| and inputs the specified text parts.
   // Returns the result through |callback|.
-  virtual void SendKeyboardInput(
-      const Selector& selector,
-      const std::vector<UChar32>& codepoints,
-      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+  virtual void SendKeyboardInput(const Selector& selector,
+                                 const std::vector<std::string>& text_parts,
+                                 base::OnceCallback<void(bool)> callback) = 0;
 
   // Return the outerHTML of an element given by |selector|.
   virtual void GetOuterHtml(
       const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&, const std::string&)>
-          callback) = 0;
-
-  // Make the next call to WaitForNavigation to expect a navigation event that
-  // started after this call.
-  virtual void ExpectNavigation() = 0;
-
-  // Returns true if the expected navigation, on which WaitForNavigation() might
-  // be waiting, has started and maybe even ended.
-  virtual bool ExpectedNavigationHasStarted() = 0;
-
-  // Wait for a navigation event to end that started after the last call to
-  // ExpectNavigation().
-  //
-  // If ExpectNavigation() was never called in the script, the function returns
-  // false and never calls the callback.
-  //
-  // The callback is passed true if navigation succeeded. The callback might be
-  // called immediately if navigation has already succeeded.
-  virtual bool WaitForNavigation(
-      base::OnceCallback<void(bool)> on_navigation_done) = 0;
+      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
 
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.

@@ -121,8 +121,7 @@ class StringFileParser(object):
 
   def _ParseLine(self, line):
     if not self._in_string:
-      if not self._ParseString(line):
-        self._ParseComment(line)
+      self._ParseComment(line)
       return
 
     if self._in_comment:

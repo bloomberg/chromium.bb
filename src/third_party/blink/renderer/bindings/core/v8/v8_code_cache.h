@@ -27,7 +27,7 @@ class CachedMetadata;
 class KURL;
 class SingleCachedMetadataHandler;
 class ScriptSourceCode;
-class ModuleRecordProduceCacheData;
+class ScriptModuleProduceCacheData;
 
 class CORE_EXPORT V8CodeCache final {
   STATIC_ONLY(V8CodeCache);
@@ -72,7 +72,7 @@ class CORE_EXPORT V8CodeCache final {
                            const ScriptSourceCode&,
                            ProduceCacheOptions);
   static void ProduceCache(v8::Isolate*,
-                           ModuleRecordProduceCacheData*,
+                           ScriptModuleProduceCacheData*,
                            size_t source_text_length,
                            const KURL& source_url,
                            const WTF::TextPosition& source_start_position);

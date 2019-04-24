@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 198, 198],
+          "rect": [8, 8, 200, 200],
           "reason": "style change"
         }
       ]

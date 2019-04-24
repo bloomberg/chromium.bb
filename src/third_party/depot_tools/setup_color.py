@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import os
 import sys
 from third_party import colorama
@@ -92,5 +90,5 @@ def init():
 
 if __name__ == '__main__':
   init()
-  print('IS_TTY:', IS_TTY)
-  print('OUT_TYPE:', OUT_TYPE)
+  print 'IS_TTY:', IS_TTY
+  print 'OUT_TYPE:', OUT_TYPE

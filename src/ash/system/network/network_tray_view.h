@@ -44,7 +44,8 @@ class NetworkTrayView : public TrayItemView,
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;

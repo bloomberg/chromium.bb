@@ -39,8 +39,8 @@
 #include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -65,7 +65,7 @@ struct VerbParams {
 };
 
 std::unique_ptr<JSONObject> ObjectForSkRect(const SkRect& rect) {
-  auto rect_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> rect_item = JSONObject::Create();
   rect_item->SetDouble("left", rect.left());
   rect_item->SetDouble("top", rect.top());
   rect_item->SetDouble("right", rect.right());
@@ -74,7 +74,7 @@ std::unique_ptr<JSONObject> ObjectForSkRect(const SkRect& rect) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkIRect(const SkIRect& rect) {
-  auto rect_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> rect_item = JSONObject::Create();
   rect_item->SetDouble("left", rect.left());
   rect_item->SetDouble("top", rect.top());
   rect_item->SetDouble("right", rect.right());
@@ -97,7 +97,7 @@ String PointModeName(SkCanvas::PointMode mode) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkPoint(const SkPoint& point) {
-  auto point_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> point_item = JSONObject::Create();
   point_item->SetDouble("x", point.x());
   point_item->SetDouble("y", point.y());
   return point_item;
@@ -105,7 +105,7 @@ std::unique_ptr<JSONObject> ObjectForSkPoint(const SkPoint& point) {
 
 std::unique_ptr<JSONArray> ArrayForSkPoints(size_t count,
                                             const SkPoint points[]) {
-  auto points_array_item = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> points_array_item = JSONArray::Create();
   for (size_t i = 0; i < count; ++i)
     points_array_item->PushObject(ObjectForSkPoint(points[i]));
   return points_array_item;
@@ -113,7 +113,7 @@ std::unique_ptr<JSONArray> ArrayForSkPoints(size_t count,
 
 std::unique_ptr<JSONObject> ObjectForRadius(const SkRRect& rrect,
                                             SkRRect::Corner corner) {
-  auto radius_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> radius_item = JSONObject::Create();
   SkVector radius = rrect.radii(corner);
   radius_item->SetDouble("xRadius", radius.x());
   radius_item->SetDouble("yRadius", radius.y());
@@ -157,7 +157,7 @@ String RadiusName(SkRRect::Corner corner) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkRRect(const SkRRect& rrect) {
-  auto rrect_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> rrect_item = JSONObject::Create();
   rrect_item->SetString("type", RrectTypeName(rrect.type()));
   rrect_item->SetDouble("left", rrect.rect().left());
   rrect_item->SetDouble("top", rrect.rect().top());
@@ -222,17 +222,17 @@ VerbParams SegmentParams(SkPath::Verb verb) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
-  auto path_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> path_item = JSONObject::Create();
   path_item->SetString("fillType", FillTypeName(path.getFillType()));
   path_item->SetString("convexity", ConvexityName(path.getConvexity()));
   path_item->SetBoolean("isRect", path.isRect(nullptr));
   SkPath::Iter iter(path, false);
   SkPoint points[4];
-  auto path_points_array = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> path_points_array = JSONArray::Create();
   for (SkPath::Verb verb = iter.next(points, false); verb != SkPath::kDone_Verb;
        verb = iter.next(points, false)) {
     VerbParams verb_params = SegmentParams(verb);
-    auto path_point_item = std::make_unique<JSONObject>();
+    std::unique_ptr<JSONObject> path_point_item = JSONObject::Create();
     path_point_item->SetString("verb", verb_params.name);
     DCHECK_LE(verb_params.point_count + verb_params.point_offset,
               base::size(points));
@@ -280,7 +280,7 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
     return nullptr;
   }
 
-  auto data_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> data_item = JSONObject::Create();
   data_item->SetString(
       "base64",
       WTF::Base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
@@ -289,7 +289,7 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkBitmap(const SkBitmap& bitmap) {
-  auto bitmap_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> bitmap_item = JSONObject::Create();
   bitmap_item->SetInteger("width", bitmap.width());
   bitmap_item->SetInteger("height", bitmap.height());
   bitmap_item->SetString("config", ColorTypeName(bitmap.colorType()));
@@ -302,7 +302,7 @@ std::unique_ptr<JSONObject> ObjectForSkBitmap(const SkBitmap& bitmap) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkImage(const SkImage* image) {
-  auto image_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> image_item = JSONObject::Create();
   image_item->SetInteger("width", image->width());
   image_item->SetInteger("height", image->height());
   image_item->SetBoolean("opaque", image->isOpaque());
@@ -311,38 +311,43 @@ std::unique_ptr<JSONObject> ObjectForSkImage(const SkImage* image) {
 }
 
 std::unique_ptr<JSONArray> ArrayForSkMatrix(const SkMatrix& matrix) {
-  auto matrix_array = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> matrix_array = JSONArray::Create();
   for (int i = 0; i < 9; ++i)
     matrix_array->PushDouble(matrix[i]);
   return matrix_array;
 }
 
 std::unique_ptr<JSONObject> ObjectForSkShader(const SkShader& shader) {
-  return std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> shader_item = JSONObject::Create();
+  const SkMatrix local_matrix = shader.getLocalMatrix();
+  if (!local_matrix.isIdentity())
+    shader_item->SetArray("localMatrix", ArrayForSkMatrix(local_matrix));
+  return shader_item;
 }
 
-String StringForSkColor(SkColor color) {
+String StringForSkColor(const SkColor& color) {
   // #AARRGGBB.
-  return String::Format("#%08X", color);
+  Vector<LChar, 9> result;
+  result.push_back('#');
+  HexNumber::AppendUnsignedAsHex(color, result);
+  return String(result.data(), result.size());
 }
 
-void AppendFlagToString(StringBuilder* flags_string,
-                        bool is_set,
-                        const StringView& name) {
+void AppendFlagToString(String* flags_string, bool is_set, const String& name) {
   if (!is_set)
     return;
   if (flags_string->length())
-    flags_string->Append("|");
-  flags_string->Append(name);
+    flags_string->append("|");
+  flags_string->append(name);
 }
 
 String StringForSkPaintFlags(const SkPaint& paint) {
   if (!paint.isAntiAlias() && !paint.isDither())
     return "none";
-  StringBuilder flags_string;
+  String flags_string = "";
   AppendFlagToString(&flags_string, paint.isAntiAlias(), "AntiAlias");
   AppendFlagToString(&flags_string, paint.isDither(), "Dither");
-  return flags_string.ToString();
+  return flags_string;
 }
 
 String FilterQualityName(SkFilterQuality filter_quality) {
@@ -404,7 +409,7 @@ String StyleName(SkPaint::Style style) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
-  auto paint_item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> paint_item = JSONObject::Create();
   if (SkShader* shader = paint.getShader())
     paint_item->SetObject("shader", ObjectForSkShader(*shader));
   paint_item->SetString("color", StringForSkColor(paint.getColor()));
@@ -454,7 +459,7 @@ class AutoLogger
 };
 
 JSONObject* AutoLogger::LogItem(const String& name) {
-  auto item = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> item = JSONObject::Create();
   item->SetString("method", name);
   log_item_ = std::move(item);
   return log_item_.get();
@@ -462,14 +467,13 @@ JSONObject* AutoLogger::LogItem(const String& name) {
 
 JSONObject* AutoLogger::LogItemWithParams(const String& name) {
   JSONObject* item = LogItem(name);
-  auto params = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> params = JSONObject::Create();
   item->SetObject("params", std::move(params));
   return item->GetJSONObject("params");
 }
 
 LoggingCanvas::LoggingCanvas()
-    : InterceptingCanvasBase(999999, 999999),
-      log_(std::make_unique<JSONArray>()) {}
+    : InterceptingCanvasBase(999999, 999999), log_(JSONArray::Create()) {}
 
 void LoggingCanvas::onDrawPaint(const SkPaint& paint) {
   AutoLogger logger(this);

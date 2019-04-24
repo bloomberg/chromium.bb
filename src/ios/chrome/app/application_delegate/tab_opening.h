@@ -13,7 +13,7 @@
 @class AppState;
 @class TabModel;
 @protocol StartupInformation;
-struct UrlLoadParams;
+class GURL;
 
 // Protocol for object that can open new tabs during application launch.
 @protocol TabOpening<NSObject>
@@ -23,9 +23,10 @@ struct UrlLoadParams;
 // run completion |handler| if it is not nil. After Tab is opened the virtual
 // URL is set to the pending navigation item.
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
-                            withUrlLoadParams:
-                                (const UrlLoadParams&)urlLoadParams
+                                      withURL:(const GURL&)url
+                                   virtualURL:(const GURL&)virtualURL
                                dismissOmnibox:(BOOL)dismissOmnibox
+                                   transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion;
 
 // Creates a new tab if the launch options are not null.

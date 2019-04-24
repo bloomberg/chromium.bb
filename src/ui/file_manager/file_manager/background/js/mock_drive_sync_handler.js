@@ -6,55 +6,36 @@
 
 /**
  * Mock of DriveSyncHandler.
+ *
+ * @constructor
+ * @struct
  * @implements {DriveSyncHandler}
+ * @extends {cr.EventTarget}
  */
-class MockDriveSyncHandler extends cr.EventTarget {
-  constructor() {
-    super();
-
-    /**
-     * @type {boolean} Drive sync suppressed state.
-     * @private
-     */
-    this.syncSuppressed_ = false;
-
-    /**
-     * @type {boolean} Drive sync disabled on mobile notification state.
-     * @private
-     */
-    this.showingDisabledMobileSyncNotification_ = false;
-  }
+function MockDriveSyncHandler() {
+  /**
+   * @type {boolean} Drive sync suppressed state.
+   * @private
+   */
+  this.syncSuppressed_ = false;
 
   /**
-   * Returns the completed event name.
-   * @return {string}
+   * @type {boolean} Drive sync disabled on mobile notification state.
+   * @private
    */
-  getCompletedEventName() {
-    return MockDriveSyncHandler.DRIVE_SYNC_COMPLETED_EVENT;
-  }
+  this.showingDisabledMobileSyncNotification_ = false;
+}
 
-  /**
-   * Returns whether the Drive sync is currently suppressed or not.
-   * @return {boolean}
-   */
-  isSyncSuppressed() {
-    return this.syncSuppressed_;
-  }
-
-  /**
-   * Shows a notification that Drive sync is disabled on cellular networks.
-   */
-  showDisabledMobileSyncNotification() {
-    this.showingDisabledMobileSyncNotification_ = true;
-  }
+MockDriveSyncHandler.prototype = /** @struct */ {
+  __proto__: cr.EventTarget.prototype,
 
   /**
    * @return {boolean} Whether the handler is syncing items or not.
    */
   get syncing() {
     return false;
-  }
-}
+  },
+};
 
 /**
  * Completed event name.
@@ -63,3 +44,26 @@ class MockDriveSyncHandler extends cr.EventTarget {
  * @const
  */
 MockDriveSyncHandler.DRIVE_SYNC_COMPLETED_EVENT = 'completed';
+
+/**
+ * Returns the completed event name.
+ * @return {string}
+ */
+MockDriveSyncHandler.prototype.getCompletedEventName = () => {
+  return MockDriveSyncHandler.DRIVE_SYNC_COMPLETED_EVENT;
+};
+
+/**
+ * Returns whether the Drive sync is currently suppressed or not.
+ * @return {boolean}
+ */
+MockDriveSyncHandler.prototype.isSyncSuppressed = function() {
+  return this.syncSuppressed_;
+};
+
+/**
+ * Shows a notification that Drive sync is disabled on cellular networks.
+ */
+MockDriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
+  this.showingDisabledMobileSyncNotification_ = true;
+};

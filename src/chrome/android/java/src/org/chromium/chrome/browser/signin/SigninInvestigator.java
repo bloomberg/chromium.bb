@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import org.chromium.signin.InvestigatedScenario;
-
 /**
  * A bridge to call shared investigator logic.
  */
@@ -18,7 +16,7 @@ public final class SigninInvestigator {
      *
      * @return int value that corresponds to enum InvestigatedScenario.
      */
-    public static @InvestigatedScenario int investigate(String currentEmail) {
+    public static int investigate(String currentEmail) {
         return nativeInvestigate(currentEmail);
     }
 

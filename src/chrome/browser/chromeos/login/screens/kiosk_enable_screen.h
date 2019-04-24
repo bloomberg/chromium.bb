@@ -20,7 +20,8 @@ namespace chromeos {
 class KioskEnableScreen : public BaseScreen,
                           public KioskEnableScreenView::Delegate {
  public:
-  KioskEnableScreen(KioskEnableScreenView* view,
+  KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
+                    KioskEnableScreenView* view,
                     const base::RepeatingClosure& exit_callback);
   ~KioskEnableScreen() override;
 

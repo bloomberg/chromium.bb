@@ -20,6 +20,7 @@
 
 namespace webrtc {
 namespace test {
+
 // Provides an AudioDecoder implementation that delivers audio data from a file.
 // The "encoded" input should contain information about what RTP timestamp the
 // encoding represents, and how many samples the decoder should produce for that
@@ -36,9 +37,6 @@ class FakeDecodeFromFile : public AudioDecoder {
         stereo_(stereo) {}
 
   ~FakeDecodeFromFile() = default;
-
-  std::vector<ParseResult> ParsePayload(rtc::Buffer&& payload,
-                                        uint32_t timestamp) override;
 
   void Reset() override {}
 

@@ -21,8 +21,8 @@ struct SyncCredentials {
   // The email associated with this account.
   std::string email;
 
-  // The OAuth2 access token.
-  std::string access_token;
+  // The raw authentication token's bytes.
+  std::string sync_token;
 };
 
 }  // namespace syncer

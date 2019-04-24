@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -138,7 +138,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);
     KURL js_url("https://example.com/worklet.js");
-    ModuleRecord module = ModuleRecord::Compile(
+    ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
@@ -182,7 +182,9 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->FindDefinition("testProcessor");
     EXPECT_TRUE(definition);
     EXPECT_EQ(definition->GetName(), "testProcessor");
-    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
+    EXPECT_TRUE(definition->ConstructorLocal(isolate)->IsFunction());
+    EXPECT_TRUE(definition->ProcessLocal(isolate)->IsFunction());
+    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
 
     AudioWorkletProcessor* processor =
@@ -283,7 +285,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         )JS";
     ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
 
-    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
+    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
     AudioWorkletProcessor* processor =
         global_scope->CreateProcessor("testProcessor",

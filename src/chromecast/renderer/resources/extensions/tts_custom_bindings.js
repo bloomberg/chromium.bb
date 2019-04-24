@@ -4,10 +4,15 @@
 
 // Custom binding for the tts API.
 
+var binding = apiBridge || require('binding').Binding.create('tts');
+
 var idGenerator = requireNative('id_generator');
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 var lazyBG = requireNative('lazy_background_page');
 
-apiBridge.registerCustomHook(function(api) {
+binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
   var tts = api.compiledApi;
   var handlers = {};
@@ -46,7 +51,12 @@ apiBridge.registerCustomHook(function(api) {
       // Balanced in eventHandler.
       lazyBG.IncrementKeepaliveCount();
     }
-    bindingUtil.sendRequest('tts.speak', args, undefined);
+    sendRequest('tts.speak', args,
+                bindingUtil ? undefined : this.definition.parameters,
+                undefined);
     return id;
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

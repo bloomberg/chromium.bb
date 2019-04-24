@@ -123,9 +123,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  DCHECK(gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP ||
-         gpu_memory_buffer->GetType() == gfx::ANDROID_HARDWARE_BUFFER ||
-         gpu_memory_buffer_manager);
+  DCHECK(gpu_memory_buffer_manager);
   GpuChannelMsg_CreateGMBSharedImage_Params params;
   params.mailbox = Mailbox::GenerateForSharedImage();
   params.handle = gpu_memory_buffer->CloneHandle();
@@ -153,7 +151,11 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
         new GpuChannelMsg_CreateGMBSharedImage(route_id_, std::move(params)));
   }
   if (requires_sync_token) {
-    gpu::SyncToken sync_token = GenVerifiedSyncToken();
+    gpu::SyncToken sync_token = GenUnverifiedSyncToken();
+
+    // Force a synchronous IPC to validate sync token.
+    host_->VerifyFlush(UINT32_MAX);
+    sync_token.SetVerifyFlush();
 
     gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
                                                        sync_token);
@@ -205,14 +207,6 @@ void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
         GpuChannelMsg_DestroySharedImage(route_id_, mailbox),
         std::move(dependencies));
   }
-}
-
-SyncToken SharedImageInterfaceProxy::GenVerifiedSyncToken() {
-  SyncToken sync_token = GenUnverifiedSyncToken();
-  // Force a synchronous IPC to validate sync token.
-  host_->VerifyFlush(UINT32_MAX);
-  sync_token.SetVerifyFlush();
-  return sync_token;
 }
 
 SyncToken SharedImageInterfaceProxy::GenUnverifiedSyncToken() {

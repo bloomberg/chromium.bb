@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/svg/svg_integer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -64,18 +63,11 @@ class SVGAnimatedInteger : public ScriptWrappable,
 
   SVGAnimatedInteger(SVGElement* context_element,
                      const QualifiedName& attribute_name,
-                     int initial)
-      : SVGAnimatedInteger(context_element,
-                           attribute_name,
-                           MakeGarbageCollected<SVGInteger>(initial)) {}
-
-  SVGAnimatedInteger(SVGElement* context_element,
-                     const QualifiedName& attribute_name,
                      SVGInteger* initial_value)
       : SVGAnimatedProperty<SVGInteger>(context_element,
                                         attribute_name,
                                         initial_value,
-                                        CSSPropertyID::kInvalid,
+                                        CSSPropertyInvalid,
                                         initial_value->Value()),
         parent_integer_optional_integer_(nullptr) {}
 

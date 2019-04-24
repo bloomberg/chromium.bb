@@ -19,9 +19,6 @@
 // Asks the presenter to display the sync encryption passphrase UI.
 - (void)showSyncPassphraseSettings;
 
-// Presents the Google services settings.
-- (void)showGoogleServicesSettings;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_UTILS_SYNC_PRESENTER_H_

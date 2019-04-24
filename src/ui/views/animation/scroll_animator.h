@@ -23,7 +23,7 @@ class VIEWS_EXPORT ScrollDelegate {
   virtual bool OnScroll(float dx, float dy) = 0;
 
  protected:
-  ~ScrollDelegate() = default;
+  ~ScrollDelegate() {}
 };
 
 class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {

@@ -59,16 +59,13 @@ var disabledTests = [
 
 var allTests = [
   function testActiveDescendant() {
-    let combobox = rootNode.find({ role: 'textFieldWithComboBox' });
-    combobox.addEventListener(EventType.FOCUS, () => {
-      assertTrue('activeDescendant' in combobox,
-                 'combobox button should have an activedescendant attribute');
-      let listbox = rootNode.find({ role: 'listBox' });
-      let opt6 = listbox.children[5];
-      assertEq(opt6, combobox.activeDescendant);
-      chrome.test.succeed();
-    }, true);
-    combobox.focus();
+    var combobox = rootNode.find({ role: 'textFieldWithComboBox' });
+    assertTrue('activeDescendant' in combobox,
+               'combobox button should have an activedescendant attribute');
+    var listbox = rootNode.find({ role: 'listBox' });
+    var opt6 = listbox.children[5];
+    assertEq(opt6, combobox.activeDescendant);
+    chrome.test.succeed();
   },
 
   function testLinkAttributes() {
@@ -88,56 +85,40 @@ var allTests = [
   },
 
   function testEditableTextAttributes() {
-    let textFields = rootNode.findAll({ role: 'textField' });
+    var textFields = rootNode.findAll({ role: 'textField' });
     assertEq(3, textFields.length);
-    for (let textField of textFields) {
-      let description = textField.description;
-      for (let attribute of EditableTextAttributes) {
+    var EditableTextAttributes = [ 'textSelStart', 'textSelEnd' ];
+    for (var i = 0; i < textFields.length; i++) {
+      var textField = textFields[i];
+      var description = textField.description;
+      for (var j = 0; j < EditableTextAttributes.length; j++) {
+        var attribute = EditableTextAttributes[j];
         assertTrue(attribute in textField,
                    'textField (' + description + ') should have a ' +
                    attribute + ' attribute');
       }
     }
 
-    let input = textFields[0];
-    input.addEventListener(EventType.FOCUS, () => {
-      assertEq('text-input', input.name);
-      assertEq(2, input.textSelStart);
-      assertEq(8, input.textSelEnd);
+    var input = textFields[0];
+    assertEq('text-input', input.name);
+    assertEq(2, input.textSelStart);
+    assertEq(8, input.textSelEnd);
+    var textArea = textFields[1];
+    assertEq('textarea', textArea.name);
+    for (var i = 0; i < EditableTextAttributes.length; i++) {
+      var attribute = EditableTextAttributes[i];
+      assertTrue(attribute in textArea,
+                 'textArea should have a ' + attribute + ' attribute');
+    }
+    assertEq(0, textArea.textSelStart);
+    assertEq(0, textArea.textSelEnd);
 
-      let textArea = textFields[1];
-      assertEq('textarea', textArea.name);
-      for (let attribute of EditableTextAttributes) {
-        assertTrue(attribute in textArea,
-                   'textArea should have a ' + attribute + ' attribute');
-      }
+    var ariaTextbox = textFields[2];
+    assertEq('textbox-role', ariaTextbox.name);
+    assertEq(undefined, ariaTextbox.textSelStart, 'ariaTextbox.textSelStart');
+    assertEq(undefined, ariaTextbox.textSelEnd, 'ariaTextbox.textSelEnd');
 
-      /* Re-enable the following two assertions once the new selection code is
-       * switched on.
-      assertEq(0, textArea.textSelStart);
-      assertEq(0, textArea.textSelEnd);
-      */
-
-      textArea.addEventListener(EventType.FOCUS, () => {
-        assertEq(2, textArea.textSelStart);
-        assertEq(4, textArea.textSelEnd);
-
-        let ariaTextbox = textFields[2];
-        assertEq('textbox-role', ariaTextbox.name);
-        assertEq(undefined, ariaTextbox.textSelStart,
-                 'ariaTextbox.textSelStart');
-        assertEq(undefined, ariaTextbox.textSelEnd, 'ariaTextbox.textSelEnd');
-        ariaTextbox.addEventListener(EventType.FOCUS, () => {
-          assertEq(undefined, ariaTextbox.textSelStart,
-                   'ariaTextbox.textSelStart');
-          assertEq(undefined, ariaTextbox.textSelEnd, 'ariaTextbox.textSelEnd');
-          chrome.test.succeed();
-        }, true);
-        ariaTextbox.focus();
-      }, true);
-      textArea.focus();
-    }, true);
-    input.focus();
+    chrome.test.succeed();
   },
 
   function testRangeAttributes() {

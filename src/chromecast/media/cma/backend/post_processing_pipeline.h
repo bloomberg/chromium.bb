@@ -20,17 +20,14 @@ namespace media {
 class PostProcessingPipeline {
  public:
   virtual ~PostProcessingPipeline() = default;
-
-  // Returns the rendering delay in seconds.
-  virtual double ProcessFrames(float* data,
-                               int num_frames,
-                               float current_multiplier,
-                               bool is_silence) = 0;
+  virtual int ProcessFrames(float* data,
+                            int num_frames,
+                            float current_multiplier,
+                            bool is_silence) = 0;
   virtual float* GetOutputBuffer() = 0;
-  virtual int NumOutputChannels() const = 0;
+  virtual int NumOutputChannels() = 0;
 
-  virtual bool SetOutputSampleRate(int sample_rate) = 0;
-  virtual int GetInputSampleRate() const = 0;
+  virtual bool SetSampleRate(int sample_rate) = 0;
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,
                                       const std::string& config) = 0;

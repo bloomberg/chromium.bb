@@ -32,37 +32,10 @@ Polymer({
      * @type {string}
      */
     icon: String,
-
-    /**
-     * True if the permission type is available for the app.
-     * @private
-     */
-    available_: {
-      type: Boolean,
-      computed: 'isAvailable_(app_, permissionType)',
-      reflectToAttribute: true,
-    },
   },
 
   listeners: {
     'click': 'onClick_',
-  },
-
-  /**
-   * Returns true if the permission type is available for the app.
-   *
-   * @param {App} app
-   * @param {string} permissionType
-   * @private
-   */
-  isAvailable_: function(app, permissionType) {
-    if (app === undefined || permissionType === undefined) {
-      return false;
-    }
-
-    assert(app);
-
-    return app_management.util.getPermission(app, permissionType) !== undefined;
   },
 
   attached: function() {
@@ -76,8 +49,8 @@ Polymer({
   onClick_: function(e) {
     e.preventDefault();
 
-    const toggle = /** @type {AppManagementPermissionToggleElement} */
-        assert(this.$$('#permission-toggle'));
+    const /** @type {AppManagementPermissionToggleElement} */ toggle =
+        this.$['permission-toggle'];
     toggle.togglePermission_();
   },
 });

@@ -55,12 +55,6 @@ class CONTENT_EXPORT AppCacheService {
   virtual void DeleteAppCacheGroup(const GURL& manifest_url,
                                    net::CompletionOnceCallback callback) = 0;
 
-  // Deletes all appcache groups associated with an origin.
-  // Always completes asynchronously.
-  virtual void DeleteAppCachesForOrigin(
-      const url::Origin& origin,
-      net::CompletionOnceCallback callback) = 0;
-
  protected:
   virtual ~AppCacheService() {}
 };

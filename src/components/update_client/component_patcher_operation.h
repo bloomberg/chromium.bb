@@ -18,6 +18,10 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}
+
 namespace update_client {
 
 extern const char kOp[];
@@ -27,7 +31,6 @@ extern const char kInput[];
 extern const char kPatch[];
 
 class CrxInstaller;
-class Patcher;
 enum class UnpackerError;
 
 class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
@@ -130,7 +133,7 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
 class DeltaUpdateOpPatch : public DeltaUpdateOp {
  public:
   DeltaUpdateOpPatch(const std::string& operation,
-                     scoped_refptr<Patcher> patcher);
+                     service_manager::Connector* connector);
 
  private:
   ~DeltaUpdateOpPatch() override;
@@ -148,7 +151,7 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
   void DonePatching(ComponentPatcher::Callback callback, int result);
 
   std::string operation_;
-  scoped_refptr<Patcher> patcher_;
+  service_manager::Connector* connector_;
   base::FilePath patch_abs_path_;
   base::FilePath input_abs_path_;
 
@@ -156,7 +159,7 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
 };
 
 DeltaUpdateOp* CreateDeltaUpdateOp(const std::string& operation,
-                                   scoped_refptr<Patcher> patcher);
+                                   service_manager::Connector* connector);
 
 }  // namespace update_client
 

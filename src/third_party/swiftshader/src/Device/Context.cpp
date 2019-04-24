@@ -15,6 +15,7 @@
 #include "Context.hpp"
 
 #include "Primitive.hpp"
+#include "Surface.hpp"
 #include "System/Memory.hpp"
 #include "Vulkan/VkDebug.hpp"
 #include "Vulkan/VkImageView.hpp"
@@ -28,10 +29,14 @@ namespace sw
 
 	bool booleanFaceRegister = false;
 	bool fullPixelPositionRegister = false;
+	bool leadingVertexFirst = false;         // Flat shading uses first vertex, else last
+	bool secondaryColor = false;             // Specular lighting is applied after texturing
 	bool colorsDefaultToZero = false;
 
 	bool forceWindowed = false;
 	bool quadLayoutEnabled = false;
+	bool veryEarlyDepthTest = true;
+	bool complementaryDepthBuffer = false;
 	bool postBlendSRGB = false;
 	bool exactColorRounding = false;
 	TransparencyAntialiasing transparencyAntialiasing = TRANSPARENCY_NONE;
@@ -58,56 +63,98 @@ namespace sw
 
 	bool Context::isDrawPoint() const
 	{
-		switch(topology)
+		switch(drawType)
 		{
-		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+		case DRAW_POINTLIST:
+		case DRAW_INDEXEDPOINTLIST16:
+		case DRAW_INDEXEDPOINTLIST32:
 			return true;
-		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
-			break;
+		case DRAW_LINELIST:
+		case DRAW_LINESTRIP:
+		case DRAW_INDEXEDLINELIST16:
+		case DRAW_INDEXEDLINESTRIP16:
+		case DRAW_INDEXEDLINELIST32:
+		case DRAW_INDEXEDLINESTRIP32:
+			return false;
+		case DRAW_TRIANGLELIST:
+		case DRAW_TRIANGLESTRIP:
+		case DRAW_TRIANGLEFAN:
+		case DRAW_INDEXEDTRIANGLELIST16:
+		case DRAW_INDEXEDTRIANGLESTRIP16:
+		case DRAW_INDEXEDTRIANGLEFAN16:
+		case DRAW_INDEXEDTRIANGLELIST32:
+		case DRAW_INDEXEDTRIANGLESTRIP32:
+		case DRAW_INDEXEDTRIANGLEFAN32:
+			return false;
 		default:
-			UNIMPLEMENTED("topology %d", int(topology));
+			ASSERT(false);
 		}
+
 		return false;
 	}
 
 	bool Context::isDrawLine() const
 	{
-		switch(topology)
+		switch(drawType)
 		{
-		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+		case DRAW_POINTLIST:
+		case DRAW_INDEXEDPOINTLIST16:
+		case DRAW_INDEXEDPOINTLIST32:
+			return false;
+		case DRAW_LINELIST:
+		case DRAW_LINESTRIP:
+		case DRAW_INDEXEDLINELIST16:
+		case DRAW_INDEXEDLINESTRIP16:
+		case DRAW_INDEXEDLINELIST32:
+		case DRAW_INDEXEDLINESTRIP32:
 			return true;
-		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
-			break;
+		case DRAW_TRIANGLELIST:
+		case DRAW_TRIANGLESTRIP:
+		case DRAW_TRIANGLEFAN:
+		case DRAW_INDEXEDTRIANGLELIST16:
+		case DRAW_INDEXEDTRIANGLESTRIP16:
+		case DRAW_INDEXEDTRIANGLEFAN16:
+		case DRAW_INDEXEDTRIANGLELIST32:
+		case DRAW_INDEXEDTRIANGLESTRIP32:
+		case DRAW_INDEXEDTRIANGLEFAN32:
+			return false;
 		default:
-			UNIMPLEMENTED("topology %d", int(topology));
+			ASSERT(false);
 		}
+
 		return false;
 	}
 
 	bool Context::isDrawTriangle() const
 	{
-		switch(topology)
+		switch(drawType)
 		{
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+		case DRAW_POINTLIST:
+		case DRAW_INDEXEDPOINTLIST16:
+		case DRAW_INDEXEDPOINTLIST32:
+			return false;
+		case DRAW_LINELIST:
+		case DRAW_LINESTRIP:
+		case DRAW_INDEXEDLINELIST16:
+		case DRAW_INDEXEDLINESTRIP16:
+		case DRAW_INDEXEDLINELIST32:
+		case DRAW_INDEXEDLINESTRIP32:
+			return false;
+		case DRAW_TRIANGLELIST:
+		case DRAW_TRIANGLESTRIP:
+		case DRAW_TRIANGLEFAN:
+		case DRAW_INDEXEDTRIANGLELIST16:
+		case DRAW_INDEXEDTRIANGLESTRIP16:
+		case DRAW_INDEXEDTRIANGLEFAN16:
+		case DRAW_INDEXEDTRIANGLELIST32:
+		case DRAW_INDEXEDTRIANGLESTRIP32:
+		case DRAW_INDEXEDTRIANGLEFAN32:
 			return true;
-		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
-			break;
 		default:
-			UNIMPLEMENTED("topology %d", int(topology));
+			ASSERT(false);
 		}
-		return false;
+
+		return true;
 	}
 
 	void Context::init()
@@ -126,14 +173,26 @@ namespace sw
 		stencilBuffer = nullptr;
 
 		stencilEnable = false;
+		stencilCompareMode = VK_COMPARE_OP_ALWAYS;
+		stencilReference = 0;
+		stencilMask = 0xFFFFFFFF;
+		stencilFailOperation = VK_STENCIL_OP_KEEP;
+		stencilPassOperation = VK_STENCIL_OP_KEEP;
+		stencilZFailOperation = VK_STENCIL_OP_KEEP;
+		stencilWriteMask = 0xFFFFFFFF;
+
 		twoSidedStencil = false;
-		frontStencil = {};
-		backStencil = {};
+		stencilCompareModeCCW = VK_COMPARE_OP_ALWAYS;
+		stencilReferenceCCW = 0;
+		stencilMaskCCW = 0xFFFFFFFF;
+		stencilFailOperationCCW = VK_STENCIL_OP_KEEP;
+		stencilPassOperationCCW = VK_STENCIL_OP_KEEP;
+		stencilZFailOperationCCW = VK_STENCIL_OP_KEEP;
+		stencilWriteMaskCCW = 0xFFFFFFFF;
 
 		rasterizerDiscard = false;
 
 		depthCompareMode = VK_COMPARE_OP_LESS;
-		depthBoundsTestEnable = false;
 		depthBufferEnable = false;
 		depthWriteEnable = false;
 

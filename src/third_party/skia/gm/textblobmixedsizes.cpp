@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "ToolUtils.h"
 #include "gm.h"
+#include "sk_tool_utils.h"
 
 #include "Resources.h"
 #include "SkBlurMask.h"
@@ -37,7 +37,7 @@ protected:
 
         const char* text = "Skia";
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, 0);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, 0);
 
         // large
         SkRect bounds;
@@ -45,42 +45,43 @@ protected:
         SkScalar yOffset = bounds.height();
         font.setSize(162);
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, yOffset);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, yOffset);
 
         // Medium
         font.measureText(text, strlen(text), kUTF8_SkTextEncoding, &bounds);
         yOffset += bounds.height();
         font.setSize(72);
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, yOffset);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, yOffset);
 
         // Small
         font.measureText(text, strlen(text), kUTF8_SkTextEncoding, &bounds);
         yOffset += bounds.height();
         font.setSize(32);
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, yOffset);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, yOffset);
 
         // micro (will fall out of distance field text even if distance field text is enabled)
         font.measureText(text, strlen(text), kUTF8_SkTextEncoding, &bounds);
         yOffset += bounds.height();
         font.setSize(14);
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, yOffset);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, yOffset);
 
         // Zero size.
         font.measureText(text, strlen(text), kUTF8_SkTextEncoding, &bounds);
         yOffset += bounds.height();
         font.setSize(0);
 
-        ToolUtils::add_to_text_blob(&builder, text, font, 0, yOffset);
+        sk_tool_utils::add_to_text_blob(&builder, text, font, 0, yOffset);
 
         // build
         fBlob = builder.make();
     }
 
     SkString onShortName() override {
-        return SkStringPrintf("textblobmixedsizes%s",
+        return SkStringPrintf("textblobmixedsizes%s%s",
+                              sk_tool_utils::platform_font_manager(),
                               fUseDFT ? "_df" : "");
     }
 

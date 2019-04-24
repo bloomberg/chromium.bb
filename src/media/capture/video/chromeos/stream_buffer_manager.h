@@ -51,11 +51,8 @@ class CAPTURE_EXPORT StreamBufferManager final {
   VideoCaptureFormat GetStreamCaptureFormat(StreamType stream_type);
 
   // Checks if all streams are available. For output stream, it is available if
-  // it has free buffers. For input stream, it is always available.
+  // it has free buffers.
   bool HasFreeBuffers(const std::set<StreamType>& stream_types);
-
-  // Checks if the target stream types have been configured or not.
-  bool HasStreamsConfigured(std::initializer_list<StreamType> stream_types);
 
   // Sets up the stream context and allocate buffers according to the
   // configuration specified in |stream|.
@@ -66,16 +63,13 @@ class CAPTURE_EXPORT StreamBufferManager final {
 
   cros::mojom::Camera3StreamPtr GetStreamConfiguration(StreamType stream_type);
 
-  // Requests buffer for specific stream type. If the |buffer_id| is provided,
-  // it will use |buffer_id| as buffer id rather than using id from free
-  // buffers.
-  base::Optional<BufferInfo> RequestBuffer(StreamType stream_type,
-                                           base::Optional<uint64_t> buffer_id);
+  // Requests buffer for specific stream type.
+  base::Optional<BufferInfo> RequestBuffer(StreamType stream_type);
 
   // Releases buffer by marking it as free buffer.
   void ReleaseBuffer(StreamType stream_type, uint64_t buffer_id);
 
-  bool IsReprocessSupported();
+  size_t GetNumberOfStreams();
 
  private:
   friend class RequestManagerTest;
@@ -83,9 +77,6 @@ class CAPTURE_EXPORT StreamBufferManager final {
   static uint64_t GetBufferIpcId(StreamType stream_type, size_t index);
 
   static size_t GetBufferIndex(uint64_t buffer_id);
-
-  // Destroy current streams and unmap mapped buffers.
-  void DestroyCurrentStreamsAndBuffers();
 
   struct StreamContext {
     StreamContext();

@@ -12,9 +12,7 @@
 Polymer({
   is: 'cr-checkbox',
 
-  behaviors: [
-    Polymer.PaperRippleBehavior,
-  ],
+  behaviors: [Polymer.PaperRippleBehavior],
 
   properties: {
     checked: {
@@ -31,25 +29,20 @@ Polymer({
       reflectToAttribute: true,
       observer: 'disabledChanged_',
     },
+  },
 
-    ariaDescription: String,
-
-    ariaLabel: {
-      type: String,
-      observer: 'onAriaLabelChanged_',
-    },
-
-    tabIndex: {
-      type: Number,
-      value: 0,
-    },
+  hostAttributes: {
+    'aria-disabled': 'false',
+    'aria-checked': 'false',
+    role: 'checkbox',
+    tabindex: 0,
   },
 
   listeners: {
-    blur: 'hideRipple_',
-    click: 'onClick_',
-    focus: 'showRipple_',
-    up: 'hideRipple_',
+    'click': 'onClick_',
+    'keypress': 'onKeyPress_',
+    'focus': 'onFocus_',
+    'blur': 'onBlur_',
   },
 
   /** @override */
@@ -57,14 +50,9 @@ Polymer({
     this.removeAttribute('unresolved');
   },
 
-  focus: function() {
-    this.$.checkbox.focus();
-  },
-
   /** @private */
   checkedChanged_: function() {
-    this.$.checkbox.setAttribute(
-        'aria-checked', this.checked ? 'true' : 'false');
+    this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
   },
 
   /**
@@ -77,25 +65,29 @@ Polymer({
       return;
     }
 
-    this.tabIndex = this.disabled ? -1 : 0;
-    this.$.checkbox.setAttribute(
-        'aria-disabled', this.disabled ? 'true' : 'false');
+    this.setAttribute('tabindex', this.disabled ? -1 : 0);
+    this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 
   /** @private */
-  showRipple_: function() {
-    this.getRipple().holdDown = true;
+  onFocus_: function() {
+    this.ensureRipple();
+    this.$$('paper-ripple').holdDown = true;
   },
 
   /** @private */
-  hideRipple_: function() {
-    this.getRipple().holdDown = false;
+  onBlur_: function() {
+    this.ensureRipple();
+    this.$$('paper-ripple').holdDown = false;
   },
 
-  /** @private */
-  onAriaLabelChanged_: function() {
-    this.$.checkbox.setAttribute(
-        'aria-labelledby', this.ariaLabel ? 'ariaLabel' : 'label-container');
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  shouldHandleEvent_: function(e) {
+    // Actions on a link within the label should not change checkbox state.
+    return !this.disabled && e.target.tagName != 'A';
   },
 
   /**
@@ -103,7 +95,7 @@ Polymer({
    * @private
    */
   onClick_: function(e) {
-    if (this.disabled || e.target.tagName == 'A') {
+    if (!this.shouldHandleEvent_(e)) {
       return;
     }
 
@@ -112,7 +104,21 @@ Polymer({
     e.stopPropagation();
     e.preventDefault();
 
+    this.toggleState_(false);
+  },
+
+  /**
+   * @param {boolean} fromKeyboard
+   * @private
+   */
+  toggleState_: function(fromKeyboard) {
     this.checked = !this.checked;
+
+    if (!fromKeyboard) {
+      this.ensureRipple();
+      this.$$('paper-ripple').holdDown = false;
+    }
+
     this.fire('change', this.checked);
   },
 
@@ -120,24 +126,27 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+  onKeyPress_: function(e) {
+    if (!this.shouldHandleEvent_(e) || (e.key != ' ' && e.key != 'Enter')) {
       return;
     }
 
     e.preventDefault();
-    e.stopPropagation();
-    if (e.repeat) {
-      return;
-    }
+    this.toggleState_(true);
+  },
 
-    this.click();
+  /** @private */
+  onButtonFocus_: function() {
+    // Forward 'focus' to the enclosing element, so that a subsequent 'Space'
+    // keystroke does not trigger both 'keypress' and 'click' which would toggle
+    // the state twice erroneously.
+    this.focus();
   },
 
   // customize the element's ripple
   _createRipple: function() {
     this._rippleContainer = this.$.checkbox;
-    const ripple = Polymer.PaperRippleBehavior._createRipple();
+    let ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle', 'toggle-ink');

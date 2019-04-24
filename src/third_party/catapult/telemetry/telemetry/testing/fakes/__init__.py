@@ -35,11 +35,11 @@ class FakePlatformBackend(object):
 
 
 class FakePlatform(object):
-  def __init__(self, os_name='', os_version_name=''):
+  def __init__(self):
     self._network_controller = None
     self._tracing_controller = None
-    self._os_name = os_name or 'FakeOS'
-    self._os_version_name = os_version_name or 'FakeVersion'
+    self._os_name = 'FakeOS'
+    self._os_version_name = 'FakeVersion'
     self._device_type_name = 'abc'
     self._is_svelte = False
     self._is_aosp = True
@@ -207,15 +207,9 @@ class FakeForwarderFactory(object):
 
 class FakePossibleBrowser(object):
   def __init__(self, execute_on_startup=None,
-               execute_after_browser_creation=None,
-               os_name='', os_version_name='', browser_type=''):
-    if os_name:
-      self._returned_browser = FakeBrowser(
-          FakePlatform(os_name, os_version_name), browser_type)
-    else:
-      self._returned_browser = FakeBrowser(
-          FakeLinuxPlatform(), browser_type)
-    self.browser_type = browser_type or 'linux'
+               execute_after_browser_creation=None):
+    self._returned_browser = FakeBrowser(FakeLinuxPlatform())
+    self.browser_type = 'linux'
     self.supports_tab_control = False
     self.execute_on_startup = execute_on_startup
     self.execute_after_browser_creation = execute_after_browser_creation
@@ -248,15 +242,10 @@ class FakePossibleBrowser(object):
     """
     return self.returned_browser.platform
 
-  def BrowserSession(self, options):
-    del options
-    return self.returned_browser
-
 
 class FakeSharedPageState(shared_page_state.SharedPageState):
-  def __init__(self, test, finder_options, story_set, possible_browser):
-    super(FakeSharedPageState, self).__init__(
-        test, finder_options, story_set, possible_browser)
+  def __init__(self, test, finder_options, story_set):
+    super(FakeSharedPageState, self).__init__(test, finder_options, story_set)
 
   def _GetPossibleBrowser(self):
     p = FakePossibleBrowser()
@@ -338,14 +327,14 @@ class FakeApp(object):
 # subclassed.
 
 class FakeBrowser(FakeApp):
-  def __init__(self, platform, browser_type=''):
+  def __init__(self, platform):
     super(FakeBrowser, self).__init__(platform)
     self._tabs = _FakeTabList(self)
     # Fake the creation of the first tab.
     self._tabs.New()
     self._returned_system_info = FakeSystemInfo()
     self._platform = platform
-    self._browser_type = browser_type or 'release'
+    self._browser_type = 'release'
     self._is_crashed = False
 
   @property
@@ -394,12 +383,6 @@ class FakeBrowser(FakeApp):
 
   def LogSymbolizedUnsymbolizedMinidumps(self, log_level):
     del log_level  # unused
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *args):
-    pass
 
 
 class _FakeTracingController(object):

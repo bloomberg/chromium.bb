@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
@@ -66,10 +67,7 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   std::unique_ptr<KeyframeModel> CreateImplInstance(
       RunState initial_run_state) const;
 
-  KeyframeModel(const KeyframeModel&) = delete;
   virtual ~KeyframeModel();
-
-  KeyframeModel& operator=(const KeyframeModel&) = delete;
 
   int id() const { return id_; }
   int group() const { return group_; }
@@ -281,6 +279,8 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   // longer affect any elements, and are deleted.
   bool affects_active_elements_;
   bool affects_pending_elements_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyframeModel);
 };
 
 }  // namespace cc

@@ -15,47 +15,21 @@ VideoDecodeStatsDB::VideoDescKey
 VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
     VideoCodecProfile codec_profile,
     const gfx::Size& size,
-    int frame_rate,
-    std::string key_system,
-    bool use_hw_secure_codecs) {
+    int frame_rate) {
   // Bucket size and framerate to prevent an explosion of one-off values in the
   // database and add basic guards against fingerprinting.
   return VideoDescKey(codec_profile, GetSizeBucket(size),
-                      GetFpsBucket(frame_rate), key_system,
-                      use_hw_secure_codecs);
+                      GetFpsBucket(frame_rate));
 }
 
 VideoDecodeStatsDB::VideoDescKey::VideoDescKey(VideoCodecProfile codec_profile,
                                                const gfx::Size& size,
-                                               int frame_rate,
-                                               std::string key_system,
-                                               bool use_hw_secure_codecs)
-    : codec_profile(codec_profile),
-      size(size),
-      frame_rate(frame_rate),
-      key_system(key_system),
-      use_hw_secure_codecs(use_hw_secure_codecs) {
-  // use_hw_secure_codecs = true -> we must have a key system.
-  DCHECK(!use_hw_secure_codecs || !key_system.empty());
-}
+                                               int frame_rate)
+    : codec_profile(codec_profile), size(size), frame_rate(frame_rate) {}
 
 std::string VideoDecodeStatsDB::VideoDescKey::Serialize() const {
-  std::string video_part =
-      base::StringPrintf("%d|%s|%d", static_cast<int>(codec_profile),
-                         size.ToString().c_str(), frame_rate);
-
-  // NOTE: |eme_part| should be completely empty for non-EME stats to preserve
-  // backward compat with pre-EME clear stats.
-  std::string eme_part;
-  if (!key_system.empty()) {
-    static const char kIsHwSecure[] = "is_hw_secure";
-    static const char kNotHwSecure[] = "not_hw_secure";
-    eme_part =
-        base::StringPrintf("|%s|%s", key_system.c_str(),
-                           use_hw_secure_codecs ? kIsHwSecure : kNotHwSecure);
-  }
-
-  return video_part + eme_part;
+  return base::StringPrintf("%d|%s|%d", static_cast<int>(codec_profile),
+                            size.ToString().c_str(), frame_rate);
 }
 
 std::string VideoDecodeStatsDB::VideoDescKey::ToLogString() const {
@@ -102,8 +76,7 @@ operator+=(const DecodeStatsEntry& right) {
 bool operator==(const VideoDecodeStatsDB::VideoDescKey& x,
                 const VideoDecodeStatsDB::VideoDescKey& y) {
   return x.codec_profile == y.codec_profile && x.size == y.size &&
-         x.frame_rate == y.frame_rate && x.key_system == y.key_system &&
-         x.use_hw_secure_codecs == y.use_hw_secure_codecs;
+         x.frame_rate == y.frame_rate;
 }
 bool operator!=(const VideoDecodeStatsDB::VideoDescKey& x,
                 const VideoDecodeStatsDB::VideoDescKey& y) {

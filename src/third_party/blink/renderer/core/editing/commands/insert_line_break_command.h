@@ -32,6 +32,10 @@ namespace blink {
 
 class InsertLineBreakCommand final : public CompositeEditCommand {
  public:
+  static InsertLineBreakCommand* Create(Document& document) {
+    return MakeGarbageCollected<InsertLineBreakCommand>(document);
+  }
+
   explicit InsertLineBreakCommand(Document&);
 
  private:

@@ -140,9 +140,8 @@ enum class CoordinateSpaceConversion {
 //
 // There's also some documentation online:
 // https://www.chromium.org/developers/design-documents/multi-column-layout
-class CORE_EXPORT LayoutMultiColumnFlowThread final
-    : public LayoutFlowThread,
-      public FragmentationContext {
+class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
+                                                public FragmentationContext {
  public:
   ~LayoutMultiColumnFlowThread() override;
 
@@ -153,7 +152,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   bool IsLayoutMultiColumnFlowThread() const final { return true; }
 
   LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return To<LayoutBlockFlow>(Parent());
+    return ToLayoutBlockFlow(Parent());
   }
 
   LayoutMultiColumnSet* FirstMultiColumnSet() const;
@@ -206,13 +205,15 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   // be calculated per fragmentainer group.
   LayoutUnit MaxColumnLogicalHeight() const;
 
+  bool ProgressionIsInline() const { return progression_is_inline_; }
+
   LayoutUnit TallestUnbreakableLogicalHeight(
       LayoutUnit offset_in_flow_thread) const;
 
   LayoutSize ColumnOffset(const LayoutPoint&) const final;
 
   // Do we need to set a new width and lay out?
-  bool NeedsNewWidth() const;
+  virtual bool NeedsNewWidth() const;
 
   bool IsPageLogicalHeightKnown() const final;
   bool MayHaveNonUniformPageLogicalHeight() const final;
@@ -224,11 +225,11 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
                                           CoordinateSpaceConversion) const;
 
   LayoutPoint FlowThreadPointToVisualPoint(
-      const LayoutPoint& flow_thread_point) const final;
+      const LayoutPoint& flow_thread_point) const override;
   LayoutPoint VisualPointToFlowThreadPoint(
-      const LayoutPoint& visual_point) const final;
+      const LayoutPoint& visual_point) const override;
 
-  LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
   LayoutMultiColumnSet* ColumnSetAtBlockOffset(LayoutUnit,
                                                PageBoundaryRule) const final;
@@ -290,10 +291,15 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
 
   const char* GetName() const override { return "LayoutMultiColumnFlowThread"; }
 
- private:
+ protected:
   LayoutMultiColumnFlowThread();
+  void SetProgressionIsInline(bool is_inline) {
+    progression_is_inline_ = is_inline;
+  }
+
   void UpdateLayout() override;
 
+ private:
   void CalculateColumnHeightAvailable();
   void CalculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
   static LayoutUnit ColumnGap(const ComputedStyle&, LayoutUnit available_width);
@@ -302,7 +308,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
       LayoutBox* spanner_object_in_flow_thread,
       LayoutObject* inserted_before_in_flow_thread);
   void DestroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
-  bool DescendantIsValidColumnSpanner(LayoutObject* descendant) const;
+  virtual bool DescendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
   void AddColumnSetToThread(LayoutMultiColumnSet*) override;
   void WillBeRemovedFromTree() override;
@@ -320,13 +326,13 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   void ComputePreferredLogicalWidths() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const final;
+                            LogicalExtentComputedValues&) const override;
   void UpdateLogicalWidth() override;
   void ContentWasLaidOut(
-      LayoutUnit logical_bottom_in_flow_thread_after_pagination) final;
-  bool CanSkipLayout(const LayoutBox&) const final;
-  MultiColumnLayoutState GetMultiColumnLayoutState() const final;
-  void RestoreMultiColumnLayoutState(const MultiColumnLayoutState&) final;
+      LayoutUnit logical_bottom_in_flow_thread_after_pagination) override;
+  bool CanSkipLayout(const LayoutBox&) const override;
+  MultiColumnLayoutState GetMultiColumnLayoutState() const override;
+  void RestoreMultiColumnLayoutState(const MultiColumnLayoutState&) override;
 
   // The last set we worked on. It's not to be used as the "current set". The
   // concept of a "current set" is difficult, since layout may jump back and
@@ -355,6 +361,9 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   bool column_heights_changed_;
 
   bool all_columns_have_known_height_ = false;
+
+  // Always true for regular multicol. False for paged-y overflow.
+  bool progression_is_inline_;
 
   bool is_being_evacuated_;
 

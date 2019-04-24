@@ -6,9 +6,11 @@ function onclick(info) {
   chrome.test.sendMessage("onclick fired");
 }
 
-chrome.contextMenus.create({"title":"Extension Item 1",
-                            "onclick": onclick}, function() {
-  if (!chrome.runtime.lastError) {
-    chrome.test.sendMessage("created item");
-  }
-});
+window.onload = function() {
+  chrome.contextMenus.create({"title":"Extension Item 1",
+                              "onclick": onclick}, function() {
+    if (!chrome.runtime.lastError) {
+      chrome.test.sendMessage("created item");
+    }
+  });
+};

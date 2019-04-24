@@ -6,6 +6,8 @@
   background: lightgreen;
 }
 #small {
+  width: 100px;
+  height: 100px;
 }
 #large {
   width: 200px;
@@ -71,7 +73,7 @@ async_test((t) => {
 
   async function runTest() {
     let container = document.getElementById("small");
-    await container.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
+    await container.displayLock.acquire({ timeout: Infinity });
 
     construct(container);
 

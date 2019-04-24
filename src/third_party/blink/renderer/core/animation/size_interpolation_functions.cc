@@ -24,7 +24,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
         std::move(length_non_interpolable_value)));
   }
 
-  bool IsKeyword() const { return IsValidCSSValueID(keyword_); }
+  bool IsKeyword() const { return keyword_ != CSSValueInvalid; }
   CSSValueID Keyword() const {
     DCHECK(IsKeyword());
     return keyword_;
@@ -44,12 +44,12 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
  private:
   CSSSizeNonInterpolableValue(CSSValueID keyword)
       : keyword_(keyword), length_non_interpolable_value_(nullptr) {
-    DCHECK_NE(keyword, CSSValueID::kInvalid);
+    DCHECK_NE(keyword, CSSValueInvalid);
   }
 
   CSSSizeNonInterpolableValue(
       scoped_refptr<NonInterpolableValue> length_non_interpolable_value)
-      : keyword_(CSSValueID::kInvalid),
+      : keyword_(CSSValueInvalid),
         length_non_interpolable_value_(
             std::move(length_non_interpolable_value)) {}
 
@@ -61,7 +61,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
 
 static InterpolationValue ConvertKeyword(CSSValueID keyword) {
-  return InterpolationValue(std::make_unique<InterpolableList>(0),
+  return InterpolationValue(InterpolableList::Create(0),
                             CSSSizeNonInterpolableValue::Create(keyword));
 }
 
@@ -83,14 +83,14 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
       const Length& side =
           convert_width ? fill_size.size.Width() : fill_size.size.Height();
       if (side.IsAuto())
-        return ConvertKeyword(CSSValueID::kAuto);
+        return ConvertKeyword(CSSValueAuto);
       return WrapConvertedLength(
           LengthInterpolationFunctions::MaybeConvertLength(side, zoom));
     }
     case EFillSizeType::kContain:
-      return ConvertKeyword(CSSValueID::kContain);
+      return ConvertKeyword(CSSValueContain);
     case EFillSizeType::kCover:
-      return ConvertKeyword(CSSValueID::kCover);
+      return ConvertKeyword(CSSValueCover);
     case EFillSizeType::kSizeNone:
     default:
       NOTREACHED();
@@ -101,27 +101,26 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
 InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
     const CSSValue& value,
     bool convert_width) {
-  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
-    const CSSValue& side = convert_width ? pair->First() : pair->Second();
-    auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
-    if (side_identifier_value &&
-        side_identifier_value->GetValueID() == CSSValueID::kAuto)
-      return ConvertKeyword(CSSValueID::kAuto);
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    const CSSValue& side = convert_width ? pair.First() : pair.Second();
+    if (side.IsIdentifierValue() &&
+        ToCSSIdentifierValue(side).GetValueID() == CSSValueAuto)
+      return ConvertKeyword(CSSValueAuto);
     return WrapConvertedLength(
         LengthInterpolationFunctions::MaybeConvertCSSValue(side));
   }
 
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (!identifier_value && !value.IsPrimitiveValue())
+  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue())
     return nullptr;
-  if (identifier_value)
-    return ConvertKeyword(identifier_value->GetValueID());
+  if (value.IsIdentifierValue())
+    return ConvertKeyword(ToCSSIdentifierValue(value).GetValueID());
 
   // A single length is equivalent to "<length> auto".
   if (convert_width)
     return WrapConvertedLength(
         LengthInterpolationFunctions::MaybeConvertCSSValue(value));
-  return ConvertKeyword(CSSValueID::kAuto);
+  return ConvertKeyword(CSSValueAuto);
 }
 
 PairwiseInterpolationValue SizeInterpolationFunctions::MaybeMergeSingles(
@@ -180,7 +179,7 @@ static Length CreateLength(
     const CSSSizeNonInterpolableValue& non_interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   if (non_interpolable_value.IsKeyword()) {
-    DCHECK_EQ(non_interpolable_value.Keyword(), CSSValueID::kAuto);
+    DCHECK_EQ(non_interpolable_value.Keyword(), CSSValueAuto);
     return Length::Auto();
   }
   return LengthInterpolationFunctions::CreateLength(
@@ -198,13 +197,13 @@ FillSize SizeInterpolationFunctions::CreateFillSize(
   const auto& side_b = ToCSSSizeNonInterpolableValue(*non_interpolable_value_b);
   if (side_a.IsKeyword()) {
     switch (side_a.Keyword()) {
-      case CSSValueID::kCover:
+      case CSSValueCover:
         DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
         return FillSize(EFillSizeType::kCover, LengthSize());
-      case CSSValueID::kContain:
+      case CSSValueContain:
         DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
         return FillSize(EFillSizeType::kContain, LengthSize());
-      case CSSValueID::kAuto:
+      case CSSValueAuto:
         break;
       default:
         NOTREACHED();

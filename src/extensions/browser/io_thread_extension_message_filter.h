@@ -45,8 +45,6 @@ class IOThreadExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionRequestForIOThread(
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
-  void OnExtensionRequestWorkerForIOThread(
-      const ExtensionHostMsg_Request_Params& params);
 
   const int render_process_id_;
 

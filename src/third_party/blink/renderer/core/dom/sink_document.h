@@ -32,6 +32,10 @@ namespace blink {
 
 class SinkDocument final : public HTMLDocument {
  public:
+  static SinkDocument* Create(const DocumentInit& initializer) {
+    return MakeGarbageCollected<SinkDocument>(initializer);
+  }
+
   explicit SinkDocument(const DocumentInit&);
 
  private:

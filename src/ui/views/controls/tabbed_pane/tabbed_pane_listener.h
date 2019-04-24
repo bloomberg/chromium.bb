@@ -17,7 +17,7 @@ class VIEWS_EXPORT TabbedPaneListener {
   virtual void TabSelectedAt(int index) = 0;
 
  protected:
-  virtual ~TabbedPaneListener() = default;
+  virtual ~TabbedPaneListener() {}
 };
 
 }  // namespace views

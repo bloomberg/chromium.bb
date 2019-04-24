@@ -28,7 +28,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DIY_FP_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DIY_FP_H_
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace WTF {
@@ -41,8 +40,6 @@ namespace double_conversion {
 // Multiplication and Subtraction do not normalize their results.
 // DiyFp are not designed to contain special doubles (NaN and Infinity).
 class DiyFp {
-  STACK_ALLOCATED();
-
  public:
   static const int kSignificandSize = 64;
 

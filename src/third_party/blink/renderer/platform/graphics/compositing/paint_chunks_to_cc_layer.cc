@@ -295,7 +295,7 @@ static bool CombineClip(const ClipPaintPropertyNode& clip,
   const auto& parent_transform_space = clip.Parent()->LocalTransformSpace();
   if (&transform_space != &parent_transform_space &&
       (transform_space.Parent() != &parent_transform_space ||
-       !transform_space.IsIdentity()))
+       !transform_space.Matrix().IsIdentity()))
     return false;
 
   // Don't combine two rounded clip rects.
@@ -711,7 +711,7 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       cc_list_.EndPaintOfUnpaired(
           chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
     }
-    UpdateEffectBounds(FloatRect(chunk.bounds), chunk_state.Transform());
+    UpdateEffectBounds(chunk.bounds, chunk_state.Transform());
   }
 }
 

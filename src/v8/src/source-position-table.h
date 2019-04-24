@@ -33,16 +33,7 @@ struct PositionTableEntry {
 
 class V8_EXPORT_PRIVATE SourcePositionTableBuilder {
  public:
-  enum RecordingMode {
-    // Indicates that source positions are never to be generated. (Resulting in
-    // an empty table).
-    OMIT_SOURCE_POSITIONS,
-    // Indicates that source positions are not currently required, but may be
-    // generated later.
-    LAZY_SOURCE_POSITIONS,
-    // Indicates that source positions should be immediately generated.
-    RECORD_SOURCE_POSITIONS
-  };
+  enum RecordingMode { OMIT_SOURCE_POSITIONS, RECORD_SOURCE_POSITIONS };
 
   explicit SourcePositionTableBuilder(
       RecordingMode mode = RECORD_SOURCE_POSITIONS);
@@ -53,8 +44,7 @@ class V8_EXPORT_PRIVATE SourcePositionTableBuilder {
   Handle<ByteArray> ToSourcePositionTable(Isolate* isolate);
   OwnedVector<byte> ToSourcePositionTableVector();
 
-  inline bool Omit() const { return mode_ != RECORD_SOURCE_POSITIONS; }
-  inline bool Lazy() const { return mode_ == LAZY_SOURCE_POSITIONS; }
+  inline bool Omit() const { return mode_ == OMIT_SOURCE_POSITIONS; }
 
  private:
   void AddEntry(const PositionTableEntry& entry);

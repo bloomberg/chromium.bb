@@ -13,9 +13,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 KeyedServiceFactory::KeyedServiceFactory(const char* name,
-                                         DependencyManager* manager,
-                                         Type type)
-    : KeyedServiceBaseFactory(name, manager, type) {}
+                                         DependencyManager* manager)
+    : KeyedServiceBaseFactory(name, manager) {
+}
 
 KeyedServiceFactory::~KeyedServiceFactory() {
   DCHECK(mapping_.empty());
@@ -40,13 +40,15 @@ void KeyedServiceFactory::SetTestingFactory(void* context,
 
 KeyedService* KeyedServiceFactory::SetTestingFactoryAndUse(
     void* context,
+    void* side_parameter,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
-  return GetServiceForContext(context, true);
+  return GetServiceForContext(context, side_parameter, true);
 }
 
 KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
+                                                        void* side_parameter,
                                                         bool create) {
   TRACE_EVENT1("browser,startup", "KeyedServiceFactory::GetServiceForContext",
                "service_name", name());
@@ -74,7 +76,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
       service = factory_iterator->second.Run(context);
     }
   } else {
-    service = BuildServiceInstanceFor(context);
+    service = BuildServiceInstanceFor(context, side_parameter);
   }
 
   return Associate(context, std::move(service));

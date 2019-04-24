@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The default {@link TaskExecutor} which maps directly to base::ThreadPool.
+ * The default {@link TaskExecutor} which maps directly to base::TaskScheduler.
  */
 class DefaultTaskExecutor implements TaskExecutor {
     Map<TaskTraits, TaskRunner> mTraitsToRunnerMap = new HashMap<>();

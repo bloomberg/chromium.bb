@@ -36,12 +36,13 @@
 namespace blink {
 
 void WebHeap::CollectGarbageForTesting() {
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      BlinkGC::kHeapPointersOnStack);
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 }
 
 void WebHeap::CollectAllGarbageForTesting() {
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 void WebHeap::SetAllocationHook(AllocationHook alloc_hook) {

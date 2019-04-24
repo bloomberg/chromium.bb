@@ -16,12 +16,6 @@ namespace learning {
 
 class DistributionReporterTest : public testing::Test {
  public:
-  DistributionReporterTest() {
-    task_.name = "TaskName";
-    // UMA reporting requires a numeric target.
-    task_.target_description.ordering = LearningTask::Ordering::kNumeric;
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   LearningTask task_;
@@ -31,27 +25,35 @@ class DistributionReporterTest : public testing::Test {
 
 TEST_F(DistributionReporterTest, DistributionReporterDoesNotCrash) {
   // Make sure that we request some sort of reporting.
-  task_.uma_hacky_aggregate_confusion_matrix = true;
+  task_.target_description.ordering = LearningTask::Ordering::kNumeric;
+  task_.uma_hacky_confusion_matrix = "test";
   reporter_ = DistributionReporter::Create(task_);
   EXPECT_NE(reporter_, nullptr);
 
-  // Observe an average of 2 / 3.
-  DistributionReporter::PredictionInfo info;
-  info.observed = TargetValue(2.0 / 3.0);
-  auto cb = reporter_->GetPredictionCallback(info);
-
-  TargetHistogram predicted;
   const TargetValue Zero(0);
   const TargetValue One(1);
 
+  TargetDistribution observed;
+  // Observe an average of 2 / 3.
+  observed[Zero] = 100;
+  observed[One] = 200;
+  auto cb = reporter_->GetPredictionCallback(observed);
+
+  TargetDistribution predicted;
   // Predict an average of 5 / 9.
   predicted[Zero] = 40;
   predicted[One] = 50;
   std::move(cb).Run(predicted);
+
+  // TODO(liberato): When we switch to ukm, use a TestUkmRecorder to make sure
+  // that it fills in the right stuff.
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1385107 .
 }
 
-TEST_F(DistributionReporterTest, DistributionReporterMustBeRequested) {
+TEST_F(DistributionReporterTest, DistributionReporterNeedsUmaName) {
   // Make sure that we don't get a reporter if we don't request any reporting.
+  task_.target_description.ordering = LearningTask::Ordering::kNumeric;
+  task_.uma_hacky_confusion_matrix = "";
   reporter_ = DistributionReporter::Create(task_);
   EXPECT_EQ(reporter_, nullptr);
 }
@@ -60,27 +62,9 @@ TEST_F(DistributionReporterTest,
        DistributionReporterHackyConfusionMatrixNeedsRegression) {
   // Hacky confusion matrix reporting only works with regression.
   task_.target_description.ordering = LearningTask::Ordering::kUnordered;
-  task_.uma_hacky_aggregate_confusion_matrix = true;
+  task_.uma_hacky_confusion_matrix = "test";
   reporter_ = DistributionReporter::Create(task_);
   EXPECT_EQ(reporter_, nullptr);
-}
-
-TEST_F(DistributionReporterTest, ProvidesAggregateReporter) {
-  task_.uma_hacky_aggregate_confusion_matrix = true;
-  reporter_ = DistributionReporter::Create(task_);
-  EXPECT_NE(reporter_, nullptr);
-}
-
-TEST_F(DistributionReporterTest, ProvidesByTrainingWeightReporter) {
-  task_.uma_hacky_by_training_weight_confusion_matrix = true;
-  reporter_ = DistributionReporter::Create(task_);
-  EXPECT_NE(reporter_, nullptr);
-}
-
-TEST_F(DistributionReporterTest, ProvidesByFeatureSubsetReporter) {
-  task_.uma_hacky_by_feature_subset_confusion_matrix = true;
-  reporter_ = DistributionReporter::Create(task_);
-  EXPECT_NE(reporter_, nullptr);
 }
 
 }  // namespace learning

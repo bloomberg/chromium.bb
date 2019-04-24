@@ -20,6 +20,7 @@
 #include "ui/base/page_transition_types.h"
 
 const char kWelcomeReturningUserUrl[] = "chrome://welcome/returning-user";
+const char kWelcomeEmailInterstitial[] = "chrome://welcome/email-interstitial";
 
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
@@ -52,7 +53,9 @@ WelcomeHandler::~WelcomeHandler() {
 bool WelcomeHandler::isValidRedirectUrl() {
   GURL current_url = web_ui()->GetWebContents()->GetVisibleURL();
 
-  return current_url == kWelcomeReturningUserUrl;
+  return current_url == kWelcomeReturningUserUrl ||
+         current_url.spec().find(kWelcomeEmailInterstitial) !=
+             std::string::npos;
 }
 
 // Override from LoginUIService::Observer.
@@ -105,7 +108,16 @@ void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
                 ? WelcomeResult::ATTEMPTED_DECLINED
                 : WelcomeResult::DECLINED;
 
-  GoToNewTabPage();
+  if (args->GetSize() == 1U) {
+    std::string url_string;
+    CHECK(args->GetString(0, &url_string));
+    GURL redirect_url = GURL(url_string);
+    DCHECK(redirect_url.is_valid());
+
+    GoToURL(redirect_url);
+  } else {
+    GoToNewTabPage();
+  }
 }
 
 // Override from WebUIMessageHandler.

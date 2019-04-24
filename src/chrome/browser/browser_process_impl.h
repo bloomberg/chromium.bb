@@ -43,7 +43,6 @@ class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
-class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -414,8 +413,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
-
-  std::unique_ptr<SiteIsolationPrefsObserver> site_isolation_prefs_observer_;
 
 #if !defined(OS_ANDROID)
   // Called to signal the process' main message loop to exit.

@@ -52,7 +52,7 @@ source_set("hid") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/dbus/permission_broker" ]
+    deps += [ "//chromeos/dbus" ]
   }
 
   if (is_win) {

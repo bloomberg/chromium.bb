@@ -15,27 +15,17 @@
 #include "src/compiler/node.h"
 #include "src/compiler/schedule.h"
 #include "src/heap/factory-inl.h"
-#include "src/machine-type.h"
 #include "src/objects/heap-number.h"
 #include "src/objects/oddball.h"
-#include "src/objects/ordered-hash-table.h"
-
-#include "src/ptr-compr-inl.h"
 
 namespace v8 {
 namespace internal {
 namespace compiler {
 
-namespace {
-bool UsingCompressedPointers() { return false; }
-
-}  // namespace
-
 EffectControlLinearizer::EffectControlLinearizer(
     JSGraph* js_graph, Schedule* schedule, Zone* temp_zone,
     SourcePositionTable* source_positions, NodeOriginTable* node_origins,
-    MaskArrayIndexEnable mask_array_index,
-    std::vector<Handle<Map>>* embedded_maps)
+    MaskArrayIndexEnable mask_array_index)
     : js_graph_(js_graph),
       schedule_(schedule),
       temp_zone_(temp_zone),
@@ -43,8 +33,7 @@ EffectControlLinearizer::EffectControlLinearizer(
       source_positions_(source_positions),
       node_origins_(node_origins),
       graph_assembler_(js_graph, nullptr, nullptr, temp_zone),
-      frame_state_zapper_(nullptr),
-      embedded_maps_(embedded_maps) {}
+      frame_state_zapper_(nullptr) {}
 
 Graph* EffectControlLinearizer::graph() const { return js_graph_->graph(); }
 CommonOperatorBuilder* EffectControlLinearizer::common() const {
@@ -78,8 +67,8 @@ class BlockEffectControlMap {
   }
 
  private:
-  using Key = std::pair<int32_t, int32_t>;
-  using Map = ZoneMap<Key, BlockEffectControlData>;
+  typedef std::pair<int32_t, int32_t> Key;
+  typedef ZoneMap<Key, BlockEffectControlData> Map;
 
   Map map_;
 };
@@ -673,12 +662,6 @@ bool EffectControlLinearizer::TryWireInStateEffect(Node* node,
     case IrOpcode::kChangeTaggedToTaggedSigned:
       result = LowerChangeTaggedToTaggedSigned(node);
       break;
-    case IrOpcode::kChangeCompressedToTaggedSigned:
-      result = LowerChangeCompressedToTaggedSigned(node);
-      break;
-    case IrOpcode::kChangeTaggedToCompressedSigned:
-      result = LowerChangeTaggedToCompressedSigned(node);
-      break;
     case IrOpcode::kTruncateTaggedToBit:
       result = LowerTruncateTaggedToBit(node);
       break;
@@ -714,15 +697,6 @@ bool EffectControlLinearizer::TryWireInStateEffect(Node* node,
       break;
     case IrOpcode::kCheckInternalizedString:
       result = LowerCheckInternalizedString(node, frame_state);
-      break;
-    case IrOpcode::kCheckNonEmptyOneByteString:
-      result = LowerCheckNonEmptyOneByteString(node, frame_state);
-      break;
-    case IrOpcode::kCheckNonEmptyTwoByteString:
-      result = LowerCheckNonEmptyTwoByteString(node, frame_state);
-      break;
-    case IrOpcode::kCheckNonEmptyString:
-      result = LowerCheckNonEmptyString(node, frame_state);
       break;
     case IrOpcode::kCheckIf:
       LowerCheckIf(node, frame_state);
@@ -803,18 +777,6 @@ bool EffectControlLinearizer::TryWireInStateEffect(Node* node,
     case IrOpcode::kCheckedTaggedToTaggedPointer:
       result = LowerCheckedTaggedToTaggedPointer(node, frame_state);
       break;
-    case IrOpcode::kCheckedCompressedToTaggedSigned:
-      result = LowerCheckedCompressedToTaggedSigned(node, frame_state);
-      break;
-    case IrOpcode::kCheckedCompressedToTaggedPointer:
-      result = LowerCheckedCompressedToTaggedPointer(node, frame_state);
-      break;
-    case IrOpcode::kCheckedTaggedToCompressedSigned:
-      result = LowerCheckedTaggedToCompressedSigned(node, frame_state);
-      break;
-    case IrOpcode::kCheckedTaggedToCompressedPointer:
-      result = LowerCheckedTaggedToCompressedPointer(node, frame_state);
-      break;
     case IrOpcode::kTruncateTaggedToWord32:
       result = LowerTruncateTaggedToWord32(node);
       break;
@@ -893,20 +855,11 @@ bool EffectControlLinearizer::TryWireInStateEffect(Node* node,
     case IrOpcode::kNewArgumentsElements:
       result = LowerNewArgumentsElements(node);
       break;
-    case IrOpcode::kNewConsOneByteString:
-      result = LowerNewConsOneByteString(node);
-      break;
-    case IrOpcode::kNewConsTwoByteString:
-      result = LowerNewConsTwoByteString(node);
-      break;
     case IrOpcode::kNewConsString:
       result = LowerNewConsString(node);
       break;
     case IrOpcode::kSameValue:
       result = LowerSameValue(node);
-      break;
-    case IrOpcode::kNumberSameValue:
-      result = LowerNumberSameValue(node);
       break;
     case IrOpcode::kDeadValue:
       result = LowerDeadValue(node);
@@ -1328,7 +1281,10 @@ void EffectControlLinearizer::TruncateTaggedPointerToBit(
             &if_heapnumber);
 
   // Check if {value} is a BigInt.
-  __ GotoIf(__ WordEqual(value_map, __ BigIntMapConstant()), &if_bigint);
+  Node* value_instance_type =
+      __ LoadField(AccessBuilder::ForMapInstanceType(), value_map);
+  __ GotoIf(__ Word32Equal(value_instance_type, __ Int32Constant(BIGINT_TYPE)),
+            &if_bigint);
 
   // All other values that reach here are true.
   __ Goto(done, __ Int32Constant(1));
@@ -1392,8 +1348,7 @@ Node* EffectControlLinearizer::LowerChangeTaggedToInt32(Node* node) {
   __ Goto(&done, ChangeSmiToInt32(value));
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   vfalse = __ ChangeFloat64ToInt32(vfalse);
   __ Goto(&done, vfalse);
@@ -1413,8 +1368,7 @@ Node* EffectControlLinearizer::LowerChangeTaggedToUint32(Node* node) {
   __ Goto(&done, ChangeSmiToInt32(value));
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   vfalse = __ ChangeFloat64ToUint32(vfalse);
   __ Goto(&done, vfalse);
@@ -1434,8 +1388,7 @@ Node* EffectControlLinearizer::LowerChangeTaggedToInt64(Node* node) {
   __ Goto(&done, ChangeSmiToInt64(value));
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   vfalse = __ ChangeFloat64ToInt64(vfalse);
   __ Goto(&done, vfalse);
@@ -1459,55 +1412,10 @@ Node* EffectControlLinearizer::LowerChangeTaggedToTaggedSigned(Node* node) {
   __ Goto(&done, value);
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
-  Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
-  vfalse = __ ChangeFloat64ToInt32(vfalse);
-  vfalse = ChangeInt32ToSmi(vfalse);
-  __ Goto(&done, vfalse);
-
-  __ Bind(&done);
-  return done.PhiAt(0);
-}
-
-Node* EffectControlLinearizer::LowerChangeCompressedToTaggedSigned(Node* node) {
-  Node* value = node->InputAt(0);
-
-  auto if_not_smi = __ MakeDeferredLabel();
-  auto done = __ MakeLabel(MachineRepresentation::kWord32);
-
-  Node* check = ObjectIsSmi(value);
-  __ GotoIfNot(check, &if_not_smi);
-  __ Goto(&done, __ ChangeCompressedSignedToTaggedSigned(value));
-
-  __ Bind(&if_not_smi);
-  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
-  Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(),
-                              __ ChangeCompressedToTagged(value));
-  vfalse = __ ChangeFloat64ToInt32(vfalse);
-  vfalse = ChangeInt32ToSmi(vfalse);
-  __ Goto(&done, vfalse);
-
-  __ Bind(&done);
-  return done.PhiAt(0);
-}
-
-Node* EffectControlLinearizer::LowerChangeTaggedToCompressedSigned(Node* node) {
-  Node* value = node->InputAt(0);
-
-  auto if_not_smi = __ MakeDeferredLabel();
-  auto done = __ MakeLabel(MachineRepresentation::kWord32);
-
-  Node* check = ObjectIsSmi(value);
-  __ GotoIfNot(check, &if_not_smi);
-  __ Goto(&done, __ ChangeTaggedSignedToCompressedSigned(value));
-
-  __ Bind(&if_not_smi);
   STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   vfalse = __ ChangeFloat64ToInt32(vfalse);
   vfalse = ChangeInt32ToSmi(vfalse);
-  vfalse = __ ChangeTaggedSignedToCompressedSigned(vfalse);
   __ Goto(&done, vfalse);
 
   __ Bind(&done);
@@ -1527,8 +1435,7 @@ Node* EffectControlLinearizer::LowerTruncateTaggedToFloat64(Node* node) {
   __ Goto(&done, vtrue);
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   __ Goto(&done, vfalse);
 
@@ -1620,27 +1527,11 @@ void EffectControlLinearizer::LowerCheckMaps(Node* node, Node* frame_state) {
     auto done = __ MakeLabel();
 
     // Load the current map of the {value}.
-    Node* value_map =
-        UsingCompressedPointers()
-            ? __ LoadField(AccessBuilder::ForCompressedMap(), value)
-            : __ LoadField(AccessBuilder::ForMap(), value);
+    Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
 
     for (size_t i = 0; i < map_count; ++i) {
-      Node* check;
-
-      if (UsingCompressedPointers()) {
-        // We need the dereference scope to embed the map pointer value as an
-        // int32. We don't visit the pointer.
-        AllowHandleDereference allow_map_dereference;
-        int32_t int32Map = static_cast<int32_t>(CompressTagged(maps[i]->ptr()));
-        Node* map = __ Int32Constant(int32Map);
-        check = __ Word32Equal(value_map, map);
-        this->embedded_maps()->push_back(maps[i]);
-      } else {
-        Node* map = __ HeapConstant(maps[i]);
-        check = __ WordEqual(value_map, map);
-      }
-
+      Node* map = __ HeapConstant(maps[i]);
+      Node* check = __ WordEqual(value_map, map);
       if (i == map_count - 1) {
         __ DeoptimizeIfNot(DeoptimizeReason::kWrongMap, p.feedback(), check,
                            frame_state, IsSafetyCheck::kCriticalSafetyCheck);
@@ -1663,26 +1554,11 @@ Node* EffectControlLinearizer::LowerCompareMaps(Node* node) {
   auto done = __ MakeLabel(MachineRepresentation::kBit);
 
   // Load the current map of the {value}.
-  Node* value_map = UsingCompressedPointers()
-                        ? __ LoadField(AccessBuilder::ForCompressedMap(), value)
-                        : __ LoadField(AccessBuilder::ForMap(), value);
+  Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
 
   for (size_t i = 0; i < map_count; ++i) {
-    Node* check;
-
-    if (UsingCompressedPointers()) {
-      // We need the dereference scope to embed the map pointer value as an
-      // int32. We don't visit the pointer.
-      AllowHandleDereference allow_map_dereference;
-      int32_t int32Map = static_cast<int32_t>(CompressTagged(maps[i]->ptr()));
-      Node* map = __ Int32Constant(int32Map);
-      check = __ Word32Equal(value_map, map);
-      this->embedded_maps()->push_back(maps[i]);
-    } else {
-      Node* map = __ HeapConstant(maps[i]);
-      check = __ WordEqual(value_map, map);
-    }
-
+    Node* map = __ HeapConstant(maps[i]);
+    Node* check = __ WordEqual(value_map, map);
     auto next_map = __ MakeLabel();
     auto passed = __ MakeLabel();
     __ Branch(check, &passed, &next_map, IsSafetyCheck::kCriticalSafetyCheck);
@@ -1798,62 +1674,6 @@ Node* EffectControlLinearizer::LowerCheckInternalizedString(Node* node,
       __ Word32And(value_instance_type,
                    __ Int32Constant(kIsNotStringMask | kIsNotInternalizedMask)),
       __ Int32Constant(kInternalizedTag));
-  __ DeoptimizeIfNot(DeoptimizeReason::kWrongInstanceType, VectorSlotPair(),
-                     check, frame_state);
-
-  return value;
-}
-
-Node* EffectControlLinearizer::LowerCheckNonEmptyOneByteString(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-
-  Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
-  Node* value_instance_type =
-      __ LoadField(AccessBuilder::ForMapInstanceType(), value_map);
-
-  Node* check = __ Word32Equal(
-      __ Word32And(value_instance_type,
-                   __ Int32Constant(kIsNotStringMask | kStringEncodingMask |
-                                    kIsEmptyStringMask)),
-      __ Int32Constant(kStringTag | kOneByteStringTag | kIsNotEmptyStringTag));
-  __ DeoptimizeIfNot(DeoptimizeReason::kWrongInstanceType, VectorSlotPair(),
-                     check, frame_state);
-
-  return value;
-}
-
-Node* EffectControlLinearizer::LowerCheckNonEmptyTwoByteString(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-
-  Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
-  Node* value_instance_type =
-      __ LoadField(AccessBuilder::ForMapInstanceType(), value_map);
-
-  Node* check = __ Word32Equal(
-      __ Word32And(value_instance_type,
-                   __ Int32Constant(kIsNotStringMask | kStringEncodingMask |
-                                    kIsEmptyStringMask)),
-      __ Int32Constant(kStringTag | kTwoByteStringTag | kIsNotEmptyStringTag));
-  __ DeoptimizeIfNot(DeoptimizeReason::kWrongInstanceType, VectorSlotPair(),
-                     check, frame_state);
-
-  return value;
-}
-
-Node* EffectControlLinearizer::LowerCheckNonEmptyString(Node* node,
-                                                        Node* frame_state) {
-  Node* value = node->InputAt(0);
-
-  Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
-  Node* value_instance_type =
-      __ LoadField(AccessBuilder::ForMapInstanceType(), value_map);
-
-  Node* check = __ Word32Equal(
-      __ Word32And(value_instance_type,
-                   __ Int32Constant(kIsNotStringMask | kIsEmptyStringMask)),
-      __ Int32Constant(kStringTag | kIsNotEmptyStringTag));
   __ DeoptimizeIfNot(DeoptimizeReason::kWrongInstanceType, VectorSlotPair(),
                      check, frame_state);
 
@@ -2497,8 +2317,7 @@ Node* EffectControlLinearizer::BuildCheckedHeapNumberOrOddballToFloat64(
           __ Word32Equal(instance_type, __ Int32Constant(ODDBALL_TYPE));
       __ DeoptimizeIfNot(DeoptimizeReason::kNotANumberOrOddball, feedback,
                          check_oddball, frame_state);
-      STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                        Oddball::kToNumberRawOffset);
+      STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
       __ Goto(&check_done);
 
       __ Bind(&check_done);
@@ -2558,52 +2377,6 @@ Node* EffectControlLinearizer::LowerCheckedTaggedToTaggedPointer(
   return value;
 }
 
-Node* EffectControlLinearizer::LowerCheckedCompressedToTaggedSigned(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-  const CheckParameters& params = CheckParametersOf(node->op());
-
-  Node* check = ObjectIsSmi(value);
-  __ DeoptimizeIfNot(DeoptimizeReason::kNotASmi, params.feedback(), check,
-                     frame_state);
-
-  return __ ChangeCompressedSignedToTaggedSigned(value);
-}
-
-Node* EffectControlLinearizer::LowerCheckedCompressedToTaggedPointer(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-  const CheckParameters& params = CheckParametersOf(node->op());
-
-  Node* check = ObjectIsSmi(value);
-  __ DeoptimizeIf(DeoptimizeReason::kSmi, params.feedback(), check,
-                  frame_state);
-  return __ ChangeCompressedPointerToTaggedPointer(value);
-}
-
-Node* EffectControlLinearizer::LowerCheckedTaggedToCompressedSigned(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-  const CheckParameters& params = CheckParametersOf(node->op());
-
-  Node* check = ObjectIsSmi(value);
-  __ DeoptimizeIfNot(DeoptimizeReason::kNotASmi, params.feedback(), check,
-                     frame_state);
-
-  return __ ChangeTaggedSignedToCompressedSigned(value);
-}
-
-Node* EffectControlLinearizer::LowerCheckedTaggedToCompressedPointer(
-    Node* node, Node* frame_state) {
-  Node* value = node->InputAt(0);
-  const CheckParameters& params = CheckParametersOf(node->op());
-
-  Node* check = ObjectIsSmi(value);
-  __ DeoptimizeIf(DeoptimizeReason::kSmi, params.feedback(), check,
-                  frame_state);
-  return __ ChangeTaggedPointerToCompressedPointer(value);
-}
-
 Node* EffectControlLinearizer::LowerTruncateTaggedToWord32(Node* node) {
   Node* value = node->InputAt(0);
 
@@ -2615,8 +2388,7 @@ Node* EffectControlLinearizer::LowerTruncateTaggedToWord32(Node* node) {
   __ Goto(&done, ChangeSmiToInt32(value));
 
   __ Bind(&if_not_smi);
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
   Node* vfalse = __ LoadField(AccessBuilder::ForHeapNumberValue(), value);
   vfalse = __ TruncateFloat64ToWord32(vfalse);
   __ Goto(&done, vfalse);
@@ -2653,8 +2425,8 @@ Node* EffectControlLinearizer::LowerCheckedTruncateTaggedToWord32(
 
 Node* EffectControlLinearizer::LowerAllocate(Node* node) {
   Node* size = node->InputAt(0);
-  AllocationType allocation = AllocationTypeOf(node->op());
-  Node* new_node = __ Allocate(allocation, size);
+  PretenureFlag pretenure = PretenureFlagOf(node->op());
+  Node* new_node = __ Allocate(pretenure, size);
   return new_node;
 }
 
@@ -2706,7 +2478,10 @@ Node* EffectControlLinearizer::LowerObjectIsBigInt(Node* node) {
   Node* check = ObjectIsSmi(value);
   __ GotoIf(check, &if_smi);
   Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
-  Node* vfalse = __ WordEqual(value_map, __ BigIntMapConstant());
+  Node* value_instance_type =
+      __ LoadField(AccessBuilder::ForMapInstanceType(), value_map);
+  Node* vfalse =
+      __ Word32Equal(value_instance_type, __ Uint32Constant(BIGINT_TYPE));
   __ Goto(&done, vfalse);
 
   __ Bind(&if_smi);
@@ -3250,28 +3025,29 @@ Node* EffectControlLinearizer::LowerArgumentsFrame(Node* node) {
 }
 
 Node* EffectControlLinearizer::LowerNewDoubleElements(Node* node) {
-  AllocationType const allocation = AllocationTypeOf(node->op());
+  PretenureFlag const pretenure = PretenureFlagOf(node->op());
   Node* length = node->InputAt(0);
 
   auto done = __ MakeLabel(MachineRepresentation::kTaggedPointer);
-  Node* zero_length = __ WordEqual(length, __ IntPtrConstant(0));
+  Node* zero_length = __ Word32Equal(length, __ Int32Constant(0));
   __ GotoIf(zero_length, &done,
             jsgraph()->HeapConstant(factory()->empty_fixed_array()));
 
   // Compute the effective size of the backing store.
-  Node* size = __ IntAdd(__ WordShl(length, __ IntPtrConstant(kDoubleSizeLog2)),
-                         __ IntPtrConstant(FixedDoubleArray::kHeaderSize));
+  Node* size =
+      __ Int32Add(__ Word32Shl(length, __ Int32Constant(kDoubleSizeLog2)),
+                  __ Int32Constant(FixedDoubleArray::kHeaderSize));
 
   // Allocate the result and initialize the header.
-  Node* result = __ Allocate(allocation, size);
+  Node* result = __ Allocate(pretenure, size);
   __ StoreField(AccessBuilder::ForMap(), result,
                 __ FixedDoubleArrayMapConstant());
   __ StoreField(AccessBuilder::ForFixedArrayLength(), result,
-                ChangeIntPtrToSmi(length));
+                ChangeInt32ToSmi(length));
 
   // Initialize the backing store with holes.
-  STATIC_ASSERT_FIELD_OFFSETS_EQUAL(HeapNumber::kValueOffset,
-                                    Oddball::kToNumberRawOffset);
+  STATIC_ASSERT(HeapNumber::kValueOffset == Oddball::kToNumberRawOffset);
+  Node* limit = ChangeUint32ToUintPtr(length);
   Node* the_hole =
       __ LoadField(AccessBuilder::ForHeapNumberValue(), __ TheHoleConstant());
   auto loop = __ MakeLoopLabel(MachineType::PointerRepresentation());
@@ -3280,13 +3056,15 @@ Node* EffectControlLinearizer::LowerNewDoubleElements(Node* node) {
   {
     // Check if we've initialized everything.
     Node* index = loop.PhiAt(0);
-    Node* check = __ UintLessThan(index, length);
+    Node* check = __ UintLessThan(index, limit);
     __ GotoIfNot(check, &done, result);
 
-    ElementAccess const access = {kTaggedBase, FixedDoubleArray::kHeaderSize,
-                                  Type::NumberOrHole(), MachineType::Float64(),
-                                  kNoWriteBarrier};
-    __ StoreElement(access, result, index, the_hole);
+    // Storing "the_hole" doesn't need a write barrier.
+    StoreRepresentation rep(MachineRepresentation::kFloat64, kNoWriteBarrier);
+    Node* offset = __ IntAdd(
+        __ WordShl(index, __ IntPtrConstant(kDoubleSizeLog2)),
+        __ IntPtrConstant(FixedDoubleArray::kHeaderSize - kHeapObjectTag));
+    __ Store(rep, result, offset, the_hole);
 
     // Advance the {index}.
     index = __ IntAdd(index, __ IntPtrConstant(1));
@@ -3298,25 +3076,27 @@ Node* EffectControlLinearizer::LowerNewDoubleElements(Node* node) {
 }
 
 Node* EffectControlLinearizer::LowerNewSmiOrObjectElements(Node* node) {
-  AllocationType const allocation = AllocationTypeOf(node->op());
+  PretenureFlag const pretenure = PretenureFlagOf(node->op());
   Node* length = node->InputAt(0);
 
   auto done = __ MakeLabel(MachineRepresentation::kTaggedPointer);
-  Node* zero_length = __ WordEqual(length, __ IntPtrConstant(0));
+  Node* zero_length = __ Word32Equal(length, __ Int32Constant(0));
   __ GotoIf(zero_length, &done,
             jsgraph()->HeapConstant(factory()->empty_fixed_array()));
 
   // Compute the effective size of the backing store.
-  Node* size = __ IntAdd(__ WordShl(length, __ IntPtrConstant(kTaggedSizeLog2)),
-                         __ IntPtrConstant(FixedArray::kHeaderSize));
+  Node* size =
+      __ Int32Add(__ Word32Shl(length, __ Int32Constant(kTaggedSizeLog2)),
+                  __ Int32Constant(FixedArray::kHeaderSize));
 
   // Allocate the result and initialize the header.
-  Node* result = __ Allocate(allocation, size);
+  Node* result = __ Allocate(pretenure, size);
   __ StoreField(AccessBuilder::ForMap(), result, __ FixedArrayMapConstant());
   __ StoreField(AccessBuilder::ForFixedArrayLength(), result,
-                ChangeIntPtrToSmi(length));
+                ChangeInt32ToSmi(length));
 
   // Initialize the backing store with holes.
+  Node* limit = ChangeUint32ToUintPtr(length);
   Node* the_hole = __ TheHoleConstant();
   auto loop = __ MakeLoopLabel(MachineType::PointerRepresentation());
   __ Goto(&loop, __ IntPtrConstant(0));
@@ -3324,14 +3104,15 @@ Node* EffectControlLinearizer::LowerNewSmiOrObjectElements(Node* node) {
   {
     // Check if we've initialized everything.
     Node* index = loop.PhiAt(0);
-    Node* check = __ UintLessThan(index, length);
+    Node* check = __ UintLessThan(index, limit);
     __ GotoIfNot(check, &done, result);
 
     // Storing "the_hole" doesn't need a write barrier.
-    ElementAccess const access = {kTaggedBase, FixedArray::kHeaderSize,
-                                  Type::Any(), MachineType::AnyTagged(),
-                                  kNoWriteBarrier};
-    __ StoreElement(access, result, index, the_hole);
+    StoreRepresentation rep(MachineRepresentation::kTagged, kNoWriteBarrier);
+    Node* offset =
+        __ IntAdd(__ WordShl(index, __ IntPtrConstant(kTaggedSizeLog2)),
+                  __ IntPtrConstant(FixedArray::kHeaderSize - kHeapObjectTag));
+    __ Store(rep, result, offset, the_hole);
 
     // Advance the {index}.
     index = __ IntAdd(index, __ IntPtrConstant(1));
@@ -3356,24 +3137,6 @@ Node* EffectControlLinearizer::LowerNewArgumentsElements(Node* node) {
       callable.descriptor().GetStackParameterCount(), flags, properties);
   return __ Call(call_descriptor, __ HeapConstant(callable.code()), frame,
                  length, __ SmiConstant(mapped_count), __ NoContextConstant());
-}
-
-Node* EffectControlLinearizer::LowerNewConsOneByteString(Node* node) {
-  Node* map = jsgraph()->HeapConstant(factory()->cons_one_byte_string_map());
-  Node* length = node->InputAt(0);
-  Node* first = node->InputAt(1);
-  Node* second = node->InputAt(2);
-
-  return AllocateConsString(map, length, first, second);
-}
-
-Node* EffectControlLinearizer::LowerNewConsTwoByteString(Node* node) {
-  Node* map = jsgraph()->HeapConstant(factory()->cons_string_map());
-  Node* length = node->InputAt(0);
-  Node* first = node->InputAt(1);
-  Node* second = node->InputAt(2);
-
-  return AllocateConsString(map, length, first, second);
 }
 
 Node* EffectControlLinearizer::LowerNewConsString(Node* node) {
@@ -3412,14 +3175,8 @@ Node* EffectControlLinearizer::LowerNewConsString(Node* node) {
   Node* result_map = done.PhiAt(0);
 
   // Allocate the resulting ConsString.
-  return AllocateConsString(result_map, length, first, second);
-}
-
-Node* EffectControlLinearizer::AllocateConsString(Node* map, Node* length,
-                                                  Node* first, Node* second) {
-  Node* result =
-      __ Allocate(AllocationType::kYoung, __ IntPtrConstant(ConsString::kSize));
-  __ StoreField(AccessBuilder::ForMap(), result, map);
+  Node* result = __ Allocate(NOT_TENURED, __ Int32Constant(ConsString::kSize));
+  __ StoreField(AccessBuilder::ForMap(), result, result_map);
   __ StoreField(AccessBuilder::ForNameHashField(), result,
                 __ Int32Constant(Name::kEmptyHashField));
   __ StoreField(AccessBuilder::ForStringLength(), result, length);
@@ -3441,31 +3198,6 @@ Node* EffectControlLinearizer::LowerSameValue(Node* node) {
       callable.descriptor().GetStackParameterCount(), flags, properties);
   return __ Call(call_descriptor, __ HeapConstant(callable.code()), lhs, rhs,
                  __ NoContextConstant());
-}
-
-Node* EffectControlLinearizer::LowerNumberSameValue(Node* node) {
-  Node* lhs = node->InputAt(0);
-  Node* rhs = node->InputAt(1);
-
-  auto is_float64_equal = __ MakeLabel();
-  auto done = __ MakeLabel(MachineRepresentation::kBit);
-
-  __ GotoIf(__ Float64Equal(lhs, rhs), &is_float64_equal);
-
-  // Return true iff both {lhs} and {rhs} are NaN.
-  __ GotoIf(__ Float64Equal(lhs, lhs), &done, __ Int32Constant(0));
-  __ GotoIf(__ Float64Equal(rhs, rhs), &done, __ Int32Constant(0));
-  __ Goto(&done, __ Int32Constant(1));
-
-  __ Bind(&is_float64_equal);
-  // Even if the values are float64-equal, we still need to distinguish
-  // zero and minus zero.
-  Node* lhs_hi = __ Float64ExtractHighWord32(lhs);
-  Node* rhs_hi = __ Float64ExtractHighWord32(rhs);
-  __ Goto(&done, __ Word32Equal(lhs_hi, rhs_hi));
-
-  __ Bind(&done);
-  return done.PhiAt(0);
 }
 
 Node* EffectControlLinearizer::LowerDeadValue(Node* node) {
@@ -3699,9 +3431,8 @@ Node* EffectControlLinearizer::LowerStringFromSingleCharCode(Node* node) {
     __ Bind(&cache_miss);
     {
       // Allocate a new SeqOneByteString for {code}.
-      Node* vtrue2 =
-          __ Allocate(AllocationType::kYoung,
-                      __ IntPtrConstant(SeqOneByteString::SizeFor(1)));
+      Node* vtrue2 = __ Allocate(
+          NOT_TENURED, __ Int32Constant(SeqOneByteString::SizeFor(1)));
       __ StoreField(AccessBuilder::ForMap(), vtrue2,
                     __ HeapConstant(factory()->one_byte_string_map()));
       __ StoreField(AccessBuilder::ForNameHashField(), vtrue2,
@@ -3724,9 +3455,8 @@ Node* EffectControlLinearizer::LowerStringFromSingleCharCode(Node* node) {
   __ Bind(&if_not_one_byte);
   {
     // Allocate a new SeqTwoByteString for {code}.
-    Node* vfalse1 =
-        __ Allocate(AllocationType::kYoung,
-                    __ IntPtrConstant(SeqTwoByteString::SizeFor(1)));
+    Node* vfalse1 = __ Allocate(NOT_TENURED,
+                                __ Int32Constant(SeqTwoByteString::SizeFor(1)));
     __ StoreField(AccessBuilder::ForMap(), vfalse1,
                   __ HeapConstant(factory()->string_map()));
     __ StoreField(AccessBuilder::ForNameHashField(), vfalse1,
@@ -3825,9 +3555,8 @@ Node* EffectControlLinearizer::LowerStringFromSingleCodePoint(Node* node) {
       __ Bind(&cache_miss);
       {
         // Allocate a new SeqOneByteString for {code}.
-        Node* vtrue2 =
-            __ Allocate(AllocationType::kYoung,
-                        __ IntPtrConstant(SeqOneByteString::SizeFor(1)));
+        Node* vtrue2 = __ Allocate(
+            NOT_TENURED, __ Int32Constant(SeqOneByteString::SizeFor(1)));
         __ StoreField(AccessBuilder::ForMap(), vtrue2,
                       __ HeapConstant(factory()->one_byte_string_map()));
         __ StoreField(AccessBuilder::ForNameHashField(), vtrue2,
@@ -3850,9 +3579,8 @@ Node* EffectControlLinearizer::LowerStringFromSingleCodePoint(Node* node) {
     __ Bind(&if_not_one_byte);
     {
       // Allocate a new SeqTwoByteString for {code}.
-      Node* vfalse1 =
-          __ Allocate(AllocationType::kYoung,
-                      __ IntPtrConstant(SeqTwoByteString::SizeFor(1)));
+      Node* vfalse1 = __ Allocate(
+          NOT_TENURED, __ Int32Constant(SeqTwoByteString::SizeFor(1)));
       __ StoreField(AccessBuilder::ForMap(), vfalse1,
                     __ HeapConstant(factory()->string_map()));
       __ StoreField(AccessBuilder::ForNameHashField(), vfalse1,
@@ -3898,9 +3626,8 @@ Node* EffectControlLinearizer::LowerStringFromSingleCodePoint(Node* node) {
     }
 
     // Allocate a new SeqTwoByteString for {code}.
-    Node* vfalse0 =
-        __ Allocate(AllocationType::kYoung,
-                    __ IntPtrConstant(SeqTwoByteString::SizeFor(2)));
+    Node* vfalse0 = __ Allocate(NOT_TENURED,
+                                __ Int32Constant(SeqTwoByteString::SizeFor(2)));
     __ StoreField(AccessBuilder::ForMap(), vfalse0,
                   __ HeapConstant(factory()->string_map()));
     __ StoreField(AccessBuilder::ForNameHashField(), vfalse0,
@@ -4129,8 +3856,7 @@ void EffectControlLinearizer::LowerCheckEqualsSymbol(Node* node,
 }
 
 Node* EffectControlLinearizer::AllocateHeapNumberWithValue(Node* value) {
-  Node* result =
-      __ Allocate(AllocationType::kYoung, __ IntPtrConstant(HeapNumber::kSize));
+  Node* result = __ Allocate(NOT_TENURED, __ Int32Constant(HeapNumber::kSize));
   __ StoreField(AccessBuilder::ForMap(), result, __ HeapNumberMapConstant());
   __ StoreField(AccessBuilder::ForHeapNumberValue(), result, value);
   return result;

@@ -28,7 +28,5 @@ void BreakDebugger() {
   __debugbreak();
 }
 
-void VerifyDebugger() {}
-
 }  // namespace debug
 }  // namespace base

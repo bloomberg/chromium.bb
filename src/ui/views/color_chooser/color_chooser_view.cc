@@ -32,13 +32,13 @@
 
 namespace {
 
-constexpr int kHueBarWidth = 20;
-constexpr int kSaturationValueSize = 200;
-constexpr int kMarginWidth = 5;
-constexpr int kSaturationValueIndicatorSize = 6;
-constexpr int kHueIndicatorSize = 5;
-constexpr int kBorderWidth = 1;
-constexpr int kTextfieldLengthInChars = 14;
+const int kHueBarWidth = 20;
+const int kSaturationValueSize = 200;
+const int kMarginWidth = 5;
+const int kSaturationValueIndicatorSize = 6;
+const int kHueIndicatorSize = 5;
+const int kBorderWidth = 1;
+const int kTextfieldLengthInChars = 14;
 
 base::string16 GetColorText(SkColor color) {
   return base::ASCIIToUTF16(base::StringPrintf("#%02x%02x%02x",
@@ -65,10 +65,10 @@ bool GetColorFromText(const base::string16& text, SkColor* result) {
 // interface.
 class LocatedEventHandlerView : public views::View {
  public:
-  ~LocatedEventHandlerView() override = default;
+  ~LocatedEventHandlerView() override {}
 
  protected:
-  LocatedEventHandlerView() = default;
+  LocatedEventHandlerView() {}
 
   // Handles an event (mouse or gesture) at the specified location.
   virtual void ProcessEventAtLocation(const gfx::Point& location) = 0;
@@ -107,8 +107,8 @@ void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
   else
     points[1].iset(0, rect.height() + 1);
   cc::PaintFlags flags;
-  flags.setShader(cc::PaintShader::MakeLinearGradient(points, colors, nullptr,
-                                                      2, SkTileMode::kClamp));
+  flags.setShader(cc::PaintShader::MakeLinearGradient(
+      points, colors, nullptr, 2, SkShader::kClamp_TileMode));
   canvas->DrawRect(rect, flags);
 }
 
@@ -401,7 +401,8 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   OnColorChanged(initial_color);
 }
 
-ColorChooserView::~ColorChooserView() = default;
+ColorChooserView::~ColorChooserView() {
+}
 
 void ColorChooserView::OnColorChanged(SkColor color) {
   SkColorToHSV(color, hsv_);

@@ -24,7 +24,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -32,6 +31,14 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
  public:
   enum TypeForSerialization { kSerializeAsRect, kSerializeAsQuad };
 
+  static CSSQuadValue* Create(CSSValue* top,
+                              CSSValue* right,
+                              CSSValue* bottom,
+                              CSSValue* left,
+                              TypeForSerialization serialization_type) {
+    return MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
+                                              serialization_type);
+  }
   static CSSQuadValue* Create(CSSValue* value,
                               TypeForSerialization serialization_type) {
     return MakeGarbageCollected<CSSQuadValue>(value, value, value, value,
@@ -76,10 +83,7 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
   Member<CSSValue> left_;
 };
 
-template <>
-struct DowncastTraits<CSSQuadValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsQuadValue(); }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSQuadValue, IsQuadValue());
 
 }  // namespace blink
 

@@ -142,8 +142,7 @@ std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
   CHECK_LT(index, NUM_DATA_SETS);
   int frames = NUM_SAMPLES / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, frames);
-  data->FromInterleaved<::media::SignedInt32SampleTypeTraits>(kTestData[index],
-                                                              frames);
+  data->FromInterleaved(kTestData[index], frames, kBytesPerSample);
   return data;
 }
 
@@ -367,6 +366,9 @@ class StreamMixerTest : public testing::Test {
     base::RunLoop run_loop1;
     message_loop_->task_runner()->PostTask(FROM_HERE, run_loop1.QuitClosure());
     run_loop1.Run();
+    base::RunLoop run_loop2;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop2.QuitClosure());
+    run_loop2.Run();
   }
 
   void PlaybackOnce() {
@@ -393,7 +395,6 @@ class StreamMixerTest : public testing::Test {
     if (redirector_ptr) {
       *redirector_ptr = redirector.get();
     }
-    EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
     mixer_->AddAudioOutputRedirector(std::move(redirector));
     return redirected_output_ptr;
   }
@@ -708,8 +709,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   // Populate the streams with data.
   for (size_t i = 0; i < inputs.size(); ++i) {
     auto test_data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-    test_data->FromInterleaved<::media::SignedInt32SampleTypeTraits>(
-        kEdgeData[i], kNumFrames);
+    test_data->FromInterleaved(kEdgeData[i], kNumFrames, kBytesPerSample);
     inputs[i]->SetData(std::move(test_data));
     EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
@@ -724,8 +724,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
 
   // Use the hand-calculated results above.
   auto expected = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  expected->FromInterleaved<::media::SignedInt32SampleTypeTraits>(kResult,
-                                                                  kNumFrames);
+  expected->FromInterleaved(kResult, kNumFrames, kBytesPerSample);
 
   CompareAudioData(*expected, *actual);
 
@@ -800,21 +799,16 @@ TEST_F(StreamMixerTest, PostProcessorDelayUnlistedDevice) {
   input.SetData(GetTestData(0));
   auto* post_processors = &pp_factory_->instances;
   // These will be called once to ensure their buffers are initialized.
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default",
-                                          testing::AtLeast(1), _, _);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix",
-                                          testing::AtLeast(1), _, _);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize",
-                                          testing::AtLeast(1), _, _);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications",
-                                          testing::AtLeast(1), _, _);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts",
-                                          testing::AtLeast(1), _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
+                                          _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications", 1,
+                                          _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
+                                          _, _);
   mixer_->AddInput(&input);
   WaitForMixer();
-
-  VerifyAndClearPostProcessors(pp_factory_);
-  input.SetData(GetTestData(0));
 
   // Delay should be based on default processor.
   int64_t delay = FramesToDelayUs(
@@ -870,7 +864,8 @@ TEST_F(StreamMixerTest, PostProcessorRingingWithoutInput) {
   CHECK_EQ(factory_ptr->instances.size(), 4u);
 
   auto* post_processors = &factory_ptr->instances;
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _,
+                                          false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
                                           false);
@@ -1031,12 +1026,13 @@ TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
   mixer_->AddLoopbackAudioObserver(&observer);
+  WaitForMixer();
+
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
                               kNumChannels, _, _))
       .Times(testing::AtLeast(1));
 
-  WaitForMixer();
   PlaybackOnce();
 
   EXPECT_CALL(observer, OnRemoved());
@@ -1054,13 +1050,13 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
   mixer_->AddLoopbackAudioObserver(&observer);
+  WaitForMixer();
 
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
                               kNumOutputChannels, _, _))
       .Times(testing::AtLeast(1));
 
-  WaitForMixer();
   PlaybackOnce();
 
   EXPECT_CALL(observer, OnRemoved());
@@ -1078,6 +1074,7 @@ TEST_F(StreamMixerTest, OneStreamOutputRedirection) {
   WaitForMixer();
 
   MockMixerSource input(kTestSamplesPerSecond);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   mixer_->AddInput(&input);
   WaitForMixer();
   mock_output_->ClearData();
@@ -1110,6 +1107,8 @@ TEST_F(StreamMixerTest, OutputRedirectionOrder) {
   WaitForMixer();
 
   MockMixerSource input(kTestSamplesPerSecond);
+  EXPECT_CALL(*redirected_output_ptr1, Start(kTestSamplesPerSecond)).Times(1);
+  EXPECT_CALL(*redirected_output_ptr2, Start(kTestSamplesPerSecond)).Times(1);
   mixer_->AddInput(&input);
   WaitForMixer();
   mock_output_->ClearData();
@@ -1152,6 +1151,7 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirection) {
   config.stream_match_patterns.push_back({AudioContentType::kMedia, "*"});
   MockRedirectedAudioOutput* redirected_output_ptr =
       AddOutputRedirector(config);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   WaitForMixer();
 
   EXPECT_CALL(*redirected_output_ptr, WriteBuffer(2, _, kOutputFrames, _))
@@ -1194,6 +1194,7 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirectionWithVolume) {
   config.apply_volume = true;
   MockRedirectedAudioOutput* redirected_output_ptr =
       AddOutputRedirector(config);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   WaitForMixer();
 
   EXPECT_CALL(*redirected_output_ptr, WriteBuffer(2, _, kOutputFrames, _))
@@ -1233,6 +1234,7 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchDeviceId) {
   config.stream_match_patterns.push_back({AudioContentType::kMedia, "*match*"});
   MockRedirectedAudioOutput* redirected_output_ptr =
       AddOutputRedirector(config);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   WaitForMixer();
 
   EXPECT_CALL(*redirected_output_ptr, WriteBuffer(1, _, kOutputFrames, _))
@@ -1273,6 +1275,7 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchContentType) {
   config.stream_match_patterns.push_back({AudioContentType::kAlarm, "*match*"});
   MockRedirectedAudioOutput* redirected_output_ptr =
       AddOutputRedirector(config);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   WaitForMixer();
 
   EXPECT_CALL(*redirected_output_ptr, WriteBuffer(1, _, kOutputFrames, _))
@@ -1310,6 +1313,7 @@ TEST_F(StreamMixerTest, OutputRedirectionNoMatch) {
   config.stream_match_patterns.push_back({AudioContentType::kAlarm, "*"});
   MockRedirectedAudioOutput* redirected_output_ptr =
       AddOutputRedirector(config);
+  EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
   WaitForMixer();
 
   EXPECT_CALL(*redirected_output_ptr, WriteBuffer(0, _, kOutputFrames, _))

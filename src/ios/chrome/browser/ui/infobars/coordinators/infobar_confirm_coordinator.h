@@ -5,15 +5,28 @@
 #ifndef IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_CONFIRM_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_CONFIRM_COORDINATOR_H_
 
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 class ConfirmInfoBarDelegate;
 
 // Coordinator that creates and manages the ConfirmInfobar.
-@interface InfobarConfirmCoordinator : InfobarCoordinator
+@interface InfobarConfirmCoordinator
+    : ChromeCoordinator <InfobarCoordinating, InfobarUIDelegate>
 
 - (instancetype)initWithInfoBarDelegate:
     (ConfirmInfoBarDelegate*)confirmInfoBarDelegate NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end
 

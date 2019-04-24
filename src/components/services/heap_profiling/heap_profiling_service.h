@@ -46,8 +46,10 @@ class HeapProfilingService
   // ProfilingService implementation.
   void AddProfilingClient(base::ProcessId pid,
                           mojom::ProfilingClientPtr client,
+                          mojo::ScopedHandle pipe_receiver,
                           mojom::ProcessType process_type,
                           mojom::ProfilingParamsPtr params) override;
+  void SetKeepSmallAllocations(bool keep_small_allocations) override;
   void GetProfiledPids(GetProfiledPidsCallback callback) override;
 
   // HeapProfiler implementation.
@@ -74,7 +76,10 @@ class HeapProfilingService
 
   memory_instrumentation::mojom::HeapProfilerHelperPtr helper_;
   ConnectionManager connection_manager_;
-  // Must be the last.
+
+  bool keep_small_allocations_ = false;
+
+  // Must be last.
   base::WeakPtrFactory<HeapProfilingService> weak_factory_{this};
 };
 

@@ -16,7 +16,6 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
-#include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
 
@@ -65,16 +64,12 @@ void AutofillAction::InternalProcessAction(
 }
 
 void AutofillAction::EndAction(ProcessedActionStatusProto status) {
-  EndAction(ClientStatus(status));
-}
-
-void AutofillAction::EndAction(const ClientStatus& status) {
   UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
 void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
-  delegate->ShortWaitForElement(
+  delegate->ShortWaitForElementExist(
       selector_, base::BindOnce(&AutofillAction::OnWaitForElement,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Unretained(delegate)));
@@ -119,16 +114,17 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AutofillAction::OnCardFormFilled(const ClientStatus& status) {
+void AutofillAction::OnCardFormFilled(bool successful) {
   // TODO(crbug.com/806868): Implement required fields checking for cards.
-  EndAction(status);
+  EndAction(successful ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+  return;
 }
 
 void AutofillAction::OnAddressFormFilled(ActionDelegate* delegate,
-                                         const ClientStatus& status) {
+                                         bool successful) {
   // In case Autofill failed, we fail the action.
-  if (!status.ok()) {
-    EndAction(status);
+  if (!successful) {
+    EndAction(OTHER_ACTION_STATUS);
     return;
   }
 
@@ -144,7 +140,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
   }
 
   DCHECK(!batch_element_checker_);
-  batch_element_checker_ = std::make_unique<BatchElementChecker>();
+  batch_element_checker_ = delegate->CreateBatchElementChecker();
   for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
     auto& required_address_field = proto_.use_address().required_fields(i);
     DCHECK_GT(required_address_field.element().selectors_size(), 0);
@@ -153,8 +149,10 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate->RunElementChecks(
-      batch_element_checker_.get(),
+  batch_element_checker_->Run(
+      base::TimeDelta::FromSeconds(0),
+      /* try_done= */ base::DoNothing(),
+      /* all_done= */
       base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      allow_fallback));
@@ -259,8 +257,8 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
 
 void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
                                              int required_fields_index,
-                                             const ClientStatus& status) {
-  if (!status.ok()) {
+                                             bool successful) {
+  if (!successful) {
     // Fallback failed: we stop the script without checking the fields.
     EndAction(MANUAL_FALLBACK);
     return;

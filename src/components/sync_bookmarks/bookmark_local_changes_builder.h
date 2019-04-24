@@ -24,7 +24,8 @@ class BookmarkLocalChangesBuilder {
   BookmarkLocalChangesBuilder(const SyncedBookmarkTracker* bookmark_tracker,
                               bookmarks::BookmarkModel* bookmark_model);
   // Builds the commit requests list.
-  syncer::CommitRequestDataList BuildCommitRequests(size_t max_entries) const;
+  std::vector<syncer::CommitRequestData> BuildCommitRequests(
+      size_t max_entries) const;
 
  private:
   const SyncedBookmarkTracker* const bookmark_tracker_;

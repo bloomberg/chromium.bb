@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
@@ -73,14 +73,14 @@ public class TabObserverTest {
         int interactableCallCount = interactabilityHelper.getCallCount();
 
         // Enter tab switcher mode and make sure the event is triggered.
-        TestThreadUtils.runOnUiThreadBlocking(() -> layoutManager.showOverview(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> layoutManager.showOverview(false));
 
         interactabilityHelper.waitForCallback(interactableCallCount);
         interactableCallCount = interactabilityHelper.getCallCount();
         assertFalse("Tab should not be interactable.", mTab.isUserInteractable());
 
         // Exit tab switcher and wait for event again.
-        TestThreadUtils.runOnUiThreadBlocking(() -> layoutManager.hideOverview(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> layoutManager.hideOverview(false));
 
         interactabilityHelper.waitForCallback(interactableCallCount);
         assertTrue("Tab should be interactable.", mTab.isUserInteractable());

@@ -31,6 +31,21 @@ class IndexFormatTest : public DawnTest {
         utils::BasicRenderPass renderPass;
 
         dawn::RenderPipeline MakeTestPipeline(dawn::IndexFormat format) {
+            dawn::VertexInputDescriptor input;
+            input.inputSlot = 0;
+            input.stride = 4 * sizeof(float);
+            input.stepMode = dawn::InputStepMode::Vertex;
+
+            dawn::VertexAttributeDescriptor attribute;
+            attribute.shaderLocation = 0;
+            attribute.inputSlot = 0;
+            attribute.offset = 0;
+            attribute.format = dawn::VertexFormat::FloatR32G32B32A32;
+
+            dawn::InputState inputState = device.CreateInputStateBuilder()
+                                              .SetInput(&input)
+                                              .SetAttribute(&attribute)
+                                              .GetResult();
 
             dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
@@ -52,11 +67,8 @@ class IndexFormatTest : public DawnTest {
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
-            descriptor.cInputState.indexFormat = format;
-            descriptor.cInputState.numInputs = 1;
-            descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
-            descriptor.cInputState.numAttributes = 1;
-            descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
+            descriptor.indexFormat = format;
+            descriptor.inputState = inputState;
             descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
             return device.CreateRenderPipeline(&descriptor);
@@ -78,7 +90,7 @@ TEST_P(IndexFormatTest, Uint32) {
         1, 2, 3
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -109,7 +121,7 @@ TEST_P(IndexFormatTest, Uint16) {
         1, 2, 0, 0, 0, 0
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -153,7 +165,7 @@ TEST_P(IndexFormatTest, Uint32PrimitiveRestart) {
         0, 1, 2, 0xFFFFFFFFu, 3, 4, 2,
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -189,7 +201,7 @@ TEST_P(IndexFormatTest, Uint16PrimitiveRestart) {
         0xFFFFu,
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -228,7 +240,7 @@ TEST_P(IndexFormatTest, ChangePipelineAfterSetIndexBuffer) {
         1, 2, 3
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -263,7 +275,7 @@ TEST_P(IndexFormatTest, DISABLED_SetIndexBufferBeforeSetPipeline) {
         0, 1, 2
     });
 
-    uint64_t zeroOffset = 0;
+    uint32_t zeroOffset = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);

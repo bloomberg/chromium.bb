@@ -4,7 +4,6 @@
 //
 // SystemStorage eject API browser tests.
 
-#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -61,7 +60,7 @@ class SystemStorageEjectApiTest : public extensions::ShellApiTest {
                                const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
     host->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(js_command), base::NullCallback());
+        base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

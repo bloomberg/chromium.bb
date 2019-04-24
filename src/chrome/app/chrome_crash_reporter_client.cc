@@ -32,7 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/descriptors_android.h"
 #endif
 
 #if defined(OS_CHROMEOS)

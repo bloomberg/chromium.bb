@@ -20,10 +20,6 @@
 #error "Extensions must be enabled"
 #endif
 
-namespace base {
-class OneShotEvent;
-}
-
 namespace content {
 class BrowserContext;
 }
@@ -37,6 +33,7 @@ class ExtensionService;
 class ExtensionSet;
 class InfoMap;
 class ManagementPolicy;
+class OneShotEvent;
 class QuotaService;
 class RuntimeData;
 class ServiceWorkerManager;
@@ -125,7 +122,7 @@ class ExtensionSystem : public KeyedService {
       const UnloadedExtensionReason reason) {}
 
   // Signaled when the extension system has completed its startup tasks.
-  virtual const base::OneShotEvent& ready() const = 0;
+  virtual const OneShotEvent& ready() const = 0;
 
   // Returns the content verifier, if any.
   virtual ContentVerifier* content_verifier() = 0;

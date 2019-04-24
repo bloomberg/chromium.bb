@@ -43,9 +43,6 @@ class CsvOutputFormatterTest(unittest.TestCase):
     self._formatter = None
     self.MakeFormatter()
 
-  def tearDown(self):
-    self._results.CleanUp()
-
   def MakeFormatter(self):
     self._formatter = csv_output_formatter.CsvOutputFormatter(self._output)
 
@@ -88,7 +85,7 @@ class CsvOutputFormatterTest(unittest.TestCase):
   def testMultiplePagesAndValues(self, cs_insert_mock):
     cs_insert_mock.return_value = 'https://cloud_storage_url/foo'
     trace_value = trace.TraceValue(
-        None, trace_data.CreateTestTrace(),
+        None, trace_data.CreateTraceDataFromRawData('{"traceEvents": []}'),
         remote_path='rp', upload_bucket='foo', cloud_url='http://google.com')
     trace_value.SerializeTraceData()
     trace_value.UploadToCloud()

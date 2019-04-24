@@ -16,6 +16,14 @@ namespace blink {
 class CORE_EXPORT AddEventListenerOptionsResolved
     : public AddEventListenerOptions {
  public:
+  static AddEventListenerOptionsResolved* Create() {
+    return MakeGarbageCollected<AddEventListenerOptionsResolved>();
+  }
+  static AddEventListenerOptionsResolved* Create(
+      const AddEventListenerOptions* options) {
+    return MakeGarbageCollected<AddEventListenerOptionsResolved>(options);
+  }
+
   AddEventListenerOptionsResolved();
   AddEventListenerOptionsResolved(const AddEventListenerOptions*);
   ~AddEventListenerOptionsResolved() override;

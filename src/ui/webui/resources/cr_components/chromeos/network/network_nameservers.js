@@ -21,6 +21,12 @@ Polymer({
       observer: 'networkPropertiesChanged_',
     },
 
+    /** Whether or not the nameservers can be edited. */
+    editable: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Array of nameserver addresses stored as strings.
      * @private {!Array<string>}
@@ -53,7 +59,7 @@ Polymer({
     /** @private */
     canChangeConfigType_: {
       type: Boolean,
-      computed: 'computeCanChangeConfigType_(networkProperties)',
+      computed: 'computeCanChangeConfigType_(editable, networkProperties)',
     }
   },
 
@@ -133,11 +139,16 @@ Polymer({
   },
 
   /**
+   * @param {boolean} editable
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the nameservers config type type can be changed.
    * @private
    */
-  computeCanChangeConfigType_: function(networkProperties) {
+  computeCanChangeConfigType_: function(editable, networkProperties) {
+    if (!editable) {
+      return false;
+    }
+
     return !this.isNetworkPolicyPathEnforced(
                networkProperties, 'NameServersConfigType') &&
         !this.isNetworkPolicyPathEnforced(
@@ -145,13 +156,15 @@ Polymer({
   },
 
   /**
+   * @param {boolean} editable
    * @param {string} nameserversType
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the nameservers are editable.
    * @private
    */
-  canEditCustomNameServers_: function(nameserversType, networkProperties) {
-    return nameserversType == 'custom' &&
+  canEditCustomNameServers_: function(
+      editable, nameserversType, networkProperties) {
+    return editable && nameserversType == 'custom' &&
         !this.isNetworkPolicyEnforced(
             networkProperties.NameServersConfigType) &&
         !!networkProperties.StaticIPConfig &&

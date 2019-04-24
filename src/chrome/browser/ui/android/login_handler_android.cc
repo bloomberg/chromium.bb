@@ -27,7 +27,7 @@ namespace {
 
 class LoginHandlerAndroid : public LoginHandler {
  public:
-  LoginHandlerAndroid(const net::AuthChallengeInfo& auth_info,
+  LoginHandlerAndroid(net::AuthChallengeInfo* auth_info,
                       content::WebContents* web_contents,
                       LoginAuthRequiredCallback auth_required_callback)
       : LoginHandler(auth_info,
@@ -89,7 +89,7 @@ class LoginHandlerAndroid : public LoginHandler {
 
 // static
 std::unique_ptr<LoginHandler> LoginHandler::Create(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback) {
   return std::make_unique<LoginHandlerAndroid>(

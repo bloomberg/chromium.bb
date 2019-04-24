@@ -417,17 +417,13 @@ void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
     observer.SetAvatarForUser(account_id, avatar);
 }
 
-void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
-  if (DataDispatcher())
-    DataDispatcher()->EnableAuthForUser(account_id);
-}
-
-void LoginScreenController::DisableAuthForUser(
+void LoginScreenController::SetAuthEnabledForUser(
     const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
+    bool is_enabled,
+    base::Optional<base::Time> auth_reenabled_time) {
   if (DataDispatcher()) {
-    DataDispatcher()->DisableAuthForUser(account_id,
-                                         std::move(auth_disabled_data));
+    DataDispatcher()->SetAuthEnabledForUser(account_id, is_enabled,
+                                            auth_reenabled_time);
   }
 }
 
@@ -489,13 +485,11 @@ void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
 }
 
 void LoginScreenController::SetKioskApps(
-    std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
-    SetKioskAppsCallback callback) {
+    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
       ->SetKioskApps(std::move(kiosk_apps));
-  std::move(callback).Run(true);
 }
 
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
@@ -586,8 +580,6 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
 }
 
 void LoginScreenController::FocusOobeDialog() {
-  if (!login_screen_client_)
-    return;
   login_screen_client_->FocusOobeDialog();
 }
 

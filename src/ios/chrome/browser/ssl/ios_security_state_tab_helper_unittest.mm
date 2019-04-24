@@ -32,9 +32,10 @@ class IOSSecurityStateTabHelperTest : public web::WebTestWithWebState {
 
   // Returns the InsecureInputEventData for current WebState().
   security_state::InsecureInputEventData GetInsecureInputEventData() const {
-    return IOSSecurityStateTabHelper::FromWebState(web_state())
-        ->GetVisibleSecurityState()
-        ->insecure_input_events;
+    security_state::SecurityInfo info;
+    IOSSecurityStateTabHelper::FromWebState(web_state())
+        ->GetSecurityInfo(&info);
+    return info.insecure_input_events;
   }
 
   InsecureInputTabHelper* insecure_input() { return insecure_input_; }

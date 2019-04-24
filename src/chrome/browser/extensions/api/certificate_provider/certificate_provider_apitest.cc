@@ -53,27 +53,29 @@ using testing::_;
 
 namespace {
 
-void IgnoreResult(const base::Closure& callback, base::Value value) {
+void IgnoreResult(const base::Closure& callback, const base::Value* value) {
   callback.Run();
 }
 
-void StoreBool(bool* result, const base::Closure& callback, base::Value value) {
-  value.GetAsBoolean(result);
+void StoreBool(bool* result,
+               const base::Closure& callback,
+               const base::Value* value) {
+  value->GetAsBoolean(result);
   callback.Run();
 }
 
 void StoreString(std::string* result,
                  const base::Closure& callback,
-                 base::Value value) {
-  value.GetAsString(result);
+                 const base::Value* value) {
+  value->GetAsString(result);
   callback.Run();
 }
 
 void StoreDigest(std::vector<uint8_t>* digest,
                  const base::Closure& callback,
-                 base::Value value) {
-  ASSERT_TRUE(value.is_blob()) << "Unexpected value in StoreDigest";
-  digest->assign(value.GetBlob().begin(), value.GetBlob().end());
+                 const base::Value* value) {
+  ASSERT_TRUE(value->is_blob()) << "Unexpected value in StoreDigest";
+  digest->assign(value->GetBlob().begin(), value->GetBlob().end());
   callback.Run();
 }
 
@@ -247,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     base::RunLoop run_loop;
     extension_contents->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("signDigestRequest.digest;"),
-        base::BindOnce(&StoreDigest, &request_digest, run_loop.QuitClosure()));
+        base::Bind(&StoreDigest, &request_digest, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -275,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
         "replyWithSignature(" + JsUint8Array(signature) + ");";
     extension_contents->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16(code),
-        base::BindOnce(&IgnoreResult, run_loop.QuitClosure()));
+        base::Bind(&IgnoreResult, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -289,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     std::string https_reply;
     https_contents->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("document.body.textContent;"),
-        base::BindOnce(&StoreString, &https_reply, run_loop.QuitClosure()));
+        base::Bind(&StoreString, &https_reply, run_loop.QuitClosure()));
     run_loop.Run();
     // Expect the server to return the fingerprint of the client cert that we
     // presented, which should be the fingerprint of 'l1_leaf.der'.
@@ -309,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     bool result = false;
     extension_contents->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16(code),
-        base::BindOnce(&StoreBool, &result, run_loop.QuitClosure()));
+        base::Bind(&StoreBool, &result, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(result);
   }

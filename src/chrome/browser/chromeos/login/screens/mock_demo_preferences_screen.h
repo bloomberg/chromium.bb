@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEMO_PREFERENCES_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEMO_PREFERENCES_SCREEN_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
@@ -16,7 +14,8 @@ namespace chromeos {
 
 class MockDemoPreferencesScreen : public DemoPreferencesScreen {
  public:
-  MockDemoPreferencesScreen(DemoPreferencesScreenView* view,
+  MockDemoPreferencesScreen(BaseScreenDelegate* base_screen_delegate,
+                            DemoPreferencesScreenView* view,
                             const ScreenExitCallback& exit_callback);
   ~MockDemoPreferencesScreen() override;
 
@@ -37,7 +36,6 @@ class MockDemoPreferencesScreenView : public DemoPreferencesScreenView {
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockBind, void(DemoPreferencesScreen* screen));
-  MOCK_METHOD1(SetInputMethodId, void(const std::string& input_method));
 
   void Bind(DemoPreferencesScreen* screen) override;
 

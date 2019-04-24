@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_H_
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
 
 namespace blink {
@@ -32,8 +31,6 @@ enum class IceTransportPolicy {
 // The ICE Agent is immediately active once this object has been constructed. It
 // can be stopped by deleting the IceTransportAdapter.
 class IceTransportAdapter {
-  USING_FAST_MALLOC(IceTransportAdapter);
-
  public:
   // Delegate to receive callbacks from the IceTransportAdapter. The Delegate
   // must outlive the IceTransportAdapter.

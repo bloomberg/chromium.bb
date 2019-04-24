@@ -16,7 +16,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -31,11 +30,13 @@
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_blacklist.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -62,12 +63,11 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
-#include "components/autofill/core/browser/payments/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -83,6 +83,7 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
+#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -129,8 +130,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/attestation_constants.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
@@ -150,9 +151,6 @@ using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
 
 namespace {
-
-// Timeout after which the histogram for slow tasks is recorded.
-const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 
 // Generic functions but currently only used when ENABLE_NACL.
 #if BUILDFLAG(ENABLE_NACL)
@@ -199,19 +197,19 @@ bool WebsiteSettingsFilterAdapter(
 }
 
 #if BUILDFLAG(ENABLE_NACL)
-void ClearNaClCacheOnIOThread(base::OnceClosure callback) {
+void ClearNaClCacheOnIOThread(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  nacl::NaClBrowser::GetInstance()->ClearValidationCache(std::move(callback));
+  nacl::NaClBrowser::GetInstance()->ClearValidationCache(callback);
 }
 
 void ClearPnaclCacheOnIOThread(base::Time begin,
                                base::Time end,
-                               base::OnceClosure callback) {
+                               const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
-      begin, end, std::move(callback));
+      begin, end, callback);
 }
 #endif
 
@@ -227,7 +225,7 @@ void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
 
 // Returned by ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher().
 bool DoesOriginMatchEmbedderMask(int origin_type_mask,
-                                 const url::Origin& origin,
+                                 const GURL& origin,
                                  storage::SpecialStoragePolicy* policy) {
   DCHECK_EQ(
       0,
@@ -238,7 +236,7 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Packaged apps and extensions match iff EXTENSION.
-  if ((origin.scheme() == extensions::kExtensionScheme) &&
+  if ((origin.GetOrigin().scheme() == extensions::kExtensionScheme) &&
       (origin_type_mask &
        ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION)) {
     return true;
@@ -321,15 +319,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   TRACE_EVENT0("browsing_data",
                "ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData");
-
-  // To detect tasks that are causing slow deletions, record running sub tasks
-  // after a delay.
-  slow_pending_tasks_closure_.Reset(base::BindRepeating(
-      &ChromeBrowsingDataRemoverDelegate::RecordUnfinishedSubTasks,
-      weak_ptr_factory_.GetWeakPtr()));
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  slow_pending_tasks_closure_.callback(),
-                                  kSlowTaskTimeout);
 
   // Embedder-defined DOM-accessible storage currently contains only
   // one datatype, which is the durable storage permission.
@@ -430,6 +419,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (content_suggestions_service) {
       content_suggestions_service->ClearHistory(delete_begin_, delete_end_,
                                                 filter);
+    }
+
+    // Remove the last visit dates meta-data from the bookmark model.
+    bookmarks::BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForBrowserContext(profile_);
+    if (bookmark_model) {
+      ntp_snippets::RemoveLastVisitedDatesBetween(delete_begin_, delete_end_,
+                                                  filter, bookmark_model);
     }
 
     language::UrlLanguageHistogram* language_histogram =
@@ -564,6 +561,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (previews_service)
       previews_service->ClearBlackList(delete_begin_, delete_end_);
 
+    // |previews_service| is null if |profile_| is off the record.
+    PageLoadCappingService* page_load_capping_service =
+        PageLoadCappingServiceFactory::GetForBrowserContext(profile_);
+    if (page_load_capping_service &&
+        page_load_capping_service->page_load_capping_blacklist()) {
+      page_load_capping_service->page_load_capping_blacklist()->ClearBlackList(
+          delete_begin_, delete_end_);
+    }
 
 #if defined(OS_ANDROID)
     OomInterventionDecider* oom_intervention_decider =
@@ -611,7 +616,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 #endif
 
-    CreateCrashUploadList()->Clear(delete_begin_, delete_end_);
+#if !defined(OS_CHROMEOS)
+    crash_reporter::ClearReportsBetween(delete_begin_, delete_end_);
+#endif
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -898,14 +905,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_NACL)
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ClearNaClCacheOnIOThread,
-                       UIThreadTrampoline(CreateTaskCompletionClosure(
-                           TracingDataType::kNaclCache))));
+        base::BindOnce(
+            &ClearNaClCacheOnIOThread,
+            base::AdaptCallbackForRepeating(UIThreadTrampoline(
+                CreateTaskCompletionClosure(TracingDataType::kNaclCache)))));
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
-                       UIThreadTrampoline(CreateTaskCompletionClosure(
-                           TracingDataType::kPnaclCache))));
+        base::BindOnce(
+            &ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
+            base::AdaptCallbackForRepeating(UIThreadTrampoline(
+                CreateTaskCompletionClosure(TracingDataType::kPnaclCache)))));
 #endif
 
     // The PrerenderManager may have a page actively being prerendered, which
@@ -1049,16 +1058,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       if (!user) {
         LOG(WARNING) << "Failed to find user for current profile.";
       } else {
-        chromeos::CryptohomeClient::Get()->TpmAttestationDeleteKeys(
-            chromeos::attestation::KEY_USER,
-            cryptohome::CreateAccountIdentifierFromAccountId(
-                user->GetAccountId()),
-            chromeos::attestation::kContentProtectionKeyPrefix,
-            base::BindOnce(
-                &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
-                weak_ptr_factory_.GetWeakPtr(),
-                CreateTaskCompletionClosure(
-                    TracingDataType::kTpmAttestationKeys)));
+        chromeos::DBusThreadManager::Get()
+            ->GetCryptohomeClient()
+            ->TpmAttestationDeleteKeys(
+                chromeos::attestation::KEY_USER,
+                cryptohome::CreateAccountIdentifierFromAccountId(
+                    user->GetAccountId()),
+                chromeos::attestation::kContentProtectionKeyPrefix,
+                base::BindOnce(
+                    &ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    CreateTaskCompletionClosure(
+                        TracingDataType::kTpmAttestationKeys)));
       }
     }
 #endif  // defined(OS_CHROMEOS)
@@ -1128,9 +1139,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto result = pending_sub_tasks_.insert(data_type);
-  DCHECK(result.second) << "Task already started: "
-                        << static_cast<int>(data_type);
+  num_pending_tasks_++;
   TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
                            static_cast<int>(data_type), "data_type",
                            static_cast<int>(data_type));
@@ -1139,15 +1148,13 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
 void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  size_t num_erased = pending_sub_tasks_.erase(data_type);
-  DCHECK_EQ(num_erased, 1U);
+  DCHECK_GT(num_pending_tasks_, 0);
+  num_pending_tasks_--;
   TRACE_EVENT_ASYNC_END1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
                          static_cast<int>(data_type), "data_type",
                          static_cast<int>(data_type));
-  if (!pending_sub_tasks_.empty())
+  if (num_pending_tasks_)
     return;
-
-  slow_pending_tasks_closure_.Cancel();
 
   DCHECK(!callback_.is_null());
   std::move(callback_).Run();
@@ -1171,14 +1178,6 @@ ChromeBrowsingDataRemoverDelegate::CreateTaskCompletionClosureForMojo(
       CreateTaskCompletionClosure(data_type),
       base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
                      weak_ptr_factory_.GetWeakPtr(), data_type));
-}
-
-void ChromeBrowsingDataRemoverDelegate::RecordUnfinishedSubTasks() {
-  DCHECK(!pending_sub_tasks_.empty());
-  for (TracingDataType task : pending_sub_tasks_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "History.ClearBrowsingData.Duration.SlowTasks180sChrome", task);
-  }
 }
 
 #if defined(OS_ANDROID)

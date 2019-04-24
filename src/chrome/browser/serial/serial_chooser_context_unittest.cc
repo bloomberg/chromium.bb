@@ -5,7 +5,6 @@
 #include "chrome/browser/serial/serial_chooser_context.h"
 
 #include "base/run_loop.h"
-#include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -20,18 +19,14 @@ class SerialChooserContextTest : public testing::Test {
   ~SerialChooserContextTest() override = default;
 
   Profile* profile() { return &profile_; }
-  MockPermissionObserver& observer() { return mock_observer_; }
 
   SerialChooserContext* GetContext(Profile* profile) {
-    auto* context = SerialChooserContextFactory::GetForProfile(profile);
-    context->AddObserver(&mock_observer_);
-    return context;
+    return SerialChooserContextFactory::GetForProfile(profile);
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  MockPermissionObserver mock_observer_;
 };
 
 }  // namespace
@@ -44,11 +39,6 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
 
   SerialChooserContext* context = GetContext(profile());
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
-
-  EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
-                              CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-                              CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
-
   context->GrantPortPermission(origin, origin, *port);
   EXPECT_TRUE(context->HasPortPermission(origin, origin, *port));
 
@@ -65,12 +55,6 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_EQ(content_settings::SettingSource::SETTING_SOURCE_USER,
             objects[0]->source);
   EXPECT_FALSE(objects[0]->incognito);
-
-  EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
-                              CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-                              CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
-  EXPECT_CALL(observer(),
-              OnPermissionRevoked(origin.GetURL(), origin.GetURL()));
 
   context->RevokeObjectPermission(origin.GetURL(), origin.GetURL(),
                                   objects[0]->value);

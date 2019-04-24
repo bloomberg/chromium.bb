@@ -38,12 +38,10 @@ namespace dawn_native { namespace vulkan {
 
     void RenderPassCacheQuery::SetColor(uint32_t index,
                                         dawn::TextureFormat format,
-                                        dawn::LoadOp loadOp,
-                                        bool hasResolveTarget) {
+                                        dawn::LoadOp loadOp) {
         colorMask.set(index);
         colorFormats[index] = format;
         colorLoadOp[index] = loadOp;
-        resolveTargetMask[index] = hasResolveTarget;
     }
 
     void RenderPassCacheQuery::SetDepthStencil(dawn::TextureFormat format,
@@ -53,10 +51,6 @@ namespace dawn_native { namespace vulkan {
         depthStencilFormat = format;
         this->depthLoadOp = depthLoadOp;
         this->stencilLoadOp = stencilLoadOp;
-    }
-
-    void RenderPassCacheQuery::SetSampleCount(uint32_t sampleCount) {
-        this->sampleCount = sampleCount;
     }
 
     // RenderPassCache
@@ -86,62 +80,14 @@ namespace dawn_native { namespace vulkan {
         const RenderPassCacheQuery& query) const {
         // The Vulkan subpasses want to know the layout of the attachments with VkAttachmentRef.
         // Precompute them as they must be pointer-chained in VkSubpassDescription
-        std::array<VkAttachmentReference, kMaxColorAttachments> colorAttachmentRefs;
-        std::array<VkAttachmentReference, kMaxColorAttachments> resolveAttachmentRefs;
-        VkAttachmentReference depthStencilAttachmentRef;
+        std::array<VkAttachmentReference, kMaxColorAttachments + 1> attachmentRefs;
 
         // Contains the attachment description that will be chained in the create info
-        // The order of all attachments in attachmentDescs is "color-depthstencil-resolve".
-        constexpr uint32_t kMaxAttachmentCount = kMaxColorAttachments * 2 + 1;
-        std::array<VkAttachmentDescription, kMaxAttachmentCount> attachmentDescs = {};
+        std::array<VkAttachmentDescription, kMaxColorAttachments + 1> attachmentDescs = {};
 
-        VkSampleCountFlagBits vkSampleCount = VulkanSampleCount(query.sampleCount);
-
-        uint32_t colorAttachmentIndex = 0;
+        uint32_t attachmentCount = 0;
         for (uint32_t i : IterateBitSet(query.colorMask)) {
-            auto& attachmentRef = colorAttachmentRefs[colorAttachmentIndex];
-            auto& attachmentDesc = attachmentDescs[colorAttachmentIndex];
-
-            attachmentRef.attachment = colorAttachmentIndex;
-            attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            attachmentDesc.flags = 0;
-            attachmentDesc.format = VulkanImageFormat(query.colorFormats[i]);
-            attachmentDesc.samples = vkSampleCount;
-            attachmentDesc.loadOp = VulkanAttachmentLoadOp(query.colorLoadOp[i]);
-            attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            ++colorAttachmentIndex;
-        }
-
-        uint32_t attachmentCount = colorAttachmentIndex;
-        VkAttachmentReference* depthStencilAttachment = nullptr;
-        if (query.hasDepthStencil) {
-            auto& attachmentDesc = attachmentDescs[attachmentCount];
-
-            depthStencilAttachment = &depthStencilAttachmentRef;
-
-            depthStencilAttachmentRef.attachment = attachmentCount;
-            depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            attachmentDesc.flags = 0;
-            attachmentDesc.format = VulkanImageFormat(query.depthStencilFormat);
-            attachmentDesc.samples = vkSampleCount;
-            attachmentDesc.loadOp = VulkanAttachmentLoadOp(query.depthLoadOp);
-            attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc.stencilLoadOp = VulkanAttachmentLoadOp(query.stencilLoadOp);
-            attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            ++attachmentCount;
-        }
-
-        uint32_t resolveAttachmentIndex = 0;
-        for (uint32_t i : IterateBitSet(query.resolveTargetMask)) {
-            auto& attachmentRef = resolveAttachmentRefs[resolveAttachmentIndex];
+            auto& attachmentRef = attachmentRefs[attachmentCount];
             auto& attachmentDesc = attachmentDescs[attachmentCount];
 
             attachmentRef.attachment = attachmentCount;
@@ -150,17 +96,37 @@ namespace dawn_native { namespace vulkan {
             attachmentDesc.flags = 0;
             attachmentDesc.format = VulkanImageFormat(query.colorFormats[i]);
             attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-            attachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc.loadOp = VulkanAttachmentLoadOp(query.colorLoadOp[i]);
             attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            ++attachmentCount;
-            ++resolveAttachmentIndex;
+            attachmentCount++;
         }
+        uint32_t colorAttachmentCount = attachmentCount;
 
-        VkAttachmentReference* resolveTargetAttachmentRefs =
-            query.resolveTargetMask.any() ? resolveAttachmentRefs.data() : nullptr;
+        VkAttachmentReference* depthStencilAttachment = nullptr;
+        if (query.hasDepthStencil) {
+            auto& attachmentRef = attachmentRefs[attachmentCount];
+            auto& attachmentDesc = attachmentDescs[attachmentCount];
+
+            depthStencilAttachment = &attachmentRefs[attachmentCount];
+
+            attachmentRef.attachment = attachmentCount;
+            attachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachmentDesc.flags = 0;
+            attachmentDesc.format = VulkanImageFormat(query.depthStencilFormat);
+            attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachmentDesc.loadOp = VulkanAttachmentLoadOp(query.depthLoadOp);
+            attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc.stencilLoadOp = VulkanAttachmentLoadOp(query.stencilLoadOp);
+            attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachmentCount++;
+        }
 
         // Create the VkSubpassDescription that will be chained in the VkRenderPassCreateInfo
         VkSubpassDescription subpassDesc;
@@ -168,9 +134,9 @@ namespace dawn_native { namespace vulkan {
         subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpassDesc.inputAttachmentCount = 0;
         subpassDesc.pInputAttachments = nullptr;
-        subpassDesc.colorAttachmentCount = colorAttachmentIndex;
-        subpassDesc.pColorAttachments = colorAttachmentRefs.data();
-        subpassDesc.pResolveAttachments = resolveTargetAttachmentRefs;
+        subpassDesc.colorAttachmentCount = colorAttachmentCount;
+        subpassDesc.pColorAttachments = attachmentRefs.data();
+        subpassDesc.pResolveAttachments = nullptr;
         subpassDesc.pDepthStencilAttachment = depthStencilAttachment;
         subpassDesc.preserveAttachmentCount = 0;
         subpassDesc.pPreserveAttachments = nullptr;
@@ -202,8 +168,6 @@ namespace dawn_native { namespace vulkan {
     size_t RenderPassCache::CacheFuncs::operator()(const RenderPassCacheQuery& query) const {
         size_t hash = Hash(query.colorMask);
 
-        HashCombine(&hash, Hash(query.resolveTargetMask));
-
         for (uint32_t i : IterateBitSet(query.colorMask)) {
             HashCombine(&hash, query.colorFormats[i], query.colorLoadOp[i]);
         }
@@ -213,22 +177,12 @@ namespace dawn_native { namespace vulkan {
             HashCombine(&hash, query.depthStencilFormat, query.depthLoadOp, query.stencilLoadOp);
         }
 
-        HashCombine(&hash, query.sampleCount);
-
         return hash;
     }
 
     bool RenderPassCache::CacheFuncs::operator()(const RenderPassCacheQuery& a,
                                                  const RenderPassCacheQuery& b) const {
         if (a.colorMask != b.colorMask) {
-            return false;
-        }
-
-        if (a.resolveTargetMask != b.resolveTargetMask) {
-            return false;
-        }
-
-        if (a.sampleCount != b.sampleCount) {
             return false;
         }
 

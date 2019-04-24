@@ -10,50 +10,34 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace extensions {
 class InfoMap;
 struct WebRequestInfo;
 
 namespace declarative_net_request {
-class CompositeMatcher;
+class RulesetMatcher;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
 // be constructed on any sequence but must be accessed and destroyed from the
 // same sequence.
 class RulesetManager {
  public:
-  struct Action {
-    enum class Type {
-      NONE,
-      // Block the network request.
-      BLOCK,
-      // Block the network request and collapse the corresponding DOM element.
-      COLLAPSE,
-      // Redirect the network request.
-      REDIRECT,
-    };
-
-    explicit Action(Type type);
-    ~Action();
-    Action(Action&&);
-    Action& operator=(Action&&);
-
-    bool operator==(const Action&) const;
-
-    Type type = Type::NONE;
-
-    // Valid iff |type| is |REDIRECT|.
-    base::Optional<GURL> redirect_url;
-
-    DISALLOW_COPY_AND_ASSIGN(Action);
+  enum class Action {
+    NONE,
+    // Block the network request.
+    BLOCK,
+    // Block the network request and collapse the corresponding DOM element.
+    COLLAPSE,
+    // Redirect the network request.
+    REDIRECT,
   };
 
   explicit RulesetManager(const InfoMap* info_map);
@@ -75,28 +59,26 @@ class RulesetManager {
   // Adds the ruleset for the given |extension_id|. Should not be called twice
   // in succession for an extension.
   void AddRuleset(const ExtensionId& extension_id,
-                  std::unique_ptr<CompositeMatcher> matcher,
+                  std::unique_ptr<RulesetMatcher> ruleset_matcher,
                   URLPatternSet allowed_pages);
 
   // Removes the ruleset for |extension_id|. Should be called only after a
   // corresponding AddRuleset.
   void RemoveRuleset(const ExtensionId& extension_id);
 
-  // Returns the CompositeMatcher corresponding to the |extension_id| or null
-  // if no matcher is present for the extension.
-  CompositeMatcher* GetMatcherForExtension(const ExtensionId& extension_id);
-
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 
-  // Returns the action to take for the given request.
-  // Precedence order: Allow > Blocking > Redirect rules.
-  // For redirect rules, most recently installed extensions are given
-  // preference.
+  // Returns the action to take for the given request. |redirect_url| will be
+  // populated if the returned action is |REDIRECT|. Blocking rules have higher
+  // priority than redirect rules. For determining the |redirect_url|, most
+  // recently installed extensions are given preference. |redirect_url| must not
+  // be null.
   Action EvaluateRequest(const WebRequestInfo& request,
-                         bool is_incognito_context) const;
+                         bool is_incognito_context,
+                         GURL* redirect_url) const;
 
-  // Returns the number of CompositeMatchers currently being managed.
+  // Returns the number of RulesetMatcher currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }
 
   // Sets the TestObserver. Client maintains ownership of |observer|.
@@ -106,7 +88,7 @@ class RulesetManager {
   struct ExtensionRulesetData {
     ExtensionRulesetData(const ExtensionId& extension_id,
                          const base::Time& extension_install_time,
-                         std::unique_ptr<CompositeMatcher> matcher,
+                         std::unique_ptr<RulesetMatcher> matcher,
                          URLPatternSet allowed_pages);
     ~ExtensionRulesetData();
     ExtensionRulesetData(ExtensionRulesetData&& other);
@@ -114,7 +96,7 @@ class RulesetManager {
 
     ExtensionId extension_id;
     base::Time extension_install_time;
-    std::unique_ptr<CompositeMatcher> matcher;
+    std::unique_ptr<RulesetMatcher> matcher;
     URLPatternSet allowed_pages;
 
     bool operator<(const ExtensionRulesetData& other) const;

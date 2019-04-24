@@ -32,6 +32,7 @@ class NativeViewHostMac : public NativeViewHostWrapper,
   ui::Layer* GetUiLayer() const override;
   uint64_t GetViewsFactoryHostId() const override;
   uint64_t GetNSViewId() const override;
+  id GetAccessibilityElement() const override;
   void OnHostableViewDestroying() override;
 
   // NativeViewHostWrapper:

@@ -483,14 +483,14 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
   }
 
   last_dns_response_ = nullptr;
-  DCHECK(url_request_context_);
   current_dns_transaction_ = factory->CreateTransaction(
       qname, net::dns_protocol::kTypeTXT,
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
                      weak_ptr_factory_.GetWeakPtr()),
       net_log_,
-      lookup_securely_ ? net::SecureDnsMode::SECURE : net::SecureDnsMode::OFF,
-      url_request_context_);
+      lookup_securely_ ? net::SecureDnsMode::SECURE : net::SecureDnsMode::OFF);
+  DCHECK(url_request_context_);
+  current_dns_transaction_->SetRequestContext(url_request_context_);
 
   current_dns_transaction_->Start();
   return true;
@@ -535,7 +535,7 @@ net::Error LogDnsClient::QueryAuditProof(
     bool lookup_securely,
     uint64_t tree_size,
     std::unique_ptr<AuditProofQuery>* out_query,
-    net::CompletionOnceCallback callback) {
+    const net::CompletionCallback& callback) {
   DCHECK(out_query);
 
   if (domain_for_log.empty() || leaf_hash.size() != crypto::kSHA256Length) {
@@ -552,16 +552,15 @@ net::Error LogDnsClient::QueryAuditProof(
 
   ++in_flight_queries_;
 
-  return query->Start(
-      std::move(leaf_hash), lookup_securely, tree_size,
-      base::BindOnce(&LogDnsClient::QueryAuditProofComplete,
-                     base::Unretained(this), std::move(callback)),
-      base::BindOnce(&LogDnsClient::QueryAuditProofCancelled,
-                     base::Unretained(this)));
+  return query->Start(std::move(leaf_hash), lookup_securely, tree_size,
+                      base::BindOnce(&LogDnsClient::QueryAuditProofComplete,
+                                     base::Unretained(this), callback),
+                      base::BindOnce(&LogDnsClient::QueryAuditProofCancelled,
+                                     base::Unretained(this)));
 }
 
 void LogDnsClient::QueryAuditProofComplete(
-    net::CompletionOnceCallback completion_callback,
+    const net::CompletionCallback& completion_callback,
     int net_error) {
   --in_flight_queries_;
 
@@ -570,7 +569,7 @@ void LogDnsClient::QueryAuditProofComplete(
   std::list<base::OnceClosure> not_throttled_callbacks =
       std::move(not_throttled_callbacks_);
 
-  std::move(completion_callback).Run(net_error);
+  completion_callback.Run(net_error);
 
   // Notify interested parties that the next query will not be throttled.
   for (auto& callback : not_throttled_callbacks) {

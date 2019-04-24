@@ -99,7 +99,7 @@ void UDPSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
   int buffer_size = (socket->buffer_size() <= 0 ? 4096 : socket->buffer_size());
   socket->RecvFrom(
       buffer_size,
-      base::BindOnce(&UDPSocketEventDispatcher::ReceiveCallback, params));
+      base::Bind(&UDPSocketEventDispatcher::ReceiveCallback, params));
 }
 
 /* static */

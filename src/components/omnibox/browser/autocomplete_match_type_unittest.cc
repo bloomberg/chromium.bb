@@ -47,13 +47,15 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelSearch) {
 namespace {
 
 bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
-  base::Optional<base::Value> value = base::JSONReader::Read(answer_json);
-  if (!value || !value->is_dict())
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(answer_json);
+  base::DictionaryValue* dict;
+  if (!value || !value->GetAsDictionary(&dict))
     return false;
 
   // ParseAnswer previously did not change the default answer type of -1, so
   // here we keep the same behavior by explicitly supplying default value.
-  return SuggestionAnswer::ParseAnswer(*value, base::UTF8ToUTF16("-1"), answer);
+  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"), answer);
 }
 
 }  // namespace

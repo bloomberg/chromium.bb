@@ -46,8 +46,8 @@ class MODULES_EXPORT AudioNodeOutput final {
  public:
   // It's OK to pass 0 for numberOfChannels in which case
   // setNumberOfChannels() must be called later on.
-  AudioNodeOutput(AudioHandler*, unsigned number_of_channels);
-
+  static std::unique_ptr<AudioNodeOutput> Create(AudioHandler*,
+                                                 unsigned number_of_channels);
   void Dispose();
 
   // Causes our AudioNode to process if it hasn't already for this render
@@ -91,6 +91,7 @@ class MODULES_EXPORT AudioNodeOutput final {
   void UpdateRenderingState();
 
  private:
+  AudioNodeOutput(AudioHandler*, unsigned number_of_channels);
   // Can be called from any thread.
   AudioHandler& Handler() const { return handler_; }
   DeferredTaskHandler& GetDeferredTaskHandler() const {

@@ -151,6 +151,7 @@ struct CORE_EXPORT ViewportDescription {
   }
   bool IsMetaViewportType() const { return type == kViewportMeta; }
   bool IsSpecifiedByAuthor() const { return type != kUserAgentStyleSheet; }
+  bool MatchesHeuristicsForGpuRasterization() const;
 
   // Reports UMA stat on whether the page is considered mobile or desktop and
   // what kind of mobile it is. Applies only to Android, must only be called

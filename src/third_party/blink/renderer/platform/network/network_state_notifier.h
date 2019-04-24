@@ -255,8 +255,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns |rtt| after adding host-specific random noise, and rounding it as
   // per the NetInfo spec to improve privacy.
-  uint32_t RoundRtt(const String& host,
-                    const base::Optional<TimeDelta>& rtt) const;
+  unsigned long RoundRtt(const String& host,
+                         const base::Optional<TimeDelta>& rtt) const;
 
   // Returns |downlink_mbps| after adding host-specific random noise, and
   // rounding it as per the NetInfo spec and to improve privacy.

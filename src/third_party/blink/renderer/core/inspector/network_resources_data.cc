@@ -132,7 +132,7 @@ size_t NetworkResourcesData::ResourceData::EvictContent() {
 }
 
 void NetworkResourcesData::ResourceData::SetResource(
-    const Resource* cached_resource) {
+    Resource* cached_resource) {
   cached_resource_ = cached_resource;
 }
 
@@ -329,7 +329,7 @@ void NetworkResourcesData::MaybeDecodeDataToContent(const String& request_id) {
 }
 
 void NetworkResourcesData::AddResource(const String& request_id,
-                                       const Resource* cached_resource) {
+                                       Resource* cached_resource) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return;

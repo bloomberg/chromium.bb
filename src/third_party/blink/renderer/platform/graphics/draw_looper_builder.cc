@@ -97,7 +97,8 @@ void DrawLooperBuilder::AddShadow(const FloatSize& offset,
         SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, sigma, respectCTM));
   }
 
-  paint->setColorFilter(SkColorFilters::Blend(sk_color, SkBlendMode::kSrcIn));
+  paint->setColorFilter(
+      SkColorFilter::MakeModeFilter(sk_color, SkBlendMode::kSrcIn));
 }
 
 }  // namespace blink

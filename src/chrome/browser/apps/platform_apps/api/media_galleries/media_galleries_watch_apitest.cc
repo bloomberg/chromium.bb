@@ -4,7 +4,6 @@
 //
 // MediaGalleries gallery watch API browser tests.
 
-#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
@@ -106,7 +105,7 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
                                const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
     background_host_->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(js_command), base::NullCallback());
+        base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

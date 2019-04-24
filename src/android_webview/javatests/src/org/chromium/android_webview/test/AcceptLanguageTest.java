@@ -100,7 +100,8 @@ public class AcceptLanguageTest {
     private void setLocaleForTesting(String lang, String country) {
         if (!isSingleLocale(lang, country)) {
             setSingleLocale(lang, country);
-            mAwContents.updateDefaultLocale();
+            AwContents.updateDefaultLocale();
+            mAwContents.getSettings().updateAcceptLanguages();
         }
     }
 
@@ -157,7 +158,8 @@ public class AcceptLanguageTest {
     @Feature({"AndroidWebView"})
     public void testAcceptLanguagesWithenUS() throws Throwable {
         LocaleList.setDefault(new LocaleList(new Locale("ko", "KR")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
+        mAwContents.getSettings().updateAcceptLanguages();
 
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
 
@@ -181,7 +183,8 @@ public class AcceptLanguageTest {
 
         // Test locales that contain "en-US" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("en", "US")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
+        mAwContents.getSettings().updateAcceptLanguages();
 
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
@@ -193,7 +196,8 @@ public class AcceptLanguageTest {
 
         // Test locales that contain "en-us" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("en", "us")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
+        mAwContents.getSettings().updateAcceptLanguages();
 
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
@@ -203,7 +207,8 @@ public class AcceptLanguageTest {
 
         // Test locales that do not contain "en-us" or "en-US" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("ja", "JP")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
+        mAwContents.getSettings().updateAcceptLanguages();
 
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 

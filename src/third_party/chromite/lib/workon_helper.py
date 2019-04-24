@@ -18,6 +18,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import repo_util
 from chromite.lib import sysroot_lib
 
 
@@ -653,32 +654,22 @@ class WorkonHelper(object):
       atoms = self._GetCanonicalAtoms(packages)
       ebuilds = [self._FindEbuildForPackage(atom) for atom in atoms]
 
-    build_root = self._src_root
-    src_root = os.path.join(build_root, "src")
-    manifest = git.ManifestCheckout.Cached(build_root)
-
     ebuild_to_repos = {}
-    ebuild_to_src_paths = collections.defaultdict(list)
-
     for ebuild in ebuilds:
       workon_vars = portage_util.EBuild.GetCrosWorkonVars(
           ebuild, portage_util.EbuildToCP(ebuild))
       projects = workon_vars.project if workon_vars else []
       ebuild_to_repos[ebuild] = projects
-      ebuild_obj = portage_util.EBuild(ebuild)
-      if ebuild_obj.is_blacklisted:
-        # blacklisted ebuilds may have source infos incorrectly defined since
-        # they are not validated by bots
-        continue
-      src_paths = ebuild_obj.GetSourceInfo(src_root, manifest).srcdirs
-      src_paths = [os.path.relpath(path, build_root) for path in src_paths]
-      ebuild_to_src_paths[ebuild] = src_paths
+
+    projects = repo_util.Repository(self._src_root).List()
+    repository_to_source_path = {p.name: p.path for p in projects}
 
     result = []
     for ebuild in ebuilds:
       package = portage_util.EbuildToCP(ebuild)
       repos = ebuild_to_repos.get(ebuild, [])
-      src_paths = ebuild_to_src_paths.get(ebuild, [])
+      src_paths = [repository_to_source_path.get(repo) for repo in repos]
+      src_paths = [path for path in src_paths if path]
       result.append(PackageInfo(package, repos, src_paths))
 
     result.sort()

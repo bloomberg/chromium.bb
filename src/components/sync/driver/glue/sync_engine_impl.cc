@@ -16,9 +16,10 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/glue/sync_engine_backend.h"
+#include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/engine_components_factory.h"
@@ -29,7 +30,6 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
-#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync/syncable/base_transaction.h"
 
 namespace syncer {
@@ -42,12 +42,12 @@ SyncEngineImpl::SyncEngineImpl(const std::string& name,
       sync_prefs_(sync_prefs),
       invalidator_(invalidator),
       weak_ptr_factory_(this) {
-  backend_ = base::MakeRefCounted<SyncEngineBackend>(
-      name_, sync_data_folder, weak_ptr_factory_.GetWeakPtr());
+  core_ = new SyncBackendHostCore(name_, sync_data_folder,
+                                  weak_ptr_factory_.GetWeakPtr());
 }
 
 SyncEngineImpl::~SyncEngineImpl() {
-  DCHECK(!backend_ && !host_) << "Must call Shutdown before destructor.";
+  DCHECK(!core_ && !host_) << "Must call Shutdown before destructor.";
   DCHECK(!registrar_);
 }
 
@@ -61,37 +61,33 @@ void SyncEngineImpl::Initialize(InitParams params) {
   registrar_ = params.registrar.get();
 
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoInitialize, backend_,
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoInitialize, core_,
                                 std::move(params)));
-}
-
-bool SyncEngineImpl::IsInitialized() const {
-  return initialized_;
 }
 
 void SyncEngineImpl::TriggerRefresh(const ModelTypeSet& types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoRefreshTypes, backend_, types));
+      base::BindOnce(&SyncBackendHostCore::DoRefreshTypes, core_, types));
 }
 
 void SyncEngineImpl::UpdateCredentials(const SyncCredentials& credentials) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoUpdateCredentials,
-                                backend_, credentials));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoUpdateCredentials,
+                                core_, credentials));
 }
 
 void SyncEngineImpl::InvalidateCredentials() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoInvalidateCredentials, backend_));
+      base::BindOnce(&SyncBackendHostCore::DoInvalidateCredentials, core_));
 }
 
 void SyncEngineImpl::StartConfiguration() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoStartConfiguration, backend_));
+      base::BindOnce(&SyncBackendHostCore::DoStartConfiguration, core_));
 }
 
 void SyncEngineImpl::StartSyncingWithServer() {
@@ -104,22 +100,22 @@ void SyncEngineImpl::StartSyncingWithServer() {
     sync_prefs_->SetLastPollTime(last_poll_time);
   }
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoStartSyncing, backend_,
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoStartSyncing, core_,
                                 last_poll_time));
 }
 
 void SyncEngineImpl::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoSetEncryptionPassphrase,
-                                backend_, passphrase));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoSetEncryptionPassphrase,
+                                core_, passphrase));
 }
 
 void SyncEngineImpl::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoSetDecryptionPassphrase,
-                                backend_, passphrase));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoSetDecryptionPassphrase,
+                                core_, passphrase));
 }
 
 void SyncEngineImpl::StopSyncingForShutdown() {
@@ -132,7 +128,7 @@ void SyncEngineImpl::StopSyncingForShutdown() {
 
   registrar_->RequestWorkerStopOnUIThread();
 
-  backend_->ShutdownOnUIThread();
+  core_->ShutdownOnUIThread();
 }
 
 void SyncEngineImpl::Shutdown(ShutdownReason reason) {
@@ -159,18 +155,18 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
   // |registrar_|.
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoShutdown, backend_, reason));
-  backend_ = nullptr;
+      base::BindOnce(&SyncBackendHostCore::DoShutdown, core_, reason));
+  core_ = nullptr;
   registrar_ = nullptr;
 }
 
 void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoPurgeDisabledTypes, backend_,
+      base::BindOnce(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
                      params.to_purge, params.to_journal, params.to_unapply));
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoConfigureSyncer, backend_,
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoConfigureSyncer, core_,
                                 std::move(params)));
 }
 
@@ -186,7 +182,7 @@ void SyncEngineImpl::UnregisterDirectoryDataType(ModelType type) {
 void SyncEngineImpl::EnableEncryptEverything() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoEnableEncryptEverything, backend_));
+      base::BindOnce(&SyncBackendHostCore::DoEnableEncryptEverything, core_));
 }
 
 void SyncEngineImpl::ActivateDirectoryDataType(
@@ -215,25 +211,25 @@ void SyncEngineImpl::DeactivateNonBlockingDataType(ModelType type) {
 }
 
 UserShare* SyncEngineImpl::GetUserShare() const {
-  return backend_->sync_manager()->GetUserShare();
+  return core_->sync_manager()->GetUserShare();
 }
 
 SyncEngineImpl::Status SyncEngineImpl::GetDetailedStatus() {
-  DCHECK(IsInitialized());
-  return backend_->sync_manager()->GetDetailedStatus();
+  DCHECK(initialized());
+  return core_->sync_manager()->GetDetailedStatus();
 }
 
 void SyncEngineImpl::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
-  DCHECK(IsInitialized());
+  DCHECK(initialized());
   base::PostTaskAndReplyWithResult(
       sync_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::HasUnsyncedItemsForTest, backend_),
+      base::BindOnce(&SyncBackendHostCore::HasUnsyncedItemsForTest, core_),
       std::move(cb));
 }
 
 void SyncEngineImpl::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
-  if (IsInitialized()) {
+  if (initialized()) {
     registrar_->GetModelSafeRoutingInfo(out);
   } else {
     NOTREACHED();
@@ -241,41 +237,41 @@ void SyncEngineImpl::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
 }
 
 void SyncEngineImpl::FlushDirectory() const {
-  DCHECK(IsInitialized());
+  DCHECK(initialized());
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::SaveChanges, backend_));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::SaveChanges, core_));
 }
 
 void SyncEngineImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &SyncEngineBackend::SendBufferedProtocolEventsAndEnableForwarding,
-          backend_));
+          &SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding,
+          core_));
 }
 
 void SyncEngineImpl::DisableProtocolEventForwarding() {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DisableProtocolEventForwarding,
-                     backend_));
+      base::BindOnce(&SyncBackendHostCore::DisableProtocolEventForwarding,
+                     core_));
 }
 
 void SyncEngineImpl::EnableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(IsInitialized());
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::EnableDirectoryTypeDebugInfoForwarding,
-                     backend_));
-}
-
-void SyncEngineImpl::DisableDirectoryTypeDebugInfoForwarding() {
-  DCHECK(IsInitialized());
+  DCHECK(initialized());
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &SyncEngineBackend::DisableDirectoryTypeDebugInfoForwarding,
-          backend_));
+          &SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding, core_));
+}
+
+void SyncEngineImpl::DisableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(initialized());
+  sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
+          core_));
 }
 
 void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
@@ -307,12 +303,20 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
 
+void SyncEngineImpl::AddExperimentalTypes() {
+  DCHECK(initialized());
+  Experiments experiments;
+  if (core_->sync_manager()->ReceivedExperiment(&experiments))
+    host_->OnExperimentsChanged(experiments);
+}
+
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     ModelTypeSet initial_types,
     const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
     const std::string& cache_guid,
+    const std::string& session_name,
     const std::string& birthday,
     const std::string& bag_of_chips) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -330,8 +334,12 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
   }
 
+  // Now that we've downloaded the control types, we can see if there are any
+  // experimental types to enable. This should be done before we inform
+  // the host to ensure they're visible in the customize screen.
+  AddExperimentalTypes();
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             cache_guid, birthday, bag_of_chips,
+                             cache_guid, session_name, birthday, bag_of_chips,
                              /*success=*/true);
 }
 
@@ -339,7 +347,7 @@ void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                              WeakHandle<DataTypeDebugInfoListener>(),
-                             /*cache_guid=*/"",
+                             /*cache_guid=*/"", /*session_name=*/"",
                              /*birthday=*/"", /*bag_of_chips=*/"",
                              /*success=*/false);
 }
@@ -350,7 +358,8 @@ void SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop(
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
-  if (IsInitialized()) {
+  if (initialized()) {
+    AddExperimentalTypes();
     host_->OnSyncCycleCompleted(snapshot);
   }
 }
@@ -369,15 +378,16 @@ void SyncEngineImpl::HandleMigrationRequestedOnFrontendLoop(
 
 void SyncEngineImpl::OnInvalidatorStateChange(InvalidatorState state) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnInvalidatorStateChange,
-                                backend_, state));
+      FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::DoOnInvalidatorStateChange, core_,
+                     state));
 }
 
 void SyncEngineImpl::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnIncomingInvalidation,
-                                backend_, invalidation_map));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoOnIncomingInvalidation,
+                                core_, invalidation_map));
 }
 
 std::string SyncEngineImpl::GetOwnerName() const {
@@ -429,9 +439,8 @@ void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,
                                         const base::Closure& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoOnCookieJarChanged, backend_,
-                     account_mismatch, empty_jar, callback));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoOnCookieJarChanged,
+                                core_, account_mismatch, empty_jar, callback));
 }
 
 void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
@@ -450,20 +459,11 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   DCHECK(success);
 }
 
-std::unique_ptr<ModelTypeControllerDelegate>
-SyncEngineImpl::GetNigoriControllerDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::make_unique<ProxyModelTypeControllerDelegate>(
-      sync_task_runner_,
-      base::BindRepeating(&SyncEngineBackend::GetNigoriControllerDelegate,
-                          base::RetainedRef(backend_)));
-}
-
 void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
   sync_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoOnInvalidatorClientIdChange,
-                     backend_, client_id));
+      base::BindOnce(&SyncBackendHostCore::DoOnInvalidatorClientIdChange, core_,
+                     client_id));
 }
 
 void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(

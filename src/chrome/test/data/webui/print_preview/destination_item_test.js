@@ -80,7 +80,6 @@ cr.define('destination_item_test', function() {
     // Test that the destination is opaque and the correct status shows up if
     // the destination has a bad cloud print certificate.
     test(assert(TestNames.BadCertificate), function() {
-      loadTimeData.overrideValues({isEnterpriseManaged: false});
       item.destination =
           print_preview_test_utils.createDestinationWithCertificateStatus(
               printerId, printerName, true);

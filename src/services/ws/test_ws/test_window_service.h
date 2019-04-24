@@ -15,6 +15,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ws/gpu_host/gpu_host.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
@@ -40,6 +41,7 @@ namespace test {
 // Service implementation that brings up the Window Service on top of aura.
 // Uses ws::WindowService to provide the Window Service.
 class TestWindowService : public service_manager::Service,
+                          public service_manager::mojom::ServiceFactory,
                           public gpu_host::GpuHostDelegate,
                           public WindowServiceDelegate,
                           public test_ws::mojom::TestWs {
@@ -84,10 +86,12 @@ class TestWindowService : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void CreatePackagedServiceInstance(
+
+  // service_manager::mojom::ServiceFactory:
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
       const std::string& name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
-      CreatePackagedServiceInstanceCallback callback) override;
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override;
 
   // gpu_host::GpuHostDelegate:
   void OnGpuServiceInitialized() override;
@@ -96,6 +100,8 @@ class TestWindowService : public service_manager::Service,
   void MaximizeNextWindow(MaximizeNextWindowCallback cb) override;
   void Shutdown(test_ws::mojom::TestWs::ShutdownCallback callback) override;
 
+  void BindServiceFactory(
+      service_manager::mojom::ServiceFactoryRequest request);
   void BindTestWs(test_ws::mojom::TestWsRequest request);
 
   void CreateGpuHost();
@@ -107,6 +113,8 @@ class TestWindowService : public service_manager::Service,
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
+  mojo::BindingSet<service_manager::mojom::ServiceFactory>
+      service_factory_bindings_;
   mojo::BindingSet<test_ws::mojom::TestWs> test_ws_bindings_;
 
   std::unique_ptr<WindowService> window_service_;

@@ -34,8 +34,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "services/network/public/cpp/network_switches.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/origin.h"
 
@@ -44,22 +42,20 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
 namespace {
 
-void RecordSecurityLevel(
-    const security_state::VisibleSecurityState& visible_security_state,
-    security_state::SecurityLevel security_level) {
-  if (security_state::IsSchemeCryptographic(visible_security_state.url)) {
+void RecordSecurityLevel(const security_state::SecurityInfo& security_info) {
+  if (security_info.scheme_is_cryptographic) {
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
-                              security_level,
+                              security_info.security_level,
                               security_state::SECURITY_LEVEL_COUNT);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
-                              security_level,
+                              security_info.security_level,
                               security_state::SECURITY_LEVEL_COUNT);
   }
 }
@@ -90,29 +86,22 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
-security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() const {
-  return security_state::GetSecurityLevel(
-      *GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
+void SecurityStateTabHelper::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
+  security_state::GetSecurityInfo(
+      GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
       base::BindRepeating(&IsOriginSecureWithWhitelist,
-                          GetSecureOriginsAndPatterns()));
-}
-
-std::unique_ptr<security_state::VisibleSecurityState>
-SecurityStateTabHelper::GetVisibleSecurityState() const {
-  auto state = security_state::GetVisibleSecurityState(web_contents());
-
-  // Malware status might already be known even if connection security
-  // information is still being initialized, thus no need to check for that.
-  state->malicious_content_status = GetMaliciousContentStatus();
-
-  return state;
+                          GetSecureOriginsAndPatterns()),
+      result);
 }
 
 void SecurityStateTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsFormSubmission()) {
+    security_state::SecurityInfo info;
+    GetSecurityInfo(&info);
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
-                              GetSecurityLevel(),
+                              info.security_level,
                               security_state::SECURITY_LEVEL_COUNT);
   }
 }
@@ -136,10 +125,10 @@ void SecurityStateTabHelper::DidFinishNavigation(
         net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
-  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
-      GetVisibleSecurityState();
-  if (net::IsCertStatusError(visible_security_state->cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state->cert_status) &&
+  security_state::SecurityInfo security_info;
+  GetSecurityInfo(&security_info);
+  if (net::IsCertStatusError(security_info.cert_status) &&
+      !net::IsCertStatusMinorError(security_info.cert_status) &&
       !navigation_handle->IsErrorPage()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
@@ -158,11 +147,11 @@ void SecurityStateTabHelper::DidFinishNavigation(
                 omnibox::kSimplifyHttpsIndicator,
                 OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
           : std::string();
-  if (GetSecurityLevel() == security_state::EV_SECURE) {
+  if (security_info.security_level == security_state::EV_SECURE) {
     if (parameter ==
         OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
           "As part of an experiment, Chrome temporarily shows only the "
           "\"Secure\" text in the address bar. Your SSL certificate with "
           "Extended Validation is still valid.");
@@ -170,7 +159,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
     if (parameter ==
         OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
           "As part of an experiment, Chrome temporarily shows only the lock "
           "icon in the address bar. Your SSL certificate with Extended "
           "Validation is still valid.");
@@ -179,7 +168,9 @@ void SecurityStateTabHelper::DidFinishNavigation(
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
-  RecordSecurityLevel(*GetVisibleSecurityState(), GetSecurityLevel());
+  security_state::SecurityInfo security_info;
+  GetSecurityInfo(&security_info);
+  RecordSecurityLevel(security_info);
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
@@ -219,7 +210,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
       case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(),
@@ -233,7 +224,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
       case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(),
@@ -269,6 +260,17 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
   return security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
+std::unique_ptr<security_state::VisibleSecurityState>
+SecurityStateTabHelper::GetVisibleSecurityState() const {
+  auto state = security_state::GetVisibleSecurityState(web_contents());
+
+  // Malware status might already be known even if connection security
+  // information is still being initialized, thus no need to check for that.
+  state->malicious_content_status = GetMaliciousContentStatus();
+
+  return state;
+}
+
 std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
     const {
   const base::CommandLine& command_line =
@@ -277,14 +279,13 @@ std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   std::string origins_str = "";
-  if (command_line.HasSwitch(
-          network::switches::kUnsafelyTreatInsecureOriginAsSecure)) {
+  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = command_line.GetSwitchValueASCII(
-        network::switches::kUnsafelyTreatInsecureOriginAsSecure);
+        switches::kUnsafelyTreatInsecureOriginAsSecure);
   } else if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure);
   }
-  return network::ParseSecureOriginAllowlist(origins_str);
+  return secure_origin_whitelist::ParseWhitelist(origins_str);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityStateTabHelper)

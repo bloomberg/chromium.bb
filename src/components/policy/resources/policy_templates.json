@@ -299,27 +299,30 @@
   ],
   'policy_definitions': [
     {
-      'name': 'Startup',
+      'name': 'Homepage',
       'type': 'group',
-      'caption': '''Startup, Home page and New Tab page''',
-      'desc': '''Configure the pages to load on startup, the default home page and the default new tab page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
+      'caption': '''Home page''',
+      'desc': '''Configure the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
-      The user's home page settings are only completely locked down if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
-
-      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
+      The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.''',
       'policies': [
-        'ShowHomeButton',
         'HomepageLocation',
         'HomepageIsNewTabPage',
+      ],
+    },
+    {
+      'name': 'NewTabPage',
+      'type': 'group',
+      'caption': '''New Tab Page''',
+      'desc': '''Configure the default New Tab page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'policies': [
         'NewTabPageLocation',
-        'RestoreOnStartup',
-        'RestoreOnStartupURLs',
       ],
     },
     {
       'name': 'RemoteAccess',
       'type': 'group',
-      'caption': '''Remote access''',
+      'caption': '''Configure remote access options''',
       'desc': '''Configure remote access options in Chrome Remote Desktop host.
 
       Chrome Remote Desktop host is a native service that runs on the target machine that a user can connect to using Chrome Remote Desktop application.  The native service is packaged and executed separately from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser.
@@ -386,7 +389,7 @@
     {
       'name': 'HTTPAuthentication',
       'type': 'group',
-      'caption': '''HTTP authentication''',
+      'caption': '''Policies for HTTP authentication''',
       'desc': '''Policies related to integrated HTTP authentication.''',
       'policies': [
         'AuthSchemes',
@@ -414,8 +417,18 @@
         'ExtensionAllowedTypes',
         'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
-        'ExtensionInstallListsMergeEnabled',
-        'UninstallBlacklistedExtensions',
+      ],
+    },
+    {
+      'name': 'RestoreOnStartupGroup',
+      'type': 'group',
+      'caption': '''Startup pages''',
+      'desc': '''Allows you to configure the pages that are loaded on startup.
+
+      The contents of the list 'URLs to open at startup' are ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
+      'policies': [
+        'RestoreOnStartup',
+        'RestoreOnStartupURLs',
       ],
     },
     {
@@ -522,7 +535,7 @@
     {
       'name': 'Drive',
       'type': 'group',
-      'caption': '''Google Drive''',
+      'caption': '''Configure Google Drive options''',
       'desc': '''Configure Google Drive in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
       'policies': [
         'DriveDisabled',
@@ -563,16 +576,6 @@
         'ScreenLockDelays',
         'PowerSmartDimEnabled',
         'ScreenBrightnessPercent',
-        'DevicePowerPeakShiftBatteryThreshold',
-        'DevicePowerPeakShiftDayConfig',
-        'DevicePowerPeakShiftEnabled',
-        'DeviceBootOnAcEnabled',
-        'DeviceAdvancedBatteryChargeModeEnabled',
-        'DeviceAdvancedBatteryChargeModeDayConfig',
-        'DeviceBatteryChargeMode',
-        'DeviceBatteryChargeCustomStartCharging',
-        'DeviceBatteryChargeCustomStopCharging',
-        'DeviceUsbPowerShareEnabled'
       ],
     },
     {
@@ -635,7 +638,7 @@
     {
       'name': 'QuickUnlock',
       'type': 'group',
-      'caption': '''Quick unlock''',
+      'caption': '''Quick unlock policies''',
       'desc': '''Configures quick unlock related policies.''',
       'policies': [
         'QuickUnlockModeWhitelist',
@@ -749,7 +752,7 @@
         'DeviceTransferSAMLCookies',
         'LoginVideoCaptureAllowedUrls',
         'DeviceStartUpFlags',
-        'DeviceLoginScreenExtensions',
+        'DeviceLoginScreenAppInstallList',
         'DeviceLoginScreenLocales',
         'DeviceLoginScreenInputMethods',
         'DeviceSecondFactorAuthentication',
@@ -793,9 +796,7 @@
         'DeviceDataRoamingEnabled',
         'NetworkThrottlingEnabled',
         'DeviceHostnameTemplate',
-        'DeviceWiFiFastTransitionEnabled',
-        'DeviceWiFiAllowed',
-        'DeviceDockMacAddressSource',
+        'DeviceWiFiFastTransitionEnabled'
       ],
     },
     {
@@ -818,7 +819,6 @@
         'MinimumRequiredChromeVersion',
         'DeviceRollbackToTargetVersion',
         'DeviceRollbackAllowedMilestones',
-        'DeviceQuickFixBuildToken',
       ],
     },
     {
@@ -978,7 +978,6 @@
       'desc': '''Controls wilco diagnostics and telemetry controller settings.''',
       'policies': [
         'DeviceWilcoDtcAllowed',
-        'DeviceWilcoDtcConfiguration',
       ],
     },
     {
@@ -1974,8 +1973,8 @@
         'type': 'string',
         'enum': [
           'any',
-          'pin',
-          'no_pin',
+          'secure',
+          'unsecure',
         ],
       },
       'items': [
@@ -1985,28 +1984,28 @@
           'caption': '''Allow printing both with and without PIN''',
         },
         {
-          'name': 'pin',
-          'value': 'pin',
+          'name': 'secure',
+          'value': 'secure',
           'caption': '''Allow printing only with PIN''',
         },
         {
-          'name': 'no_pin',
-          'value': 'no_pin',
+          'name': 'unsecure',
+          'value': 'unsecure',
           'caption': '''Allow printing only without PIN''',
         },
       ],
-      'supported_on': ['chrome_os:75-'],
+      'supported_on': ['chrome_os:74-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': 'pin',
+      'example_value': 'secure',
       'id': 525,
       'caption': '''Restrict PIN printing mode''',
       'tags': [],
-      'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols ''',
+      'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored.''',
     },
     {
       'name': 'PrintingAllowedPageSizes',
@@ -2121,30 +2120,30 @@
       'schema': {
         'type': 'string',
         'enum': [
-          'pin',
-          'no_pin',
+          'secure',
+          'unsecure',
         ],
       },
       'items': [
         {
-          'name': 'pin',
-          'value': 'pin',
+          'name': 'secure',
+          'value': 'secure',
           'caption': '''Enable PIN printing by default''',
         },
         {
-          'name': 'no_pin',
-          'value': 'no_pin',
+          'name': 'unsecure',
+          'value': 'unsecure',
           'caption': '''Disable PIN printing by default''',
         },
       ],
-      'supported_on': ['chrome_os:75-'],
+      'supported_on': ['chrome_os:74-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': 'pin',
+      'example_value': 'secure',
       'id': 526,
       'caption': '''Default PIN printing mode''',
       'tags': [],
@@ -3012,8 +3011,6 @@
       'tags': [],
       'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
-          This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
-
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
           If you choose to use system proxy settings, all other options are ignored.
@@ -3088,8 +3085,6 @@
 
           Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
-          This policy only takes effect  if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
-
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
           If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
@@ -3123,7 +3118,7 @@
       'tags': [],
       'desc': '''You can specify the URL of the proxy server here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3150,7 +3145,7 @@
       'tags': [],
       'desc': '''You can specify a URL to a proxy .pac file here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3177,7 +3172,7 @@
       'tags': [],
       'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3192,10 +3187,7 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'ProxyMode': {
-            'type': 'string',
-            'enum': ['direct', 'auto_detect', 'pac_script', 'fixed_servers', 'system'],
-          },
+          'ProxyMode': { 'type': 'string' },
           'ProxyPacUrl': { 'type': 'string' },
           'ProxyServer': { 'type': 'string' },
           'ProxyBypassList': { 'type': 'string' },
@@ -3207,6 +3199,7 @@
         'chrome_os:18-',
         'android:30-',
       ],
+      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3217,32 +3210,7 @@
       'tags': ['system-security'],
       'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. These proxy settings will be available for ARC-apps too.
 
-          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps ignore all proxy-related options specified from the command line.
-
-          Leaving this policy not set will allow the users to choose the proxy settings on their own.
-
-          If the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy is set, it will override any of the individual policies <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph>, <ph name="PROXY_PAC_URL_POLICY_NAME">ProxyPacUrl</ph>, <ph name="PROXY_SERVER_POLICY_NAME">ProxyServer</ph>, <ph name="PROXY_BYPASS_POLICY_NAME">ProxyBypassList</ph> and <ph name="PROXY_SERVER_MODE_POLICY_NAME">ProxyServerMode</ph>.
-
-          The <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph> field allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
-
-          The <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD">ProxyPacUrl</ph> field is a URL to a proxy .pac file.
-
-          The <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD">ProxyServer</ph> field is a URL of the proxy server.
-
-          The <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph> field is a list of proxy hosts that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass.
-
-          The <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD">ProxyServerMode</ph> field is deprecated in favor of the field 'ProxyMode'. It allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
-
-          If you choose the value 'direct' as 'ProxyMode', a proxy will never be used and all other fields will be ignored.
-
-          If you choose the value 'system' as 'ProxyMode', the systems's proxy will be used and all other fields will be ignored.
-
-          If you choose the value 'auto_detect' as 'ProxyMode', all other fields will be ignored.
-
-          If you choose the value 'fixed_server' as 'ProxyMode', the 'ProxyServer' and 'ProxyBypassList' fields will be used.
-
-          If you choose the value 'pac_script' as 'ProxyMode', the 'ProxyPacUrl' and 'ProxyBypassList' fields will be used.''',
-
+      This policy isn't ready for usage yet, please don't use it.''',
       'arc_support': 'Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.',
     },
     {
@@ -3429,7 +3397,7 @@
       },
       'example_value': True,
       'id': 393,
-      'caption': '''Enable NTLMv2 authentication.''',
+      'caption': '''Whether NTLMv2 authentication is enabled.''',
       'tags': ['website-sharing'],
       'desc': '''Controls whether NTLMv2 is enabled.
 
@@ -3495,7 +3463,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;https://clients2.google.com/service/update2/crx', 'abcdefghijklmnopabcdefghijklmnop'],
+      'example_value': ['gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx', 'abcdefghijklmnopabcdefghijklmnop'],
       'id': 34,
       'caption': '''Configure the list of force-installed apps and extensions''',
       'tags': ['full-admin-access'],
@@ -3517,7 +3485,7 @@
 
           Each list item of the policy is a string that contains an extension ID and, optionally, an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the "update" URL explicitly was mandatory in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> versions up to and including 67.
 
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;https://clients2.google.com/service/update2/crx</ph> installs the extension with id <ph name="EXTENSION_ID_SAMPLE">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ph> from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome Remote Desktop</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
 
           If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -3606,9 +3574,7 @@
 
           If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
 
-          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.
-
-          Prior to version 75 using multiple comma separated extension IDs is not supported and will be skipped. The rest of the policy will continue to apply.''',
+          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.''',
       'label': '''Types of extensions/apps that are allowed to be installed''',
     },
     {
@@ -3617,7 +3583,7 @@
       'schema': {
         'type': 'object',
         'patternProperties': {
-          '^[a-p]{32}(?:,[a-p]{32})*,?$': {
+          '^[a-p]{32}$': {
             'type': 'object',
             'properties': {
               'installation_mode': {
@@ -3723,10 +3689,6 @@
           'installation_mode': 'blocked',
           'blocked_install_message': 'Custom error message.',
         },
-        'defghijklmnopabcdefghijklmnopabc,efghijklmnopabcdefghijklmnopabcd' : {
-          'installation_mode': 'blocked',
-          'blocked_install_message': 'Custom error message.',
-        },
         'update_url:https://www.example.com/update.xml': {
           'blocked_permissions': ['wallpaper'],
           'allowed_permissions': ['downloads'],
@@ -3751,49 +3713,8 @@
 
           This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>.
 
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
           For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           ''',
-    },
-    {
-      'name': 'ExtensionInstallListsMergeEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*: 75-'],
-      'future': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 544,
-      'caption': '''Merge extension install list policies from multiple sources''',
-      'tags': [],
-      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
-
-      If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
-
-      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.''',
-    },
-    {
-      'name': 'UninstallBlacklistedExtensions',
-      'type': 'main',
-      'schema': {'type': 'boolean' },
-      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
-      'features' : {
-        'dynamic_refresh' : True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 546,
-      'caption': '''Uninstall blacklisted extensions''',
-      'tags': [],
-      'desc': '''This will remove extensions appearing in the <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> or extensions appearing in <ph name="EXTENSION_SETTINGS_POLICY_NAME">ExtensionSettings</ph> that have the installation mode set to blocked and will purge local user data with it.  Refer to the extensions privacy policy or data retention policy to understand what may happen with the user data that is not stored locally.
-
-      When the policy is set to enabled, extensions that fall in the aforementioned lists (if already installed on a machine) will be removed from that machine in its entirety (including local user data).
-
-      When the policy is set to disabled or left unset, extensions that fall in the aforementioned lists (if already installed on a machine and existing in the blacklist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>) will be disabled on the machine and not uninstalled.''',
     },
     {
       'name': 'ShowHomeButton',
@@ -4733,7 +4654,7 @@
           'required': ['devices', 'urls']
         }
       },
-      'supported_on': ['android:75-', 'chrome_os:74-', 'chrome.*:74-'],
+      'supported_on': ['chrome_os:74-', 'chrome.*:74-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -6108,31 +6029,6 @@
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
-      'name': 'PolicyListMultipleSourceMergeList',
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'supported_on': ['chrome.*:75-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': ['ExtensionInstallWhitelist', 'ExtensionInstallBlacklist'],
-      'id': 554,
-      'caption': '''Allow merging list policies from different sources''',
-      'tags': [],
-      'desc': '''Allows the selected policies to be merged when they come from different sources, with the same scopes and level.
-
-        If a policy is in the list, in case there is conflict between two sources, given that they have the same scopes and level, the values will be merged into a new policy list.
-
-        If a policy is in the list, in case there is conflict between two sources but also between different scopes and/or level, the policy with the highest priority will be applied.
-
-        If a policy is not in the list, in case there is any conflict between sources, scopes and/or level, the policy with the highest priority will be applied.''',
-      'label': '''Allow merging list policies from different sources''',
-    },
-    {
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -6542,7 +6438,7 @@
       },
       'example_value': False,
       'id': 129,
-      'caption': '''Enable online OCSP/CRL checks''',
+      'caption': '''Whether online OCSP/CRL checks are performed''',
       'tags': ['website-sharing'],
       'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
 
@@ -6559,7 +6455,7 @@
       },
       'example_value': False,
       'id': 235,
-      'caption': '''Require online OCSP/CRL checks for local trust anchors''',
+      'caption': '''Whether online OCSP/CRL checks are required for local trust anchors''',
       'tags': [],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always perform revocation checking for server certificates that successfully validate and are signed by locally-installed CA certificates.
 
@@ -6578,7 +6474,7 @@
       },
       'example_value': False,
       'id': 340,
-      'caption': '''Allow SHA-1 signed certificates issued by local trust anchors''',
+      'caption': '''Whether SHA-1 signed certificates issued by local trust anchors are allowed''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
 
@@ -6598,7 +6494,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 366,
-      'caption': '''Allow certificates issued by local trust anchors without subjectAlternativeName extension''',
+      'caption': '''Whether to allow certificates issued by local trust anchors that are missing the subjectAlternativeName extension''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the commonName of a server certificate to match a hostname if the certificate is missing a subjectAlternativeName extension, as long as it successfully validates and chains to a locally-installed CA certificates.
 
@@ -6610,14 +6506,14 @@
       'name': 'EnableSymantecLegacyInfrastructure',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:66-75', 'chrome_os:66-75', 'android:66-75'],
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-', 'android:66-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
       'example_value': False,
       'id': 413,
-      'caption': '''Enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
+      'caption': '''Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure''',
       'tags': ['system-security'],
       'desc': '''When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows certificates issued by Symantec Corporation's Legacy PKI operations to be trusted if they otherwise successfully validate and chain to a recognized CA certificate.
 
@@ -7213,7 +7109,7 @@
       },
       'example_value': False,
       'id': 134,
-      'caption': '''Users may configure the Chrome OS release channel''',
+      'caption': '''Whether the release channel should be configurable by the user''',
       'tags': [],
       'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
@@ -8322,9 +8218,7 @@
 
           When this policy is unset, no warning dialog is shown.
 
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.
-
-          The warning message is only shown if the idle action is to logout or shut down.''',
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
     },
     {
       'name': 'IdleDelayAC',
@@ -8457,9 +8351,7 @@
 
           When this policy is unset, no warning dialog is shown.
 
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.
-
-          The warning message is only shown if the idle action is to logout or shut down.''',
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
     },
     {
       'name': 'IdleDelayBattery',
@@ -8895,7 +8787,7 @@
           There are four types of action:
           * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
           * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
-          * A warning dialog will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken. The warning message is only shown if the idle action is to logout or shut down.
+          * A warning dialog will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
           * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
 
           For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not take the corresponding action.
@@ -10381,7 +10273,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 310,
-      'caption': '''Enable RC4 cipher suites in TLS''',
+      'caption': '''Whether RC4 cipher suites in TLS are enabled''',
       'tags': ['system-security'],
       'desc': '''Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 52 (around September 2016) and this policy will stop working then.
 
@@ -10405,7 +10297,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 334,
-      'caption': '''Enable DHE cipher suites in TLS''',
+      'caption': '''Whether DHE cipher suites in TLS are enabled''',
       'tags': ['system-security'],
       'desc': '''Warning: DHE will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 57 (around March 2017) and this policy will stop working then.
 
@@ -10484,8 +10376,7 @@
       'caption': '''Enable domain name autocomplete during user sign in''',
       'tags': [],
       'desc': '''If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show an autocomplete option during user sign-in flow.
-      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only their user name without the domain name extension.  The user will be able to overwrite this domain name extension.
-      If the value of the policy is not a valid domain, the policy will not be applied.''',
+      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only their user name without the domain name extension.  The user will be able to overwrite this domain name extension.''',
     },
     {
       'name': 'ForceMaximizeOnFirstRun',
@@ -11062,71 +10953,6 @@
       'id': 501,
     },
     {
-      'name': 'DeviceWiFiAllowed',
-      'device_only': True,
-      'caption': '''Enable WiFi''',
-      'desc': '''
-          If the policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will disable WiFi and users cannot enable it back.
-          If the policy is set to true or left unset, users will be able to enable or disable WiFi as they wish.''',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': True,
-      'tags': [],
-      'id': 537,
-    },
-    {
-      'name': 'DeviceDockMacAddressSource',
-      'caption': '''Device MAC address source when docked''',
-      'desc': '''
-          Configures which MAC (media access control) address will be used when a dock is connected to the device.
-
-          When a dock is connected to some device models, the device's designated dock MAC address is used to identify the device on Ethernet by default. This policy allows the administrator to change the source of the MAC address while docked.
-
-          If  'DeviceDockMacAddress' is selected or the policy is left unset, the device's designated dock MAC address will be used.
-
-          If  'DeviceNicMacAddress' is selected, the device's NIC (network interface controller) MAC address will be used.
-
-          If  'DockNicMacAddress' is selected, the dock's NIC MAC address will be used.
-
-          This setting can not be changed by the user.''',
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 1, 2, 3 ]
-      },
-      'items': [
-        {
-          'name': 'DeviceDockMacAddress',
-          'value': 1,
-          'caption': '''Device's designated dock MAC address'''
-        },
-        {
-          'name': 'DeviceNicMacAddress',
-          'value': 2,
-          'caption': '''Device's built-in NIC MAC address'''
-        },
-        {
-          'name': 'DockNicMacAddress',
-          'value': 3,
-          'caption': '''Dock's built-in NIC MAC address'''
-        },
-      ],
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': 1,
-      'tags': [],
-      'id': 547,
-    },
-    {
       'name': 'LoginVideoCaptureAllowedUrls',
       'type': 'list',
       'schema': {
@@ -11150,7 +10976,7 @@
       allowed.'''
     },
     {
-      'name': 'DeviceLoginScreenExtensions',
+      'name': 'DeviceLoginScreenAppInstallList',
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -11266,7 +11092,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [ 'chrome.*:52-74', 'chrome_os:52-74' ],
-      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -11791,10 +11616,6 @@
           'allow-user-initiated-preserve-device-state': {
             'type': 'boolean',
           },
-          'auto-update-mode': {
-            'type': 'integer',
-            'enum': [ 1, 2, 3, 4 ],
-          },
         },
       },
       'features': {
@@ -11804,7 +11625,6 @@
       'example_value': {
         'allow-user-initiated-powerwash': True,
         'allow-user-initiated-preserve-device-state': True,
-        'auto-update-mode': 1,
       },
       'caption': '''Configure <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update behavior''',
       'tags': [],
@@ -11815,13 +11635,6 @@
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE">allow-user-initiated-preserve-device-state</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE">true</ph>, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update flow that preserves device-wide state (including enterprise enrollment), but loses user data. This update flow is available starting from version 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE">auto-update-mode</ph>: Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware. All flows preserve local device state.
-        If set to 1 or left not set, TPM firmware updates are not enforced.
-        If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot after user acknowledges the update.
-        If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot.
-        If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated after enrollment, before user sign-in.
-        This option is available starting from version 74.
 
       If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
     },
@@ -12240,7 +12053,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2, 4],
+        'enum': [ 0, 1, 2, 3, 4, 5],
       },
       'items': [
         {
@@ -12259,10 +12072,20 @@
           'caption': '''Wipe the user’s ecryptfs home directory and start with a fresh ext4-encrypted home directory.''',
         },
         {
+          'name': 'AskUser',
+          'value': 3,
+          'caption': '''Ask the user if they would like to migrate or skip migration and disallow ARC.''',
+        },
+        {
           'name': 'MinimalMigrate',
           'value': 4,
           'caption': '''Similar to Wipe (value 2), but tries to preserve login tokens so the user does not have to sign in again.''',
         },
+        {
+          'name': 'AskForEcryptfsArcUsers',
+          'value': 5,
+          'caption': '''If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).''',
+        }
       ],
       'supported_on': ['chrome_os:61-'],
       'device_only': False,
@@ -12270,11 +12093,11 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': 2,
+      'example_value': 3,
       'id': 376,
       'caption': '''Migration strategy for ecryptfs''',
       'tags': [],
-      'desc': '''Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption.
+      'desc': '''Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption and needs to transition to ext4 encryption.
 
       If you set this policy to 'DisallowArc', Android apps will be disabled for the user and no migration from ecryptfs to ext4 encryption will be performed. Android apps will not be prevented from running when the home directory is already ext4-encrypted.
 
@@ -12282,9 +12105,7 @@
 
       If you set this policy to 'Wipe', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. Warning: This removes the user's local data.
 
-      If you set this policy to 'MinimalMigrate', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. However, it will be attempted to preserve login tokens so that the user does not have to sign in again. Warning: This removes the user's local data.
-
-      If you set this policy to an option that is no longer supported ('AskUser' or 'AskForEcryptfsArcUsers'), it will be treated as if you had selected 'Migrate' instead.
+      If you set this policy to 'AskUser', users with ecryptfs-encrypted home directories will be offered to migrate.
 
       This policy does not apply to kiosk users. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.''',
     },
@@ -12411,7 +12232,6 @@
                   'properties': {
                     'day_of_week': {
                       'type': 'string',
-                      'id': 'WeekDay',
                       'enum': [
                         'MONDAY',
                         'TUESDAY',
@@ -12476,24 +12296,25 @@
       'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (e.g. when user is logged in not with an allowed account).''',
     },
     {
-      'name': 'CloudPolicyOverridesPlatformPolicy',
+      'name': 'CloudPolicyOverridesMachinePolicy',
       'type': 'main',
       'schema': { 'type': 'boolean'},
-      'supported_on': ['chrome.*:65-'],
+      'supported_on': ['chrome.*:62-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,
       'id': 381,
-      'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Platform policy.''',
+      'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Machine policy.''',
       'tags': [],
+      'future': True,
       'desc': '''
-      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
-      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
+      If the policy is set to true, cloud  policy takes precedence if it conflicts with machine policy.
+      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
+      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
 
-      This policy is only available as a mandatory machine platform policy and it only affects machine scope cloud policies.
-      ''',
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
     },
     {
       'name': 'PromptForDownloadLocation',
@@ -12841,38 +12662,6 @@
 
       If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
 
-      If a language is included in both this policy and the SpellcheckLanguageBlacklist policy, this policy is prioritized and the spellcheck language is enabled.
-
-      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
-    },
-    {
-      'name': 'SpellcheckLanguageBlacklist',
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' }
-      },
-      # Spell checking is provided by macOS, so can't be controlled on Mac.
-      'supported_on': ['chrome.win:75-', 'chrome.linux:75-', 'chrome_os:75-'],
-      'features': {
-        'can_be_recommended': False,
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': ['fr', 'es'],
-      'id': 536,
-      'caption': '''Force disable spellcheck languages''',
-      'tags': [],
-      'desc': '''Force-disables spellcheck languages. Unrecognized languages in that list will be ignored.
-
-      If you enable this policy, spellcheck will be disabled for the languages specified. The user can still enable or disable spellcheck for languages not in the list.
-
-      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
-
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
-
-      If a language is included in both this policy and the SpellcheckLanguage policy, the SpellcheckLanguage policy is prioritized and the spellcheck language will be enabled.
-
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
     {
@@ -12906,7 +12695,7 @@
       'tags': [],
       'desc': '''If this policy is not set or enabled, the user is allowed to use spellcheck.
 
-      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage and SpellcheckLanguageBlacklist policies will also be ignored when this policy is disabled.
+      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage policy will also be ignored when this policy is disabled.
       '''
     },
     {
@@ -13430,7 +13219,7 @@
 
       When this policy is unset or set to Default (value 0), the behavior of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
 
-      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenExtensions policy).
+      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy affects only users who authenticate using SAML.''',
     },
@@ -13549,7 +13338,18 @@
                 'items': {
                   'type': 'object',
                   'properties': {
-                    'effective_day': { '$ref': 'WeekDay' },
+                    'effective_day': {
+                      'type': 'string',
+                      'enum': [
+                        'MONDAY',
+                        'TUESDAY',
+                        'WEDNESDAY',
+                        'THURSDAY',
+                        'FRIDAY',
+                        'SATURDAY',
+                        'SUNDAY'
+                      ]
+                    },
                     'starts_at': {
                       'type': 'object',
                       'id': 'Time',
@@ -13707,7 +13507,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2 ],
+        'enum': [ 0, 1 ],
       },
       'items': [
         {
@@ -13719,11 +13519,6 @@
           'name': 'BackupAndRestoreUnderUserControl',
           'value': 1,
           'caption': '''User decides whether to enable backup and restore''',
-        },
-        {
-          'name': 'BackupAndRestoreEnabled',
-          'value': 2,
-          'caption': '''Backup and restore enabled''',
         },
       ],
       'supported_on': ['chrome_os:68-'],
@@ -13737,22 +13532,18 @@
       'caption': '''Control Android backup and restore service''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the initial state of Android backup and restore.
+      '''This policy controls the availability of Android backup and restore.
 
-      When this policy is not configured or set to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph>, Android backup and restore is initially disabled.
+      When this policy is not configured or set to <ph name="BR_DISABLED">BackupAndRestoreDisabled</ph>, Android backup and restore is disabled and cannot be enabled by the user.
 
-      When this policy is set to <ph name="BR_ENABLED">BackupAndRestoreEnabled</ph>, Android backup and restore is initially enabled.
-
-      When this policy is set to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph>, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.
-
-      Note that this policy controls the state of Android backup and restore during initial setup only. The user can open Android settings afterward and turn Android backup and restore on/off.''',
+      When this policy is set to <ph name="BR_UNDER_USER_CONTROL">BackupAndRestoreUnderUserControl</ph>, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.''',
     },
     {
       'name': 'ArcGoogleLocationServicesEnabled',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2 ],
+        'enum': [ 0, 1 ],
       },
       'items': [
         {
@@ -13764,11 +13555,6 @@
           'name': 'GoogleLocationServicesUnderUserControl',
           'value': 1,
           'caption': '''User decides whether to enable Google location services''',
-        },
-        {
-          'name': 'GoogleLocationServicesEnabled',
-          'value': 2,
-          'caption': '''Google location services enabled''',
         },
       ],
       'supported_on': ['chrome_os:68-'],
@@ -13782,15 +13568,11 @@
       'caption': '''Control Android Google location services''',
       'tags': ['google-sharing'],
       'desc':
-      '''This policy controls the initial state of Google location services.
+      '''This policy controls the availability of Google location services.
 
-      When this policy is not configured or set to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph>, Google location services are initially disabled.
-
-      When this policy is set to <ph name="GLS_ENABLED">GoogleLocationServicesEnabled</ph>, Google location services are initially enabled.
+      When this policy is not configured or set to <ph name="GLS_DISABLED">GoogleLocationServicesDisabled</ph>, Google location services are disabled and cannot be enabled by the user.
 
       When this policy is set to <ph name="GLS_UNDER_USER_CONTROL">GoogleLocationServicesUnderUserControl</ph>, the user is asked to choose whether to use Google location services. This will allow Android apps to use the services to query the device location, and also will enable submitting of anonymous location data to Google.
-
-      Note that this policy controls the state of Google location services during initial setup only. The user can open Android settings afterward and turn Google location services on/off.
 
       Note that this policy is ignored and Google location services are always disabled when the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.''',
     },
@@ -14209,37 +13991,35 @@
           'type': 'object',
           'properties': {
             'url': { 'type': 'string' },
-            'default_launch_container': {
+            'launch_container': {
               'type': 'string',
               'enum': [
                 'tab',
                 'window'
               ]
-            },
-            'create_desktop_shortcut': { 'type': 'boolean' }
+            }
           },
           'required': ['url']
         }
       },
-      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
+      'supported_on': [],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': [{
         'url': 'https://www.google.com/maps',
-        'default_launch_container': 'window',
-        'create_desktop_shortcut': True
+        'launch_container': 'window'
       }, {
         'url': 'https://docs.google.com',
-        'default_launch_container': 'tab'
+        'launch_container': 'tab'
       }],
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
       'tags': [],
       'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
-      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created.''',
+      Each list item of the policy is an object with two members: "url" and "launch_container". "url" should be the URL of the web app to install and "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed. If "launch_container" is omitted, the app will launch in a window if Chrome considers it a Progressive Web App and in a tab otherwise.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
     {
@@ -14608,7 +14388,7 @@
 
       When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s own executable path when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
-      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
+      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
       This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.''',
     },
@@ -15076,7 +14856,7 @@
       'device_only': True,
       'example_value': 2,
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': False,
       },
       'supported_on': ['chrome_os:74-'],
@@ -15139,12 +14919,12 @@
       },
       'example_value': True,
       'id': 529,
-      'caption': '''Allow Google Assistant to listen for the voice activation phrase''',
+      'caption': '''"Allow Google Access Assistant to listen for the voice activation phrase"''',
       'desc': '''This policy gives Google Assistant permission to listen for the voice activation phrase.
 
       If the policy is enabled, Google Assistant would listen for the voice activation phrase.
       If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
+      If not set, users can decide whether to allow Google Assistant to listen to the voice activation phrase.
       ''',
     },
     {
@@ -15175,7 +14955,6 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
-      'default_for_enterprise_users': True,
       'example_value': False,
       'id': 533,
       'caption': '''Allows a page to show popups during its unloading''',
@@ -15189,545 +14968,6 @@
       This policy will be removed in Chrome 82.
 
       See https://www.chromestatus.com/feature/5989473649164288 .''',
-    },
-    {
-      'name': 'DeviceWilcoDtcConfiguration',
-      'type': 'external',
-      'schema': {
-        'type': 'object',
-        'properties': {
-          'url': { 'type': 'string' },
-          'hash': { 'type': 'string' }
-        },
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': {
-        "url": "https://example.com/wilcodtcconfig",
-        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-      },
-      'max_size': 1000000,
-      'id': 535,
-      'caption': '''Wilco DTC configuration''',
-      'tags': [],
-      'desc': '''Provides a wilco DTC (diagnostics and telemetry controller) configuration.
-
-      This policy allows to provide wilco DTC configuration that is allowed to be applied if wilco DTC is available on the given device and allowed by policy. The size of the configuration must not exceed 1MB (1000000 bytes) and must be encoded in JSON. The wilco DTC is responsible for handling it. The cryptographic hash is used to verify the integrity of the download.
-
-      The configuration is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      If you set this policy, users cannot change or override it.''',
-    },
-    {
-      'name': 'DevicePowerPeakShiftEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': False,
-      'id': 538,
-      'caption': '''Enable power peak shift''',
-      'tags': [],
-      'desc': '''Enable the power peak shift power management policy.
-
-          Peak Shift is power saving policy that minimizes alternating current usage during the peak usage times during the day. For each weekday a start and end time to run in power Peak Shift mode can be set. During these times the system will run from the battery even if the alternating current is attached as long as the battery stays above the threshold specified. After the end time specified the system will run from alternating current if attached but will not charge the battery. The system will again function normally using alternating current and recharging the battery after the specified Charge Start time.
-
-          If this policy is set to true, and DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig are set, then power peak shift will always be enabled if supported on the device.
-
-          If this policy is set to false, power peak shift will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, power peak shift is disabled initially and cannot be enabled by the user.'''
-    },
-    {
-      'name': 'DevicePowerPeakShiftBatteryThreshold',
-      'type': 'int',
-      'schema': {
-        'type': 'integer',
-        'minimum': 15,
-        'maximum': 100
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': 20,
-      'id': 539,
-      'caption': '''Set power peak shift battery threshold in percent''',
-      'tags': [],
-      'desc': '''Set power peak shift battery threshold in percent.
-
-          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
-
-          If this policy is not configured or left unset, power peak shift will always be disabled.'''
-    },
-    {
-      'name': 'DevicePowerPeakShiftDayConfig',
-      'type': 'dict',
-      'schema': {
-        'type': 'object',
-        'properties': {
-          'entries': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'day': { '$ref': 'WeekDay' },
-                'start_time': { '$ref': 'Time' },
-                'end_time': { '$ref': 'Time' },
-                'charge_start_time': { '$ref': 'Time' }
-              }
-            }
-          }
-        }
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': {
-        'entries': [
-          {
-            'day': 'MONDAY',
-            'start_time': {
-              'hour': 9,
-              'minute': 0
-            },
-            'end_time': {
-              'hour': 15,
-              'minute': 15
-            },
-            'charge_start_time': {
-              'hour': 20,
-              'minute': 45
-            }
-          },
-          {
-            'day': 'FRIDAY',
-            'start_time': {
-              'hour': 2,
-              'minute': 30
-            },
-            'end_time': {
-              'hour': 21,
-              'minute': 0
-            },
-            'charge_start_time': {
-              'hour': 23,
-              'minute': 45
-            }
-          }
-        ],
-      },
-      'id': 540,
-      'caption': '''Set power peak shift day config''',
-      'tags': [],
-      'desc': '''Set power peak shift day config.
-
-          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
-
-          If this policy is not configured or left unset, power peak shift will always be disabled.
-
-          Note: allowed values for <ph name="MINUTE_FIELD_NAME">minute</ph> field in <ph name="START_TIME_FIELD_NAME">start_time</ph>, <ph name="END_TIME_FIELD_NAME">end_time</ph> and <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> are 0, 15, 30, 45.'''
-    },
-    {
-      'name': 'DeviceBootOnAcEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': False,
-      'id': 541,
-      'caption': '''Enable boot on AC (alternating current)''',
-      'tags': [],
-      'desc': '''Enable the boot on AC power management policy.
-
-          Boot on AC provides an opportunity for system to automatically boot up from OFF/Hibernate state when line power is inserted.
-
-          If this policy is set to true then boot on AC will always be enabled if supported on the device.
-
-          If this policy is set to false, boot on AC will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.'''
-    },
-    {
-      'name': 'DeviceUsbPowerShareEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': True,
-      'id': 553,
-      'caption': '''Enable USB power share''',
-      'tags': [],
-      'desc': '''Enable the USB power share power management policy.
-
-          Certain devices have a specific USB port marked with a lightning bolt or battery icon that can be used to charge devices like a mobile phone using the system battery. This policy affects the charging behavior of this port while the system is in the sleep and shut down modes. This policy does not affect the other USB ports and the charging behavior while the system is awake.
-
-          When awake, the USB port will always provide power.
-
-          When sleeping, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger or if the battery level is > 50%. Otherwise no power is supplied.
-
-          When shut down, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger. Otherwise no power is supplied.
-
-          If this policy is left unset, the policy is enabled and cannot be disabled by the user.'''
-    },
-    {
-      'name': 'SignedHTTPExchangeEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 542,
-      'caption': '''Enable Signed HTTP Exchange (SXG) support''',
-      'tags': ['filtering'],
-      'desc': '''Enable support for Signed HTTP Exchange (SXG).
-
-          If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
-
-          If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.''',
-    },
-    {
-      'name': 'DeviceQuickFixBuildToken',
-      'type': 'string',
-      'schema': {
-        'type': 'string',
-      },
-      'supported_on': ['chrome_os:75-'],
-      'tags': [],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': 'sometoken',
-      'id': 543,
-      'caption': '''Provide users with Quick Fix Build.''',
-      'desc': '''This policy controls whether or not the device should be updated to a Quick Fix Build.
-
-      If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
-
-      If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.''',
-    },
-    {
-      'name': 'SamlInSessionPasswordChangeEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:76-'],
-      'future': True,
-      'tags': [],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': True,
-      'id': 545,
-      'caption': '''Enables a page for in-session change of password for SAML users.''',
-      'desc': '''Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lockscreen password are kept in-sync.
-
-      This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
-      But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
-
-      If this policy is set, the user cannot change or override it.''',
-    },
-    {
-      'name': 'SamlPasswordExpirationAdvanceWarningDays',
-      'type': 'int',
-      'schema': {
-        'type': 'integer',
-        'minimum': 0,
-        'maximum': 90
-      },
-      'supported_on': ['chrome_os:76-'],
-      'future': True,
-      'tags': [],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': 14,
-      'id': 555,
-      'caption': '''How many days in advance to notify SAML users when their password is due to expire''',
-      'desc': '''This policy has no effect unless SamlInSessionPasswordChangeEnabled is true.
-      If that policy is true, and this policy is set to (for example) 14, that means SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
-      Then they can deal with this immediately by doing an in-session password change and updating their password before it expires.
-      But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
-      Setting this policy to zero means the users will not be notified in advance - they will only be notified once the password has already expired.
-
-      If this policy is set, the user cannot change or override it.''',
-    },
-    {
-      'name': 'DeviceAdvancedBatteryChargeModeEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': False,
-      'id': 548,
-      'caption': '''Enable advanced battery charge mode''',
-      'tags': [],
-      'desc': '''Enable the advanced battery charge mode power management policy.
-
-          Advanced Battery Charging Mode allows the user to maximize the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximize battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day the time in which the system will be most heavily used is specified by the start time and the duration.
-
-          If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
-
-          If this policy is set to false, advanced battery charge mode will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, advanced battery charge mode is disabled and cannot be enabled by the user.'''
-    },
-    {
-      'name': 'DeviceAdvancedBatteryChargeModeDayConfig',
-      'type': 'dict',
-      'schema': {
-        'type': 'object',
-        'properties': {
-          'entries': {
-            'type': 'array',
-            'items': {
-              'type': 'object',
-              'properties': {
-                'day': { '$ref': 'WeekDay' },
-                'charge_start_time': { '$ref': 'Time' },
-                'charge_end_time': { '$ref': 'Time' }
-              }
-            }
-          }
-        }
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': {
-        'entries': [
-          {
-            'day': 'TUESDAY',
-            'charge_start_time': {
-              'hour': 20,
-              'minute': 30,
-            },
-            'charge_end_time': {
-              'hour': 23,
-              'minute': 0,
-            },
-          },
-          {
-            'day': 'FRIDAY',
-            'charge_start_time': {
-              'hour': 4,
-              'minute': 15,
-            },
-            'charge_end_time': {
-              'hour': 6,
-              'minute': 45,
-            },
-          }
-        ],
-      },
-      'id': 549,
-      'caption': '''Set advanced battery charge mode day config''',
-      'tags': [],
-      'desc': '''Set advanced battery charge mode day config.
-
-          This policy is only used if DeviceAdvancedBatteryChargeModeEnabled is set to true.
-
-          If this policy is not configured or left unset, advanced battery charge mode will always be disabled.
-
-          Note: <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> must be less than <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph>.
-
-          Note: allowed values for <ph name="MINUTE_FIELD_NAME">minute</ph> field in <ph name="CHARGE_START_TIME_FIELD_NAME">charge_start_time</ph> and <ph name="CHARGE_END_TIME_FIELD_NAME">charge_end_time</ph> are 0, 15, 30, 45.'''
-    },
-    {
-      'name': 'DeviceBatteryChargeMode',
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 1, 2, 3, 4, 5 ]
-      },
-      'items': [
-        {
-          'name': 'Standard',
-          'value': 1,
-          'caption': '''Fully charge battery at a standard rate.'''
-        },
-        {
-          'name': 'ExpressCharge',
-          'value': 2,
-          'caption': '''Charge battery using fast charging technology.'''
-        },
-        {
-          'name': 'PrimarilyAcUse',
-          'value': 3,
-          'caption': '''Charge battery for devices that are primarily connected to an external power source.'''
-        },
-        {
-          'name': 'Adaptive',
-          'value': 4,
-          'caption': '''Adaptive charge battery based on battery usage pattern.'''
-        },
-        {
-          'name': 'Custom',
-          'value': 5,
-          'caption': '''Charge battery while it is within a fixed range.'''
-        }
-      ],
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': 1,
-      'id': 550,
-      'caption': '''Battery charge mode''',
-      'tags': [],
-      'desc': '''Specifies battery charge mode power management policy.
-
-          Dynamically control battery charging to minimize battery wear-out due to battery stress and extend battery life.
-
-          If custom battery charge mode is selected then DeviceBatteryChargeCustomStartCharging and DeviceBatteryChargeCustomStopCharging must be specified.
-
-          If this policy is set then battery charge mode will be applied if supported on the device.
-
-          If this policy is left unset and policy is supported on the device, the standard battery charge mode will be applied and cannot be changed by the user.
-
-          Note: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME">DeviceAdvancedBatteryChargeModeEnabled</ph> overrides this policy if the former is specified.'''
-    },
-    {
-      'name': 'DeviceBatteryChargeCustomStartCharging',
-      'type': 'int',
-      'schema': {
-        'type': 'integer',
-        'minimum': 50,
-        'maximum': 95
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': 60,
-      'id': 551,
-      'caption': '''Set battery charge custom start charging in percent''',
-      'tags': [],
-      'desc': '''Set battery charge custom start charging in percent.
-
-          Battery starts charging when it depletes the battery charge custom start charging value.
-
-          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
-
-          This policy is only used if DeviceBatteryChargeMode is set to custom.
-
-          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
-    },
-    {
-      'name': 'DeviceBatteryChargeCustomStopCharging',
-      'type': 'int',
-      'schema': {
-        'type': 'integer',
-        'minimum': 55,
-        'maximum': 100
-      },
-      'supported_on': ['chrome_os:75-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False
-      },
-      'example_value': 90,
-      'id': 552,
-      'caption': '''Set battery charge custom stop charging in percent''',
-      'tags': [],
-      'desc': '''Set battery charge custom stop charging in percent.
-
-          Battery stops charging when it reaches the battery charge custom stop charging value.
-
-          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
-
-          This policy is only used if DeviceBatteryChargeMode is set to custom.
-
-          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
-    },
-    {
-      'name': 'DeviceScheduledUpdateCheck',
-      'device_only': True,
-      'type': 'dict',
-      'schema': {
-        'type': 'object',
-        'properties': {
-          'update_check_time': {
-            'description': '''Time when the update check should happen, interpreted in the device's local time zone.''',
-            '$ref': 'Time'
-          },
-          'frequency': {
-            'description': 'Frequency with which the update check should recur.',
-            'type': 'string',
-            'enum': [
-              'DAILY',
-              'WEEKLY',
-              'MONTHLY'
-            ]
-          },
-          'day_of_week': {
-            'description': '''Day of week when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'WEEKLY'.''',
-            '$ref': 'WeekDay'
-          },
-          'day_of_month': {
-            'description': '''Day of month [1-31] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen.''',
-            'type': 'integer',
-            'minimum': 1,
-            'maximum': 31
-          }
-        },
-        'required': ['update_check_time', 'frequency']
-      },
-      'supported_on': ['chrome_os:75-'],
-      'supported_chrome_os_management': ['google_cloud'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': {'update_check_time' : {'hour': 23, 'minute': 35}, 'frequency': 'WEEKLY', 'day_of_week': 'MONDAY', 'day_of_month': 11},
-      'tags': [],
-      'id': 556,
-      'caption': '''Set custom schedule to check for updates''',
-      'desc': '''Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.'''
     },
   ],
 
@@ -15894,5 +15134,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  556
+  'highest_id_currently_used':  534
 }

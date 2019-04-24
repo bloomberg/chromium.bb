@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -80,7 +81,8 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
 
   bool element_definition_is_running_;
 
-  using DefinitionList = HeapVector<Member<CustomElementDefinition>>;
+  using DefinitionList =
+      HeapVector<TraceWrapperMember<CustomElementDefinition>>;
   DefinitionList definitions_;
 
   using NameIdMap = HashMap<AtomicString, CustomElementDefinition::Id>;
@@ -101,7 +103,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
       HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
   WhenDefinedPromiseMap when_defined_promise_map_;
 
-  Member<CustomElementReactionStack> reaction_stack_;
+  TraceWrapperMember<CustomElementReactionStack> reaction_stack_;
 
   FRIEND_TEST_ALL_PREFIXES(
       CustomElementTest,

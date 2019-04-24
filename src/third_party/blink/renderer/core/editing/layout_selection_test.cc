@@ -43,7 +43,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_text);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       const unsigned text_start =
-          To<NGPhysicalTextFragment>(fragments.begin()->PhysicalFragment())
+          ToNGPhysicalTextFragment(fragments.begin()->PhysicalFragment())
               .StartOffset();
       for (const NGPaintFragment* fragment : fragments) {
         const LayoutSelectionStatus status =
@@ -777,7 +777,7 @@ TEST_P(LayoutSelectionTest, ClearByRemoveNode) {
 
   Node* baz = GetDocument().body()->lastChild();
   baz->remove();
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
@@ -809,8 +809,8 @@ TEST_P(LayoutSelectionTest, ClearByRemoveLayoutObject) {
       DumpSelectionInfo());
 
   Element* span_baz = ToElement(GetDocument().body()->lastChild());
-  span_baz->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
-  GetDocument().UpdateStyleAndLayout();
+  span_baz->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
@@ -854,7 +854,7 @@ TEST_P(LayoutSelectionTest, ClearBySlotChange) {
       GetDocument().body()->firstChild()->GetShadowRoot()->QuerySelector(
           "slot");
   slot->setAttribute("name", "s2");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"

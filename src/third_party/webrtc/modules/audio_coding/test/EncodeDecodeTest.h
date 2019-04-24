@@ -28,7 +28,7 @@ class TestPacketization : public AudioPacketizationCallback {
  public:
   TestPacketization(RTPStream *rtpStream, uint16_t frequency);
   ~TestPacketization();
-  int32_t SendData(const AudioFrameType frameType,
+  int32_t SendData(const FrameType frameType,
                    const uint8_t payloadType,
                    const uint32_t timeStamp,
                    const uint8_t* payloadData,

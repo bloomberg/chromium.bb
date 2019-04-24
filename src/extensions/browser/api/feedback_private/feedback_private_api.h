@@ -140,20 +140,22 @@ class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnAllLogsFetched(bool send_histograms,
-                        bool send_bluetooth_logs,
-                        scoped_refptr<feedback::FeedbackData> feedback_data);
+  void OnAllLogsFetched(
+      scoped_refptr<feedback::FeedbackData> feedback_data,
+      bool send_histograms,
+      bool send_bluetooth_logs,
+      std::unique_ptr<FeedbackCommon::SystemLogsMap> sys_logs);
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
 };
 
-class FeedbackPrivateLoginFeedbackCompleteFunction
+class FeedbackPrivateLogSrtPromptResultFunction
     : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.loginFeedbackComplete",
-                             FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE)
+  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.logSrtPromptResult",
+                             FEEDBACKPRIVATE_LOGSRTPROMPTRESULT)
 
  protected:
-  ~FeedbackPrivateLoginFeedbackCompleteFunction() override {}
+  ~FeedbackPrivateLogSrtPromptResultFunction() override {}
   ResponseAction Run() override;
 };
 

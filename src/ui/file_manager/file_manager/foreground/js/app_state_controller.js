@@ -62,42 +62,38 @@ AppStateController.DEFAULT_SORT_DIRECTION = 'desc';
 AppStateController.prototype.loadInitialViewOptions = function() {
   // Load initial view option.
   return new Promise((fulfill, reject) => {
-           chrome.storage.local.get(this.viewOptionStorageKey_, values => {
-             if (chrome.runtime.lastError) {
-               reject(
-                   'Failed to load view options: ' +
-                   chrome.runtime.lastError.message);
-             } else {
-               fulfill(values);
-             }
-           });
-         })
-      .then(values => {
-        this.viewOptions_ = {};
-        const value = values[this.viewOptionStorageKey_];
-        if (!value) {
-          return;
-        }
+    chrome.storage.local.get(this.viewOptionStorageKey_, values => {
+      if (chrome.runtime.lastError) {
+        reject('Failed to load view options: ' +
+            chrome.runtime.lastError.message);
+      } else {
+        fulfill(values);
+      }
+    });
+  }).then(values => {
+    this.viewOptions_ = {};
+    const value = values[this.viewOptionStorageKey_];
+    if (!value) {
+      return;
+    }
 
-        // Load the global default options.
-        try {
-          this.viewOptions_ = JSON.parse(value);
-        } catch (ignore) {
-        }
+    // Load the global default options.
+    try {
+      this.viewOptions_ = JSON.parse(value);
+    } catch (ignore) {}
 
-        // Override with window-specific options.
-        if (window.appState && window.appState.viewOptions) {
-          for (const key in window.appState.viewOptions) {
-            if (window.appState.viewOptions.hasOwnProperty(key)) {
-              this.viewOptions_[key] = window.appState.viewOptions[key];
-            }
-          }
+    // Override with window-specific options.
+    if (window.appState && window.appState.viewOptions) {
+      for (const key in window.appState.viewOptions) {
+        if (window.appState.viewOptions.hasOwnProperty(key)) {
+          this.viewOptions_[key] = window.appState.viewOptions[key];
         }
-      })
-      .catch(error => {
-        this.viewOptions_ = {};
-        console.error(error);
-      });
+      }
+    }
+  }).catch(error => {
+    this.viewOptions_ = {};
+    console.error(error);
+  });
 };
 
 /**

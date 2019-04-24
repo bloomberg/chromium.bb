@@ -660,8 +660,7 @@ public class MediaCodecVideoEncoder {
       mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
 
       if (useSurface) {
-        eglBase =
-            EglBase.createEgl14((EglBase14.Context) getEglContext(), EglBase.CONFIG_RECORDABLE);
+        eglBase = new EglBase14((EglBase14.Context) getEglContext(), EglBase.CONFIG_RECORDABLE);
         // Create an input surface and keep a reference since we must release the surface when done.
         inputSurface = mediaCodec.createInputSurface();
         eglBase.createSurface(inputSurface);

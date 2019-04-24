@@ -98,13 +98,15 @@ void FocusManagerTest::SetAccessiblePanes(const std::vector<View*>& panes) {
 ////////////////////////////////////////////////////////////////////////////////
 // TestFocusChangeListener
 
-TestFocusChangeListener::TestFocusChangeListener() = default;
+TestFocusChangeListener::TestFocusChangeListener() {
+}
 
-TestFocusChangeListener::~TestFocusChangeListener() = default;
+TestFocusChangeListener::~TestFocusChangeListener() {
+}
 
 void TestFocusChangeListener::OnWillChangeFocus(View* focused_before,
                                                 View* focused_now) {
-  focus_changes_.emplace_back(focused_before, focused_now);
+  focus_changes_.push_back(ViewPair(focused_before, focused_now));
 }
 void TestFocusChangeListener::OnDidChangeFocus(View* focused_before,
                                                View* focused_now) {
@@ -117,9 +119,11 @@ void TestFocusChangeListener::ClearFocusChanges() {
 ////////////////////////////////////////////////////////////////////////////////
 // TestWidgetFocusChangeListener
 
-TestWidgetFocusChangeListener::TestWidgetFocusChangeListener() = default;
+TestWidgetFocusChangeListener::TestWidgetFocusChangeListener() {
+}
 
-TestWidgetFocusChangeListener::~TestWidgetFocusChangeListener() = default;
+TestWidgetFocusChangeListener::~TestWidgetFocusChangeListener() {
+}
 
 void TestWidgetFocusChangeListener::ClearFocusChanges() {
   focus_changes_.clear();

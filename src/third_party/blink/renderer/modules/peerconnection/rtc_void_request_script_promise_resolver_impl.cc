@@ -10,6 +10,14 @@
 
 namespace blink {
 
+RTCVoidRequestScriptPromiseResolverImpl*
+RTCVoidRequestScriptPromiseResolverImpl::Create(ScriptPromiseResolver* resolver,
+                                                const char* interface_name,
+                                                const char* property_name) {
+  return MakeGarbageCollected<RTCVoidRequestScriptPromiseResolverImpl>(
+      resolver, interface_name, property_name);
+}
+
 RTCVoidRequestScriptPromiseResolverImpl::
     RTCVoidRequestScriptPromiseResolverImpl(ScriptPromiseResolver* resolver,
                                             const char* interface_name,

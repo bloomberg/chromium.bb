@@ -5,7 +5,6 @@
 #include "content/browser/webrtc/webrtc_internals_message_handler.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -154,7 +153,7 @@ void WebRTCInternalsMessageHandler::ExecuteJavascriptCommand(
     args_vector.push_back(args);
 
   base::string16 script = WebUI::GetJavascriptCall(command, args_vector);
-  host->ExecuteJavaScript(script, base::NullCallback());
+  host->ExecuteJavaScript(script);
 }
 
 }  // namespace content

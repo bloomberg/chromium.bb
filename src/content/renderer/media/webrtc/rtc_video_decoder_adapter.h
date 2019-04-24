@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
@@ -70,6 +70,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the DecodingThread.
   int32_t Decode(const webrtc::EncodedImage& input_image,
                  bool missing_frames,
+                 const webrtc::CodecSpecificInfo* codec_specific_info,
                  int64_t render_time_ms) override;
   // Called on the worker thread and on the DecodingThread.
   int32_t Release() override;
@@ -113,11 +114,8 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   std::unique_ptr<media::VideoDecoder> video_decoder_;
   int32_t outstanding_decode_requests_ = 0;
 
-  // Decoding thread members.
-  bool key_frame_required_ = true;
   // Shared members.
   base::Lock lock_;
-  webrtc::VideoCodecType video_codec_type_ = webrtc::kVideoCodecGeneric;
   int32_t consecutive_error_count_ = 0;
   bool has_error_ = false;
   webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
@@ -128,8 +126,8 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   base::circular_deque<base::TimeDelta> decode_timestamps_;
 
   // Thread management.
-  SEQUENCE_CHECKER(worker_sequence_checker_);
-  SEQUENCE_CHECKER(decoding_sequence_checker_);
+  THREAD_CHECKER(worker_thread_checker_);
+  THREAD_CHECKER(decoding_thread_checker_);
 
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_;

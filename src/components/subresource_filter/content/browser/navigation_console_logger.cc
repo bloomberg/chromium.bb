@@ -12,7 +12,7 @@ namespace subresource_filter {
 // static
 void NavigationConsoleLogger::LogMessageOnCommit(
     content::NavigationHandle* handle,
-    blink::mojom::ConsoleMessageLevel level,
+    content::ConsoleMessageLevel level,
     const std::string& message) {
   DCHECK(handle->IsInMainFrame());
   if (handle->HasCommitted() && !handle->IsErrorPage()) {

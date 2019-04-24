@@ -108,12 +108,12 @@
   [self.selectionDelegate
       languageSelectorSelectedLanguage:
           [self.selectionMediator languageCodeForLanguageAtIndex:index]];
-  [self.presenter dismissAnimated:NO];
+  [self.presenter dismissAnimated:YES];
 }
 
 - (void)languageSelectionCanceled {
   [self.selectionDelegate languageSelectorClosedWithoutSelection];
-  [self.presenter dismissAnimated:NO];
+  [self.presenter dismissAnimated:YES];
 }
 
 @end

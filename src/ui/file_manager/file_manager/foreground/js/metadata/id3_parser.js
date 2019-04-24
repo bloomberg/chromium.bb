@@ -115,8 +115,10 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
  * @param {number} end Frame end position in reader.
  * @private
  */
-Id3Parser.prototype.readTextFrame_ = function(
-    reader, majorVersion, frame, end) {
+Id3Parser.prototype.readTextFrame_ = function(reader,
+                                              majorVersion,
+                                              frame,
+                                              end) {
   frame.encoding = reader.readScalar(1, false, end);
   frame.value = this.readString_(reader, frame.encoding, end - reader.tell());
 };
@@ -130,14 +132,21 @@ Id3Parser.prototype.readTextFrame_ = function(
  * @param {number} end Frame end position in reader.
  * @private
  */
-Id3Parser.prototype.readUserDefinedTextFrame_ = function(
-    reader, majorVersion, frame, end) {
+Id3Parser.prototype.readUserDefinedTextFrame_ = function(reader,
+                                                         majorVersion,
+                                                         frame,
+                                                         end) {
   frame.encoding = reader.readScalar(1, false, end);
 
-  frame.description =
-      this.readString_(reader, frame.encoding, end - reader.tell());
+  frame.description = this.readString_(
+      reader,
+      frame.encoding,
+      end - reader.tell());
 
-  frame.value = this.readString_(reader, frame.encoding, end - reader.tell());
+  frame.value = this.readString_(
+      reader,
+      frame.encoding,
+      end - reader.tell());
 };
 
 /**
@@ -151,8 +160,9 @@ Id3Parser.prototype.readPIC_ = function(reader, majorVersion, frame, end) {
   frame.encoding = reader.readScalar(1, false, end);
   frame.format = reader.readNullTerminatedString(3, end - reader.tell());
   frame.pictureType = reader.readScalar(1, false, end);
-  frame.description =
-      this.readString_(reader, frame.encoding, end - reader.tell());
+  frame.description = this.readString_(reader,
+                                       frame.encoding,
+                                       end - reader.tell());
 
 
   if (frame.format == '-->') {
@@ -174,8 +184,10 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
   frame.encoding = reader.readScalar(1, false, end);
   frame.mime = reader.readNullTerminatedString(end - reader.tell());
   frame.pictureType = reader.readScalar(1, false, end);
-  frame.description =
-      this.readString_(reader, frame.encoding, end - reader.tell());
+  frame.description = this.readString_(
+      reader,
+      frame.encoding,
+      end - reader.tell());
 
   if (frame.mime == '-->') {
     frame.imageUrl = reader.readNullTerminatedString(end - reader.tell());
@@ -233,10 +245,17 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
 
   if (Id3Parser.v2.HANDLERS[frame.name]) {
     Id3Parser.v2.HANDLERS[frame.name].call(
-        this, reader, majorVersion, frame, reader.tell() + frame.size);
+        this,
+        reader,
+        majorVersion,
+        frame,
+        reader.tell() + frame.size);
   } else if (frame.name.charAt(0) == 'T' || frame.name.charAt(0) == 'W') {
     this.readTextFrame_(
-        reader, majorVersion, frame, reader.tell() + frame.size);
+        reader,
+        majorVersion,
+        frame,
+        reader.tell() + frame.size);
   }
 
   reader.popSeek();
@@ -258,7 +277,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
   this.log('Starting id3 parser for ' + file.name);
 
   const id3v1Parser = new FunctionSequence(
-      'id3v1parser', [
+      'id3v1parser',
+      [
         /**
          * Reads last 128 bytes of file in bytebuffer,
          * which passes further.
@@ -266,8 +286,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
          * @param {File} file File which bytes to read.
          */
         function readTail(file) {
-          MetadataParser.readFileBytes(
-              file, file.size - 128, file.size, this.nextStep, this.onError);
+          MetadataParser.readFileBytes(file, file.size - 128, file.size,
+              this.nextStep, this.onError);
         },
 
         /**
@@ -304,13 +324,16 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           this.nextStep();
         }
       ],
-      this, () => {}, error => {});
+      this,
+      () => {},
+      error => {});
 
   const id3v2Parser = new FunctionSequence(
-      'id3v2parser', [
+      'id3v2parser',
+      [
         function readHead(file) {
-          MetadataParser.readFileBytes(
-              file, 0, 10, this.nextStep, this.onError);
+          MetadataParser.readFileBytes(file, 0, 10, this.nextStep,
+              this.onError);
         },
 
         /**
@@ -328,8 +351,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
             id3v2.flags = reader.readScalar(1, false);
             id3v2.size = Id3Parser.readSynchSafe_(reader, 4);
 
-            MetadataParser.readFileBytes(
-                file, 10, 10 + id3v2.size, this.nextStep, this.onError);
+            MetadataParser.readFileBytes(file, 10, 10 + id3v2.size,
+                this.nextStep, this.onError);
           } else {
             this.finish();
           }
@@ -381,7 +404,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           metadata.description = [];
 
           for (const key in id3v2) {
-            if (typeof (Id3Parser.v2.MAPPERS[key]) != 'undefined' &&
+            if (typeof(Id3Parser.v2.MAPPERS[key]) != 'undefined' &&
                 id3v2[key].value.trim().length > 0) {
               metadata.description.push({
                 key: Id3Parser.v2.MAPPERS[key],
@@ -410,17 +433,23 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
           metadata.description.sort((a, b) => {
             return Id3Parser.METADATA_ORDER.indexOf(a.key) -
-                Id3Parser.METADATA_ORDER.indexOf(b.key);
+                   Id3Parser.METADATA_ORDER.indexOf(b.key);
           });
           this.nextStep();
         }
       ],
-      this, () => {}, error => {});
+      this,
+      () => {},
+      error => {});
 
   const metadataParser = new FunctionParallel(
-      'mp3metadataParser', [id3v1Parser, id3v2Parser], this, () => {
+      'mp3metadataParser',
+      [id3v1Parser, id3v2Parser],
+      this,
+      () => {
         callback.call(null, metadata);
-      }, onError);
+      },
+      onError);
 
   id3v1Parser.setCallback(metadataParser.nextStep);
   id3v2Parser.setCallback(metadataParser.nextStep);
@@ -671,21 +700,21 @@ Id3Parser.v2 = {
     UTF_8: 3
   },
   HANDLERS: {
-    // User defined text information frame
+    //User defined text information frame
     TXX: Id3Parser.prototype.readUserDefinedTextFrame_,
-    // User defined URL link frame
+    //User defined URL link frame
     WXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-    // User defined text information frame
+    //User defined text information frame
     TXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-    // User defined URL link frame
+    //User defined URL link frame
     WXXX: Id3Parser.prototype.readUserDefinedTextFrame_,
 
-    // User attached image
+    //User attached image
     PIC: Id3Parser.prototype.readPIC_,
 
-    // User attached image
+    //User attached image
     APIC: Id3Parser.prototype.readAPIC_
   },
   MAPPERS: {

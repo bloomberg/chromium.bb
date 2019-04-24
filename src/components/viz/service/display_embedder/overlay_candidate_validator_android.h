@@ -19,7 +19,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
-  bool NeedsSurfaceOccludingDamageRect() override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
 
  private:

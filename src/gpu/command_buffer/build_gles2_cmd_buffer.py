@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 """code generator for GLES2 command buffers."""
 
-import filecmp
 import os
 import os.path
 import sys
@@ -3887,6 +3886,30 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_lose_context',
     'trace_level': 1,
   },
+  'InsertFenceSyncCHROMIUM': {
+    'type': 'Custom',
+    'internal': True,
+    'impl_func': False,
+    'cmd_args': 'GLuint64 release_count',
+    'extension': "CHROMIUM_sync_point",
+    'trace_level': 1,
+  },
+  'GenSyncTokenCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_sync_point",
+  },
+  'GenUnverifiedSyncTokenCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_sync_point",
+  },
+  'VerifySyncTokensCHROMIUM' : {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_sync_point",
+  },
+  'WaitSyncTokenCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_sync_point",
+  },
   'DiscardBackbufferCHROMIUM': {
     'type': 'Custom',
     'extension': True,
@@ -4261,11 +4284,11 @@ _FUNCTION_INFO = {
     'extension': 'MESA_framebuffer_flip_y',
     'extension_flag': 'mesa_framebuffer_flip_y',
   },
-  'FramebufferTextureMultiviewOVR': {
-    'decoder_func': 'DoFramebufferTextureMultiviewOVR',
+  'FramebufferTextureMultiviewLayeredANGLE': {
+    'decoder_func': 'DoFramebufferTextureMultiviewLayeredANGLE',
     'unit_test': False,
-    'extension': 'OVR_multiview2',
-    'extension_flag': 'ovr_multiview2',
+    'extension': 'ANGLE_multiview',
+    'extension_flag': 'angle_multiview',
     'trace_level': 1,
     'es3': True
   },
@@ -4315,14 +4338,11 @@ def main(argv):
   parser = OptionParser()
   parser.add_option(
       "--output-dir",
-      help="Output directory for generated files. Defaults to chromium root "
-      "directory.")
+      help="base directory for resulting files, under chrome/src. default is "
+      "empty. Use this if you want the result stored under gen.")
   parser.add_option(
-      "-v", "--verbose", action="store_true", help="Verbose logging output.")
-  parser.add_option(
-      "-c", "--check", action="store_true",
-      help="Check if output files match generated files in chromium root "
-      "directory.  Use this in PRESUBMIT scripts with --output-dir.")
+      "-v", "--verbose", action="store_true",
+      help="prints more output.")
 
   (options, _) = parser.parse_args(args=argv)
 
@@ -4354,30 +4374,24 @@ def main(argv):
     if not valid_value in gl_state_valid:
       gl_state_valid.append(valid_value)
 
-  # This script lives under src/gpu/command_buffer.
-  script_dir = os.path.dirname(os.path.abspath(__file__))
-  assert script_dir.endswith(os.path.normpath("src/gpu/command_buffer"))
-  # os.path.join doesn't do the right thing with relative paths.
-  chromium_root_dir = os.path.abspath(script_dir + "/../..")
-
-  # Support generating files under gen/ and for PRESUBMIT.
-  if options.output_dir:
-    output_dir = options.output_dir
-  else:
-    output_dir = chromium_root_dir
-  os.chdir(output_dir)
-
+  # This script lives under gpu/command_buffer, cd to base directory.
+  os.chdir(os.path.dirname(__file__) + "/../..")
+  base_dir = os.getcwd()
   build_cmd_buffer_lib.InitializePrefix("GLES2")
-  gen = build_cmd_buffer_lib.GLGenerator(
-      options.verbose, "2014", _FUNCTION_INFO, _NAMED_TYPE_INFO,
-      chromium_root_dir)
+  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, "2014",
+                                         _FUNCTION_INFO, _NAMED_TYPE_INFO)
   gen.ParseGLH("gpu/command_buffer/gles2_cmd_buffer_functions.txt")
+
+  # Support generating files under gen/
+  if options.output_dir != None:
+    os.chdir(options.output_dir)
 
   gen.WritePepperGLES2Interface("ppapi/api/ppb_opengles2.idl", False)
   gen.WritePepperGLES2Interface("ppapi/api/dev/ppb_opengles2ext_dev.idl", True)
   gen.WriteGLES2ToPPAPIBridge("ppapi/lib/gl/gles2/gles2.c")
   gen.WritePepperGLES2Implementation(
       "ppapi/shared_impl/ppb_opengles2_shared.cc")
+  os.chdir(base_dir)
   gen.WriteCommandIds("gpu/command_buffer/common/gles2_cmd_ids_autogen.h")
   gen.WriteFormat("gpu/command_buffer/common/gles2_cmd_format_autogen.h")
   gen.WriteFormatTest(
@@ -4431,27 +4445,11 @@ def main(argv):
     "gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("gpu/GLES2/gl2chromium_autogen.h")
 
-  build_cmd_buffer_lib.Format(gen.generated_cpp_filenames, output_dir,
-                              chromium_root_dir)
+  build_cmd_buffer_lib.Format(gen.generated_cpp_filenames)
 
   if gen.errors > 0:
-    print "build_gles2_cmd_buffer.py: Failed with %d errors" % gen.errors
+    print "%d errors" % gen.errors
     return 1
-
-  check_failed_filenames = []
-  if options.check:
-    for filename in gen.generated_cpp_filenames:
-      if not filecmp.cmp(os.path.join(output_dir, filename),
-                         os.path.join(chromium_root_dir, filename)):
-        check_failed_filenames.append(filename)
-
-  if len(check_failed_filenames) > 0:
-    print 'Please run gpu/command_buffer/build_gles2_cmd_buffer.py'
-    print 'Failed check on autogenerated command buffer files:'
-    for filename in check_failed_filenames:
-      print filename
-    return 1
-
   return 0
 
 

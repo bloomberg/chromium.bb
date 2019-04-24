@@ -7,12 +7,15 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class CSSFunctionValue : public CSSValueList {
  public:
+  static CSSFunctionValue* Create(CSSValueID id) {
+    return MakeGarbageCollected<CSSFunctionValue>(id);
+  }
+
   CSSFunctionValue(CSSValueID id)
       : CSSValueList(kFunctionClass, kCommaSeparator), value_id_(id) {}
 
@@ -31,12 +34,7 @@ class CSSFunctionValue : public CSSValueList {
   const CSSValueID value_id_;
 };
 
-template <>
-struct DowncastTraits<CSSFunctionValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsFunctionValue();
-  }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFunctionValue, IsFunctionValue());
 
 }  // namespace blink
 

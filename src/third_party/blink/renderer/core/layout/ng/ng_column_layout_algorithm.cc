@@ -50,12 +50,12 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
       ComputeBorders(space, node) + ComputePadding(space, node.Style());
 
   const ComputedStyle& style = node.Style();
-  LayoutUnit max = ResolveMaxBlockLength(space, style, border_padding,
-                                         style.LogicalMaxHeight(), size,
-                                         LengthResolvePhase::kLayout);
-  LayoutUnit extent = ResolveMainBlockLength(space, style, border_padding,
-                                             style.LogicalHeight(), size,
-                                             LengthResolvePhase::kLayout);
+  LayoutUnit max = ResolveBlockLength(
+      space, style, border_padding, style.LogicalMaxHeight(), size,
+      LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+  LayoutUnit extent = ResolveBlockLength(
+      space, style, border_padding, style.LogicalHeight(), size,
+      LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
   if (extent != NGSizeIndefinite) {
     // A specified height/width will just constrain the maximum length.
     max = std::min(max, extent);
@@ -72,7 +72,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
     const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -123,8 +123,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-      const auto* column =
-          To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+      const NGPhysicalBoxFragment* column =
+          ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
       NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
       container_builder_.AddChild(*result, logical_offset);
@@ -149,7 +149,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
           std::max(intrinsic_block_size, column_block_offset + block_size);
 
       column_inline_offset += column_inline_progression;
-      break_token = To<NGBlockBreakToken>(column->BreakToken());
+      break_token = ToNGBlockBreakToken(column->BreakToken());
     } while (break_token && !break_token->IsFinished());
 
     // If we overflowed (actual column count larger than what we have room for),
@@ -180,8 +180,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     break;
   } while (true);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
-                        &container_builder_)
+  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
+                        Node().IsFixedContainer(), borders + scrollbars,
+                        ConstraintSpace(), Style())
       .Run();
 
   // TODO(mstensho): Propagate baselines.

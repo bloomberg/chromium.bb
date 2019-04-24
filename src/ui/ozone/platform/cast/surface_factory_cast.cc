@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/macros.h"

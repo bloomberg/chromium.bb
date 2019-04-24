@@ -154,9 +154,8 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
             http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
-    console_logger->AddConsoleMessage(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+    console_logger->AddErrorMessage(
+        ConsoleLogger::Source::kSecurity,
         "Refused to execute script from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type +
@@ -197,9 +196,8 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   if (!allow || warn) {
     const char* msg =
         allow ? "Deprecated: Future versions will refuse" : "Refused";
-    console_logger->AddConsoleMessage(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+    console_logger->AddErrorMessage(
+        ConsoleLogger::Source::kSecurity,
         String() + msg + " to execute script from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type + "') is not executable.");

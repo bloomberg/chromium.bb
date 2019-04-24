@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -78,13 +79,22 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
  private:
   friend class DOMTimerCoordinator;  // For Create().
 
+  static DOMTimer* Create(ExecutionContext* context,
+                          ScheduledAction* action,
+                          TimeDelta timeout,
+                          bool single_shot,
+                          int timeout_id) {
+    return MakeGarbageCollected<DOMTimer>(context, action, timeout, single_shot,
+                                          timeout_id);
+  }
+
   void Fired() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const override;
 
   int timeout_id_;
   int nesting_level_;
-  Member<ScheduledAction> action_;
+  TraceWrapperMember<ScheduledAction> action_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
 };
 

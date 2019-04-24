@@ -8,9 +8,8 @@ from telemetry import story
 
 
 class _IdleSharedState(shared_page_state.SharedPageState):
-  def __init__(self, test, finder_options, story_set, possible_browser=None):
-    super(_IdleSharedState, self).__init__(
-        test, finder_options, story_set, possible_browser)
+  def __init__(self, test, finder_options, story_set):
+    super(_IdleSharedState, self).__init__(test, finder_options, story_set)
     self._current_story = None
 
   def WillRunStory(self, current_story):

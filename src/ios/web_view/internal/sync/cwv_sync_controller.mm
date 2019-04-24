@@ -115,7 +115,6 @@ class WebViewSyncControllerObserverBridge
 }
 
 @synthesize delegate = _delegate;
-@synthesize currentIdentity = _currentIdentity;
 
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
                     identityManager:(identity::IdentityManager*)identityManager
@@ -149,6 +148,18 @@ class WebViewSyncControllerObserverBridge
 
 #pragma mark - Public Methods
 
+- (CWVIdentity*)currentIdentity {
+  if (!_identityManager->HasPrimaryAccount()) {
+    return nil;
+  }
+  AccountInfo accountInfo = _identityManager->GetPrimaryAccountInfo();
+  NSString* email = base::SysUTF8ToNSString(accountInfo.email);
+  NSString* fullName = base::SysUTF8ToNSString(accountInfo.full_name);
+  NSString* gaiaID = base::SysUTF8ToNSString(accountInfo.gaia);
+  return
+      [[CWVIdentity alloc] initWithEmail:email fullName:fullName gaiaID:gaiaID];
+}
+
 - (BOOL)isPassphraseNeeded {
   return _syncService->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
@@ -157,14 +168,13 @@ class WebViewSyncControllerObserverBridge
                    dataSource:
                        (__weak id<CWVSyncControllerDataSource>)dataSource {
   DCHECK(!_dataSource);
-  DCHECK(!_currentIdentity);
 
   _dataSource = dataSource;
-  _currentIdentity = identity;
 
   AccountInfo info;
   info.gaia = base::SysNSStringToUTF8(identity.gaiaID);
   info.email = base::SysNSStringToUTF8(identity.email);
+  info.full_name = base::SysNSStringToUTF8(identity.fullName);
   std::string newAuthenticatedAccountID =
       _identityManager->LegacySeedAccountInfo(info);
   auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
@@ -179,7 +189,6 @@ class WebViewSyncControllerObserverBridge
       identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
-  _currentIdentity = nil;
   _dataSource = nil;
 }
 

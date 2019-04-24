@@ -4,9 +4,6 @@
 
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 
-#include <memory>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

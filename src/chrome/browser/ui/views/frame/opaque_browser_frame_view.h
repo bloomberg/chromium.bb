@@ -58,8 +58,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void InitViews();
 
   // BrowserNonClientFrameView:
-  gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const override;
+  gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
@@ -84,7 +83,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
+  void OnMenuButtonClicked(views::MenuButton* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 

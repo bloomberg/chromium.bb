@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -20,8 +19,6 @@ bool IsEmpty(const ObjectStartBitmap& bitmap) {
 // Abstraction for objects that hides ObjectStartBitmap::kGranularity and
 // the base address as getting either of it wrong will result in failed DCHECKs.
 class Object {
-  STACK_ALLOCATED();
-
  public:
   static Address kBaseOffset;
 

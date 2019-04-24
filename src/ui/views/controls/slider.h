@@ -11,7 +11,7 @@
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
-using SkColor = unsigned int;
+typedef unsigned int SkColor;
 
 namespace views {
 
@@ -39,7 +39,7 @@ class VIEWS_EXPORT SliderListener {
   virtual void SliderDragEnded(Slider* sender) {}
 
  protected:
-  virtual ~SliderListener() = default;
+  virtual ~SliderListener() {}
 };
 
 class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {

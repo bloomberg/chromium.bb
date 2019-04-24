@@ -480,13 +480,11 @@ experimental domain BackgroundService
       backgroundFetch
       backgroundSync
 
-  # Enables event updates for the service.
-  command startObserving
+  command enable
     parameters
       ServiceName service
 
-  # Disables event updates for the service.
-  command stopObserving
+  command disable
     parameters
       ServiceName service
 
@@ -496,45 +494,11 @@ experimental domain BackgroundService
       boolean shouldRecord
       ServiceName service
 
-  # Clears all stored data for the service.
-  command clearEvents
-    parameters
-      ServiceName service
-
   # Called when the recording state for the service has been updated.
   event recordingStateChanged
     parameters
       boolean isRecording
       ServiceName service
-
-  # A key-value pair for additional event information to pass along.
-  type EventMetadata extends object
-    properties
-      string key
-      string value
-
-  type BackgroundServiceEvent extends object
-    properties
-      # Timestamp of the event (in seconds).
-      Network.TimeSinceEpoch timestamp
-      # The origin this event belongs to.
-      string origin
-      # The Service Worker ID that initiated the event.
-      ServiceWorker.RegistrationID serviceWorkerRegistrationId
-      # The Background Service this event belongs to.
-      ServiceName service
-      # A description of the event.
-      string eventName
-      # An identifier that groups related events together.
-      string instanceId
-      # A list of event-specific information.
-      array of EventMetadata eventMetadata
-
-  # Called with all existing backgroundServiceEvents when enabled, and all new
-  # events afterwards if enabled and recording.
-  event backgroundServiceEventReceived
-    parameters
-      BackgroundServiceEvent backgroundServiceEvent
 
 # The Browser domain defines methods and events for browser managing.
 domain Browser
@@ -1332,9 +1296,8 @@ experimental domain CacheStorage
     returns
       # Array of object store data entries.
       array of DataEntry cacheDataEntries
-      # Count of returned entries from this storage. If pathFilter is empty, it
-      # is the count of all entries from this storage.
-      number returnCount
+      # If true, there are more entries to fetch in the given range.
+      boolean hasMore
 
 # A domain for interacting with Cast, Presentation API, and Remote Playback API
 # functionalities.
@@ -3031,8 +2994,9 @@ experimental domain IndexedDB
       # If true, there are more entries to fetch in the given range.
       boolean hasMore
 
-  # Gets metadata of an object store
-  command getMetadata
+  # Gets the auto increment number of an object store. Only meaningful
+  # when objectStore.autoIncrement is true.
+  command getKeyGeneratorCurrentNumber
     parameters
       # Security origin.
       string securityOrigin
@@ -3041,12 +3005,9 @@ experimental domain IndexedDB
       # Object store name.
       string objectStoreName
     returns
-      # the entries count
-      number entriesCount
       # the current value of key generator, to become the next inserted
-      # key into the object store. Valid if objectStore.autoIncrement
-      # is true.
-      number keyGeneratorValue
+      # key into the object store.
+      number currentNumber
 
   # Requests database with given name in given frame.
   command requestDatabase
@@ -4415,7 +4376,7 @@ domain Network
       # Map with extra HTTP headers.
       Headers headers
 
-  # Sets the requests to intercept that match the provided patterns and optionally resource types.
+  # Sets the requests to intercept that match a the provided patterns and optionally resource types.
   experimental command setRequestInterception
     parameters
       # Requests matching any of these patterns will be forwarded and wait for the corresponding
@@ -4520,9 +4481,6 @@ domain Network
       # Response headers if intercepted at the response stage or if redirect occurred while
       # intercepting request or auth retry occurred.
       optional Headers responseHeaders
-      # If the intercepted request had a corresponding requestWillBeSent event fired for it, then
-      # this requestId will be the same as the requestId present in the requestWillBeSent event.
-      optional RequestId requestId
 
   # Fired if request ended up loading from cache.
   event requestServedFromCache
@@ -4699,7 +4657,6 @@ experimental domain Overlay
       searchForNode
       searchForUAShadowDOM
       captureAreaScreenshot
-      showDistances
       none
 
   # Disables domain notifications.
@@ -4827,6 +4784,11 @@ experimental domain Overlay
     parameters
       # Whether to paint size or not.
       boolean show
+
+  command setSuspended
+    parameters
+      # Whether overlay should be suspended and not consume any resources until resumed.
+      boolean suspended
 
   # Fired when the node should be inspected. This happens after call to `setInspectMode` or when
   # user manually inspects an element.
@@ -5059,16 +5021,6 @@ domain Page
       # Default fixed font size.
       optional integer fixed
 
-  experimental type ClientNavigationReason extends string
-    enum
-      formSubmissionGet
-      formSubmissionPost
-      httpHeaderRefresh
-      scriptInitiated
-      metaTagRefresh
-      pageBlockInterstitial
-      reload
-
   # Deprecated, please use addScriptToEvaluateOnNewDocument instead.
   experimental deprecated command addScriptToEvaluateOnLoad
     parameters
@@ -5172,10 +5124,6 @@ domain Page
       array of AppManifestError errors
       # Manifest content.
       optional string data
-
-  experimental command getInstallabilityErrors
-    returns
-      array of string errors
 
   # Returns all browser cookies. Depending on the backend support, will return detailed cookie
   # information in the `cookies` field.
@@ -5556,7 +5504,7 @@ domain Page
       optional Runtime.StackTrace stack
 
   # Fired when frame no longer has a scheduled navigation.
-  deprecated event frameClearedScheduledNavigation
+  experimental event frameClearedScheduledNavigation
     parameters
       # Id of the frame that has cleared its scheduled navigation.
       FrameId frameId
@@ -5575,19 +5523,8 @@ domain Page
 
   experimental event frameResized
 
-  # Fired when a renderer-initiated navigation is requested.
-  # Navigation may still be cancelled after the event is issued.
-  experimental event frameRequestedNavigation
-    parameters
-      # Id of the frame that has scheduled a navigation.
-      FrameId frameId
-      # The reason for the navigation.
-      ClientNavigationReason reason
-      # The destination URL for the requested navigation.
-      string url
-
   # Fired when frame schedules a potential navigation.
-  deprecated event frameScheduledNavigation
+  experimental event frameScheduledNavigation
     parameters
       # Id of the frame that has scheduled a navigation.
       FrameId frameId
@@ -5709,6 +5646,7 @@ domain Page
       # Base64-encoded data
       binary data
 
+
 domain Performance
 
   # Run-time execution metric.
@@ -5793,21 +5731,23 @@ domain Security
       optional array of string recommendations
 
   # Information about insecure content on the page.
-  deprecated type InsecureContentStatus extends object
+  type InsecureContentStatus extends object
     properties
-      # Always false.
+      # True if the page was loaded over HTTPS and ran mixed (HTTP) content such as scripts.
       boolean ranMixedContent
-      # Always false.
+      # True if the page was loaded over HTTPS and displayed mixed (HTTP) content such as images.
       boolean displayedMixedContent
-      # Always false.
+      # True if the page was loaded over HTTPS and contained a form targeting an insecure url.
       boolean containedMixedForm
-      # Always false.
+      # True if the page was loaded over HTTPS without certificate errors, and ran content such as
+      # scripts that were loaded with certificate errors.
       boolean ranContentWithCertErrors
-      # Always false.
+      # True if the page was loaded over HTTPS without certificate errors, and displayed content
+      # such as images that were loaded with certificate errors.
       boolean displayedContentWithCertErrors
-      # Always set to unknown.
+      # Security state representing a page that ran insecure content.
       SecurityState ranInsecureContentStyle
-      # Always set to unknown.
+      # Security state representing a page that displayed insecure content.
       SecurityState displayedInsecureContentStyle
 
   # The action to take when a certificate error occurs. continue will continue processing the
@@ -5868,17 +5808,16 @@ domain Security
       # `warning`, at least one corresponding explanation should be included.
       array of SecurityStateExplanation explanations
       # Information about insecure content on the page.
-      deprecated InsecureContentStatus insecureContentStatus
+      InsecureContentStatus insecureContentStatus
       # Overrides user-visible description of the state.
       optional string summary
 
 experimental domain ServiceWorker
-  type RegistrationID extends string
 
   # ServiceWorker registration.
   type ServiceWorkerRegistration extends object
     properties
-      RegistrationID registrationId
+      string registrationId
       string scopeURL
       boolean isDeleted
 
@@ -5902,7 +5841,7 @@ experimental domain ServiceWorker
   type ServiceWorkerVersion extends object
     properties
       string versionId
-      RegistrationID registrationId
+      string registrationId
       string scriptURL
       ServiceWorkerVersionRunningStatus runningStatus
       ServiceWorkerVersionStatus status
@@ -5918,7 +5857,7 @@ experimental domain ServiceWorker
   type ServiceWorkerErrorMessage extends object
     properties
       string errorMessage
-      RegistrationID registrationId
+      string registrationId
       string versionId
       string sourceURL
       integer lineNumber
@@ -5927,7 +5866,7 @@ experimental domain ServiceWorker
   command deliverPushMessage
     parameters
       string origin
-      RegistrationID registrationId
+      string registrationId
       string data
 
   command disable
@@ -5935,7 +5874,7 @@ experimental domain ServiceWorker
   command dispatchSyncEvent
     parameters
       string origin
-      RegistrationID registrationId
+      string registrationId
       string tag
       boolean lastChance
 
@@ -6409,13 +6348,6 @@ experimental domain Tracing
       # Configuration for memory dump triggers. Used only when "memory-infra" category is enabled.
       optional MemoryDumpConfig memoryDumpConfig
 
-  # Data format of a trace. Can be either the legacy JSON format or the
-  # protocol buffer format. Note that the JSON format will be deprecated soon.
-  type StreamFormat extends string
-    enum
-      json
-      proto
-
   # Compression type to use for traces returned via streams.
   type StreamCompression extends string
     enum
@@ -6459,9 +6391,6 @@ experimental domain Tracing
       optional enum transferMode
         ReportEvents
         ReturnAsStream
-      # Trace data format to use. This only applies when using `ReturnAsStream`
-      # transfer mode (defaults to `json`).
-      optional StreamFormat streamFormat
       # Compression format to use. This only applies when using `ReturnAsStream`
       # transfer mode (defaults to `none`)
       optional StreamCompression streamCompression
@@ -6490,10 +6419,21 @@ experimental domain Tracing
     parameters
       # A handle of the stream that holds resulting trace data.
       optional IO.StreamHandle stream
-      # Trace data format of returned stream.
-      optional StreamFormat traceFormat
       # Compression format of returned stream.
       optional StreamCompression streamCompression
+
+# Testing domain is a dumping ground for the capabilities requires for browser or app testing that do not fit other
+# domains.
+experimental domain Testing
+  depends on Page
+
+  # Generates a report for testing.
+  command generateTestReport
+    parameters
+      # Message to be displayed in the report.
+      string message
+      # Specifies the endpoint group to deliver the report to.
+      optional string group
 
 # A domain for letting clients substitute browser's network layer with client code.
 experimental domain Fetch
@@ -6673,9 +6613,6 @@ experimental domain Fetch
       optional integer responseStatusCode
       # Response headers if intercepted at the response stage.
       optional array of HeaderEntry responseHeaders
-      # If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
-      # then this networkId will be the same as the requestId present in the requestWillBeSent event.
-      optional RequestId networkId
 
   # Issued when the domain is enabled with handleAuthRequests set to true.
   # The request is paused until client responds with continueWithAuth.

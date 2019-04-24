@@ -10,7 +10,6 @@
 
 #include "modules/congestion_controller/goog_cc/alr_detector.h"
 
-#include "api/transport/field_trial_based_config.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/experiments/alr_experiment.h"
 #include "test/field_trial.h"
@@ -70,15 +69,13 @@ class SimulateOutgoingTrafficIn {
 };
 }  // namespace
 
-class AlrDetectorTest : public ::testing::Test {
+class AlrDetectorTest : public testing::Test {
  public:
-  AlrDetectorTest() : alr_detector_(&field_trials_) {}
   void SetUp() override {
     alr_detector_.SetEstimatedBitrate(kEstimatedBitrateBps);
   }
 
  protected:
-  FieldTrialBasedConfig field_trials_;
   AlrDetector alr_detector_;
   int64_t timestamp_ms_ = 1000;
 };
@@ -156,7 +153,7 @@ TEST_F(AlrDetectorTest, ParseControlFieldTrial) {
       "WebRTC-ProbingScreenshareBwe/Control/");
   absl::optional<AlrExperimentSettings> parsed_params =
       AlrExperimentSettings::CreateFromFieldTrial(
-          FieldTrialBasedConfig(), "WebRTC-ProbingScreenshareBwe");
+          "WebRTC-ProbingScreenshareBwe");
   EXPECT_FALSE(static_cast<bool>(parsed_params));
 }
 
@@ -165,7 +162,7 @@ TEST_F(AlrDetectorTest, ParseActiveFieldTrial) {
       "WebRTC-ProbingScreenshareBwe/1.1,2875,85,20,-20,1/");
   absl::optional<AlrExperimentSettings> parsed_params =
       AlrExperimentSettings::CreateFromFieldTrial(
-          FieldTrialBasedConfig(), "WebRTC-ProbingScreenshareBwe");
+          "WebRTC-ProbingScreenshareBwe");
   ASSERT_TRUE(static_cast<bool>(parsed_params));
   EXPECT_EQ(1.1f, parsed_params->pacing_factor);
   EXPECT_EQ(2875, parsed_params->max_paced_queue_time);

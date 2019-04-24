@@ -112,7 +112,7 @@ class CORE_EXPORT Response final : public Body {
   bool IsBodyUsedForDCheck(ExceptionState&) override;
 
  private:
-  const Member<FetchResponseData> response_;
+  const TraceWrapperMember<FetchResponseData> response_;
   const Member<Headers> headers_;
   DISALLOW_COPY_AND_ASSIGN(Response);
 };

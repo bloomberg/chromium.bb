@@ -672,6 +672,7 @@ te{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
+        BYN{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -729,6 +730,7 @@ te{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
+        RON{"lei"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -737,6 +739,7 @@ te{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
+        STN{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1410,5 +1413,5 @@ te{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.48.17"}
+    Version{"2.1.43.50"}
 }

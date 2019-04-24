@@ -15,7 +15,6 @@
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_capture_devices.h"
-#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -141,22 +140,17 @@ void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
                                           CastWindowManager::WindowId z_order,
                                           VisibilityPriority initial_priority) {
   DCHECK(window_manager);
-  DCHECK(window_);
   window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
                                       z_order, initial_priority);
   web_contents_->Focus();
 }
 
 void CastWebViewDefault::GrantScreenAccess() {
-  if (!window_)
-    return;
   window_->GrantScreenAccess();
 }
 
 void CastWebViewDefault::RevokeScreenAccess() {
   resize_window_when_navigation_starts_ = false;
-  if (!window_)
-    return;
   window_->RevokeScreenAccess();
 }
 
@@ -309,13 +303,13 @@ void CastWebViewDefault::DidStartNavigation(
 }
 
 void CastWebViewDefault::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                             const content::MediaPlayerId& id) {
+                                             const MediaPlayerId& id) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
 void CastWebViewDefault::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const content::MediaPlayerId& id,
+    const MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }

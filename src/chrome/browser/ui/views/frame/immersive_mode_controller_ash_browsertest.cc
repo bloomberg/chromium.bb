@@ -50,7 +50,8 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
-    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    https_server_.AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
     ASSERT_TRUE(https_server_.Start());
 
     WebApplicationInfo web_app_info;

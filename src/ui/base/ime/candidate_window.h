@@ -11,21 +11,21 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/infolist_entry.h"
+#include "ui/base/ime/ui_base_ime_types_export.h"
 
 namespace ui {
 
 // CandidateWindow represents the structure of candidates generated from IME.
-class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindow {
+class UI_BASE_IME_TYPES_EXPORT CandidateWindow {
  public:
   enum Orientation {
     HORIZONTAL = 0,
     VERTICAL = 1,
   };
 
-  struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindowProperty {
+  struct UI_BASE_IME_TYPES_EXPORT CandidateWindowProperty {
     CandidateWindowProperty();
     virtual ~CandidateWindowProperty();
     int page_size;
@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CandidateWindow {
   };
 
   // Represents a candidate entry.
-  struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) Entry {
+  struct UI_BASE_IME_TYPES_EXPORT Entry {
     Entry();
     Entry(const Entry& other);
     virtual ~Entry();

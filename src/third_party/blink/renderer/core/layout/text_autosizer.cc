@@ -324,7 +324,9 @@ void TextAutosizer::PrepareClusterStack(LayoutObject* layout_object) {
   if (!layout_object)
     return;
   PrepareClusterStack(layout_object->Parent());
-  if (auto* block = DynamicTo<LayoutBlock>(layout_object)) {
+
+  if (layout_object->IsLayoutBlock()) {
+    LayoutBlock* block = ToLayoutBlock(layout_object);
 #if DCHECK_IS_ON()
     blocks_that_have_begun_layout_.insert(block);
 #endif
@@ -426,7 +428,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     }
   } else if (parent->IsLayoutBlock() &&
              (parent->ChildrenInline() || behavior == kDescendToInnerBlocks)) {
-    child = To<LayoutBlock>(parent)->FirstChild();
+    child = ToLayoutBlock(parent)->FirstChild();
   } else if (parent->IsLayoutInline()) {
     child = ToLayoutInline(parent)->FirstChild();
   }
@@ -517,8 +519,10 @@ void TextAutosizer::MarkSuperclusterForConsistencyCheck(LayoutObject* object) {
     return;
 
   Supercluster* last_supercluster = nullptr;
+  LayoutBlock* block = nullptr;
   while (object) {
-    if (auto* block = DynamicTo<LayoutBlock>(object)) {
+    if (object->IsLayoutBlock()) {
+      block = ToLayoutBlock(object);
       if (block->IsTableCell() ||
           ClassifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH)) {
         // If supercluster hasn't been created yet, create one.
@@ -679,7 +683,6 @@ void TextAutosizer::SetAllTextNeedsLayout(LayoutBlock* container) {
       if (object->IsText()) {
         object->SetNeedsLayoutAndFullPaintInvalidation(
             layout_invalidation_reason::kTextAutosizing);
-        object->SetNeedsCollectInlines();
       }
       object = object->NextInPreOrder(container);
     }
@@ -689,18 +692,19 @@ void TextAutosizer::SetAllTextNeedsLayout(LayoutBlock* container) {
 TextAutosizer::BlockFlags TextAutosizer::ClassifyBlock(
     const LayoutObject* layout_object,
     BlockFlags mask) const {
-  const auto* block = DynamicTo<LayoutBlock>(layout_object);
-  if (!block)
+  if (!layout_object->IsLayoutBlock())
     return 0;
 
+  const LayoutBlock* block = ToLayoutBlock(layout_object);
   BlockFlags flags = 0;
+
   if (IsPotentialClusterRoot(block)) {
     if (mask & POTENTIAL_ROOT)
       flags |= POTENTIAL_ROOT;
 
     LayoutMultiColumnFlowThread* flow_thread = nullptr;
-    if (auto* block_flow = DynamicTo<LayoutBlockFlow>(block))
-      flow_thread = block_flow->MultiColumnFlowThread();
+    if (block->IsLayoutBlockFlow())
+      flow_thread = ToLayoutBlockFlow(block)->MultiColumnFlowThread();
     if ((mask & INDEPENDENT) &&
         (IsIndependentDescendant(block) || block->IsTable() ||
          (flow_thread && flow_thread->ColumnCount() > 1)))
@@ -1080,8 +1084,8 @@ const LayoutBlock* TextAutosizer::DeepestBlockContainingAllText(
     last_node = last_node->Parent();
   }
 
-  if (auto* layout_block = DynamicTo<LayoutBlock>(first_node))
-    return layout_block;
+  if (first_node->IsLayoutBlock())
+    return ToLayoutBlock(first_node);
 
   // containingBlock() should never leave the cluster, since it only skips
   // ancestors when finding the container of position:absolute/fixed blocks, and
@@ -1205,6 +1209,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
           layout_invalidation_reason::kTextAutosizing, kMarkContainerChain,
           layouter);
+      layout_object->MarkContainerNeedsCollectInlines();
       break;
 
     case kLayoutNeeded:
@@ -1327,7 +1332,7 @@ bool TextAutosizer::FingerprintMapper::Remove(LayoutObject* layout_object) {
     return false;
 
   BlockSet& blocks = *blocks_iter->value;
-  blocks.erase(To<LayoutBlock>(layout_object));
+  blocks.erase(ToLayoutBlock(layout_object));
   if (blocks.IsEmpty()) {
     blocks_for_fingerprint_.erase(blocks_iter);
 
@@ -1394,7 +1399,7 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
 TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
                                             LayoutUnit inline_size)
     : text_autosizer_(node.GetLayoutBox()->GetDocument().GetTextAutosizer()),
-      block_(To<LayoutBlockFlow>(node.GetLayoutBox())) {
+      block_(ToLayoutBlockFlow(node.GetLayoutBox())) {
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
       block_->IsLayoutNGListMarker()) {
     // Bail if text autosizing isn't enabled, but also if this is a

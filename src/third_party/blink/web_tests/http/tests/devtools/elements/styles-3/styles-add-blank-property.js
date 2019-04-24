@@ -39,14 +39,13 @@
     ElementsTestRunner.waitForStyleApplied(commitProperty);
   }
 
-  async function commitProperty() {
+  function commitProperty() {
     // Commit.
-    treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    await ElementsTestRunner.waitForStyleAppliedPromise();
+    treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
     reloadStyles(addAndChangeLastCompoundProperty);
   }
 
-  async function addAndChangeLastCompoundProperty() {
+  function addAndChangeLastCompoundProperty() {
     TestRunner.addResult('After insertion at index 0:');
     ElementsTestRunner.dumpSelectedElementStyles(true);
 
@@ -56,17 +55,16 @@
     treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 
     treeElement.valueElement.textContent = 'green; font-weight: bold';
-    await treeElement.kickFreeFlowStyleEditForTest();
+    treeElement.kickFreeFlowStyleEditForTest();
 
     treeElement.valueElement.textContent = 'red; font-weight: bold';
-    await treeElement.kickFreeFlowStyleEditForTest();
+    treeElement.kickFreeFlowStyleEditForTest();
 
     treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    await ElementsTestRunner.waitForStyleAppliedPromise();
-    reloadStyles(addAndCommitMiddleProperty);
+    ElementsTestRunner.waitForStyleApplied(reloadStyles.bind(this, addAndCommitMiddleProperty));
   }
 
-  async function addAndCommitMiddleProperty() {
+  function addAndCommitMiddleProperty() {
     TestRunner.addResult('After appending and changing a \'compound\' property:');
     ElementsTestRunner.dumpSelectedElementStyles(true);
 
@@ -77,8 +75,7 @@
     treeElement.valueElement.textContent = 'third-value';
 
     treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    await ElementsTestRunner.waitForStyleAppliedPromise();
-    reloadStyles(dumpAndComplete);
+    ElementsTestRunner.waitForStyleApplied(reloadStyles.bind(this, dumpAndComplete));
   }
 
   function dumpAndComplete() {

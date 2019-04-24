@@ -143,13 +143,10 @@ void surface_semaphore_test(skiatest::Reporter* reporter,
     }
 #endif
 
-    GrFlushInfo info;
-    info.fNumSemaphores = 2;
-    info.fSignalSemaphores = semaphores.get();
     if (flushContext) {
-        mainCtx->flush(info);
+        mainCtx->flushAndSignalSemaphores(2, semaphores.get());
     } else {
-        mainSurface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, info);
+        mainSurface->flushAndSignalSemaphores(2, semaphores.get());
     }
 
     sk_sp<SkImage> mainImage = mainSurface->makeImageSnapshot();

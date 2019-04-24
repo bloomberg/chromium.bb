@@ -46,14 +46,14 @@ class SVGAnimatedPath final : public GarbageCollectedFinalized<SVGAnimatedPath>,
   static SVGAnimatedPath* Create(
       SVGElement* context_element,
       const QualifiedName& attribute_name,
-      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyInvalid) {
     return MakeGarbageCollected<SVGAnimatedPath>(
         context_element, attribute_name, css_property_id);
   }
 
   SVGAnimatedPath(SVGElement*,
                   const QualifiedName&,
-                  CSSPropertyID = CSSPropertyID::kInvalid);
+                  CSSPropertyID = CSSPropertyInvalid);
 
   const CSSValue& CssValue() const;
 };

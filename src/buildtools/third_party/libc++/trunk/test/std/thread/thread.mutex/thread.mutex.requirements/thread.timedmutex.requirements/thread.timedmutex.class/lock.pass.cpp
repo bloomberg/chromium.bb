@@ -19,6 +19,8 @@
 #include <cstdlib>
 #include <cassert>
 
+#include <iostream>
+
 std::timed_mutex m;
 
 typedef std::chrono::system_clock Clock;

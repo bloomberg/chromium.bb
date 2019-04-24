@@ -55,8 +55,14 @@ void TransitionInterpolation::Apply(StyleResolverState& state) const {
 
 std::unique_ptr<TypedInterpolationValue>
 TransitionInterpolation::GetInterpolatedValue() const {
-  return std::make_unique<TypedInterpolationValue>(
+  return TypedInterpolationValue::Create(
       type_, CurrentInterpolableValue().Clone(), CurrentNonInterpolableValue());
+}
+
+AnimatableValue* TransitionInterpolation::GetInterpolatedCompositorValue()
+    const {
+  return AnimatableValue::Interpolate(compositor_start_, compositor_end_,
+                                      cached_fraction_);
 }
 
 }  // namespace blink

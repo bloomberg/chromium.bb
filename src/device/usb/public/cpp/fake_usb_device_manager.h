@@ -19,8 +19,6 @@
 
 namespace device {
 
-class MockUsbMojoDevice;
-
 // This class implements a fake USB device manager which will only be used in
 // tests for device::mojom::UsbDeviceManager's users.
 class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
@@ -47,14 +45,9 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
 
   void RemoveDevice(scoped_refptr<FakeUsbDeviceInfo> device);
 
-  bool SetMockForDevice(const std::string& guid,
-                        MockUsbMojoDevice* mock_device);
-
   bool IsBound() { return !bindings_.empty(); }
 
   void CloseAllBindings() { bindings_.CloseAllBindings(); }
-
-  void RemoveAllDevices();
 
  protected:
   DeviceMap& devices() { return devices_; }

@@ -4,12 +4,14 @@
 
 // Custom binding for the pageCapture API.
 
+var binding = apiBridge || require('binding').Binding.create('pageCapture');
+
 var handleUncaughtException = require('uncaught_exception_handler').handle;
 var pageCaptureNatives = requireNative('page_capture');
 var CreateBlob = pageCaptureNatives.CreateBlob;
 var SendResponseAck = pageCaptureNatives.SendResponseAck;
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('saveAsMHTML',
@@ -29,3 +31,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     }
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

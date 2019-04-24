@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -54,8 +53,8 @@ void GetOrderOfViewsWithLayers(
     order->push_back(view);
   }
 
-  for (views::View* child : view->children())
-    GetOrderOfViewsWithLayers(child, parent_layer, hosts, order);
+  for (int i = 0; i < view->child_count(); ++i)
+    GetOrderOfViewsWithLayers(view->child_at(i), parent_layer, hosts, order);
 }
 
 }  // namespace
@@ -162,8 +161,6 @@ void WindowReorderer::ReorderChildWindows() {
   GetOrderOfViewsWithLayers(root_view_, parent_window_->layer(), hosted_windows,
       &view_with_layer_order);
 
-  std::vector<ui::Layer*> children_layer_order;
-
   // For the sake of simplicity, reorder both the layers owned by views and the
   // layers of windows associated with a view. Iterate through
   // |view_with_layer_order| backwards and stack windows at the bottom so that
@@ -173,7 +170,7 @@ void WindowReorderer::ReorderChildWindows() {
        it != view_with_layer_order.rend(); ++it) {
     View* view = *it;
     ui::Layer* layer = view->layer();
-    aura::Window* window = nullptr;
+    aura::Window* window = NULL;
 
     auto hosted_window_it = hosted_windows.find(view);
     if (hosted_window_it != hosted_windows.end()) {
@@ -184,10 +181,8 @@ void WindowReorderer::ReorderChildWindows() {
     DCHECK(layer);
     if (window)
       parent_window_->StackChildAtBottom(window);
-    children_layer_order.emplace_back(layer);
+    parent_window_->layer()->StackAtBottom(layer);
   }
-  std::reverse(children_layer_order.begin(), children_layer_order.end());
-  parent_window_->layer()->StackChildrenAtBottom(children_layer_order);
 }
 
 void WindowReorderer::OnWindowAdded(aura::Window* new_window) {
@@ -201,7 +196,7 @@ void WindowReorderer::OnWillRemoveWindow(aura::Window* window) {
 
 void WindowReorderer::OnWindowDestroying(aura::Window* window) {
   parent_window_->RemoveObserver(this);
-  parent_window_ = nullptr;
+  parent_window_ = NULL;
   association_observer_.reset();
 }
 

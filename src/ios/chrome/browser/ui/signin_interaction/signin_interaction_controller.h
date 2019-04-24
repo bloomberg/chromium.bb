@@ -9,6 +9,7 @@
 
 #import "base/ios/block_types.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
 namespace ios {
@@ -16,20 +17,6 @@ class ChromeBrowserState;
 }
 @class ChromeIdentity;
 @protocol SigninInteractionPresenting;
-
-// Sign-in result from SigninInteractionController.
-typedef NS_ENUM(NSInteger, SigninResult) {
-  // The user canceled sign-in.
-  SigninResultCanceled,
-  // The user signed in.
-  SigninResultSuccess,
-  // The user wants to check the synn settings before to start the sync.
-  SigninResultSignedInnAndOpennSettings,
-};
-
-// The type of the completion handler block when sign-in is finished.
-typedef void (^SigninInteractionControllerCompletionCallback)(
-    SigninResult signinResult);
 
 // Interaction controller for sign-in related operations. This class is mainly a
 // proxy for |ChromeSigninViewController|, calling directly
@@ -54,19 +41,16 @@ typedef void (^SigninInteractionControllerCompletionCallback)(
 // * |completion| will be called when the operation is done, and
 //   |succeeded| will notify the caller on whether the user is now signed in.
 - (void)signInWithIdentity:(ChromeIdentity*)identity
-                completion:
-                    (SigninInteractionControllerCompletionCallback)completion;
+                completion:(signin_ui::CompletionCallback)completion;
 
 // Re-authenticate the user. This method will always show a sign-in web flow.
 // The completion block will be called when the operation is done, and
 // |succeeded| will notify the caller on whether the user has been
 // correctly re-authenticated.
-- (void)reAuthenticateWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion;
+- (void)reAuthenticateWithCompletion:(signin_ui::CompletionCallback)completion;
 
 // Starts the flow to add an identity via ChromeIdentityInteractionManager.
-- (void)addAccountWithCompletion:
-    (SigninInteractionControllerCompletionCallback)completion;
+- (void)addAccountWithCompletion:(signin_ui::CompletionCallback)completion;
 
 // Cancels any current process. Calls the completion callback when done.
 - (void)cancel;

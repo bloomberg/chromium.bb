@@ -38,6 +38,11 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // The RenderWidget was closed. Only swapped-in RenderWidgets receive this.
   virtual void RenderWidgetDidClose() = 0;
 
+  // The RenderWidget was closed while in a swapped out state. Used to
+  // notify the swapped in render widget to close, which will result in a
+  // RenderWidgetDidClose() on the swapped in widget eventually.
+  virtual void RenderWidgetNeedsToRouteCloseEvent() = 0;
+
   // The RenderWidget finished the first visually non-empty paint.
   virtual void RenderWidgetDidFirstVisuallyNonEmptyPaint() = 0;
 

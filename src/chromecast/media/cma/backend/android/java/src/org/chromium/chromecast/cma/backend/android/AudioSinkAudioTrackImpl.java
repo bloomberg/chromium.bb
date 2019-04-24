@@ -13,7 +13,6 @@ import android.media.AudioTimestamp;
 import android.media.AudioTrack;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ContextUtils;
@@ -22,8 +21,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromecast.media.AudioContentType;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -137,25 +134,19 @@ class AudioSinkAudioTrackImpl {
     private ThrottledLog mUnderrunWarningLog;
     private ThrottledLog mTStampJitterWarningLog;
 
-    @IntDef({ReferenceTimestampState.STARTING_UP, ReferenceTimestampState.STABLE,
-            ReferenceTimestampState.RESYNCING_AFTER_PAUSE,
-            ReferenceTimestampState.RESYNCING_AFTER_UNDERRUN,
-            ReferenceTimestampState.RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ReferenceTimestampState {
-        int STARTING_UP = 0; // Starting up, no valid reference time yet.
-        int STABLE = 1; // Reference time exists and is updated regularly.
-        int RESYNCING_AFTER_PAUSE = 2; // Sync the timestamp after pause so that the renderer delay
-                                       // will be correct.
-        int RESYNCING_AFTER_UNDERRUN = 3; // The AudioTrack hit an underrun and we need to find a
-                                          // new reference timestamp after the underrun point.
-        int RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT =
-                4; // We experienced excessive and consistent
-                   // jitters in the timestamps and we should find a
-                   // new reference timestamp.
+    private enum ReferenceTimestampState {
+        STARTING_UP, // Starting up, no valid reference time yet.
+        STABLE, // Reference time exists and is updated regularly.
+        RESYNCING_AFTER_PAUSE, // Sync the timestamp after pause so that the renderer delay will be
+                               // correct.
+        RESYNCING_AFTER_UNDERRUN, // The AudioTrack hit an underrun and we need to find a new
+                                  // reference timestamp after the underrun point.
+        RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT, // We experienced excessive and consistent
+                                                   // jitters in the timestamps and we should find a
+                                                   // new reference timestamp.
     }
 
-    private @ReferenceTimestampState int mReferenceTimestampState;
+    ReferenceTimestampState mReferenceTimestampState;
 
     private boolean mIsInitialized;
 
@@ -639,7 +630,7 @@ class AudioSinkAudioTrackImpl {
         }
     }
 
-    private void resyncTimestamp(@ReferenceTimestampState int reason) {
+    private void resyncTimestamp(ReferenceTimestampState reason) {
         mLastTimestampUpdateNsec = NO_TIMESTAMP;
         mTimestampStabilityCounter = 0;
         mReferenceTimestampState = reason;
@@ -696,7 +687,7 @@ class AudioSinkAudioTrackImpl {
 
         long prevRefNanoTimeAtFramePos0 = mRefNanoTimeAtFramePos0;
         switch (mReferenceTimestampState) {
-            case ReferenceTimestampState.STARTING_UP:
+            case STARTING_UP:
                 // The Audiotrack produces a few timestamps at the beginning of time that are widely
                 // inaccurate. Hence, we require several stable timestamps before setting a
                 // reference point.
@@ -710,11 +701,11 @@ class AudioSinkAudioTrackImpl {
                         "First stable timestamp [" + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
-            case ReferenceTimestampState.RESYNCING_AFTER_PAUSE:
+            case RESYNCING_AFTER_PAUSE:
             // fall-through
-            case ReferenceTimestampState.RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT:
+            case RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT:
             // fall-through
-            case ReferenceTimestampState.RESYNCING_AFTER_UNDERRUN:
+            case RESYNCING_AFTER_UNDERRUN:
                 // Resyncing happens after we hit a pause, underrun or excessive drift in the
                 // AudioTrack. This causes the Android Audio stack to insert additional samples,
                 // which increases the reference timestamp (at framePosition=0) by thousands of
@@ -739,7 +730,7 @@ class AudioSinkAudioTrackImpl {
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
 
-            case ReferenceTimestampState.STABLE:
+            case STABLE:
                 // Timestamps can be jittery, and on some systems they are occasionally off by
                 // hundreds of usecs. Filter out timestamps that are too jittery and use a low-pass
                 // filter on the smaller ones.

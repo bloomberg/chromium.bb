@@ -36,15 +36,17 @@
  * into component streams, and the reverse process of muxing - writing supplied
  * data in a specified container format. It also has an @ref lavf_io
  * "I/O module" which supports a number of protocols for accessing the data (e.g.
- * file, tcp, http and others).
+ * file, tcp, http and others). Before using lavf, you need to call
+ * av_register_all() to register all compiled muxers, demuxers and protocols.
  * Unless you are absolutely sure you won't use libavformat's network
  * capabilities, you should also call avformat_network_init().
  *
  * A supported input format is described by an AVInputFormat struct, conversely
  * an output format is described by AVOutputFormat. You can iterate over all
- * input/output formats using the  av_demuxer_iterate / av_muxer_iterate() functions.
- * The protocols layer is not part of the public API, so you can only get the names
- * of supported protocols with the avio_enum_protocols() function.
+ * registered input/output formats using the av_iformat_next() /
+ * av_oformat_next() functions. The protocols layer is not part of the public
+ * API, so you can only get the names of supported protocols with the
+ * avio_enum_protocols() function.
  *
  * Main lavf structure used for both muxing and demuxing is AVFormatContext,
  * which exports all information about the file being read or written. As with
@@ -530,16 +532,7 @@ typedef struct AVOutputFormat {
      * New public fields should be added right above.
      *****************************************************************
      */
-    /**
-     * The ff_const59 define is not part of the public API and will
-     * be removed without further warning.
-     */
-#if FF_API_AVIOFORMAT
-#define ff_const59
-#else
-#define ff_const59 const
-#endif
-    ff_const59 struct AVOutputFormat *next;
+    struct AVOutputFormat *next;
     /**
      * size of private data so that it can be allocated in the wrapper
      */
@@ -653,7 +646,7 @@ typedef struct AVInputFormat {
 
     /**
      * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
-     * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
+     * AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
      * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
      */
     int flags;
@@ -683,7 +676,7 @@ typedef struct AVInputFormat {
      * New public fields should be added right above.
      *****************************************************************
      */
-    ff_const59 struct AVInputFormat *next;
+    struct AVInputFormat *next;
 
     /**
      * Raw demuxers store their codec ID here.
@@ -700,7 +693,7 @@ typedef struct AVInputFormat {
      * The buffer provided is guaranteed to be AVPROBE_PADDING_SIZE bytes
      * big so you do not have to check for that unless you need more.
      */
-    int (*read_probe)(const AVProbeData *);
+    int (*read_probe)(AVProbeData *);
 
     /**
      * Read the format header and initialize the AVFormatContext
@@ -1353,14 +1346,14 @@ typedef struct AVFormatContext {
      *
      * Demuxing only, set by avformat_open_input().
      */
-    ff_const59 struct AVInputFormat *iformat;
+    struct AVInputFormat *iformat;
 
     /**
      * The output container format.
      *
      * Muxing only, must be set by the caller before avformat_write_header().
      */
-    ff_const59 struct AVOutputFormat *oformat;
+    struct AVOutputFormat *oformat;
 
     /**
      * Format private data. This is an AVOptions-enabled struct
@@ -2218,7 +2211,7 @@ AVProgram *av_new_program(AVFormatContext *s, int id);
  * @return >= 0 in case of success, a negative AVERROR code in case of
  * failure
  */
-int avformat_alloc_output_context2(AVFormatContext **ctx, ff_const59 AVOutputFormat *oformat,
+int avformat_alloc_output_context2(AVFormatContext **ctx, AVOutputFormat *oformat,
                                    const char *format_name, const char *filename);
 
 /**
@@ -2229,7 +2222,7 @@ int avformat_alloc_output_context2(AVFormatContext **ctx, ff_const59 AVOutputFor
 /**
  * Find AVInputFormat based on the short name of the input format.
  */
-ff_const59 AVInputFormat *av_find_input_format(const char *short_name);
+AVInputFormat *av_find_input_format(const char *short_name);
 
 /**
  * Guess the file format.
@@ -2238,7 +2231,7 @@ ff_const59 AVInputFormat *av_find_input_format(const char *short_name);
  * @param is_opened Whether the file is already opened; determines whether
  *                  demuxers with or without AVFMT_NOFILE are probed.
  */
-ff_const59 AVInputFormat *av_probe_input_format(ff_const59 AVProbeData *pd, int is_opened);
+AVInputFormat *av_probe_input_format(AVProbeData *pd, int is_opened);
 
 /**
  * Guess the file format.
@@ -2252,7 +2245,7 @@ ff_const59 AVInputFormat *av_probe_input_format(ff_const59 AVProbeData *pd, int 
  *                  If the score is <= AVPROBE_SCORE_MAX / 4 it is recommended
  *                  to retry with a larger probe buffer.
  */
-ff_const59 AVInputFormat *av_probe_input_format2(ff_const59 AVProbeData *pd, int is_opened, int *score_max);
+AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max);
 
 /**
  * Guess the file format.
@@ -2261,7 +2254,7 @@ ff_const59 AVInputFormat *av_probe_input_format2(ff_const59 AVProbeData *pd, int
  *                  demuxers with or without AVFMT_NOFILE are probed.
  * @param score_ret The score of the best detection.
  */
-ff_const59 AVInputFormat *av_probe_input_format3(ff_const59 AVProbeData *pd, int is_opened, int *score_ret);
+AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened, int *score_ret);
 
 /**
  * Probe a bytestream to determine the input format. Each time a probe returns
@@ -2279,14 +2272,14 @@ ff_const59 AVInputFormat *av_probe_input_format3(ff_const59 AVProbeData *pd, int
  *         the maximal score is AVPROBE_SCORE_MAX
  * AVERROR code otherwise
  */
-int av_probe_input_buffer2(AVIOContext *pb, ff_const59 AVInputFormat **fmt,
+int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
                            const char *url, void *logctx,
                            unsigned int offset, unsigned int max_probe_size);
 
 /**
  * Like av_probe_input_buffer2() but returns 0 on success
  */
-int av_probe_input_buffer(AVIOContext *pb, ff_const59 AVInputFormat **fmt,
+int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
                           const char *url, void *logctx,
                           unsigned int offset, unsigned int max_probe_size);
 
@@ -2309,7 +2302,7 @@ int av_probe_input_buffer(AVIOContext *pb, ff_const59 AVInputFormat **fmt,
  *
  * @note If you want to use custom IO, preallocate the format context and set its pb field.
  */
-int avformat_open_input(AVFormatContext **ps, const char *url, ff_const59 AVInputFormat *fmt, AVDictionary **options);
+int avformat_open_input(AVFormatContext **ps, const char *url, AVInputFormat *fmt, AVDictionary **options);
 
 attribute_deprecated
 int av_demuxer_open(AVFormatContext *ic);
@@ -2694,14 +2687,14 @@ int av_write_trailer(AVFormatContext *s);
  * @param mime_type if non-NULL checks if mime_type matches with the
  * MIME type of the registered formats
  */
-ff_const59 AVOutputFormat *av_guess_format(const char *short_name,
+AVOutputFormat *av_guess_format(const char *short_name,
                                 const char *filename,
                                 const char *mime_type);
 
 /**
  * Guess the codec ID based upon muxer and filename.
  */
-enum AVCodecID av_guess_codec(ff_const59 AVOutputFormat *fmt, const char *short_name,
+enum AVCodecID av_guess_codec(AVOutputFormat *fmt, const char *short_name,
                             const char *filename, const char *mime_type,
                             enum AVMediaType type);
 

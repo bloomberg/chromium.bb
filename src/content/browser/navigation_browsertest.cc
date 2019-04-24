@@ -657,7 +657,8 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
   CommonNavigationParams common_params(
       data_url, url::Origin::Create(data_url), Referrer(),
       ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy(), false /* should_replace_current_entry */,
+      NavigationDownloadPolicy::kAllow,
+      false /* should_replace_current_entry */,
       file_url, /* base_url_for_data_url */
       GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now() /* navigation_start */, "GET",
@@ -705,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
   std::string script = base::StringPrintf(
       "var xhr = new XMLHttpRequest()\n"
       "xhr.open('GET', '%s', false);\n"
-      "try { xhr.send(); } catch (e) {}\n"
+      "xhr.send();\n"
       "window.domAutomationController.send(xhr.responseText);",
       file_url.spec().c_str());
   std::string result;
@@ -1041,10 +1042,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
 }
 
 // Regression test for https://crbug.com/856396.
-// Note that original issue for the bug is not applicable anymore, because there
-// is no provisional document loader which has not committed yet. We keep the
-// modified version of this test to check removing iframe from the load event
-// handler.
 IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
                        ReplacingDocumentLoaderFiresLoadEvent) {
   net::test_server::ControllableHttpResponse main_document_response(
@@ -1073,8 +1070,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   main_document_response.Done();
 
   // 2) The iframe starts to load, but the server only have time to send the
-  // response's headers, not the response's body. This should commit the
-  // iframe's load.
+  // response's headers, not the response's body. A provisional DocumentLoader
+  // will be created in the renderer process, but it will never commit.
   iframe_response.WaitForRequest();
   iframe_response.Send(
       "HTTP/1.1 200 OK\r\n"
@@ -1082,13 +1079,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
       "\r\n");
 
   // 3) In the meantime the iframe navigates elsewhere. It causes the previous
-  // DocumentLoader to be replaced by the new one. Removing it may
+  // provisional DocumentLoader to be replaced by the new one. Removing it may
   // trigger the 'load' event and delete the iframe.
   EXPECT_TRUE(ExecuteScript(
       shell(), "document.querySelector('iframe').src = '/title1.html'"));
-
-  // 4) Finish the original request.
-  iframe_response.Done();
 
   // Wait for the iframe to be deleted and check the renderer process is still
   // alive.
@@ -1167,6 +1161,97 @@ IN_PROC_BROWSER_TEST_F(NavigationDownloadBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 }
 
+// This test reproduces the following race condition:
+// 1) A first navigation starts, the headers are received, the navigation
+//    reaches ready-to-commit. It is sent to the renderer to be committed.
+// 2) In the meantime, a second navigation reaches ready-to-commit in the
+//    browser.
+// 3) Before the renderer gets notified of the new navigation, the
+//    first navigation is committed.
+// 4) The browser gets notified of the commit of the first navigation. This
+//    should not destroy the NavigationRequest corresponding to the second
+//    navigation.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       RaceNewNavigationCommitWhileOldOneFinishesLoading) {
+  // Start the test with an initial document.
+  GURL main_url(embedded_test_server()->GetURL("/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* render_frame_host = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  NavigationRecorder recorder(shell()->web_contents());
+  // Note: These two pages contain an image that will never load. The goal is to
+  // prevent RenderFrameHostImpl::DidStopLoading() to be called since it will
+  // cancel any pending navigation.
+  GURL page_1(embedded_test_server()->GetURL("/infinite_load_1.html"));
+  GURL page_2(embedded_test_server()->GetURL("/infinite_load_2.html"));
+  // Intercept and cancel any FrameMsgHost_DidCommitProvisionalLoad events.
+  InterceptAndCancelDidCommitProvisionalLoad interceptor(
+      shell()->web_contents());
+
+  // 1) Navigate to page_1.
+  shell()->LoadURL(page_1);
+
+  // 2) The browser receives the response's headers. The navigation commits in
+  //    the browser.
+  recorder.WaitForEvents(2);
+  EXPECT_EQ(2u, recorder.records().size());
+  EXPECT_STREQ("start /infinite_load_1.html", recorder.records()[0].c_str());
+  EXPECT_STREQ("ready-to-commit /infinite_load_1.html",
+               recorder.records()[1].c_str());
+
+  // 3) Wait for the renderer to receive the response's body, but do not notify
+  //    the browser of it right now. It is delayed in 6).
+  interceptor.Wait(1);
+  EXPECT_EQ(1u, interceptor.intercepted_messages().size());
+
+  // 4) In the meantime, the browser starts a navigation to page_2.
+  shell()->LoadURL(page_2);
+
+  // 5) The response's headers are received, the navigation reaches
+  // ready-to-commit in the browser. This should not delete the ongoing
+  // NavigationRequest.
+  recorder.WaitForEvents(4);
+  EXPECT_EQ(4u, recorder.records().size());
+  EXPECT_STREQ("start /infinite_load_2.html", recorder.records()[2].c_str());
+  EXPECT_STREQ("ready-to-commit /infinite_load_2.html",
+               recorder.records()[3].c_str());
+
+  // 6) The browser receives the first DidCommitProvisionalLoad message. This
+  //    should not delete the second navigation. This is the end of the first
+  //    navigation.
+  ASSERT_GE(interceptor.intercepted_navigations().size(), 1u);
+  render_frame_host->DidCommitNavigationForTesting(
+      interceptor.intercepted_navigations()[0],
+      std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
+          interceptor.intercepted_messages()[0]),
+      mojom::DidCommitProvisionalLoadInterfaceParams::New(
+          std::move(interceptor.intercepted_requests()[0]),
+          std::move(interceptor.intercepted_broker_content_requests()[0]),
+          std::move(interceptor.intercepted_broker_blink_requests()[0])));
+  recorder.WaitForEvents(5);
+  EXPECT_EQ(5u, recorder.records().size());
+  EXPECT_STREQ("did-commit /infinite_load_1.html",
+               recorder.records()[4].c_str());
+
+  // 7) Wait for the renderer to receive the second response's body. This is the
+  //    end of the second navigation.
+  interceptor.Wait(2);
+  EXPECT_EQ(2u, interceptor.intercepted_messages().size());
+  render_frame_host->DidCommitNavigationForTesting(
+      interceptor.intercepted_navigations()[1],
+      std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
+          interceptor.intercepted_messages()[1]),
+      mojom::DidCommitProvisionalLoadInterfaceParams::New(
+          std::move(interceptor.intercepted_requests()[1]),
+          std::move(interceptor.intercepted_broker_content_requests()[1]),
+          std::move(interceptor.intercepted_broker_blink_requests()[1])));
+  recorder.WaitForEvents(6);
+  EXPECT_EQ(6u, recorder.records().size());
+  EXPECT_STREQ("did-commit /infinite_load_2.html",
+               recorder.records()[5].c_str());
+}
+
 // Renderer initiated back/forward navigation in beforeunload should not prevent
 // the user to navigate away from a website.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HistoryBackInBeforeUnload) {
@@ -1201,7 +1286,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                                       "};"));
   TestNavigationManager navigation(shell()->web_contents(), url_2);
   auto ipc_observer = base::MakeRefCounted<BrowserMessageObserver>(
-      FrameMsgStart, FrameHostMsg_GoToEntryAtOffset::ID);
+      ViewMsgStart, ViewHostMsg_GoToEntryAtOffset::ID);
   static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
       ->GetProcess()
       ->AddFilter(ipc_observer.get());
@@ -1477,8 +1562,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
-  histograms.ExpectUniqueSample("Navigation.DownloadPolicy.LogPerPolicyApplied",
-                                NavigationDownloadType::kDefaultAllow, 1);
+  histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
+                                NavigationDownloadPolicy::kAllow, 1);
 }
 
 // A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
@@ -1531,8 +1616,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // when the network service is enabled.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     histograms.ExpectUniqueSample(
-        "Navigation.DownloadPolicy.LogPerPolicyApplied",
-        NavigationDownloadType::kOpenerCrossOrigin, 1);
+        "Navigation.DownloadPolicy",
+        NavigationDownloadPolicy::kDisallowOpenerCrossOrigin, 1);
   }
 }
 

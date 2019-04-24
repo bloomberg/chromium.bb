@@ -13,7 +13,7 @@ namespace net {
 
 ProxyConnectRedirectHttpStream::ProxyConnectRedirectHttpStream(
     LoadTimingInfo* load_timing_info)
-    : has_load_timing_info_(load_timing_info != nullptr) {
+    : has_load_timing_info_(load_timing_info != NULL) {
   if (has_load_timing_info_)
     load_timing_info_ = *load_timing_info;
 }
@@ -123,7 +123,7 @@ void ProxyConnectRedirectHttpStream::SetPriority(RequestPriority priority) {
 
 HttpStream* ProxyConnectRedirectHttpStream::RenewStreamForAuth() {
   NOTREACHED();
-  return nullptr;
+  return NULL;
 }
 
 }  // namespace net

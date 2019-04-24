@@ -246,9 +246,8 @@ SessionsGetDevicesFunction::CreateWindowModel(
       continue;
     const sessions::SerializedNavigationEntry& current_navigation =
         tab->navigations.at(tab->normalized_navigation_index());
-    if (search::IsNTPOrRelatedURL(
-            current_navigation.virtual_url(),
-            Profile::FromBrowserContext(browser_context()))) {
+    if (search::IsNTPURL(current_navigation.virtual_url(),
+                         Profile::FromBrowserContext(browser_context()))) {
       continue;
     }
     tabs_in_window.push_back(tab);

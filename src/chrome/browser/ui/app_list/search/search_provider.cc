@@ -28,10 +28,6 @@ void SearchProvider::ClearResults() {
   FireResultChanged();
 }
 
-void SearchProvider::ClearResultsSilently() {
-  results_.clear();
-}
-
 void SearchProvider::FireResultChanged() {
   if (result_changed_callback_.is_null())
     return;

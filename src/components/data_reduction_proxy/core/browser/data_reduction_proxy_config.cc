@@ -423,7 +423,13 @@ void DataReductionProxyConfig::UpdateConfigForTesting(
       !secure_proxies_allowed);
   if (!insecure_proxies_allowed !=
           network_properties_manager_->HasWarmupURLProbeFailed(
+              false /* secure_proxy */, false /* is_core_proxy */) ||
+      !insecure_proxies_allowed !=
+          network_properties_manager_->HasWarmupURLProbeFailed(
               false /* secure_proxy */, true /* is_core_proxy */)) {
+    network_properties_manager_->SetHasWarmupURLProbeFailed(
+        false /* secure_proxy */, false /* is_core_proxy */,
+        !insecure_proxies_allowed);
     network_properties_manager_->SetHasWarmupURLProbeFailed(
         false /* secure_proxy */, true /* is_core_proxy */,
         !insecure_proxies_allowed);
@@ -657,10 +663,6 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   configurator_->SetBypassRules(
       // Hostnames with no dot in them.
       "<local>,"
-
-      // WebSockets
-      "ws://*,"
-      "wss://*,"
 
       // RFC6890 current network (only valid as source address).
       "0.0.0.0/8,"

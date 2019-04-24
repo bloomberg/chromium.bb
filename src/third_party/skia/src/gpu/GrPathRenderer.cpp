@@ -22,6 +22,7 @@ void GrPathRenderer::StencilPathArgs::validate() const {
     SkASSERT(fViewMatrix);
     SkASSERT(fShape);
     SkASSERT(fShape->style().isSimpleFill());
+    SkASSERT(GrAAType::kCoverage != fAAType);
     SkPath path;
     fShape->asPath(&path);
     SkASSERT(!path.isInverseFillType());
@@ -48,14 +49,15 @@ bool GrPathRenderer::drawPath(const DrawPathArgs& args) {
     canArgs.fClipConservativeBounds = args.fClipConservativeBounds;
     canArgs.fViewMatrix = args.fViewMatrix;
     canArgs.fShape = args.fShape;
-    canArgs.fAATypeFlags = args.fAATypeFlags;
+    canArgs.fAAType = args.fAAType;
     canArgs.fTargetIsWrappedVkSecondaryCB = args.fRenderTargetContext->wrapsVkSecondaryCB();
     canArgs.validate();
 
     canArgs.fHasUserStencilSettings = !args.fUserStencilSettings->isUnused();
-    if (AATypeFlags::kMixedSampledStencilThenCover & canArgs.fAATypeFlags) {
-        SkASSERT(GrFSAAType::kMixedSamples == args.fRenderTargetContext->fsaaType());
-    }
+    SkASSERT(!(canArgs.fAAType == GrAAType::kMSAA &&
+               GrFSAAType::kUnifiedMSAA != args.fRenderTargetContext->fsaaType()));
+    SkASSERT(!(canArgs.fAAType == GrAAType::kMixedSamples &&
+               GrFSAAType::kMixedSamples != args.fRenderTargetContext->fsaaType()));
     SkASSERT(CanDrawPath::kNo != this->canDrawPath(canArgs));
     if (!args.fUserStencilSettings->isUnused()) {
         SkPath path;
@@ -116,9 +118,7 @@ void GrPathRenderer::onStencilPath(const StencilPathArgs& args) {
                           args.fClipConservativeBounds,
                           args.fViewMatrix,
                           args.fShape,
-                          (GrAA::kYes == args.fDoStencilMSAA)
-                                  ? AATypeFlags::kMSAA
-                                  : AATypeFlags::kNone,
+                          args.fAAType,
                           false};
     this->drawPath(drawArgs);
 }

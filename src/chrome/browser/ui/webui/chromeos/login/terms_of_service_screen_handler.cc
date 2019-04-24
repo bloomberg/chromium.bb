@@ -30,6 +30,12 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.TermsOfServiceScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
@@ -37,6 +43,7 @@ TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
     CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 TermsOfServiceScreenHandler::~TermsOfServiceScreenHandler() {

@@ -46,7 +46,7 @@ Polymer({
     },
 
     /**
-     * @private {!PageVisibility}
+     * @private {!GuestModePageVisibility}
      */
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
@@ -58,9 +58,6 @@ Polymer({
 
     /** @private */
     showCrostini_: Boolean,
-
-    /** @private */
-    showPluginVm_: Boolean,
 
     /** @private */
     havePlayStoreApp_: Boolean,
@@ -110,12 +107,7 @@ Polymer({
       // <if expr="chromeos">
       controlledSettingShared:
           loadTimeData.getString('controlledSettingShared'),
-      controlledSettingWithOwner:
-          loadTimeData.getString('controlledSettingWithOwner'),
-      controlledSettingNoOwner:
-          loadTimeData.getString('controlledSettingNoOwner'),
-      controlledSettingParent:
-          loadTimeData.getString('controlledSettingParent'),
+      controlledSettingOwner: loadTimeData.getString('controlledSettingOwner'),
       // </if>
     };
 
@@ -145,23 +137,13 @@ Polymer({
     };
     // </if>
 
-    // The SplitSettings feature hides OS settings in the browser settings page.
-    // https://crbug.com/950007
-    const showOSSettings = loadTimeData.getBoolean('showOSSettings');
-    this.showAndroidApps_ = showOSSettings &&
-        loadTimeData.valueExists('androidAppsVisible') &&
+    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
-    this.showKioskNextShell_ = showOSSettings &&
-        loadTimeData.valueExists('showKioskNextShell') &&
+    this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
         loadTimeData.getBoolean('showKioskNextShell');
-    this.showCrostini_ = showOSSettings &&
-        loadTimeData.valueExists('showCrostini') &&
+    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
-    this.showPluginVm_ = showOSSettings &&
-        loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = showOSSettings &&
-        loadTimeData.valueExists('havePlayStoreApp') &&
+    this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
         loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {

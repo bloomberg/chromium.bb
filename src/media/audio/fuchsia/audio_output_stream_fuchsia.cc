@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/fuchsia/service_directory_client.h"
-#include "base/memory/writable_shared_memory_region.h"
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -121,18 +120,14 @@ size_t AudioOutputStreamFuchsia::GetMinBufferSize() {
 
 bool AudioOutputStreamFuchsia::InitializePayloadBuffer() {
   size_t buffer_size = GetMinBufferSize();
-  auto region = base::WritableSharedMemoryRegion::Create(buffer_size);
-  payload_buffer_ = region.Map();
-  if (!payload_buffer_.IsValid()) {
+  if (!payload_buffer_.CreateAndMapAnonymous(buffer_size)) {
     LOG(WARNING) << "Failed to allocate VMO of size " << buffer_size;
     return false;
   }
 
   payload_buffer_pos_ = 0;
   audio_renderer_->AddPayloadBuffer(
-      kBufferId, base::WritableSharedMemoryRegion::TakeHandleForSerialization(
-                     std::move(region))
-                     .PassPlatformHandle());
+      kBufferId, zx::vmo(payload_buffer_.handle().Duplicate().GetHandle()));
 
   return true;
 }
@@ -145,9 +140,9 @@ void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
   // lated in PumpSamples(). This is necessary because VMO allocation may fail
   // and it's not possible to report that error here - OnMinLeadTimeChanged()
   // may be invoked before Start().
-  if (payload_buffer_.IsValid() &&
-      GetMinBufferSize() > payload_buffer_.size()) {
-    payload_buffer_ = {};
+  if (payload_buffer_.mapped_size() > 0 &&
+      GetMinBufferSize() > payload_buffer_.mapped_size()) {
+    payload_buffer_.Unmap();
   }
 }
 
@@ -167,7 +162,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
   DCHECK(audio_renderer_);
 
   // Allocate payload buffer if necessary.
-  if (!payload_buffer_.IsValid() && !InitializePayloadBuffer()) {
+  if (!payload_buffer_.mapped_size() && !InitializePayloadBuffer()) {
     ReportError();
     return;
   }
@@ -205,7 +200,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   // Save samples to the |payload_buffer_|.
   size_t packet_size = parameters_.GetBytesPerBuffer(kSampleFormatF32);
-  DCHECK_LE(payload_buffer_pos_ + packet_size, payload_buffer_.size());
+  DCHECK_LE(payload_buffer_pos_ + packet_size, payload_buffer_.mapped_size());
   audio_bus_->ToInterleaved<media::Float32SampleTypeTraits>(
       audio_bus_->frames(),
       reinterpret_cast<float*>(static_cast<uint8_t*>(payload_buffer_.memory()) +
@@ -222,7 +217,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   stream_position_samples_ += frames_filled;
   payload_buffer_pos_ =
-      (payload_buffer_pos_ + packet_size) % payload_buffer_.size();
+      (payload_buffer_pos_ + packet_size) % payload_buffer_.mapped_size();
 
   SchedulePumpSamples(now);
 }

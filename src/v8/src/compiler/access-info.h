@@ -25,9 +25,9 @@ namespace compiler {
 
 // Forward declarations.
 class CompilationDependencies;
-class ElementAccessFeedback;
 class Type;
 class TypeCache;
+struct ProcessedFeedback;
 
 // Whether we are loading a property or storing to a property.
 // For a store during literal creation, do not walk up the prototype chain.
@@ -95,7 +95,6 @@ class PropertyAccessInfo final {
   bool Merge(PropertyAccessInfo const* that, AccessMode access_mode,
              Zone* zone) V8_WARN_UNUSED_RESULT;
 
-  bool IsInvalid() const { return kind() == kInvalid; }
   bool IsNotFound() const { return kind() == kNotFound; }
   bool IsDataConstant() const { return kind() == kDataConstant; }
   bool IsDataField() const { return kind() == kDataField; }
@@ -156,37 +155,32 @@ class AccessInfoFactory final {
       FeedbackNexus nexus, MapHandles const& maps, AccessMode access_mode,
       ZoneVector<ElementAccessInfo>* access_infos) const;
 
-  PropertyAccessInfo ComputePropertyAccessInfo(Handle<Map> map,
-                                               Handle<Name> name,
-                                               AccessMode access_mode) const;
-  PropertyAccessInfo ComputePropertyAccessInfo(MapHandles const& maps,
-                                               Handle<Name> name,
-                                               AccessMode access_mode) const;
-  void ComputePropertyAccessInfos(
+  bool ComputePropertyAccessInfo(Handle<Map> map, Handle<Name> name,
+                                 AccessMode access_mode,
+                                 PropertyAccessInfo* access_info) const;
+  bool ComputePropertyAccessInfo(MapHandles const& maps, Handle<Name> name,
+                                 AccessMode access_mode,
+                                 PropertyAccessInfo* access_info) const;
+  bool ComputePropertyAccessInfos(
       MapHandles const& maps, Handle<Name> name, AccessMode access_mode,
       ZoneVector<PropertyAccessInfo>* access_infos) const;
 
-  // Merge as many of the given {infos} as possible. Return false iff
-  // any of them was invalid.
-  bool FinalizePropertyAccessInfos(
-      ZoneVector<PropertyAccessInfo> infos, AccessMode access_mode,
-      ZoneVector<PropertyAccessInfo>* result) const;
-
  private:
-  bool ConsolidateElementLoad(ElementAccessFeedback const& processed,
+  bool ConsolidateElementLoad(ProcessedFeedback const& processed,
                               ElementAccessInfo* access_info) const;
-  PropertyAccessInfo LookupSpecialFieldAccessor(Handle<Map> map,
-                                                Handle<Name> name) const;
-  PropertyAccessInfo LookupTransition(Handle<Map> map, Handle<Name> name,
-                                      MaybeHandle<JSObject> holder) const;
-  PropertyAccessInfo ComputeDataFieldAccessInfo(Handle<Map> receiver_map,
-                                                Handle<Map> map,
-                                                MaybeHandle<JSObject> holder,
-                                                int number,
-                                                AccessMode access_mode) const;
-  PropertyAccessInfo ComputeAccessorDescriptorAccessInfo(
+  bool LookupSpecialFieldAccessor(Handle<Map> map, Handle<Name> name,
+                                  PropertyAccessInfo* access_info) const;
+  bool LookupTransition(Handle<Map> map, Handle<Name> name,
+                        MaybeHandle<JSObject> holder,
+                        PropertyAccessInfo* access_info) const;
+  bool ComputeDataFieldAccessInfo(Handle<Map> receiver_map, Handle<Map> map,
+                                  MaybeHandle<JSObject> holder, int number,
+                                  AccessMode access_mode,
+                                  PropertyAccessInfo* access_info) const;
+  bool ComputeAccessorDescriptorAccessInfo(
       Handle<Map> receiver_map, Handle<Name> name, Handle<Map> map,
-      MaybeHandle<JSObject> holder, int number, AccessMode access_mode) const;
+      MaybeHandle<JSObject> holder, int number, AccessMode access_mode,
+      PropertyAccessInfo* access_info) const;
 
   CompilationDependencies* dependencies() const { return dependencies_; }
   JSHeapBroker* broker() const { return broker_; }

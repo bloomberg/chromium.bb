@@ -10,14 +10,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace chromeos {
 namespace input_method {
 
-class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) FakeImeKeyboard
-    : public ImeKeyboard {
+class UI_BASE_IME_EXPORT FakeImeKeyboard : public ImeKeyboard {
  public:
   FakeImeKeyboard();
   ~FakeImeKeyboard() override;

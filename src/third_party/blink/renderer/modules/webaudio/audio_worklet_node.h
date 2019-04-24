@@ -49,7 +49,6 @@ class AudioWorkletHandler final : public AudioHandler {
 
   double TailTime() const override;
   double LatencyTime() const override { return 0; }
-  bool PropagatesSilence() const final;
 
   String Name() const { return name_; }
 
@@ -73,15 +72,17 @@ class AudioWorkletHandler final : public AudioHandler {
 
   String name_;
 
+  double tail_time_ = std::numeric_limits<double>::infinity();
+
   // MUST be set/used by render thread.
   CrossThreadPersistent<AudioWorkletProcessor> processor_;
 
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map_;
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 
-  // Any tail processing must be handled by the script; we can't really do
-  // anything meaningful ourselves.
-  bool RequiresTailProcessing() const override { return false; }
+  // TODO(): Adjust this if needed based on the result of the process
+  // method or the value of |tail_time_|.
+  bool RequiresTailProcessing() const override { return true; }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

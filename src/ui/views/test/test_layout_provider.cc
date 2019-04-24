@@ -9,8 +9,8 @@
 namespace views {
 namespace test {
 
-TestLayoutProvider::TestLayoutProvider() = default;
-TestLayoutProvider::~TestLayoutProvider() = default;
+TestLayoutProvider::TestLayoutProvider() {}
+TestLayoutProvider::~TestLayoutProvider() {}
 
 void TestLayoutProvider::SetDistanceMetric(int metric, int value) {
   distance_metrics_[metric] = value;

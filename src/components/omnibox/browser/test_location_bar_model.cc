@@ -38,7 +38,8 @@ GURL TestLocationBarModel::GetURL() const {
   return url_;
 }
 
-security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel() const {
+security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel(
+    bool ignore_editing) const {
   return security_level_;
 }
 
@@ -62,6 +63,11 @@ base::string16 TestLocationBarModel::GetSecureDisplayText() const {
 
 base::string16 TestLocationBarModel::GetSecureAccessibilityText() const {
   return base::string16();
+}
+
+base::string16 TestLocationBarModel::GetEVCertName() const {
+  return (security_level_ == security_state::EV_SECURE) ? ev_cert_name_
+                                                        : base::string16();
 }
 
 bool TestLocationBarModel::ShouldDisplayURL() const {

@@ -58,7 +58,6 @@ private:
     String fExtraEmitCodeCode;
     std::set<int> fWrittenTransformedCoords;
     std::vector<Compiler::FormatArg>* fFormatArgs;
-    const FunctionDeclaration* fCurrentFunction;
 
     typedef GLSLCodeGenerator INHERITED;
 };

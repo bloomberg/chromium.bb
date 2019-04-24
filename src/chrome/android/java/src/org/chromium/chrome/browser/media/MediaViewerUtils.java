@@ -182,17 +182,17 @@ public class MediaViewerUtils {
 
     /**
      * Selectively enables or disables the MediaLauncherActivity.
+     * @param context The application Context.
      */
-    public static void updateMediaLauncherActivityEnabled() {
+    public static void updateMediaLauncherActivityEnabled(Context context) {
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
-                () -> { synchronousUpdateMediaLauncherActivityEnabled(); });
+                () -> { synchronousUpdateMediaLauncherActivityEnabled(context); });
     }
 
-    static void synchronousUpdateMediaLauncherActivityEnabled() {
-        Context context = ContextUtils.getApplicationContext();
+    static void synchronousUpdateMediaLauncherActivityEnabled(Context context) {
         PackageManager packageManager = context.getPackageManager();
         ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
-        int newState = shouldEnableMediaLauncherActivity()
+        int newState = shouldEnableMediaLauncherActivity(context)
                 ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                 : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
         // This indicates that we don't want to kill Chrome when changing component enabled
@@ -206,34 +206,35 @@ public class MediaViewerUtils {
 
     /**
      * Force MediaLauncherActivity to be enabled for testing.
+     * @param context The application Context.
      */
-    public static void forceEnableMediaLauncherActivityForTest() {
+    public static void forceEnableMediaLauncherActivityForTest(Context context) {
         sIsMediaLauncherActivityForceEnabledForTest = true;
         // Synchronously update to avoid race conditions in tests.
-        synchronousUpdateMediaLauncherActivityEnabled();
+        synchronousUpdateMediaLauncherActivityEnabled(context);
     }
 
     /**
      * Stops forcing MediaLauncherActivity to be enabled for testing.
+     * @param context The application Context.
      */
-    public static void stopForcingEnableMediaLauncherActivityForTest() {
+    public static void stopForcingEnableMediaLauncherActivityForTest(Context context) {
         sIsMediaLauncherActivityForceEnabledForTest = false;
         // Synchronously update to avoid race conditions in tests.
-        synchronousUpdateMediaLauncherActivityEnabled();
+        synchronousUpdateMediaLauncherActivityEnabled(context);
     }
 
-    private static boolean shouldEnableMediaLauncherActivity() {
+    private static boolean shouldEnableMediaLauncherActivity(Context context) {
         return sIsMediaLauncherActivityForceEnabledForTest
-                || ((FeatureUtilities.isAndroidGo() || isEnterpriseManaged())
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
+                || ((FeatureUtilities.isAndroidGo() || isEnterpriseManaged(context))
+                           && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
     }
 
-    private static boolean isEnterpriseManaged() {
+    private static boolean isEnterpriseManaged(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         RestrictionsManager restrictionsManager =
-                (RestrictionsManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.RESTRICTIONS_SERVICE);
+                (RestrictionsManager) context.getSystemService(Context.RESTRICTIONS_SERVICE);
         return restrictionsManager.hasRestrictionsProvider()
                 || !restrictionsManager.getApplicationRestrictions().isEmpty();
     }

@@ -30,29 +30,10 @@
 
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
-#include <memory>
+#include "third_party/blink/renderer/platform/wtf/text/collator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/icu/source/common/unicode/uloc.h"
-#include "third_party/icu/source/i18n/unicode/ucol.h"
 
 namespace blink {
-
-namespace {
-
-class UCollatorDeleter {
- public:
-  void operator()(UCollator* collator) { ucol_close(collator); }
-};
-
-struct UCollatorHolder {
-  std::unique_ptr<UCollator, UCollatorDeleter> collator;
-  char equivalent_locale[ULOC_FULLNAME_CAPACITY];
-  bool lower_first = false;
-
-  operator UCollator*() const { return collator.get(); }
-};
-
-}  // namespace
 
 inline const xmlChar* ToXMLChar(const char* string) {
   return reinterpret_cast<const xmlChar*>(string);
@@ -147,44 +128,9 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
   // both "en-US" and "en_US", for example. This lets an author to really
   // specify sorting rules, e.g. "de_DE@collation=phonebook", which isn't
   // possible with language alone.
-  const char* lang =
-      comp->has_lang ? reinterpret_cast<const char*>(comp->lang) : "en";
-
-  UErrorCode status = U_ZERO_ERROR;
-  char equivalent_locale[ULOC_FULLNAME_CAPACITY];
-  UBool is_available;
-  ucol_getFunctionalEquivalent(equivalent_locale, ULOC_FULLNAME_CAPACITY,
-                               "collation", lang, &is_available, &status);
-  if (U_FAILURE(status)) {
-    strcpy(equivalent_locale, "root");
-    status = U_ZERO_ERROR;
-  }
-
-  DEFINE_STATIC_LOCAL(std::unique_ptr<UCollatorHolder>, cached_collator, ());
-  std::unique_ptr<UCollatorHolder> collator;
-  if (cached_collator &&
-      !strcmp(cached_collator->equivalent_locale, equivalent_locale) &&
-      cached_collator->lower_first == comp->lower_first) {
-    collator = std::move(cached_collator);
-  } else {
-    collator = std::make_unique<UCollatorHolder>();
-    strncpy(collator->equivalent_locale, equivalent_locale,
-            ULOC_FULLNAME_CAPACITY);
-    collator->lower_first = comp->lower_first;
-
-    collator->collator.reset(ucol_open(lang, &status));
-    if (U_FAILURE(status)) {
-      status = U_ZERO_ERROR;
-      collator->collator.reset(ucol_open("", &status));
-    }
-    DCHECK(U_SUCCESS(status));
-    ucol_setAttribute(*collator, UCOL_CASE_FIRST,
-                      comp->lower_first ? UCOL_LOWER_FIRST : UCOL_UPPER_FIRST,
-                      &status);
-    DCHECK(U_SUCCESS(status));
-    ucol_setAttribute(*collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
-    DCHECK(U_SUCCESS(status));
-  }
+  Collator collator(comp->has_lang ? reinterpret_cast<const char*>(comp->lang)
+                                   : "en");
+  collator.SetOrderLowerFirst(comp->lower_first);
 
   // Shell's sort of node-set.
   for (int incr = len / 2; incr > 0; incr /= 2) {
@@ -224,8 +170,8 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
             String::FromUTF8(
                 reinterpret_cast<const char*>(results[j + incr]->stringval))
                 .AppendTo(string2);
-            tst = ucol_strcoll(*collator, string1.data(), string1.size(),
-                               string2.data(), string2.size());
+            tst = collator.Collate(string1.data(), string1.size(),
+                                   string2.data(), string2.size());
           }
           if (descending)
             tst = -tst;
@@ -279,8 +225,8 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
                 String::FromUTF8(
                     reinterpret_cast<const char*>(res[j + incr]->stringval))
                     .AppendTo(string2);
-                tst = ucol_strcoll(*collator, string1.data(), string1.size(),
-                                   string2.data(), string2.size());
+                tst = collator.Collate(string1.data(), string1.size(),
+                                       string2.data(), string2.size());
               }
               if (desc)
                 tst = -tst;
@@ -341,8 +287,6 @@ void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
       xmlFree(results_tab[j]);
     }
   }
-
-  cached_collator = std::move(collator);
 }
 
 }  // namespace blink

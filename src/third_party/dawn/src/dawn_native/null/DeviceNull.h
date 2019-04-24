@@ -22,6 +22,7 @@
 #include "dawn_native/CommandEncoder.h"
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/InputState.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/Queue.h"
 #include "dawn_native/RenderPipeline.h"
@@ -43,6 +44,7 @@ namespace dawn_native { namespace null {
     class CommandBuffer;
     using ComputePipeline = ComputePipelineBase;
     class Device;
+    using InputState = InputStateBase;
     using PipelineLayout = PipelineLayoutBase;
     class Queue;
     using RenderPipeline = RenderPipelineBase;
@@ -60,6 +62,7 @@ namespace dawn_native { namespace null {
         using CommandBufferType = CommandBuffer;
         using ComputePipelineType = ComputePipeline;
         using DeviceType = Device;
+        using InputStateType = InputState;
         using PipelineLayoutType = PipelineLayout;
         using QueueType = Queue;
         using RenderPipelineType = RenderPipeline;
@@ -86,6 +89,7 @@ namespace dawn_native { namespace null {
         ~Device();
 
         CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
+        InputStateBase* CreateInputState(InputStateBuilder* builder) override;
 
         Serial GetCompletedCommandSerial() const final override;
         Serial GetLastSubmittedCommandSerial() const final override;
@@ -97,10 +101,10 @@ namespace dawn_native { namespace null {
 
         ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
         MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
-                                           uint64_t sourceOffset,
+                                           uint32_t sourceOffset,
                                            BufferBase* destination,
-                                           uint64_t destinationOffset,
-                                           uint64_t size) override;
+                                           uint32_t destinationOffset,
+                                           uint32_t size) override;
 
       private:
         ResultOrError<BindGroupBase*> CreateBindGroupImpl(
@@ -181,12 +185,12 @@ namespace dawn_native { namespace null {
       public:
         using WSIContext = struct {};
         void Init(WSIContext* context);
-        DawnSwapChainError Configure(DawnTextureFormat format,
-                                     DawnTextureUsageBit,
+        dawnSwapChainError Configure(dawnTextureFormat format,
+                                     dawnTextureUsageBit,
                                      uint32_t width,
                                      uint32_t height);
-        DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture);
-        DawnSwapChainError Present();
+        dawnSwapChainError GetNextTexture(dawnSwapChainNextTexture* nextTexture);
+        dawnSwapChainError Present();
         dawn::TextureFormat GetPreferredFormat() const;
     };
 

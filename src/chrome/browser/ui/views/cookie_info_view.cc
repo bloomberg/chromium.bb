@@ -94,7 +94,7 @@ void CookieInfoView::EnableCookieDisplay(bool enabled) {
 // CookieInfoView, views::View overrides.
 
 void CookieInfoView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
     Init();
 }

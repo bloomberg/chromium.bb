@@ -51,8 +51,6 @@ class Worklist {
       return worklist_->LocalPushSegmentSize(task_id_);
     }
 
-    void FlushToGlobal() { worklist_->FlushToGlobal(task_id_); }
-
    private:
     Worklist<EntryType, SEGMENT_SIZE>* worklist_;
     int task_id_;

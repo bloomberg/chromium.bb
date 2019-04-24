@@ -75,8 +75,7 @@ public class TabGroupUtils {
         sTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
-                if (!navigationHandle.isInMainFrame() || navigationHandle.pageTransition() == null)
-                    return;
+                if (!navigationHandle.isInMainFrame()) return;
                 if (tab.isIncognito()) return;
                 if (navigationHandle.pageTransition() == null) return;
 

@@ -1,8 +1,0 @@
-[document web]
-++[menu]
-++++[menu item] name='File'
-++++[menu item] name='Edit'
-++++[menu item] name='Complex menuitem'
-++++++[text] name='Complex '
-++++++[entry] selectable-text
-++++++[text] name=' menuitem'

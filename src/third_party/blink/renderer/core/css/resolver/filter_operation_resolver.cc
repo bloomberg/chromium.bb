@@ -46,25 +46,25 @@ static const float kOffScreenCanvasRemFontSize = 16.0;
 FilterOperation::OperationType FilterOperationResolver::FilterOperationForType(
     CSSValueID type) {
   switch (type) {
-    case CSSValueID::kGrayscale:
+    case CSSValueGrayscale:
       return FilterOperation::GRAYSCALE;
-    case CSSValueID::kSepia:
+    case CSSValueSepia:
       return FilterOperation::SEPIA;
-    case CSSValueID::kSaturate:
+    case CSSValueSaturate:
       return FilterOperation::SATURATE;
-    case CSSValueID::kHueRotate:
+    case CSSValueHueRotate:
       return FilterOperation::HUE_ROTATE;
-    case CSSValueID::kInvert:
+    case CSSValueInvert:
       return FilterOperation::INVERT;
-    case CSSValueID::kOpacity:
+    case CSSValueOpacity:
       return FilterOperation::OPACITY;
-    case CSSValueID::kBrightness:
+    case CSSValueBrightness:
       return FilterOperation::BRIGHTNESS;
-    case CSSValueID::kContrast:
+    case CSSValueContrast:
       return FilterOperation::CONTRAST;
-    case CSSValueID::kBlur:
+    case CSSValueBlur:
       return FilterOperation::BLUR;
-    case CSSValueID::kDropShadow:
+    case CSSValueDropShadow:
       return FilterOperation::DROP_SHADOW;
     default:
       NOTREACHED();
@@ -123,15 +123,15 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
 static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,
                                               const CSSPrimitiveValue* value) {
   switch (filter.FunctionType()) {
-    case CSSValueID::kGrayscale:
-    case CSSValueID::kSepia:
-    case CSSValueID::kSaturate:
-    case CSSValueID::kInvert:
-    case CSSValueID::kBrightness:
-    case CSSValueID::kContrast:
-    case CSSValueID::kOpacity: {
-      double amount = (filter.FunctionType() == CSSValueID::kBrightness ||
-                       filter.FunctionType() == CSSValueID::kInvert)
+    case CSSValueGrayscale:
+    case CSSValueSepia:
+    case CSSValueSaturate:
+    case CSSValueInvert:
+    case CSSValueBrightness:
+    case CSSValueContrast:
+    case CSSValueOpacity: {
+      double amount = (filter.FunctionType() == CSSValueBrightness ||
+                       filter.FunctionType() == CSSValueInvert)
                           ? 0
                           : 1;
       if (filter.length() == 1) {
@@ -141,7 +141,7 @@ static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,
       }
       return amount;
     }
-    case CSSValueID::kHueRotate: {
+    case CSSValueHueRotate: {
       double angle = 0;
       if (filter.length() == 1)
         angle = value->ComputeDegrees();
@@ -157,71 +157,70 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
     const CSSValue& in_value) {
   FilterOperations operations;
 
-  if (auto* in_identifier_value = DynamicTo<CSSIdentifierValue>(in_value)) {
-    DCHECK_EQ(in_identifier_value->GetValueID(), CSSValueID::kNone);
+  if (in_value.IsIdentifierValue()) {
+    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
     return operations;
   }
 
   const CSSToLengthConversionData& conversion_data =
       state.CssToLengthConversionData();
 
-  for (auto& curr_value : To<CSSValueList>(in_value)) {
-    if (const auto* url_value =
-            DynamicTo<cssvalue::CSSURIValue>(curr_value.Get())) {
+  for (auto& curr_value : ToCSSValueList(in_value)) {
+    if (curr_value->IsURIValue()) {
       CountFilterUse(FilterOperation::REFERENCE, state.GetDocument());
 
+      const CSSURIValue& url_value = ToCSSURIValue(*curr_value);
       SVGResource* resource =
           state.GetElementStyleResources().GetSVGResourceFromValue(
-              state.GetTreeScope(), *url_value,
+              state.GetTreeScope(), url_value,
               ElementStyleResources::kAllowExternalResource);
-      operations.Operations().push_back(
-          MakeGarbageCollected<ReferenceFilterOperation>(
-              url_value->ValueForSerialization(), resource));
+      operations.Operations().push_back(ReferenceFilterOperation::Create(
+          url_value.ValueForSerialization(), resource));
       continue;
     }
 
-    const auto* filter_value = To<CSSFunctionValue>(curr_value.Get());
+    const CSSFunctionValue* filter_value = ToCSSFunctionValue(curr_value.Get());
     FilterOperation::OperationType operation_type =
         FilterOperationForType(filter_value->FunctionType());
     CountFilterUse(operation_type, state.GetDocument());
     DCHECK_LE(filter_value->length(), 1u);
 
-    const CSSPrimitiveValue* first_value = nullptr;
-    if (filter_value->length())
-      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
-
+    const CSSPrimitiveValue* first_value =
+        filter_value->length() && filter_value->Item(0).IsPrimitiveValue()
+            ? &ToCSSPrimitiveValue(filter_value->Item(0))
+            : nullptr;
     double first_number =
         ResolveFirstArgumentForFunction(*filter_value, first_value);
 
     switch (filter_value->FunctionType()) {
-      case CSSValueID::kGrayscale:
-      case CSSValueID::kSepia:
-      case CSSValueID::kSaturate:
-      case CSSValueID::kHueRotate: {
+      case CSSValueGrayscale:
+      case CSSValueSepia:
+      case CSSValueSaturate:
+      case CSSValueHueRotate: {
         operations.Operations().push_back(
-            MakeGarbageCollected<BasicColorMatrixFilterOperation>(
-                first_number, operation_type));
+            BasicColorMatrixFilterOperation::Create(first_number,
+                                                    operation_type));
         break;
       }
-      case CSSValueID::kInvert:
-      case CSSValueID::kBrightness:
-      case CSSValueID::kContrast:
-      case CSSValueID::kOpacity: {
+      case CSSValueInvert:
+      case CSSValueBrightness:
+      case CSSValueContrast:
+      case CSSValueOpacity: {
         operations.Operations().push_back(
-            MakeGarbageCollected<BasicComponentTransferFilterOperation>(
-                first_number, operation_type));
+            BasicComponentTransferFilterOperation::Create(first_number,
+                                                          operation_type));
         break;
       }
-      case CSSValueID::kBlur: {
+      case CSSValueBlur: {
         Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(
-            MakeGarbageCollected<BlurFilterOperation>(std_deviation));
+            BlurFilterOperation::Create(std_deviation));
         break;
       }
-      case CSSValueID::kDropShadow: {
+      case CSSValueDropShadow: {
         ShadowData shadow = StyleBuilderConverter::ConvertShadow(
             conversion_data, &state, filter_value->Item(0));
         // TODO(fs): Resolve 'currentcolor' when constructing the filter chain.
@@ -246,8 +245,8 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     const Font& font) {
   FilterOperations operations;
 
-  if (auto* in_identifier_value = DynamicTo<CSSIdentifierValue>(in_value)) {
-    DCHECK_EQ(in_identifier_value->GetValueID(), CSSValueID::kNone);
+  if (in_value.IsIdentifierValue()) {
+    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
     return operations;
   }
 
@@ -258,11 +257,11 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
                                             font_sizes, viewport_size,
                                             1);  // zoom
 
-  for (auto& curr_value : To<CSSValueList>(in_value)) {
+  for (auto& curr_value : ToCSSValueList(in_value)) {
     if (curr_value->IsURIValue())
       continue;
 
-    const auto* filter_value = To<CSSFunctionValue>(curr_value.Get());
+    const CSSFunctionValue* filter_value = ToCSSFunctionValue(curr_value.Get());
     FilterOperation::OperationType operation_type =
         FilterOperationForType(filter_value->FunctionType());
     // TODO(fserb): Take an ExecutionContext argument to this function,
@@ -270,42 +269,42 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     // countFilterUse(operationType, state.document());
     DCHECK_LE(filter_value->length(), 1u);
 
-    const CSSPrimitiveValue* first_value = nullptr;
-    if (filter_value->length())
-      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
-
+    const CSSPrimitiveValue* first_value =
+        filter_value->length() && filter_value->Item(0).IsPrimitiveValue()
+            ? &ToCSSPrimitiveValue(filter_value->Item(0))
+            : nullptr;
     double first_number =
         ResolveFirstArgumentForFunction(*filter_value, first_value);
 
     switch (filter_value->FunctionType()) {
-      case CSSValueID::kGrayscale:
-      case CSSValueID::kSepia:
-      case CSSValueID::kSaturate:
-      case CSSValueID::kHueRotate: {
+      case CSSValueGrayscale:
+      case CSSValueSepia:
+      case CSSValueSaturate:
+      case CSSValueHueRotate: {
         operations.Operations().push_back(
-            MakeGarbageCollected<BasicColorMatrixFilterOperation>(
-                first_number, operation_type));
+            BasicColorMatrixFilterOperation::Create(first_number,
+                                                    operation_type));
         break;
       }
-      case CSSValueID::kInvert:
-      case CSSValueID::kBrightness:
-      case CSSValueID::kContrast:
-      case CSSValueID::kOpacity: {
+      case CSSValueInvert:
+      case CSSValueBrightness:
+      case CSSValueContrast:
+      case CSSValueOpacity: {
         operations.Operations().push_back(
-            MakeGarbageCollected<BasicComponentTransferFilterOperation>(
-                first_number, operation_type));
+            BasicComponentTransferFilterOperation::Create(first_number,
+                                                          operation_type));
         break;
       }
-      case CSSValueID::kBlur: {
+      case CSSValueBlur: {
         Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(
-            MakeGarbageCollected<BlurFilterOperation>(std_deviation));
+            BlurFilterOperation::Create(std_deviation));
         break;
       }
-      case CSSValueID::kDropShadow: {
+      case CSSValueDropShadow: {
         ShadowData shadow = StyleBuilderConverter::ConvertShadow(
             conversion_data, nullptr, filter_value->Item(0));
         // For offscreen canvas, the default color is always black.

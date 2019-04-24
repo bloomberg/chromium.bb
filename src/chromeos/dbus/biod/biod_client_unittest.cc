@@ -82,14 +82,12 @@ class BiodClientTest : public testing::Test {
     EXPECT_CALL(*proxy_.get(), DoConnectToSignal(kInterface, _, _, _))
         .WillRepeatedly(Invoke(this, &BiodClientTest::ConnectToSignal));
 
-    BiodClient::Initialize(bus_.get());
-    client_ = BiodClient::Get();
+    client_.reset(BiodClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
+    client_->Init(bus_.get());
 
     // Execute callbacks posted by Init().
     base::RunLoop().RunUntilIdle();
   }
-
-  void TearDown() override { BiodClient::Shutdown(); }
 
   void GetBiometricType(biod::BiometricType type) { biometric_type_ = type; }
 
@@ -164,8 +162,7 @@ class BiodClientTest : public testing::Test {
   scoped_refptr<dbus::MockBus> bus_;
   scoped_refptr<dbus::MockObjectProxy> proxy_;
 
-  // Convenience pointer to the global instance.
-  BiodClient* client_;
+  std::unique_ptr<BiodClient> client_;
 
   // Maps from biod signal name to the corresponding callback provided by
   // |client_|.

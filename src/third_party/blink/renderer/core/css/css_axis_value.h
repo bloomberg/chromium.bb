@@ -7,13 +7,18 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
-namespace cssvalue {
 
 class CSSAxisValue : public CSSValueList {
  public:
+  static CSSAxisValue* Create(CSSValueID axis_name) {
+    return MakeGarbageCollected<CSSAxisValue>(axis_name);
+  }
+  static CSSAxisValue* Create(double x, double y, double z) {
+    return MakeGarbageCollected<CSSAxisValue>(x, y, z);
+  }
+
   explicit CSSAxisValue(CSSValueID axis_name);
   CSSAxisValue(double x, double y, double z);
 
@@ -33,12 +38,7 @@ class CSSAxisValue : public CSSValueList {
   CSSValueID axis_name_;
 };
 
-}  // namespace cssvalue
-
-template <>
-struct DowncastTraits<cssvalue::CSSAxisValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsAxisValue(); }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSAxisValue, IsAxisValue());
 
 }  // namespace blink
 

@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -58,7 +59,28 @@ const Extension* InstalledLoaderUnitTest::AddExtension() {
 }
 
 TEST_F(InstalledLoaderUnitTest,
+       RuntimeHostPermissions_Metrics_FeatureDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  AddExtension();
+
+  base::HistogramTester histograms;
+  InstalledLoader loader(service());
+  loader.RecordExtensionsMetricsForTesting();
+
+  // No metrics should be recorded when the feature is disabled.
+  histograms.ExpectTotalCount(kHasWithheldHostsHistogram, 0);
+  histograms.ExpectTotalCount(kGrantedHostCountHistogram, 0);
+}
+
+TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_HasWithheldHosts_False) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   AddExtension();
 
   base::HistogramTester histograms;
@@ -75,6 +97,10 @@ TEST_F(InstalledLoaderUnitTest,
 
 TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_HasWithheldHosts_True) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   const Extension* extension = AddExtension();
   ScriptingPermissionsModifier(profile(), extension)
       .SetWithholdHostPermissions(true);
@@ -95,6 +121,10 @@ TEST_F(InstalledLoaderUnitTest,
 
 TEST_F(InstalledLoaderUnitTest,
        RuntimeHostPermissions_Metrics_GrantedHostCount) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   const Extension* extension = AddExtension();
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.SetWithholdHostPermissions(true);

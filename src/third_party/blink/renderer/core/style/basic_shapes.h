@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -74,6 +73,11 @@ class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
  protected:
   BasicShape() = default;
 };
+
+#define DEFINE_BASICSHAPE_TYPE_CASTS(thisType)                         \
+  DEFINE_TYPE_CASTS(thisType, BasicShape, value,                       \
+                    value->GetType() == BasicShape::k##thisType##Type, \
+                    value.GetType() == BasicShape::k##thisType##Type)
 
 class BasicShapeCenterCoordinate {
   DISALLOW_NEW();
@@ -159,12 +163,7 @@ class CORE_EXPORT BasicShapeCircle final : public BasicShape {
   BasicShapeRadius radius_;
 };
 
-template <>
-struct DowncastTraits<BasicShapeCircle> {
-  static bool AllowFrom(const BasicShape& value) {
-    return value.GetType() == BasicShape::kBasicShapeCircleType;
-  }
-};
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeCircle);
 
 class BasicShapeEllipse final : public BasicShape {
  public:
@@ -199,12 +198,7 @@ class BasicShapeEllipse final : public BasicShape {
   BasicShapeRadius radius_y_;
 };
 
-template <>
-struct DowncastTraits<BasicShapeEllipse> {
-  static bool AllowFrom(const BasicShape& value) {
-    return value.GetType() == BasicShape::kBasicShapeEllipseType;
-  }
-};
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
 
 class BasicShapePolygon final : public BasicShape {
  public:
@@ -234,12 +228,7 @@ class BasicShapePolygon final : public BasicShape {
   Vector<Length> values_;
 };
 
-template <>
-struct DowncastTraits<BasicShapePolygon> {
-  static bool AllowFrom(const BasicShape& value) {
-    return value.GetType() == BasicShape::kBasicShapePolygonType;
-  }
-};
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapePolygon);
 
 class BasicShapeInset : public BasicShape {
  public:
@@ -292,12 +281,7 @@ class BasicShapeInset : public BasicShape {
   LengthSize bottom_left_radius_;
 };
 
-template <>
-struct DowncastTraits<BasicShapeInset> {
-  static bool AllowFrom(const BasicShape& value) {
-    return value.GetType() == BasicShape::kBasicShapeInsetType;
-  }
-};
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeInset);
 
 }  // namespace blink
 #endif

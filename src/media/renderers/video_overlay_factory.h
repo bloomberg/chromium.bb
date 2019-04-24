@@ -16,13 +16,16 @@ class Size;
 
 namespace media {
 
+class GpuVideoAcceleratorFactories;
 class VideoFrame;
 
 // Creates video overlay frames - native textures that get turned into
 // transparent holes in the browser compositor using overlay system.
+// This class must be used on GpuVideoAcceleratorFactories::GetTaskRunner().
 class MEDIA_EXPORT VideoOverlayFactory {
  public:
-  VideoOverlayFactory();
+  explicit VideoOverlayFactory(
+      ::media::GpuVideoAcceleratorFactories* gpu_factories);
   ~VideoOverlayFactory();
 
   scoped_refptr<::media::VideoFrame> CreateFrame(const gfx::Size& size);
@@ -31,8 +34,13 @@ class MEDIA_EXPORT VideoOverlayFactory {
   }
 
  private:
+  class Texture;
+  Texture* GetTexture();
+
   // |overlay_plane_id_| identifies the instances of VideoOverlayFactory.
   const base::UnguessableToken overlay_plane_id_;
+  ::media::GpuVideoAcceleratorFactories* gpu_factories_;
+  std::unique_ptr<Texture> texture_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoOverlayFactory);
 };

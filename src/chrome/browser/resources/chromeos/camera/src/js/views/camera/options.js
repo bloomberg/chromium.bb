@@ -21,15 +21,15 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the options of Camera view.
- * @param {function()} doSwitchDevice Callback to trigger device switching.
+ * @param {function()} onNewStreamNeeded Callback to request new stream.
  * @constructor
  */
-cca.views.camera.Options = function(doSwitchDevice) {
+cca.views.camera.Options = function(onNewStreamNeeded) {
   /**
    * @type {function()}
    * @private
    */
-  this.doSwitchDevice_ = doSwitchDevice;
+  this.onNewStreamNeeded_ = onNewStreamNeeded;
 
   /**
    * @type {HTMLInputElement}
@@ -81,13 +81,14 @@ cca.views.camera.Options = function(doSwitchDevice) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  [['#switch-device', () => this.switchDevice_()],
-   ['#toggle-grid', () => this.animatePreviewGrid_()],
-   ['#open-settings', () => cca.nav.open('settings')],
-  ]
-      .forEach(
-          ([selector, fn]) =>
-              document.querySelector(selector).addEventListener('click', fn));
+  [
+    ['#switch-device', () => this.switchDevice_()],
+    ['#switch-recordvideo', () => this.switchMode_(true)],
+    ['#switch-takephoto', () => this.switchMode_(false)],
+    ['#toggle-grid', () => this.animatePreviewGrid_()],
+    ['#open-settings', () => cca.nav.open('settings')],
+  ].forEach(([selector, fn]) =>
+      document.querySelector(selector).addEventListener('click', fn));
 
   this.toggleMic_.addEventListener('click', () => this.updateAudioByMic_());
   this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
@@ -103,12 +104,32 @@ cca.views.camera.Options = function(doSwitchDevice) {
   setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
 };
 
+cca.views.camera.Options.prototype = {
+  get newStreamRequestDisabled() {
+    return !cca.state.get('streaming') || cca.state.get('taking');
+  },
+};
+
+/**
+ * Switches mode to either video-recording or photo-taking.
+ * @param {boolean} record True for record-mode, false otherwise.
+ * @private
+ */
+cca.views.camera.Options.prototype.switchMode_ = function(record) {
+  if (this.newStreamRequestDisabled) {
+    return;
+  }
+  cca.state.set('record-mode', record);
+  cca.state.set('mode-switching', true);
+  this.onNewStreamNeeded_().then(() => cca.state.set('mode-switching', false));
+};
+
 /**
  * Switches to the next available camera device.
  * @private
  */
 cca.views.camera.Options.prototype.switchDevice_ = function() {
-  if (!cca.state.get('streaming') || cca.state.get('taking')) {
+  if (this.newStreamRequestDisabled) {
     return;
   }
   this.videoDevices_.then((devices) => {
@@ -122,7 +143,7 @@ cca.views.camera.Options.prototype.switchDevice_ = function() {
       index = (index + 1) % devices.length;
       this.videoDeviceId_ = devices[index].deviceId;
     }
-    return this.doSwitchDevice_();
+    return this.onNewStreamNeeded_();
   }).then(() => this.videoDevices_).then((devices) => {
     // Make the active camera announced by screen reader.
     var found = devices.find((entry) => entry.deviceId == this.videoDeviceId_);

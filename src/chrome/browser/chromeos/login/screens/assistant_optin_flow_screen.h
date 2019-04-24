@@ -14,10 +14,12 @@
 namespace chromeos {
 
 class AssistantOptInFlowScreenView;
+class BaseScreenDelegate;
 
 class AssistantOptInFlowScreen : public BaseScreen {
  public:
-  AssistantOptInFlowScreen(AssistantOptInFlowScreenView* view,
+  AssistantOptInFlowScreen(BaseScreenDelegate* base_screen_delegate,
+                           AssistantOptInFlowScreenView* view,
                            const base::RepeatingClosure& exit_callback);
   ~AssistantOptInFlowScreen() override;
 

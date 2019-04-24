@@ -11,8 +11,7 @@ namespace syncer {
 ForwardingModelTypeControllerDelegate::ForwardingModelTypeControllerDelegate(
     ModelTypeControllerDelegate* other)
     : other_(other) {
-  // TODO(crbug.com/895340): Put "DCHECK(other_);"" back once
-  // FakeUserEventService provides a proper non-null test double.
+  DCHECK(other_);
 }
 
 ForwardingModelTypeControllerDelegate::

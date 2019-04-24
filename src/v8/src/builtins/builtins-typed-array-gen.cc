@@ -495,10 +495,9 @@ void TypedArrayBuiltinsAssembler::CallCMemmove(TNode<RawPtrT> dest_ptr,
                                                TNode<UintPtrT> byte_length) {
   TNode<ExternalReference> memmove =
       ExternalConstant(ExternalReference::libc_memmove_function());
-  CallCFunction(memmove, MachineType::AnyTagged(),
-                std::make_pair(MachineType::Pointer(), dest_ptr),
-                std::make_pair(MachineType::Pointer(), src_ptr),
-                std::make_pair(MachineType::UintPtr(), byte_length));
+  CallCFunction3(MachineType::AnyTagged(), MachineType::Pointer(),
+                 MachineType::Pointer(), MachineType::UintPtr(), memmove,
+                 dest_ptr, src_ptr, byte_length);
 }
 
 void TypedArrayBuiltinsAssembler::CallCMemcpy(TNode<RawPtrT> dest_ptr,
@@ -506,10 +505,9 @@ void TypedArrayBuiltinsAssembler::CallCMemcpy(TNode<RawPtrT> dest_ptr,
                                               TNode<UintPtrT> byte_length) {
   TNode<ExternalReference> memcpy =
       ExternalConstant(ExternalReference::libc_memcpy_function());
-  CallCFunction(memcpy, MachineType::AnyTagged(),
-                std::make_pair(MachineType::Pointer(), dest_ptr),
-                std::make_pair(MachineType::Pointer(), src_ptr),
-                std::make_pair(MachineType::UintPtr(), byte_length));
+  CallCFunction3(MachineType::AnyTagged(), MachineType::Pointer(),
+                 MachineType::Pointer(), MachineType::UintPtr(), memcpy,
+                 dest_ptr, src_ptr, byte_length);
 }
 
 void TypedArrayBuiltinsAssembler::CallCMemset(TNode<RawPtrT> dest_ptr,
@@ -517,10 +515,9 @@ void TypedArrayBuiltinsAssembler::CallCMemset(TNode<RawPtrT> dest_ptr,
                                               TNode<UintPtrT> length) {
   TNode<ExternalReference> memset =
       ExternalConstant(ExternalReference::libc_memset_function());
-  CallCFunction(memset, MachineType::AnyTagged(),
-                std::make_pair(MachineType::Pointer(), dest_ptr),
-                std::make_pair(MachineType::IntPtr(), value),
-                std::make_pair(MachineType::UintPtr(), length));
+  CallCFunction3(MachineType::AnyTagged(), MachineType::Pointer(),
+                 MachineType::IntPtr(), MachineType::UintPtr(), memset,
+                 dest_ptr, value, length);
 }
 
 void TypedArrayBuiltinsAssembler::
@@ -533,12 +530,10 @@ void TypedArrayBuiltinsAssembler::
              Word32BinaryNot(IsBigInt64ElementsKind(LoadElementsKind(dest))));
   TNode<ExternalReference> f = ExternalConstant(
       ExternalReference::copy_fast_number_jsarray_elements_to_typed_array());
-  CallCFunction(f, MachineType::AnyTagged(),
-                std::make_pair(MachineType::AnyTagged(), context),
-                std::make_pair(MachineType::AnyTagged(), source),
-                std::make_pair(MachineType::AnyTagged(), dest),
-                std::make_pair(MachineType::UintPtr(), source_length),
-                std::make_pair(MachineType::UintPtr(), offset));
+  CallCFunction5(MachineType::AnyTagged(), MachineType::AnyTagged(),
+                 MachineType::AnyTagged(), MachineType::AnyTagged(),
+                 MachineType::UintPtr(), MachineType::UintPtr(), f, context,
+                 source, dest, source_length, offset);
 }
 
 void TypedArrayBuiltinsAssembler::CallCCopyTypedArrayElementsToTypedArray(
@@ -546,11 +541,10 @@ void TypedArrayBuiltinsAssembler::CallCCopyTypedArrayElementsToTypedArray(
     TNode<IntPtrT> source_length, TNode<IntPtrT> offset) {
   TNode<ExternalReference> f = ExternalConstant(
       ExternalReference::copy_typed_array_elements_to_typed_array());
-  CallCFunction(f, MachineType::AnyTagged(),
-                std::make_pair(MachineType::AnyTagged(), source),
-                std::make_pair(MachineType::AnyTagged(), dest),
-                std::make_pair(MachineType::UintPtr(), source_length),
-                std::make_pair(MachineType::UintPtr(), offset));
+  CallCFunction4(MachineType::AnyTagged(), MachineType::AnyTagged(),
+                 MachineType::AnyTagged(), MachineType::UintPtr(),
+                 MachineType::UintPtr(), f, source, dest, source_length,
+                 offset);
 }
 
 void TypedArrayBuiltinsAssembler::CallCCopyTypedArrayElementsSlice(
@@ -558,11 +552,9 @@ void TypedArrayBuiltinsAssembler::CallCCopyTypedArrayElementsSlice(
     TNode<IntPtrT> end) {
   TNode<ExternalReference> f =
       ExternalConstant(ExternalReference::copy_typed_array_elements_slice());
-  CallCFunction(f, MachineType::AnyTagged(),
-                std::make_pair(MachineType::AnyTagged(), source),
-                std::make_pair(MachineType::AnyTagged(), dest),
-                std::make_pair(MachineType::UintPtr(), start),
-                std::make_pair(MachineType::UintPtr(), end));
+  CallCFunction4(MachineType::AnyTagged(), MachineType::AnyTagged(),
+                 MachineType::AnyTagged(), MachineType::UintPtr(),
+                 MachineType::UintPtr(), f, source, dest, start, end);
 }
 
 void TypedArrayBuiltinsAssembler::DispatchTypedArrayByElementsKind(

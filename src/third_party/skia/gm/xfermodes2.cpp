@@ -4,13 +4,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "SkBitmap.h"
+#include "SkShader.h"
 #include "SkBlendModePriv.h"
 #include "SkColorPriv.h"
-#include "SkShader.h"
 #include "SkTextUtils.h"
-#include "ToolUtils.h"
-#include "gm.h"
 
 namespace skiagm {
 
@@ -33,7 +33,7 @@ protected:
         const SkScalar w = SkIntToScalar(kSize);
         const SkScalar h = SkIntToScalar(kSize);
 
-        SkFont font(ToolUtils::create_portable_typeface());
+        SkFont font(sk_tool_utils::create_portable_typeface());
 
         const int W = 6;
 
@@ -95,7 +95,8 @@ private:
 
         SkMatrix lm;
         lm.setScale(SkIntToScalar(16), SkIntToScalar(16));
-        fBG = bg.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &lm);
+        fBG = SkShader::MakeBitmapShader(bg, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+                                         &lm);
 
         SkBitmap srcBmp;
         srcBmp.allocN32Pixels(kSize, kSize);
@@ -108,7 +109,8 @@ private:
                 pixels[kSize * y + x] = rowColor;
             }
         }
-        fSrc = srcBmp.makeShader();
+        fSrc = SkShader::MakeBitmapShader(srcBmp, SkShader::kClamp_TileMode,
+                                          SkShader::kClamp_TileMode);
         SkBitmap dstBmp;
         dstBmp.allocN32Pixels(kSize, kSize);
         pixels = reinterpret_cast<SkPMColor*>(dstBmp.getPixels());
@@ -120,7 +122,8 @@ private:
                 pixels[kSize * y + x] = colColor;
             }
         }
-        fDst = dstBmp.makeShader();
+        fDst = SkShader::MakeBitmapShader(dstBmp, SkShader::kClamp_TileMode,
+                                          SkShader::kClamp_TileMode);
     }
 
     enum {

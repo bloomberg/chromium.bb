@@ -28,7 +28,6 @@
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -41,8 +40,6 @@ class ArrayBuffer;
 class ArrayBufferView;
 
 class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
-  USING_FAST_MALLOC(ArrayBuffer);
-
  public:
   static inline scoped_refptr<ArrayBuffer> Create(unsigned num_elements,
                                                   unsigned element_byte_size);

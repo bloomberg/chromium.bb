@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -30,25 +29,25 @@ class MultiColumnRenderingTest : public RenderingTest {
 
 LayoutMultiColumnFlowThread* MultiColumnRenderingTest::FindFlowThread(
     const char* id) const {
-  if (auto* multicol_container =
-          To<LayoutBlockFlow>(GetLayoutObjectByElementId(id)))
+  if (LayoutBlockFlow* multicol_container =
+          ToLayoutBlockFlow(GetLayoutObjectByElementId(id)))
     return multicol_container->MultiColumnFlowThread();
   return nullptr;
 }
 
 String MultiColumnRenderingTest::ColumnSetSignature(
     LayoutMultiColumnFlowThread* flow_thread) {
-  StringBuilder signature;
+  String signature = "";
   for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
        column_box = column_box->NextSiblingMultiColumnBox()) {
     if (column_box->IsLayoutMultiColumnSpannerPlaceholder())
-      signature.Append('s');
+      signature.append('s');
     else if (column_box->IsLayoutMultiColumnSet())
-      signature.Append('c');
+      signature.append('c');
     else
-      signature.Append('?');
+      signature.append('?');
   }
-  return signature.ToString();
+  return signature;
 }
 
 String MultiColumnRenderingTest::ColumnSetSignature(const char* multicol_id) {
@@ -68,8 +67,8 @@ TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck) {
   // Examine the layout tree established by a simple multicol container with a
   // block with some text inside.
   SetMulticolHTML("<div id='mc'><div>xxx</div></div>");
-  auto* multicol_container =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
+  LayoutBlockFlow* multicol_container =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
   ASSERT_TRUE(multicol_container);
   LayoutMultiColumnFlowThread* flow_thread =
       multicol_container->MultiColumnFlowThread();
@@ -81,7 +80,7 @@ TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck) {
   ASSERT_TRUE(column_set);
   EXPECT_EQ(column_set->PreviousSibling(), flow_thread);
   EXPECT_FALSE(column_set->NextSibling());
-  auto* block = To<LayoutBlockFlow>(flow_thread->FirstChild());
+  LayoutBlockFlow* block = ToLayoutBlockFlow(flow_thread->FirstChild());
   ASSERT_TRUE(block);
   EXPECT_FALSE(block->NextSibling());
   ASSERT_TRUE(block->FirstChild());
@@ -607,9 +606,10 @@ void MultiColumnTreeModifyingTest::DestroyLayoutObject(const char* child_id) {
 TEST_F(MultiColumnTreeModifyingTest, InsertFirstContentAndRemove) {
   SetMulticolHTML("<div id='block'></div><div id='mc'></div>");
   LayoutMultiColumnFlowThread* flow_thread = FindFlowThread("mc");
-  auto* block = To<LayoutBlockFlow>(GetLayoutObjectByElementId("block"));
-  auto* multicol_container =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
+  LayoutBlockFlow* block =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("block"));
+  LayoutBlockFlow* multicol_container =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
   block->Remove();
   multicol_container->AddChild(block);
   EXPECT_EQ(block->Parent(), flow_thread);
@@ -650,9 +650,10 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentAndRemove) {
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAndRemove) {
   SetMulticolHTML("<div id='spanner'></div><div id='mc'></div>");
   LayoutMultiColumnFlowThread* flow_thread = FindFlowThread("mc");
-  auto* spanner = To<LayoutBlockFlow>(GetLayoutObjectByElementId("spanner"));
-  auto* multicol_container =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("mc"));
+  LayoutBlockFlow* spanner =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("spanner"));
+  LayoutBlockFlow* multicol_container =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("mc"));
   spanner->Remove();
   multicol_container->AddChild(spanner);
   EXPECT_EQ(spanner->Parent(), flow_thread);

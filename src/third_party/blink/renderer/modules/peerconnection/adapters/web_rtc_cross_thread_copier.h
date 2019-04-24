@@ -29,7 +29,6 @@ class SocketAddress;
 
 namespace webrtc {
 class DtlsTransportInformation;
-class SctpTransportInformation;
 }
 
 namespace blink {
@@ -103,12 +102,6 @@ struct CrossThreadCopier<P2PQuicTransportConfig>
 template <>
 struct CrossThreadCopier<webrtc::DtlsTransportInformation>
     : public CrossThreadCopierPassThrough<webrtc::DtlsTransportInformation> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
-struct CrossThreadCopier<webrtc::SctpTransportInformation>
-    : public CrossThreadCopierPassThrough<webrtc::SctpTransportInformation> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

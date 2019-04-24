@@ -88,8 +88,7 @@ int PackFrameHeader(uint8_t* buffer,
   ByteWriter<uint8_t>::WriteBigEndian(buffer + offset, frame_header.codec_type);
   offset += sizeof(uint8_t);
 
-  ByteWriter<uint8_t>::WriteBigEndian(
-      buffer + offset, static_cast<uint8_t>(frame_header.frame_type));
+  ByteWriter<uint8_t>::WriteBigEndian(buffer + offset, frame_header.frame_type);
   offset += sizeof(uint8_t);
 
   RTC_DCHECK_EQ(offset, kMultiplexImageComponentHeaderSize);
@@ -116,13 +115,11 @@ MultiplexImageComponentHeader UnpackFrameHeader(const uint8_t* buffer) {
       ByteReader<uint32_t>::ReadBigEndian(buffer + offset);
   offset += sizeof(uint32_t);
 
-  // TODO(nisse): This makes the wire format depend on the numeric values of the
-  // VideoCodecType and VideoFrameType enum constants.
   frame_header.codec_type = static_cast<VideoCodecType>(
       ByteReader<uint8_t>::ReadBigEndian(buffer + offset));
   offset += sizeof(uint8_t);
 
-  frame_header.frame_type = static_cast<VideoFrameType>(
+  frame_header.frame_type = static_cast<FrameType>(
       ByteReader<uint8_t>::ReadBigEndian(buffer + offset));
   offset += sizeof(uint8_t);
 
@@ -170,8 +167,10 @@ EncodedImage MultiplexEncodedImagePacker::PackAndRelease(
     frame_header.component_index = images[i].component_index;
 
     frame_header.bitstream_offset = bitstream_offset;
+    const size_t padding =
+        EncodedImage::GetBufferPaddingBytes(images[i].codec_type);
     frame_header.bitstream_length =
-        static_cast<uint32_t>(images[i].encoded_image.size());
+        static_cast<uint32_t>(images[i].encoded_image.size() + padding);
     bitstream_offset += frame_header.bitstream_length;
 
     frame_header.codec_type = images[i].codec_type;
@@ -182,8 +181,8 @@ EncodedImage MultiplexEncodedImagePacker::PackAndRelease(
     // key frame so as to decode the whole image without previous frame data.
     // Thus only when all components are key frames, we can mark the combined
     // frame as key frame.
-    if (frame_header.frame_type == VideoFrameType::kVideoFrameDelta) {
-      combined_image._frameType = VideoFrameType::kVideoFrameDelta;
+    if (frame_header.frame_type == FrameType::kVideoFrameDelta) {
+      combined_image._frameType = FrameType::kVideoFrameDelta;
     }
 
     frame_headers.push_back(frame_header);
@@ -263,11 +262,12 @@ MultiplexImage MultiplexEncodedImagePacker::Unpack(
     EncodedImage encoded_image = combined_image;
     encoded_image.SetTimestamp(combined_image.Timestamp());
     encoded_image._frameType = frame_headers[i].frame_type;
-    encoded_image.Allocate(frame_headers[i].bitstream_length);
-    encoded_image.set_size(frame_headers[i].bitstream_length);
-    memcpy(encoded_image.data(),
-           combined_image.data() + frame_headers[i].bitstream_offset,
-           frame_headers[i].bitstream_length);
+    encoded_image.set_buffer(
+        combined_image.mutable_data() + frame_headers[i].bitstream_offset,
+        static_cast<size_t>(frame_headers[i].bitstream_length));
+    const size_t padding =
+        EncodedImage::GetBufferPaddingBytes(image_component.codec_type);
+    encoded_image.set_size(encoded_image.capacity() - padding);
 
     image_component.encoded_image = encoded_image;
 

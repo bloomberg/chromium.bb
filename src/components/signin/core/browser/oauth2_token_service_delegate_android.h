@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -58,16 +57,18 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // Lists account names at the OS level.
   std::vector<std::string> GetSystemAccountNames();
 
-  void UpdateAccountList(
+  void ValidateAccounts(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& current_account);
+      const base::android::JavaParamRef<jstring>& current_account,
+      jboolean force_notifications);
 
   // Takes a the signed in sync account as well as all the other
-  // android account ids and check the token status of each.
-  // NOTE: TokenAvailable notifications will be sent for all accounts, even if
-  // they were already known. See https://crbug.com/939470 for details.
-  void UpdateAccountList(const std::string& signed_in_account_id);
+  // android account ids and check the token status of each.  If
+  // |force_notifications| is true, TokenAvailable notifications will
+  // be sent anyway, even if the account was already known.
+  void ValidateAccounts(const std::string& signed_in_account_id,
+                        bool force_notifications);
 
   // Overridden from OAuth2TokenService to complete signout of all
   // OA2TService aware accounts.
@@ -109,12 +110,14 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   };
 
   // Return whether accounts are valid and we have access to all the tokens in
-  // |curr_ids|.
-  bool UpdateAccountList(const std::string& signed_in_id,
-                         const std::vector<std::string>& prev_ids,
-                         const std::vector<std::string>& curr_ids,
-                         std::vector<std::string>* refreshed_ids,
-                         std::vector<std::string>* revoked_ids);
+  // |curr_ids|. If |force_notifications| is true, TokenAvailable notifications
+  // will be sent anyway, even if the account was already known.
+  bool ValidateAccounts(const std::string& signed_in_id,
+                        const std::vector<std::string>& prev_ids,
+                        const std::vector<std::string>& curr_ids,
+                        std::vector<std::string>* refreshed_ids,
+                        std::vector<std::string>* revoked_ids,
+                        bool force_notifications);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
@@ -123,7 +126,6 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
 
   AccountTrackerService* account_tracker_service_;
   RefreshTokenLoadStatus fire_refresh_token_loaded_;
-  base::Time last_update_accounts_time_;
 
   static bool disable_interaction_with_system_accounts_;
 

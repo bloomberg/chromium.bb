@@ -23,6 +23,8 @@
 namespace spvtools {
 namespace reduce {
 
+using namespace opt;
+
 // An opportunity to replace a structured loop with a selection.
 class StructuredLoopToSelectionReductionOpportunity
     : public ReductionOpportunity {
@@ -30,8 +32,8 @@ class StructuredLoopToSelectionReductionOpportunity
   // Constructs an opportunity from a loop header block and the function that
   // encloses it.
   explicit StructuredLoopToSelectionReductionOpportunity(
-      opt::IRContext* context, opt::BasicBlock* loop_construct_header,
-      opt::Function* enclosing_function)
+      IRContext* context, BasicBlock* loop_construct_header,
+      Function* enclosing_function)
       : context_(context),
         loop_construct_header_(loop_construct_header),
         enclosing_function_(enclosing_function) {}
@@ -65,12 +67,11 @@ class StructuredLoopToSelectionReductionOpportunity
   // Removes any components of |to_block|'s phi instructions relating to
   // |from_id|.
   void AdaptPhiInstructionsForRemovedEdge(uint32_t from_id,
-                                          opt::BasicBlock* to_block);
+                                          BasicBlock* to_block);
 
   // Adds components to |to_block|'s phi instructions to account for a new
   // incoming edge from |from_id|.
-  void AdaptPhiInstructionsForAddedEdge(uint32_t from_id,
-                                        opt::BasicBlock* to_block);
+  void AdaptPhiInstructionsForAddedEdge(uint32_t from_id, BasicBlock* to_block);
 
   // Turns the OpLoopMerge for the loop into OpSelectionMerge, and adapts the
   // following branch instruction accordingly.
@@ -86,10 +87,9 @@ class StructuredLoopToSelectionReductionOpportunity
   // 2) |def| is an OpVariable
   // 3) |use| is part of an OpPhi, with associated incoming block b, and |def|
   // dominates b.
-  bool DefinitionSufficientlyDominatesUse(opt::Instruction* def,
-                                          opt::Instruction* use,
+  bool DefinitionSufficientlyDominatesUse(Instruction* def, Instruction* use,
                                           uint32_t use_index,
-                                          opt::BasicBlock& def_block);
+                                          BasicBlock& def_block);
 
   // Checks whether the global value list has an OpVariable of the given pointer
   // type, adding one if not, and returns the id of such an OpVariable.
@@ -105,9 +105,9 @@ class StructuredLoopToSelectionReductionOpportunity
   // be factored out in due course.
   uint32_t FindOrCreateFunctionVariable(uint32_t pointer_type_id);
 
-  opt::IRContext* context_;
-  opt::BasicBlock* loop_construct_header_;
-  opt::Function* enclosing_function_;
+  IRContext* context_;
+  BasicBlock* loop_construct_header_;
+  Function* enclosing_function_;
 };
 
 }  // namespace reduce

@@ -11,7 +11,7 @@
 #include "test/pc/e2e/analyzer/video/id_generator.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
+namespace test {
 
 IntIdGenerator::IntIdGenerator(int start_value) : next_id_(start_value) {}
 IntIdGenerator::~IntIdGenerator() = default;
@@ -20,5 +20,5 @@ int IntIdGenerator::GetNextId() {
   return next_id_++;
 }
 
-}  // namespace webrtc_pc_e2e
+}  // namespace test
 }  // namespace webrtc

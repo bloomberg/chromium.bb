@@ -64,8 +64,7 @@ void TestHelper::OnTraceData(std::vector<TracePacket> packets, bool has_more) {
     protos::TracePacket packet;
     ASSERT_TRUE(encoded_packet.Decode(&packet));
     if (packet.has_clock_snapshot() || packet.has_trace_config() ||
-        packet.has_trace_stats() || !packet.synchronization_marker().empty() ||
-        packet.has_system_info()) {
+        packet.has_trace_stats() || !packet.synchronization_marker().empty()) {
       continue;
     }
     ASSERT_EQ(protos::TracePacket::kTrustedUid,
@@ -88,7 +87,6 @@ void TestHelper::StartServiceIfRequired() {
 FakeProducer* TestHelper::ConnectFakeProducer() {
   std::unique_ptr<FakeProducerDelegate> producer_delegate(
       new FakeProducerDelegate(TEST_PRODUCER_SOCK_NAME,
-                               WrapTask(CreateCheckpoint("producer.setup")),
                                WrapTask(CreateCheckpoint("producer.enabled"))));
   FakeProducerDelegate* producer_delegate_cached = producer_delegate.get();
   producer_thread_.Start(std::move(producer_delegate));
@@ -151,10 +149,6 @@ void TestHelper::WaitForConsumerConnect() {
   RunUntilCheckpoint("consumer.connected." + std::to_string(cur_consumer_num_));
 }
 
-void TestHelper::WaitForProducerSetup() {
-  RunUntilCheckpoint("producer.setup");
-}
-
 void TestHelper::WaitForProducerEnabled() {
   RunUntilCheckpoint("producer.enabled");
 }
@@ -184,16 +178,9 @@ void TestHelper::OnAttach(bool success, const TraceConfig&) {
 
 void TestHelper::OnTraceStats(bool, const TraceStats&) {}
 
-void TestHelper::OnObservableEvents(const ObservableEvents&) {}
-
 // static
 const char* TestHelper::GetConsumerSocketName() {
   return TEST_CONSUMER_SOCK_NAME;
-}
-
-// static
-const char* TestHelper::GetProducerSocketName() {
-  return TEST_PRODUCER_SOCK_NAME;
 }
 
 }  // namespace perfetto

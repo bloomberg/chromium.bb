@@ -43,8 +43,7 @@ class BrowserXRRuntimeObserver : public base::CheckedObserver {
 // device activation.
 class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
  public:
-  explicit BrowserXRRuntime(device::mojom::XRDeviceId id,
-                            device::mojom::XRRuntimePtr runtime,
+  explicit BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
                             device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntime() override;
 
@@ -78,7 +77,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void RemoveObserver(BrowserXRRuntimeObserver* observer) {
     observers_.RemoveObserver(observer);
   }
-  device::mojom::XRDeviceId GetId() { return id_; }
 
  private:
   // device::XRRuntimeEventListener
@@ -100,7 +98,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnImmersiveSessionError();
   void OnInitialized();
 
-  device::mojom::XRDeviceId id_;
   device::mojom::XRRuntimePtr runtime_;
   device::mojom::XRSessionControllerPtr immersive_session_controller_;
 

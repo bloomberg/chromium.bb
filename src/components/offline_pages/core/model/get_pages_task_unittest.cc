@@ -5,9 +5,6 @@
 #include "components/offline_pages/core/model/get_pages_task.h"
 
 #include <stdint.h>
-#include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +12,6 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/offline_page_types.h"
-#include "components/offline_pages/core/offline_store_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -28,227 +24,246 @@ const char kTestNamespace[] = "test_namespace";
 
 class GetPagesTaskTest : public ModelTaskTestBase {
  public:
-  const std::set<OfflinePageItem>& task_result() const { return task_result_; }
+  void OnGetPagesDone(const std::vector<OfflinePageItem>& pages);
+  void OnGetPageDone(const OfflinePageItem* page);
 
-  void InsertItems(std::vector<OfflinePageItem> items) {
-    for (auto& item : items) {
-      store_test_util()->InsertItem(item);
-    }
+  MultipleOfflinePageItemCallback get_pages_callback();
+  SingleOfflinePageItemCallback get_single_page_callback();
+
+  const std::vector<OfflinePageItem>& read_result() const {
+    return read_result_;
   }
 
-  std::unique_ptr<GetPagesTask> CreateTask(const PageCriteria& criteria) {
-    return std::make_unique<GetPagesTask>(
-        store(), &policy_controller_, criteria,
-        base::BindOnce(&GetPagesTaskTest::OnGetPagesDone,
-                       base::Unretained(this)));
+  const OfflinePageItem& single_page_result() const {
+    return single_page_result_;
   }
 
  private:
-  void OnGetPagesDone(const std::vector<OfflinePageItem>& result) {
-    task_result_.clear();
-    task_result_.insert(result.begin(), result.end());
-    // Verify there were no identical items, to ensure the set contains the
-    // same data.
-    EXPECT_EQ(result.size(), task_result_.size());
-  }
-
- protected:
-  ClientPolicyController policy_controller_;
-  std::set<OfflinePageItem> task_result_;
+  std::vector<OfflinePageItem> read_result_;
+  OfflinePageItem single_page_result_;
 };
+
+void GetPagesTaskTest::OnGetPagesDone(
+    const std::vector<OfflinePageItem>& result) {
+  read_result_.clear();
+  for (auto page : result)
+    read_result_.push_back(page);
+}
+
+void GetPagesTaskTest::OnGetPageDone(const OfflinePageItem* page) {
+  if (!page)
+    return;
+  single_page_result_ = *page;
+}
+
+MultipleOfflinePageItemCallback GetPagesTaskTest::get_pages_callback() {
+  return base::BindOnce(&GetPagesTaskTest::OnGetPagesDone,
+                        base::Unretained(this));
+}
+
+SingleOfflinePageItemCallback GetPagesTaskTest::get_single_page_callback() {
+  return base::BindOnce(&GetPagesTaskTest::OnGetPageDone,
+                        base::Unretained(this));
+}
 
 TEST_F(GetPagesTaskTest, GetAllPages) {
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
   OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
   OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
+  store_test_util()->InsertItem(item_3);
 
-  RunTask(CreateTask(PageCriteria()));
+  RunTask(
+      GetPagesTask::CreateTaskMatchingAllPages(store(), get_pages_callback()));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2, item_3}), task_result());
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(3UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
+  EXPECT_EQ(1UL, result_set.count(item_3));
 }
 
-TEST_F(GetPagesTaskTest, MultipleClientIds) {
+TEST_F(GetPagesTaskTest, GetPagesForSingleClientId) {
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem item_1 = generator()->CreateItem();
-  OfflinePageItem item_2 = generator()->CreateItem();
-  OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
+  store_test_util()->InsertItem(item_1);
 
-  PageCriteria criteria;
-  criteria.client_ids = {item_1.client_id, item_2.client_id};
-  RunTask(CreateTask(criteria));
+  std::vector<ClientId> client_ids = {item_1.client_id};
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2}), task_result());
+  RunTask(GetPagesTask::CreateTaskMatchingClientIds(
+      store(), get_pages_callback(), client_ids));
+
+  EXPECT_EQ(1UL, read_result().size());
+  EXPECT_EQ(item_1, *(read_result().begin()));
 }
 
-TEST_F(GetPagesTaskTest, Namespace) {
+TEST_F(GetPagesTaskTest, GetPagesForMultipleClientIds) {
+  generator()->SetNamespace(kTestNamespace);
+  OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
+  OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
+
+  std::vector<ClientId> client_ids{item_1.client_id, item_2.client_id};
+
+  RunTask(GetPagesTask::CreateTaskMatchingClientIds(
+      store(), get_pages_callback(), client_ids));
+
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
+}
+
+TEST_F(GetPagesTaskTest, GetPagesByNamespace) {
   static const char kOtherNamespace[] = "other_namespace";
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
   OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
   generator()->SetNamespace(kOtherNamespace);
   OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
+  store_test_util()->InsertItem(item_3);
 
-  PageCriteria criteria;
-  criteria.client_namespaces.push_back(kTestNamespace);
-  RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingNamespace(
+      store(), get_pages_callback(), kTestNamespace));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2}), task_result());
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
 }
 
-TEST_F(GetPagesTaskTest, RequestOrigin) {
+TEST_F(GetPagesTaskTest, GetPagesByRequestOrigin) {
   static const char kRequestOrigin1[] = "bar";
   static const char kRequestOrigin2[] = "baz";
   generator()->SetNamespace(kTestNamespace);
   generator()->SetRequestOrigin(kRequestOrigin1);
   OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
   OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
   generator()->SetRequestOrigin(kRequestOrigin2);
   OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
+  store_test_util()->InsertItem(item_3);
 
-  PageCriteria criteria;
-  criteria.request_origin = kRequestOrigin1;
-  RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingRequestOrigin(
+      store(), get_pages_callback(), kRequestOrigin1));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2}), task_result());
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
 }
 
-TEST_F(GetPagesTaskTest, Url) {
-  const GURL kUrl1("http://cs.chromium.org");
-  const GURL kUrl1WithSuffix("http://cs.chromium.org/suffix");
-  const GURL kUrl1Frag("http://cs.chromium.org#frag1");
-  const GURL kUrl2("http://chrome.google.com");
+TEST_F(GetPagesTaskTest, GetPagesByUrl) {
+  static const GURL kUrl1("http://cs.chromium.org");
+  static const GURL kUrl1Frag("http://cs.chromium.org#frag1");
+  static const GURL kUrl2("http://chrome.google.com");
   generator()->SetNamespace(kTestNamespace);
   generator()->SetUrl(kUrl1);
   OfflinePageItem item_1 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_1);
 
   generator()->SetUrl(kUrl1Frag);
   OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
 
   generator()->SetUrl(kUrl2);
   generator()->SetOriginalUrl(kUrl1);
   OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
 
   generator()->SetUrl(kUrl2);
   generator()->SetOriginalUrl(kUrl1Frag);
   OfflinePageItem item_4 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_4);
 
   generator()->SetUrl(kUrl2);
   generator()->SetOriginalUrl(kUrl2);
   OfflinePageItem item_5 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_5);
 
-  generator()->SetUrl(kUrl1WithSuffix);
-  generator()->SetOriginalUrl(kUrl1WithSuffix);
-  OfflinePageItem item_6 = generator()->CreateItem();
+  RunTask(GetPagesTask::CreateTaskMatchingUrl(store(), get_pages_callback(),
+                                              kUrl1));
 
-  InsertItems({item_1, item_2, item_3, item_4, item_5, item_6});
-
-  PageCriteria criteria;
-  criteria.url = kUrl1;
-  RunTask(CreateTask(criteria));
-
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1, item_2, item_3, item_4}),
-            task_result());
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(4UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
+  EXPECT_EQ(1UL, result_set.count(item_3));
+  EXPECT_EQ(1UL, result_set.count(item_4));
 }
 
-TEST_F(GetPagesTaskTest, OfflineId) {
+TEST_F(GetPagesTaskTest, GetPageByOfflineId) {
   generator()->SetNamespace(kTestNamespace);
-  const OfflinePageItem item_1 = generator()->CreateItem();
-  const OfflinePageItem item_2 = generator()->CreateItem();
-  const OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
-
-  PageCriteria criteria;
-  criteria.offline_id = item_1.offline_id;
-  RunTask(CreateTask(criteria));
-
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
-}
-
-TEST_F(GetPagesTaskTest, Guid) {
-  const OfflinePageItem item_1 = generator()->CreateItem();
-  const OfflinePageItem item_2 = generator()->CreateItem();
-  const OfflinePageItem item_3 = generator()->CreateItem();
-  InsertItems({item_1, item_2, item_3});
-
-  PageCriteria criteria;
-  criteria.guid = item_1.client_id.id;
-  RunTask(CreateTask(criteria));
-
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
-}
-
-TEST_F(GetPagesTaskTest, FileSize) {
   OfflinePageItem item_1 = generator()->CreateItem();
-  item_1.file_size = 123;
+  store_test_util()->InsertItem(item_1);
   OfflinePageItem item_2 = generator()->CreateItem();
-  InsertItems({item_1, item_2});
+  store_test_util()->InsertItem(item_2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
 
-  PageCriteria criteria;
-  criteria.file_size = 123;
-  RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingOfflineId(
+      store(), get_single_page_callback(), item_1.offline_id));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
+  EXPECT_EQ(item_1, single_page_result());
 }
 
-TEST_F(GetPagesTaskTest, Digest) {
+TEST_F(GetPagesTaskTest, GetPageByGuid) {
   OfflinePageItem item_1 = generator()->CreateItem();
-  item_1.digest = "abc";
+  store_test_util()->InsertItem(item_1);
   OfflinePageItem item_2 = generator()->CreateItem();
-  item_2.digest = "123";
-  InsertItems({item_1, item_2});
+  store_test_util()->InsertItem(item_2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
 
-  PageCriteria criteria;
-  criteria.digest = "abc";
-  RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingGuid(
+      store(), get_single_page_callback(), item_1.client_id.id));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
+  EXPECT_EQ(item_1, single_page_result());
 }
 
-TEST_F(GetPagesTaskTest, MultipleConditions) {
-  const GURL kUrl1("http://cs.chromium.org");
-  const std::string digest = "abc";
-
-  // |item_1| matches, and all other items differ by one criteria.
+TEST_F(GetPagesTaskTest, GetPageBySizeAndDigest) {
+  static const int64_t kFileSize1 = 123LL;
+  static const int64_t kFileSize2 = 999999LL;
+  static const char kDigest1[] = "digest 1";
+  static const char kDigest2[] = "digest 2";
+  generator()->SetFileSize(kFileSize1);
+  generator()->SetDigest(kDigest1);
   OfflinePageItem item_1 = generator()->CreateItem();
-  item_1.digest = digest;
-  item_1.file_size = 123;
-  item_1.url = kUrl1;
-  item_1.client_id.name_space = kDownloadNamespace;
+  store_test_util()->InsertItem(item_1);
+  generator()->SetDigest(kDigest2);
+  OfflinePageItem item_2 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_2);
+  generator()->SetFileSize(kFileSize2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_test_util()->InsertItem(item_3);
 
-  OfflinePageItem item_2 = item_1;
-  item_2.offline_id = store_utils::GenerateOfflineId();
-  item_2.digest = "other";
+  RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), kFileSize1, "mismatched digest"));
+  EXPECT_EQ(OfflinePageItem(), single_page_result());
 
-  OfflinePageItem item_3 = item_1;
-  item_3.offline_id = store_utils::GenerateOfflineId();
-  item_3.client_id.name_space = kLastNNamespace;
+  RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), 0LL, kDigest1));
+  EXPECT_EQ(OfflinePageItem(), single_page_result());
 
-  OfflinePageItem item_4 = item_1;
-  item_4.offline_id = store_utils::GenerateOfflineId();
-  item_4.file_size = 0;
-
-  OfflinePageItem item_5 = item_1;
-  item_5.offline_id = store_utils::GenerateOfflineId();
-  item_5.url = GURL("http://cs.chromium.org/1");
-
-  InsertItems({item_1, item_2, item_3, item_4, item_5});
-
-  PageCriteria criteria;
-  criteria.digest = digest;
-  criteria.file_size = 123;
-  criteria.url = kUrl1;
-  criteria.exclude_tab_bound_pages = true;
-  RunTask(CreateTask(criteria));
-
-  EXPECT_EQ(std::set<OfflinePageItem>({item_1}), task_result());
+  RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), kFileSize2, kDigest2));
+  EXPECT_EQ(item_3, single_page_result());
 }
 
-TEST_F(GetPagesTaskTest, SupportedByDownloads) {
+TEST_F(GetPagesTaskTest, GetPagesSupportedByDownloads) {
   generator()->SetNamespace(kCCTNamespace);
   store_test_util()->InsertItem(generator()->CreateItem());
   generator()->SetNamespace(kDownloadNamespace);
@@ -258,28 +273,17 @@ TEST_F(GetPagesTaskTest, SupportedByDownloads) {
   OfflinePageItem ntp_suggestion_item = generator()->CreateItem();
   store_test_util()->InsertItem(ntp_suggestion_item);
 
-  // All pages with supported_by_downloads.
-  {
-    PageCriteria criteria;
-    criteria.supported_by_downloads = true;
-    RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
+      store(), get_pages_callback(), policy_controller()));
 
-    EXPECT_EQ(std::set<OfflinePageItem>({download_item, ntp_suggestion_item}),
-              task_result());
-  }
-
-  // Only CCT, NTP with supported_by_downloads.
-  {
-    PageCriteria criteria;
-    criteria.supported_by_downloads = true;
-    criteria.client_namespaces = {kCCTNamespace, kNTPSuggestionsNamespace};
-    RunTask(CreateTask(criteria));
-
-    EXPECT_EQ(std::set<OfflinePageItem>({ntp_suggestion_item}), task_result());
-  }
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(download_item));
+  EXPECT_EQ(1UL, result_set.count(ntp_suggestion_item));
 }
 
-TEST_F(GetPagesTaskTest, RemovedOnCacheReset) {
+TEST_F(GetPagesTaskTest, GetPagesRemovedOnCacheReset) {
   generator()->SetNamespace(kCCTNamespace);
   OfflinePageItem cct_item = generator()->CreateItem();
   store_test_util()->InsertItem(cct_item);
@@ -288,11 +292,46 @@ TEST_F(GetPagesTaskTest, RemovedOnCacheReset) {
   generator()->SetNamespace(kNTPSuggestionsNamespace);
   store_test_util()->InsertItem(generator()->CreateItem());
 
-  PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
-  RunTask(CreateTask(criteria));
+  RunTask(GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
+      store(), get_pages_callback(), policy_controller()));
 
-  EXPECT_EQ(std::set<OfflinePageItem>({cct_item}), task_result());
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(1UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(cct_item));
+}
+
+TEST_F(GetPagesTaskTest, SelectItemsForUpgrade) {
+  base::Time now = base::Time::Now();
+  std::vector<int> remaining_attempts = {3, 2, 2, 1};
+  std::vector<base::Time> creation_times = {
+      now, now, now - base::TimeDelta::FromDays(1), now};
+
+  // |expected_items| are items expected to be selected by the task.
+  std::vector<OfflinePageItem> expected_items;
+
+  generator()->SetNamespace(kDownloadNamespace);
+  for (size_t i = 0; i < remaining_attempts.size(); ++i) {
+    OfflinePageItem selected_item = generator()->CreateItem();
+    selected_item.upgrade_attempt = remaining_attempts[i];
+    selected_item.creation_time = creation_times[i];
+    store_test_util()->InsertItem(selected_item);
+    // This selected_item is expected in return and in this position.
+    expected_items.push_back(selected_item);
+
+    // Should be skipped (no more upgrade attempts available).
+    OfflinePageItem non_selected_item = generator()->CreateItem();
+    non_selected_item.upgrade_attempt = 0;
+    non_selected_item.creation_time = creation_times[i];
+    store_test_util()->InsertItem(non_selected_item);
+  }
+
+  RunTask(GetPagesTask::CreateTaskSelectingItemsMarkedForUpgrade(
+      store(), get_pages_callback()));
+
+  ASSERT_TRUE(expected_items.size() == read_result().size());
+  for (size_t i = 0; i < expected_items.size(); ++i)
+    EXPECT_EQ(expected_items[i], read_result()[i]);
 }
 
 }  // namespace offline_pages

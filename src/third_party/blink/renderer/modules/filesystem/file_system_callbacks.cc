@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 
 #include <memory>
-#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -54,9 +53,13 @@
 
 namespace blink {
 
-FileSystemCallbacksBase::FileSystemCallbacksBase(DOMFileSystemBase* file_system,
-                                                 ExecutionContext* context)
-    : file_system_(file_system), execution_context_(context) {
+FileSystemCallbacksBase::FileSystemCallbacksBase(
+    ErrorCallbackBase* error_callback,
+    DOMFileSystemBase* file_system,
+    ExecutionContext* context)
+    : error_callback_(error_callback),
+      file_system_(file_system),
+      execution_context_(context) {
   DCHECK(execution_context_);
 
   if (file_system_)
@@ -68,17 +71,120 @@ FileSystemCallbacksBase::~FileSystemCallbacksBase() {
     file_system_->RemovePendingCallbacks();
 }
 
+void FileSystemCallbacksBase::DidFail(base::File::Error error) {
+  if (error_callback_) {
+    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
+                             error_callback_.Release(), error);
+  }
+}
+
+bool FileSystemCallbacksBase::ShouldScheduleCallback() const {
+  return execution_context_ && execution_context_->IsContextPaused();
+}
+
+template <typename CallbackMemberFunction,
+          typename CallbackClass,
+          typename... Args>
+void FileSystemCallbacksBase::InvokeOrScheduleCallback(
+    CallbackMemberFunction&& callback_member_function,
+    CallbackClass&& callback_object,
+    Args&&... args) {
+  DCHECK(callback_object);
+
+  if (ShouldScheduleCallback()) {
+    DOMFileSystem::ScheduleCallback(
+        execution_context_.Get(),
+        WTF::Bind(callback_member_function, WrapPersistent(callback_object),
+                  WrapPersistentIfNeeded(args)...));
+  } else {
+    ((*callback_object).*callback_member_function)(args...);
+  }
+  execution_context_.Clear();
+}
+
+// ScriptErrorCallback --------------------------------------------------------
+
+// static
+ScriptErrorCallback* ScriptErrorCallback::Wrap(V8ErrorCallback* callback) {
+  // DOMFileSystem operations take an optional (nullable) callback. If a
+  // script callback was not passed, don't bother creating a dummy wrapper
+  // and checking during invoke().
+  if (!callback)
+    return nullptr;
+  return MakeGarbageCollected<ScriptErrorCallback>(callback);
+}
+
+void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
+  ErrorCallbackBase::Trace(visitor);
+  visitor->Trace(callback_);
+}
+
+void ScriptErrorCallback::Invoke(base::File::Error error) {
+  callback_->InvokeAndReportException(nullptr,
+                                      file_error::CreateDOMException(error));
+}
+
+ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
+    : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
+// PromiseErrorCallback -------------------------------------------------------
+
+PromiseErrorCallback::PromiseErrorCallback(ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void PromiseErrorCallback::Trace(Visitor* visitor) {
+  ErrorCallbackBase::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void PromiseErrorCallback::Invoke(base::File::Error error) {
+  resolver_->Reject(file_error::CreateDOMException(error));
+}
+
 // EntryCallbacks -------------------------------------------------------------
 
-EntryCallbacks::EntryCallbacks(SuccessCallback success_callback,
-                               ErrorCallback error_callback,
+void EntryCallbacks::OnDidGetEntryV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidGetEntryCallback::Trace(visitor);
+}
+
+void EntryCallbacks::OnDidGetEntryV8Impl::OnSuccess(Entry* entry) {
+  callback_->InvokeAndReportException(nullptr, entry);
+}
+
+EntryCallbacks::OnDidGetEntryPromiseImpl::OnDidGetEntryPromiseImpl(
+    ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void EntryCallbacks::OnDidGetEntryPromiseImpl::Trace(Visitor* visitor) {
+  OnDidGetEntryCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void EntryCallbacks::OnDidGetEntryPromiseImpl::OnSuccess(Entry* entry) {
+  resolver_->Resolve(entry->asFileSystemHandle());
+}
+
+std::unique_ptr<EntryCallbacks> EntryCallbacks::Create(
+    OnDidGetEntryCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DOMFileSystemBase* file_system,
+    const String& expected_path,
+    bool is_directory) {
+  return base::WrapUnique(new EntryCallbacks(success_callback, error_callback,
+                                             context, file_system,
+                                             expected_path, is_directory));
+}
+
+EntryCallbacks::EntryCallbacks(OnDidGetEntryCallback* success_callback,
+                               ErrorCallbackBase* error_callback,
                                ExecutionContext* context,
                                DOMFileSystemBase* file_system,
                                const String& expected_path,
                                bool is_directory)
-    : FileSystemCallbacksBase(file_system, context),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)),
+    : FileSystemCallbacksBase(error_callback, file_system, context),
+      success_callback_(success_callback),
       expected_path_(expected_path),
       is_directory_(is_directory) {}
 
@@ -86,32 +192,35 @@ void EntryCallbacks::DidSucceed() {
   if (!success_callback_)
     return;
 
-  Entry* entry = is_directory_
-                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
-                           file_system_, expected_path_))
-                     : static_cast<Entry*>(MakeGarbageCollected<FileEntry>(
-                           file_system_, expected_path_));
-
-  std::move(success_callback_).Run(entry);
-}
-
-void EntryCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  Entry* entry = is_directory_ ? static_cast<Entry*>(DirectoryEntry::Create(
+                                     file_system_, expected_path_))
+                               : static_cast<Entry*>(FileEntry::Create(
+                                     file_system_, expected_path_));
+  InvokeOrScheduleCallback(&OnDidGetEntryCallback::OnSuccess,
+                           success_callback_.Release(), entry);
 }
 
 // EntriesCallbacks -----------------------------------------------------------
 
-EntriesCallbacks::EntriesCallbacks(const SuccessCallback& success_callback,
-                                   ErrorCallback error_callback,
+std::unique_ptr<EntriesCallbacks> EntriesCallbacks::Create(
+    OnDidGetEntriesCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DirectoryReaderBase* directory_reader,
+    const String& base_path) {
+  return base::WrapUnique(new EntriesCallbacks(
+      success_callback, error_callback, context, directory_reader, base_path));
+}
+
+EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
+                                   ErrorCallbackBase* error_callback,
                                    ExecutionContext* context,
                                    DirectoryReaderBase* directory_reader,
                                    const String& base_path)
-    : FileSystemCallbacksBase(directory_reader->Filesystem(), context),
+    : FileSystemCallbacksBase(error_callback,
+                              directory_reader->Filesystem(),
+                              context),
       success_callback_(success_callback),
-      error_callback_(std::move(error_callback)),
       directory_reader_(directory_reader),
       base_path_(base_path),
       entries_(MakeGarbageCollected<HeapVector<Member<Entry>>>()) {
@@ -122,11 +231,10 @@ void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
                                              bool is_directory) {
   DOMFileSystemBase* filesystem = directory_reader_->Filesystem();
   const String& path = DOMFilePath::Append(base_path_, name);
-  Entry* entry = is_directory
-                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
-                           filesystem, path))
-                     : static_cast<Entry*>(
-                           MakeGarbageCollected<FileEntry>(filesystem, path));
+  Entry* entry =
+      is_directory
+          ? static_cast<Entry*>(DirectoryEntry::Create(filesystem, path))
+          : static_cast<Entry*>(FileEntry::Create(filesystem, path));
   entries_->push_back(entry);
 }
 
@@ -135,32 +243,57 @@ void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   EntryHeapVector* entries =
       MakeGarbageCollected<EntryHeapVector>(std::move(*entries_));
 
-  if (!success_callback_) {
+  if (!success_callback_)
     return;
-  }
 
-  success_callback_.Run(entries);
-}
-
-void EntriesCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_) {
-    return;
-  }
-
-  std::move(error_callback_).Run(error);
+  InvokeOrScheduleCallback(&OnDidGetEntriesCallback::OnSuccess,
+                           success_callback_.Get(), entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------
 
-FileSystemCallbacks::FileSystemCallbacks(SuccessCallback success_callback,
-                                         ErrorCallback error_callback,
-                                         ExecutionContext* context,
-                                         mojom::blink::FileSystemType type)
-    : FileSystemCallbacksBase(
-          /*file_system=*/nullptr,
-          context),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)),
+void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidOpenFileSystemCallback::Trace(visitor);
+}
+
+void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::OnSuccess(
+    DOMFileSystem* file_system) {
+  callback_->InvokeAndReportException(nullptr, file_system);
+}
+
+FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::
+    OnDidOpenFileSystemPromiseImpl(ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::Trace(
+    Visitor* visitor) {
+  OnDidOpenFileSystemCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::OnSuccess(
+    DOMFileSystem* file_system) {
+  resolver_->Resolve(file_system->root()->asFileSystemHandle());
+}
+
+std::unique_ptr<FileSystemCallbacks> FileSystemCallbacks::Create(
+    OnDidOpenFileSystemCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    mojom::blink::FileSystemType type) {
+  return base::WrapUnique(
+      new FileSystemCallbacks(success_callback, error_callback, context, type));
+}
+
+FileSystemCallbacks::FileSystemCallbacks(
+    OnDidOpenFileSystemCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    mojom::blink::FileSystemType type)
+    : FileSystemCallbacksBase(error_callback, nullptr, context),
+      success_callback_(success_callback),
       type_(type) {}
 
 void FileSystemCallbacks::DidOpenFileSystem(const String& name,
@@ -168,28 +301,27 @@ void FileSystemCallbacks::DidOpenFileSystem(const String& name,
   if (!success_callback_)
     return;
 
-  auto* filesystem = MakeGarbageCollected<DOMFileSystem>(
-      execution_context_.Get(), name, type_, root_url);
-  std::move(success_callback_).Run(filesystem);
-}
-
-void FileSystemCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  InvokeOrScheduleCallback(
+      &OnDidOpenFileSystemCallback::OnSuccess, success_callback_.Release(),
+      DOMFileSystem::Create(execution_context_.Get(), name, type_, root_url));
 }
 
 // ResolveURICallbacks --------------------------------------------------------
 
-ResolveURICallbacks::ResolveURICallbacks(SuccessCallback success_callback,
-                                         ErrorCallback error_callback,
-                                         ExecutionContext* context)
-    : FileSystemCallbacksBase(
-          /*file_system=*/nullptr,
-          context),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)) {
+std::unique_ptr<ResolveURICallbacks> ResolveURICallbacks::Create(
+    OnDidGetEntryCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context) {
+  return base::WrapUnique(
+      new ResolveURICallbacks(success_callback, error_callback, context));
+}
+
+ResolveURICallbacks::ResolveURICallbacks(
+    OnDidGetEntryCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context)
+    : FileSystemCallbacksBase(error_callback, nullptr, context),
+      success_callback_(success_callback) {
   DCHECK(success_callback_);
 }
 
@@ -198,8 +330,8 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
                                         mojom::blink::FileSystemType type,
                                         const String& file_path,
                                         bool is_directory) {
-  auto* filesystem = MakeGarbageCollected<DOMFileSystem>(
-      execution_context_.Get(), name, type, root_url);
+  DOMFileSystem* filesystem =
+      DOMFileSystem::Create(execution_context_.Get(), name, type, root_url);
   DirectoryEntry* root = filesystem->root();
 
   String absolute_path;
@@ -209,88 +341,130 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
     return;
   }
 
-  Entry* entry = is_directory
-                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
-                           filesystem, absolute_path))
-                     : static_cast<Entry*>(MakeGarbageCollected<FileEntry>(
-                           filesystem, absolute_path));
-
-  std::move(success_callback_).Run(entry);
-}
-
-void ResolveURICallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  Entry* entry =
+      is_directory
+          ? static_cast<Entry*>(
+                DirectoryEntry::Create(filesystem, absolute_path))
+          : static_cast<Entry*>(FileEntry::Create(filesystem, absolute_path));
+  InvokeOrScheduleCallback(&OnDidGetEntryCallback::OnSuccess,
+                           success_callback_.Release(), entry);
 }
 
 // MetadataCallbacks ----------------------------------------------------------
 
-MetadataCallbacks::MetadataCallbacks(SuccessCallback success_callback,
-                                     ErrorCallback error_callback,
-                                     ExecutionContext* context,
-                                     DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(file_system, context),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)) {}
+void MetadataCallbacks::OnDidReadMetadataV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidReadMetadataCallback::Trace(visitor);
+}
+
+void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
+  callback_->InvokeAndReportException(nullptr, metadata);
+}
+
+std::unique_ptr<MetadataCallbacks> MetadataCallbacks::Create(
+    OnDidReadMetadataCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DOMFileSystemBase* file_system) {
+  return base::WrapUnique(new MetadataCallbacks(
+      success_callback, error_callback, context, file_system));
+}
+
+MetadataCallbacks::MetadataCallbacks(
+    OnDidReadMetadataCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DOMFileSystemBase* file_system)
+    : FileSystemCallbacksBase(error_callback, file_system, context),
+      success_callback_(success_callback) {}
 
 void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
   if (!success_callback_)
     return;
 
-  std::move(success_callback_).Run(MakeGarbageCollected<Metadata>(metadata));
-}
-
-void MetadataCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  InvokeOrScheduleCallback(&OnDidReadMetadataCallback::OnSuccess,
+                           success_callback_.Release(),
+                           Metadata::Create(metadata));
 }
 
 // FileWriterCallbacks ----------------------------------------------------
 
-FileWriterCallbacks::FileWriterCallbacks(FileWriterBase* file_writer,
-                                         SuccessCallback success_callback,
-                                         ErrorCallback error_callback,
-                                         ExecutionContext* context)
-    : FileSystemCallbacksBase(
-          /*file_system =*/nullptr,
-          context),
-      file_writer_(file_writer),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)) {}
-
-void FileWriterCallbacks::DidCreateFileWriter(const KURL& path,
-                                              int64_t length) {
-  if (!success_callback_)
-    return;
-
-  file_writer_->Initialize(path, length);
-  std::move(success_callback_).Run(file_writer_);
+void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidCreateFileWriterCallback::Trace(visitor);
 }
 
-void FileWriterCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
+void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
+    FileWriterBase* file_writer) {
+  // The call sites must pass a FileWriter in |file_writer|.
+  callback_->InvokeAndReportException(nullptr,
+                                      static_cast<FileWriter*>(file_writer));
+}
 
-  std::move(error_callback_).Run(error);
+std::unique_ptr<FileWriterCallbacks> FileWriterCallbacks::Create(
+    FileWriterBase* file_writer,
+    OnDidCreateFileWriterCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context) {
+  return base::WrapUnique(new FileWriterCallbacks(file_writer, success_callback,
+                                                  error_callback, context));
+}
+
+FileWriterCallbacks::FileWriterCallbacks(
+    FileWriterBase* file_writer,
+    OnDidCreateFileWriterCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context)
+    : FileSystemCallbacksBase(error_callback, nullptr, context),
+      file_writer_(file_writer),
+      success_callback_(success_callback) {}
+
+void FileWriterCallbacks::DidCreateFileWriter(const KURL& path,
+                                              long long length) {
+  if (!success_callback_)
+    return;
+  file_writer_->Initialize(path, length);
+  InvokeOrScheduleCallback(&OnDidCreateFileWriterCallback::OnSuccess,
+                           success_callback_.Release(), file_writer_);
 }
 
 // SnapshotFileCallback -------------------------------------------------------
 
-SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem,
-                                           const String& name,
-                                           const KURL& url,
-                                           SuccessCallback success_callback,
-                                           ErrorCallback error_callback,
-                                           ExecutionContext* context)
-    : FileSystemCallbacksBase(filesystem, context),
+void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidCreateSnapshotFileCallback::Trace(visitor);
+}
+
+void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::OnSuccess(
+    File* file) {
+  callback_->InvokeAndReportException(nullptr, file);
+}
+
+std::unique_ptr<AsyncFileSystemCallbacks> SnapshotFileCallback::Create(
+    DOMFileSystemBase* filesystem,
+    const String& name,
+    const KURL& url,
+    OnDidCreateSnapshotFileCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context) {
+  return base::WrapUnique(new SnapshotFileCallback(
+      filesystem, name, url, success_callback, error_callback, context));
+}
+
+SnapshotFileCallback::SnapshotFileCallback(
+    DOMFileSystemBase* filesystem,
+    const String& name,
+    const KURL& url,
+    OnDidCreateSnapshotFileCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context)
+    : FileSystemCallbacksBase(error_callback, filesystem, context),
       name_(name),
       url_(url),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)) {}
+      success_callback_(success_callback) {}
 
 void SnapshotFileCallback::DidCreateSnapshotFile(
     const FileMetadata& metadata,
@@ -304,40 +478,61 @@ void SnapshotFileCallback::DidCreateSnapshotFile(
   // coined a File with a new handle that has the correct type set on it. This
   // allows the blob storage system to track when a temp file can and can't be
   // safely deleted.
-  std::move(success_callback_)
-      .Run(DOMFileSystemBase::CreateFile(metadata, url_,
-                                         file_system_->GetType(), name_));
-}
 
-void SnapshotFileCallback::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  InvokeOrScheduleCallback(&OnDidCreateSnapshotFileCallback::OnSuccess,
+                           success_callback_.Release(),
+                           DOMFileSystemBase::CreateFile(
+                               metadata, url_, file_system_->GetType(), name_));
 }
 
 // VoidCallbacks --------------------------------------------------------------
 
-VoidCallbacks::VoidCallbacks(SuccessCallback success_callback,
-                             ErrorCallback error_callback,
+void VoidCallbacks::OnDidSucceedV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidSucceedCallback::Trace(visitor);
+}
+
+void VoidCallbacks::OnDidSucceedV8Impl::OnSuccess(
+    ExecutionContext* dummy_arg_for_sync_helper) {
+  callback_->InvokeAndReportException(nullptr);
+}
+
+VoidCallbacks::OnDidSucceedPromiseImpl::OnDidSucceedPromiseImpl(
+    ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void VoidCallbacks::OnDidSucceedPromiseImpl::Trace(Visitor* visitor) {
+  OnDidSucceedCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void VoidCallbacks::OnDidSucceedPromiseImpl::OnSuccess(ExecutionContext*) {
+  resolver_->Resolve();
+}
+
+std::unique_ptr<VoidCallbacks> VoidCallbacks::Create(
+    OnDidSucceedCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DOMFileSystemBase* file_system) {
+  return base::WrapUnique(new VoidCallbacks(success_callback, error_callback,
+                                            context, file_system));
+}
+
+VoidCallbacks::VoidCallbacks(OnDidSucceedCallback* success_callback,
+                             ErrorCallbackBase* error_callback,
                              ExecutionContext* context,
                              DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(file_system, context),
-      success_callback_(std::move(success_callback)),
-      error_callback_(std::move(error_callback)) {}
+    : FileSystemCallbacksBase(error_callback, file_system, context),
+      success_callback_(success_callback) {}
 
 void VoidCallbacks::DidSucceed() {
   if (!success_callback_)
     return;
 
-  std::move(success_callback_).Run();
-}
-
-void VoidCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
-    return;
-
-  std::move(error_callback_).Run(error);
+  InvokeOrScheduleCallback(&OnDidSucceedCallback::OnSuccess,
+                           success_callback_.Release(),
+                           execution_context_.Get());
 }
 
 }  // namespace blink

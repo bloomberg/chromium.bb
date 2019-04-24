@@ -290,7 +290,7 @@ class WebCryptoResultAdapter : public ScriptFunction {
 template <typename T>
 WebCryptoResult ToWebCryptoResult(ScriptState* script_state,
                                   base::RepeatingCallback<void(T)> function) {
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   result->Promise().Then(
       (MakeGarbageCollected<WebCryptoResultAdapter<T>>(script_state,
                                                        std::move(function)))
@@ -896,7 +896,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
   V8TestingScope scope;
 
-  auto* fs = MakeGarbageCollected<DOMFileSystem>(
+  DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
       mojom::blink::FileSystemType::kPersistent,
       KURL("filesystem:http://example.com/persistent/"));
@@ -919,7 +919,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
                                  ExceptionState::kExecutionContext, "Window",
                                  "postMessage");
 
-  auto* fs = MakeGarbageCollected<DOMFileSystem>(
+  DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
       mojom::blink::FileSystemType::kPersistent,
       KURL("filesystem:http://example.com/persistent/0/"));

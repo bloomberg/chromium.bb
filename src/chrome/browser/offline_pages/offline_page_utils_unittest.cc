@@ -151,8 +151,7 @@ void OfflinePageUtilsTest::SetUp() {
 
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_.GetProfileKey(),
-      base::BindRepeating(&BuildTestOfflinePageModel));
+      &profile_, base::BindRepeating(&BuildTestOfflinePageModel));
   RunUntilIdle();
 
   RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(

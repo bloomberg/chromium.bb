@@ -64,7 +64,7 @@ AppSorting* MockExtensionSystem::app_sorting() {
   return nullptr;
 }
 
-const base::OneShotEvent& MockExtensionSystem::ready() const {
+const OneShotEvent& MockExtensionSystem::ready() const {
   return ready_;
 }
 

@@ -11,29 +11,24 @@ Dumping CacheStorage tree:
         (cache empty)
 Dumping CacheStorage tree:
     cache: testCache1 - http://127.0.0.1:8000
-        0, /1, default, text/plain, 0
-        1, /2, default, text/plain, 0
-        2, /T, default, image/png, 0
-        totalCount: 3
+        /1, default, text/plain, 0
+        /2, default, text/plain, 0
+        /T, default, image/png, 0
     cache: testCache2 - http://127.0.0.1:8000
-        0, /1, default, text/plain, 0
-        1, /2, default, text/plain, 0
-        2, /H/22, default, text/plain, 0
-        3, /L/11, default, text/plain, 0
-        4, /T, default, text/javascript, 0
-        totalCount: 5
+        /1, default, text/plain, 0
+        /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
+        /L/11, default, text/plain, 0
+        /T, default, text/javascript, 0
     cache: testCache3 - http://127.0.0.1:8000
-        0, /devtools/resources/image.png, basic, image/png, 647
-        1, /vars, default, text/plain, 0
-        totalCount: 2
+        /devtools/resources/image.png, basic, image/png, 647
+        /vars, default, text/plain, 0
 Dumping CacheStorage tree with URL path filter string "2"
     cache: testCache1 - http://127.0.0.1:8000
-        0, /2, default, text/plain, 0
-        totalCount: 1
+        /2, default, text/plain, 0
     cache: testCache2 - http://127.0.0.1:8000
-        0, /2, default, text/plain, 0
-        1, /H/22, default, text/plain, 0
-        totalCount: 2
+        /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
     cache: testCache3 - http://127.0.0.1:8000
         (no matching entries)
 Dumping CacheStorage tree with URL path filter string "image"
@@ -42,8 +37,7 @@ Dumping CacheStorage tree with URL path filter string "image"
     cache: testCache2 - http://127.0.0.1:8000
         (no matching entries)
     cache: testCache3 - http://127.0.0.1:8000
-        0, /devtools/resources/image.png, basic, image/png, 647
-        totalCount: 1
+        /devtools/resources/image.png, basic, image/png, 647
 Dumping testCache2's entry with request URL: http://fake.request.com/1
         Y
 Dumping testCache3's entry with request URL: http://fake.request.com/vars

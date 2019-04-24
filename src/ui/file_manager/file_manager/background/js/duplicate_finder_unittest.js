@@ -86,9 +86,11 @@ function testCheckDuplicateTrue(callback) {
   const files = setupHashes(filePaths, fileHashes);
 
   reportPromise(
-      duplicateFinder.isDuplicate(files[0]).then(isDuplicate => {
-        assertTrue(isDuplicate);
-      }),
+      duplicateFinder.isDuplicate(files[0])
+          .then(
+              isDuplicate => {
+                assertTrue(isDuplicate);
+              }),
       callback);
 }
 
@@ -104,9 +106,11 @@ function testCheckDuplicateFalse(callback) {
   const newFile = /** @type {!FileEntry} */ (fileSystem.entries[newFilePath]);
 
   reportPromise(
-      duplicateFinder.isDuplicate(newFile).then(isDuplicate => {
-        assertFalse(isDuplicate);
-      }),
+      duplicateFinder.isDuplicate(newFile)
+          .then(
+              isDuplicate => {
+                assertFalse(isDuplicate);
+              }),
       callback);
 }
 
@@ -130,7 +134,8 @@ function testDispositionChecker_HistoryDupe(callback) {
   const fileHashes = ['abc123'];
   const files = setupHashes(filePaths, fileHashes);
 
-  testHistory.importedPaths['/foo.txt'] = [importer.Destination.GOOGLE_DRIVE];
+  testHistory.importedPaths['/foo.txt'] =
+      [importer.Destination.GOOGLE_DRIVE];
 
   reportPromise(
       getDisposition(
@@ -169,9 +174,10 @@ function setupHashes(filePaths, fileHashes) {
   // Set up a filesystem with some files.
   fileSystem.populate(filePaths);
 
-  const files = filePaths.map(filename => {
-    return fileSystem.entries[filename];
-  });
+  const files = filePaths.map(
+      filename => {
+        return fileSystem.entries[filename];
+      });
 
   files.forEach((file, index) => {
     hashes[file.toURL()] = fileHashes[index];

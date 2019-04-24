@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
@@ -57,13 +58,13 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   Vector<AtomicString> supportedEntryTypes;
   auto* execution_context = ExecutionContext::From(script_state);
   if (execution_context->IsDocument()) {
-    if (RuntimeEnabledFeatures::ElementTimingEnabled(execution_context))
+    if (origin_trials::ElementTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kElement);
-    if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context)) {
+    if (origin_trials::EventTimingEnabled(execution_context)) {
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
       supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
     }
-    if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(execution_context))
+    if (origin_trials::LayoutJankAPIEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);
   }
@@ -127,8 +128,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "its "
           "entryTypes attribute.";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
@@ -137,8 +137,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer does not support buffered flag with "
           "entryTypes. ";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     }
     filter_options_ = entry_types;
   } else {
@@ -163,8 +162,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer MUST have a valid entryType in its "
           "type attribute.";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (filter_options_ & entry_type) {
@@ -172,8 +170,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The Performance Observer has already been called with this "
           "entryType";
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
@@ -182,8 +179,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
         String message =
             "Buffered flag does not support the long task entry type ";
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, message));
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
       } else {
         // Append all entries of this type to the current performance_entries_
         // to be returned on the next callback.

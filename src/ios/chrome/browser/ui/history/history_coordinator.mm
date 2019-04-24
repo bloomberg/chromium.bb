@@ -54,6 +54,7 @@
     _historyClearBrowsingDataCoordinator;
 @synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
+@synthesize loader = _loader;
 @synthesize mediator = _mediator;
 @synthesize presentationDelegate = _presentationDelegate;
 
@@ -61,7 +62,7 @@
   // Initialize and configure HistoryTableViewController.
   self.historyTableViewController = [[HistoryTableViewController alloc] init];
   self.historyTableViewController.browserState = self.browserState;
-  self.historyTableViewController.loadStrategy = self.loadStrategy;
+  self.historyTableViewController.loader = self.loader;
 
   // Initialize and set HistoryMediator
   self.mediator =
@@ -146,7 +147,7 @@
     self.historyClearBrowsingDataCoordinator.localDispatcher = self;
     self.historyClearBrowsingDataCoordinator.presentationDelegate =
         self.presentationDelegate;
-    self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
+    self.historyClearBrowsingDataCoordinator.loader = self.loader;
     self.historyClearBrowsingDataCoordinator.dispatcher = self.dispatcher;
     [self.historyClearBrowsingDataCoordinator start];
 }

@@ -53,7 +53,6 @@ class AutofillWebDataBackendImpl
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
       const base::Closure& on_changed_callback,
-      const base::Closure& on_address_conversion_completed_callback,
       const base::Callback<void(syncer::ModelType)>& on_sync_started_callback);
 
   void SetAutofillProfileChangedCallback(
@@ -70,7 +69,6 @@ class AutofillWebDataBackendImpl
       const AutofillProfileChange& change) override;
   void NotifyOfCreditCardChanged(const CreditCardChange& change) override;
   void NotifyOfMultipleAutofillChanges() override;
-  void NotifyOfAddressConversionCompleted() override;
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override;
   void CommitChanges() override;
 
@@ -135,15 +133,6 @@ class AutofillWebDataBackendImpl
   // Returns the local/server Autofill profiles from the web database.
   std::unique_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
   std::unique_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
-
-  // Converts server profiles to local profiles, comparing profiles using
-  // |app_locale| and filling in |primary_account_email| into newly converted
-  // profiles. The task only converts profiles that have not been converted
-  // before.
-  WebDatabase::State ConvertWalletAddressesAndUpdateWalletCards(
-      const std::string& app_locale,
-      const std::string& primary_account_email,
-      WebDatabase* db);
 
   // Returns the number of values such that all for autofill entries with that
   // value, the interval between creation date and last usage is entirely
@@ -257,7 +246,6 @@ class AutofillWebDataBackendImpl
   scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
   base::Closure on_changed_callback_;
-  base::Closure on_address_conversion_completed_callback_;
   base::Callback<void(syncer::ModelType)> on_sync_started_callback_;
 
   base::RepeatingCallback<void(const AutofillProfileDeepChange&)>

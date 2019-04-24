@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_H_
 
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/files/file.h"
@@ -72,13 +73,13 @@ class DrmThread : public base::Thread,
                     uint32_t flags,
                     std::unique_ptr<GbmBuffer>* buffer,
                     scoped_refptr<DrmFramebuffer>* framebuffer);
-  void CreateBufferFromHandle(gfx::AcceleratedWidget widget,
-                              const gfx::Size& size,
-                              gfx::BufferFormat format,
-                              gfx::NativePixmapHandle handle,
-                              std::unique_ptr<GbmBuffer>* buffer,
-                              scoped_refptr<DrmFramebuffer>* framebuffer);
-  void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
+  void CreateBufferFromFds(gfx::AcceleratedWidget widget,
+                           const gfx::Size& size,
+                           gfx::BufferFormat format,
+                           std::vector<base::ScopedFD> fds,
+                           const std::vector<gfx::NativePixmapPlane>& planes,
+                           std::unique_ptr<GbmBuffer>* buffer,
+                           scoped_refptr<DrmFramebuffer>* framebuffer);
   void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
   void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 

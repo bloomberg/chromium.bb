@@ -27,18 +27,15 @@ uint32_t CodeCommentEntry::size() const {
   return kOffsetToCommentString + comment_length();
 }
 
-CodeCommentsIterator::CodeCommentsIterator(Address code_comments_start,
-                                           uint32_t code_comments_size)
+CodeCommentsIterator::CodeCommentsIterator(Address code_comments_start)
     : code_comments_start_(code_comments_start),
-      code_comments_size_(code_comments_size),
-      current_entry_(code_comments_start + kOffsetToFirstCommentEntry) {
-  DCHECK_NE(kNullAddress, code_comments_start);
-  DCHECK_IMPLIES(
-      code_comments_size,
-      code_comments_size == *reinterpret_cast<uint32_t*>(code_comments_start_));
-}
+      current_entry_(code_comments_start + kOffsetToFirstCommentEntry) {}
 
-uint32_t CodeCommentsIterator::size() const { return code_comments_size_; }
+uint32_t CodeCommentsIterator::size() const {
+  return code_comments_start_ != kNullAddress
+             ? *reinterpret_cast<uint32_t*>(code_comments_start_)
+             : 0;
+}
 
 const char* CodeCommentsIterator::GetComment() const {
   const char* comment_string =
@@ -87,9 +84,8 @@ uint32_t CodeCommentsWriter::section_size() const {
   return kOffsetToFirstCommentEntry + static_cast<uint32_t>(byte_count_);
 }
 
-void PrintCodeCommentsSection(std::ostream& out, Address code_comments_start,
-                              uint32_t code_comments_size) {
-  CodeCommentsIterator it(code_comments_start, code_comments_size);
+void PrintCodeCommentsSection(std::ostream& out, Address code_comments_start) {
+  CodeCommentsIterator it(code_comments_start);
   out << "CodeComments (size = " << it.size() << ")\n";
   if (it.HasCurrent()) {
     out << std::setw(6) << "pc" << std::setw(6) << "len"

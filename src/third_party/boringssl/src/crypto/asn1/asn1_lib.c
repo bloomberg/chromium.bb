@@ -205,11 +205,7 @@ static int asn1_get_length(const unsigned char **pp, int *inf, long *rl,
         } else
             ret = i;
     }
-    /*
-     * Bound the length to comfortably fit in an int. Lengths in this module
-     * often switch between int and long without overflow checks.
-     */
-    if (ret > INT_MAX / 2)
+    if (ret > LONG_MAX)
         return 0;
     *pp = p;
     *rl = (long)ret;

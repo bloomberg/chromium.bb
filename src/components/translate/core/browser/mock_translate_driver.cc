@@ -4,8 +4,6 @@
 
 #include "components/translate/core/browser/mock_translate_driver.h"
 
-#include <string>
-
 namespace translate {
 
 namespace testing {
@@ -58,10 +56,6 @@ const GURL&  MockTranslateDriver::GetLastCommittedURL() {
 
 const GURL& MockTranslateDriver::GetVisibleURL() {
   return GURL::EmptyGURL();
-}
-
-ukm::SourceId MockTranslateDriver::GetUkmSourceId() {
-  return ukm::kInvalidSourceId;
 }
 
 bool MockTranslateDriver::HasCurrentPage() {

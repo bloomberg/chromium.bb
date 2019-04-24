@@ -34,7 +34,7 @@ class WidgetDialogExample : public DialogDelegateView {
 
 class ModalDialogExample : public WidgetDialogExample {
  public:
-  ModalDialogExample() = default;
+  ModalDialogExample() {}
 
   // WidgetDelegate:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
@@ -50,7 +50,7 @@ WidgetDialogExample::WidgetDialogExample() {
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
-WidgetDialogExample::~WidgetDialogExample() = default;
+WidgetDialogExample::~WidgetDialogExample() {}
 
 base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
@@ -70,7 +70,8 @@ View* WidgetDialogExample::CreateFootnoteView() {
 WidgetExample::WidgetExample() : ExampleBase("Widget") {
 }
 
-WidgetExample::~WidgetExample() = default;
+WidgetExample::~WidgetExample() {
+}
 
 void WidgetExample::CreateExampleView(View* container) {
   container->SetLayoutManager(
@@ -122,15 +123,14 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
-      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), nullptr,
+      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), NULL,
                                          sender->GetWidget()->GetNativeView())
           ->Show();
       break;
     }
     case MODAL_DIALOG: {
-      DialogDelegate::CreateDialogWidget(new ModalDialogExample(), nullptr,
-                                         sender->GetWidget()->GetNativeView())
-          ->Show();
+      DialogDelegate::CreateDialogWidget(new ModalDialogExample(), NULL,
+          sender->GetWidget()->GetNativeView())->Show();
       break;
     }
     case CHILD:

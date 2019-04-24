@@ -23,10 +23,6 @@ class StructTraits<tracing::mojom::ChromeConfigDataView,
     return src.trace_config();
   }
 
-  static bool privacy_filtering_enabled(const perfetto::ChromeConfig& src) {
-    return src.privacy_filtering_enabled();
-  }
-
   static bool Read(tracing::mojom::ChromeConfigDataView data,
                    perfetto::ChromeConfig* out);
 };

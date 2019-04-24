@@ -18,10 +18,6 @@
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
-#if defined(OS_WIN) && defined(DeleteFile)
-#undef DeleteFile
-#endif
-
 using leveldb_env::UMALogger;
 
 namespace leveldb {

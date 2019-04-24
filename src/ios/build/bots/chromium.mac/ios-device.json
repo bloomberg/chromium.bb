@@ -19,6 +19,7 @@
     "all"
   ],
   "configuration": "Release",
+  "explain": true,
   "tests": [
   ]
 }

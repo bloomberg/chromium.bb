@@ -26,9 +26,7 @@ public class MonochromeApplication extends ChromeApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!LibraryLoader.getInstance().isLoadedByZygote()) {
-            LibraryLoader.getInstance().setNativeLibraryPreloader(new MonochromeLibraryPreloader());
-        }
+        LibraryLoader.getInstance().setNativeLibraryPreloader(new MonochromeLibraryPreloader());
         // ChildProcessCreationParams is only needed for browser process, though it is
         // created and set in all processes. We must set isExternalService to true for
         // Monochrome because Monochrome's renderer services are shared with WebView

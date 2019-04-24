@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "AnimTimer.h"
 #include "DecodeFile.h"
 #include "Sample.h"
-#include "SkCamera.h"
+#include "SkAnimTimer.h"
 #include "SkCanvas.h"
+#include "SkCamera.h"
 #include "SkEmbossMaskFilter.h"
 #include "SkGradientShader.h"
 #include "SkPath.h"
@@ -39,7 +39,10 @@ public:
                 SkMatrix matrix;
                 matrix.setRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
 
-                fShaders.push_back(bm.makeShader(&matrix));
+                fShaders.push_back(SkShader::MakeBitmapShader(bm,
+                                                           SkShader::kClamp_TileMode,
+                                                           SkShader::kClamp_TileMode,
+                                                           &matrix));
             } else {
                 break;
             }
@@ -80,7 +83,7 @@ protected:
         }
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(const SkAnimTimer& timer) override {
         if (timer.isStopped()) {
             fRY = 0;
         } else {

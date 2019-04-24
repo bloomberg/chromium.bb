@@ -24,18 +24,18 @@
 #  error Please define the macro LLVM_DISASSEMBLER(TargetName)
 #endif
 
-#if defined(__aarch64__)
 LLVM_DISASSEMBLER(AArch64)
-#endif
-#if defined(__arm__)
+LLVM_DISASSEMBLER(AMDGPU)
 LLVM_DISASSEMBLER(ARM)
-#endif
-#if defined(__i386__) || defined(__x86_64__)
-LLVM_DISASSEMBLER(X86)
-#endif
-#if defined(__mips__)
+LLVM_DISASSEMBLER(BPF)
+LLVM_DISASSEMBLER(Hexagon)
+LLVM_DISASSEMBLER(Lanai)
 LLVM_DISASSEMBLER(Mips)
-#endif
+LLVM_DISASSEMBLER(PowerPC)
+LLVM_DISASSEMBLER(Sparc)
+LLVM_DISASSEMBLER(SystemZ)
+LLVM_DISASSEMBLER(X86)
+LLVM_DISASSEMBLER(XCore)
 
 
 #undef LLVM_DISASSEMBLER

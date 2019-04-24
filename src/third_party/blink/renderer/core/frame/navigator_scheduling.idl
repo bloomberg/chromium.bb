@@ -6,7 +6,7 @@
 [
     Exposed=Window,
     ImplementedAs=NavigatorScheduling,
-    RuntimeEnabled=ExperimentalIsInputPending
+    OriginTrialEnabled=ExperimentalIsInputPending
 ] partial interface Navigator {
   readonly attribute Scheduling scheduling;
 };

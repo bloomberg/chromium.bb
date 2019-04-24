@@ -18,11 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
-#include "components/update_client/patch/patch_impl.h"
-#include "components/update_client/patcher.h"
 #include "components/update_client/protocol_handler.h"
-#include "components/update_client/unzip/unzip_impl.h"
-#include "components/update_client/unzipper.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -181,28 +177,12 @@ ChromeUpdateClientConfig::GetNetworkFetcherFactory() {
   return network_fetcher_factory_;
 }
 
-scoped_refptr<update_client::UnzipperFactory>
-ChromeUpdateClientConfig::GetUnzipperFactory() {
+std::unique_ptr<service_manager::Connector>
+ChromeUpdateClientConfig::CreateServiceManagerConnector() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!unzip_factory_) {
-    unzip_factory_ = base::MakeRefCounted<update_client::UnzipChromiumFactory>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
-  }
-  return unzip_factory_;
-}
-
-scoped_refptr<update_client::PatcherFactory>
-ChromeUpdateClientConfig::GetPatcherFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!patch_factory_) {
-    patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
-  }
-  return patch_factory_;
+  return content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->Clone();
 }
 
 bool ChromeUpdateClientConfig::EnabledDeltas() const {

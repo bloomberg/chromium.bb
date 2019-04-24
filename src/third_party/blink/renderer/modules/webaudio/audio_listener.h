@@ -46,7 +46,11 @@ class AudioListener : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit AudioListener(BaseAudioContext&);
+  static AudioListener* Create(BaseAudioContext& context) {
+    return MakeGarbageCollected<AudioListener>(context);
+  }
+
+  AudioListener(BaseAudioContext&);
   ~AudioListener() override;
 
   // Location of the listener

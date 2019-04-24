@@ -10,7 +10,6 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
@@ -66,50 +65,6 @@ mojom::SnapDirection GetSnapDirection(
 }
 
 }  // namespace
-
-// The class to observe the to-be-snapped window during the waiting-for-snap
-// mode. If the window's window state is changed or the window is put in
-// overview during the waiting mode, cancel the snap.
-class FrameSizeButton::SnappingWindowObserver : public aura::WindowObserver {
- public:
-  SnappingWindowObserver(aura::Window* window, FrameSizeButton* size_button)
-      : window_(window), size_button_(size_button) {
-    window_->AddObserver(this);
-  }
-  ~SnappingWindowObserver() override {
-    if (window_) {
-      window_->RemoveObserver(this);
-      window_ = nullptr;
-    }
-  }
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    DCHECK_EQ(window_, window);
-    if ((key == kIsShowingInOverviewKey &&
-         window_->GetProperty(kIsShowingInOverviewKey)) ||
-        key == kWindowStateTypeKey) {
-      // If the window is put in overview while we're in waiting-for-snapping
-      // mode, or the window's window state has changed, cancel the snap.
-      size_button_->CancelSnap();
-    }
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(window_, window);
-    window_->RemoveObserver(this);
-    window_ = nullptr;
-    size_button_->CancelSnap();
-  }
-
- private:
-  aura::Window* window_;
-  FrameSizeButton* size_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(SnappingWindowObserver);
-};
 
 FrameSizeButton::FrameSizeButton(views::ButtonListener* listener,
                                  FrameSizeButtonDelegate* delegate)
@@ -209,10 +164,6 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
 
 void FrameSizeButton::AnimateButtonsToSnapMode() {
   SetButtonsToSnapMode(FrameSizeButtonDelegate::ANIMATE_YES);
-
-  // Start observing the to-be-snapped window.
-  snapping_window_observer_ = std::make_unique<SnappingWindowObserver>(
-      delegate_->GetFrameWindow(), this);
 }
 
 void FrameSizeButton::SetButtonsToSnapMode(
@@ -281,7 +232,6 @@ const views::FrameCaptionButton* FrameSizeButton::GetButtonToHover(
 }
 
 bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
-  snapping_window_observer_.reset();
   mojom::SnapDirection snap = GetSnapDirection(GetButtonToHover(event));
   delegate_->CommitSnap(snap);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
@@ -297,13 +247,6 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
 
   SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_NO);
   return true;
-}
-
-void FrameSizeButton::CancelSnap() {
-  snapping_window_observer_.reset();
-  delegate_->CommitSnap(mojom::SnapDirection::kNone);
-  delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
-  SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
 }
 
 void FrameSizeButton::SetButtonsToNormalMode(

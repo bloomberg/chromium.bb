@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
@@ -53,12 +52,12 @@ WebMediaStreamTrack& WebMediaStreamTrack::operator=(
 }
 
 void WebMediaStreamTrack::Initialize(const WebMediaStreamSource& source) {
-  private_ = MakeGarbageCollected<MediaStreamComponent>(source);
+  private_ = MediaStreamComponent::Create(source);
 }
 
 void WebMediaStreamTrack::Initialize(const WebString& id,
                                      const WebMediaStreamSource& source) {
-  private_ = MakeGarbageCollected<MediaStreamComponent>(id, source);
+  private_ = MediaStreamComponent::Create(id, source);
 }
 
 void WebMediaStreamTrack::Reset() {

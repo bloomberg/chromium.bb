@@ -21,8 +21,6 @@ extern const char kUserLanguageProfile[];
 // the user selected, if applicable.
 extern const char kApplicationLocale[];
 
-extern const char kFluentLanguages[];
-
 }  // namespace prefs
 }  // namespace language
 

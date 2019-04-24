@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
@@ -90,7 +90,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
-#include "ui/events/blink/blink_features.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
@@ -102,7 +101,7 @@
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/system_fonts_win.h"
+#include "ui/gfx/platform_font_win.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -129,10 +128,10 @@ base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
 
 #if defined(OS_WIN)
 // Fetches the name and font size of a particular Windows system font.
-void GetFontInfo(gfx::win::SystemFont system_font,
+void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
                  base::string16* name,
                  int32_t* size) {
-  const gfx::Font& font = gfx::win::GetSystemFont(system_font);
+  const gfx::Font& font = gfx::PlatformFontWin::GetSystemFont(system_font);
   *name = base::UTF8ToUTF16(font.GetFontName());
   *size = font.GetFontSize();
 }
@@ -143,17 +142,17 @@ void GetPlatformSpecificPrefs(blink::mojom::RendererPreferences* prefs) {
   // Note that what is called "height" in this struct is actually the font size;
   // font "height" typically includes ascender, descender, and padding and is
   // often a third or so larger than the given font size.
-  GetFontInfo(gfx::win::SystemFont::kCaption, &prefs->caption_font_family_name,
-              &prefs->caption_font_height);
-  GetFontInfo(gfx::win::SystemFont::kSmallCaption,
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kCaption,
+              &prefs->caption_font_family_name, &prefs->caption_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kSmallCaption,
               &prefs->small_caption_font_family_name,
               &prefs->small_caption_font_height);
-  GetFontInfo(gfx::win::SystemFont::kMenu, &prefs->menu_font_family_name,
-              &prefs->menu_font_height);
-  GetFontInfo(gfx::win::SystemFont::kMessage, &prefs->message_font_family_name,
-              &prefs->message_font_height);
-  GetFontInfo(gfx::win::SystemFont::kStatus, &prefs->status_font_family_name,
-              &prefs->status_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMenu,
+              &prefs->menu_font_family_name, &prefs->menu_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMessage,
+              &prefs->message_font_family_name, &prefs->message_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kStatus,
+              &prefs->status_font_family_name, &prefs->status_font_height);
 
   prefs->vertical_scroll_bar_width_in_dips =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);
@@ -272,16 +271,6 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
-  // We can't release the SessionStorageNamespace until our peer
-  // in the renderer has wound down.
-  if (GetProcess()->IsInitializedAndNotDead()) {
-    RenderProcessHostImpl::ReleaseOnCloseACK(
-        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
-        GetWidget()->GetRoutingID());
-  }
-
-  GetWidget()->ShutdownAndDestroyWidget(false);
-
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
@@ -300,11 +289,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   GetProcess()->RemoveObserver(this);
 }
 
-RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
+RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() const {
   return delegate_;
 }
 
-SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() {
+SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() const {
   return instance_.get();
 }
 
@@ -412,7 +401,7 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   GetWidget()->UpdatePriority();
 }
 
-bool RenderViewHostImpl::IsRenderViewLive() {
+bool RenderViewHostImpl::IsRenderViewLive() const {
   return GetProcess()->IsInitializedAndNotDead() &&
          GetWidget()->renderer_initialized();
 }
@@ -528,9 +517,6 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   } else {
     NOTREACHED();
   }
-
-  prefs.dont_send_key_events_to_javascript =
-      base::FeatureList::IsEnabled(features::kDontSendKeyEventsToJavascript);
 
 // TODO(dtapuska): Enable barrel button selection drag support on Android.
 // crbug.com/758042
@@ -660,8 +646,12 @@ void RenderViewHostImpl::SetSlowWebPreferences(
 #if defined(OS_ANDROID)
     const bool device_is_phone =
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
-    prefs->video_fullscreen_orientation_lock_enabled = device_is_phone;
-    prefs->video_rotate_to_fullscreen_enabled = device_is_phone;
+    prefs->video_fullscreen_orientation_lock_enabled =
+        base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
+        device_is_phone;
+    prefs->video_rotate_to_fullscreen_enabled =
+        base::FeatureList::IsEnabled(media::kVideoRotateToFullscreen) &&
+        device_is_phone;
 #endif
   }
 }
@@ -736,15 +726,15 @@ bool RenderViewHostImpl::Send(IPC::Message* msg) {
   return GetWidget()->Send(msg);
 }
 
-RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() {
+RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() const {
   return render_widget_host_.get();
 }
 
-RenderProcessHost* RenderViewHostImpl::GetProcess() {
+RenderProcessHost* RenderViewHostImpl::GetProcess() const {
   return GetWidget()->GetProcess();
 }
 
-int RenderViewHostImpl::GetRoutingID() {
+int RenderViewHostImpl::GetRoutingID() const {
   return routing_id_;
 }
 
@@ -839,7 +829,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
@@ -862,6 +851,24 @@ void RenderViewHostImpl::RenderWidgetDidClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   ClosePageIgnoringUnloadEvents();
+}
+
+void RenderViewHostImpl::RenderWidgetNeedsToRouteCloseEvent() {
+  // Have the delegate route this to the active RenderViewHost.
+  delegate_->RouteCloseEvent(this);
+}
+
+void RenderViewHostImpl::ShutdownAndDestroy() {
+  // We can't release the SessionStorageNamespace until our peer
+  // in the renderer has wound down.
+  if (GetProcess()->IsInitializedAndNotDead()) {
+    RenderProcessHostImpl::ReleaseOnCloseACK(
+        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
+        GetWidget()->GetRoutingID());
+  }
+
+  GetWidget()->ShutdownAndDestroyWidget(false);
+  delete this;
 }
 
 void RenderViewHostImpl::CreateNewWidget(int32_t widget_route_id,
@@ -887,17 +894,6 @@ void RenderViewHostImpl::OnShowFullscreenWidget(int widget_route_id) {
   delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(),
                                          widget_route_id);
   Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
-}
-
-void RenderViewHostImpl::OnRouteCloseEvent() {
-  // This is only used when the RenderViewHost is not active, to signal to
-  // the active RenderViewHost that JS has requested the page to close.
-  //
-  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
-  // RenderFrameProxyHost.
-  //
-  // The delegate will route the close request to the active RenderViewHost.
-  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
@@ -1068,10 +1064,6 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
     view->set_is_evicted();
   }
   return ids;
-}
-
-bool RenderViewHostImpl::IsTestRenderViewHost() const {
-  return false;
 }
 
 }  // namespace content

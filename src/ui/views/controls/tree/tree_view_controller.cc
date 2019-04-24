@@ -13,6 +13,7 @@ bool TreeViewController::CanEdit(TreeView* tree_view, ui::TreeModelNode* node) {
   return true;
 }
 
-TreeViewController::~TreeViewController() = default;
+TreeViewController::~TreeViewController() {
+}
 
 }  // namespace views

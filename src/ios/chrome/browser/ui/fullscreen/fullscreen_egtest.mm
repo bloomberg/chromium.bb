@@ -21,7 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/common/features.h"
+#import "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/error_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -84,29 +84,38 @@ void AssertURLIs(const GURL& expectedURL) {
 
 // Verifies that the content offset of the web view is set up at the correct
 // initial value when initially displaying a PDF.
-// TODO(crbug.com/947536): Fails on iOS 12 devices.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testLongPDFInitialState DISABLED_testLongPDFInitialState
-#else
-#define MAYBE_testLongPDFInitialState testLongPDFInitialState
-#endif
-- (void)MAYBE_testLongPDFInitialState {
+- (void)testLongPDFInitialState {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];
 
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
-
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   // Initial y scroll positions are set to make room for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which
   // generates these values is exposed.
-  CGFloat yOffset = IsIPadIdiom() ? -89.0 : -48.0;
-  if (@available(iOS 12, *)) {
-    // The safe area is included in the top inset as well as the toolbar
-    // heights.  Due to crbug.com/903635, however, this only occurs on iOS 12;
-    // pdf rendering does not correctly account for the safe area on iOS 11.
+  CGFloat yOffset = 0;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (IsIPadIdiom()) {
+      yOffset = -89.0;
+    } else {
+      yOffset = -48.0;
+    }
+  } else {
+    if (IsIPadIdiom()) {
+      yOffset = -95.0;
+    } else {
+      yOffset = -56.0;
+    }
+  }
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen) &&
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      base::ios::IsRunningOnIOS12OrLater()) {
+    // In the fullscreen browser implementation, the safe area is included in
+    // the top inset as well as the toolbar heights.  Due to crbug.com/903635,
+    // however, this only occurs on iOS 12; pdf rendering does not correctly
+    // account for the safe area on iOS 11.
     yOffset -=
         chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   }
@@ -138,15 +147,12 @@ void AssertURLIs(const GURL& expectedURL) {
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Test that the toolbar is still visible even after attempting to hide it
   // on swipe up.
   HideToolbarUsingUI();
-  NSError* toolbarVisibleError2 = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError2,
-                toolbarVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Reenable synchronization.
   if (@available(iOS 12, *)) {
@@ -175,24 +181,18 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Test that the toolbar is visible after a user swipes down.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError2 =
-      [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError2,
-                toolbarNotVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 }
 
 // Tests that link clicks from a chrome:// to chrome:// link result in the
@@ -236,15 +236,12 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Scroll to hide the UI.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Test that the toolbar is visible when moving from one chrome:// link to
   // another chrome:// link.
   GREYAssert(TapWebViewElementWithId("version"), @"Failed to tap \"version\"");
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests hiding and showing of the header with a user scroll on a long page.
@@ -257,21 +254,16 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpSimpleHttpServer(responses);
 
   [ChromeEarlGrey loadURL:URL];
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   // Simulate a user scroll down.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
   // Simulate a user scroll up.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  NSError* toolbarVisibleError2 = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError2,
-                toolbarVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that reloading of a page shows the header even if it was not shown
@@ -292,15 +284,12 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
 
   // Main test is here: Make sure the header is still visible!
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Test to make sure the header is shown when a Tab opened by the current Tab is
@@ -336,9 +325,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Open new window.
   GREYAssert(TapWebViewElementWithId("link1"), @"Failed to tap \"link1\"");
@@ -351,10 +338,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError2 =
-      [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError2,
-                toolbarNotVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Close the tab by tapping link2.
   NSError* error = nil;
@@ -374,8 +358,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Make sure the toolbar is on the screen.
   [ChromeEarlGrey waitForMainTabCount:1];
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when a regular page (non-native page) is
@@ -405,32 +388,24 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Navigate to the other page.
   GREYAssert(TapWebViewElementWithId("link1"), @"Failed to tap \"link1\"");
   [ChromeEarlGrey waitForWebViewContainingText:"link2"];
 
   // Make sure toolbar is shown since a new load has started.
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError2 =
-      [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError2,
-                toolbarNotVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back.
   GREYAssert(TapWebViewElementWithId("link2"), @"Failed to tap \"link2\"");
 
   // Make sure the toolbar has loaded now that a new page has loaded.
-  NSError* toolbarVisibleError2 = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError2,
-                toolbarVisibleError2.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when a native page is loaded from a page where
@@ -452,16 +427,13 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back to NTP, which is a native view.
   GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
 
   // Make sure the toolbar is visible now that a new page has loaded.
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when loading an error page in a native view
@@ -482,14 +454,11 @@ void AssertURLIs(const GURL& expectedURL) {
 
   [ChromeEarlGrey loadURL:URL];
   HideToolbarUsingUI();
-  NSError* toolbarNotVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  GREYAssertNil(toolbarNotVisibleError,
-                toolbarNotVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
   AssertURLIs(ErrorPageResponseProvider::GetDnsFailureUrl());
-  NSError* toolbarVisibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(toolbarVisibleError, toolbarVisibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 @end

@@ -170,14 +170,9 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
     RequestOverlayInfoCB request_overlay_info_cb,
-    const gfx::ColorSpace& target_color_space,
-    mojom::VideoDecoderImplementation implementation) {
+    const gfx::ColorSpace& target_color_space) {
   // All implementations require a command buffer.
   if (!command_buffer_id)
-    return nullptr;
-
-  // TODO(liberato): Support non-default for D3D11VideoDecoder.
-  if (implementation != mojom::VideoDecoderImplementation::Default)
     return nullptr;
 
 #if defined(OS_ANDROID)

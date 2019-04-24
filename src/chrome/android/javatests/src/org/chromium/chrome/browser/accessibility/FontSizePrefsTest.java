@@ -16,11 +16,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for {@link FontSizePrefs}.
@@ -173,7 +173,7 @@ public class FontSizePrefsTest {
         }
 
         private void assertConsistent() {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
                 Assert.assertEquals(getUserFontScaleFactor(), mUserFontScaleFactor, EPSILON);
                 Assert.assertEquals(getFontScaleFactor(), mFontScaleFactor, EPSILON);
                 Assert.assertEquals(getForceEnableZoom(), mForceEnableZoom);
@@ -182,11 +182,12 @@ public class FontSizePrefsTest {
     }
 
     private FontSizePrefs getFontSizePrefs(final Context context) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> FontSizePrefs.getInstance());
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> FontSizePrefs.getInstance(context));
     }
 
     private TestingObserver createAndAddFontSizePrefsObserver() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             TestingObserver observer = new TestingObserver();
             mFontSizePrefs.addObserver(observer);
             return observer;
@@ -194,32 +195,30 @@ public class FontSizePrefsTest {
     }
 
     private void setUserFontScaleFactor(final float fontsize) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mFontSizePrefs.setUserFontScaleFactor(fontsize));
+        ThreadUtils.runOnUiThreadBlocking(() -> mFontSizePrefs.setUserFontScaleFactor(fontsize));
     }
 
     private float getUserFontScaleFactor() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mFontSizePrefs.getUserFontScaleFactor());
     }
 
     private float getFontScaleFactor() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mFontSizePrefs.getFontScaleFactor());
     }
 
     private void setForceEnableZoomFromUser(final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mFontSizePrefs.setForceEnableZoomFromUser(enabled));
+        ThreadUtils.runOnUiThreadBlocking(() -> mFontSizePrefs.setForceEnableZoomFromUser(enabled));
     }
 
     private boolean getForceEnableZoom() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mFontSizePrefs.getForceEnableZoom());
     }
 
     private void setSystemFontScaleForTest(final float systemFontScale) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mFontSizePrefs.setSystemFontScaleForTest(systemFontScale);
             mFontSizePrefs.onSystemFontScaleChanged();
         });

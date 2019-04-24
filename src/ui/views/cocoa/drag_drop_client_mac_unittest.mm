@@ -124,7 +124,7 @@ namespace test {
 // View object that will receive and process dropped data from the test.
 class DragDropView : public View {
  public:
-  DragDropView() = default;
+  DragDropView() {}
 
   void set_formats(int formats) { formats_ = formats; }
 

@@ -14,7 +14,7 @@ namespace blink {
 CSSCustomIdentValue::CSSCustomIdentValue(const AtomicString& str)
     : CSSValue(kCustomIdentClass),
       string_(str),
-      property_id_(CSSPropertyID::kInvalid) {}
+      property_id_(CSSPropertyInvalid) {}
 
 CSSCustomIdentValue::CSSCustomIdentValue(CSSPropertyID id)
     : CSSValue(kCustomIdentClass), string_(), property_id_(id) {

@@ -211,7 +211,7 @@ int FailingHttpTransactionFactory::CreateTransaction(
 }
 
 HttpCache* FailingHttpTransactionFactory::GetCache() {
-  return nullptr;
+  return NULL;
 }
 
 HttpNetworkSession* FailingHttpTransactionFactory::GetSession() {

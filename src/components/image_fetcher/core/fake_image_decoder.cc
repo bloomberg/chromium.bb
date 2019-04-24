@@ -12,24 +12,16 @@
 namespace image_fetcher {
 
 FakeImageDecoder::FakeImageDecoder() : enabled_(true), valid_(true) {}
-
-FakeImageDecoder::FakeImageDecoder(const FakeImageDecoder& other) {
-  enabled_ = other.enabled_;
-  valid_ = other.valid_;
-  before_image_decoded_ = other.before_image_decoded_;
-  decoded_image_ = other.decoded_image_;
-}
-
 FakeImageDecoder::~FakeImageDecoder() = default;
 
 void FakeImageDecoder::DecodeImage(
     const std::string& image_data,
     const gfx::Size& desired_image_frame_size,
-    image_fetcher::ImageDecodedCallback callback) {
+    const image_fetcher::ImageDecodedCallback& callback) {
   ASSERT_TRUE(enabled_);
   gfx::Image image;
-  if (valid_ && decoded_image_.IsEmpty() && !image_data.empty()) {
-    decoded_image_ = gfx::test::CreateImage(2, 3);
+  if (valid_ && !image_data.empty()) {
+    image = gfx::test::CreateImage(2, 3);
   }
 
   if (before_image_decoded_) {
@@ -38,7 +30,7 @@ void FakeImageDecoder::DecodeImage(
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), decoded_image_));
+      FROM_HERE, base::BindRepeating(callback, image));
 }
 
 void FakeImageDecoder::SetEnabled(bool enabled) {
@@ -52,10 +44,6 @@ void FakeImageDecoder::SetDecodingValid(bool valid) {
 void FakeImageDecoder::SetBeforeImageDecoded(
     const base::RepeatingClosure& callback) {
   before_image_decoded_ = callback;
-}
-
-void FakeImageDecoder::SetDecodedImage(const gfx::Image& image) {
-  decoded_image_ = image;
 }
 
 }  // namespace image_fetcher

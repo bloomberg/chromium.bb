@@ -254,22 +254,25 @@ class RepeatedValueConverter
 
   bool Convert(const base::Value& value,
                std::vector<std::unique_ptr<Element>>* field) const override {
-    if (!value.is_list()) {
+    const base::ListValue* list = NULL;
+    if (!value.GetAsList(&list)) {
       // The field is not a list.
       return false;
     }
 
-    field->reserve(value.GetList().size());
-    size_t i = 0;
-    for (const Value& element : value.GetList()) {
-      auto e = std::make_unique<Element>();
-      if (basic_converter_.Convert(element, e.get())) {
+    field->reserve(list->GetSize());
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      const base::Value* element = NULL;
+      if (!list->Get(i, &element))
+        continue;
+
+      std::unique_ptr<Element> e(new Element);
+      if (basic_converter_.Convert(*element, e.get())) {
         field->push_back(std::move(e));
       } else {
         DVLOG(1) << "failure at " << i << "-th element";
         return false;
       }
-      i++;
     }
     return true;
   }
@@ -287,20 +290,23 @@ class RepeatedMessageConverter
 
   bool Convert(const base::Value& value,
                std::vector<std::unique_ptr<NestedType>>* field) const override {
-    if (!value.is_list())
+    const base::ListValue* list = NULL;
+    if (!value.GetAsList(&list))
       return false;
 
-    field->reserve(value.GetList().size());
-    size_t i = 0;
-    for (const Value& element : value.GetList()) {
-      auto nested = std::make_unique<NestedType>();
-      if (converter_.Convert(element, nested.get())) {
+    field->reserve(list->GetSize());
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      const base::Value* element = NULL;
+      if (!list->Get(i, &element))
+        continue;
+
+      std::unique_ptr<NestedType> nested(new NestedType);
+      if (converter_.Convert(*element, nested.get())) {
         field->push_back(std::move(nested));
       } else {
         DVLOG(1) << "failure at " << i << "-th element";
         return false;
       }
-      i++;
     }
     return true;
   }
@@ -321,20 +327,23 @@ class RepeatedCustomValueConverter
 
   bool Convert(const base::Value& value,
                std::vector<std::unique_ptr<NestedType>>* field) const override {
-    if (!value.is_list())
+    const base::ListValue* list = NULL;
+    if (!value.GetAsList(&list))
       return false;
 
-    field->reserve(value.GetList().size());
-    size_t i = 0;
-    for (const Value& element : value.GetList()) {
-      auto nested = std::make_unique<NestedType>();
-      if ((*convert_func_)(&element, nested.get())) {
+    field->reserve(list->GetSize());
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      const base::Value* element = NULL;
+      if (!list->Get(i, &element))
+        continue;
+
+      std::unique_ptr<NestedType> nested(new NestedType);
+      if ((*convert_func_)(element, nested.get())) {
         field->push_back(std::move(nested));
       } else {
         DVLOG(1) << "failure at " << i << "-th element";
         return false;
       }
-      i++;
     }
     return true;
   }
@@ -485,14 +494,15 @@ class JSONValueConverter {
   }
 
   bool Convert(const base::Value& value, StructType* output) const {
-    if (!value.is_dict())
+    const DictionaryValue* dictionary_value = NULL;
+    if (!value.GetAsDictionary(&dictionary_value))
       return false;
 
     for (size_t i = 0; i < fields_.size(); ++i) {
       const internal::FieldConverterBase<StructType>* field_converter =
           fields_[i].get();
-      const base::Value* field = value.FindPath(field_converter->field_path());
-      if (field) {
+      const base::Value* field = NULL;
+      if (dictionary_value->Get(field_converter->field_path(), &field)) {
         if (!field_converter->ConvertField(*field, output)) {
           DVLOG(1) << "failure at field " << field_converter->field_path();
           return false;

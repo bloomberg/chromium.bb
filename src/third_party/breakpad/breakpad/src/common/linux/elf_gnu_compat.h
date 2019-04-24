@@ -43,9 +43,4 @@
 #define NT_GNU_BUILD_ID 3
 #endif
 
-// Newer Linux systems offer this.
-#ifndef NT_SIGINFO
-#define NT_SIGINFO 0x53494749
-#endif
-
 #endif  // COMMON_LINUX_ELF_GNU_COMPAT_H_

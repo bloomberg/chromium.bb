@@ -32,36 +32,36 @@ AudioTrack::AudioTrack(const std::string& label,
 }
 
 AudioTrack::~AudioTrack() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   set_state(MediaStreamTrackInterface::kEnded);
   if (audio_source_)
     audio_source_->UnregisterObserver(this);
 }
 
 std::string AudioTrack::kind() const {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   return kAudioKind;
 }
 
 AudioSourceInterface* AudioTrack::GetSource() const {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   return audio_source_.get();
 }
 
 void AudioTrack::AddSink(AudioTrackSinkInterface* sink) {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_source_)
     audio_source_->AddSink(sink);
 }
 
 void AudioTrack::RemoveSink(AudioTrackSinkInterface* sink) {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_source_)
     audio_source_->RemoveSink(sink);
 }
 
 void AudioTrack::OnChanged() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_source_->state() == MediaSourceInterface::kEnded) {
     set_state(kEnded);
   } else {

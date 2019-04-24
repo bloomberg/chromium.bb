@@ -47,8 +47,7 @@ HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
   return meter;
 }
 
-LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
-                                                   LegacyLayout legacy) {
+LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
   switch (style.Appearance()) {
     case kMeterPart:
       UseCounter::Count(GetDocument(),
@@ -61,7 +60,7 @@ LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
     default:
       break;
   }
-  return HTMLElement::CreateLayoutObject(style, legacy);
+  return HTMLElement::CreateLayoutObject(style);
 }
 
 void HTMLMeterElement::ParseAttribute(
@@ -204,7 +203,7 @@ void HTMLMeterElement::UpdateValueAppearance(double percentage) {
   DEFINE_STATIC_LOCAL(AtomicString, even_less_good_pseudo_id,
                       ("-webkit-meter-even-less-good-value"));
 
-  value_->SetInlineStyleProperty(CSSPropertyID::kWidth, percentage,
+  value_->SetInlineStyleProperty(CSSPropertyWidth, percentage,
                                  CSSPrimitiveValue::UnitType::kPercentage);
   switch (GetGaugeRegion()) {
     case kGaugeRegionOptimum:

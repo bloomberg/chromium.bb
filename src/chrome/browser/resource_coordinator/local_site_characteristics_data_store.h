@@ -72,11 +72,7 @@ class LocalSiteCharacteristicsDataStore
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest, EndToEnd);
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest,
-                           OnURLsDeleted_Partial_OriginNotReferenced);
-  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest,
-                           OnURLsDeleted_Partial_OriginStillReferenced);
-  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest,
-                           OnURLsDeleted_Full);
+                           HistoryServiceObserver);
 
   // Returns a pointer to the LocalSiteCharacteristicsDataImpl object
   // associated with |origin|, create one and add it to |origin_data_map_|

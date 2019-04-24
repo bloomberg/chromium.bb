@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
@@ -98,7 +99,7 @@ class CORE_EXPORT SVGMatrixTearOff final : public ScriptWrappable {
 
   AffineTransform static_value_;
 
-  Member<SVGTransformTearOff> context_transform_;
+  TraceWrapperMember<SVGTransformTearOff> context_transform_;
 };
 
 }  // namespace blink

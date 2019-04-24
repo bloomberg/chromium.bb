@@ -541,15 +541,6 @@
 
     /**
      * @override
-     * @param {string} histogramName
-     * @param {number} duration
-     */
-    recordPerformanceHistogram(histogramName, duration) {
-      DevToolsAPI.sendMessageToEmbedder('recordPerformanceHistogram', [histogramName, duration], null);
-    }
-
-    /**
-     * @override
      */
     requestFileSystems() {
       DevToolsAPI.sendMessageToEmbedder('requestFileSystems', [], null);
@@ -992,7 +983,6 @@
       'textEditorAutoDetectIndent',
       'textEditorBracketMatching',
       'textEditorIndent',
-      'textEditorTabMovesFocus',
       'timelineCaptureFilmStrip',
       'timelineCaptureLayersAndPictures',
       'timelineCaptureMemory',

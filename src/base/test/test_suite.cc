@@ -27,7 +27,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/icu_test_util.h"
@@ -66,14 +66,6 @@
 
 #if defined(OS_LINUX)
 #include "base/test/fontconfig_util_linux.h"
-#endif
-
-#if defined(OS_FUCHSIA)
-#include "base/base_paths_fuchsia.h"
-#endif
-
-#if defined(OS_WIN) && defined(_DEBUG)
-#include <crtdbg.h>
 #endif
 
 namespace base {
@@ -121,32 +113,33 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
 
   // Check for leaks in individual tests.
   void OnTestStart(const testing::TestInfo& test) override {
-    thread_pool_set_before_test_ = ThreadPool::GetInstance();
+    scheduler_set_before_test_ = TaskScheduler::GetInstance();
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-    DCHECK_EQ(thread_pool_set_before_test_, ThreadPool::GetInstance())
+    DCHECK_EQ(scheduler_set_before_test_, TaskScheduler::GetInstance())
         << " in test " << test.test_case_name() << "." << test.name();
   }
 
   // Check for leaks in test cases (consisting of one or more tests).
   void OnTestCaseStart(const testing::TestCase& test_case) override {
-    thread_pool_set_before_case_ = ThreadPool::GetInstance();
+    scheduler_set_before_case_ = TaskScheduler::GetInstance();
   }
   void OnTestCaseEnd(const testing::TestCase& test_case) override {
-    DCHECK_EQ(thread_pool_set_before_case_, ThreadPool::GetInstance())
+    DCHECK_EQ(scheduler_set_before_case_, TaskScheduler::GetInstance())
         << " in case " << test_case.name();
   }
 
  private:
-  ThreadPool* thread_pool_set_before_test_ = nullptr;
-  ThreadPool* thread_pool_set_before_case_ = nullptr;
+  TaskScheduler* scheduler_set_before_test_ = nullptr;
+  TaskScheduler* scheduler_set_before_case_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CheckForLeakedGlobals);
 };
 
 const std::string& GetProfileName() {
-  static const NoDestructor<std::string> profile_name([]() {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  static const base::NoDestructor<std::string> profile_name([]() {
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kProfilingFile))
       return command_line.GetSwitchValueASCII(switches::kProfilingFile);
     else
@@ -159,25 +152,12 @@ void InitializeLogging() {
 #if defined(OS_ANDROID)
   InitAndroidTestLogging();
 #else
-
-  FilePath log_filename;
   FilePath exe;
   PathService::Get(FILE_EXE, &exe);
-
-#if defined(OS_FUCHSIA)
-  // Write logfiles to /data, because the default log location alongside the
-  // executable (/pkg) is read-only.
-  FilePath data_dir;
-  PathService::Get(DIR_APP_DATA, &data_dir);
-  log_filename = data_dir.Append(exe.BaseName())
-                     .ReplaceExtension(FILE_PATH_LITERAL("log"));
-#else
-  log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
-#endif  // defined(OS_FUCHSIA)
-
+  FilePath log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
   logging::LoggingSettings settings;
-  settings.log_file = log_filename.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
+  settings.log_file = log_filename.value().c_str();
   settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   logging::InitLogging(settings);
   // We want process and thread IDs because we may have multiple processes.
@@ -191,7 +171,7 @@ void InitializeLogging() {
 int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
   return LaunchUnitTests(argc, argv,
-                         BindOnce(&TestSuite::Run, Unretained(&test_suite)));
+                         Bind(&TestSuite::Run, Unretained(&test_suite)));
 }
 
 TestSuite::TestSuite(int argc, char** argv) {
@@ -248,8 +228,6 @@ void TestSuite::PreInitialize() {
   // have the locale set. In the absence of such a call the "C" locale is the
   // default. In the gtk code (below) gtk_init() implicitly sets a locale.
   setlocale(LC_ALL, "");
-  // We still need number to string conversions to be locale insensitive.
-  setlocale(LC_NUMERIC, "C");
 #endif  // defined(OS_LINUX) && defined(USE_AURA)
 
   // On Android, AtExitManager is created in
@@ -334,8 +312,8 @@ void TestSuite::DisableCheckForLeakedGlobals() {
 
 void TestSuite::UnitTestAssertHandler(const char* file,
                                       int line,
-                                      const StringPiece summary,
-                                      const StringPiece stack_trace) {
+                                      const base::StringPiece summary,
+                                      const base::StringPiece stack_trace) {
 #if defined(OS_ANDROID)
   // Correlating test stdio with logcat can be difficult, so we emit this
   // helpful little hint about what was running.  Only do this for Android
@@ -486,10 +464,10 @@ void TestSuite::Initialize() {
     SuppressErrorDialogs();
     debug::SetSuppressDebugUI(true);
     assert_handler_ = std::make_unique<logging::ScopedLogAssertHandler>(
-        Bind(&TestSuite::UnitTestAssertHandler, Unretained(this)));
+        base::Bind(&TestSuite::UnitTestAssertHandler, base::Unretained(this)));
   }
 
-  test::InitializeICUForTesting();
+  base::test::InitializeICUForTesting();
 
   // On the Mac OS X command line, the default locale is *_POSIX. In Chromium,
   // the locale is set via an OS X locale API and is never *_POSIX.
@@ -526,16 +504,14 @@ void TestSuite::Initialize() {
 
   trace_to_file_.BeginTracingFromCommandLineOptions();
 
-  debug::StartProfiling(GetProfileName());
-
-  debug::VerifyDebugger();
+  base::debug::StartProfiling(GetProfileName());
 
   is_initialized_ = true;
 }
 
 void TestSuite::Shutdown() {
   DCHECK(is_initialized_);
-  debug::StopProfiling();
+  base::debug::StopProfiling();
 }
 
 }  // namespace base

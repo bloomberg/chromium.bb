@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "ipc/ipc_message.h"
@@ -22,7 +23,8 @@ namespace safe_browsing {
 // SafeBrowsing URL checks.
 // A MojoSafeBrowsingImpl instance is destructed when the Mojo message pipe is
 // disconnected or |resource_context_| is destructed.
-class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
+class MojoSafeBrowsingImpl : public mojom::SafeBrowsing,
+                             public base::SupportsUserData::Data {
  public:
   ~MojoSafeBrowsingImpl() override;
 
@@ -51,10 +53,6 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
   void Clone(mojom::SafeBrowsingRequest request) override;
 
   void OnConnectionError();
-
-  // This is an instance of SafeBrowserUserData that is set as user-data on
-  // |resource_context_|. SafeBrowserUserData owns |this|.
-  const void* user_data_key_ = nullptr;
 
   mojo::BindingSet<mojom::SafeBrowsing> bindings_;
   scoped_refptr<UrlCheckerDelegate> delegate_;

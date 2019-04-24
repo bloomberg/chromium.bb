@@ -8,8 +8,6 @@
 
 #include <iterator>
 
-#include "build/build_config.h"
-
 namespace {
 
 constexpr char kFolderSeparator = '/';
@@ -20,7 +18,7 @@ constexpr const char* g_FontFolders[] = {
     "/usr/share/X11/fonts/TTF", "/usr/local/share/fonts",
 #elif _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
     "~/Library/Fonts", "/Library/Fonts", "/System/Library/Fonts",
-#elif defined(OS_ANDROID)
+#elif _FX_PLATFORM_ == _FX_PLATFORM_ANDROID_
     "/system/fonts",
 #endif
 };
@@ -33,14 +31,14 @@ CFX_FontSourceEnum_File::CFX_FontSourceEnum_File()
 CFX_FontSourceEnum_File::~CFX_FontSourceEnum_File() = default;
 
 ByteString CFX_FontSourceEnum_File::GetNextFile() {
-  FX_FolderHandle* pCurHandle =
-      !m_FolderQueue.empty() ? m_FolderQueue.back().pFolderHandle : nullptr;
+  FX_FileHandle* pCurHandle =
+      !m_FolderQueue.empty() ? m_FolderQueue.back().pFileHandle : nullptr;
   if (!pCurHandle) {
     if (m_FolderPaths.empty())
       return ByteString();
     pCurHandle = FX_OpenFolder(m_FolderPaths.back().c_str());
     HandleParentPath hpp;
-    hpp.pFolderHandle = pCurHandle;
+    hpp.pFileHandle = pCurHandle;
     hpp.bsParentPath = m_FolderPaths.back();
     m_FolderQueue.push_back(hpp);
   }
@@ -56,7 +54,7 @@ ByteString CFX_FontSourceEnum_File::GetNextFile() {
           m_FolderPaths.pop_back();
         return !m_FolderPaths.empty() ? GetNextFile() : ByteString();
       }
-      pCurHandle = m_FolderQueue.back().pFolderHandle;
+      pCurHandle = m_FolderQueue.back().pFileHandle;
       continue;
     }
     if (bsName == "." || bsName == "..")
@@ -65,11 +63,11 @@ ByteString CFX_FontSourceEnum_File::GetNextFile() {
       HandleParentPath hpp;
       hpp.bsParentPath =
           m_FolderQueue.back().bsParentPath + kFolderSeparator + bsName;
-      hpp.pFolderHandle = FX_OpenFolder(hpp.bsParentPath.c_str());
-      if (!hpp.pFolderHandle)
+      hpp.pFileHandle = FX_OpenFolder(hpp.bsParentPath.c_str());
+      if (!hpp.pFileHandle)
         continue;
       m_FolderQueue.push_back(hpp);
-      pCurHandle = hpp.pFolderHandle;
+      pCurHandle = hpp.pFileHandle;
       continue;
     }
     bsName = m_FolderQueue.back().bsParentPath + kFolderSeparator + bsName;

@@ -120,6 +120,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
  private:
   class DomContentLoadedListener;
+  class GetRegistrationForReadyCallback;
 
   using ReadyProperty =
       ScriptPromiseProperty<Member<ServiceWorkerContainer>,
@@ -130,8 +131,6 @@ class MODULES_EXPORT ServiceWorkerContainer final
   void EnableClientMessageQueue();
   void DispatchMessageEvent(WebServiceWorkerObjectInfo source,
                             TransferableMessage);
-
-  void OnGetRegistrationForReady(WebServiceWorkerRegistrationObjectInfo info);
 
   std::unique_ptr<WebServiceWorkerProvider> provider_;
   Member<ServiceWorker> controller_;

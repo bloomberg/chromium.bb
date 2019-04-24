@@ -29,7 +29,7 @@ class TraceProcessorContext;
 class SliceTracker {
  public:
   explicit SliceTracker(TraceProcessorContext*);
-  virtual ~SliceTracker();
+  ~SliceTracker();
 
   void BeginAndroid(int64_t timestamp,
                     uint32_t ftrace_tid,
@@ -37,11 +37,7 @@ class SliceTracker {
                     StringId cat,
                     StringId name);
 
-  // virtual for testing
-  virtual void Begin(int64_t timestamp,
-                     UniqueTid utid,
-                     StringId cat,
-                     StringId name);
+  void Begin(int64_t timestamp, UniqueTid utid, StringId cat, StringId name);
 
   void Scoped(int64_t timestamp,
               UniqueTid utid,
@@ -51,11 +47,10 @@ class SliceTracker {
 
   void EndAndroid(int64_t timestamp, uint32_t ftrace_tid, uint32_t atrace_tgid);
 
-  // virtual for testing
-  virtual void End(int64_t timestamp,
-                   UniqueTid utid,
-                   StringId opt_cat = {},
-                   StringId opt_name = {});
+  void End(int64_t timestamp,
+           UniqueTid utid,
+           StringId opt_cat = {},
+           StringId opt_name = {});
 
  private:
   using SlicesStack = std::vector<size_t>;

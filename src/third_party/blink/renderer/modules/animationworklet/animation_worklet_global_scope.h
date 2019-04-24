@@ -33,6 +33,10 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static AnimationWorkletGlobalScope* Create(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      WorkerThread*);
+
   AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                               WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
@@ -55,29 +59,22 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
 
   AnimatorDefinition* FindDefinitionForTest(const String& name);
   bool IsAnimatorStateful(int animation_id);
-  void MigrateAnimatorsTo(AnimationWorkletGlobalScope*);
-  Animator* GetAnimator(int animation_id) {
-    return animators_.at(animation_id);
-  }
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
   void RegisterWithProxyClientIfNeeded();
-  Animator* CreateInstance(
-      const String& name,
-      WorkletAnimationOptions options,
-      scoped_refptr<SerializedScriptValue> serialized_state,
-      const std::vector<base::Optional<TimeDelta>>& local_times);
-  Animator* CreateAnimatorFor(
-      int animation_id,
-      const String& name,
-      WorkletAnimationOptions options,
-      scoped_refptr<SerializedScriptValue> serialized_state,
-      const std::vector<base::Optional<TimeDelta>>& local_times);
-  typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
+  Animator* CreateInstance(const String& name,
+                           WorkletAnimationOptions* options,
+                           int num_effects);
+  Animator* CreateAnimatorFor(int animation_id,
+                              const String& name,
+                              WorkletAnimationOptions* options,
+                              int num_effects);
+  typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
+      DefinitionMap;
   DefinitionMap animator_definitions_;
 
-  typedef HeapHashMap<int, Member<Animator>> AnimatorMap;
+  typedef HeapHashMap<int, TraceWrapperMember<Animator>> AnimatorMap;
   AnimatorMap animators_;
 
   bool registered_ = false;

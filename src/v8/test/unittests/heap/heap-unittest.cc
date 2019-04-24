@@ -16,8 +16,8 @@
 namespace v8 {
 namespace internal {
 
-using HeapTest = TestWithIsolate;
-using HeapWithPointerCompressionTest = TestWithIsolateAndPointerCompression;
+typedef TestWithIsolate HeapTest;
+typedef TestWithIsolateAndPointerCompression HeapWithPointerCompressionTest;
 
 TEST(Heap, SemiSpaceSize) {
   const size_t MB = static_cast<size_t>(i::MB);

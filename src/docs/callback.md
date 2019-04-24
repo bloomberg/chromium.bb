@@ -1,7 +1,5 @@
 # Callback<> and Bind()
 
-[TOC]
-
 ## Introduction
 
 The templated `base::Callback<>` class is a generalized function object.
@@ -107,20 +105,6 @@ LOG(INFO) << lambda_cb.Run();  // Print 4.
 
 base::OnceCallback<int()> lambda_cb2 = base::BindOnce([] { return 3; });
 LOG(INFO) << std::move(lambda_cb2).Run();  // Print 3.
-```
-
-### Binding A Capturing Lambda (In Tests)
-
-When writing tests, it is often useful to capture arguments that need to be
-modified in a callback.
-
-``` cpp
-#include "base/test/bind_test_util.h"
-
-int i = 2;
-base::Callback<void()> lambda_cb = base::BindLambdaForTesting([&]() { i++; });
-lambda_cb.Run();
-LOG(INFO) << i;  // Print 3;
 ```
 
 ### Binding A Class Method

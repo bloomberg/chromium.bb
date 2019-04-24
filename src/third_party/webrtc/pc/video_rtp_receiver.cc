@@ -26,10 +26,6 @@
 
 namespace webrtc {
 
-namespace {
-constexpr double kDefaultLatency = 0.0;
-}  // namespace
-
 VideoRtpReceiver::VideoRtpReceiver(rtc::Thread* worker_thread,
                                    std::string receiver_id,
                                    std::vector<std::string> stream_ids)
@@ -194,11 +190,6 @@ void VideoRtpReceiver::SetObserver(RtpReceiverObserverInterface* observer) {
   if (received_first_packet_ && observer_) {
     observer_->OnFirstPacketReceived(media_type());
   }
-}
-
-void VideoRtpReceiver::SetJitterBufferMinimumDelay(
-    absl::optional<double> delay_seconds) {
-  source_->SetLatency(delay_seconds.value_or(kDefaultLatency));
 }
 
 void VideoRtpReceiver::SetMediaChannel(cricket::MediaChannel* media_channel) {

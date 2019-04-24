@@ -166,7 +166,7 @@ function runNextTest() {
       return;
     }
   }
-  wtu.dispatchTask(runNextTest);
+  wtu.waitForComposite(runNextTest);
 }
 
 function testFormatType(t, test) {

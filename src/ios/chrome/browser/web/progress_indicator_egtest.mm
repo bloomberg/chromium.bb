@@ -196,8 +196,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  NSError* visibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(visibleError, visibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   infinitePendingProvider->Abort();
 }
 
@@ -237,8 +236,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  NSError* visibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(visibleError, visibleError.localizedDescription);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   infinitePendingProvider->Abort();
 }
 

@@ -23,7 +23,7 @@ PaintRecordBuilder::PaintRecordBuilder(printing::MetafileSkia* metafile,
     paint_controller_ = paint_controller;
   } else {
     own_paint_controller_ =
-        std::make_unique<PaintController>(PaintController::kTransient);
+        PaintController::Create(PaintController::kTransient);
     paint_controller_ = own_paint_controller_.get();
   }
 

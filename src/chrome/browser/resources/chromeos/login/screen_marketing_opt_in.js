@@ -14,5 +14,13 @@ login.createScreen('MarketingOptInScreen', 'marketing-opt-in', function() {
     get defaultControl() {
       return $('marketing-opt-in-impl');
     },
+
+    /**
+     * Event handler that is invoked just before the screen is shown.
+     * @param {object} data Screen init payload.
+     */
+    onBeforeShow: function(data) {
+      Oobe.getInstance().headerHidden = true;
+    }
   };
 });

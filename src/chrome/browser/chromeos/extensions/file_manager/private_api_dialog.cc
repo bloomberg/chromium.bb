@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -79,12 +78,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateSelectFileFunction::Run() {
       render_frame_host(), chrome_details.GetProfile(), file_paths, option,
       base::BindOnce(
           &FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse,
-          this, params->for_opening, params->index));
+          this, params->index));
   return RespondLater();
 }
 
 void FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse(
-    bool for_open,
     int index,
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -94,12 +92,6 @@ void FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse(
   }
   SelectFileDialogExtension::OnFileSelected(GetFileDialogRoutingID(this),
                                             files[0], index);
-  ChromeExtensionFunctionDetails chrome_details(this);
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              chrome_details.GetProfile())) {
-    notifier->NotifyFileDialogSelection({files[0]}, for_open);
-  }
   Respond(NoArguments());
 }
 
@@ -120,12 +112,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateSelectFilesFunction::Run() {
           : file_manager::util::NO_LOCAL_PATH_RESOLUTION,
       base::BindOnce(
           &FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse,
-          this, true));
+          this));
   return RespondLater();
 }
 
 void FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
-    bool for_open,
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (files.empty()) {
@@ -135,12 +126,6 @@ void FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
 
   SelectFileDialogExtension::OnMultiFilesSelected(GetFileDialogRoutingID(this),
                                                   files);
-  ChromeExtensionFunctionDetails chrome_details(this);
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              chrome_details.GetProfile())) {
-    notifier->NotifyFileDialogSelection(files, for_open);
-  }
   Respond(NoArguments());
 }
 

@@ -25,39 +25,10 @@
 #include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
 
-namespace {
-
-void DoPredicateFilter(WideString wsCondition,
-                       size_t iFoundCount,
-                       CFXJSE_ResolveNodeData* pRnd) {
-  ASSERT(iFoundCount == pRnd->m_Objects.size());
-  WideString wsExpression;
-  CXFA_Script::Type eLangType = CXFA_Script::Type::Unknown;
-  if (wsCondition.Left(2).EqualsASCII(".[") && wsCondition.Last() == L']')
-    eLangType = CXFA_Script::Type::Formcalc;
-  else if (wsCondition.Left(2).EqualsASCII(".(") && wsCondition.Last() == L')')
-    eLangType = CXFA_Script::Type::Javascript;
-  else
-    return;
-
-  wsExpression = wsCondition.Mid(2, wsCondition.GetLength() - 3);
-  for (size_t i = iFoundCount; i > 0; --i) {
-    auto pRetValue =
-        pdfium::MakeUnique<CFXJSE_Value>(pRnd->m_pSC->GetIsolate());
-    bool bRet =
-        pRnd->m_pSC->RunScript(eLangType, wsExpression.AsStringView(),
-                               pRetValue.get(), pRnd->m_Objects[i - 1].Get());
-    if (!bRet || !pRetValue->ToBoolean())
-      pRnd->m_Objects.erase(pRnd->m_Objects.begin() + i - 1);
-  }
-}
-
-}  // namespace
-
 CFXJSE_ResolveProcessor::CFXJSE_ResolveProcessor()
     : m_pNodeHelper(pdfium::MakeUnique<CXFA_NodeHelper>()) {}
 
-CFXJSE_ResolveProcessor::~CFXJSE_ResolveProcessor() = default;
+CFXJSE_ResolveProcessor::~CFXJSE_ResolveProcessor() {}
 
 bool CFXJSE_ResolveProcessor::Resolve(CFXJSE_ResolveNodeData& rnd) {
   if (!rnd.m_CurObject)
@@ -108,7 +79,7 @@ bool CFXJSE_ResolveProcessor::Resolve(CFXJSE_ResolveNodeData& rnd) {
       return true;
     }
     if (!rnd.m_Objects.empty())
-      FilterCondition(rnd.m_wsCondition, &rnd);
+      FilterCondition(rnd, rnd.m_wsCondition);
 
     return !rnd.m_Objects.empty();
   }
@@ -119,34 +90,34 @@ bool CFXJSE_ResolveProcessor::Resolve(CFXJSE_ResolveNodeData& rnd) {
 }
 
 bool CFXJSE_ResolveProcessor::ResolveAnyChild(CFXJSE_ResolveNodeData& rnd) {
-  CXFA_Node* pParent = ToNode(rnd.m_CurObject.Get());
-  if (!pParent)
-    return false;
-
   WideStringView wsName = rnd.m_wsName.AsStringView();
   WideString wsCondition = rnd.m_wsCondition;
-  const bool bClassName = !wsName.IsEmpty() && wsName[0] == '#';
-  CXFA_Node* const pChild =
-      bClassName
-          ? pParent->GetOneChildOfClass(wsName.Right(wsName.GetLength() - 1))
-          : pParent->GetOneChildNamed(wsName);
-  if (!pChild)
+  CXFA_Node* findNode = nullptr;
+  bool bClassName = false;
+  if (wsName.GetLength() && wsName[0] == '#') {
+    bClassName = true;
+    findNode = m_pNodeHelper->GetOneChildOfClass(
+        ToNode(rnd.m_CurObject.Get()), wsName.Right(wsName.GetLength() - 1));
+  } else {
+    findNode =
+        m_pNodeHelper->GetOneChildNamed(ToNode(rnd.m_CurObject.Get()), wsName);
+  }
+  if (!findNode)
     return false;
 
   if (wsCondition.IsEmpty()) {
-    rnd.m_Objects.emplace_back(pChild);
+    rnd.m_Objects.emplace_back(findNode);
     return true;
   }
 
-  std::vector<CXFA_Node*> nodes;
+  std::vector<CXFA_Node*> tempNodes;
   for (const auto& pObject : rnd.m_Objects)
-    nodes.push_back(pObject->AsNode());
-
-  std::vector<CXFA_Node*> siblings = pChild->GetSiblings(bClassName);
-  nodes.insert(nodes.end(), siblings.begin(), siblings.end());
+    tempNodes.push_back(pObject->AsNode());
+  m_pNodeHelper->CountSiblings(findNode, XFA_LOGIC_Transparent, &tempNodes,
+                               bClassName);
   rnd.m_Objects =
-      std::vector<UnownedPtr<CXFA_Object>>(nodes.begin(), nodes.end());
-  FilterCondition(wsCondition, &rnd);
+      std::vector<UnownedPtr<CXFA_Object>>(tempNodes.begin(), tempNodes.end());
+  FilterCondition(rnd, wsCondition);
   return !rnd.m_Objects.empty();
 }
 
@@ -161,8 +132,8 @@ bool CFXJSE_ResolveProcessor::ResolveDollar(CFXJSE_ResolveNodeData& rnd) {
   if (rnd.m_nLevel > 0)
     return false;
 
-  XFA_HashCode dwNameHash = static_cast<XFA_HashCode>(
-      FX_HashCode_GetW(wsName.AsStringView().Right(iNameLen - 1), false));
+  XFA_HashCode dwNameHash = static_cast<XFA_HashCode>(FX_HashCode_GetW(
+      WideStringView(wsName.c_str() + 1, iNameLen - 1), false));
   if (dwNameHash == XFA_HASHCODE_Xfa) {
     rnd.m_Objects.emplace_back(rnd.m_pSC->GetDocument()->GetRoot());
   } else {
@@ -171,7 +142,8 @@ bool CFXJSE_ResolveProcessor::ResolveDollar(CFXJSE_ResolveNodeData& rnd) {
       rnd.m_Objects.emplace_back(pObjNode);
   }
   if (!rnd.m_Objects.empty())
-    FilterCondition(wsCondition, &rnd);
+    FilterCondition(rnd, wsCondition);
+
   return !rnd.m_Objects.empty();
 }
 
@@ -294,7 +266,7 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
       rndFind.m_Objects.clear();
     }
     if (rnd.m_Objects.size() > nNum) {
-      FilterCondition(wsCondition, &rnd);
+      FilterCondition(rnd, wsCondition);
       return !rnd.m_Objects.empty();
     }
   }
@@ -312,8 +284,8 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
         rnd.m_Objects.emplace_back(child);
       }
 
-      if (child->GetElementType() != XFA_Element::PageSet &&
-          child->IsTransparent()) {
+      if (m_pNodeHelper->NodeIsTransparent(child) &&
+          child->GetElementType() != XFA_Element::PageSet) {
         if (!bSetFlag) {
           SetStylesForChild(dwStyles, rndFind);
           bSetFlag = true;
@@ -331,12 +303,10 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
     if (rnd.m_Objects.size() > nNum) {
       if (!(dwStyles & XFA_RESOLVENODE_ALL)) {
         std::vector<CXFA_Node*> upArrayNodes;
-        if (curNode->IsTransparent()) {
-          CXFA_Node* pCurrent = ToNode(rnd.m_Objects.front().Get());
-          if (pCurrent) {
-            upArrayNodes =
-                pCurrent->GetSiblings(!!(dwStyles & XFA_RESOLVENODE_TagName));
-          }
+        if (m_pNodeHelper->NodeIsTransparent(ToNode(curNode))) {
+          m_pNodeHelper->CountSiblings(ToNode(rnd.m_Objects.front().Get()),
+                                       XFA_LOGIC_Transparent, &upArrayNodes,
+                                       !!(dwStyles & XFA_RESOLVENODE_TagName));
         }
         if (upArrayNodes.size() > rnd.m_Objects.size()) {
           CXFA_Object* pSaveObject = rnd.m_Objects.front().Get();
@@ -345,7 +315,7 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
           rnd.m_Objects.front() = pSaveObject;
         }
       }
-      FilterCondition(wsCondition, &rnd);
+      FilterCondition(rnd, wsCondition);
       return !rnd.m_Objects.empty();
     }
   }
@@ -367,14 +337,15 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
       }
     }
     if (rnd.m_Objects.size() > nNum) {
-      FilterCondition(wsCondition, &rnd);
+      FilterCondition(rnd, wsCondition);
       return !rnd.m_Objects.empty();
     }
 
     CXFA_Node* pProp = nullptr;
     if (XFA_Element::Subform == curNode->GetElementType() &&
         XFA_HASHCODE_Occur == uNameHash) {
-      CXFA_Node* pInstanceManager = curNode->GetInstanceMgrOfSubform();
+      CXFA_Node* pInstanceManager =
+          curNode->AsNode()->GetInstanceMgrOfSubform();
       if (pInstanceManager) {
         pProp = pInstanceManager->JSObject()->GetOrCreateProperty<CXFA_Occur>(
             0, XFA_Element::Occur);
@@ -382,9 +353,10 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
     } else {
       XFA_Element eType = XFA_GetElementByName(wsName.AsStringView());
       if (eType == XFA_Element::PageSet) {
-        pProp = curNode->JSObject()->GetProperty<CXFA_Node>(0, eType);
+        pProp = curNode->AsNode()->JSObject()->GetProperty<CXFA_Node>(0, eType);
       } else if (eType != XFA_Element::Unknown) {
-        pProp = curNode->JSObject()->GetOrCreateProperty<CXFA_Node>(0, eType);
+        pProp = curNode->AsNode()->JSObject()->GetOrCreateProperty<CXFA_Node>(
+            0, eType);
       }
     }
     if (pProp) {
@@ -393,12 +365,13 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
     }
   }
 
-  CXFA_Node* const parentNode = curNode->GetParent();
+  CXFA_Node* parentNode =
+      m_pNodeHelper->GetParent(curNode->AsNode(), XFA_LOGIC_NoTransparent);
   uint32_t uCurClassHash = curNode->GetClassHashCode();
   if (!parentNode) {
     if (uCurClassHash == uNameHash) {
-      rnd.m_Objects.emplace_back(curNode);
-      FilterCondition(wsCondition, &rnd);
+      rnd.m_Objects.emplace_back(curNode->AsNode());
+      FilterCondition(rnd, wsCondition);
       if (!rnd.m_Objects.empty())
         return true;
     }
@@ -447,7 +420,7 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
              child->GetElementType() == XFA_Element::PageSet)) {
           bInnerSearch = true;
         }
-      } else if (child->IsTransparent()) {
+      } else if (m_pNodeHelper->NodeIsTransparent(child)) {
         bInnerSearch = true;
       }
       if (bInnerSearch) {
@@ -465,13 +438,11 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
       child = child->GetNextSibling();
     }
     if (rnd.m_Objects.size() > nNum) {
-      if (parentNode->IsTransparent()) {
+      if (m_pNodeHelper->NodeIsTransparent(parentNode)) {
         std::vector<CXFA_Node*> upArrayNodes;
-        CXFA_Node* pCurrent = ToNode(rnd.m_Objects.front().Get());
-        if (pCurrent) {
-          upArrayNodes =
-              pCurrent->GetSiblings(!!(dwStyles & XFA_RESOLVENODE_TagName));
-        }
+        m_pNodeHelper->CountSiblings(ToNode(rnd.m_Objects.front().Get()),
+                                     XFA_LOGIC_Transparent, &upArrayNodes,
+                                     !!(dwStyles & XFA_RESOLVENODE_TagName));
         if (upArrayNodes.size() > rnd.m_Objects.size()) {
           CXFA_Object* pSaveObject = rnd.m_Objects.front().Get();
           rnd.m_Objects = std::vector<UnownedPtr<CXFA_Object>>(
@@ -479,7 +450,7 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(CFXJSE_ResolveNodeData& rnd) {
           rnd.m_Objects.front() = pSaveObject;
         }
       }
-      FilterCondition(wsCondition, &rnd);
+      FilterCondition(rnd, wsCondition);
       return !rnd.m_Objects.empty();
     }
   }
@@ -532,9 +503,9 @@ int32_t CFXJSE_ResolveProcessor::GetFilter(WideStringView wsExpression,
     pdfium::span<wchar_t> pNameBuf = wsName.GetBuffer(iLength - nStart);
     pdfium::span<wchar_t> pConditionBuf =
         wsCondition.GetBuffer(iLength - nStart);
-    pdfium::span<const wchar_t> pSrc = wsExpression.span();
     std::vector<int32_t> stack;
     int32_t nType = -1;
+    const wchar_t* pSrc = wsExpression.unterminated_c_str();
     wchar_t wPrev = 0;
     wchar_t wCur;
     bool bIsCondition = false;
@@ -594,14 +565,14 @@ int32_t CFXJSE_ResolveProcessor::GetFilter(WideStringView wsExpression,
   return nStart;
 }
 
-void CFXJSE_ResolveProcessor::ConditionArray(size_t iCurIndex,
+void CFXJSE_ResolveProcessor::ConditionArray(int32_t iCurIndex,
                                              WideString wsCondition,
-                                             size_t iFoundCount,
-                                             CFXJSE_ResolveNodeData* pRnd) {
-  size_t iLen = wsCondition.GetLength();
+                                             int32_t iFoundCount,
+                                             CFXJSE_ResolveNodeData& rnd) {
+  int32_t iLen = wsCondition.GetLength();
   bool bRelative = false;
   bool bAll = false;
-  size_t i = 1;
+  int32_t i = 1;
   for (; i < iLen; ++i) {
     wchar_t ch = wsCondition[i];
     if (ch == ' ')
@@ -614,18 +585,18 @@ void CFXJSE_ResolveProcessor::ConditionArray(size_t iCurIndex,
     break;
   }
   if (bAll) {
-    if (pRnd->m_dwStyles & XFA_RESOLVENODE_CreateNode) {
-      if (pRnd->m_dwStyles & XFA_RESOLVENODE_Bind) {
-        m_pNodeHelper->m_pCreateParent = ToNode(pRnd->m_CurObject.Get());
+    if (rnd.m_dwStyles & XFA_RESOLVENODE_CreateNode) {
+      if (rnd.m_dwStyles & XFA_RESOLVENODE_Bind) {
+        m_pNodeHelper->m_pCreateParent = ToNode(rnd.m_CurObject.Get());
         m_pNodeHelper->m_iCreateCount = 1;
-        pRnd->m_Objects.clear();
+        rnd.m_Objects.clear();
         m_pNodeHelper->m_iCurAllStart = -1;
         m_pNodeHelper->m_pAllStartParent = nullptr;
       } else if (m_pNodeHelper->m_iCurAllStart == -1) {
         m_pNodeHelper->m_iCurAllStart = m_iCurStart;
-        m_pNodeHelper->m_pAllStartParent = ToNode(pRnd->m_CurObject.Get());
+        m_pNodeHelper->m_pAllStartParent = ToNode(rnd.m_CurObject.Get());
       }
-    } else if (pRnd->m_dwStyles & XFA_RESOLVENODE_BindNew) {
+    } else if (rnd.m_dwStyles & XFA_RESOLVENODE_BindNew) {
       if (m_pNodeHelper->m_iCurAllStart == -1)
         m_pNodeHelper->m_iCurAllStart = m_iCurStart;
     }
@@ -638,63 +609,91 @@ void CFXJSE_ResolveProcessor::ConditionArray(size_t iCurIndex,
   if (bRelative)
     iIndex += iCurIndex;
 
-  if (iIndex < 0 || static_cast<size_t>(iIndex) >= iFoundCount) {
-    if (pRnd->m_dwStyles & XFA_RESOLVENODE_CreateNode) {
-      m_pNodeHelper->m_pCreateParent = ToNode(pRnd->m_CurObject.Get());
+  if (iFoundCount <= iIndex || iIndex < 0) {
+    if (rnd.m_dwStyles & XFA_RESOLVENODE_CreateNode) {
+      m_pNodeHelper->m_pCreateParent = ToNode(rnd.m_CurObject.Get());
       m_pNodeHelper->m_iCreateCount = iIndex - iFoundCount + 1;
     }
-    pRnd->m_Objects.clear();
+    rnd.m_Objects.clear();
   } else {
-    pRnd->m_Objects =
-        std::vector<UnownedPtr<CXFA_Object>>(1, pRnd->m_Objects[iIndex]);
+    rnd.m_Objects =
+        std::vector<UnownedPtr<CXFA_Object>>(1, rnd.m_Objects[iIndex]);
   }
 }
 
-void CFXJSE_ResolveProcessor::FilterCondition(WideString wsCondition,
-                                              CFXJSE_ResolveNodeData* pRnd) {
-  size_t iCurIndex = 0;
-  const std::vector<CXFA_Node*>* pArray = pRnd->m_pSC->GetUpObjectArray();
+void CFXJSE_ResolveProcessor::DoPredicateFilter(int32_t iCurIndex,
+                                                WideString wsCondition,
+                                                int32_t iFoundCount,
+                                                CFXJSE_ResolveNodeData& rnd) {
+  ASSERT(iFoundCount == pdfium::CollectionSize<int32_t>(rnd.m_Objects));
+  WideString wsExpression;
+  CXFA_Script::Type eLangType = CXFA_Script::Type::Unknown;
+  if (wsCondition.Left(2).EqualsASCII(".[") && wsCondition.Last() == L']')
+    eLangType = CXFA_Script::Type::Formcalc;
+  else if (wsCondition.Left(2).EqualsASCII(".(") && wsCondition.Last() == L')')
+    eLangType = CXFA_Script::Type::Javascript;
+  else
+    return;
+
+  wsExpression = wsCondition.Mid(2, wsCondition.GetLength() - 3);
+  for (int32_t i = iFoundCount - 1; i >= 0; i--) {
+    auto pRetValue = pdfium::MakeUnique<CFXJSE_Value>(rnd.m_pSC->GetIsolate());
+    bool bRet = rnd.m_pSC->RunScript(eLangType, wsExpression.AsStringView(),
+                                     pRetValue.get(), rnd.m_Objects[i].Get());
+    if (!bRet || !pRetValue->ToBoolean())
+      rnd.m_Objects.erase(rnd.m_Objects.begin() + i);
+  }
+}
+
+void CFXJSE_ResolveProcessor::FilterCondition(CFXJSE_ResolveNodeData& rnd,
+                                              WideString wsCondition) {
+  int32_t iCurrIndex = 0;
+  const std::vector<CXFA_Node*>* pArray = rnd.m_pSC->GetUpObjectArray();
   if (!pArray->empty()) {
-    CXFA_Node* pNode = pArray->back();
-    bool bIsProperty = pNode->IsProperty();
-    bool bIsClassIndex =
-        pNode->IsUnnamed() ||
-        (bIsProperty && pNode->GetElementType() != XFA_Element::PageSet);
-    iCurIndex = pNode->GetIndex(bIsProperty, bIsClassIndex);
+    CXFA_Node* curNode = pArray->back();
+    bool bIsProperty = m_pNodeHelper->NodeIsProperty(curNode);
+    if (curNode->IsUnnamed() ||
+        (bIsProperty && curNode->GetElementType() != XFA_Element::PageSet)) {
+      iCurrIndex = m_pNodeHelper->GetIndex(curNode, XFA_LOGIC_Transparent,
+                                           bIsProperty, true);
+    } else {
+      iCurrIndex = m_pNodeHelper->GetIndex(curNode, XFA_LOGIC_Transparent,
+                                           bIsProperty, false);
+    }
   }
 
-  size_t iFoundCount = pRnd->m_Objects.size();
+  int32_t iFoundCount = pdfium::CollectionSize<int32_t>(rnd.m_Objects);
   wsCondition.Trim();
 
   int32_t iLen = wsCondition.GetLength();
   if (!iLen) {
-    if (pRnd->m_dwStyles & XFA_RESOLVENODE_ALL)
+    if (rnd.m_dwStyles & XFA_RESOLVENODE_ALL)
       return;
     if (iFoundCount == 1)
       return;
 
-    if (iFoundCount <= iCurIndex) {
-      if (pRnd->m_dwStyles & XFA_RESOLVENODE_CreateNode) {
-        m_pNodeHelper->m_pCreateParent = ToNode(pRnd->m_CurObject.Get());
-        m_pNodeHelper->m_iCreateCount = iCurIndex - iFoundCount + 1;
+    if (iFoundCount <= iCurrIndex) {
+      if (rnd.m_dwStyles & XFA_RESOLVENODE_CreateNode) {
+        m_pNodeHelper->m_pCreateParent = ToNode(rnd.m_CurObject.Get());
+        m_pNodeHelper->m_iCreateCount = iCurrIndex - iFoundCount + 1;
       }
-      pRnd->m_Objects.clear();
+      rnd.m_Objects.clear();
       return;
     }
 
-    pRnd->m_Objects =
-        std::vector<UnownedPtr<CXFA_Object>>(1, pRnd->m_Objects[iCurIndex]);
+    rnd.m_Objects =
+        std::vector<UnownedPtr<CXFA_Object>>(1, rnd.m_Objects[iCurrIndex]);
     return;
   }
 
   wchar_t wTypeChar = wsCondition[0];
   switch (wTypeChar) {
     case '[':
-      ConditionArray(iCurIndex, wsCondition, iFoundCount, pRnd);
+      ConditionArray(iCurrIndex, wsCondition, iFoundCount, rnd);
       return;
     case '.':
       if (iLen > 1 && (wsCondition[1] == '[' || wsCondition[1] == '('))
-        DoPredicateFilter(wsCondition, iFoundCount, pRnd);
+        DoPredicateFilter(iCurrIndex, wsCondition, iFoundCount, rnd);
       return;
     case '(':
     case '"':
@@ -702,7 +701,6 @@ void CFXJSE_ResolveProcessor::FilterCondition(WideString wsCondition,
       return;
   }
 }
-
 void CFXJSE_ResolveProcessor::SetStylesForChild(uint32_t dwParentStyles,
                                                 CFXJSE_ResolveNodeData& rnd) {
   uint32_t dwSubStyles = XFA_RESOLVENODE_Children;
@@ -733,4 +731,4 @@ void CFXJSE_ResolveProcessor::SetIndexDataBind(WideString& wsNextCondition,
 CFXJSE_ResolveNodeData::CFXJSE_ResolveNodeData(CFXJSE_Engine* pSC)
     : m_pSC(pSC) {}
 
-CFXJSE_ResolveNodeData::~CFXJSE_ResolveNodeData() = default;
+CFXJSE_ResolveNodeData::~CFXJSE_ResolveNodeData() {}

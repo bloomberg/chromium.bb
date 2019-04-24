@@ -16,7 +16,7 @@ class HeapObject;
 class SnapshotByteSink;
 class ReadOnlySerializer;
 
-class V8_EXPORT_PRIVATE StartupSerializer : public RootsSerializer {
+class StartupSerializer : public RootsSerializer {
  public:
   StartupSerializer(Isolate* isolate, ReadOnlySerializer* read_only_serializer);
   ~StartupSerializer() override;

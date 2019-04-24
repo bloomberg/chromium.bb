@@ -34,7 +34,7 @@
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
-#include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -319,7 +319,7 @@ void FromFrameSenderConfig(const FrameSenderConfig& config,
 // unlikely to happen in normal use cases.
 CastStreamingNativeHandler::CastStreamingNativeHandler(
     ScriptContext* context,
-    NativeExtensionBindingsSystem* bindings_system)
+    ExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       last_transport_id_(
           context->extension()
@@ -405,8 +405,7 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
 
-  scoped_refptr<CastSession> session(new CastSession(
-      context()->web_frame()->GetTaskRunner(blink::TaskType::kInternalMedia)));
+  scoped_refptr<CastSession> session(new CastSession());
   std::unique_ptr<CastRtpStream> stream1, stream2;
   if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
       (args[1]->IsNull() || args[1]->IsUndefined())) {
@@ -543,11 +542,9 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
     RtpParams params;
     FromFrameSenderConfig(configs[i], &params.payload);
     std::unique_ptr<base::DictionaryValue> params_value = params.ToValue();
-    result
-        ->CreateDataProperty(
-            context()->v8_context(), static_cast<int>(i),
-            converter->ToV8Value(params_value.get(), context()->v8_context()))
-        .Check();
+    result->Set(
+        static_cast<int>(i),
+        converter->ToV8Value(params_value.get(), context()->v8_context()));
   }
   args.GetReturnValue().Set(result);
 }

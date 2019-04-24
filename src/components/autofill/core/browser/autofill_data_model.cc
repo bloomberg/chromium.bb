@@ -77,7 +77,7 @@ double AutofillDataModel::GetFrecencyScore(base::Time time) const {
 }
 
 bool AutofillDataModel::IsDeletable() const {
-  return IsAutofillEntryWithUseDateDeletable(use_date_);
+  return use_date_ < AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta;
 }
 
 AutofillDataModel::ValidityState AutofillDataModel::GetValidityState(

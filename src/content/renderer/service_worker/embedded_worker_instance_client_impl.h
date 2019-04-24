@@ -14,7 +14,12 @@
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
-#include "third_party/blink/public/web/web_embedded_worker_start_data.h"
+
+namespace blink {
+
+class WebEmbeddedWorker;
+
+}  // namespace blink
 
 namespace content {
 
@@ -67,20 +72,21 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
-  void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories) override;
 
   // Handler of connection error bound to |binding_|.
   void OnError();
 
-  blink::WebEmbeddedWorkerStartData BuildStartData(
-      const blink::mojom::EmbeddedWorkerStartParams& params);
+  std::unique_ptr<blink::WebEmbeddedWorker> StartWorkerContext(
+      blink::mojom::EmbeddedWorkerStartParamsPtr params,
+      std::unique_ptr<ServiceWorkerContextClient> context_client,
+      blink::mojom::CacheStoragePtrInfo cache_storage,
+      service_manager::mojom::InterfaceProviderPtrInfo interface_provider,
+      blink::PrivacyPreferences privacy_preferences);
 
   mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
 
-  // nullptr means worker is not running.
-  std::unique_ptr<ServiceWorkerContextClient> service_worker_context_client_;
+  // nullptr means the worker is not running.
+  std::unique_ptr<blink::WebEmbeddedWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);
 };

@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_lifecycle_state.h"
-#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -36,8 +35,6 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   };
 
   class PLATFORM_EXPORT LifecycleObserverHandle {
-    USING_FAST_MALLOC(LifecycleObserverHandle);
-
    public:
     LifecycleObserverHandle(FrameOrWorkerScheduler* scheduler,
                             Observer* observer);
@@ -50,58 +47,22 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
     DISALLOW_COPY_AND_ASSIGN(LifecycleObserverHandle);
   };
 
-  // RAII handle which should be kept alive as long as the feature is active
-  // and the policy should be applied.
-  class PLATFORM_EXPORT SchedulingAffectingFeatureHandle {
-    DISALLOW_NEW();
-
-   public:
-    SchedulingAffectingFeatureHandle() = default;
-    SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&&);
-    inline ~SchedulingAffectingFeatureHandle() { reset(); }
-
-    SchedulingAffectingFeatureHandle& operator=(
-        SchedulingAffectingFeatureHandle&&);
-
-    inline void reset() {
-      if (scheduler_)
-        scheduler_->OnStoppedUsingFeature(feature_, policy_);
-      scheduler_ = nullptr;
-    }
-
-   private:
-    friend class FrameOrWorkerScheduler;
-
-    SchedulingAffectingFeatureHandle(SchedulingPolicy::Feature feature,
-                                     SchedulingPolicy policy,
-                                     base::WeakPtr<FrameOrWorkerScheduler>);
-
-    SchedulingPolicy::Feature feature_ = SchedulingPolicy::Feature::kCount;
-    SchedulingPolicy policy_;
-    base::WeakPtr<FrameOrWorkerScheduler> scheduler_;
-
-    DISALLOW_COPY_AND_ASSIGN(SchedulingAffectingFeatureHandle);
-  };
-
   virtual ~FrameOrWorkerScheduler();
 
-  // Notifies scheduler that this execution context has started using a feature
-  // which impacts scheduling decisions.
-  // When the feature stops being used, this handle should be destroyed.
-  //
-  // Usage:
-  // handle = scheduler->RegisterFeature(
-  //     kYourFeature, { SchedulingPolicy::DisableSomething() });
-  SchedulingAffectingFeatureHandle RegisterFeature(
-      SchedulingPolicy::Feature feature,
-      SchedulingPolicy policy) WARN_UNUSED_RESULT;
+  class ActiveConnectionHandle {
+   public:
+    ActiveConnectionHandle() = default;
+    virtual ~ActiveConnectionHandle() = default;
 
-  // Register a feature which is used for the rest of the lifetime of
-  // the document and can't be unregistered.
-  // The policy is reset when the main frame navigates away from the current
-  // document.
-  void RegisterStickyFeature(SchedulingPolicy::Feature feature,
-                             SchedulingPolicy policy);
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandle);
+  };
+
+  // Notifies scheduler that this execution context has established an active
+  // real time connection (websocket, webrtc, etc). When connection is closed
+  // this handle must be destroyed.
+  virtual std::unique_ptr<ActiveConnectionHandle>
+  OnActiveConnectionCreated() = 0;
 
   // Adds an Observer instance to be notified on scheduling policy changed.
   // When an Observer is added, the initial state will be notified synchronously
@@ -109,8 +70,7 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   // A RAII handle is returned and observer is unregistered when the handle is
   // destroyed.
   std::unique_ptr<LifecycleObserverHandle> AddLifecycleObserver(ObserverType,
-                                                                Observer*)
-      WARN_UNUSED_RESULT;
+                                                                Observer*);
 
   virtual FrameScheduler* ToFrameScheduler() { return nullptr; }
 
@@ -123,13 +83,6 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
       ObserverType) const {
     return scheduler::SchedulingLifecycleState::kNotThrottled;
   }
-
-  virtual void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                                     const SchedulingPolicy& policy) = 0;
-  virtual void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                                     const SchedulingPolicy& policy) = 0;
-
-  virtual base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr();
 
   base::WeakPtr<FrameOrWorkerScheduler> GetWeakPtr();
 

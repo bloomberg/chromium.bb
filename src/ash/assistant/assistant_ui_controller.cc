@@ -236,7 +236,7 @@ void AssistantUiController::OnAssistantControllerDestroying() {
 void AssistantUiController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  if (!assistant::util::IsWebDeepLinkType(type, params))
+  if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
   ShowUi(AssistantEntryPoint::kDeepLink);

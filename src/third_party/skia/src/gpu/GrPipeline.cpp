@@ -21,17 +21,17 @@ GrPipeline::GrPipeline(const InitArgs& args,
                        GrAppliedClip&& appliedClip) {
     SkASSERT(processors.isFinalized());
 
-    fFlags = (Flags)args.fInputFlags;
+    fFlags = args.fFlags;
     if (appliedClip.hasStencilClip()) {
-        fFlags |= Flags::kHasStencilClip;
+        fFlags |= kHasStencilClip_Flag;
     }
     if (appliedClip.scissorState().enabled()) {
-        fFlags |= Flags::kScissorEnabled;
+        fFlags |= kScissorEnabled_Flag;
     }
 
     fWindowRectsState = appliedClip.windowRectsState();
-    if (!args.fUserStencil->isDisabled(fFlags & Flags::kHasStencilClip)) {
-        fFlags |= Flags::kStencilEnabled;
+    if (!args.fUserStencil->isDisabled(fFlags & kHasStencilClip_Flag)) {
+        fFlags |= kStencilEnabled_Flag;
     }
 
     fUserStencilSettings = args.fUserStencil;
@@ -39,9 +39,7 @@ GrPipeline::GrPipeline(const InitArgs& args,
     fXferProcessor = processors.refXferProcessor();
 
     if (args.fDstProxy.proxy()) {
-        if (args.fResourceProvider->explicitlyAllocateGPUResources()) {
-            SkASSERT(args.fDstProxy.proxy()->isInstantiated());
-        } else if (!args.fDstProxy.proxy()->instantiate(args.fResourceProvider)) {
+        if (!args.fDstProxy.proxy()->instantiate(args.fResourceProvider)) {
             this->markAsBad();
         }
 
@@ -97,19 +95,15 @@ GrXferBarrierType GrPipeline::xferBarrierType(GrTexture* texture, const GrCaps& 
     return this->getXferProcessor().xferBarrierType(caps);
 }
 
-GrPipeline::GrPipeline(GrScissorTest scissorTest, SkBlendMode blendmode, InputFlags inputFlags,
-                       const GrUserStencilSettings* userStencil)
+GrPipeline::GrPipeline(GrScissorTest scissorTest, SkBlendMode blendmode)
         : fWindowRectsState()
-        , fUserStencilSettings(userStencil)
-        , fFlags((Flags)inputFlags)
+        , fUserStencilSettings(&GrUserStencilSettings::kUnused)
+        , fFlags()
         , fXferProcessor(GrPorterDuffXPFactory::MakeNoCoverageXP(blendmode))
         , fFragmentProcessors()
         , fNumColorProcessors(0) {
     if (GrScissorTest::kEnabled == scissorTest) {
-        fFlags |= Flags::kScissorEnabled;
-    }
-    if (!userStencil->isDisabled(false)) {
-        fFlags |= Flags::kStencilEnabled;
+        fFlags |= kScissorEnabled_Flag;
     }
 }
 

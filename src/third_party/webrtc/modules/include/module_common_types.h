@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "api/rtp_headers.h"
-#include "api/video/video_frame_type.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types_public.h"
 #include "modules/include/module_fec_types.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
@@ -30,8 +30,7 @@ struct WebRtcRTPHeader {
   RTPVideoHeader video;
 
   RTPHeader header;
-  // Used for video only.
-  VideoFrameType frameType;
+  FrameType frameType;
   // NTP time of the capture time in local timebase in milliseconds.
   int64_t ntp_time_ms;
 };
@@ -109,6 +108,14 @@ class LossNotificationSender {
                                     bool decodability_flag) = 0;
 };
 
+// Used to indicate if a received packet contain a complete NALU (or equivalent)
+enum VCMNaluCompleteness {
+  kNaluUnset = 0,     // Packet has not been filled.
+  kNaluComplete = 1,  // Packet can be decoded as is.
+  kNaluStart,         // Packet contain beginning of NALU
+  kNaluIncomplete,    // Packet is not beginning or end of NALU
+  kNaluEnd,           // Packet is the end of a NALU
+};
 }  // namespace webrtc
 
 #endif  // MODULES_INCLUDE_MODULE_COMMON_TYPES_H_

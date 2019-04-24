@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <utility>
 
 #include "base/macros.h"
 #include "base/time/time.h"

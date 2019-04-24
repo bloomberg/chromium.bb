@@ -18,16 +18,14 @@ public class ChosenObjectInfo implements Serializable {
     private final String mEmbedder;
     private final String mName;
     private final String mObject;
-    private final boolean mIsManaged;
 
     ChosenObjectInfo(@ContentSettingsType int contentSettingsType, String origin, String embedder,
-            String name, String object, boolean isManaged) {
+            String name, String object) {
         mContentSettingsType = contentSettingsType;
         mOrigin = origin;
         mEmbedder = embedder;
         mName = name;
         mObject = object;
-        mIsManaged = isManaged;
     }
 
     /**
@@ -66,19 +64,10 @@ public class ChosenObjectInfo implements Serializable {
     }
 
     /**
-     * Returns whether the object is managed by policy.
-     */
-    public boolean isManaged() {
-        return mIsManaged;
-    }
-
-    /**
-     * Revokes permission for the origin to access the object if the object is not managed.
+     * Revokes permission for the origin to access the object.
      */
     public void revoke() {
-        if (!mIsManaged) {
-            WebsitePreferenceBridge.nativeRevokeObjectPermission(
-                    mContentSettingsType, mOrigin, mEmbedder, mObject);
-        }
+        WebsitePreferenceBridge.nativeRevokeObjectPermission(
+                mContentSettingsType, mOrigin, mEmbedder, mObject);
     }
 }

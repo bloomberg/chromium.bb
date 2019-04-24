@@ -12,6 +12,7 @@
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
+#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace {
@@ -38,17 +39,20 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     // Set up the channels for the Context service, but postpone client
     // binding until after the browser TaskRunners are up and running.
-    fidl::InterfaceHandle<fuchsia::web::Context> context;
-    content::ContentMainDelegate* content_main_delegate =
-        new WebEngineMainDelegate(context.NewRequest());
-
+    zx::channel server_channel;
+    zx::channel client_channel;
+    zx_status_t result =
+        zx::channel::create(0, &client_channel, &server_channel);
+    ZX_CHECK(result == ZX_OK, result) << "zx::channel::create";
     cr_fuchsia::WebEngineBrowserTest::SetContextClientChannel(
-        context.TakeChannel());
+        std::move(client_channel));
 
-    return content_main_delegate;
+    return new WebEngineMainDelegate(std::move(server_channel));
   }
 
  private:
+  chromium::web::ContextPtr context_;
+
   DISALLOW_COPY_AND_ASSIGN(WebEngineTestLauncherDelegate);
 };
 

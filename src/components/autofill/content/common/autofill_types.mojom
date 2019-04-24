@@ -159,7 +159,8 @@ struct FormData {
   mojo_base.mojom.String16 name_attribute;
   mojo_base.mojom.String16 name;
   array<ButtonTitleInfo> button_titles;
-  url.mojom.Url url;
+  // TODO(crbug.com/788181): Either change type to Origin or rename to URL.
+  url.mojom.Url origin;
   url.mojom.Url action;
   url.mojom.Origin main_frame_origin;
   bool is_form_tag;

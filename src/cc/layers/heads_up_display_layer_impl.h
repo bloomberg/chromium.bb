@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
@@ -40,10 +41,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
       int id) {
     return base::WrapUnique(new HeadsUpDisplayLayerImpl(tree_impl, id));
   }
-  HeadsUpDisplayLayerImpl(const HeadsUpDisplayLayerImpl&) = delete;
   ~HeadsUpDisplayLayerImpl() override;
-
-  HeadsUpDisplayLayerImpl& operator=(const HeadsUpDisplayLayerImpl&) = delete;
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
@@ -159,6 +157,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::vector<DebugRect> paint_rects_;
 
   base::TimeTicks time_of_last_graph_update_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayerImpl);
 };
 
 }  // namespace cc

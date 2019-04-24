@@ -591,7 +591,7 @@ bool CoreAudioBase::Stop() {
   // thread is not destroyed during restart attempts triggered by internal
   // error callbacks.
   if (!IsRestarting()) {
-    thread_checker_audio_.Detach();
+    thread_checker_audio_.DetachFromThread();
   }
 
   // Release all allocated COM interfaces to allow for a restart without

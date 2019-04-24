@@ -26,13 +26,16 @@ using ::testing::Eq;
 class ElementPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
-    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
-    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"empty"})), _))
-        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementCheck(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
+        .WillByDefault(RunOnceCallback<2>(true));
+    ON_CALL(mock_web_controller_,
+            OnElementCheck(kExistenceCheck, Eq(Selector({"empty"})), _))
+        .WillByDefault(RunOnceCallback<2>(true));
+    ON_CALL(
+        mock_web_controller_,
+        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
+        .WillByDefault(RunOnceCallback<2>(false));
 
     ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<1>(true, "foo"));
@@ -47,9 +50,11 @@ class ElementPreconditionTest : public testing::Test {
   // Runs a precondition given |exists_| and |value_match_|.
   void Check(base::OnceCallback<void(bool)> callback) {
     ElementPrecondition precondition(exist_, value_match_);
-    BatchElementChecker batch_checks;
+    BatchElementChecker batch_checks(&mock_web_controller_);
     precondition.Check(&batch_checks, std::move(callback));
-    batch_checks.Run(&mock_web_controller_, base::DoNothing());
+    batch_checks.Run(base::TimeDelta::FromSeconds(0),
+                     /* try_done=*/base::DoNothing(),
+                     /* all_done=*/base::DoNothing());
   }
 
   MockWebController mock_web_controller_;

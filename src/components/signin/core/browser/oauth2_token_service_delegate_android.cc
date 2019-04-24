@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -163,7 +162,8 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
   }
 
   if (!disable_interaction_with_system_accounts_) {
-    Java_OAuth2TokenService_updateAccountList(AttachCurrentThread(), java_ref_);
+    Java_OAuth2TokenService_validateAccounts(AttachCurrentThread(), java_ref_,
+                                             JNI_TRUE);
   }
 }
 
@@ -270,12 +270,13 @@ void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
   Java_OAuth2TokenService_invalidateAccessToken(env, j_access_token);
 }
 
-void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
+void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_current_acc) {
+    const JavaParamRef<jstring>& j_current_acc,
+    jboolean j_force_notifications) {
   std::string signed_in_account_name;
-  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList from java";
+  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts from java";
   if (j_current_acc)
     signed_in_account_name = ConvertJavaStringToUTF8(env, j_current_acc);
   if (!signed_in_account_name.empty())
@@ -284,11 +285,13 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
   // Clear any auth errors so that client can retry to get access tokens.
   errors_.clear();
 
-  UpdateAccountList(MapAccountNameToAccountId(signed_in_account_name));
+  ValidateAccounts(MapAccountNameToAccountId(signed_in_account_name),
+                   j_force_notifications != JNI_FALSE);
 }
 
-void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
-    const std::string& signed_in_account_id) {
+void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
+    const std::string& signed_in_account_id,
+    bool force_notifications) {
   std::vector<std::string> curr_ids;
   for (const std::string& curr_name : GetSystemAccountNames()) {
     std::string curr_id(MapAccountNameToAccountId(curr_name));
@@ -302,15 +305,16 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
       prev_ids.push_back(prev_id);
   }
 
-  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
+  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
            << " sigined_in_account_id=" << signed_in_account_id
-           << " prev_ids=" << prev_ids.size()
-           << " curr_ids=" << curr_ids.size();
+           << " prev_ids=" << prev_ids.size() << " curr_ids=" << curr_ids.size()
+           << " force=" << (force_notifications ? "true" : "false");
 
   std::vector<std::string> refreshed_ids;
   std::vector<std::string> revoked_ids;
-  bool keep_accounts = UpdateAccountList(
-      signed_in_account_id, prev_ids, curr_ids, &refreshed_ids, &revoked_ids);
+  bool keep_accounts =
+      ValidateAccounts(signed_in_account_id, prev_ids, curr_ids, &refreshed_ids,
+                       &revoked_ids, force_notifications);
 
   ScopedBatchChange batch(this);
   JNIEnv* env = AttachCurrentThread();
@@ -352,20 +356,15 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
       signed_in_account_id.empty()) {
     account_tracker_service_->SetMigrationDone();
   }
-
-  if (!last_update_accounts_time_.is_null()) {
-    base::TimeDelta sample = base::Time::Now() - last_update_accounts_time_;
-    UmaHistogramLongTimes("Signin.AndroidTimeBetweenUpdateAccountList", sample);
-  }
-  last_update_accounts_time_ = base::Time::Now();
 }
 
-bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
+bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     const std::string& signed_in_id,
     const std::vector<std::string>& prev_ids,
     const std::vector<std::string>& curr_ids,
     std::vector<std::string>* refreshed_ids,
-    std::vector<std::string>* revoked_ids) {
+    std::vector<std::string>* revoked_ids,
+    bool force_notifications) {
   bool keep_accounts = base::FeatureList::IsEnabled(signin::kMiceFeature) ||
                        base::ContainsValue(curr_ids, signed_in_id);
   if (keep_accounts) {
@@ -374,36 +373,40 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
       if (prev_id == signed_in_id)
         continue;
       if (!base::ContainsValue(curr_ids, prev_id)) {
-        DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
+        DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                  << "revoked=" << prev_id;
         revoked_ids->push_back(prev_id);
       }
     }
 
-    if (!signed_in_id.empty()) {
+    // Refresh token for new ids or all ids if |force_notifications|.
+    if (!signed_in_id.empty() &&
+        (force_notifications || !base::ContainsValue(prev_ids, signed_in_id))) {
       // Always fire the primary signed in account first.
-      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
+      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "refreshed=" << signed_in_id;
       refreshed_ids->push_back(signed_in_id);
     }
     for (const std::string& curr_id : curr_ids) {
       if (curr_id == signed_in_id)
         continue;
-      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
-               << "refreshed=" << curr_id;
-      refreshed_ids->push_back(curr_id);
+      if (force_notifications || !base::ContainsValue(prev_ids, curr_id)) {
+        DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
+                 << "refreshed=" << curr_id;
+        refreshed_ids->push_back(curr_id);
+      }
     }
   } else {
     // Revoke all ids.
     if (base::ContainsValue(prev_ids, signed_in_id)) {
-      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
+      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "revoked=" << signed_in_id;
       revoked_ids->push_back(signed_in_id);
     }
     for (const std::string& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
         continue;
-      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
+      DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "revoked=" << prev_id;
       revoked_ids->push_back(prev_id);
     }
@@ -497,9 +500,9 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
 
 void OAuth2TokenServiceDelegateAndroid::ReloadAccountsFromSystem(
     const std::string& primary_account_id) {
-  // UpdateAccountList() effectively synchronizes the accounts in the Token
+  // ValidateAccounts() effectively synchronizes the accounts in the Token
   // Service with those present at the system level.
-  UpdateAccountList(primary_account_id);
+  ValidateAccounts(primary_account_id, /*force_notifications=*/true);
 }
 
 std::string OAuth2TokenServiceDelegateAndroid::MapAccountIdToAccountName(

@@ -32,12 +32,11 @@ StorageSchema SchedSliceTable::CreateStorageSchema() {
       .AddOrderedNumericColumn("ts", &slices.start_ns())
       .AddNumericColumn("cpu", &slices.cpus())
       .AddNumericColumn("dur", &slices.durations())
-      .AddGenericNumericColumn(
-          "ts_end", TsEndAccessor(&slices.start_ns(), &slices.durations()))
+      .AddColumn<TsEndColumn>("ts_end", &slices.start_ns(), &slices.durations())
       .AddNumericColumn("utid", &slices.utids(), &slices.rows_for_utids())
       .AddColumn<EndStateColumn>("end_state", &slices.end_state())
       .AddNumericColumn("priority", &slices.priorities())
-      .AddGenericNumericColumn("row_id", RowIdAccessor(TableId::kSched))
+      .AddColumn<IdColumn>("row_id", TableId::kSched)
       .Build({"cpu", "ts"});
 }
 

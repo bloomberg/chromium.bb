@@ -56,9 +56,9 @@ TEST(WebSocketFrameParserTest, DecodeNormalFrame) {
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
   ASSERT_EQ(1u, frames.size());
   WebSocketFrameChunk* frame = frames[0].get();
-  ASSERT_TRUE(frame != nullptr);
+  ASSERT_TRUE(frame != NULL);
   const WebSocketFrameHeader* header = frame->header.get();
-  EXPECT_TRUE(header != nullptr);
+  EXPECT_TRUE(header != NULL);
   if (header) {
     EXPECT_TRUE(header->final);
     EXPECT_FALSE(header->reserved1);
@@ -83,9 +83,9 @@ TEST(WebSocketFrameParserTest, DecodeMaskedFrame) {
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
   ASSERT_EQ(1u, frames.size());
   WebSocketFrameChunk* frame = frames[0].get();
-  ASSERT_TRUE(frame != nullptr);
+  ASSERT_TRUE(frame != NULL);
   const WebSocketFrameHeader* header = frame->header.get();
-  EXPECT_TRUE(header != nullptr);
+  EXPECT_TRUE(header != NULL);
   if (header) {
     EXPECT_TRUE(header->final);
     EXPECT_FALSE(header->reserved1);
@@ -143,7 +143,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
 
   for (int i = 0; i < kNumInputs; ++i) {
     WebSocketFrameChunk* frame = frames[i].get();
-    EXPECT_TRUE(frame != nullptr);
+    EXPECT_TRUE(frame != NULL);
     if (!frame)
       continue;
     EXPECT_TRUE(frame->final_chunk);
@@ -155,7 +155,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
         frame->data->data()));
 
     const WebSocketFrameHeader* header = frame->header.get();
-    EXPECT_TRUE(header != nullptr);
+    EXPECT_TRUE(header != NULL);
     if (!header)
       continue;
     EXPECT_TRUE(header->final);
@@ -189,7 +189,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
     if (frames1.size() != 1u)
       continue;
     WebSocketFrameChunk* frame1 = frames1[0].get();
-    EXPECT_TRUE(frame1 != nullptr);
+    EXPECT_TRUE(frame1 != NULL);
     if (!frame1)
       continue;
     EXPECT_FALSE(frame1->final_chunk);
@@ -201,7 +201,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
           std::equal(expected1.begin(), expected1.end(), frame1->data->data()));
     }
     const WebSocketFrameHeader* header1 = frame1->header.get();
-    EXPECT_TRUE(header1 != nullptr);
+    EXPECT_TRUE(header1 != NULL);
     if (!header1)
       continue;
     EXPECT_TRUE(header1->final);
@@ -219,7 +219,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
     if (frames2.size() != 1u)
       continue;
     WebSocketFrameChunk* frame2 = frames2[0].get();
-    EXPECT_TRUE(frame2 != nullptr);
+    EXPECT_TRUE(frame2 != NULL);
     if (!frame2)
       continue;
     EXPECT_TRUE(frame2->final_chunk);
@@ -231,7 +231,7 @@ TEST(WebSocketFrameParserTest, DecodePartialFrame) {
           std::equal(expected2.begin(), expected2.end(), frame2->data->data()));
     }
     const WebSocketFrameHeader* header2 = frame2->header.get();
-    EXPECT_TRUE(header2 == nullptr);
+    EXPECT_TRUE(header2 == NULL);
   }
 }
 
@@ -256,7 +256,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     if (frames1.size() != 1u)
       continue;
     WebSocketFrameChunk* frame1 = frames1[0].get();
-    EXPECT_TRUE(frame1 != nullptr);
+    EXPECT_TRUE(frame1 != NULL);
     if (!frame1)
       continue;
     EXPECT_FALSE(frame1->final_chunk);
@@ -268,7 +268,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
           std::equal(expected1.begin(), expected1.end(), frame1->data->data()));
     }
     const WebSocketFrameHeader* header1 = frame1->header.get();
-    EXPECT_TRUE(header1 != nullptr);
+    EXPECT_TRUE(header1 != NULL);
     if (!header1)
       continue;
     EXPECT_TRUE(header1->final);
@@ -286,7 +286,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     if (frames2.size() != 1u)
       continue;
     WebSocketFrameChunk* frame2 = frames2[0].get();
-    EXPECT_TRUE(frame2 != nullptr);
+    EXPECT_TRUE(frame2 != NULL);
     if (!frame2)
       continue;
     EXPECT_TRUE(frame2->final_chunk);
@@ -298,7 +298,7 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
           std::equal(expected2.begin(), expected2.end(), frame2->data->data()));
     }
     const WebSocketFrameHeader* header2 = frame2->header.get();
-    EXPECT_TRUE(header2 == nullptr);
+    EXPECT_TRUE(header2 == NULL);
   }
 }
 
@@ -328,7 +328,7 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
     if (frames.size() != 1u)
       continue;
     WebSocketFrameChunk* frame = frames[0].get();
-    EXPECT_TRUE(frame != nullptr);
+    EXPECT_TRUE(frame != NULL);
     if (!frame)
       continue;
     if (frame_length == input_payload_size) {
@@ -347,7 +347,7 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
                              frame->data->data()));
     }
     const WebSocketFrameHeader* header = frame->header.get();
-    EXPECT_TRUE(header != nullptr);
+    EXPECT_TRUE(header != NULL);
     if (!header)
       continue;
     EXPECT_TRUE(header->final);
@@ -392,7 +392,7 @@ TEST(WebSocketFrameParserTest, DecodePartialHeader) {
     if (frames.size() != 1u)
       continue;
     WebSocketFrameChunk* frame = frames[0].get();
-    EXPECT_TRUE(frame != nullptr);
+    EXPECT_TRUE(frame != NULL);
     if (!frame)
       continue;
     if (frame_length == 0u) {
@@ -402,7 +402,7 @@ TEST(WebSocketFrameParserTest, DecodePartialHeader) {
     }
     EXPECT_EQ(NULL, frame->data.get());
     const WebSocketFrameHeader* header = frame->header.get();
-    EXPECT_TRUE(header != nullptr);
+    EXPECT_TRUE(header != NULL);
     if (!header)
       continue;
     EXPECT_TRUE(header->final);
@@ -494,13 +494,13 @@ TEST(WebSocketFrameParserTest, FrameTypes) {
     if (frames.size() != 1u)
       continue;
     WebSocketFrameChunk* frame = frames[0].get();
-    EXPECT_TRUE(frame != nullptr);
+    EXPECT_TRUE(frame != NULL);
     if (!frame)
       continue;
     EXPECT_TRUE(frame->final_chunk);
     EXPECT_EQ(NULL, frame->data.get());
     const WebSocketFrameHeader* header = frame->header.get();
-    EXPECT_TRUE(header != nullptr);
+    EXPECT_TRUE(header != NULL);
     if (!header)
       continue;
     EXPECT_TRUE(header->final);
@@ -550,13 +550,13 @@ TEST(WebSocketFrameParserTest, FinalBitAndReservedBits) {
     if (frames.size() != 1u)
       continue;
     WebSocketFrameChunk* frame = frames[0].get();
-    EXPECT_TRUE(frame != nullptr);
+    EXPECT_TRUE(frame != NULL);
     if (!frame)
       continue;
     EXPECT_TRUE(frame->final_chunk);
     EXPECT_EQ(NULL, frame->data.get());
     const WebSocketFrameHeader* header = frame->header.get();
-    EXPECT_TRUE(header != nullptr);
+    EXPECT_TRUE(header != NULL);
     if (!header)
       continue;
     EXPECT_EQ(final, header->final);

@@ -61,8 +61,6 @@ class ConsumerIPCService : public protos::ConsumerPort {
   void Attach(const protos::AttachRequest&, DeferredAttachResponse) override;
   void GetTraceStats(const protos::GetTraceStatsRequest&,
                      DeferredGetTraceStatsResponse) override;
-  void ObserveEvents(const protos::ObserveEventsRequest&,
-                     DeferredObserveEventsResponse) override;
   void OnClientDisconnected() override;
 
  private:
@@ -83,16 +81,13 @@ class ConsumerIPCService : public protos::ConsumerPort {
     void OnDetach(bool) override;
     void OnAttach(bool, const TraceConfig&) override;
     void OnTraceStats(bool, const TraceStats&) override;
-    void OnObservableEvents(const ObservableEvents&) override;
-
-    void CloseObserveEventsResponseStream();
 
     // The interface obtained from the core service business logic through
     // TracingService::ConnectConsumer(this). This allows to invoke methods for
     // a specific Consumer on the Service business logic.
     std::unique_ptr<TracingService::ConsumerEndpoint> service_endpoint;
 
-    // After ReadBuffers() is invoked, this binds the async callback that
+    // After DisableTracing() is invoked, this binds the async callback that
     // allows to stream trace packets back to the client.
     DeferredReadBuffersResponse read_buffers_response;
 
@@ -109,10 +104,6 @@ class ConsumerIPCService : public protos::ConsumerPort {
 
     // As above, but for GetTraceStats().
     DeferredGetTraceStatsResponse get_trace_stats_response;
-
-    // After ObserveEvents() is invoked, this binds the async callback that
-    // allows to stream ObservableEvents back to the client.
-    DeferredObserveEventsResponse observe_events_response;
   };
 
   // This has to be a container that doesn't invalidate iterators.

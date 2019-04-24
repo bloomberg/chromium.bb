@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -56,7 +57,7 @@ class CORE_EXPORT WorkerReportingProxy {
   virtual void ReportException(const String& error_message,
                                std::unique_ptr<SourceLocation>,
                                int exception_id) {}
-  virtual void ReportConsoleMessage(mojom::ConsoleMessageSource,
+  virtual void ReportConsoleMessage(MessageSource,
                                     mojom::ConsoleMessageLevel,
                                     const String& message,
                                     SourceLocation*) {}

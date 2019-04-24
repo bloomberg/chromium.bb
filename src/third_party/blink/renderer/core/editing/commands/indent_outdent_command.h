@@ -33,6 +33,9 @@ namespace blink {
 class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
  public:
   enum IndentType { kIndent, kOutdent };
+  static IndentOutdentCommand* Create(Document& document, IndentType type) {
+    return MakeGarbageCollected<IndentOutdentCommand>(document, type);
+  }
 
   IndentOutdentCommand(Document&, IndentType);
 

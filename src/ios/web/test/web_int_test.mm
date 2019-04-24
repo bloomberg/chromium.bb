@@ -77,7 +77,6 @@ void WebIntTest::SetUp() {
       [UIApplication sharedApplication].keyWindow.bounds;
 
   web_state()->SetDelegate(&web_state_delegate_);
-  web_state()->SetKeepRenderProcessAlive(true);
 }
 
 void WebIntTest::TearDown() {

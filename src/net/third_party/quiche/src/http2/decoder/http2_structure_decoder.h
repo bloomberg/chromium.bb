@@ -15,12 +15,12 @@
 
 #include <cstdint>
 
+#include "base/logging.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_http2_structures.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/http2_structures.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 
 namespace http2 {
 namespace test {
@@ -44,9 +44,8 @@ class HTTP2_EXPORT_PRIVATE Http2StructureDecoder {
   template <class S>
   bool Start(S* out, DecodeBuffer* db) {
     static_assert(S::EncodedSize() <= sizeof buffer_, "buffer_ is too small");
-    HTTP2_DVLOG(2) << __func__ << "@" << this
-                   << ": db->Remaining=" << db->Remaining()
-                   << "; EncodedSize=" << S::EncodedSize();
+    DVLOG(2) << __func__ << "@" << this << ": db->Remaining=" << db->Remaining()
+             << "; EncodedSize=" << S::EncodedSize();
     if (db->Remaining() >= S::EncodedSize()) {
       DoDecode(out, db);
       return true;
@@ -57,12 +56,12 @@ class HTTP2_EXPORT_PRIVATE Http2StructureDecoder {
 
   template <class S>
   bool Resume(S* out, DecodeBuffer* db) {
-    HTTP2_DVLOG(2) << __func__ << "@" << this << ": offset_=" << offset_
-                   << "; db->Remaining=" << db->Remaining();
+    DVLOG(2) << __func__ << "@" << this << ": offset_=" << offset_
+             << "; db->Remaining=" << db->Remaining();
     if (ResumeFillingBuffer(db, S::EncodedSize())) {
       // We have the whole thing now.
-      HTTP2_DVLOG(2) << __func__ << "@" << this << "    offset_=" << offset_
-                     << "    Ready to decode from buffer_.";
+      DVLOG(2) << __func__ << "@" << this << "    offset_=" << offset_
+               << "    Ready to decode from buffer_.";
       DecodeBuffer buffer_db(buffer_, S::EncodedSize());
       DoDecode(out, &buffer_db);
       return true;
@@ -78,10 +77,10 @@ class HTTP2_EXPORT_PRIVATE Http2StructureDecoder {
   template <class S>
   DecodeStatus Start(S* out, DecodeBuffer* db, uint32_t* remaining_payload) {
     static_assert(S::EncodedSize() <= sizeof buffer_, "buffer_ is too small");
-    HTTP2_DVLOG(2) << __func__ << "@" << this
-                   << ": *remaining_payload=" << *remaining_payload
-                   << "; db->Remaining=" << db->Remaining()
-                   << "; EncodedSize=" << S::EncodedSize();
+    DVLOG(2) << __func__ << "@" << this
+             << ": *remaining_payload=" << *remaining_payload
+             << "; db->Remaining=" << db->Remaining()
+             << "; EncodedSize=" << S::EncodedSize();
     if (db->MinLengthRemaining(*remaining_payload) >= S::EncodedSize()) {
       DoDecode(out, db);
       *remaining_payload -= S::EncodedSize();
@@ -92,14 +91,14 @@ class HTTP2_EXPORT_PRIVATE Http2StructureDecoder {
 
   template <class S>
   bool Resume(S* out, DecodeBuffer* db, uint32_t* remaining_payload) {
-    HTTP2_DVLOG(3) << __func__ << "@" << this << ": offset_=" << offset_
-                   << "; *remaining_payload=" << *remaining_payload
-                   << "; db->Remaining=" << db->Remaining()
-                   << "; EncodedSize=" << S::EncodedSize();
+    DVLOG(3) << __func__ << "@" << this << ": offset_=" << offset_
+             << "; *remaining_payload=" << *remaining_payload
+             << "; db->Remaining=" << db->Remaining()
+             << "; EncodedSize=" << S::EncodedSize();
     if (ResumeFillingBuffer(db, remaining_payload, S::EncodedSize())) {
       // We have the whole thing now.
-      HTTP2_DVLOG(2) << __func__ << "@" << this << ": offset_=" << offset_
-                     << "; Ready to decode from buffer_.";
+      DVLOG(2) << __func__ << "@" << this << ": offset_=" << offset_
+               << "; Ready to decode from buffer_.";
       DecodeBuffer buffer_db(buffer_, S::EncodedSize());
       DoDecode(out, &buffer_db);
       return true;

@@ -8,7 +8,6 @@ import android.support.annotation.CallSuper;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -24,7 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 /**
  * A class that provides the current {@link Tab} for various states of the browser's activity.
  */
-public class ActivityTabProvider implements Supplier<Tab> {
+public class ActivityTabProvider {
     /** An interface to track the visible tab for the activity. */
     public interface ActivityTabObserver {
         /**
@@ -80,7 +79,7 @@ public class ActivityTabProvider implements Supplier<Tab> {
                 onObservingDifferentTab(tab);
             };
             mTabProvider.addObserver(mActivityTabObserver);
-            updateObservedTab(mTabProvider.get());
+            updateObservedTab(mTabProvider.getActivityTab());
         }
 
         /**
@@ -175,8 +174,7 @@ public class ActivityTabProvider implements Supplier<Tab> {
     /**
      * @return The activity's current tab.
      */
-    @Override
-    public Tab get() {
+    public Tab getActivityTab() {
         return mActivityTab;
     }
 

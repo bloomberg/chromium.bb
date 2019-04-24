@@ -151,8 +151,6 @@ void SignedExchangeCertFetcher::Start() {
 void SignedExchangeCertFetcher::Abort() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::Abort");
-  MaybeNotifyCompletionToDevtools(
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   DCHECK(callback_);
   url_loader_ = nullptr;
   body_.reset();
@@ -194,10 +192,6 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   url_loader_ = nullptr;
   body_.reset();
   handle_watcher_ = nullptr;
-
-  // Notify the completion to the devtools here because |this| may be deleted
-  // before OnComplete() is called.
-  MaybeNotifyCompletionToDevtools(network::URLLoaderCompletionStatus(net::OK));
 
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
       SignedExchangeCertificateChain::Parse(
@@ -314,18 +308,12 @@ void SignedExchangeCertFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnComplete");
-  MaybeNotifyCompletionToDevtools(status);
+  if (devtools_proxy_) {
+    DCHECK(cert_request_id_);
+    devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
+  }
   if (!handle_watcher_)
     Abort();
-}
-
-void SignedExchangeCertFetcher::MaybeNotifyCompletionToDevtools(
-    const network::URLLoaderCompletionStatus& status) {
-  if (!devtools_proxy_ || has_notified_completion_to_devtools_)
-    return;
-  DCHECK(cert_request_id_);
-  devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
-  has_notified_completion_to_devtools_ = true;
 }
 
 // static

@@ -24,8 +24,7 @@ namespace base {
 class BASE_EXPORT MemoryPressureMonitor {
  public:
   using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
-  using DispatchCallback =
-      base::RepeatingCallback<void(MemoryPressureLevel level)>;
+  using DispatchCallback = base::Callback<void(MemoryPressureLevel level)>;
 
   virtual ~MemoryPressureMonitor();
 

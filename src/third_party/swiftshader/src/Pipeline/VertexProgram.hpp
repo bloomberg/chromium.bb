@@ -32,15 +32,31 @@ namespace sw
 		VertexProgram(
 			const VertexProcessor::State &state,
 			vk::PipelineLayout const *pipelineLayout,
-			SpirvShader const *spirvShader,
-			const vk::DescriptorSet::Bindings &descriptorSets);
+			SpirvShader const *spirvShader);
 
 		virtual ~VertexProgram();
 
 	private:
-		void program(UInt &index) override;
+		Int enableIndex;
+		Array<Int4, 1 + 24> enableStack;
 
-		const vk::DescriptorSet::Bindings &descriptorSets;
+		void program(UInt &index) override;
+		RValue<Pointer<Byte>> uniformAddress(int bufferIndex, unsigned int index);
+		RValue<Pointer<Byte>> uniformAddress(int bufferIndex, unsigned int index, Int &offset);
+		Int4 enableMask();
+
+		int ifDepth;
+		int loopRepDepth;
+		int currentLabel;
+		bool whileTest;
+
+		BasicBlock *ifFalseBlock[24 + 24];
+		BasicBlock *loopRepTestBlock[4];
+		BasicBlock *loopRepEndBlock[4];
+		BasicBlock *labelBlock[2048];
+		std::vector<BasicBlock*> callRetBlock[2048];
+		BasicBlock *returnBlock;
+		bool isConditionalIf[24 + 24];
 	};
 }
 

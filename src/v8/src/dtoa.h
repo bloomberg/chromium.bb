@@ -56,9 +56,8 @@ const int kBase10MaximalLength = 17;
 // and a terminating null-character. In SHORTEST-mode it expects a buffer of
 // at least kBase10MaximalLength + 1. Otherwise, the size of the output is
 // limited to requested_digits digits plus the null terminator.
-V8_EXPORT_PRIVATE void DoubleToAscii(double v, DtoaMode mode,
-                                     int requested_digits, Vector<char> buffer,
-                                     int* sign, int* length, int* point);
+void DoubleToAscii(double v, DtoaMode mode, int requested_digits,
+                   Vector<char> buffer, int* sign, int* length, int* point);
 
 }  // namespace internal
 }  // namespace v8

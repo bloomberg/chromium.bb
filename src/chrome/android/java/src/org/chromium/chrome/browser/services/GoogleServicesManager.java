@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.services;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ApplicationState;
@@ -41,6 +42,9 @@ public class GoogleServicesManager implements ApplicationStateListener {
     @SuppressLint("StaticFieldLeak")
     private static GoogleServicesManager sGoogleServicesManager;
 
+    @VisibleForTesting
+    protected final Context mContext;
+
     private final ChromeSigninController mChromeSigninController;
 
     private final SigninHelper mSigninHelper;
@@ -50,20 +54,24 @@ public class GoogleServicesManager implements ApplicationStateListener {
      * <p/>
      * Can only be accessed on the main thread.
      *
+     * @param context the ApplicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the GoogleServicesManager
      */
-    public static GoogleServicesManager get() {
+    public static GoogleServicesManager get(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sGoogleServicesManager == null) {
-            sGoogleServicesManager = new GoogleServicesManager();
+            sGoogleServicesManager = new GoogleServicesManager(context);
         }
         return sGoogleServicesManager;
     }
 
-    private GoogleServicesManager() {
+    private GoogleServicesManager(Context context) {
         try {
             TraceEvent.begin("GoogleServicesManager.GoogleServicesManager");
             ThreadUtils.assertOnUiThread();
+            // We should store the application context, as we outlive any activity which may create
+            // us.
+            mContext = context.getApplicationContext();
 
             mChromeSigninController = ChromeSigninController.get();
             mSigninHelper = SigninHelper.get();
@@ -81,7 +89,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
             }
 
             // Initialize sync.
-            SyncController.get();
+            SyncController.get(context);
 
             ApplicationStatus.registerApplicationStateListener(this);
         } finally {

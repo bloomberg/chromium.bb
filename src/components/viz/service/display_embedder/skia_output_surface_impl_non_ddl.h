@@ -17,11 +17,6 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/vulkan/buildflags.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
-class GrVkSecondaryCBDrawContext;
-#endif
 
 namespace gfx {
 struct PresentationFeedback;
@@ -41,8 +36,6 @@ class SyncPointOrderData;
 }  // namespace gpu
 
 namespace viz {
-
-struct ImageContext;
 
 // A SkiaOutputSurface implementation for running SkiaRenderer on GpuThread.
 // Comparing to SkiaOutputSurfaceImpl, it will issue skia draw operations
@@ -86,9 +79,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      const std::vector<ResourceMetadata>& metadatas,
+      std::vector<ResourceMetadata> metadatas,
       SkYUVColorSpace yuv_color_space,
-      sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
@@ -97,14 +89,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint() override;
-  sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
+  sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
       const gfx::Size& size,
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
+  gpu::SyncToken ReleasePromiseSkImages(
+      std::vector<sk_sp<SkImage>> images) override;
+
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
@@ -117,8 +111,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   GrContext* gr_context() { return shared_context_state_->gr_context(); }
 
   bool WaitSyncToken(const gpu::SyncToken& sync_token);
-  std::unique_ptr<ImageContext> MakeSkImageFromSharedImage(
-      const ResourceMetadata& metadata);
+  sk_sp<SkImage> MakeSkImageFromSharedImage(const ResourceMetadata& metadata);
   bool GetGrBackendTexture(const ResourceMetadata& metadata,
                            GrBackendTexture* backend_texture);
 
@@ -155,20 +148,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   // The SkSurface for the framebuffer.
   sk_sp<SkSurface> sk_surface_;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  // The |draw_context_| for the current frame.
-  GrVkSecondaryCBDrawContext* draw_context_ = nullptr;
-#endif
-
   // Offscreen SkSurfaces for render passes.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_sk_surfaces_;
-
-  // Cached promise image.
-  base::flat_map<ResourceId, std::unique_ptr<ImageContext>>
-      promise_image_cache_;
-
-  // Images for current frame or render pass.
-  std::vector<ImageContext*> images_in_current_paint_;
 
   THREAD_CHECKER(thread_checker_);
 

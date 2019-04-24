@@ -52,4 +52,4 @@ enum ServiceWorkerState {
     attribute EventHandler onstatechange;
 };
 
-ServiceWorker includes AbstractWorker;
+ServiceWorker implements AbstractWorker;

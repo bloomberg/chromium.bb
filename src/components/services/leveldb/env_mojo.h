@@ -8,17 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "components/services/leveldb/leveldb_mojo_proxy.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
-
-#if defined(OS_WIN) && defined(DeleteFile)
-// See comment in env.h.
-#undef DeleteFile
-#define ENV_MOJO_DELETEFILE_UNDEFINED
-#endif  // defined(OS_WIN) && defined(DeleteFile)
 
 namespace leveldb {
 
@@ -93,10 +86,5 @@ class MojoEnv : public Env,
 };
 
 }  // namespace leveldb
-
-// Redefine DeleteFile if necessary.
-#if defined(OS_WIN) && defined(ENV_MOJO_DELETEFILE_UNDEFINED)
-#define DeleteFile DeleteFileW
-#endif
 
 #endif  // COMPONENTS_SERVICES_LEVELDB_ENV_MOJO_H_

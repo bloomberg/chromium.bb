@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/cast/gl_surface_cast.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 

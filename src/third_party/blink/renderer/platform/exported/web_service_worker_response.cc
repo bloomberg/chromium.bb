@@ -120,7 +120,7 @@ WebString WebServiceWorkerResponse::GetHeader(const WebString& key) const {
   return private_->headers.Get(key);
 }
 
-void WebServiceWorkerResponse::VisitHttpHeaderFields(
+void WebServiceWorkerResponse::VisitHTTPHeaderFields(
     WebHTTPHeaderVisitor* header_visitor) const {
   for (HTTPHeaderMap::const_iterator i = private_->headers.begin(),
                                      end = private_->headers.end();

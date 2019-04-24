@@ -18,7 +18,7 @@ InterpolationValue CSSCustomListInterpolationType::MaybeConvertNeutral(
   size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingLengthChecker>(underlying_length));
+      UnderlyingLengthChecker::Create(underlying_length));
 
   if (underlying_length == 0)
     return nullptr;
@@ -39,16 +39,16 @@ InterpolationValue CSSCustomListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers&) const {
-  const auto* list = DynamicTo<CSSValueList>(value);
-  if (!list)
+  if (!value.IsValueList())
     return nullptr;
 
   ConversionCheckers null_checkers;
 
+  const CSSValueList& list = ToCSSValueList(value);
   return ListInterpolationFunctions::CreateList(
-      list->length(), [this, list, state, &null_checkers](size_t index) {
+      list.length(), [this, &list, state, &null_checkers](size_t index) {
         return this->inner_interpolation_type_->MaybeConvertValue(
-            list->Item(index), state, null_checkers);
+            list.Item(index), state, null_checkers);
       });
 }
 

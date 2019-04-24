@@ -76,7 +76,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
@@ -113,11 +112,11 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/login/auth/stub_authenticator_builder.h"
+#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/util/tpm_util.h"
+#include "chromeos/login/auth/stub_authenticator.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
@@ -457,6 +456,7 @@ void UserSessionManager::MaybeAppendPolicySwitches(
       user_profile_prefs->FindPreference(prefs::kIsolateOrigins);
   bool site_per_process = site_per_process_pref->IsManaged() &&
                           site_per_process_pref->GetValue()->GetBool();
+
   std::string isolate_origins =
       isolate_origins_pref->IsManaged()
           ? isolate_origins_pref->GetValue()->GetString()
@@ -479,14 +479,23 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   // We use the policy-style sentinels because these values originate from
   // policy, and because login_manager uses the same sentinels when adding the
   // login-screen site isolation flags.
-  bool use_policy_sentinels = site_per_process || disable_site_isolation;
-  if (use_policy_sentinels) {
+  bool use_policy_sentinels =
+      site_per_process || !isolate_origins.empty() || disable_site_isolation;
+  if (use_policy_sentinels)
     user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
-  }
 
+  // Inject site isolation and isolate origins command line switch from
+  // user policy.
   if (site_per_process) {
     user_flags->AppendSwitch(::switches::kSitePerProcess);
   }
+
+  if (!isolate_origins.empty()) {
+    user_flags->AppendSwitchASCII(
+        ::switches::kIsolateOrigins,
+        user_profile_prefs->GetString(prefs::kIsolateOrigins));
+  }
+
   if (disable_site_isolation) {
     user_flags->AppendSwitch(::switches::kDisableSiteIsolationForPolicy);
   }
@@ -569,7 +578,7 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
   const base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *base::CommandLine::ForCurrentProcess(), NULL)) {
-    SessionManagerClient::Get()->SetFlagsForUser(
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
         cryptohome::CreateAccountIdentifierFromAccountId(
             user_manager::GuestAccountId()),
         base::CommandLine::StringVector());
@@ -588,8 +597,9 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   }
 
   if (authenticator_.get() == NULL) {
-    if (injected_authenticator_builder_) {
-      authenticator_ = injected_authenticator_builder_->Create(consumer);
+    if (injected_user_context_) {
+      authenticator_ =
+          new StubAuthenticator(consumer, *injected_user_context_.get());
     } else {
       authenticator_ = new ChromeCryptohomeAuthenticator(consumer);
     }
@@ -686,8 +696,9 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 
 void UserSessionManager::RestoreActiveSessions() {
   user_sessions_restore_in_progress_ = true;
-  SessionManagerClient::Get()->RetrieveActiveSessions(base::BindOnce(
-      &UserSessionManager::OnRestoreActiveSessions, AsWeakPtr()));
+  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
+      base::BindOnce(&UserSessionManager::OnRestoreActiveSessions,
+                     AsWeakPtr()));
 }
 
 bool UserSessionManager::UserSessionsRestored() const {
@@ -889,7 +900,9 @@ bool UserSessionManager::RespectLocalePreference(
 bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
     Profile* profile,
     bool early_restart) {
-  if (!SessionManagerClient::Get()->SupportsRestartToApplyUserFlags())
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
+  if (!session_manager_client->SupportsRestartToApplyUserFlags())
     return false;
 
   if (ProfileHelper::IsSigninProfile(profile) ||
@@ -1125,7 +1138,7 @@ void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
 void UserSessionManager::StartCrosSession() {
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
-  SessionManagerClient::Get()->StartSession(
+  DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()));
   btl->AddLoginTimeMarker("StartSession-End", false);
@@ -1134,7 +1147,7 @@ void UserSessionManager::StartCrosSession() {
 void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
   if (send_password) {
     if (user_context_.GetPasswordKey()->GetSecret().size() > 0) {
-      SessionManagerClient::Get()->SaveLoginPassword(
+      DBusThreadManager::Get()->GetSessionManagerClient()->SaveLoginPassword(
           user_context_.GetPasswordKey()->GetSecret());
     } else {
       LOG(WARNING) << "Not saving password because password is empty.";
@@ -1256,8 +1269,7 @@ void ShowSupervisedUserDeprecationNotification(Profile* profile,
   notification->set_priority(message_center::SYSTEM_PRIORITY);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void UserSessionManager::InitProfilePreferences(
@@ -1327,9 +1339,13 @@ void UserSessionManager::InitProfilePreferences(
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
-    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
-    identity_manager->LegacySetPrimaryAccount(
-        gaia_id, user_context.GetAccountId().GetUserEmail());
+    // TODO(https://crbug.com/814787): Change this flow to go through a
+    // mainstream Identity Service API once that API exists. Note that this
+    // might require supplying a valid refresh token here as opposed to an
+    // empty string.
+    identity_manager->SetPrimaryAccountSynchronously(
+        gaia_id, user_context.GetAccountId().GetUserEmail(),
+        /*refresh_token=*/std::string());
     std::string account_id = identity_manager->GetPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
@@ -1496,7 +1512,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   auto callback =
       base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
                      AsWeakPtr(), profile);
-  CryptohomeClient* client = CryptohomeClient::Get();
+  CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
   if (tpm_util::TpmIsOwned())
     client->TpmClearStoredPassword(std::move(callback));
   else
@@ -1776,6 +1792,9 @@ void UserSessionManager::RestoreAuthSessionImpl(
     return;
   }
 
+  // Remove legacy OAuth1 token if we have one. If it's valid, we should already
+  // have OAuth2 refresh token in OAuth2TokenService that could be used to
+  // retrieve all other tokens and user_context.
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
@@ -1880,7 +1899,7 @@ void UserSessionManager::OnRestoreActiveSessions(
     LOG(ERROR) << "Could not get list of active user sessions after crash.";
     // If we could not get list of active user sessions it is safer to just
     // sign out so that we don't get in the inconsistent state.
-    SessionManagerClient::Get()->StopSession();
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
     return;
   }
 
@@ -2154,6 +2173,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     browser_creator.LaunchBrowser(
         *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
         chrome::startup::IS_PROCESS_STARTUP, first_run);
+  } else {
+    LOG(WARNING) << "Browser hasn't been launched, should_launch_browser_"
+                 << " is false. This is normal in some tests.";
   }
 
   if (HatsNotificationController::ShouldShowSurveyToProfile(profile))
@@ -2181,11 +2203,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Check to see if this profile should show TPM Firmware Update Notification
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
-
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetTPMAutoUpdateModePolicyHandler()
-      ->ShowTPMAutoUpdateNotificationIfNeeded();
 
   if (should_launch_browser_) {
     ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
@@ -2223,9 +2240,9 @@ void UserSessionManager::RemoveProfileForTesting(Profile* profile) {
   default_ime_states_.erase(profile);
 }
 
-void UserSessionManager::InjectAuthenticatorBuilder(
-    std::unique_ptr<StubAuthenticatorBuilder> builder) {
-  injected_authenticator_builder_ = std::move(builder);
+void UserSessionManager::InjectStubUserContext(
+    const UserContext& user_context) {
+  injected_user_context_.reset(new UserContext(user_context));
   authenticator_ = NULL;
 }
 
@@ -2309,7 +2326,9 @@ void UserSessionManager::SetSwitchesForUser(
                         pair.second.end());
   }
 
-  SessionManagerClient::Get()->SetFlagsForUser(
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
+  session_manager_client->SetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       all_switches);
 }

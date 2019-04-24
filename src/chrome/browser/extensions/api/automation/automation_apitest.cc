@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/path_service.h"
@@ -31,7 +30,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
@@ -144,8 +142,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   EXPECT_EQ(expected_mode, web_contents->GetAccessibilityMode());
 }
 
-// TODO(aboxhall): Fix flakiness
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tab_id.html"))
       << message_;
@@ -377,23 +374,6 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DocumentSelection) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTest) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "hit_test.html"))
-      << message_;
-}
-
-class AutomationApiTestWithLanguageDetection : public AutomationApiTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutomationApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityLanguageDetection);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(AutomationApiTestWithLanguageDetection,
-                       DetectedLanguage) {
-  StartEmbeddedTestServer();
-  ASSERT_TRUE(
-      RunExtensionSubtest("automation/tests/tabs", "detected_language.html"))
       << message_;
 }
 

@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class GridTabSwitcherCoordinator
         implements Destroyable, GridTabSwitcher, GridTabSwitcherMediator.ResetHandler {
-    final static String COMPONENT_NAME = "GridTabSwitcher";
+    private final static String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabListCoordinator mTabGridCoordinator;

@@ -354,15 +354,15 @@ bool TryMatchLoadStoreShift(Arm64OperandGenerator* g,
 // Bitfields describing binary operator properties:
 // CanCommuteField is true if we can switch the two operands, potentially
 // requiring commuting the flags continuation condition.
-using CanCommuteField = BitField8<bool, 1, 1>;
+typedef BitField8<bool, 1, 1> CanCommuteField;
 // MustCommuteCondField is true when we need to commute the flags continuation
 // condition in order to switch the operands.
-using MustCommuteCondField = BitField8<bool, 2, 1>;
+typedef BitField8<bool, 2, 1> MustCommuteCondField;
 // IsComparisonField is true when the operation is a comparison and has no other
 // result other than the condition.
-using IsComparisonField = BitField8<bool, 3, 1>;
+typedef BitField8<bool, 3, 1> IsComparisonField;
 // IsAddSubField is true when an instruction is encoded as ADD or SUB.
-using IsAddSubField = BitField8<bool, 4, 1>;
+typedef BitField8<bool, 4, 1> IsAddSubField;
 
 // Get properties of a binary operator.
 uint8_t GetBinopProperties(InstructionCode opcode) {
@@ -633,18 +633,7 @@ void InstructionSelector::VisitLoad(Node* node) {
       opcode = kArm64LdrDecompressAnyTagged;
       immediate_mode = kLoadStoreImm32;
       break;
-    case MachineRepresentation::kCompressedSigned:
-    case MachineRepresentation::kCompressedPointer:
-    case MachineRepresentation::kCompressed:
-      opcode = kArm64LdrW;
-      immediate_mode = kLoadStoreImm32;
-      break;
 #else
-    case MachineRepresentation::kCompressedSigned:   // Fall through.
-    case MachineRepresentation::kCompressedPointer:  // Fall through.
-    case MachineRepresentation::kCompressed:
-      UNREACHABLE();
-      return;
     case MachineRepresentation::kTaggedSigned:   // Fall through.
     case MachineRepresentation::kTaggedPointer:  // Fall through.
     case MachineRepresentation::kTagged:         // Fall through.
@@ -704,8 +693,21 @@ void InstructionSelector::VisitStore(Node* node) {
       addressing_mode = kMode_MRR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode =
-        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
+    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
+    switch (write_barrier_kind) {
+      case kNoWriteBarrier:
+        UNREACHABLE();
+        break;
+      case kMapWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsMap;
+        break;
+      case kPointerWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsPointer;
+        break;
+      case kFullWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsAny;
+        break;
+    }
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -746,18 +748,7 @@ void InstructionSelector::VisitStore(Node* node) {
         opcode = kArm64StrCompressTagged;
         immediate_mode = kLoadStoreImm32;
         break;
-      case MachineRepresentation::kCompressedSigned:
-      case MachineRepresentation::kCompressedPointer:
-      case MachineRepresentation::kCompressed:
-        opcode = kArm64StrW;
-        immediate_mode = kLoadStoreImm32;
-        break;
 #else
-      case MachineRepresentation::kCompressedSigned:   // Fall through.
-      case MachineRepresentation::kCompressedPointer:  // Fall through.
-      case MachineRepresentation::kCompressed:
-        UNREACHABLE();
-        return;
       case MachineRepresentation::kTaggedSigned:   // Fall through.
       case MachineRepresentation::kTaggedPointer:  // Fall through.
       case MachineRepresentation::kTagged:         // Fall through.
@@ -1292,6 +1283,11 @@ void InstructionSelector::VisitWord32Popcnt(Node* node) { UNREACHABLE(); }
 
 void InstructionSelector::VisitWord64Popcnt(Node* node) { UNREACHABLE(); }
 
+void InstructionSelector::VisitSpeculationFence(Node* node) {
+  Arm64OperandGenerator g(this);
+  Emit(kArm64DsbIsb, g.NoOutput());
+}
+
 void InstructionSelector::VisitInt32Add(Node* node) {
   Arm64OperandGenerator g(this);
   Int32BinopMatcher m(node);
@@ -1655,46 +1651,6 @@ void InstructionSelector::VisitChangeUint32ToUint64(Node* node) {
       break;
   }
   Emit(kArm64Mov32, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeTaggedToCompressed(Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* value = node->InputAt(0);
-  Emit(kArm64CompressAny, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeTaggedPointerToCompressedPointer(
-    Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* value = node->InputAt(0);
-  Emit(kArm64CompressPointer, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeTaggedSignedToCompressedSigned(
-    Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* value = node->InputAt(0);
-  Emit(kArm64CompressSigned, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeCompressedToTagged(Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* const value = node->InputAt(0);
-  Emit(kArm64DecompressAny, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeCompressedPointerToTaggedPointer(
-    Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* const value = node->InputAt(0);
-  Emit(kArm64DecompressPointer, g.DefineAsRegister(node), g.UseRegister(value));
-}
-
-void InstructionSelector::VisitChangeCompressedSignedToTaggedSigned(
-    Node* node) {
-  Arm64OperandGenerator g(this);
-  Node* const value = node->InputAt(0);
-  Emit(kArm64DecompressSigned, g.DefineAsRegister(node), g.UseRegister(value));
 }
 
 void InstructionSelector::VisitTruncateInt64ToInt32(Node* node) {
@@ -3316,7 +3272,8 @@ InstructionSelector::SupportedMachineOperatorFlags() {
          MachineOperatorBuilder::kInt32DivIsSafe |
          MachineOperatorBuilder::kUint32DivIsSafe |
          MachineOperatorBuilder::kWord32ReverseBits |
-         MachineOperatorBuilder::kWord64ReverseBits;
+         MachineOperatorBuilder::kWord64ReverseBits |
+         MachineOperatorBuilder::kSpeculationFence;
 }
 
 // static

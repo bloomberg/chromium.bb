@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -29,7 +30,6 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
@@ -141,6 +141,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
      * editable node at the right timing, which is after input method window shows up.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelCreator")
     private static class ShowKeyboardResultReceiver extends ResultReceiver {
         // Unfortunately, the memory life cycle of ResultReceiver object, once passed in
         // showSoftInput(), is in the control of Android's input method framework and IME app,
@@ -192,9 +194,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         mWebContents = (WebContentsImpl) webContents;
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         assert mViewDelegate != null;
-        // Use application context here to avoid leaking the activity context.
         InputMethodManagerWrapper wrapper =
-                createDefaultInputMethodManagerWrapper(ContextUtils.getApplicationContext());
+                createDefaultInputMethodManagerWrapper(mWebContents.getContext());
 
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(getContainerView().getResources().getConfiguration());

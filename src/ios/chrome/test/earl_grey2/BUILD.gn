@@ -53,6 +53,13 @@ source_set("eg_app_support+eg2") {
   ]
 }
 
+group("eg_test_support+eg2") {
+  testonly = true
+  public_deps = [
+    ":shared_helper_headers",
+  ]
+}
+
 source_set("eg2_tests") {
   configs += [
     "//build/config/compiler:enable_arc",
@@ -65,8 +72,7 @@ source_set("eg2_tests") {
   ]
 
   deps = [
-    ":shared_helper_headers",
-    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    ":eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]
 

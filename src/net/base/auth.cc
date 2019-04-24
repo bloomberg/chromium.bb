@@ -9,15 +9,10 @@ namespace net {
 AuthChallengeInfo::AuthChallengeInfo() : is_proxy(false) {
 }
 
-AuthChallengeInfo::AuthChallengeInfo(const AuthChallengeInfo& other) = default;
-
-bool AuthChallengeInfo::operator==(const AuthChallengeInfo& that) const {
-  return (is_proxy == that.is_proxy && challenger == that.challenger &&
-          scheme == that.scheme && realm == that.realm);
-}
-
-bool AuthChallengeInfo::operator!=(const AuthChallengeInfo& that) const {
-  return !(*this == that);
+bool AuthChallengeInfo::Equals(const AuthChallengeInfo& that) const {
+  return (this->is_proxy == that.is_proxy &&
+          this->challenger == that.challenger && this->scheme == that.scheme &&
+          this->realm == that.realm);
 }
 
 AuthChallengeInfo::~AuthChallengeInfo() = default;

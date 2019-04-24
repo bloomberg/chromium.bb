@@ -378,6 +378,24 @@ uint64_t PerformanceTiming::LargestImagePaintSize() const {
       .LargestImagePaintSize();
 }
 
+uint64_t PerformanceTiming::LastImagePaint() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      paint_timing_detector->GetImagePaintTimingDetector().LastImagePaint());
+}
+
+uint64_t PerformanceTiming::LastImagePaintSize() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return paint_timing_detector->GetImagePaintTimingDetector()
+      .LastImagePaintSize();
+}
+
 uint64_t PerformanceTiming::LargestTextPaint() const {
   PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
   if (!paint_timing_detector)
@@ -394,6 +412,24 @@ uint64_t PerformanceTiming::LargestTextPaintSize() const {
 
   return paint_timing_detector->GetTextPaintTimingDetector()
       .LargestTextPaintSize();
+}
+
+uint64_t PerformanceTiming::LastTextPaint() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      paint_timing_detector->GetTextPaintTimingDetector().LastTextPaint());
+}
+
+uint64_t PerformanceTiming::LastTextPaintSize() const {
+  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
+  if (!paint_timing_detector)
+    return 0;
+
+  return paint_timing_detector->GetTextPaintTimingDetector()
+      .LastTextPaintSize();
 }
 
 uint64_t PerformanceTiming::PageInteractive() const {
@@ -590,7 +626,7 @@ PaintTimingDetector* PerformanceTiming::GetPaintTimingDetector() const {
 }
 
 std::unique_ptr<TracedValue> PerformanceTiming::GetNavigationTracingData() {
-  auto data = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
   data->SetString("navigationId",
                   IdentifiersFactory::LoaderId(GetDocumentLoader()));
   return data;

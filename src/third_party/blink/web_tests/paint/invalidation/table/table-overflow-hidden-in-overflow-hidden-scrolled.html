@@ -30,8 +30,12 @@
             background-color: green;
         }
     </style>
-    <script src="../../../resources/run-after-layout-and-paint.js"></script>
     <script>
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
+
         function repaintTest()
         {
             window.location.hash = "#ucp";
@@ -42,7 +46,7 @@
         function runTest()
         {
             document.getElementById("outer").scrollTop = 1000;
-            runAfterLayoutAndPaint(repaintTest, true);
+            setTimeout(repaintTest, 0);
         }
         window.addEventListener("load", runTest, false);
     </script>

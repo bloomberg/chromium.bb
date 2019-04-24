@@ -223,6 +223,7 @@ var scenario = {
   "source_protocol": "http",
   "target_protocol": "http",
   "subresource": "iframe-tag",
+  "subresource_path": "/referrer-policy/generic/subresource/document.py",
   "referrer_url": "origin"
 };
 ```

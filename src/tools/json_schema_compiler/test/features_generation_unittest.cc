@@ -125,10 +125,8 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     comparator.extension_types = {Manifest::TYPE_EXTENSION,
                                   Manifest::TYPE_PLATFORM_APP};
     comparator.location = SimpleFeature::COMPONENT_LOCATION;
-    comparator.allowlist = {"ABCDEF0123456789ABCDEF0123456789ABCDEF01",
-                            "10FEDCBA9876543210FEDCBA9876543210FEDCBA"};
-    comparator.blocklist = {"0123456789ABCDEF0123456789ABCDEF01234567",
-                            "76543210FEDCBA9876543210FEDCBA9876543210"};
+    comparator.allowlist = {"aaa", "bbb"};
+    comparator.blocklist = {"zzz", "yyy"};
     comparator.component_extensions_auto_granted = false;
     comparator.CompareFeature(feature);
   }
@@ -147,7 +145,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     // case that it specifies its own value. Thus, we reuse |comparator|.
     feature = GetAsSimpleFeature("gamma.child");
     comparator.name = "gamma.child";
-    comparator.allowlist = {"0123456789ABCDEF0123456789ABCDEF01234567"};
+    comparator.allowlist = {"ccc"};
     comparator.platforms = {Feature::LINUX_PLATFORM};
     comparator.dependencies.clear();
     comparator.CompareFeature(feature);
@@ -157,7 +155,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     // other feature.
     const SimpleFeature* feature = GetAsSimpleFeature("gamma.unparented");
     FeatureComparator comparator("gamma.unparented");
-    comparator.blocklist = {"0123456789ABCDEF0123456789ABCDEF01234567"};
+    comparator.blocklist = {"ddd"};
     comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
     comparator.channel = version_info::Channel::DEV;
     comparator.CompareFeature(feature);
@@ -261,7 +259,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
       comparator.channel = version_info::Channel::BETA;
       comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
       comparator.extension_types = {Manifest::TYPE_EXTENSION};
-      comparator.allowlist = {"0123456789ABCDEF0123456789ABCDEF01234567"};
+      comparator.allowlist = {"aaa"};
       comparator.CompareFeature(other_parent);
     }
   }

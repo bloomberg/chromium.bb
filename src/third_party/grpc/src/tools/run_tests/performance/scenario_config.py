@@ -463,7 +463,8 @@ class CXXLanguage:
                 secure=secure,
                 minimal_stack=not secure,
                 categories=smoketest_categories + inproc_categories +
-                [SCALABLE])
+                [SCALABLE],
+                excluded_poll_engines=['poll-cv'])
 
             yield _ping_pong_scenario(
                 'cpp_protobuf_async_client_unary_1channel_64wide_128Breq_8MBresp_%s'
@@ -489,7 +490,8 @@ class CXXLanguage:
                 secure=secure,
                 minimal_stack=not secure,
                 categories=smoketest_categories + inproc_categories +
-                [SCALABLE])
+                [SCALABLE],
+                excluded_poll_engines=['poll-cv'])
 
             yield _ping_pong_scenario(
                 'cpp_protobuf_async_unary_ping_pong_%s_1MB' % secstr,

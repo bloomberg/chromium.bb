@@ -85,24 +85,23 @@ class WindowMoveObserver : public WindowTreeClientTestObserver {
   }
   ~WindowMoveObserver() override { client_->RemoveTestObserver(this); }
 
-  bool in_window_move() const { return window_move_count_ > 0; }
-  int window_move_count() const { return window_move_count_; }
+  bool in_window_move() const { return in_window_move_; }
 
  private:
   // WindowTreeClientTestObserver:
   void OnChangeStarted(uint32_t change_id, ChangeType type) override {
     if (type == ChangeType::MOVE_LOOP)
-      window_move_count_++;
+      in_window_move_ = true;
   }
   void OnChangeCompleted(uint32_t change_id,
                          ChangeType type,
                          bool success) override {
     if (type == ChangeType::MOVE_LOOP)
-      window_move_count_--;
+      in_window_move_ = false;
   }
 
   WindowTreeClient* client_;
-  int window_move_count_ = 0;
+  bool in_window_move_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowMoveObserver);
 };
@@ -153,13 +152,6 @@ class ClientSideWindowMoveHandlerTest
       event_generator_->PressLeftButton();
     else
       event_generator_->PressTouch();
-  }
-
-  void ReleaseInput() {
-    if (IsInputMouse())
-      event_generator_->ReleaseLeftButton();
-    else
-      event_generator_->ReleaseTouch();
   }
 
   gfx::Rect GetWindowBounds() { return test_window_->GetBoundsInScreen(); }
@@ -295,38 +287,6 @@ TEST_P(ClientSideWindowMoveHandlerTest, MouseExitDoesNotCancelResize) {
   EXPECT_TRUE(observer.in_window_move());
   EXPECT_EQ(HTTOPLEFT, window_tree()->last_move_hit_test());
   EXPECT_EQ(HTTOPLEFT, window_tree()->last_window_resize_shadow());
-  window_tree()->AckAllChanges();
-  EXPECT_FALSE(observer.in_window_move());
-}
-
-TEST_P(ClientSideWindowMoveHandlerTest,
-       AdditionalEventsShouldntTriggerAnotherMove) {
-  WindowMoveObserver observer(window_tree_client_impl());
-
-  MoveInputTo(GetWindowBounds().origin() + gfx::Vector2d(10, 10));
-
-  PressInput();
-  MoveInputBy(10, 10);
-  EXPECT_EQ(1, observer.window_move_count());
-  EXPECT_EQ(HTCAPTION, window_tree()->last_move_hit_test());
-  EXPECT_EQ(HTNOWHERE, window_tree()->last_window_resize_shadow());
-
-  // Nothing should happen for additional move events.
-  MoveInputBy(10, 10);
-  EXPECT_EQ(1, observer.window_move_count());
-  EXPECT_EQ(HTCAPTION, window_tree()->last_move_hit_test());
-  EXPECT_EQ(HTNOWHERE, window_tree()->last_window_resize_shadow());
-  window_tree()->AckAllChanges();
-  EXPECT_FALSE(observer.in_window_move());
-  ReleaseInput();
-
-  // Restarting a move should start a new move.
-  MoveInputTo(GetWindowBounds().origin() + gfx::Vector2d(10, 10));
-  PressInput();
-  MoveInputBy(10, 10);
-  EXPECT_EQ(1, observer.window_move_count());
-  EXPECT_EQ(HTCAPTION, window_tree()->last_move_hit_test());
-  EXPECT_EQ(HTNOWHERE, window_tree()->last_window_resize_shadow());
   window_tree()->AckAllChanges();
   EXPECT_FALSE(observer.in_window_move());
 }

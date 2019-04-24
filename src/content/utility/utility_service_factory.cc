@@ -49,7 +49,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
@@ -135,30 +134,29 @@ UtilityServiceFactory::UtilityServiceFactory()
 
 UtilityServiceFactory::~UtilityServiceFactory() {}
 
-void UtilityServiceFactory::RunService(
-    const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  auto request = service_manager::mojom::ServiceRequest(std::move(receiver));
+bool UtilityServiceFactory::HandleServiceRequest(
+    const std::string& name,
+    service_manager::mojom::ServiceRequest request) {
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   if (trace_log->IsProcessNameEmpty())
-    trace_log->set_process_name("Service: " + service_name);
+    trace_log->set_process_name("Service: " + name);
 
-  static auto* service_name_crash_key = base::debug::AllocateCrashKeyString(
+  static auto* service_name = base::debug::AllocateCrashKeyString(
       "service-name", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(service_name_crash_key, service_name);
+  base::debug::SetCrashKeyString(service_name, name);
 
   std::unique_ptr<service_manager::Service> service;
-  if (service_name == audio::mojom::kServiceName) {
+  if (name == audio::mojom::kServiceName) {
     service = CreateAudioService(std::move(request));
-  } else if (service_name == data_decoder::mojom::kServiceName) {
+  } else if (name == data_decoder::mojom::kServiceName) {
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     service =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
-  } else if (service_name == tracing::mojom::kServiceName &&
+  } else if (name == tracing::mojom::kServiceName &&
              !base::FeatureList::IsEnabled(
                  features::kTracingServiceInProcess)) {
     service = std::make_unique<tracing::TracingService>(std::move(request));
-  } else if (service_name == mojom::kNetworkServiceName &&
+  } else if (name == mojom::kNetworkServiceName &&
              base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Unlike other services supported by the utility process, the network
     // service runs on the IO thread and never self-terminates.
@@ -169,15 +167,15 @@ void UtilityServiceFactory::RunService(
         base::BindOnce(&RunNetworkServiceOnIOThread, std::move(request),
                        std::move(network_registry_),
                        base::SequencedTaskRunnerHandle::Get()));
-    return;
-  } else if (service_name == video_capture::mojom::kServiceName) {
+    return true;
+  } else if (name == video_capture::mojom::kServiceName) {
     service = std::make_unique<video_capture::ServiceImpl>(
         std::move(request), base::ThreadTaskRunnerHandle::Get());
-  } else if (service_name == viz::mojom::kVizServiceName) {
+  } else if (name == viz::mojom::kVizServiceName) {
     service = std::make_unique<viz::Service>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  else if (service_name == media::mojom::kCdmServiceName) {
+  else if (name == media::mojom::kCdmServiceName) {
     service = std::make_unique<media::CdmService>(
         std::make_unique<ContentCdmServiceClient>(), std::move(request));
   }
@@ -188,16 +186,14 @@ void UtilityServiceFactory::RunService(
         std::move(service),
         base::BindOnce(&UtilityThread::ReleaseProcess,
                        base::Unretained(UtilityThread::Get())));
-    return;
+    return true;
   }
 
-  if (GetContentClient()->utility()->HandleServiceRequest(service_name,
-                                                          std::move(request))) {
-    return;
-  }
+  return GetContentClient()->utility()->HandleServiceRequest(
+      name, std::move(request));
+}
 
-  // Nothing knew how to handle this request. Complain loudly and die.
-  LOG(ERROR) << "Ignoring request to start unknown service: " << service_name;
+void UtilityServiceFactory::OnLoadFailed() {
   UtilityThreadImpl* utility_thread =
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();
@@ -214,28 +210,6 @@ UtilityServiceFactory::CreateAudioService(
           service_manager::features::kAudioServiceSandbox)) {
     sandbox::DisableLaunchServices();
   }
-
-  // Set the audio process to run with similar scheduling parameters as the
-  // browser process.
-  task_category_policy category;
-  category.role = TASK_FOREGROUND_APPLICATION;
-  kern_return_t result = task_policy_set(
-      mach_task_self(), TASK_CATEGORY_POLICY,
-      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
-
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_CATEGORY_POLICY";
-
-  task_qos_policy qos;
-  qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
-  qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
-  result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
-                           reinterpret_cast<task_policy_t>(&qos),
-                           TASK_QOS_POLICY_COUNT);
-
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_QOS_POLICY";
-
 #endif
 
   return audio::CreateStandaloneService(std::move(audio_registry_),

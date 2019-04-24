@@ -195,6 +195,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::ContextCreationAttribs)
   IPC_STRUCT_TRAITS_MEMBER(enable_raster_interface)
   IPC_STRUCT_TRAITS_MEMBER(enable_oop_rasterization)
   IPC_STRUCT_TRAITS_MEMBER(enable_swap_timestamps_if_supported)
+  IPC_STRUCT_TRAITS_MEMBER(backed_by_surface_texture)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::GpuMemoryBufferFormatSet)

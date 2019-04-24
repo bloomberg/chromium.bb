@@ -40,7 +40,7 @@ void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   CheckUiCallsAllowed();
   if (producer_weak_ptr_) {
-    producer_weak_ptr_->OnParentDrawDataUpdated(this);
+    producer_weak_ptr_->OnParentDrawConstraintsUpdated(this);
   }
 }
 
@@ -106,18 +106,11 @@ ChildFrameQueue RenderThreadManager::PassUncommittedFrameOnUI() {
   return returned_frames;
 }
 
-void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
-    const ParentCompositorDrawConstraints& parent_draw_constraints,
-    const CompositorID& compositor_id,
-    viz::PresentationFeedbackMap presentation_feedbacks) {
+void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
+    const ParentCompositorDrawConstraints& parent_draw_constraints) {
   {
     base::AutoLock lock(lock_);
     parent_draw_constraints_ = parent_draw_constraints;
-    // Presentation feedbacks are a sequence and it's ok to drop something in
-    // the middle of the sequence. This also means its ok to drop the feedbacks
-    // from early returned frames from WaitAndPruneFrameQueue as well.
-    presentation_feedbacks_ = std::move(presentation_feedbacks);
-    compositor_id_for_presentation_feedbacks_ = compositor_id;
   }
 
   // No need to hold the lock_ during the post task.
@@ -127,17 +120,12 @@ void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
                      ui_thread_weak_ptr_));
 }
 
-void RenderThreadManager::TakeParentDrawDataOnUI(
-    ParentCompositorDrawConstraints* constraints,
-    CompositorID* compositor_id,
-    viz::PresentationFeedbackMap* presentation_feedbacks) {
+ParentCompositorDrawConstraints
+RenderThreadManager::GetParentDrawConstraintsOnUI() const {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  DCHECK(presentation_feedbacks->empty());
   CheckUiCallsAllowed();
   base::AutoLock lock(lock_);
-  *constraints = parent_draw_constraints_;
-  *compositor_id = compositor_id_for_presentation_feedbacks_;
-  presentation_feedbacks_.swap(*presentation_feedbacks);
+  return parent_draw_constraints_;
 }
 
 void RenderThreadManager::SetInsideHardwareRelease(bool inside) {
@@ -192,7 +180,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   }
 
   if (hardware_renderer_)
-    hardware_renderer_->Draw(params);
+    hardware_renderer_->DrawGL(params);
 }
 
 void RenderThreadManager::DestroyHardwareRendererOnRT(bool save_restore) {

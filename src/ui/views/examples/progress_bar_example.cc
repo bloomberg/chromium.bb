@@ -25,9 +25,15 @@ double SetToMax(double percent) {
 namespace views {
 namespace examples {
 
-ProgressBarExample::ProgressBarExample() : ExampleBase("Progress Bar") {}
+ProgressBarExample::ProgressBarExample()
+    : ExampleBase("Progress Bar"),
+      minus_button_(nullptr),
+      plus_button_(nullptr),
+      progress_bar_(nullptr),
+      current_percent_(0.0) {}
 
-ProgressBarExample::~ProgressBarExample() = default;
+ProgressBarExample::~ProgressBarExample() {
+}
 
 void ProgressBarExample::CreateExampleView(View* container) {
   GridLayout* layout = container->SetLayoutManager(

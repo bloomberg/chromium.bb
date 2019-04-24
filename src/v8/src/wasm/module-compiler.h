@@ -37,10 +37,15 @@ class NativeModule;
 class WasmCode;
 struct WasmModule;
 
-std::shared_ptr<NativeModule> CompileToNativeModule(
+std::unique_ptr<NativeModule> CompileToNativeModule(
     Isolate* isolate, const WasmFeatures& enabled, ErrorThrower* thrower,
     std::shared_ptr<const WasmModule> module, const ModuleWireBytes& wire_bytes,
     Handle<FixedArray>* export_wrappers_out);
+
+void CompileNativeModuleWithExplicitBoundsChecks(Isolate* isolate,
+                                                 ErrorThrower* thrower,
+                                                 const WasmModule* wasm_module,
+                                                 NativeModule* native_module);
 
 V8_EXPORT_PRIVATE
 void CompileJsToWasmWrappers(Isolate* isolate, const WasmModule* module,
@@ -51,7 +56,8 @@ V8_EXPORT_PRIVATE Handle<Script> CreateWasmScript(
     const std::string& source_map_url);
 
 // Triggered by the WasmCompileLazy builtin.
-void CompileLazy(Isolate*, NativeModule*, uint32_t func_index);
+// Returns the instruction start of the compiled code object.
+Address CompileLazy(Isolate*, NativeModule*, uint32_t func_index);
 
 // Encapsulates all the state and steps of an asynchronous compilation.
 // An asynchronous compile job consists of a number of tasks that are executed
@@ -104,8 +110,7 @@ class AsyncCompileJob {
 
   void FinishCompile();
 
-  void DecodeFailed(const WasmError&);
-  void AsyncCompileFailed();
+  void AsyncCompileFailed(const WasmError&);
 
   void AsyncCompileSucceeded(Handle<WasmModuleObject> result);
 
@@ -150,7 +155,7 @@ class AsyncCompileJob {
   // Copy of the module wire bytes, moved into the {native_module_} on its
   // creation.
   std::unique_ptr<byte[]> bytes_copy_;
-  // Reference to the wire bytes (held in {bytes_copy_} or as part of
+  // Reference to the wire bytes (hold in {bytes_copy_} or as part of
   // {native_module_}).
   ModuleWireBytes wire_bytes_;
   Handle<Context> native_context_;

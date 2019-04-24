@@ -32,10 +32,15 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   using Direction = cc::KeyframeModel::Direction;
   using FillMode = cc::KeyframeModel::FillMode;
 
-  CompositorKeyframeModel(const CompositorAnimationCurve&,
-                          compositor_target_property::Type,
-                          int keyframe_model_id,
-                          int group_id);
+  static std::unique_ptr<CompositorKeyframeModel> Create(
+      const blink::CompositorAnimationCurve& curve,
+      compositor_target_property::Type target,
+      int group_id,
+      int keyframe_model_id) {
+    return base::WrapUnique(new CompositorKeyframeModel(
+        curve, target, keyframe_model_id, group_id));
+  }
+
   ~CompositorKeyframeModel();
 
   // An id must be unique.
@@ -75,6 +80,11 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   std::unique_ptr<CompositorFloatAnimationCurve> FloatCurveForTesting() const;
 
  private:
+  CompositorKeyframeModel(const CompositorAnimationCurve&,
+                          compositor_target_property::Type,
+                          int keyframe_model_id,
+                          int group_id);
+
   std::unique_ptr<cc::KeyframeModel> keyframe_model_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorKeyframeModel);

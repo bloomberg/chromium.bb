@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "net/base/net_errors.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
@@ -189,11 +188,7 @@ bool MDnsHostLocator::Impl::StartListening() {
 
   socket_factory_ = net::MDnsSocketFactory::CreateDefault();
   mdns_client_ = net::MDnsClient::CreateDefault();
-  int result = mdns_client_->StartListening(socket_factory_.get());
-  if (result != net::OK) {
-    LOG(ERROR) << "Error starting mDNS client: " << net::ErrorToString(result);
-  }
-  return result == net::OK;
+  return mdns_client_->StartListening(socket_factory_.get());
 }
 
 bool MDnsHostLocator::Impl::CreatePtrTransaction() {

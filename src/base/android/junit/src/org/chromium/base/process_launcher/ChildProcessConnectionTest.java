@@ -92,8 +92,7 @@ public class ChildProcessConnectionTest {
                 @Override
                 public ChildProcessConnection.ChildServiceConnection createConnection(
                         Intent bindIntent, int bindFlags,
-                        ChildProcessConnection.ChildServiceConnectionDelegate delegate,
-                        String instanceName) {
+                        ChildProcessConnection.ChildServiceConnectionDelegate delegate) {
                     ChildServiceConnectionMock connection =
                             spy(new ChildServiceConnectionMock(bindIntent, delegate));
                     if (mFirstServiceConnection == null) {
@@ -155,7 +154,7 @@ public class ChildProcessConnectionTest {
         String serviceName = "TestService";
         return new ChildProcessConnection(null /* context */,
                 new ComponentName(packageName, serviceName), bindToCaller, bindAsExternalService,
-                serviceBundle, mServiceConnectionFactory, null /* instanceName */);
+                serviceBundle, mServiceConnectionFactory);
     }
 
     @Test

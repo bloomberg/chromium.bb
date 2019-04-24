@@ -36,13 +36,13 @@ String CSSColorValue::SerializeAsCSSComponentValue(Color color) {
   else
     result.Append("rgb(");
 
-  result.AppendNumber(static_cast<uint16_t>(color.Red()));
+  result.AppendNumber(static_cast<unsigned char>(color.Red()));
   result.Append(", ");
 
-  result.AppendNumber(static_cast<uint16_t>(color.Green()));
+  result.AppendNumber(static_cast<unsigned char>(color.Green()));
   result.Append(", ");
 
-  result.AppendNumber(static_cast<uint16_t>(color.Blue()));
+  result.AppendNumber(static_cast<unsigned char>(color.Blue()));
   if (color_has_alpha) {
     result.Append(", ");
     // See <alphavalue> section in

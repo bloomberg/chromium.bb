@@ -33,8 +33,7 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::TEXT, views::TEXT)));
-  AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(dialog_text_id)));
+  AddChildView(new views::Label(l10n_util::GetStringUTF16(dialog_text_id)));
 
   // Parent the dialog widget to the LockSystemModalContainer, or
   // OverlayContainer to ensure that it will get displayed on respective

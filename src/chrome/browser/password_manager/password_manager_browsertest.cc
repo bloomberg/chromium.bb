@@ -83,8 +83,7 @@ namespace {
 void SetNewParsingForSaving(base::test::ScopedFeatureList* scoped_feature_list,
                             bool enabled) {
   std::vector<Feature> features = {features::kNewPasswordFormParsing,
-                                   features::kNewPasswordFormParsingForSaving,
-                                   features::kOnlyNewParser};
+                                   features::kNewPasswordFormParsingForSaving};
 
   std::vector<Feature> enabled_features;
   std::vector<Feature> disabled_features;
@@ -966,15 +965,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptIfLinkClicked) {
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
-// Disabled due to flakiness on windows.
-#if defined(OS_WIN)
-#define MAYBE_VerifyPasswordGenerationUpload \
-  DISABLED_VerifyPasswordGenerationUpload
-#else
-#define MAYBE_VerifyPasswordGenerationUpload VerifyPasswordGenerationUpload
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_VerifyPasswordGenerationUpload) {
+                       VerifyPasswordGenerationUpload) {
   // Prevent Autofill requests from actually going over the wire.
   net::TestURLFetcherFactory factory;
   // Disable Autofill requesting access to AddressBook data. This causes
@@ -1154,8 +1146,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
-// TODO(crbug.com/949908) The test is flaky (crashing) on all platforms.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DISABLED_DeleteFrameBeforeSubmit) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
   NavigateToFile("/password/multi_frames.html");
 
   NavigationObserver observer(WebContents());
@@ -2476,11 +2467,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   std::vector<autofill::PasswordForm> password_forms;
   password_forms.push_back(autofill::PasswordForm());
   password_forms.back().origin = main_frame_url;
-  ContentPasswordManagerDriverFactory* factory =
-      ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
-  EXPECT_TRUE(factory);
   autofill::mojom::PasswordManagerDriver* driver =
-      factory->GetDriverForFrame(iframe);
+      ChromePasswordManagerClient::FromWebContents(WebContents());
   EXPECT_TRUE(driver);
   driver->PasswordFormsParsed(password_forms);
 
@@ -3661,10 +3649,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // page.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
   for (bool new_parser_enabled : {false, true}) {
-    SCOPED_TRACE(testing::Message("new_parser_enabled=") << new_parser_enabled);
     base::test::ScopedFeatureList scoped_feature_list;
-    SetNewParsingForSaving(&scoped_feature_list, new_parser_enabled);
-
+    if (new_parser_enabled) {
+      scoped_feature_list.InitAndEnableFeature(
+          features::kNewPasswordFormParsing);
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          features::kNewPasswordFormParsing);
+    }
     // The embedded_test_server() is already started at this point and adding
     // the request handler to it would not be thread safe. Therefore, use a new
     // server.
@@ -3849,9 +3841,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // bubble is shown instead of silent update.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        NoSilentOverwriteOnPSLMatch) {
-  // The test matches the behavior of the new password form manager.
-  base::test::ScopedFeatureList scoped_feature_list;
-  SetNewParsingForSaving(&scoped_feature_list, true);
   // Store a password at origin A.
   const GURL url_A = embedded_test_server()->GetURL("abc.foo.com", "/");
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -3901,16 +3890,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   prompt_observer->AcceptUpdatePrompt(stored_form);
 
   WaitForPasswordStore();
-  // There are two credentials saved with the new password.
-  const auto& passwords_map = password_store->stored_passwords();
-  ASSERT_THAT(passwords_map, ElementsAre(testing::Key(url_A.GetOrigin()),
-                                         testing::Key(url_B.GetOrigin())));
-  for (const auto& credentials : passwords_map) {
-    ASSERT_THAT(credentials.second, testing::SizeIs(1));
-    EXPECT_EQ(base::ASCIIToUTF16("user"), credentials.second[0].username_value);
-    EXPECT_EQ(base::ASCIIToUTF16("new password"),
-              credentials.second[0].password_value);
-  }
+  CheckThatCredentialsStored("user", "new password");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -3973,11 +3953,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   NavigateToFile("/password/password_form.html");
 
-  ContentPasswordManagerDriverFactory* factory =
-      ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
   autofill::mojom::PasswordManagerDriver* driver =
-      factory->GetDriverForFrame(WebContents()->GetMainFrame());
-
+      ChromePasswordManagerClient::FromWebContents(WebContents());
   // Instruct Chrome to show the password dropdown.
   driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
                                   0, gfx::RectF());

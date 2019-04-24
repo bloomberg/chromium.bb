@@ -33,7 +33,7 @@
 }
 
 - (int)maxPacketLifeTime {
-  return *_nativeDataChannelInit.maxRetransmitTime;
+  return _nativeDataChannelInit.maxRetransmitTime;
 }
 
 - (void)setMaxPacketLifeTime:(int)maxPacketLifeTime {
@@ -41,11 +41,7 @@
 }
 
 - (int)maxRetransmits {
-  if (_nativeDataChannelInit.maxRetransmits) {
-    return *_nativeDataChannelInit.maxRetransmits;
-  } else {
-    return -1;
-  }
+  return _nativeDataChannelInit.maxRetransmits;
 }
 
 - (void)setMaxRetransmits:(int)maxRetransmits {

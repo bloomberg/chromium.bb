@@ -57,8 +57,7 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
   HRESULT hr;
   hr = security_manager_->ProcessUrlAction(
       base::as_wcstr(url16), URLACTION_CREDENTIALS_USE,
-      reinterpret_cast<BYTE*>(&policy), sizeof(policy), nullptr, 0, PUAF_NOUI,
-      0);
+      reinterpret_cast<BYTE*>(&policy), sizeof(policy), NULL, 0, PUAF_NOUI, 0);
   if (FAILED(hr)) {
     LOG(ERROR) << "IInternetSecurityManager::ProcessUrlAction failed: " << hr;
     return false;
@@ -103,8 +102,8 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
 
 bool URLSecurityManagerWin::EnsureSystemSecurityManager() {
   if (!security_manager_.Get()) {
-    HRESULT hr =
-        CoInternetCreateSecurityManager(nullptr, &security_manager_, 0);
+    HRESULT hr = CoInternetCreateSecurityManager(
+        NULL, security_manager_.GetAddressOf(), NULL);
     if (FAILED(hr) || !security_manager_.Get()) {
       LOG(ERROR) << "Unable to create the Windows Security Manager instance";
       return false;

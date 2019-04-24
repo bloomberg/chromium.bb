@@ -4,8 +4,6 @@
 
 #include "android_webview/browser/aw_web_contents_delegate.h"
 
-#include <utility>
-
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
@@ -113,11 +111,11 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 void AwWebContentsDelegate::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    base::OnceCallback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback) {
   // Android webview intercepts download in its resource dispatcher host
   // delegate, so should not reach here.
   NOTREACHED();
-  std::move(callback).Run(false);
+  callback.Run(false);
 }
 
 void AwWebContentsDelegate::RunFileChooser(

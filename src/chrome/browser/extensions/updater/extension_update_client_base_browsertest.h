@@ -40,7 +40,7 @@ class ExtensionUpdateClientBaseTest : public ExtensionBrowserTest {
  public:
   using ConfigFactoryCallback = ChromeUpdateClientConfig::FactoryCallback;
 
-  ExtensionUpdateClientBaseTest();
+  explicit ExtensionUpdateClientBaseTest(bool use_JSON);
   ~ExtensionUpdateClientBaseTest() override;
 
   // ExtensionBrowserTest:
@@ -86,6 +86,8 @@ class ExtensionUpdateClientBaseTest : public ExtensionBrowserTest {
 
   net::EmbeddedTestServer https_server_for_update_;
   net::EmbeddedTestServer https_server_for_ping_;
+
+  bool use_JSON_ = false;
 
  private:
   bool OnRequest(content::URLLoaderInterceptor::RequestParams* params);

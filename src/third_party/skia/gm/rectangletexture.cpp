@@ -40,17 +40,20 @@ protected:
         SkCanvas canvas(bmp);
         SkPoint pts[] = { {0, 0}, {0, SkIntToScalar(height)} };
         SkColor colors0[] = { 0xFF1060B0 , 0xFF102030 };
-        paint.setShader(SkGradientShader::MakeLinear(pts, colors0, nullptr, 2, SkTileMode::kClamp));
+        paint.setShader(SkGradientShader::MakeLinear(pts, colors0, nullptr, 2,
+                                                     SkShader::kClamp_TileMode));
         canvas.drawPaint(paint);
 
         SkColor colors1[] = {0xFFA07010, 0xFFA02080};
         paint.setAntiAlias(true);
-        paint.setShader(SkGradientShader::MakeLinear(pts, colors1, nullptr, 2, SkTileMode::kClamp));
+        paint.setShader(SkGradientShader::MakeLinear(pts, colors1, nullptr, 2,
+                                                     SkShader::kClamp_TileMode));
         canvas.drawCircle(SkIntToScalar(width) / 2, SkIntToScalar(height) / 2,
                           SkIntToScalar(width + height) / 5, paint);
     }
 
-    static const GrGLContext* GetGLContextIfSupported(GrContext* context) {
+    sk_sp<SkImage> createRectangleTextureImg(GrContext* context, GrSurfaceOrigin origin, int width,
+                                             int height, const uint32_t* pixels) {
         GrGpu* gpu = context->priv().getGpu();
         if (!gpu) {
             return nullptr;
@@ -60,32 +63,9 @@ protected:
             return nullptr;
         }
 
-    #if 0 // TODO(bsalomon): use extensions on GLES?
-        bool is_GL31 = glCtx->standard() == kGL_GrGLStandard
-                    && glCtx->version()  >= GR_GL_VER(3, 1);
-        if (!is_GL31
-                && !glCtx->hasExtension("GL_ARB_texture_rectangle")
-                && !glCtx->hasExtension("GL_ANGLE_texture_rectangle")) {
-            return nullptr;
-        }
-    #else
-        if (glCtx->standard() != kGL_GrGLStandard) {
-            return nullptr;
-        }
-        if (glCtx->version() < GR_GL_VER(3,1)
-                && !glCtx->hasExtension("GL_ARB_texture_rectangle")
-                && !glCtx->hasExtension("GL_ANGLE_texture_rectangle")) {
-            return nullptr;
-        }
-    #endif
-
-        return glCtx;
-    }
-
-    sk_sp<SkImage> createRectangleTextureImg(GrContext* context, GrSurfaceOrigin origin, int width,
-                                             int height, const uint32_t* pixels) {
-        const GrGLContext* glCtx = GetGLContextIfSupported(context);
-        if (!glCtx) {
+        if (!(kGL_GrGLStandard == glCtx->standard() && glCtx->version() >= GR_GL_VER(3, 1)) &&
+            !(glCtx->hasExtension("GL_ARB_texture_rectangle") ||
+              glCtx->hasExtension("GL_ANGLE_texture_rectangle"))) {
             return nullptr;
         }
 
@@ -139,11 +119,6 @@ protected:
 
     DrawResult onDraw(GrContext* context, GrRenderTargetContext*, SkCanvas* canvas,
                       SkString* errorMsg) override {
-        if (!GetGLContextIfSupported(context)) {
-            *errorMsg = "this GM requires an OpenGL 3.1+ context";
-            return DrawResult::kSkip;
-        }
-
         constexpr int kWidth = 50;
         constexpr int kHeight = 50;
         constexpr SkScalar kPad = 5.f;
@@ -194,8 +169,8 @@ protected:
                     // repeat/mirror shader
                     SkPaint repeatPaint;
                     repeatPaint.setFilterQuality(q);
-                    repeatPaint.setShader(rectImgs[i]->makeShader(SkTileMode::kRepeat,
-                                                                  SkTileMode::kMirror));
+                    repeatPaint.setShader(rectImgs[i]->makeShader(SkShader::kRepeat_TileMode,
+                                                                  SkShader::kMirror_TileMode));
                     canvas->drawRect(SkRect::MakeWH(1.5f * kWidth, 1.5f * kHeight), repeatPaint);
                     canvas->translate(1.5f * kWidth + kPad, 0);
 

@@ -5,8 +5,6 @@
 #ifndef V8_V8THREADS_H_
 #define V8_V8THREADS_H_
 
-#include <atomic>
-
 #include "src/isolate.h"
 
 namespace v8 {
@@ -77,8 +75,8 @@ class ThreadManager {
 
   void Iterate(RootVisitor* v);
   void IterateArchivedThreads(ThreadVisitor* v);
-  bool IsLockedByCurrentThread() const {
-    return mutex_owner_.load(std::memory_order_relaxed) == ThreadId::Current();
+  bool IsLockedByCurrentThread() {
+    return mutex_owner_.Equals(ThreadId::Current());
   }
 
   ThreadId CurrentId();
@@ -98,9 +96,7 @@ class ThreadManager {
   void EagerlyArchiveThread();
 
   base::Mutex mutex_;
-  // {ThreadId} must be trivially copyable to be stored in {std::atomic}.
-  ASSERT_TRIVIALLY_COPYABLE(i::ThreadId);
-  std::atomic<ThreadId> mutex_owner_;
+  ThreadId mutex_owner_;
   ThreadId lazily_archived_thread_;
   ThreadState* lazily_archived_thread_state_;
 

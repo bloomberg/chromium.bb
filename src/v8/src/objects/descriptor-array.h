@@ -22,21 +22,18 @@ class Handle;
 class Isolate;
 
 // An EnumCache is a pair used to hold keys and indices caches.
-class EnumCache : public Struct {
+class EnumCache : public Tuple2 {
  public:
   DECL_ACCESSORS(keys, FixedArray)
   DECL_ACCESSORS(indices, FixedArray)
 
   DECL_CAST(EnumCache)
 
-  DECL_PRINTER(EnumCache)
-  DECL_VERIFIER(EnumCache)
-
   // Layout description.
-  DEFINE_FIELD_OFFSET_CONSTANTS(Struct::kHeaderSize,
-                                TORQUE_GENERATED_ENUM_CACHE_FIELDS)
+  static const int kKeysOffset = kValue1Offset;
+  static const int kIndicesOffset = kValue2Offset;
 
-  OBJECT_CONSTRUCTORS(EnumCache, Struct);
+  OBJECT_CONSTRUCTORS(EnumCache, Tuple2);
 };
 
 // A DescriptorArray is a custom array that holds instance descriptors.
@@ -126,9 +123,9 @@ class DescriptorArray : public HeapObject {
 
   // Allocates a DescriptorArray, but returns the singleton
   // empty descriptor array object if number_of_descriptors is 0.
-  V8_EXPORT_PRIVATE static Handle<DescriptorArray> Allocate(
+  static Handle<DescriptorArray> Allocate(
       Isolate* isolate, int nof_descriptors, int slack,
-      AllocationType allocation = AllocationType::kYoung);
+      AllocationType type = AllocationType::kYoung);
 
   void Initialize(EnumCache enum_cache, HeapObject undefined_value,
                   int nof_descriptors, int slack);
@@ -174,7 +171,7 @@ class DescriptorArray : public HeapObject {
   inline ObjectSlot GetKeySlot(int descriptor);
   inline MaybeObjectSlot GetValueSlot(int descriptor);
 
-  using BodyDescriptor = FlexibleWeakBodyDescriptor<kPointersStartOffset>;
+  typedef FlexibleWeakBodyDescriptor<kPointersStartOffset> BodyDescriptor;
 
   // Layout of descriptor.
   // Naming is consistent with Dictionary classes for easy templating.
@@ -193,7 +190,7 @@ class DescriptorArray : public HeapObject {
 
 #ifdef DEBUG
   // Is the descriptor array sorted and without duplicates?
-  V8_EXPORT_PRIVATE bool IsSortedNoDuplicates(int valid_descriptors = -1);
+  bool IsSortedNoDuplicates(int valid_descriptors = -1);
 
   // Are two DescriptorArrays equal?
   bool IsEqualTo(DescriptorArray other);

@@ -158,7 +158,8 @@ class ChannelIDServiceJob {
   bool create_if_missing_;
 };
 
-ChannelIDService::Request::Request() : service_(nullptr) {}
+ChannelIDService::Request::Request() : service_(NULL) {
+}
 
 ChannelIDService::Request::~Request() {
   Cancel();
@@ -169,7 +170,7 @@ void ChannelIDService::Request::Cancel() {
     callback_.Reset();
     job_->CancelRequest(this);
 
-    service_ = nullptr;
+    service_ = NULL;
   }
 }
 
@@ -178,7 +179,7 @@ void ChannelIDService::Request::RequestStarted(
     CompletionOnceCallback callback,
     std::unique_ptr<crypto::ECPrivateKey>* key,
     ChannelIDServiceJob* job) {
-  DCHECK(service_ == nullptr);
+  DCHECK(service_ == NULL);
   service_ = service;
   callback_ = std::move(callback);
   key_ = key;
@@ -188,7 +189,7 @@ void ChannelIDService::Request::RequestStarted(
 void ChannelIDService::Request::Post(
     int error,
     std::unique_ptr<crypto::ECPrivateKey> key) {
-  service_ = nullptr;
+  service_ = NULL;
   DCHECK(!callback_.is_null());
   if (key)
     *key_ = std::move(key);

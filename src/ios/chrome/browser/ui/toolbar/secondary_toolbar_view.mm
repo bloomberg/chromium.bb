@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -145,12 +144,6 @@ const CGFloat kToolsMenuOffset = -7;
     self.toolsMenuButton
   ];
 
-  UIView* separator = [[UIView alloc] init];
-  separator.backgroundColor = [UIColor colorWithWhite:0
-                                                alpha:kToolbarSeparatorAlpha];
-  separator.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:separator];
-
   self.stackView =
       [[UIStackView alloc] initWithArrangedSubviews:self.allButtons];
   self.stackView.distribution = UIStackViewDistributionEqualSpacing;
@@ -169,13 +162,6 @@ const CGFloat kToolsMenuOffset = -7;
     [self.stackView.topAnchor
         constraintEqualToAnchor:self.topAnchor
                        constant:kBottomButtonsBottomMargin],
-
-    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [separator.bottomAnchor constraintEqualToAnchor:self.topAnchor],
-    [separator.heightAnchor
-        constraintEqualToConstant:ui::AlignValueToUpperPixel(
-                                      kToolbarSeparatorHeight)],
   ]];
 }
 

@@ -9,9 +9,7 @@ var CrPolicyStrings = CrPolicyStrings || {
   controlledSettingRecommendedMatches: 'matches',
   controlledSettingRecommendedDiffers: 'differs',
   controlledSettingShared: 'shared: $1',
-  controlledSettingWithOwner: 'owner: $1',
-  controlledSettingNoOwner: 'owner',
+  controlledSettingOwner: 'owner: $1',
   controlledSettingExtension: 'extension: $1',
   controlledSettingExtensionWithoutName: 'extension',
-  controlledSettingParent: 'parent',
 };

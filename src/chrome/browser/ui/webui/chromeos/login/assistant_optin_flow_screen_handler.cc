@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
@@ -24,13 +23,13 @@
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
-#include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
 namespace {
 
+constexpr char kJsScreenPath[] = "login.AssistantOptInFlowScreen";
 constexpr char kSkipPressed[] = "skip-pressed";
 constexpr char kNextPressed[] = "next-pressed";
 constexpr char kRecordPressed[] = "record-pressed";
@@ -45,7 +44,7 @@ AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       client_binding_(this),
       weak_factory_(this) {
-  set_user_acted_method_path("login.AssistantOptInFlowScreen.userActed");
+  set_call_js_prefix(kJsScreenPath);
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
@@ -360,11 +359,8 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   // Process get more data.
   email_optin_needed_ = settings_ui.has_email_opt_in_ui() &&
                         settings_ui.email_opt_in_ui().has_title();
-  auto* profile_helper = ProfileHelper::Get();
-  const auto* user = user_manager::UserManager::Get()->GetActiveUser();
   auto get_more_data =
-      CreateGetMoreData(email_optin_needed_, settings_ui.email_opt_in_ui(),
-                        profile_helper->GetProfileByUser(user)->GetPrefs());
+      CreateGetMoreData(email_optin_needed_, settings_ui.email_opt_in_ui());
 
   bool skip_get_more =
       skip_third_party_disclosure && !get_more_data.GetList().size();
@@ -380,9 +376,9 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // Pass string constants dictionary.
   auto dictionary = GetSettingsUiStrings(settings_ui, activity_control_needed_);
-  dictionary.SetKey("voiceMatchEnabled",
-                    base::Value(IsVoiceMatchEnabled(
-                        ProfileManager::GetActiveUserProfile()->GetPrefs())));
+  dictionary.SetKey("voiceMatchFeatureEnabled",
+                    base::Value(base::FeatureList::IsEnabled(
+                        assistant::features::kAssistantVoiceMatch)));
   ReloadContent(dictionary);
 }
 
@@ -448,10 +444,11 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction(
 
 void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     const std::string& action) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-
-  if (!IsVoiceMatchEnabled(prefs))
+  if (!base::FeatureList::IsEnabled(
+          assistant::features::kAssistantVoiceMatch)) {
     return;
+  }
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
   if (action == kVoiceMatchDone) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);

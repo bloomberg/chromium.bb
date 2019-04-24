@@ -204,8 +204,7 @@ TEST_F(SOCKS5ClientSocketTest, ConnectAndDisconnectTwice) {
         MockRead(SYNCHRONOUS, kSOCKS5OkResponse, kSOCKS5OkResponseLength)
     };
 
-    user_sock_ =
-        BuildMockSocket(data_reads, data_writes, hostname, 80, nullptr);
+    user_sock_ = BuildMockSocket(data_reads, data_writes, hostname, 80, NULL);
 
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsOk());
@@ -226,7 +225,7 @@ TEST_F(SOCKS5ClientSocketTest, LargeHostNameFails) {
   MockWrite data_writes[] = {MockWrite()};
   MockRead data_reads[] = {MockRead()};
   user_sock_ =
-      BuildMockSocket(data_reads, data_writes, large_host_name, 80, nullptr);
+      BuildMockSocket(data_reads, data_writes, large_host_name, 80, NULL);
 
   // Try to connect -- should fail (without having read/written anything to
   // the transport socket first) because the hostname is too long.

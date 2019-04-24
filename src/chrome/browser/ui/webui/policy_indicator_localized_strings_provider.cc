@@ -32,9 +32,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
      IDS_CONTROLLED_SETTING_EXTENSION_WITHOUT_NAME},
 #if defined(OS_CHROMEOS)
     {"controlledSettingShared", IDS_CONTROLLED_SETTING_SHARED},
-    {"controlledSettingWithOwner", IDS_CONTROLLED_SETTING_WITH_OWNER},
-    {"controlledSettingNoOwner", IDS_CONTROLLED_SETTING_NO_OWNER},
-    {"controlledSettingParent", IDS_CONTROLLED_SETTING_PARENT},
+    {"controlledSettingOwner", IDS_CONTROLLED_SETTING_OWNER},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

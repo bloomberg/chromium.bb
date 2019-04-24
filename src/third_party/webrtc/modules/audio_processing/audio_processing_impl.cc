@@ -28,7 +28,6 @@
 #include "modules/audio_processing/common.h"
 #include "modules/audio_processing/echo_cancellation_impl.h"
 #include "modules/audio_processing/echo_control_mobile_impl.h"
-#include "modules/audio_processing/gain_control_config_proxy.h"
 #include "modules/audio_processing/gain_control_for_experimental_agc.h"
 #include "modules/audio_processing/gain_control_impl.h"
 #include "modules/audio_processing/gain_controller2.h"
@@ -125,19 +124,6 @@ NoiseSuppression::Level NsConfigLevelToInterfaceLevel(
       return NoiseSuppression::kVeryHigh;
     default:
       RTC_NOTREACHED();
-  }
-}
-
-GainControl::Mode Agc1ConfigModeToInterfaceMode(
-    AudioProcessing::Config::GainController1::Mode mode) {
-  using Agc1Config = AudioProcessing::Config::GainController1;
-  switch (mode) {
-    case Agc1Config::kAdaptiveAnalog:
-      return GainControl::kAdaptiveAnalog;
-    case Agc1Config::kAdaptiveDigital:
-      return GainControl::kAdaptiveDigital;
-    case Agc1Config::kFixedDigital:
-      return GainControl::kFixedDigital;
   }
 }
 
@@ -268,14 +254,13 @@ struct AudioProcessingImpl::ApmPublicSubmodules {
   // Accessed externally of APM without any lock acquired.
   // TODO(bugs.webrtc.org/9947): Move these submodules into private_submodules_
   // when their pointer-to-submodule API functions are gone.
+  std::unique_ptr<GainControlImpl> gain_control;
   std::unique_ptr<LevelEstimatorImpl> level_estimator;
   std::unique_ptr<NoiseSuppressionImpl> noise_suppression;
   std::unique_ptr<NoiseSuppressionProxy> noise_suppression_proxy;
   std::unique_ptr<VoiceDetectionImpl> voice_detection;
-  std::unique_ptr<GainControlImpl> gain_control;
   std::unique_ptr<GainControlForExperimentalAgc>
       gain_control_for_experimental_agc;
-  std::unique_ptr<GainControlConfigProxy> gain_control_config_proxy;
 
   // Accessed internally from both render and capture.
   std::unique_ptr<TransientSuppressor> transient_suppressor;
@@ -408,7 +393,7 @@ AudioProcessingImpl::AudioProcessingImpl(
   capture_nonlocked_.echo_controller_enabled =
       static_cast<bool>(echo_control_factory_);
 
-  public_submodules_->gain_control.reset(new GainControlImpl());
+  public_submodules_->gain_control.reset(new GainControlImpl(&crit_capture_));
   public_submodules_->level_estimator.reset(
       new LevelEstimatorImpl(&crit_capture_));
   public_submodules_->noise_suppression.reset(
@@ -418,10 +403,8 @@ AudioProcessingImpl::AudioProcessingImpl(
   public_submodules_->voice_detection.reset(
       new VoiceDetectionImpl(&crit_capture_));
   public_submodules_->gain_control_for_experimental_agc.reset(
-      new GainControlForExperimentalAgc(
-          public_submodules_->gain_control.get()));
-  public_submodules_->gain_control_config_proxy.reset(
-      new GainControlConfigProxy(&crit_capture_, this, agc1()));
+      new GainControlForExperimentalAgc(public_submodules_->gain_control.get(),
+                                        &crit_capture_));
 
   // If no echo detector is injected, use the ResidualEchoDetector.
   if (!private_submodules_->echo_detector) {
@@ -697,20 +680,6 @@ void AudioProcessingImpl::ApplyConfig(const AudioProcessing::Config& config) {
        config_.echo_canceller.legacy_moderate_suppression_level !=
            config.echo_canceller.legacy_moderate_suppression_level);
 
-  const bool agc1_config_changed =
-      config_.gain_controller1.enabled != config.gain_controller1.enabled ||
-      config_.gain_controller1.mode != config.gain_controller1.mode ||
-      config_.gain_controller1.target_level_dbfs !=
-          config.gain_controller1.target_level_dbfs ||
-      config_.gain_controller1.compression_gain_db !=
-          config.gain_controller1.compression_gain_db ||
-      config_.gain_controller1.enable_limiter !=
-          config.gain_controller1.enable_limiter ||
-      config_.gain_controller1.analog_level_minimum !=
-          config.gain_controller1.analog_level_minimum ||
-      config_.gain_controller1.analog_level_maximum !=
-          config.gain_controller1.analog_level_maximum;
-
   config_ = config;
 
   if (aec_config_changed) {
@@ -726,10 +695,6 @@ void AudioProcessingImpl::ApplyConfig(const AudioProcessing::Config& config) {
 
   RTC_LOG(LS_INFO) << "Highpass filter activated: "
                    << config_.high_pass_filter.enabled;
-
-  if (agc1_config_changed) {
-    ApplyAgc1Config(config_.gain_controller1);
-  }
 
   const bool config_ok = GainController2::Validate(config_.gain_controller2);
   if (!config_ok) {
@@ -763,38 +728,6 @@ void AudioProcessingImpl::ApplyConfig(const AudioProcessing::Config& config) {
     private_submodules_->voice_detector->Initialize(
         proc_split_sample_rate_hz());
   }
-}
-
-void AudioProcessingImpl::ApplyAgc1Config(
-    const Config::GainController1& config) {
-  GainControl* agc = agc1();
-  int error = agc->Enable(config.enabled);
-  RTC_DCHECK_EQ(kNoError, error);
-  error = agc->set_mode(Agc1ConfigModeToInterfaceMode(config.mode));
-  RTC_DCHECK_EQ(kNoError, error);
-  error = agc->set_target_level_dbfs(config.target_level_dbfs);
-  RTC_DCHECK_EQ(kNoError, error);
-  error = agc->set_compression_gain_db(config.compression_gain_db);
-  RTC_DCHECK_EQ(kNoError, error);
-  error = agc->enable_limiter(config.enable_limiter);
-  RTC_DCHECK_EQ(kNoError, error);
-  error = agc->set_analog_level_limits(config.analog_level_minimum,
-                                       config.analog_level_maximum);
-  RTC_DCHECK_EQ(kNoError, error);
-}
-
-GainControl* AudioProcessingImpl::agc1() {
-  if (constants_.use_experimental_agc) {
-    return public_submodules_->gain_control_for_experimental_agc.get();
-  }
-  return public_submodules_->gain_control.get();
-}
-
-const GainControl* AudioProcessingImpl::agc1() const {
-  if (constants_.use_experimental_agc) {
-    return public_submodules_->gain_control_for_experimental_agc.get();
-  }
-  return public_submodules_->gain_control.get();
 }
 
 void AudioProcessingImpl::SetExtraOptions(const webrtc::Config& config) {
@@ -860,7 +793,6 @@ void AudioProcessingImpl::SetRuntimeSetting(RuntimeSetting setting) {
       RTC_NOTREACHED();
       return;
     case RuntimeSetting::Type::kCapturePreGain:
-    case RuntimeSetting::Type::kCaptureCompressionGain:
       capture_runtime_settings_enqueuer_.Enqueue(setting);
       return;
   }
@@ -987,15 +919,6 @@ void AudioProcessingImpl::HandleCaptureRuntimeSettings() {
         }
         // TODO(bugs.chromium.org/9138): Log setting handling by Aec Dump.
         break;
-      case RuntimeSetting::Type::kCaptureCompressionGain: {
-        float value;
-        setting.GetFloat(&value);
-        int int_value = static_cast<int>(value + .5f);
-        config_.gain_controller1.compression_gain_db = int_value;
-        int error = agc1()->set_compression_gain_db(int_value);
-        RTC_DCHECK_EQ(kNoError, error);
-        break;
-      }
       case RuntimeSetting::Type::kCustomRenderProcessingRuntimeSetting:
         RTC_NOTREACHED();
         break;
@@ -1018,8 +941,9 @@ void AudioProcessingImpl::HandleRenderRuntimeSettings() {
           private_submodules_->render_pre_processor->SetRuntimeSetting(setting);
         }
         break;
-      case RuntimeSetting::Type::kCapturePreGain:          // fall-through
-      case RuntimeSetting::Type::kCaptureCompressionGain:  // fall-through
+      case RuntimeSetting::Type::kCapturePreGain:
+        RTC_NOTREACHED();
+        break;
       case RuntimeSetting::Type::kNotSpecified:
         RTC_NOTREACHED();
         break;
@@ -1311,7 +1235,7 @@ int AudioProcessingImpl::ProcessCaptureStreamLocked() {
 
   if (private_submodules_->echo_controller) {
     // Detect and flag any change in the analog gain.
-    int analog_mic_level = agc1()->stream_analog_level();
+    int analog_mic_level = gain_control()->stream_analog_level();
     capture_.echo_path_gain_change =
         capture_.prev_analog_mic_level != analog_mic_level &&
         capture_.prev_analog_mic_level != -1;
@@ -1465,7 +1389,7 @@ int AudioProcessingImpl::ProcessCaptureStreamLocked() {
 
   if (config_.gain_controller2.enabled) {
     private_submodules_->gain_controller2->NotifyAnalogLevel(
-        agc1()->stream_analog_level());
+        gain_control()->stream_analog_level());
     private_submodules_->gain_controller2->Process(capture_buffer);
   }
 
@@ -1696,17 +1620,6 @@ int AudioProcessingImpl::delay_offset_ms() const {
   return capture_.delay_offset_ms;
 }
 
-void AudioProcessingImpl::set_stream_analog_level(int level) {
-  rtc::CritScope cs_capture(&crit_capture_);
-  int error = agc1()->set_stream_analog_level(level);
-  RTC_DCHECK_EQ(kNoError, error);
-}
-
-int AudioProcessingImpl::recommended_stream_analog_level() const {
-  rtc::CritScope cs_capture(&crit_capture_);
-  return agc1()->stream_analog_level();
-}
-
 void AudioProcessingImpl::AttachAecDump(std::unique_ptr<AecDump> aec_dump) {
   RTC_DCHECK(aec_dump);
   rtc::CritScope cs_render(&crit_render_);
@@ -1794,7 +1707,10 @@ AudioProcessingStats AudioProcessingImpl::GetStatistics(
 }
 
 GainControl* AudioProcessingImpl::gain_control() const {
-  return public_submodules_->gain_control_config_proxy.get();
+  if (constants_.use_experimental_agc) {
+    return public_submodules_->gain_control_for_experimental_agc.get();
+  }
+  return public_submodules_->gain_control.get();
 }
 
 LevelEstimator* AudioProcessingImpl::level_estimator() const {
@@ -2116,7 +2032,7 @@ void AudioProcessingImpl::RecordAudioProcessingState() {
   audio_proc_state.delay = capture_nonlocked_.stream_delay_ms;
   audio_proc_state.drift =
       private_submodules_->echo_cancellation->stream_drift_samples();
-  audio_proc_state.level = agc1()->stream_analog_level();
+  audio_proc_state.level = gain_control()->stream_analog_level();
   audio_proc_state.keypress = capture_.key_pressed;
   aec_dump_->AddAudioProcessingState(audio_proc_state);
 }

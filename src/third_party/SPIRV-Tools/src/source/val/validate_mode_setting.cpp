@@ -344,7 +344,6 @@ spv_result_t ValidateExecutionMode(ValidationState_t& _,
     case SpvExecutionModeOriginLowerLeft:
     case SpvExecutionModeEarlyFragmentTests:
     case SpvExecutionModeDepthReplacing:
-    case SpvExecutionModeDepthGreater:
     case SpvExecutionModeDepthLess:
     case SpvExecutionModeDepthUnchanged:
       if (!std::all_of(models->begin(), models->end(),
@@ -409,21 +408,6 @@ spv_result_t ValidateExecutionMode(ValidationState_t& _,
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "In the Vulkan environment, the PixelCenterInteger execution "
                 "mode must not be used.";
-    }
-  }
-
-  if (spvIsWebGPUEnv(_.context()->target_env)) {
-    if (mode != SpvExecutionModeOriginUpperLeft &&
-        mode != SpvExecutionModeDepthReplacing &&
-        mode != SpvExecutionModeDepthGreater &&
-        mode != SpvExecutionModeDepthLess &&
-        mode != SpvExecutionModeDepthUnchanged &&
-        mode != SpvExecutionModeLocalSize &&
-        mode != SpvExecutionModeLocalSizeHint) {
-      return _.diag(SPV_ERROR_INVALID_DATA, inst)
-             << "Execution mode must be one of OriginUpperLeft, "
-                "DepthReplacing, DepthGreater, DepthLess, DepthUnchanged, "
-                "LocalSize, or LocalSizeHint for WebGPU environment.";
     }
   }
 

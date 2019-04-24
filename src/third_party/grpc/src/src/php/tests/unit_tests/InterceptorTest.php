@@ -103,11 +103,7 @@ class ChangeMetadataInterceptor extends Grpc\Interceptor
         $metadata["foo"] = array('interceptor_from_unary_request');
         return $continuation($method, $argument, $deserialize, $metadata, $options);
     }
-    public function interceptStreamUnary($method,
-                                         $deserialize,
-                                         array $metadata = [],
-                                         array $options = [],
-                                         $continuation)
+    public function interceptStreamUnary($method, $deserialize, array $metadata = [], array $options = [], $continuation)
     {
         $metadata["foo"] = array('interceptor_from_stream_request');
         return $continuation($method, $deserialize, $metadata, $options);
@@ -182,11 +178,7 @@ class ChangeRequestInterceptor extends Grpc\Interceptor
         $argument->setData('intercepted_unary_request');
         return $continuation($method, $argument, $deserialize, $metadata, $options);
     }
-    public function interceptStreamUnary($method,
-                                         $deserialize,
-                                         array $metadata = [],
-                                         array $options = [],
-                                         $continuation)
+    public function interceptStreamUnary($method, $deserialize, array $metadata = [], array $options = [], $continuation)
     {
         return new ChangeRequestCall(
             $continuation($method, $deserialize, $metadata, $options)
@@ -198,7 +190,6 @@ class StopCallInterceptor extends Grpc\Interceptor
 {
     public function interceptUnaryUnary($method,
                                         $argument,
-                                        $deserialize,
                                         array $metadata = [],
                                         array $options = [],
                                         $continuation)
@@ -206,7 +197,6 @@ class StopCallInterceptor extends Grpc\Interceptor
         $metadata["foo"] = array('interceptor_from_request_response');
     }
     public function interceptStreamUnary($method,
-                                         $deserialize,
                                          array $metadata = [],
                                          array $options = [],
                                          $continuation)

@@ -294,8 +294,7 @@ template("gcc_like_toolchain") {
     }
 
     tool("link") {
-      exe_name = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
-      rspfile = "$exe_name.rsp"
+      rspfile = "{{output}}.rsp"
       rspfile_content = "{{inputs}}"
 
       # --start-group/--end-group let us link multiple .a {{inputs}}
@@ -310,18 +309,10 @@ template("gcc_like_toolchain") {
         _start_group = ""
         _end_group = ""
       }
-      if (is_ios) {
-        command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o $exe_name && dsymutil $exe_name"
-      } else {
-        command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o $exe_name"
-      }
-
+      command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o {{output}}"
       outputs = [
-        "$exe_name",
+        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
       ]
-      if (is_ios) {
-        outputs += [ "{{root_out_dir}}/{{target_output_name}}.dSYM" ]
-      }
       description = "link {{output}}"
     }
 

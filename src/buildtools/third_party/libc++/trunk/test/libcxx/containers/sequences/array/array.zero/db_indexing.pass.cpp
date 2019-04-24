@@ -5,19 +5,29 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// UNSUPPORTED: c++98, c++03
-// UNSUPPORTED: windows
 
+// UNSUPPORTED: libcpp-no-exceptions
 // MODULES_DEFINES: _LIBCPP_DEBUG=1
+// MODULES_DEFINES: _LIBCPP_DEBUG_USE_EXCEPTIONS
 
 // Can't test the system lib because this test enables debug mode
 // UNSUPPORTED: with_system_cxx_lib
 
-// test array<T, 0>::operator[] raises a debug error.
+// test array<T, 0>::operator[] throws a debug exception.
 
 #define _LIBCPP_DEBUG 1
+#define _LIBCPP_DEBUG_USE_EXCEPTIONS
 #include <array>
-#include "debug_mode_helper.h"
+
+template <class Array>
+inline bool CheckDebugThrows(Array& Arr, size_t Index) {
+  try {
+    Arr[Index];
+  } catch (std::__libcpp_debug_exception const&) {
+    return true;
+  }
+  return false;
+}
 
 int main(int, char**)
 {
@@ -25,19 +35,19 @@ int main(int, char**)
     typedef std::array<int, 0> C;
     C c = {};
     C const& cc = c;
-    EXPECT_DEATH( c[0] );
-    EXPECT_DEATH( c[1] );
-    EXPECT_DEATH( cc[0] );
-    EXPECT_DEATH( cc[1] );
+    assert(CheckDebugThrows(c, 0));
+    assert(CheckDebugThrows(c, 1));
+    assert(CheckDebugThrows(cc, 0));
+    assert(CheckDebugThrows(cc, 1));
   }
   {
     typedef std::array<const int, 0> C;
     C c = {{}};
     C const& cc = c;
-    EXPECT_DEATH( c[0] );
-    EXPECT_DEATH( c[1] );
-    EXPECT_DEATH( cc[0] );
-    EXPECT_DEATH( cc[1] );
+    assert(CheckDebugThrows(c, 0));
+    assert(CheckDebugThrows(c, 1));
+    assert(CheckDebugThrows(cc, 0));
+    assert(CheckDebugThrows(cc, 1));
   }
 
   return 0;

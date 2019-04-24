@@ -12,7 +12,6 @@
 #define API_TRANSPORT_BITRATE_SETTINGS_H_
 
 #include "absl/types/optional.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -21,7 +20,7 @@ namespace webrtc {
 // estimator, and for initial configuration of the encoder. We may
 // want to create separate apis for those, and use a smaller struct
 // with only the min and max constraints.
-struct RTC_EXPORT BitrateSettings {
+struct BitrateSettings {
   BitrateSettings();
   ~BitrateSettings();
   BitrateSettings(const BitrateSettings&);

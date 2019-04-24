@@ -30,8 +30,9 @@
 // https://html.spec.whatwg.org/C/#windoweventhandlers
 
 [
-    LegacyTreatAsPartialInterface
-] interface mixin WindowEventHandlers {
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject // Always used on target of 'implements'
+] interface WindowEventHandlers {
     attribute EventHandler onafterprint;
     attribute EventHandler onbeforeprint;
     // FIXME: onbeforeunload should be an OnBeforeUnloadEventHandler.

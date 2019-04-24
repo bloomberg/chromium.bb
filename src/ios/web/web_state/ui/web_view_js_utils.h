@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#import "ios/web/public/block_types.h"
+
 @class WKWebView;
 
 namespace base {
@@ -37,7 +39,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id result);
 // moment, |completion_handler| is called with an NSError.
 void ExecuteJavaScript(WKWebView* web_view,
                        NSString* script,
-                       void (^completion_handler)(id, NSError*));
+                       JavaScriptResultBlock completion_handler);
 
 }  // namespace web
 

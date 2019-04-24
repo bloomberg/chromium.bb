@@ -47,7 +47,6 @@ class SelectionPopupController : public RenderWidgetHostConnector {
                                   int start_adjust,
                                   int end_adjust);
   void HidePopupsAndPreserveSelection();
-  void RestoreSelectionPopupsIfNecessary();
   std::unique_ptr<ui::TouchHandleDrawable> CreateTouchHandleDrawable();
   void MoveRangeSelectionExtent(const gfx::PointF& extent);
 

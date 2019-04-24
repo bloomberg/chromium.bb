@@ -282,15 +282,8 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
 
   std::string encoded_request_with_minus =
       pm->GetBase64SerializedUpdateRequestProto();
-
-  const std::string expected =
-#if defined(FULL_SAFE_BROWSING)
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoASICCAE=";
-#else
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaGwgBEAIaCmg4eGZZcVk-OlIiBxCAICABIAIoASICCAE=";
-#endif
-
-  EXPECT_EQ(expected, encoded_request_with_minus);
+  EXPECT_EQ("Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoASICCAE=",
+            encoded_request_with_minus);
 
   // TODO(vakh): Add a similar test for underscore for completeness, although
   // the '-' case is sufficient to prove that we are using URL encoding.
@@ -353,12 +346,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestExtendedReportingLevelIncluded) {
   store_state_map_->clear();
   (*store_state_map_)[ListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT)] =
       "state";
-  const std::string base =
-#if defined(FULL_SAFE_BROWSING)
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
-#else
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaFggBEAIaBXN0YXRlIgcQgCAgASACKAEiAgg";
-#endif
+  std::string base = "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
 
   std::unique_ptr<V4UpdateProtocolManager> pm_with_off(CreateProtocolManager(
       std::vector<ListUpdateResponse>({}), false, SBER_LEVEL_OFF));

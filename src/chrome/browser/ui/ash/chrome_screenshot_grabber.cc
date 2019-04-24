@@ -701,8 +701,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(GetProfile())
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification,
-                /*metadata=*/nullptr);
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {

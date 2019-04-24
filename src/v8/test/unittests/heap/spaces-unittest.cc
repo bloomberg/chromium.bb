@@ -11,7 +11,7 @@
 namespace v8 {
 namespace internal {
 
-using SpacesTest = TestWithIsolate;
+typedef TestWithIsolate SpacesTest;
 
 TEST_F(SpacesTest, CompactionSpaceMerge) {
   Heap* heap = i_isolate()->heap();

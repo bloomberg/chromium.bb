@@ -9,19 +9,23 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
 bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
-  base::Optional<base::Value> value = base::JSONReader::Read(answer_json);
-  if (!value || !value->is_dict())
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(answer_json);
+  base::DictionaryValue* dict;
+  if (!value || !value->GetAsDictionary(&dict))
     return false;
 
   // ParseAnswer previously did not change the default answer type of -1, so
   // here we keep the same behavior by explicitly supplying default value.
-  return SuggestionAnswer::ParseAnswer(*value, base::UTF8ToUTF16("-1"), answer);
+  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"), answer);
 }
 
 }  // namespace
@@ -269,6 +273,8 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
 
   {
     // Test with the image URL supplied by the "i" (image) param.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kExperimentalUi);
     json =
         "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
         "  \"l\" : ["

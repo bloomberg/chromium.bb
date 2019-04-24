@@ -43,7 +43,6 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void ConnectToVideoSourceProvider(
       mojom::VideoSourceProviderRequest request) override;
   void ShutdownServiceAsap() override;
-  void SetRetryCount(int32_t count) override;
 
 #if defined(OS_CHROMEOS)
   void BindCrosImageCaptureRequest(

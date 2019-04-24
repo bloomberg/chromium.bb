@@ -20,7 +20,6 @@
     {
       "name": "LayoutTableRow TR",
       "position": [8, 18],
-      "drawsContent": false,
       "backgroundColor": "#0000FF"
     },
     {

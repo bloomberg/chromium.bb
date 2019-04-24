@@ -12,36 +12,24 @@ namespace blink {
 // static
 PerformanceElementTiming* PerformanceElementTiming::Create(
     const AtomicString& name,
-    const FloatRect& intersection_rect,
+    const IntRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
-    const AtomicString& identifier,
-    int naturalWidth,
-    int naturalHeight,
-    const AtomicString& id) {
-  DCHECK_GT(naturalWidth, 0);
-  DCHECK_GT(naturalHeight, 0);
+    const AtomicString& identifier) {
   return MakeGarbageCollected<PerformanceElementTiming>(
-      name, intersection_rect, start_time, response_end, identifier,
-      naturalWidth, naturalHeight, id);
+      name, intersection_rect, start_time, response_end, identifier);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& name,
-    const FloatRect& intersection_rect,
+    const IntRect& intersection_rect,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp response_end,
-    const AtomicString& identifier,
-    int naturalWidth,
-    int naturalHeight,
-    const AtomicString& id)
+    const AtomicString& identifier)
     : PerformanceEntry(name, start_time, start_time),
-      intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
+      intersection_rect_(DOMRectReadOnly::FromIntRect(intersection_rect)),
       response_end_(response_end),
-      identifier_(identifier),
-      naturalWidth_(naturalWidth),
-      naturalHeight_(naturalHeight),
-      id_(id) {}
+      identifier_(identifier) {}
 
 PerformanceElementTiming::~PerformanceElementTiming() = default;
 

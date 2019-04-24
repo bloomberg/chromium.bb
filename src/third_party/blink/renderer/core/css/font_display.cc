@@ -9,17 +9,17 @@
 namespace blink {
 
 FontDisplay CSSValueToFontDisplay(const CSSValue* value) {
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    switch (identifier_value->GetValueID()) {
-      case CSSValueID::kAuto:
+  if (value && value->IsIdentifierValue()) {
+    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+      case CSSValueAuto:
         return kFontDisplayAuto;
-      case CSSValueID::kBlock:
+      case CSSValueBlock:
         return kFontDisplayBlock;
-      case CSSValueID::kSwap:
+      case CSSValueSwap:
         return kFontDisplaySwap;
-      case CSSValueID::kFallback:
+      case CSSValueFallback:
         return kFontDisplayFallback;
-      case CSSValueID::kOptional:
+      case CSSValueOptional:
         return kFontDisplayOptional;
       default:
         break;

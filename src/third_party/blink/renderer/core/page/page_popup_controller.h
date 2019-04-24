@@ -45,6 +45,8 @@ class PagePopupController final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static PagePopupController* Create(PagePopup&, PagePopupClient*);
+
   PagePopupController(PagePopup&, PagePopupClient*);
 
   void setValueAndClosePopup(int num_value, const String& string_value);

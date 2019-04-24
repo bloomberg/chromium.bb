@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -213,17 +212,16 @@ public class PictureInPictureController {
                 new DismissActivityOnTabModelSelectorEventObserver(activity);
         final WebContentsObserver webContentsObserver =
                 new DismissActivityOnWebContentsObserver(activity);
-        final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
 
         activityTab.addObserver(tabObserver);
-        tabModelSelector.addObserver(tabModelSelectorObserver);
+        activityTab.getTabModelSelector().addObserver(tabModelSelectorObserver);
         webContents.addObserver(webContentsObserver);
 
         mOnLeavePipCallbacks.add(new Callback<ChromeActivity>() {
             @Override
             public void onResult(ChromeActivity activity2) {
                 activityTab.removeObserver(tabObserver);
-                tabModelSelector.removeObserver(tabModelSelectorObserver);
+                activityTab.getTabModelSelector().removeObserver(tabModelSelectorObserver);
                 webContents.removeObserver(webContentsObserver);
             }
         });

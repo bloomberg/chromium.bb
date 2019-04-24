@@ -91,8 +91,11 @@ void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
 }  // namespace
 
 FileSystemQuotaClient::FileSystemQuotaClient(
-    FileSystemContext* file_system_context)
-    : file_system_context_(file_system_context) {}
+    FileSystemContext* file_system_context,
+    bool is_incognito)
+    : file_system_context_(file_system_context),
+      is_incognito_(is_incognito) {
+}
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
@@ -108,6 +111,12 @@ void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
                                            StorageType storage_type,
                                            GetUsageCallback callback) {
   DCHECK(!callback.is_null());
+
+  if (is_incognito_) {
+    // We don't support FileSystem in incognito mode yet.
+    std::move(callback).Run(0);
+    return;
+  }
 
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
@@ -132,6 +141,13 @@ void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
 
+  if (is_incognito_) {
+    // We don't support FileSystem in incognito mode yet.
+    std::set<url::Origin> origins;
+    std::move(callback).Run(origins);
+    return;
+  }
+
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
@@ -146,6 +162,13 @@ void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
                                               const std::string& host,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
+
+  if (is_incognito_) {
+    // We don't support FileSystem in incognito mode yet.
+    std::set<url::Origin> origins;
+    std::move(callback).Run(origins);
+    return;
+  }
 
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   file_task_runner()->PostTaskAndReply(

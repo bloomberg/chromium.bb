@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
@@ -61,7 +61,7 @@ public class TemplateUrlServiceTest {
     public void testUrlForContextualSearchQueryValid() throws ExecutionException {
         waitForTemplateUrlServiceToLoad();
 
-        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        Assert.assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return TemplateUrlService.getInstance().isLoaded();
@@ -78,7 +78,7 @@ public class TemplateUrlServiceTest {
     private void validateQuery(final String query, final String alternative, final boolean prefetch,
             final String protocolVersion)
             throws ExecutionException {
-        String result = TestThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+        String result = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
@@ -105,7 +105,7 @@ public class TemplateUrlServiceTest {
     public void testLoadUrlService() {
         waitForTemplateUrlServiceToLoad();
 
-        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        Assert.assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return TemplateUrlService.getInstance().isLoaded();
@@ -115,14 +115,17 @@ public class TemplateUrlServiceTest {
         // Add another load listener and ensure that is notified without needing to call load()
         // again.
         final AtomicBoolean observerNotified = new AtomicBoolean(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TemplateUrlService service = TemplateUrlService.getInstance();
-            service.registerLoadListener(new LoadListener() {
-                @Override
-                public void onTemplateUrlServiceLoaded() {
-                    observerNotified.set(true);
-                }
-            });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TemplateUrlService service = TemplateUrlService.getInstance();
+                service.registerLoadListener(new LoadListener() {
+                    @Override
+                    public void onTemplateUrlServiceLoaded() {
+                        observerNotified.set(true);
+                    }
+                });
+            }
         });
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Observer wasn't notified of TemplateUrlService load.") {
@@ -140,7 +143,7 @@ public class TemplateUrlServiceTest {
         final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
 
         List<TemplateUrl> searchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         return templateUrlService.getTemplateUrls();
@@ -148,7 +151,7 @@ public class TemplateUrlServiceTest {
                 });
         // Ensure known state of default search index before running test.
         TemplateUrl defaultSearchEngine =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
                     public TemplateUrl call() throws Exception {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
@@ -158,13 +161,17 @@ public class TemplateUrlServiceTest {
         Assert.assertEquals(searchEngines.get(0), defaultSearchEngine);
 
         // Set search engine index and verified it stuck.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue("There must be more than one search engine to change searchEngines",
-                    searchEngines.size() > 1);
-            templateUrlService.setSearchEngine(searchEngines.get(1).getKeyword());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertTrue(
+                        "There must be more than one search engine to change searchEngines",
+                        searchEngines.size() > 1);
+                templateUrlService.setSearchEngine(searchEngines.get(1).getKeyword());
+            }
         });
         defaultSearchEngine =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
                     public TemplateUrl call() throws Exception {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
@@ -184,7 +191,7 @@ public class TemplateUrlServiceTest {
         final int prepopulatedEngineNum = getSearchEngineCount(templateUrlService);
 
         TemplateUrl defaultSearchEngine =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
                     public TemplateUrl call() throws Exception {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
@@ -194,7 +201,7 @@ public class TemplateUrlServiceTest {
         // Add custom search engines and verified only engines visited within 2 days are added.
         // Also verified custom engines are sorted correctly.
         List<TemplateUrl> customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.addSearchEngineForTesting("keyword1", 0);
@@ -213,7 +220,7 @@ public class TemplateUrlServiceTest {
         // Add more custom search engines and verified at most 3 custom engines are returned.
         // Also verified custom engines are sorted correctly.
         customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.addSearchEngineForTesting("keyword4", 0);
@@ -231,7 +238,7 @@ public class TemplateUrlServiceTest {
 
         // Verified last_visited is updated correctly and sorting in descending order correctly.
         customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.updateLastVisitedForTesting("keyword3");
@@ -249,7 +256,7 @@ public class TemplateUrlServiceTest {
         // Set a custom engine as default provider and verified still 3 custom engines are returned.
         // Also verified custom engines are sorted correctly.
         customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
                     public List<TemplateUrl> call() throws Exception {
                         templateUrlService.setSearchEngine("keyword4");
@@ -269,7 +276,7 @@ public class TemplateUrlServiceTest {
     }
 
     private int getSearchEngineCount(final TemplateUrlService templateUrlService) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return templateUrlService.getTemplateUrls().size();
@@ -285,17 +292,16 @@ public class TemplateUrlServiceTest {
                 observerNotified.set(true);
             }
         };
-        final TemplateUrlService templateUrlService =
-                TestThreadUtils.runOnUiThreadBlockingNoException(
-                        new Callable<TemplateUrlService>() {
-                            @Override
-                            public TemplateUrlService call() {
-                                TemplateUrlService service = TemplateUrlService.getInstance();
-                                service.registerLoadListener(listener);
-                                service.load();
-                                return service;
-                            }
-                        });
+        final TemplateUrlService templateUrlService = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<TemplateUrlService>() {
+                    @Override
+                    public TemplateUrlService call() {
+                        TemplateUrlService service = TemplateUrlService.getInstance();
+                        service.registerLoadListener(listener);
+                        service.load();
+                        return service;
+                    }
+                });
 
         CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Observer wasn't notified of TemplateUrlService load.") {

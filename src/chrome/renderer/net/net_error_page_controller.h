@@ -79,8 +79,6 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   explicit NetErrorPageController(base::WeakPtr<Delegate> delegate);
   ~NetErrorPageController() override;
 
-  void ErrorPageLoadedOrUpdated();
-
   // Execute a button click to download page later.
   bool DownloadButtonClick();
 

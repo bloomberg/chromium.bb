@@ -402,7 +402,6 @@ private:
     void resetToSize(int verbCount, int pointCount, int conicCount,
                      int reserveVerbs = 0, int reservePoints = 0) {
         SkDEBUGCODE(this->validate();)
-        this->callGenIDChangeListeners();
         fBoundsIsDirty = true;      // this also invalidates fIsFinite
         fGenerationID = 0;
 

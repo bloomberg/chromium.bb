@@ -271,7 +271,7 @@ void AsmJsScanner::ConsumeIdentifier(uc32 ch) {
 
 void AsmJsScanner::ConsumeNumber(uc32 ch) {
   std::string number;
-  number.assign(1, ch);
+  number = ch;
   bool has_dot = ch == '.';
   bool has_prefix = false;
   for (;;) {

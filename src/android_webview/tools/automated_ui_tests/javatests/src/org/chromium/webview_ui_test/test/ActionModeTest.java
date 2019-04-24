@@ -20,7 +20,6 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExt
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.matcher.RootMatchers.DEFAULT;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isClickable;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withChild;
@@ -39,7 +38,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
@@ -48,6 +46,9 @@ import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.IdlingResource;
+import android.support.test.espresso.IdlingResource.ResourceCallback;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.Root;
@@ -68,6 +69,7 @@ import junit.framework.AssertionFailedError;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,6 +104,8 @@ public class ActionModeTest {
     public WebViewUiTestRule mWebViewActivityRule =
             new WebViewUiTestRule(WebViewUiTestActivity.class);
 
+    private ActionBarIdlingResource mActionBarIdlingResource;
+
     @Before
     public void setUp() {
         mWebViewActivityRule.launchActivity();
@@ -111,6 +115,13 @@ public class ActionModeTest {
         onWebView(withId(R.id.webview))
                 .withElement(findElement(Locator.TAG_NAME, "p"))
                 .check(webMatches(getText(), containsString("Hello world")));
+        mActionBarIdlingResource = new ActionBarIdlingResource();
+        Espresso.registerIdlingResources(mActionBarIdlingResource);
+    }
+
+    @After
+    public void tearDown() {
+        Espresso.unregisterIdlingResources(mActionBarIdlingResource);
     }
 
     /**
@@ -193,8 +204,8 @@ public class ActionModeTest {
     @SmallTest
     @UseLayout("edittext_webview")
     public void testAssist() {
-        // The assist option is only available on N
-        assumeTrue(Build.VERSION.SDK_INT == Build.VERSION_CODES.N);
+        // TODO(aluo): Get SdkSuppress to work with the test runner
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         longClickOnLastWord(R.id.webview);
         clickPopupAction(ASSIST_ACTION);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -225,12 +236,12 @@ public class ActionModeTest {
         }
 
         try {
-            onView(allOf(anyOf(withText(name), withContentDescription(name)), isClickable()))
+            onView(anyOf(withText(name), withContentDescription(name)))
                     .inRoot(rootMatcher)
                     .perform(click());
         } catch (PerformException | NoMatchingViewException e) {
             // Take care of case when the item is in the overflow menu
-            onView(allOf(withContentDescription(MORE_OPTIONS_ACTION), isClickable()))
+            onView(withContentDescription(MORE_OPTIONS_ACTION))
                     .inRoot(rootMatcher)
                     .perform(click());
             onData(new MenuItemMatcher(equalTo(name))).inRoot(rootMatcher).perform(click());
@@ -241,7 +252,7 @@ public class ActionModeTest {
          * briefly due to selection change, wait for the menu to reappear
          */
         if (name.equals(SELECT_ALL_ACTION)) {
-            assertTrue(mWebViewActivityRule.waitForActionBarPopup());
+            mActionBarIdlingResource.start();
         }
     }
 
@@ -254,7 +265,7 @@ public class ActionModeTest {
         // implementation that gets bounding box for elements using Javascript.
         onView(withId(viewId)).perform(actionWithAssertions(
                 new GeneralClickAction(Tap.LONG, GeneralLocation.CENTER_RIGHT, Press.FINGER)));
-        assertTrue(mWebViewActivityRule.waitForActionBarPopup());
+        mActionBarIdlingResource.start();
     }
 
     /**
@@ -276,6 +287,44 @@ public class ActionModeTest {
         public void describeTo(Description description) {
             description.appendText("has MenuItem with title: ");
             description.appendDescriptionOf(mTitleMatcher);
+        }
+    }
+
+    private class ActionBarIdlingResource implements IdlingResource {
+        private boolean mActionStarting;
+        private ResourceCallback mResourceCallback;
+        private boolean mPreviousActionBarDisplayed;
+
+        @Override
+        public String getName() {
+            return "ActionBarIdlingResource";
+        }
+
+        @Override
+        public boolean isIdleNow() {
+            if (!mActionStarting) return true;
+            boolean currentActionBarDisplayed = mWebViewActivityRule.isActionBarDisplayed();
+            /* Only transition to idle when action bar is displayed fully for
+             * 2 consecutive checks.  This avoids false transitions
+             * in cases where the action bar was already displayed but is due
+             * to be updated immediately after a previous action
+             */
+            if (mPreviousActionBarDisplayed && currentActionBarDisplayed) {
+                mActionStarting = false;
+                if (mResourceCallback != null) mResourceCallback.onTransitionToIdle();
+            }
+            mPreviousActionBarDisplayed = currentActionBarDisplayed;
+            return !mActionStarting;
+        }
+
+        @Override
+        public void registerIdleTransitionCallback(ResourceCallback callback) {
+            mResourceCallback = callback;
+        }
+
+        public void start() {
+            mActionStarting = true;
+            mPreviousActionBarDisplayed = false;
         }
     }
 }

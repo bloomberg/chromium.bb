@@ -37,10 +37,6 @@ class StorageBlock : public FileBlock {
   StorageBlock(MappedFile* file, Addr address);
   virtual ~StorageBlock();
 
-  // Deeps copies from another block. Neither this nor |other| should be
-  // |modified|.
-  void CopyFrom(StorageBlock<T>* other);
-
   // FileBlock interface.
   void* buffer() const override;
   size_t size() const override;

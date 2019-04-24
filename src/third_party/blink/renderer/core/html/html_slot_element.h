@@ -139,6 +139,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
 
+  const HeapVector<Member<Node>>& GetDistributedNodes();
+
   void RecalcFlatTreeChildren();
   void UpdateFlatTreeNodeDataForAssignedNodes();
   void ClearAssignedNodesAndFlatTreeChildren();

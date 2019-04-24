@@ -26,39 +26,73 @@ namespace storage {
 class FileSystemContext;
 }
 
-BrowsingDataFileSystemHelper::BrowsingDataFileSystemHelper(
+namespace {
+
+// An implementation of the BrowsingDataFileSystemHelper interface that pulls
+// data from a given |filesystem_context| and returns a list of FileSystemInfo
+// items to a client.
+class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
+ public:
+  // BrowsingDataFileSystemHelper implementation
+  explicit BrowsingDataFileSystemHelperImpl(
+      storage::FileSystemContext* filesystem_context);
+  void StartFetching(FetchCallback callback) override;
+  void DeleteFileSystemOrigin(const url::Origin& origin) override;
+
+ private:
+  ~BrowsingDataFileSystemHelperImpl() override;
+
+  // Enumerates all filesystem files, storing the resulting list into
+  // file_system_file_ for later use. This must be called on the file
+  // task runner.
+  void FetchFileSystemInfoInFileThread(FetchCallback callback);
+
+  // Deletes all file systems associated with |origin|. This must be called on
+  // the file task runner.
+  void DeleteFileSystemOriginInFileThread(const url::Origin& origin);
+
+  // Returns the file task runner for the |filesystem_context_|.
+  base::SequencedTaskRunner* file_task_runner() {
+    return filesystem_context_->default_file_task_runner();
+  }
+
+  // Keep a reference to the FileSystemContext object for the current profile
+  // for use on the file task runner.
+  scoped_refptr<storage::FileSystemContext> filesystem_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataFileSystemHelperImpl);
+};
+
+BrowsingDataFileSystemHelperImpl::BrowsingDataFileSystemHelperImpl(
     storage::FileSystemContext* filesystem_context)
     : filesystem_context_(filesystem_context) {
   DCHECK(filesystem_context_.get());
 }
 
-BrowsingDataFileSystemHelper::~BrowsingDataFileSystemHelper() {}
-
-base::SequencedTaskRunner* BrowsingDataFileSystemHelper::file_task_runner() {
-  return filesystem_context_->default_file_task_runner();
+BrowsingDataFileSystemHelperImpl::~BrowsingDataFileSystemHelperImpl() {
 }
 
-void BrowsingDataFileSystemHelper::StartFetching(FetchCallback callback) {
+void BrowsingDataFileSystemHelperImpl::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   file_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread, this,
-          std::move(callback)));
+          &BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread,
+          this, std::move(callback)));
 }
 
-void BrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
+void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &BrowsingDataFileSystemHelper::DeleteFileSystemOriginInFileThread,
+          &BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread,
           this, origin));
 }
 
-void BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread(
+void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
     FetchCallback callback) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
@@ -102,11 +136,13 @@ void BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread(
                            base::BindOnce(std::move(callback), result));
 }
 
-void BrowsingDataFileSystemHelper::DeleteFileSystemOriginInFileThread(
+void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
     const url::Origin& origin) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin.GetURL());
 }
+
+}  // namespace
 
 BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(
     const url::Origin& origin)
@@ -120,12 +156,12 @@ BrowsingDataFileSystemHelper::FileSystemInfo::~FileSystemInfo() {}
 // static
 BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
     storage::FileSystemContext* filesystem_context) {
-  return new BrowsingDataFileSystemHelper(filesystem_context);
+  return new BrowsingDataFileSystemHelperImpl(filesystem_context);
 }
 
 CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
-    storage::FileSystemContext* filesystem_context)
-    : BrowsingDataFileSystemHelper(filesystem_context) {}
+    Profile* profile) {
+}
 
 CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}
 
@@ -159,10 +195,4 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(FetchCallback callback) {
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), result));
-}
-
-void CannedBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
-    const url::Origin& origin) {
-  pending_origins_.erase(origin);
-  BrowsingDataFileSystemHelper::DeleteFileSystemOrigin(origin);
 }

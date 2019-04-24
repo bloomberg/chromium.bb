@@ -69,13 +69,18 @@
 
 namespace blink {
 
+std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
+    GraphicsLayerClient& client) {
+  return base::WrapUnique(new GraphicsLayer(client));
+}
+
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
       paints_hit_test_(false),
       contents_visible_(true),
-      hit_testable_(false),
+      hit_testable_without_draws_content_(false),
       needs_check_raster_invalidation_(false),
       has_scroll_parent_(false),
       has_clip_parent_(false),
@@ -94,7 +99,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
 #endif
   layer_ = cc::PictureLayer::Create(this);
   CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
-  CcLayer()->SetHitTestable(hit_testable_);
   CcLayer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
@@ -117,9 +121,9 @@ GraphicsLayer::~GraphicsLayer() {
   DCHECK(!parent_);
 }
 
-IntRect GraphicsLayer::VisualRect() const {
+LayoutRect GraphicsLayer::VisualRect() const {
   DCHECK(layer_state_);
-  return IntRect(layer_state_->offset, IntSize(Size()));
+  return LayoutRect(layer_state_->offset, LayoutSize(Size()));
 }
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
@@ -139,14 +143,10 @@ void GraphicsLayer::SetSnapContainerData(
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
     bool is_resized_by_browser_controls) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsResizedByBrowserControls(is_resized_by_browser_controls);
 }
 
 void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
 }
 
@@ -545,7 +545,6 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // contents_layer, for the correctness of early exit conditions in
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
-  contents_layer_->SetHitTestable(contents_visible_);
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
@@ -590,9 +589,8 @@ cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
 
 RasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
-    raster_invalidator_ =
-        std::make_unique<RasterInvalidator>(base::BindRepeating(
-            &GraphicsLayer::SetNeedsDisplayInRect, base::Unretained(this)));
+    raster_invalidator_ = std::make_unique<RasterInvalidator>(
+        [this](const IntRect& r) { SetNeedsDisplayInRect(r); });
     raster_invalidator_->SetTracksRasterInvalidations(
         client_.IsTrackingRasterInvalidations());
   }
@@ -835,11 +833,11 @@ void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
   CcLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
-void GraphicsLayer::SetHitTestable(bool should_hit_test) {
-  if (hit_testable_ == should_hit_test)
+void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
+  if (hit_testable_without_draws_content_ == should_hit_test)
     return;
-  hit_testable_ = should_hit_test;
-  CcLayer()->SetHitTestable(should_hit_test);
+  hit_testable_without_draws_content_ = should_hit_test;
+  CcLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {
@@ -1016,7 +1014,7 @@ void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
 PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(PaintsContentOrHitTest());
   if (!paint_controller_)
-    paint_controller_ = std::make_unique<PaintController>();
+    paint_controller_ = PaintController::Create();
   return *paint_controller_;
 }
 

@@ -59,6 +59,11 @@ ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK(main_render_frame_entry_map_.empty());
   DCHECK(subframe_to_mainframe_map_.empty());
 
+  if (page_capping_observer_) {
+    // Remove the |page_capping_observer_| before the ObserverList is deleted.
+    RemoveObserver(page_capping_observer_.get());
+  }
+
   // DCHECK(pending_navigation_data_use_map_.empty());
   // DCHECK(data_use_recorders_.empty());
 }

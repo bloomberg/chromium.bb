@@ -190,9 +190,9 @@ bool PresentationReceiverWindowController::ShouldFocusPageAfterCrash() {
 void PresentationReceiverWindowController::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    base::OnceCallback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback) {
   // Local presentation pages are not allowed to download files.
-  std::move(callback).Run(false);
+  callback.Run(false);
 }
 
 bool PresentationReceiverWindowController::ShouldCreateWebContents(

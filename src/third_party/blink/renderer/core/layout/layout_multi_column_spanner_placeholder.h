@@ -26,12 +26,8 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
       const ComputedStyle& parent_style,
       LayoutBox&);
 
-  LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return To<LayoutBlockFlow>(Parent());
-  }
-
   LayoutMultiColumnFlowThread* FlowThread() const {
-    return To<LayoutBlockFlow>(Parent())->MultiColumnFlowThread();
+    return ToLayoutBlockFlow(Parent())->MultiColumnFlowThread();
   }
 
   LayoutBox* LayoutObjectInFlowThread() const {

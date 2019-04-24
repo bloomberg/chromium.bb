@@ -18,7 +18,6 @@
 #include "VkDebug.hpp"
 #include "VkDescriptorSetLayout.hpp"
 #include "VkQueue.hpp"
-#include "Device/Blitter.hpp"
 
 #include <new> // Must #include this to use "placement new"
 
@@ -49,11 +48,8 @@ Device::Device(const Device::CreateInfo* info, void* mem)
 	if(pCreateInfo->enabledLayerCount)
 	{
 		// "The ppEnabledLayerNames and enabledLayerCount members of VkDeviceCreateInfo are deprecated and their values must be ignored by implementations."
-		UNIMPLEMENTED("enabledLayerCount");   // TODO(b/119321052): UNIMPLEMENTED() should be used only for features that must still be implemented. Use a more informational macro here.
+		UNIMPLEMENTED();   // TODO(b/119321052): UNIMPLEMENTED() should be used only for features that must still be implemented. Use a more informational macro here.
 	}
-
-	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-	blitter = new sw::Blitter();
 }
 
 void Device::destroy(const VkAllocationCallbacks* pAllocator)
@@ -64,8 +60,6 @@ void Device::destroy(const VkAllocationCallbacks* pAllocator)
 	}
 
 	vk::deallocate(queues, pAllocator);
-
-	delete blitter;
 }
 
 size_t Device::ComputeRequiredAllocationSize(const Device::CreateInfo* info)

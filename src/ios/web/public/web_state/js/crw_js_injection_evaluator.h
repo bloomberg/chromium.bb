@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/web/public/block_types.h"
+
 @protocol CRWJSInjectionEvaluator
 
 // Executes the supplied JavaScript in the WebView. Calls |completionHandler|
@@ -14,7 +16,7 @@
 // has no way to run the execution or the execution returns a nil value)
 // or an NSError if there is an error. The |completionHandler| can be nil.
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(void (^)(id, NSError*))completionHandler;
+        completionHandler:(web::JavaScriptResultBlock)completionHandler;
 
 // Checks to see if the script for a class has been injected into the
 // current page already.

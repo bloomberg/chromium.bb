@@ -5,7 +5,6 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -113,8 +112,7 @@ void DevToolsWindowTesting::WaitForDevToolsWindowLoad(DevToolsWindow* window) {
   }
   base::string16 harness = base::UTF8ToUTF16(
       content::DevToolsFrontendHost::GetFrontendResource(kHarnessScript));
-  window->main_web_contents_->GetMainFrame()->ExecuteJavaScript(
-      harness, base::NullCallback());
+  window->main_web_contents_->GetMainFrame()->ExecuteJavaScript(harness);
 }
 
 // static

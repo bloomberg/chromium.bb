@@ -203,6 +203,8 @@ class AboutSigninInternals
   // IdentityManager::Observer implementations.
   void OnRefreshTokensLoaded() override;
   void OnEndBatchOfRefreshTokenStateChanges() override;
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(

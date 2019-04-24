@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/ash/network/enrollment_dialog_view.h"
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
+#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 
 namespace {
 
@@ -50,7 +50,7 @@ void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  chromeos::cellular_setup::OpenCellularSetupDialog(network_id);
+  chromeos::MobileSetupDialog::ShowByNetworkId(network_id);
 }
 
 void NetworkConnectDelegateChromeOS::ShowNetworkConnectError(

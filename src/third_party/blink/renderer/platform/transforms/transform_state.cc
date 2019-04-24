@@ -41,10 +41,9 @@ TransformState& TransformState::operator=(const TransformState& other) {
 
   accumulated_transform_.reset();
 
-  if (other.accumulated_transform_) {
+  if (other.accumulated_transform_)
     accumulated_transform_ =
-        std::make_unique<TransformationMatrix>(*other.accumulated_transform_);
-  }
+        TransformationMatrix::Create(*other.accumulated_transform_);
 
   return *this;
 }
@@ -132,14 +131,14 @@ void TransformState::ApplyTransform(
   // transform
   if (accumulated_transform_) {
     if (direction_ == kApplyTransformDirection)
-      accumulated_transform_ = std::make_unique<TransformationMatrix>(
+      accumulated_transform_ = TransformationMatrix::Create(
           transform_from_container * *accumulated_transform_);
     else
       accumulated_transform_->Multiply(transform_from_container);
   } else if (accumulate == kAccumulateTransform) {
     // Make one if we started to accumulate
     accumulated_transform_ =
-        std::make_unique<TransformationMatrix>(transform_from_container);
+        TransformationMatrix::Create(transform_from_container);
   }
 
   if (accumulate == kFlattenTransform) {
@@ -176,9 +175,8 @@ FloatPoint TransformState::MappedPoint(bool* was_clamped) const {
     *was_clamped = false;
 
   FloatPoint point = last_planar_point_;
-  point.Move(FloatSize(direction_ == kApplyTransformDirection
-                           ? accumulated_offset_
-                           : -accumulated_offset_));
+  point.Move((direction_ == kApplyTransformDirection) ? accumulated_offset_
+                                                      : -accumulated_offset_);
   if (!accumulated_transform_)
     return point;
 

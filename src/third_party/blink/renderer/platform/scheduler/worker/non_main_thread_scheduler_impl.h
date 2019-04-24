@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
@@ -29,11 +28,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
  public:
   ~NonMainThreadSchedulerImpl() override;
 
-  // |sequence_manager| and |proxy| must remain valid for the entire lifetime of
-  // this object.
   static std::unique_ptr<NonMainThreadSchedulerImpl> Create(
       WebThreadType thread_type,
-      base::sequence_manager::SequenceManager* sequence_manager,
       WorkerSchedulerProxy* proxy);
 
   // Blink should use NonMainThreadSchedulerImpl::DefaultTaskQueue instead of
@@ -89,16 +85,11 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
 
   scoped_refptr<NonMainThreadTaskQueue> CreateTaskQueue(const char* name);
 
-  scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
-      override;
-
  protected:
   static void RunIdleTask(Thread::IdleTask task, base::TimeTicks deadline);
 
-  // |sequence_manager| must remain valid for the entire lifetime of
-  // this object.
   explicit NonMainThreadSchedulerImpl(
-      base::sequence_manager::SequenceManager* sequence_manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
       TaskType default_task_type);
 
   friend class WorkerScheduler;
@@ -109,6 +100,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
   NonMainThreadSchedulerHelper* helper() { return &helper_; }
 
  private:
+  SchedulerHelper* GetHelper() override;
+
   NonMainThreadSchedulerHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadSchedulerImpl);

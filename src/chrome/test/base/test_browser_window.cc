@@ -136,14 +136,8 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
 
-PageActionIconContainer*
-TestBrowserWindow::GetOmniboxPageActionIconContainer() {
-  return &omnibox_page_action_icon_container_;
-}
-
-PageActionIconContainer*
-TestBrowserWindow::GetToolbarPageActionIconContainer() {
-  return nullptr;
+PageActionIconContainer* TestBrowserWindow::GetPageActionIconContainer() {
+  return &page_action_icon_container_;
 }
 
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
@@ -221,6 +215,10 @@ FindBar* TestBrowserWindow::CreateFindBar() {
 web_modal::WebContentsModalDialogHost*
     TestBrowserWindow::GetWebContentsModalDialogHost() {
   return NULL;
+}
+
+int TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
+  return 0;
 }
 
 void TestBrowserWindow::ExecuteExtensionCommand(

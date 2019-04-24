@@ -56,10 +56,6 @@ cr.define('inline.login', function() {
     $('contents').classList.toggle('loading', true);
   }
 
-  function onShowIncognito() {
-    chrome.send('showIncognito');
-  }
-
   /**
    * Initialize the UI.
    */
@@ -71,7 +67,6 @@ cr.define('inline.login', function() {
     authExtHost.addEventListener('newWindow', onNewWindow);
     authExtHost.addEventListener('resize', onResize);
     authExtHost.addEventListener('authCompleted', onAuthCompleted);
-    authExtHost.addEventListener('showIncognito', onShowIncognito);
     chrome.send('initialize');
   }
 
@@ -134,7 +129,7 @@ cr.define('inline.login', function() {
   }
 
   function showBackButton() {
-    $('navigation-button').ironIcon =
+    $('navigation-button').icon =
         isRTL() ? 'cr:arrow-forward' : 'cr:arrow-back';
 
     $('navigation-button')
@@ -143,7 +138,7 @@ cr.define('inline.login', function() {
   }
 
   function showCloseButton() {
-    $('navigation-button').ironIcon = 'cr:close';
+    $('navigation-button').icon = 'cr:close';
     $('navigation-button').classList.add('enabled');
     $('navigation-button')
         .setAttribute(

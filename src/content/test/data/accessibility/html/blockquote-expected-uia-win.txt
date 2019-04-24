@@ -1,5 +1,5 @@
 region
-++document
+++document IsKeyboardFocusable=true
 ++++group
 ++++++group
 ++++++++description Name='First blockquote has a child element.'

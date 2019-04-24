@@ -34,13 +34,7 @@ CrElementsActionMenuTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsActionMenuTest', 'MAYBE_All', function() {
+TEST_F('CrElementsActionMenuTest', 'All', function() {
   mocha.run();
 });
 
@@ -58,13 +52,7 @@ CrElementsProfileAvatarSelectorFocusTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsProfileAvatarSelectorFocusTest', 'MAYBE_All', function() {
+TEST_F('CrElementsProfileAvatarSelectorFocusTest', 'All', function() {
   cr_profile_avatar_selector.registerTests();
   mocha.grep(cr_profile_avatar_selector.TestNames.Focus).run();
 });
@@ -88,13 +76,7 @@ CrElementsToggleTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsToggleTest', 'MAYBE_All', function() {
+TEST_F('CrElementsToggleTest', 'All', function() {
   mocha.run();
 });
 
@@ -118,13 +100,7 @@ CrElementsCheckboxTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsCheckboxTest', 'MAYBE_All', function() {
+TEST_F('CrElementsCheckboxTest', 'All', function() {
   mocha.run();
 });
 
@@ -147,13 +123,7 @@ CrElementsInputTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsInputTest', 'MAYBE_All', function() {
+TEST_F('CrElementsInputTest', 'All', function() {
   mocha.run();
 });
 
@@ -176,44 +146,6 @@ CrElementsIconButtonFocusTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsIconButtonFocusTest', 'MAYBE_All', function() {
-  mocha.run();
-});
-
-
-/**
- * @constructor
- * @extends {CrElementsFocusTest}
- */
-function CrElementsExpandButtonTest() {}
-
-CrElementsExpandButtonTest.prototype = {
-  __proto__: CrElementsFocusTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html',
-
-  /** @override */
-  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
-    'cr_expand_button_focus_tests.js',
-  ]),
-};
-
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsExpandButtonTest', 'MAYBE_All', function() {
+TEST_F('CrElementsIconButtonFocusTest', 'All', function() {
   mocha.run();
 });

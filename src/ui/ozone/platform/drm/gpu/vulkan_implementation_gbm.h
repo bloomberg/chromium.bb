@@ -18,7 +18,7 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
   ~VulkanImplementationGbm() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance(bool using_surface) override;
+  bool InitializeVulkanInstance() override;
   gpu::VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<gpu::VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
@@ -31,12 +31,6 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
-  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
-                                    gpu::SemaphoreHandle handle) override;
-  gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
-                                          VkSemaphore vk_semaphore) override;
-  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
   gpu::VulkanInstance vulkan_instance_;

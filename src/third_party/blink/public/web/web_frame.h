@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -51,7 +52,6 @@ class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebView;
 enum class WebSandboxFlags;
-struct FramePolicy;
 struct WebFrameOwnerProperties;
 struct WebRect;
 
@@ -104,7 +104,7 @@ class BLINK_EXPORT WebFrame {
   // parent is in another process and it dynamically updates this frame's
   // sandbox flags or container policy. The new policy won't take effect until
   // the next navigation.
-  void SetFrameOwnerPolicy(const FramePolicy&);
+  void SetFrameOwnerPolicy(WebSandboxFlags, const blink::ParsedFeaturePolicy&);
 
   // The frame's insecure request policy.
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;

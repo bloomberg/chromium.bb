@@ -58,9 +58,8 @@ class PeerConnectionRemoteAudioSource final
     : public blink::MediaStreamAudioSource,
       protected webrtc::AudioTrackSinkInterface {
  public:
-  PeerConnectionRemoteAudioSource(
-      scoped_refptr<webrtc::AudioTrackInterface> track_interface,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit PeerConnectionRemoteAudioSource(
+      scoped_refptr<webrtc::AudioTrackInterface> track_interface);
   ~PeerConnectionRemoteAudioSource() final;
 
  protected:

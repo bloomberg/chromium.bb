@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 
-#include "base/auto_reset.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -48,7 +47,6 @@ struct DataForRecursion {
   bool animation_axis_aligned_since_render_target;
   bool not_axis_aligned_since_last_clip;
   gfx::Transform compound_transform_since_render_target;
-  bool* subtree_has_rounded_corner;
 };
 
 template <typename LayerType>
@@ -113,12 +111,6 @@ class PropertyTreeBuilderContext {
       const DataForRecursion<LayerType>& data_from_ancestor,
       LayerType* layer,
       DataForRecursion<LayerType>* data_for_children) const;
-
-  bool UpdateRenderSurfaceIfNeeded(
-      int parent_effect_tree_id,
-      DataForRecursion<LayerType>* data_for_children,
-      bool subtree_has_rounded_corner,
-      bool created_transform_node) const;
 
   LayerType* root_layer_;
   const LayerType* page_scale_layer_;
@@ -194,33 +186,6 @@ static inline const FilterOperations& Filters(LayerImpl* layer) {
   return layer->test_properties()->filters;
 }
 
-static bool IsFastRoundedCorner(Layer* layer) {
-  return layer->is_fast_rounded_corner();
-}
-
-static bool IsFastRoundedCorner(LayerImpl* layer) {
-  return false;
-}
-
-static bool HasRoundedCorner(Layer* layer) {
-  return layer->HasRoundedCorner();
-}
-
-static bool HasRoundedCorner(LayerImpl* layer) {
-  return false;
-}
-
-static gfx::RRectF RoundedCornerBounds(Layer* layer) {
-  const std::array<uint32_t, 4> radii = layer->corner_radii();
-  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())), radii[0], radii[0],
-                     radii[1], radii[1], radii[2], radii[2], radii[3],
-                     radii[3]);
-}
-
-static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
-  return gfx::RRectF();
-}
-
 static PictureLayer* MaskLayer(Layer* layer) {
   return layer->mask_layer();
 }
@@ -292,18 +257,6 @@ bool HasOnlyTranslationTransforms(const MutatorHost& host, LayerType* layer) {
 }
 
 template <typename LayerType>
-float MaximumAnimationScale(const MutatorHost& host, LayerType* layer) {
-  return host.MaximumTargetScale(layer->element_id(),
-                                 layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
-float StartingAnimationScale(const MutatorHost& host, LayerType* layer) {
-  return host.AnimationStartScale(layer->element_id(),
-                                  layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
 bool AnimationsPreserveAxisAlignment(const MutatorHost& host,
                                      LayerType* layer) {
   return host.AnimationsPreserveAxisAlignment(layer->element_id());
@@ -328,8 +281,7 @@ static int GetTransformParent(const DataForRecursion<LayerType>& data,
 
 template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || MaskLayer(layer) ||
-         HasRoundedCorner(layer);
+  return layer->masks_to_bounds() || MaskLayer(layer);
 }
 
 template <typename LayerType>
@@ -485,8 +437,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   bool requires_node = is_root || is_snapped || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
-                       is_sticky || is_at_boundary_of_3d_rendering_context ||
-                       HasRoundedCorner(layer);
+                       is_sticky || is_at_boundary_of_3d_rendering_context;
 
   int parent_index = TransformTree::kRootNodeId;
   int source_index = TransformTree::kRootNodeId;
@@ -576,8 +527,10 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
 
   node->has_potential_animation = has_potentially_animated_transform;
   node->is_currently_animating = TransformIsAnimating(mutator_host_, layer);
-  node->maximum_animation_scale = MaximumAnimationScale(mutator_host_, layer);
-  node->starting_animation_scale = StartingAnimationScale(mutator_host_, layer);
+  if (has_potentially_animated_transform) {
+    node->has_only_translation_animations =
+        HasOnlyTranslationTransforms(mutator_host_, layer);
+  }
 
   float post_local_scale_factor = 1.0f;
 
@@ -894,11 +847,6 @@ bool ShouldCreateRenderSurface(const MutatorHost& mutator_host,
     return true;
   }
 
-  if (!IsFastRoundedCorner(layer) && HasRoundedCorner(layer) &&
-      num_descendants_that_draw_content > 1) {
-    return true;
-  }
-
   // If the layer has blending.
   // TODO(rosca): this is temporary, until blending is implemented for other
   // types of quads than viz::RenderPassDrawQuad. Layers having descendants that
@@ -1046,7 +994,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   bool requires_node =
       is_root || has_transparency || has_potential_opacity_animation ||
       has_potential_filter_animation || has_non_axis_aligned_clip ||
-      should_create_render_surface || HasRoundedCorner(layer);
+      should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
 
@@ -1093,21 +1041,13 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   if (MaskLayer(layer)) {
     node->mask_layer_id = MaskLayer(layer)->id();
     effect_tree_.AddMaskLayerId(node->mask_layer_id);
-    node->is_masked = true;
-  }
-
-  if (HasRoundedCorner(layer)) {
-    // This is currently in the local space of the layer and hence in an invalid
-    // space. Once we have the associated transform node for this effect node,
-    // we will update this to the transform node's coordinate space.
-    node->rounded_corner_bounds = RoundedCornerBounds(layer);
-    node->is_fast_rounded_corner = IsFastRoundedCorner(layer);
   }
 
   if (!is_root) {
-    // Having a rounded corner or a render surface, both trigger the creation
-    // of a transform node.
-    if (should_create_render_surface || HasRoundedCorner(layer)) {
+    // The effect node's transform id is used only when we create a render
+    // surface. So, we can leave the default value when we don't create a render
+    // surface.
+    if (should_create_render_surface) {
       // In this case, we will create a transform node, so it's safe to use the
       // next available id from the transform tree as this effect node's
       // transform id.
@@ -1152,48 +1092,6 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
     data_for_children->animation_axis_aligned_since_render_target = true;
   }
   return should_create_render_surface;
-}
-
-template <typename LayerType>
-bool PropertyTreeBuilderContext<LayerType>::UpdateRenderSurfaceIfNeeded(
-    int parent_effect_tree_id,
-    DataForRecursion<LayerType>* data_for_children,
-    bool subtree_has_rounded_corner,
-    bool created_transform_node) const {
-  // No effect node was generated for this layer.
-  if (parent_effect_tree_id == data_for_children->effect_tree_parent) {
-    *data_for_children->subtree_has_rounded_corner = subtree_has_rounded_corner;
-    return false;
-  }
-
-  EffectNode* effect_node =
-      effect_tree_.Node(data_for_children->effect_tree_parent);
-  const bool has_rounded_corner = !effect_node->rounded_corner_bounds.IsEmpty();
-
-  // Having a rounded corner should trigger a transform node.
-  if (has_rounded_corner)
-    DCHECK(created_transform_node);
-
-  // If the subtree has a rounded corner and this node also has a rounded
-  // corner, then this node needs to have a render surface to prevent any
-  // intersections between the rrects. Since GL renderer can only handle a
-  // single rrect per quad at draw time, it would be unable to handle
-  // intersections thus resulting in artifacts.
-  if (subtree_has_rounded_corner && has_rounded_corner)
-    effect_node->has_render_surface = true;
-
-  // Inform the parent that its subtree has rounded corners if one of the two
-  // scenario is true:
-  //   - The subtree rooted at this node has a rounded corner and this node
-  //     does not have a render surface.
-  //   - This node has a rounded corner.
-  // The parent may have a rounded corner and would want to create a render
-  // surface of its own to prevent blending artifacts due to intersecting
-  // rounded corners.
-  *data_for_children->subtree_has_rounded_corner =
-      (subtree_has_rounded_corner && !effect_node->has_render_surface) ||
-      has_rounded_corner;
-  return effect_node->has_render_surface;
 }
 
 static inline bool UserScrollableHorizontal(Layer* layer) {
@@ -1367,7 +1265,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   layer->set_property_tree_sequence_number(property_trees_.sequence_number);
 
   DataForRecursion<LayerType> data_for_children(data_from_parent);
-  *data_for_children.subtree_has_rounded_corner = false;
 
   bool created_render_surface =
       AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
@@ -1393,14 +1290,11 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   data_for_children.not_axis_aligned_since_last_clip =
       !has_non_axis_aligned_clip;
 
-  bool subtree_has_rounded_corner = false;
   for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
     LayerType* current_child = LayerChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
     if (!ScrollParent(current_child)) {
       BuildPropertyTreesInternal(current_child, data_for_children);
-      subtree_has_rounded_corner |=
-          *data_for_children.subtree_has_rounded_corner;
     }
   }
 
@@ -1410,15 +1304,10 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
     LayerType* scroll_child = it->second;
     DCHECK_EQ(ScrollParent(scroll_child), layer);
     DCHECK(LayerParent(scroll_child));
-    base::AutoReset<int> auto_reset_effect_tree_parent(
-        &data_for_children.effect_tree_parent,
-        LayerParent(scroll_child)->effect_tree_index());
+    data_for_children.effect_tree_parent =
+        LayerParent(scroll_child)->effect_tree_index();
     BuildPropertyTreesInternal(scroll_child, data_for_children);
   }
-
-  created_render_surface = UpdateRenderSurfaceIfNeeded(
-      data_from_parent.effect_tree_parent, &data_for_children,
-      subtree_has_rounded_corner, created_transform_node);
 
   if (MaskLayer(layer)) {
     MaskLayer(layer)->set_property_tree_sequence_number(
@@ -1529,9 +1418,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
   root_clip.transform_id = TransformTree::kRootNodeId;
   data_for_recursion.clip_tree_parent =
       clip_tree_.Insert(root_clip, ClipTree::kRootNodeId);
-
-  bool subtree_has_rounded_corner;
-  data_for_recursion.subtree_has_rounded_corner = &subtree_has_rounded_corner;
 
   BuildPropertyTreesInternal(root_layer_, data_for_recursion);
   property_trees_.needs_rebuild = false;

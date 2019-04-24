@@ -60,14 +60,12 @@ bool WriteFile(const base::FilePath& file, base::StringPiece content) {
 
 class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
-  TestableIndexedDBBackingStore(IndexedDBBackingStore::Mode backing_store_mode,
-                                IndexedDBFactory* indexed_db_factory,
+  TestableIndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
                                 const url::Origin& origin,
                                 const base::FilePath& blob_path,
                                 std::unique_ptr<LevelDBDatabase> db,
                                 base::SequencedTaskRunner* task_runner)
-      : IndexedDBBackingStore(backing_store_mode,
-                              indexed_db_factory,
+      : IndexedDBBackingStore(indexed_db_factory,
                               origin,
                               blob_path,
                               std::move(db),
@@ -152,14 +150,12 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   ~TestIDBFactory() override {}
 
   scoped_refptr<IndexedDBBackingStore> CreateBackingStore(
-      IndexedDBBackingStore::Mode backing_store_mode,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner) override {
     return base::MakeRefCounted<TestableIndexedDBBackingStore>(
-        backing_store_mode, this, origin, blob_path, std::move(db),
-        task_runner);
+        this, origin, blob_path, std::move(db), task_runner);
   }
 
  private:

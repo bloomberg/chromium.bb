@@ -1,13 +1,14 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <ul id="future_parent" aria-owns="future_child"></ul>
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFutureParent = accessibilityController.accessibleElementById("future_parent");
     assert_equals(axFutureParent.childrenCount, 0);
     var futureParent = document.getElementById("future_parent");
@@ -47,7 +48,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
   var source1 = document.getElementById("source1");
   var target = document.getElementById("target");
   var axSource1 = accessibilityController.accessibleElementById("source1");
@@ -72,7 +73,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axLogicalParent = accessibilityController.accessibleElementById("logical_parent");
 

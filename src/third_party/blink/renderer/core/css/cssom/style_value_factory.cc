@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 
-#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
@@ -38,23 +37,22 @@ namespace {
 CSSStyleValue* CreateStyleValueWithoutProperty(const CSSValue& value) {
   if (value.IsCSSWideKeyword())
     return CSSKeywordValue::FromCSSValue(value);
-  if (auto* variable_reference_value =
-          DynamicTo<CSSVariableReferenceValue>(value))
-    return CSSUnparsedValue::FromCSSValue(*variable_reference_value);
-  if (auto* custom_prop_declaration =
-          DynamicTo<CSSCustomPropertyDeclaration>(value)) {
-    return CSSUnparsedValue::FromCSSValue(*custom_prop_declaration);
+  if (value.IsVariableReferenceValue())
+    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
+  if (value.IsCustomPropertyDeclaration()) {
+    return CSSUnparsedValue::FromCSSValue(
+        ToCSSCustomPropertyDeclaration(value));
   }
   return nullptr;
 }
 
 CSSStyleValue* CreateStyleValue(const CSSValue& value) {
-  if (IsA<CSSIdentifierValue>(value) || IsA<CSSCustomIdentValue>(value))
+  if (value.IsIdentifierValue() || value.IsCustomIdentValue())
     return CSSKeywordValue::FromCSSValue(value);
-  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
-    return CSSNumericValue::FromCSSValue(*primitive_value);
-  if (auto* image_value = DynamicTo<CSSImageValue>(value)) {
-    return CSSURLImageValue::FromCSSValue(*image_value->Clone());
+  if (value.IsPrimitiveValue())
+    return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
+  if (value.IsImageValue()) {
+    return CSSURLImageValue::FromCSSValue(*ToCSSImageValue(value).Clone());
   }
   return nullptr;
 }
@@ -64,143 +62,142 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
   // FIXME: We should enforce/document what the possible CSSValue structures
   // are for each property.
   switch (property_id) {
-    case CSSPropertyID::kBorderBottomLeftRadius:
-    case CSSPropertyID::kBorderBottomRightRadius:
-    case CSSPropertyID::kBorderTopLeftRadius:
-    case CSSPropertyID::kBorderTopRightRadius: {
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderTopRightRadius: {
       // border-radius-* are always stored as pairs, but when both values are
       // the same, we should reify as a single value.
-      if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+      if (const CSSValuePair* pair = ToCSSValuePairOrNull(value)) {
         if (pair->First() == pair->Second() && !pair->KeepIdenticalValues()) {
           return CreateStyleValue(pair->First());
         }
       }
       return nullptr;
     }
-    case CSSPropertyID::kCaretColor: {
+    case CSSPropertyCaretColor:
       // caret-color also supports 'auto'
-      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-      if (identifier_value &&
-          identifier_value->GetValueID() == CSSValueID::kAuto)
+      if (value.IsIdentifierValue() &&
+          ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto) {
         return CSSKeywordValue::Create("auto");
+      }
       FALLTHROUGH;
-    }
-    case CSSPropertyID::kBackgroundColor:
-    case CSSPropertyID::kBorderBottomColor:
-    case CSSPropertyID::kBorderLeftColor:
-    case CSSPropertyID::kBorderRightColor:
-    case CSSPropertyID::kBorderTopColor:
-    case CSSPropertyID::kColor:
-    case CSSPropertyID::kColumnRuleColor:
-    case CSSPropertyID::kFloodColor:
-    case CSSPropertyID::kLightingColor:
-    case CSSPropertyID::kOutlineColor:
-    case CSSPropertyID::kStopColor:
-    case CSSPropertyID::kTextDecorationColor:
-    case CSSPropertyID::kWebkitTextEmphasisColor: {
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+    case CSSPropertyColor:
+    case CSSPropertyColumnRuleColor:
+    case CSSPropertyFloodColor:
+    case CSSPropertyLightingColor:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyStopColor:
+    case CSSPropertyTextDecorationColor:
+    case CSSPropertyWebkitTextEmphasisColor:
       // Only 'currentcolor' is supported.
-      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-      if (identifier_value &&
-          identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
+      if (value.IsIdentifierValue() &&
+          ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
         return CSSKeywordValue::Create("currentcolor");
+      }
       return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
                                               value);
-    }
-    case CSSPropertyID::kContain: {
+    case CSSPropertyContain: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
       // Only single values are supported in level 1.
-      const auto& value_list = To<CSSValueList>(value);
+      const auto& value_list = ToCSSValueList(value);
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kFontVariantEastAsian:
-    case CSSPropertyID::kFontVariantLigatures:
-    case CSSPropertyID::kFontVariantNumeric: {
+    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric: {
       // Only single keywords are supported in level 1.
-      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
+      if (const auto* value_list = ToCSSValueListOrNull(value)) {
         if (value_list->length() != 1U)
           return nullptr;
         return CreateStyleValue(value_list->Item(0));
       }
       return CreateStyleValue(value);
     }
-    case CSSPropertyID::kGridAutoFlow: {
-      const auto& value_list = To<CSSValueList>(value);
+    case CSSPropertyGridAutoFlow: {
+      const auto& value_list = ToCSSValueList(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kTransform:
+    case CSSPropertyTransform:
       return CSSTransformValue::FromCSSValue(value);
-    case CSSPropertyID::kOffsetAnchor:
-    case CSSPropertyID::kOffsetPosition:
+    case CSSPropertyOffsetAnchor:
+    case CSSPropertyOffsetPosition:
       // offset-anchor and offset-position can be 'auto'
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
       FALLTHROUGH;
-    case CSSPropertyID::kObjectPosition:
-    case CSSPropertyID::kPerspectiveOrigin:
-    case CSSPropertyID::kTransformOrigin:
+    case CSSPropertyObjectPosition:
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyTransformOrigin:
       return CSSPositionValue::FromCSSValue(value);
-    case CSSPropertyID::kOffsetRotate: {
-      const auto& value_list = To<CSSValueList>(value);
+    case CSSPropertyOffsetRotate: {
+      const auto& value_list = ToCSSValueList(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kAlignItems: {
+    case CSSPropertyAlignItems: {
       // Computed align-items is a ValueList of either length 1 or 2.
       // Typed OM level 1 can't support "pairs", so we only return
       // a Typed OM object for length 1 lists.
-      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
-        if (value_list->length() != 1U)
+      if (value.IsValueList()) {
+        const auto& value_list = ToCSSValueList(value);
+        if (value_list.length() != 1U)
           return nullptr;
-        return CreateStyleValue(value_list->Item(0));
+        return CreateStyleValue(value_list.Item(0));
       }
       return CreateStyleValue(value);
     }
-    case CSSPropertyID::kTextDecorationLine: {
+    case CSSPropertyTextDecorationLine: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = To<CSSValueList>(value);
+      const auto& value_list = ToCSSValueList(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kTextIndent: {
+    case CSSPropertyTextIndent: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = To<CSSValueList>(value);
+      const auto& value_list = ToCSSValueList(value);
       // Only single values are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kTransitionProperty:
-    case CSSPropertyID::kTouchAction: {
-      const auto& value_list = To<CSSValueList>(value);
+    case CSSPropertyTransitionProperty:
+    case CSSPropertyTouchAction: {
+      const auto& value_list = ToCSSValueList(value);
       // Only single values are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
     }
-    case CSSPropertyID::kWillChange: {
+    case CSSPropertyWillChange: {
       // Only 'auto' is supported, which can be stored as an identifier or list.
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = To<CSSValueList>(value);
-      if (value_list.length() == 1U) {
-        const auto* ident = DynamicTo<CSSIdentifierValue>(value_list.Item(0));
-        if (ident && ident->GetValueID() == CSSValueID::kAuto)
+      const auto& value_list = ToCSSValueList(value);
+      if (value_list.length() == 1U && value_list.Item(0).IsIdentifierValue()) {
+        const auto& ident = ToCSSIdentifierValue(value_list.Item(0));
+        if (ident.GetValueID() == CSSValueAuto)
           return CreateStyleValue(value_list.Item(0));
       }
       return nullptr;
@@ -214,13 +211,13 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
 
 CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
                                             const CSSValue& value) {
-  DCHECK_NE(property_id, CSSPropertyID::kInvalid);
+  DCHECK_NE(property_id, CSSPropertyInvalid);
 
   if (CSSStyleValue* style_value = CreateStyleValueWithoutProperty(value))
     return style_value;
 
   if (!CSSOMTypes::IsPropertySupported(property_id)) {
-    DCHECK_NE(property_id, CSSPropertyID::kVariable);
+    DCHECK_NE(property_id, CSSPropertyVariable);
     return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
                                             value);
   }
@@ -247,15 +244,14 @@ CSSStyleValueVector StyleValueFactory::FromString(
     const PropertyRegistration* registration,
     const String& css_text,
     const CSSParserContext* parser_context) {
-  DCHECK_NE(property_id, CSSPropertyID::kInvalid);
-  DCHECK_EQ(property_id == CSSPropertyID::kVariable,
-            !custom_property_name.IsNull());
+  DCHECK_NE(property_id, CSSPropertyInvalid);
+  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSTokenizer tokenizer(css_text);
   const auto tokens = tokenizer.TokenizeToEOF();
   const CSSParserTokenRange range(tokens);
 
   HeapVector<CSSPropertyValue, 256> parsed_properties;
-  if (property_id != CSSPropertyID::kVariable &&
+  if (property_id != CSSPropertyVariable &&
       CSSPropertyParser::ParseValue(property_id, false, range, parser_context,
                                     parsed_properties,
                                     StyleRule::RuleType::kStyle)) {
@@ -277,7 +273,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
     return result;
   }
 
-  if (property_id == CSSPropertyID::kVariable && registration) {
+  if (property_id == CSSPropertyVariable && registration) {
     const bool is_animation_tainted = false;
     const CSSValue* value = registration->Syntax().Parse(tokens, parser_context,
                                                          is_animation_tainted);
@@ -288,7 +284,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
         CSSPropertyName(custom_property_name), *value);
   }
 
-  if ((property_id == CSSPropertyID::kVariable && !tokens.IsEmpty()) ||
+  if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
       CSSVariableParser::ContainsValidVariableReferences(range)) {
     const auto variable_data = CSSVariableData::Create(
         range, false /* is_animation_tainted */,
@@ -358,25 +354,25 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return style_value_vector;
   }
 
-  // We assume list-valued properties are always stored as a list.
-  const auto* css_value_list = DynamicTo<CSSValueList>(css_value);
-  if (!css_value_list ||
+  if (!css_value.IsValueList() ||
       // TODO(andruud): Custom properties claim to not be repeated, even though
       // they may be. Therefore we must ignore "IsRepeated" for custom
       // properties.
       (!CSSProperty::Get(property_id).IsRepeated() &&
-       property_id != CSSPropertyID::kVariable) ||
+       property_id != CSSPropertyVariable) ||
       // Note: CSSTransformComponent is parsed as CSSFunctionValue, which is a
       // CSSValueList. We do not yet support such CSSFunctionValues, however.
       // TODO(andruud): Make CSSTransformComponent a subclass of CSSStyleValue,
       // once TypedOM spec is updated.
       // https://github.com/w3c/css-houdini-drafts/issues/290
-      (property_id == CSSPropertyID::kVariable &&
+      (property_id == CSSPropertyVariable &&
        CSSTransformComponent::FromCSSValue(css_value))) {
     return UnsupportedCSSValue(name, css_value);
   }
 
-  for (const CSSValue* inner_value : *css_value_list) {
+  // We assume list-valued properties are always stored as a list.
+  const CSSValueList& css_value_list = ToCSSValueList(css_value);
+  for (const CSSValue* inner_value : css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
     if (!style_value)
       return UnsupportedCSSValue(name, css_value);

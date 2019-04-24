@@ -35,7 +35,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -55,6 +54,13 @@ class PLATFORM_EXPORT Prerender final
    public:
     virtual ~ExtraData() = default;
   };
+
+  static Prerender* Create(PrerenderClient* client,
+                           const KURL& url,
+                           unsigned rel_types,
+                           const Referrer& referrer) {
+    return MakeGarbageCollected<Prerender>(client, url, rel_types, referrer);
+  }
 
   Prerender(PrerenderClient*, const KURL&, unsigned rel_types, const Referrer&);
   ~Prerender();

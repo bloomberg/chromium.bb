@@ -92,7 +92,7 @@ class FakeSocket : public P2PDatagramSocket {
     if (!read_callback_.is_null()) {
       int size = std::min(read_buffer_size_, static_cast<int>(data.size()));
       memcpy(read_buffer_->data(), &data[0], data.size());
-      net::CompletionRepeatingCallback cb = read_callback_;
+      net::CompletionCallback cb = read_callback_;
       read_callback_.Reset();
       read_buffer_ = NULL;
       cb.Run(size);
@@ -112,9 +112,8 @@ class FakeSocket : public P2PDatagramSocket {
   void set_latency(int latency_ms) { latency_ms_ = latency_ms; }
 
   // P2PDatagramSocket interface.
-  int Recv(const scoped_refptr<net::IOBuffer>& buf,
-           int buf_len,
-           const net::CompletionRepeatingCallback& callback) override {
+  int Recv(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
+           const net::CompletionCallback& callback) override {
     CHECK(read_callback_.is_null());
     CHECK(buf);
 
@@ -133,9 +132,8 @@ class FakeSocket : public P2PDatagramSocket {
     }
   }
 
-  int Send(const scoped_refptr<net::IOBuffer>& buf,
-           int buf_len,
-           const net::CompletionRepeatingCallback& callback) override {
+  int Send(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
+           const net::CompletionCallback& callback) override {
     DCHECK(buf);
     if (peer_socket_) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -152,7 +150,7 @@ class FakeSocket : public P2PDatagramSocket {
  private:
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::CompletionRepeatingCallback read_callback_;
+  net::CompletionCallback read_callback_;
 
   base::circular_deque<std::vector<char>> incoming_packets_;
 
@@ -226,7 +224,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
                                     kMessageSize);
       result = client_socket_->Write(
           output_buffer_.get(), bytes_to_write,
-          base::BindOnce(&TCPChannelTester::OnWritten, base::Unretained(this)),
+          base::Bind(&TCPChannelTester::OnWritten, base::Unretained(this)),
           TRAFFIC_ANNOTATION_FOR_TESTS);
       HandleWriteResult(result);
     }
@@ -399,8 +397,8 @@ TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {
   DeleteOnConnected host_delete(base::ThreadTaskRunnerHandle::Get(),
                                 &host_pseudotcp_);
 
-  host_pseudotcp_->Connect(base::BindOnce(&DeleteOnConnected::OnConnected,
-                                          base::Unretained(&host_delete)));
+  host_pseudotcp_->Connect(base::Bind(&DeleteOnConnected::OnConnected,
+                                      base::Unretained(&host_delete)));
   client_pseudotcp_->Connect(client_connect_cb.callback());
   base::RunLoop().Run();
 

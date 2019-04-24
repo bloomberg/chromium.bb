@@ -42,7 +42,6 @@
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סריקת קוד QR</translation>
-<translation id="1552525382687785070">מנהל המערכת השבית את הסנכרון</translation>
 <translation id="1558704936695638228">לחיצה ארוכה תציג עוד אפשרויות כרטיסייה</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
 <translation id="1582732959743469162">הפעולה תפסיק את ההורדה הנוכחית.</translation>
@@ -85,7 +84,6 @@
 <translation id="213900355088104901">כדי לגלוש באופן פרטי יש לפתוח כרטיסיית גלישה בסתר</translation>
 <translation id="2139867232736819575">חיפוש טקסט שהעתקת</translation>
 <translation id="2149973817440762519">ערוך סימניות</translation>
-<translation id="2179182049312275900">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות.</translation>
 <translation id="2198757192731523470">‏Google תוכל להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של החיפוש, מודעות ושירותי Google אחרים.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> מאמרים שלא נקראו ברשימת הקריאה.</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
@@ -104,7 +102,6 @@
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2435457462613246316">הצג סיסמה</translation>
 <translation id="2481538920734869610">הוספת חשבון</translation>
-<translation id="2497852260688568942">מנהל המערכת שלך השבית את הסנכרון</translation>
 <translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2523363575747517183">האתר הזה מנסה שוב ושוב לפתוח אפליקציה אחרת.</translation>
 <translation id="2529021024822217800">פתח הכול</translation>
@@ -203,9 +200,9 @@
 <translation id="4038354071007134711">אין במכשיר זה אף אפליקציה שניתן לפתוח באמצעותה את הקובץ.</translation>
 <translation id="4042870976416480368">מצא בדף</translation>
 <translation id="4049507953662678203">ודא שאתה מחובר לרשת ונסה שוב.</translation>
-<translation id="4071530748369333746">לבטל את הסנכרון?</translation>
 <translation id="4082688844002261427">שליטה באופן שבו היסטוריית הגלישה משמשת להתאמה אישית של החיפוש, המודעות ועוד</translation>
 <translation id="408404951701638773">עכשיו קל יותר להגיע אל סרגל החיפוש</translation>
+<translation id="4084682180776658562">סימניה</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
 <translation id="4112644173421521737">חיפוש</translation>
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, יש להגדיר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
@@ -217,6 +214,7 @@
 <translation id="4272631900155121838">‏כדי לסרוק את קוד ה-QR, הפעל את המצלמה דרך ההגדרות</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="430793432425771671">סנכרון הכל</translation>
+<translation id="4342284590510997375">חדש</translation>
 <translation id="4359125752503270327">הדף הזה ייפתח ביישום אחר.</translation>
 <translation id="4370827530403103842">הסנכרון לא עובד. הקש כאן לתיקון.</translation>
 <translation id="4375040482473363939">‏חיפוש של קוד QR</translation>
@@ -272,7 +270,6 @@
 <translation id="5197255632782567636">אינטרנט</translation>
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
-<translation id="5245322853195994030">ביטול הסנכרון</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -366,9 +363,9 @@
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
 <translation id="6657585470893396449">סיסמה</translation>
-<translation id="6668619169535738264">עריכת סימניה</translation>
 <translation id="667999046851023355">מסמך</translation>
 <translation id="6691331417640343772">‏ניהול נתונים מסוכרנים במרכז השליטה של Google</translation>
+<translation id="6709334795756764830">עריכת סימניה</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">אי אפשר לייצא סיסמאות</translation>
 <translation id="6780034285637185932">מיקוד</translation>
@@ -409,7 +406,6 @@
 <translation id="7291368939935408496">מכין סיסמאות...</translation>
 <translation id="7336264872878993241">הושלמה הורדה של <ph name="PERCENT" /> אחוז</translation>
 <translation id="7346909386216857016">בסדר, הבנתי</translation>
-<translation id="7348502496356775519">הוספה לסימניות</translation>
 <translation id="7383797227493018512">רשימת קריאה</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7425346204213733349">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
@@ -457,7 +453,6 @@
 <translation id="8073670137947914548">ההורדה הסתיימה</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">יש קובץ זמין להורדה. האפשרויות זמינות בחלק התחתון של המסך.</translation>
-<translation id="8131740175452115882">אישור</translation>
 <translation id="8205564605687841303">בטל</translation>
 <translation id="8225985093977202398">תמונות וקבצים במטמון</translation>
 <translation id="8261506727792406068">מחיקה</translation>

@@ -90,6 +90,10 @@ class Internals final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static Internals* Create(ExecutionContext* context) {
+    return MakeGarbageCollected<Internals>(context);
+  }
+
   static void ResetToConsistentState(Page*);
 
   explicit Internals(ExecutionContext*);
@@ -388,6 +392,8 @@ class Internals final : public ScriptWrappable {
                                 float max_scale_factor,
                                 ExceptionState&);
 
+  bool magnifyScaleAroundAnchor(float factor, float x, float y);
+
   void setIsCursorVisible(Document*, bool, ExceptionState&);
 
   String effectivePreload(HTMLMediaElement*);
@@ -417,7 +423,9 @@ class Internals final : public ScriptWrappable {
 
   void startTrackingRepaints(Document*, ExceptionState&);
   void stopTrackingRepaints(Document*, ExceptionState&);
-  void updateLayoutAndRunPostLayoutTasks(Node*, ExceptionState&);
+  void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
+      Node*,
+      ExceptionState&);
   void forceFullRepaint(Document*, ExceptionState&);
 
   DOMRectList* draggableRegions(Document*, ExceptionState&);
@@ -449,7 +457,6 @@ class Internals final : public ScriptWrappable {
   int selectPopupItemStyleFontHeight(Node*, int);
   void resetTypeAheadSession(HTMLSelectElement*);
 
-  StaticSelection* getDragCaret();
   StaticSelection* getSelectionInFlatTree(DOMWindow*, ExceptionState&);
   Node* visibleSelectionAnchorNode();
   unsigned visibleSelectionAnchorOffset();
@@ -470,7 +477,7 @@ class Internals final : public ScriptWrappable {
   ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
   ScriptPromise addOneToPromise(ScriptState*, ScriptPromise);
   ScriptPromise promiseCheck(ScriptState*,
-                             int32_t,
+                             long,
                              bool,
                              const ScriptValue&,
                              const String&,
@@ -480,10 +487,10 @@ class Internals final : public ScriptWrappable {
                                                   const ScriptValue&,
                                                   const String&,
                                                   const Vector<String>&);
-  ScriptPromise promiseCheckRange(ScriptState*, int32_t);
+  ScriptPromise promiseCheckRange(ScriptState*, long);
   ScriptPromise promiseCheckOverload(ScriptState*, Location*);
   ScriptPromise promiseCheckOverload(ScriptState*, Document*);
-  ScriptPromise promiseCheckOverload(ScriptState*, Location*, int32_t, int32_t);
+  ScriptPromise promiseCheckOverload(ScriptState*, Location*, long, long);
 
   void Trace(blink::Visitor*) override;
 
@@ -491,6 +498,8 @@ class Internals final : public ScriptWrappable {
 
   void setFocused(bool);
   void setInitialFocus(bool);
+
+  bool ignoreLayoutWithPendingStylesheets(Document*);
 
   Element* interestedElement();
 
@@ -507,7 +516,7 @@ class Internals final : public ScriptWrappable {
   // Note: This is designed to be only used from PerformanceTests/BlinkGC to
   //       explicitly measure only Blink GC time.  Normal web tests should use
   //       gc() instead as it would trigger both Blink GC and V8 GC.
-  void scheduleBlinkGC();
+  void forceBlinkGCWithoutV8GC();
 
   String selectedHTMLForClipboard();
   String selectedTextForClipboard();
@@ -592,8 +601,6 @@ class Internals final : public ScriptWrappable {
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 
   LocalFrame* GetFrame() const;
-
-  void setDeviceEmulationScale(float scale, ExceptionState&);
 
  private:
   Document* ContextDocument() const;

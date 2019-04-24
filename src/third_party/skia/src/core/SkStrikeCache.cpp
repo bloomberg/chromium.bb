@@ -36,16 +36,8 @@ public:
         return fStrike.getGlyphMetrics(glyphID, position);
     }
 
-    SkSpan<const SkGlyphPos> prepareForDrawing(const SkGlyphID glyphIDs[],
-                                               const SkPoint positions[],
-                                               size_t n,
-                                               int maxDimension,
-                                               SkGlyphPos results[]) override {
-        return fStrike.prepareForDrawing(glyphIDs, positions, n, maxDimension, results);
-    }
-
-    void generatePath(const SkGlyph& glyph) override {
-        fStrike.generatePath(glyph);
+    bool decideCouldDrawFromPath(const SkGlyph& glyph) override {
+        return fStrike.decideCouldDrawFromPath(glyph);
     }
 
     const SkDescriptor& getDescriptor() const override {

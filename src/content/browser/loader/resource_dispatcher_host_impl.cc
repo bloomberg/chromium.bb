@@ -56,6 +56,9 @@
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -237,7 +240,7 @@ class LoginDelegateProxy : public LoginDelegate {
     delegate_ui_.reset(new DelegateOwnerUI(weak_factory_.GetWeakPtr()));
   }
 
-  void Start(const net::AuthChallengeInfo& auth_info,
+  void Start(net::AuthChallengeInfo* auth_info,
              ResourceRequestInfo::WebContentsGetter web_contents_getter,
              const GlobalRequestID& request_id,
              bool is_request_for_main_frame,
@@ -247,11 +250,11 @@ class LoginDelegateProxy : public LoginDelegate {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&DelegateOwnerUI::Start,
-                       base::Unretained(delegate_ui_.get()), auth_info,
-                       std::move(web_contents_getter), request_id,
-                       is_request_for_main_frame, url,
-                       std::move(response_headers), first_auth_attempt));
+        base::BindOnce(
+            &DelegateOwnerUI::Start, base::Unretained(delegate_ui_.get()),
+            base::RetainedRef(auth_info), std::move(web_contents_getter),
+            request_id, is_request_for_main_frame, url,
+            std::move(response_headers), first_auth_attempt));
   }
 
  private:
@@ -264,7 +267,7 @@ class LoginDelegateProxy : public LoginDelegate {
         : proxy_(std::move(proxy)) {}
     ~DelegateOwnerUI() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-    void Start(const net::AuthChallengeInfo& auth_info,
+    void Start(net::AuthChallengeInfo* auth_info,
                ResourceRequestInfo::WebContentsGetter web_contents_getter,
                const GlobalRequestID& request_id,
                bool is_request_for_main_frame,
@@ -585,7 +588,7 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(
 
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
     ResourceLoader* loader,
-    const net::AuthChallengeInfo& auth_info) {
+    net::AuthChallengeInfo* auth_info) {
   if (!delegate_)
     return nullptr;
 
@@ -628,13 +631,11 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
-  network::mojom::URLLoaderFactory* dummy = nullptr;
-
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
       info->GetNavigationUIData(), info->IsMainFrame(),
       info->GetPageTransition(), info->HasUserGesture(), url_request->method(),
-      url_request->extra_request_headers(), nullptr, dummy);
+      url_request->extra_request_headers());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
@@ -821,7 +822,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     if (blob_context) {
       // Get BlobHandles to request_body to prevent blobs and any attached
       // shareable files from being freed until upload completion. These data
-      // will be used in UploadDataStream.
+      // will be used in UploadDataStream and ServiceWorkerURLRequestJob.
       if (!GetBodyBlobDataHandles(request_data.request_body.get(),
                                   resource_context, &blob_handles)) {
         AbortRequestBeforeItStarts(requester_info->filter(), request_id,
@@ -961,10 +962,18 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   new_request->SetReferrer(network::ComputeReferrer(request_data.referrer));
   new_request->set_referrer_policy(request_data.referrer_policy);
 
-  // Internal headers must be set here to avoid being blocked by CORS checks.
-  net::HttpRequestHeaders merged_headers = headers;
-  merged_headers.MergeFrom(request_data.cors_exempt_headers);
-  new_request->SetExtraRequestHeaders(merged_headers);
+  new_request->SetExtraRequestHeaders(headers);
+  // X-Requested-With and X-Client-Data header must be set here to avoid
+  // breaking CORS checks. They are non-empty when the values are given by the
+  // UA code, therefore they should be ignored by CORS checks.
+  if (!request_data.requested_with_header.empty()) {
+    new_request->SetExtraRequestHeaderByName(
+        "X-Requested-With", request_data.requested_with_header, true);
+  }
+  if (!request_data.client_data_header.empty()) {
+    new_request->SetExtraRequestHeaderByName(
+        "X-Client-Data", request_data.client_data_header, true);
+  }
 
   std::unique_ptr<network::ScopedThrottlingToken> throttling_token =
       network::ScopedThrottlingToken::MaybeCreate(
@@ -1076,6 +1085,18 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                                ->context()
                                ->GetBlobDataFromPublicURL(new_request->url()));
   }
+
+  // Initialize the service worker handler for the request.
+  ServiceWorkerRequestHandler::InitializeHandler(
+      new_request.get(), requester_info->service_worker_context(), blob_context,
+      child_id, request_data.service_worker_provider_id,
+      request_data.skip_service_worker, request_data.fetch_request_mode,
+      request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
+      request_data.fetch_integrity, request_data.keepalive,
+      static_cast<ResourceType>(request_data.resource_type),
+      static_cast<blink::mojom::RequestContextType>(
+          request_data.fetch_request_context_type),
+      request_data.fetch_frame_type, request_data.request_body);
 
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(
@@ -1489,6 +1510,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     network::mojom::URLLoaderClientPtr url_loader_client,
     network::mojom::URLLoaderRequest url_loader_request,
+    ServiceWorkerNavigationHandleCore* service_worker_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
     uint32_t url_loader_options,
     net::RequestPriority net_priority,
@@ -1572,7 +1594,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
   // that IO thread -> UI thread hops will work.
   ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
-      ResourceRequesterInfo::CreateForBrowserSideNavigation(),
+      ResourceRequesterInfo::CreateForBrowserSideNavigation(
+          service_worker_handle_core
+              ? service_worker_handle_core->context_wrapper()
+              : scoped_refptr<ServiceWorkerContextWrapper>()),
       -1,  // route_id
       info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
@@ -1582,7 +1607,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       resource_type, info.common_params.transition,
       false,  // is download
       false,  // is stream
-      info.common_params.download_policy.GetResourceInterceptPolicy(),
+      GetResourceInterceptPolicy(info.common_params.download_policy),
       info.common_params.has_user_gesture,
       true,   // enable_load_timing
       false,  // enable_upload_progress
@@ -1614,6 +1639,16 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         new_request.get(),
         blob_context->GetBlobDataFromPublicURL(new_request->url()));
   }
+
+  network::mojom::RequestContextFrameType frame_type =
+      info.is_main_frame ? network::mojom::RequestContextFrameType::kTopLevel
+                         : network::mojom::RequestContextFrameType::kNested;
+  ServiceWorkerRequestHandler::InitializeForNavigation(
+      new_request.get(), service_worker_handle_core, blob_context,
+      info.begin_params->skip_service_worker, resource_type,
+      info.begin_params->request_context_type, frame_type,
+      info.are_ancestors_secure, info.common_params.post_data,
+      extra_info->GetWebContentsGetterForRequest());
 
   // Have the appcache associate its extra info with the request.
   if (appcache_handle_core) {

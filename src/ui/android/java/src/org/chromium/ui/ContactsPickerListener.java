@@ -47,7 +47,10 @@ public interface ContactsPickerListener {
     /**
      * Called when the user has selected an action. For possible actions see above.
      *
+     * @param contactsJson The contacts that were selected (string contains json format).
      * @param contacts The list of contacts selected.
      */
-    void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts);
+    // TODO(finnur): Remove the JSON param (along with <input> implementation).
+    void onContactsPickerUserAction(
+            @ContactsPickerAction int action, String contactsJson, List<Contact> contacts);
 }

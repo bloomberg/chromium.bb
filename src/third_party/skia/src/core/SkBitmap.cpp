@@ -286,8 +286,9 @@ bool SkBitmap::tryAllocPixelsFlags(const SkImageInfo& requestedInfo, uint32_t al
     // setInfo may have corrected info (e.g. 565 is always opaque).
     const SkImageInfo& correctedInfo = this->info();
 
-    sk_sp<SkPixelRef> pr = SkMallocPixelRef::MakeAllocate(correctedInfo,
-                                                          correctedInfo.minRowBytes());
+    sk_sp<SkPixelRef> pr = (allocFlags & kZeroPixels_AllocFlag) ?
+        SkMallocPixelRef::MakeZeroed(correctedInfo, correctedInfo.minRowBytes()) :
+        SkMallocPixelRef::MakeAllocate(correctedInfo, correctedInfo.minRowBytes());
     if (!pr) {
         return reset_return_false(this);
     }

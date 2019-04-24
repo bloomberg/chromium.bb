@@ -23,7 +23,8 @@ a formal conformance submission.
 
 4. Verify that the User Agent and WebGL renderer strings identify your browser and target correctly.
 
-5. Submit a PR with the results to [https://github.com/KhronosGroup/WebGLConformanceSubmissions].
+5. Copy the contents of the text summary (starting with "WebGL Conformance Test Results") and send via email to
+   webgl_conformance_submissions@khronos.org
 
 Please see CONFORMANCE_RULES.txt in this directory for guidelines
 about what constitutes a conformant WebGL implementation.

@@ -35,7 +35,6 @@ GCLIENT_SOLUTION = [
       "v8/test/test262/harness"               : None,
       "v8/third_party/android_ndk"            : None,
       "v8/third_party/android_tools"          : None,
-      "v8/third_party/android_sdk"            : None,
       "v8/third_party/catapult"               : None,
       "v8/third_party/colorama/src"           : None,
       "v8/third_party/fuchsia-sdk"            : None,

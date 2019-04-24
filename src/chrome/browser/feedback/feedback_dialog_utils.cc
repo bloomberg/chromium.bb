@@ -4,7 +4,6 @@
 
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,14 +30,8 @@ GURL GetTargetTabUrl(SessionID session_id, int index) {
   if (index >= 0) {
     content::WebContents* target_tab =
         browser->tab_strip_model()->GetWebContentsAt(index);
-    if (target_tab) {
-      if (browser->is_devtools()) {
-        target_tab = DevToolsWindow::AsDevToolsWindow(target_tab)
-                         ->GetInspectedWebContents();
-      }
-      if (target_tab)
-        return target_tab->GetURL();
-    }
+    if (target_tab)
+      return target_tab->GetURL();
   }
 
   return GURL();

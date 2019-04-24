@@ -66,13 +66,14 @@ blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #endif
 }
 
-uint64_t PpapiBlinkPlatformImpl::VisitedLinkHash(const char* canonical_url,
-                                                 size_t length) {
+unsigned long long PpapiBlinkPlatformImpl::VisitedLinkHash(
+    const char* canonical_url,
+    size_t length) {
   NOTREACHED();
   return 0;
 }
 
-bool PpapiBlinkPlatformImpl::IsLinkVisited(uint64_t link_hash) {
+bool PpapiBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }

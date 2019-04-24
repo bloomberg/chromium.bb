@@ -48,8 +48,7 @@ class PluginMetadata {
                  const GURL& plugin_url,
                  const GURL& help_url,
                  const base::string16& group_name_matcher,
-                 const std::string& language,
-                 bool plugin_is_deprecated);
+                 const std::string& language);
   ~PluginMetadata();
 
   // Unique identifier for the plugin.
@@ -71,7 +70,7 @@ class PluginMetadata {
   const std::string& language() const { return language_; }
 
   // Returns whether the plugin has been deprecated and cannot be updated.
-  bool plugin_is_deprecated() const { return plugin_is_deprecated_; }
+  bool IsPluginDeprecated() const;
 
   bool HasMimeType(const std::string& mime_type) const;
   void AddMimeType(const std::string& mime_type);
@@ -111,7 +110,6 @@ class PluginMetadata {
   std::map<base::Version, SecurityStatus, VersionComparator> versions_;
   std::vector<std::string> all_mime_types_;
   std::vector<std::string> matching_mime_types_;
-  const bool plugin_is_deprecated_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetadata);
 };

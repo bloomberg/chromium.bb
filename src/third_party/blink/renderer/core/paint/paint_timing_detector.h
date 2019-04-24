@@ -12,14 +12,14 @@
 
 namespace blink {
 
-class Image;
-class ImagePaintTimingDetector;
-class ImageResourceContent;
 class LayoutObject;
 class LocalFrameView;
-class PropertyTreeState;
-class StyleImage;
+class PaintLayer;
+class LayoutRect;
 class TextPaintTimingDetector;
+class ImagePaintTimingDetector;
+class PropertyTreeState;
+class Image;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -37,28 +37,28 @@ class CORE_EXPORT PaintTimingDetector
   // images in each layer.
   // Notify the paint of background image.
   static void NotifyBackgroundImagePaint(
-      const Node*,
-      const Image*,
-      const StyleImage* cached_image,
+      const Node* node,
+      Image* image,
       const PropertyTreeState& current_paint_chunk_properties);
   static void NotifyImagePaint(
-      const LayoutObject&,
-      const IntSize& intrinsic_size,
-      const ImageResourceContent* cached_image,
+      const Node* node,
+      const PropertyTreeState& current_paint_chunk_properties);
+  static void NotifyImagePaint(
+      const LayoutObject& object,
       const PropertyTreeState& current_paint_chunk_properties);
 
+  static void NotifyTextPaint(const Node* node, const PropertyTreeState&);
   static void NotifyTextPaint(const LayoutObject& object,
                               const PropertyTreeState&);
-  void NotifyNodeRemoved(const LayoutObject&);
+  void NotifyNodeRemoved(const LayoutObject& object);
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
   void NotifyScroll(ScrollType scroll_type);
   void DidChangePerformanceTiming();
-
-  // |visual_rect| should be an object's bounding rect in the space of
-  // PropertyTreeState.
-  uint64_t CalculateVisualSize(const IntRect& visual_rect,
+  uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
+                               const PaintLayer& painting_layer) const;
+  uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
                                const PropertyTreeState&) const;
   void Dispose();
 

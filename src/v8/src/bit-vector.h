@@ -11,7 +11,7 @@
 namespace v8 {
 namespace internal {
 
-class V8_EXPORT_PRIVATE BitVector : public ZoneObject {
+class BitVector : public ZoneObject {
  public:
   union DataStorage {
     uintptr_t* ptr_;    // valid if data_length_ > 1
@@ -34,7 +34,7 @@ class V8_EXPORT_PRIVATE BitVector : public ZoneObject {
     ~Iterator() = default;
 
     bool Done() const { return current_index_ >= target_->data_length_; }
-    V8_EXPORT_PRIVATE void Advance();
+    void Advance();
 
     int Current() const {
       DCHECK(!Done());

@@ -4,9 +4,6 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 
-#include <memory>
-#include <utility>
-
 #include "base/bind.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -15,9 +12,9 @@
 
 namespace ui {
 
-DrmThreadProxy::DrmThreadProxy() = default;
+DrmThreadProxy::DrmThreadProxy() {}
 
-DrmThreadProxy::~DrmThreadProxy() = default;
+DrmThreadProxy::~DrmThreadProxy() {}
 
 // Used only with the paramtraits implementation.
 void DrmThreadProxy::BindThreadIntoMessagingProxy(
@@ -25,6 +22,7 @@ void DrmThreadProxy::BindThreadIntoMessagingProxy(
   messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
+// Used only for the mojo implementation.
 void DrmThreadProxy::StartDrmThread(base::OnceClosure binding_drainer) {
   drm_thread_.Start(std::move(binding_drainer));
 }
@@ -49,42 +47,19 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
                      widget, size, format, usage, flags, buffer, framebuffer));
 }
 
-void DrmThreadProxy::CreateBufferFromHandle(
+void DrmThreadProxy::CreateBufferFromFds(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle,
+    std::vector<base::ScopedFD> fds,
+    const std::vector<gfx::NativePixmapPlane>& planes,
     std::unique_ptr<GbmBuffer>* buffer,
     scoped_refptr<DrmFramebuffer>* framebuffer) {
-  PostSyncTask(
-      drm_thread_.task_runner(),
-      base::BindOnce(&DrmThread::CreateBufferFromHandle,
-                     base::Unretained(&drm_thread_), widget, size, format,
-                     base::Passed(std::move(handle)), buffer, framebuffer));
-}
-
-void DrmThreadProxy::SetClearOverlayCacheCallback(
-    base::RepeatingClosure callback) {
-  DCHECK(drm_thread_.task_runner());
-
-  drm_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DrmThread::SetClearOverlayCacheCallback,
-                     base::Unretained(&drm_thread_),
-                     CreateSafeRepeatingCallback(std::move(callback))));
-}
-
-void DrmThreadProxy::CheckOverlayCapabilities(
-    gfx::AcceleratedWidget widget,
-    const std::vector<OverlaySurfaceCandidate>& candidates,
-    OverlayCapabilitiesCallback callback) {
-  DCHECK(drm_thread_.task_runner());
-
-  drm_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DrmThread::CheckOverlayCapabilities,
-                     base::Unretained(&drm_thread_), widget, candidates,
-                     CreateSafeOnceCallback(std::move(callback))));
+  PostSyncTask(drm_thread_.task_runner(),
+               base::BindOnce(&DrmThread::CreateBufferFromFds,
+                              base::Unretained(&drm_thread_), widget, size,
+                              format, base::Passed(std::move(fds)), planes,
+                              buffer, framebuffer));
 }
 
 void DrmThreadProxy::AddBindingCursorDevice(

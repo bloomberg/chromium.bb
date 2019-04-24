@@ -493,7 +493,7 @@ void SessionMetricsHelper::OnEnterFullscreenBrowsing() {
 
 void SessionMetricsHelper::MediaStartedPlaying(
     const MediaPlayerInfo& media_info,
-    const content::MediaPlayerId&) {
+    const MediaPlayerId&) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!media_info.has_video)
@@ -516,7 +516,7 @@ void SessionMetricsHelper::MediaStartedPlaying(
 
 void SessionMetricsHelper::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const content::MediaPlayerId&,
+    const MediaPlayerId&,
     WebContentsObserver::MediaStoppedReason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

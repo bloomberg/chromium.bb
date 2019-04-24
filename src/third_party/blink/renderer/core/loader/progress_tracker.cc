@@ -54,10 +54,20 @@ static const double kProgressNotificationTimeInterval = 0.1;
 
 struct ProgressItem {
   USING_FAST_MALLOC(ProgressItem);
+
  public:
-  int64_t bytes_received = 0;
-  int64_t estimated_length = 0;
+  explicit ProgressItem(long long length)
+      : bytes_received(0), estimated_length(length) {}
+
+  long long bytes_received;
+  long long estimated_length;
+
+  DISALLOW_COPY_AND_ASSIGN(ProgressItem);
 };
+
+ProgressTracker* ProgressTracker::Create(LocalFrame* frame) {
+  return MakeGarbageCollected<ProgressTracker>(frame);
+}
 
 ProgressTracker::ProgressTracker(LocalFrame* frame)
     : frame_(frame),
@@ -90,8 +100,6 @@ void ProgressTracker::Reset() {
   last_notified_progress_time_ = 0;
   finished_parsing_ = false;
   did_first_contentful_paint_ = false;
-  bytes_received_ = 0;
-  estimated_bytes_for_pending_requests_ = 0;
 }
 
 LocalFrameClient* ProgressTracker::GetLocalFrameClient() const {
@@ -134,58 +142,43 @@ void ProgressTracker::SendFinalProgress() {
   GetLocalFrameClient()->ProgressEstimateChanged(progress_value_);
 }
 
-void ProgressTracker::WillStartLoading(uint64_t identifier,
+void ProgressTracker::WillStartLoading(unsigned long identifier,
                                        ResourceLoadPriority priority) {
   if (!frame_->IsLoading())
     return;
   if (HaveParsedAndPainted() || priority < ResourceLoadPriority::kHigh)
     return;
-  ProgressItem new_item;
-  UpdateProgressItem(new_item, 0, kProgressItemDefaultEstimatedLength);
-  progress_items_.Set(identifier, new_item);
+  progress_items_.Set(identifier, std::make_unique<ProgressItem>(
+                                      kProgressItemDefaultEstimatedLength));
 }
 
-void ProgressTracker::IncrementProgress(uint64_t identifier,
+void ProgressTracker::IncrementProgress(unsigned long identifier,
                                         const ResourceResponse& response) {
-  auto item = progress_items_.find(identifier);
-  if (item == progress_items_.end())
+  ProgressItem* item = progress_items_.at(identifier);
+  if (!item)
     return;
 
-  int64_t estimated_length = response.ExpectedContentLength();
+  long long estimated_length = response.ExpectedContentLength();
   if (estimated_length < 0)
     estimated_length = kProgressItemDefaultEstimatedLength;
-  UpdateProgressItem(item->value, 0, estimated_length);
+  item->bytes_received = 0;
+  item->estimated_length = estimated_length;
 }
 
-void ProgressTracker::IncrementProgress(uint64_t identifier, uint64_t length) {
-  auto item = progress_items_.find(identifier);
-  if (item == progress_items_.end())
+void ProgressTracker::IncrementProgress(unsigned long identifier,
+                                        uint64_t length) {
+  ProgressItem* item = progress_items_.at(identifier);
+  if (!item)
     return;
 
-  ProgressItem& progress_item = item->value;
-  int64_t bytes_received = progress_item.bytes_received + length;
-  int64_t estimated_length = bytes_received > progress_item.estimated_length
-                                 ? bytes_received * 2
-                                 : progress_item.estimated_length;
-  UpdateProgressItem(progress_item, bytes_received, estimated_length);
+  item->bytes_received += length;
+  if (item->bytes_received > item->estimated_length)
+    item->estimated_length = item->bytes_received * 2;
   MaybeSendProgress();
 }
 
 bool ProgressTracker::HaveParsedAndPainted() {
   return finished_parsing_ && did_first_contentful_paint_;
-}
-
-void ProgressTracker::UpdateProgressItem(ProgressItem& item,
-                                         int64_t bytes_received,
-                                         int64_t estimated_length) {
-  bytes_received_ += (bytes_received - item.bytes_received);
-  estimated_bytes_for_pending_requests_ +=
-      (estimated_length - item.estimated_length);
-  DCHECK_GE(bytes_received_, 0);
-  DCHECK_GE(estimated_bytes_for_pending_requests_, bytes_received_);
-
-  item.bytes_received = bytes_received;
-  item.estimated_length = estimated_length;
 }
 
 void ProgressTracker::MaybeSendProgress() {
@@ -198,17 +191,27 @@ void ProgressTracker::MaybeSendProgress() {
   if (did_first_contentful_paint_)
     progress_value_ += 0.1;
 
+  long long bytes_received = 0;
+  long long estimated_bytes_for_pending_requests = 0;
+  for (const auto& progress_item : progress_items_) {
+    bytes_received += progress_item.value->bytes_received;
+    estimated_bytes_for_pending_requests +=
+        progress_item.value->estimated_length;
+  }
+  DCHECK_GE(estimated_bytes_for_pending_requests, 0);
+  DCHECK_GE(estimated_bytes_for_pending_requests, bytes_received);
+
   if (HaveParsedAndPainted() &&
-      estimated_bytes_for_pending_requests_ == bytes_received_) {
+      estimated_bytes_for_pending_requests == bytes_received) {
     SendFinalProgress();
     return;
   }
 
   double percent_of_bytes_received =
-      !estimated_bytes_for_pending_requests_
+      !estimated_bytes_for_pending_requests
           ? 1.0
-          : (double)bytes_received_ /
-                (double)estimated_bytes_for_pending_requests_;
+          : (double)bytes_received /
+                (double)estimated_bytes_for_pending_requests;
   progress_value_ += percent_of_bytes_received / 2;
 
   DCHECK_GE(progress_value_, kInitialProgressValue);
@@ -231,14 +234,12 @@ void ProgressTracker::MaybeSendProgress() {
   }
 }
 
-void ProgressTracker::CompleteProgress(uint64_t identifier) {
-  auto item = progress_items_.find(identifier);
-  if (item == progress_items_.end())
+void ProgressTracker::CompleteProgress(unsigned long identifier) {
+  ProgressItem* item = progress_items_.at(identifier);
+  if (!item)
     return;
 
-  ProgressItem& progress_item = item->value;
-  UpdateProgressItem(item->value, progress_item.bytes_received,
-                     progress_item.bytes_received);
+  item->estimated_length = item->bytes_received;
   MaybeSendProgress();
 }
 

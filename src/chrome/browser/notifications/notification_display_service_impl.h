@@ -66,7 +66,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   void Shutdown() override;
   void Display(NotificationHandler::Type notification_type,
                const message_center::Notification& notification,
-               std::unique_ptr<NotificationCommon::Metadata> metadata) override;
+               std::unique_ptr<NotificationCommon::Metadata> metadata =
+                   nullptr) override;
   void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(DisplayedNotificationsCallback callback) override;

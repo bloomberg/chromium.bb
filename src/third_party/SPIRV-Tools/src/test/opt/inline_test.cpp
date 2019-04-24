@@ -2421,8 +2421,7 @@ OpBranchConditional %true %44 %43
 OpStore %38 %float_1
 OpBranch %40
 %43 = OpLabel
-OpStore %38 %float_1
-OpBranch %40
+OpUnreachable
 %41 = OpLabel
 OpBranchConditional %false %39 %40
 %40 = OpLabel
@@ -2447,7 +2446,7 @@ OpBranchConditional %true %36 %35
 %36 = OpLabel
 OpReturnValue %float_1
 %35 = OpLabel
-OpReturnValue %float_1
+OpUnreachable
 OpFunctionEnd
 )";
 
@@ -3059,7 +3058,6 @@ OpDecorate %2 DescriptorSet 439418829
 %4 = OpTypeFunction %void
 %float = OpTypeFloat 32
 %_struct_6 = OpTypeStruct %float %float
-%15 = OpConstantNull %_struct_6
 %7 = OpTypeFunction %_struct_6
 %1 = OpFunction %void Pure|Const %4
 %8 = OpLabel
@@ -3069,11 +3067,10 @@ OpFunctionEnd
 %9 = OpFunction %_struct_6 None %7
 %10 = OpLabel
 %11 = OpFunctionCall %_struct_6 %9
-OpReturnValue %15
+OpUnreachable
 OpFunctionEnd
 )";
 
-  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
   SinglePassRunAndCheck<InlineExhaustivePass>(test, test, false, true);
 }
 
@@ -3089,7 +3086,6 @@ OpDecorate %2 DescriptorSet 439418829
 %4 = OpTypeFunction %void
 %float = OpTypeFloat 32
 %_struct_6 = OpTypeStruct %float %float
-%15 = OpConstantNull %_struct_6
 %7 = OpTypeFunction %_struct_6
 %1 = OpFunction %void Pure|Const %4
 %8 = OpLabel
@@ -3099,16 +3095,15 @@ OpFunctionEnd
 %9 = OpFunction %_struct_6 None %7
 %10 = OpLabel
 %11 = OpFunctionCall %_struct_6 %12
-OpReturnValue %15
+OpUnreachable
 OpFunctionEnd
 %12 = OpFunction %_struct_6 None %7
 %13 = OpLabel
 %14 = OpFunctionCall %_struct_6 %9
-OpReturnValue %15
+OpUnreachable
 OpFunctionEnd
 )";
 
-  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
   SinglePassRunAndCheck<InlineExhaustivePass>(test, test, false, true);
 }
 

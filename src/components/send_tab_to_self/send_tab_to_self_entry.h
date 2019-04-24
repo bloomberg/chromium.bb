@@ -17,8 +17,6 @@ class SendTabToSelfSpecifics;
 
 namespace send_tab_to_self {
 
-constexpr base::TimeDelta kExpiryTime = base::TimeDelta::FromDays(10);
-
 class SendTabToSelfLocal;
 
 // A tab that is being shared. The URL is a unique identifier for an entry, as
@@ -36,8 +34,7 @@ class SendTabToSelfEntry {
                      const std::string& title,
                      base::Time shared_time,
                      base::Time original_navigation_time,
-                     const std::string& device_name,
-                     const std::string& target_device_sync_cache_guid);
+                     const std::string& device_name);
   ~SendTabToSelfEntry();
 
   // The unique random id for the entry.
@@ -50,10 +47,9 @@ class SendTabToSelfEntry {
   base::Time GetSharedTime() const;
   // The time that the tab was navigated to.
   base::Time GetOriginalNavigationTime() const;
+
   // The name of the device that originated the sent tab.
   const std::string& GetDeviceName() const;
-  // The cache guid of of the device that this tab is shared with.
-  const std::string& GetTargetDeviceSyncCacheGuid() const;
 
   // The state of this entry's notification: if it has been |dismissed|.
   void SetNotificationDismissed(bool notification_dismissed);
@@ -75,15 +71,11 @@ class SendTabToSelfEntry {
       const SendTabToSelfLocal& pb_entry,
       base::Time now);
 
-  // Returns if the Entry has expired based on the |current_time|.
-  bool IsExpired(base::Time current_time) const;
-
  private:
   std::string guid_;
   GURL url_;
   std::string title_;
   std::string device_name_;
-  std::string target_device_sync_cache_guid_;
   base::Time shared_time_;
   base::Time original_navigation_time_;
   bool notification_dismissed_;

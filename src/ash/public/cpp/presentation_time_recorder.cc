@@ -100,8 +100,8 @@ void PresentationTimeRecorder::OnPresented(
 
   if (feedback.flags & gfx::PresentationFeedback::kFailure) {
     failure_count_++;
-    LOG(WARNING) << "PresentationFailed (" << count << "):"
-                 << ", flags=" << ToFlagString(feedback.flags);
+    VLOG(1) << "PresentationFailed (" << count << "):"
+            << ", flags=" << ToFlagString(feedback.flags);
     return;
   }
 

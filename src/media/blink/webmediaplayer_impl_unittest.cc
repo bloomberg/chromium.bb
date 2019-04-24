@@ -36,7 +36,6 @@
 #include "media/blink/mock_resource_fetch_context.h"
 #include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
-#include "media/blink/video_decode_stats_reporter.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
@@ -337,7 +336,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(
         false, base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
-        base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
@@ -464,10 +462,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnVideoNaturalSizeChange(size);
   }
 
-  void OnVideoConfigChange(const VideoDecoderConfig& config) {
-    wmpi_->OnVideoConfigChange(config);
-  }
-
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
@@ -566,15 +560,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->pipeline_metadata_.natural_size;
   }
 
-  VideoDecodeStatsReporter* GetVideoStatsReporter() const {
-    return wmpi_->video_decode_stats_reporter_.get();
-  }
-
-  VideoCodecProfile GetVideoStatsReporterCodecProfile() const {
-    DCHECK(GetVideoStatsReporter());
-    return GetVideoStatsReporter()->codec_profile_;
-  }
-
   void Load(std::string data_file) {
     // URL doesn't matter, it's value is unknown to the underlying demuxer.
     const GURL kTestURL("file://example.com/sample.webm");
@@ -605,7 +590,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // "Serve" the file to the DataSource. Note: We respond with 200 okay, which
     // will prevent range requests or partial responses from being used.
     blink::WebURLResponse response(kTestURL);
-    response.SetHttpHeaderField(
+    response.SetHTTPHeaderField(
         blink::WebString::FromUTF8("Content-Length"),
         blink::WebString::FromUTF8(base::NumberToString(data->data_size())));
     response.SetExpectedContentLength(data->data_size());
@@ -861,8 +846,6 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 // Verify that preload=metadata suspend video w/ poster uses zero video memory.
@@ -894,8 +877,6 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 // Verify that preload=metadata suspend is aborted if we know the element will
@@ -1327,24 +1308,6 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   InitializeWebMediaPlayerImpl();
 
-  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
-      .WillRepeatedly(Return(layer.get()));
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true)).Times(1);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false)).Times(1);
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
-
   // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
   // initialization will stall waiting for a CDM to be set.
   LoadAndWaitForMetadata(kVideoOnlyTestFile);
@@ -1353,72 +1316,13 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
 
   OnWaiting(WaitingReason::kNoDecryptionKey);
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
-}
-
-TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
-  InitializeWebMediaPlayerImpl();
-  PipelineMetadata metadata;
-  metadata.has_video = true;
-  metadata.video_decoder_config =
-      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
-  metadata.natural_size = gfx::Size(320, 240);
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
-
-  // Arrival of metadata should trigger creation of reporter with video config
-  // with profile matching test config.
-  OnMetadata(metadata);
-  VideoDecodeStatsReporter* last_reporter = GetVideoStatsReporter();
-  ASSERT_NE(nullptr, last_reporter);
-  ASSERT_EQ(VP9PROFILE_PROFILE0, GetVideoStatsReporterCodecProfile());
-
-  // Changing the codec profile should trigger recreation of the reporter.
-  auto new_profile_config =
-      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE1);
-  OnVideoConfigChange(new_profile_config);
-  ASSERT_EQ(VP9PROFILE_PROFILE1, GetVideoStatsReporterCodecProfile());
-  ASSERT_NE(last_reporter, GetVideoStatsReporter());
-  last_reporter = GetVideoStatsReporter();
-
-  // Changing the codec (implies changing profile) should similarly trigger
-  // recreation of the reporter.
-  auto new_codec_config = TestVideoConfig::NormalCodecProfile(kCodecVP8);
-  OnVideoConfigChange(new_codec_config);
-  ASSERT_EQ(VP8PROFILE_MIN, GetVideoStatsReporterCodecProfile());
-  ASSERT_NE(last_reporter, GetVideoStatsReporter());
-  last_reporter = GetVideoStatsReporter();
-
-  // Changing other aspects of the config (like colorspace) should not trigger
-  // recreation of the reporter
-  VideoDecoderConfig new_color_config = TestVideoConfig::NormalWithColorSpace(
-      kCodecVP8, VideoColorSpace::REC709());
-  ASSERT_EQ(VP8PROFILE_MIN, new_color_config.profile());
-  OnVideoConfigChange(new_color_config);
-  ASSERT_EQ(last_reporter, GetVideoStatsReporter());
-  ASSERT_EQ(VP8PROFILE_MIN, GetVideoStatsReporterCodecProfile());
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
   metadata.has_video = true;
-  metadata.video_decoder_config =
-      TestVideoConfig::NormalCodecProfile(kCodecVP8, VP8PROFILE_MIN);
+  metadata.video_decoder_config = TestVideoConfig::Normal();
   metadata.natural_size = gfx::Size(320, 240);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
@@ -1437,22 +1341,9 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
-  // Arrival of metadata should trigger creation of reporter with original size.
-  VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
-  ASSERT_NE(nullptr, orig_stats_reporter);
-  ASSERT_TRUE(
-      orig_stats_reporter->MatchesBucketedNaturalSize(gfx::Size(320, 240)));
-
   EXPECT_CALL(client_, SizeChanged());
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->NaturalSize());
-
-  // New natural size triggers new reporter to be created.
-  ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
-  ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
-      gfx::Size(1920, 1080)));
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
@@ -1479,23 +1370,10 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
-  // Arrival of metadata should trigger creation of reporter with original size.
-  VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
-  ASSERT_NE(nullptr, orig_stats_reporter);
-  ASSERT_TRUE(
-      orig_stats_reporter->MatchesBucketedNaturalSize(gfx::Size(320, 240)));
-
   EXPECT_CALL(client_, SizeChanged());
   // For 90/270deg rotations, the natural size should be transposed.
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->NaturalSize());
-
-  // New natural size triggers new reporter to be created.
-  ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
-  ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
-      gfx::Size(1080, 1920)));
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
@@ -1552,8 +1430,6 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   // Foregrounding the player unsets the lock.
   ForegroundPlayer();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
@@ -1613,8 +1489,6 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   wmpi_->Pause();
   EXPECT_EQ(0, wmpi_->CurrentTime());
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
@@ -1821,8 +1695,8 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     return wmpi_->ShouldDisableVideoWhenHidden();
   }
 
-  bool ShouldPausePlaybackWhenHidden() const {
-    return wmpi_->ShouldPausePlaybackWhenHidden();
+  bool ShouldPauseVideoWhenHidden() const {
+    return wmpi_->ShouldPauseVideoWhenHidden();
   }
 
   bool IsBackgroundOptimizationCandidate() const {
@@ -1837,7 +1711,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioOnly) {
   // Never optimize or pause an audio-only player.
   SetMetadata(true, false);
   EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPausePlaybackWhenHidden());
+  EXPECT_FALSE(IsBackgroundVideoPlaybackEnabled() &&
+               ShouldPauseVideoWhenHidden());
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 
@@ -1857,7 +1732,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   bool should_pause = !IsBackgroundVideoPlaybackEnabled() ||
                       IsMediaSuspendOn() ||
                       (IsBackgroundPauseOn() && matches_requirements);
-  EXPECT_EQ(should_pause, ShouldPausePlaybackWhenHidden());
+  EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
 }
 
 TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
@@ -1879,7 +1754,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   // videos are on by default on Android and off on desktop.
   EXPECT_EQ(!IsBackgroundVideoPlaybackEnabled() ||
                 (IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled()),
-            ShouldPausePlaybackWhenHidden());
+            ShouldPauseVideoWhenHidden());
 
   if (!IsBackgroundOptimizationOn() || !matches_requirements ||
       !ShouldDisableVideoWhenHidden() || IsMediaSuspendOn()) {

@@ -11,15 +11,6 @@
 
 @class ChromeIdentity;
 
-typedef NS_ENUM(NSInteger, TableViewAccountMode) {
-  // The cell can be tappable, and the colors are not dimmed.
-  TableViewAccountModeEnabled,
-  // The cell is not tappable, and the colors are not dimmed.
-  TableViewAccountModeNonTappable,
-  // The cell is not tappable, and the colors are dimmed.
-  TableViewAccountModeDisabled,
-};
-
 // Item for account avatar, used everywhere an account cell is shown.
 @interface TableViewAccountItem : TableViewItem
 
@@ -28,8 +19,7 @@ typedef NS_ENUM(NSInteger, TableViewAccountMode) {
 @property(nonatomic, copy) NSString* detailText;
 @property(nonatomic, assign) BOOL shouldDisplayError;
 @property(nonatomic, strong) ChromeIdentity* chromeIdentity;
-// The default value is TableViewAccountModeEnabled.
-@property(nonatomic, assign) TableViewAccountMode mode;
+@property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
 @end
 

@@ -24,7 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -48,11 +48,9 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
@@ -137,8 +135,12 @@ public class FullscreenManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> TabStateBrowserControlsVisibilityDelegate.disablePageLoadDelayForTests());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabStateBrowserControlsVisibilityDelegate.disablePageLoadDelayForTests();
+            }
+        });
     }
 
     @Test
@@ -183,10 +185,13 @@ public class FullscreenManagerTest {
         // the test (See https://b/10387660)
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            View view = tab.getContentView();
-            view.setSystemUiVisibility(
-                    view.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_FULLSCREEN);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                View view = tab.getContentView();
+                view.setSystemUiVisibility(
+                        view.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_FULLSCREEN);
+            }
         });
         FullscreenTestUtils.waitForFullscreenFlag(tab, true, mActivityTestRule.getActivity());
         FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
@@ -379,18 +384,21 @@ public class FullscreenManagerTest {
                     }
                 });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Check that when the browser controls are gone, the entire decorView is contained
-            // in the transparent region of the app.
-            Rect visibleDisplayFrame = new Rect();
-            Region transparentRegion = new Region();
-            ViewGroup decorView =
-                    (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView();
-            decorView.getWindowVisibleDisplayFrame(visibleDisplayFrame);
-            decorView.gatherTransparentRegion(transparentRegion);
-            Assert.assertTrue("Transparent region " + transparentRegion.getBounds()
-                            + " should contain " + visibleDisplayFrame,
-                    transparentRegion.quickContains(visibleDisplayFrame));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Check that when the browser controls are gone, the entire decorView is contained
+                // in the transparent region of the app.
+                Rect visibleDisplayFrame = new Rect();
+                Region transparentRegion = new Region();
+                ViewGroup decorView =
+                        (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView();
+                decorView.getWindowVisibleDisplayFrame(visibleDisplayFrame);
+                decorView.gatherTransparentRegion(transparentRegion);
+                Assert.assertTrue("Transparent region " + transparentRegion.getBounds()
+                                + " should contain " + visibleDisplayFrame,
+                        transparentRegion.quickContains(visibleDisplayFrame));
+            }
         });
 
         // Additional manual test that this is working:
@@ -443,12 +451,20 @@ public class FullscreenManagerTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate =
                 tab.getTabWebContentsDelegateAndroid();
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> { delegate.rendererUnresponsive(); });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                delegate.rendererUnresponsive();
+            }
+        });
         FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0);
 
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> { delegate.rendererResponsive(); });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                delegate.rendererResponsive();
+            }
+        });
 
         // TODO(tedchoc): This is running into timing issues with the renderer offset logic.
         //waitForBrowserControlsToBeMoveable(getActivity().getActivityTab());
@@ -543,7 +559,7 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.waitForBrowserControlsPosition(
                 mActivityTestRule, -browserControlsHeight);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Navigation bar not hidden.",
                     (view.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
                             == 0);
@@ -563,7 +579,7 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.waitForBrowserControlsPosition(
                 mActivityTestRule, -browserControlsHeight);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Navigation bar hidden.",
                     (view.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
                             != 0);

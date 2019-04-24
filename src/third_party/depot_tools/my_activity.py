@@ -595,8 +595,6 @@ class MyActivity(object):
                        change['header'],
                        change['review_url'],
                        change['author'],
-                       change['created'],
-                       change['modified'],
                        optional_values)
 
   def print_issue(self, issue):
@@ -611,8 +609,6 @@ class MyActivity(object):
                        issue['header'],
                        issue['url'],
                        issue['author'],
-                       issue['created'],
-                       issue['modified'],
                        optional_values)
 
   def print_review(self, review):
@@ -635,13 +631,11 @@ class MyActivity(object):
                        review['header'],
                        review['review_url'],
                        review['author'],
-                       review['created'],
-                       review['modified'],
                        optional_values)
 
   @staticmethod
   def print_generic(default_fmt, specific_fmt,
-                    title, url, author, created, modified,
+                    title, url, author,
                     optional_values=None):
     output_format = specific_fmt if specific_fmt is not None else default_fmt
     output_format = unicode(output_format)
@@ -649,8 +643,6 @@ class MyActivity(object):
         'title': title,
         'url': url,
         'author': author,
-        'created': created,
-        'modified': modified,
     }
     if optional_values is not None:
       values.update(optional_values)
@@ -938,10 +930,9 @@ def main():
                               'individually for each activity type. The format '
                               'is defined as documented for '
                               'string.format(...). The variables available for '
-                              'all activity types are url, title, author, '
-                              'created and modified. Format options for '
-                              'specific activity types will override the '
-                              'generic format.')
+                              'all activity types are url, title and author. '
+                              'Format options for specific activity types will '
+                              'override the generic format.')
   output_format_group.add_option(
       '-f', '--output-format', metavar='<format>',
       default=u'{url} {title}',

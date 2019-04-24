@@ -146,7 +146,7 @@ void URLRequest::Delegate::OnReceivedRedirect(URLRequest* request,
                                               bool* defer_redirect) {}
 
 void URLRequest::Delegate::OnAuthRequired(URLRequest* request,
-                                          const AuthChallengeInfo& auth_info) {
+                                          AuthChallengeInfo* auth_info) {
   request->CancelAuth();
 }
 
@@ -211,7 +211,7 @@ const UploadDataStream* URLRequest::get_upload() const {
 }
 
 bool URLRequest::has_upload() const {
-  return upload_data_stream_.get() != nullptr;
+  return upload_data_stream_.get() != NULL;
 }
 
 void URLRequest::SetExtraRequestHeaderByName(const string& name,
@@ -1018,16 +1018,14 @@ void URLRequest::SetPriority(RequestPriority priority) {
     job_->SetPriority(priority_);
 }
 
-void URLRequest::NotifyAuthRequired(
-    std::unique_ptr<AuthChallengeInfo> auth_info) {
+void URLRequest::NotifyAuthRequired(AuthChallengeInfo* auth_info) {
   NetworkDelegate::AuthRequiredResponse rv =
       NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  auth_info_ = std::move(auth_info);
-  DCHECK(auth_info_);
+  auth_info_ = auth_info;
   if (network_delegate_) {
     OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_AUTH_REQUIRED);
     rv = network_delegate_->NotifyAuthRequired(
-        this, *auth_info_.get(),
+        this, *auth_info,
         base::BindOnce(&URLRequest::NotifyAuthRequiredComplete,
                        base::Unretained(this)),
         &auth_credentials_);
@@ -1050,14 +1048,14 @@ void URLRequest::NotifyAuthRequiredComplete(
   // so it can be reset on another round.
   AuthCredentials credentials = auth_credentials_;
   auth_credentials_ = AuthCredentials();
-  std::unique_ptr<AuthChallengeInfo> auth_info;
+  scoped_refptr<AuthChallengeInfo> auth_info;
   auth_info.swap(auth_info_);
 
   switch (result) {
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
       // Defer to the URLRequest::Delegate, since the NetworkDelegate
       // didn't take an action.
-      delegate_->OnAuthRequired(this, *auth_info.get());
+      delegate_->OnAuthRequired(this, auth_info.get());
       break;
 
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
@@ -1188,7 +1186,7 @@ void URLRequest::NotifyRequestCompleted() {
   is_redirecting_ = false;
   has_notified_completion_ = true;
   if (network_delegate_)
-    network_delegate_->NotifyCompleted(this, job_.get() != nullptr,
+    network_delegate_->NotifyCompleted(this, job_.get() != NULL,
                                        status_.error());
 }
 

@@ -146,8 +146,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
 
   // Update or add the notification.
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void SigninErrorNotifier::HandleSecondaryAccountError(
@@ -183,8 +182,7 @@ void SigninErrorNotifier::HandleSecondaryAccountError(
 
   // Update or add the notification.
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(

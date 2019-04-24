@@ -1180,16 +1180,6 @@ ulocimp_getLanguage(const char *localeID,
     int32_t offset;
     char lang[4]={ 0, 0, 0, 0 }; /* temporary buffer to hold language code for searching */
 
-    if (uprv_stricmp(localeID, "root") == 0) {
-        localeID += 4;
-    } else if (uprv_strnicmp(localeID, "und", 3) == 0 &&
-               (localeID[3] == '\0' ||
-                localeID[3] == '-' ||
-                localeID[3] == '_' ||
-                localeID[3] == '@')) {
-        localeID += 3;
-    }
-
     /* if it starts with i- or x- then copy that prefix */
     if(_isIDPrefix(localeID)) {
         if(i<languageCapacity) {
@@ -1603,7 +1593,7 @@ _canonicalize(const char* localeID,
         len = (int32_t)uprv_strlen(d);
 
         if (name != NULL) {
-            uprv_memcpy(name, d, len);
+            uprv_strncpy(name, d, len);
         }
     } else if(_isIDSeparator(*tmpLocaleID)) {
         const char *scriptID;
@@ -1787,16 +1777,9 @@ uloc_getParent(const char*    localeID,
         i=0;
     }
 
-    if (i > 0) {
-        if (uprv_strnicmp(localeID, "und_", 4) == 0) {
-            localeID += 3;
-            i -= 3;
-            uprv_memmove(parent, localeID, uprv_min(i, parentCapacity));
-        } else if (parent != localeID) {
-            uprv_memcpy(parent, localeID, uprv_min(i, parentCapacity));
-        }
+    if(i>0 && parent != localeID) {
+        uprv_memcpy(parent, localeID, uprv_min(i, parentCapacity));
     }
-
     return u_terminateChars(parent, parentCapacity, i, err);
 }
 
@@ -2019,19 +2002,16 @@ uloc_getLCID(const char* localeID)
         return 0;
     }
 
-    // First, attempt Windows platform lookup if available, but fall
-    // through to catch any special cases (ICU vs Windows name differences).
-    lcid = uprv_convertToLCIDPlatform(localeID, &status);
-    if (U_FAILURE(status)) {
-        return 0;
-    }
-    if (lcid > 0) {
+    // Attempt platform lookup if available
+    lcid = uprv_convertToLCIDPlatform(localeID);
+    if (lcid > 0)
+    {
         // Windows found an LCID, return that
         return lcid;
     }
 
     uloc_getLanguage(localeID, langID, sizeof(langID), &status);
-    if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
+    if (U_FAILURE(status)) {
         return 0;
     }
 

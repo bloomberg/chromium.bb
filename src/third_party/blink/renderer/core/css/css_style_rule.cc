@@ -50,9 +50,8 @@ CSSStyleRule::~CSSStyleRule() = default;
 
 CSSStyleDeclaration* CSSStyleRule::style() const {
   if (!properties_cssom_wrapper_) {
-    properties_cssom_wrapper_ =
-        MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(
-            style_rule_->MutableProperties(), const_cast<CSSStyleRule*>(this));
+    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
+        style_rule_->MutableProperties(), const_cast<CSSStyleRule*>(this));
   }
   return properties_cssom_wrapper_.Get();
 }

@@ -214,7 +214,8 @@ in step (3) determines how many dumps (which are snapshots) are taken.
 **Warning:** If OOPHP is enabled, the tracing UI may not be able to handle
 deserializing or rendering the memory dump. In this situation, save
 the heap dump directly in chrome://memory-internals and use alternate tools to
-analyze it.
+analyze it. Also, consider leaving  `#memlog-keep-small-allocations` Disabled in
+`chrome://flags` to reduce the heap dump size.
 
 TODO(ajwong): Add screenshot or at least reference the more detailed
 memory-infra docs.

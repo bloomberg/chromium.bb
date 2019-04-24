@@ -413,12 +413,15 @@ LayoutRect MultiColumnFragmentainerGroup::ColumnRectAt(
   LayoutUnit column_logical_left;
   LayoutUnit column_gap = column_set_.ColumnGap();
 
-  if (column_set_.StyleRef().IsLeftToRightDirection()) {
-    column_logical_left += column_index * (column_logical_width + column_gap);
+  if (column_set_.MultiColumnFlowThread()->ProgressionIsInline()) {
+    if (column_set_.StyleRef().IsLeftToRightDirection())
+      column_logical_left += column_index * (column_logical_width + column_gap);
+    else
+      column_logical_left += column_set_.ContentLogicalWidth() -
+                             column_logical_width -
+                             column_index * (column_logical_width + column_gap);
   } else {
-    column_logical_left += column_set_.ContentLogicalWidth() -
-                           column_logical_width -
-                           column_index * (column_logical_width + column_gap);
+    column_logical_top += column_index * (ColumnLogicalHeight() + column_gap);
   }
 
   LayoutRect column_rect(column_logical_left, column_logical_top,
@@ -517,20 +520,26 @@ unsigned MultiColumnFragmentainerGroup::ConstrainedColumnIndexAtOffset(
 
 unsigned MultiColumnFragmentainerGroup::ColumnIndexAtVisualPoint(
     const LayoutPoint& visual_point) const {
-  LayoutUnit column_length = column_set_.PageLogicalWidth();
+  bool is_column_progression_inline =
+      column_set_.MultiColumnFlowThread()->ProgressionIsInline();
+  bool is_horizontal_writing_mode = column_set_.IsHorizontalWritingMode();
+  LayoutUnit column_length_in_column_progression_direction =
+      is_column_progression_inline ? column_set_.PageLogicalWidth()
+                                   : ColumnLogicalHeight();
   LayoutUnit offset_in_column_progression_direction =
-      column_set_.IsHorizontalWritingMode() ? visual_point.X()
-                                            : visual_point.Y();
-  if (!column_set_.StyleRef().IsLeftToRightDirection()) {
+      is_horizontal_writing_mode == is_column_progression_inline
+          ? visual_point.X()
+          : visual_point.Y();
+  if (!column_set_.StyleRef().IsLeftToRightDirection() &&
+      is_column_progression_inline)
     offset_in_column_progression_direction =
         column_set_.LogicalWidth() - offset_in_column_progression_direction;
-  }
   LayoutUnit column_gap = column_set_.ColumnGap();
-  if (column_length + column_gap <= 0)
+  if (column_length_in_column_progression_direction + column_gap <= 0)
     return 0;
   // Column boundaries are in the middle of the column gap.
   int index = ((offset_in_column_progression_direction + column_gap / 2) /
-               (column_length + column_gap))
+               (column_length_in_column_progression_direction + column_gap))
                   .ToInt();
   if (index < 0)
     return 0;
@@ -564,22 +573,26 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForVisualRect(
     const LayoutRect& rect,
     unsigned& first_column,
     unsigned& last_column) const {
-  bool is_column_ltr = column_set_.StyleRef().IsLeftToRightDirection();
-  if (column_set_.IsHorizontalWritingMode()) {
-    if (is_column_ltr) {
-      first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
-      last_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
-    } else {
+  bool is_column_progression_inline =
+      column_set_.MultiColumnFlowThread()->ProgressionIsInline();
+  bool is_flipped_column_progression =
+      !column_set_.StyleRef().IsLeftToRightDirection() &&
+      is_column_progression_inline;
+  if (column_set_.IsHorizontalWritingMode() == is_column_progression_inline) {
+    if (is_flipped_column_progression) {
       first_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
       last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
+    } else {
+      first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
+      last_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
     }
   } else {
-    if (is_column_ltr) {
-      first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
-      last_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
-    } else {
+    if (is_flipped_column_progression) {
       first_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
       last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
+    } else {
+      first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
+      last_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
     }
   }
   DCHECK_LE(first_column, last_column);

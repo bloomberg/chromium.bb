@@ -63,15 +63,17 @@ void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
                                            encrypt_everything_, nigori);
 }
 
-bool FakeSyncEncryptionHandler::NeedKeystoreKey() const {
+bool FakeSyncEncryptionHandler::NeedKeystoreKey(
+    syncable::BaseTransaction* const trans) const {
   return keystore_key_.empty();
 }
 
 bool FakeSyncEncryptionHandler::SetKeystoreKeys(
-    const std::vector<std::string>& keys) {
-  if (keys.empty())
+    const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
+    syncable::BaseTransaction* const trans) {
+  if (keys.size() == 0)
     return false;
-  std::string new_key = keys.back();
+  std::string new_key = keys.Get(keys.size() - 1);
   if (new_key.empty())
     return false;
   keystore_key_ = new_key;

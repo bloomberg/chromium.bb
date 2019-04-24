@@ -143,7 +143,6 @@ component("fido") {
   deps = [
     "//components/apdu",
     "//components/cbor",
-    "//components/device_event_log",
     "//crypto",
     "//device/base",
     "//device/fido/strings",
@@ -237,7 +236,6 @@ source_set("mocks") {
     ":fido",
     "//base",
     "//components/apdu",
-    "//components/cbor",
     "//testing/gmock",
   ]
 }
@@ -271,7 +269,6 @@ fuzzer_test("ctap_response_fuzzer") {
     ":fido",
     "//base",
     "//base:i18n",
-    "//components/cbor",
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]

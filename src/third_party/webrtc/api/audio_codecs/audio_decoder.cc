@@ -130,9 +130,11 @@ size_t AudioDecoder::DecodePlc(size_t num_frames, int16_t* decoded) {
   return 0;
 }
 
-// TODO(bugs.webrtc.org/9676): Remove default implementation.
+// TODO(bugs.webrtc.org/9676): Remove default impementation.
 void AudioDecoder::GeneratePlc(size_t /*requested_samples_per_channel*/,
-                               rtc::BufferT<int16_t>* /*concealment_audio*/) {}
+                               rtc::BufferT<int16_t>* /*concealment_audio*/) {
+  return;
+}
 
 int AudioDecoder::IncomingPacket(const uint8_t* payload,
                                  size_t payload_len,

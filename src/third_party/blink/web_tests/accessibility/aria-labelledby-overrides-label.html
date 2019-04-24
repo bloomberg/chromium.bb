@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -15,7 +16,7 @@
 <input id="target" aria-labelledby="a b c" value="10">
 
 <script>
-test((t) => {
+test_after_layout_and_paint((t) => {
     var axTarget = accessibilityController.accessibleElementById("target");
     assert_equals(axTarget.name, "A B C");
     assert_equals(axTarget.nameElementCount(), 3);

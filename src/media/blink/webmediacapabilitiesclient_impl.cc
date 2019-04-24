@@ -120,9 +120,9 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
 
     info->supported = info->smooth = info->power_efficient = true;
     info->content_decryption_module_access =
-        WebContentDecryptionModuleAccessImpl::Create(
+        base::WrapUnique(WebContentDecryptionModuleAccessImpl::Create(
             key_system_configuration->key_system, blink::WebSecurityOrigin(),
-            blink::WebMediaKeySystemConfiguration(), {}, nullptr);
+            blink::WebMediaKeySystemConfiguration(), {}, nullptr));
 
     callbacks->OnSuccess(std::move(info));
     return;
@@ -135,14 +135,9 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
     BindToHistoryService(&decode_history_ptr_);
   DCHECK(decode_history_ptr_.is_bound());
 
-  // TODO(chcunningham): Implement query for EME stats. Hard-coding values
-  // for non-EME query below.
-  const std::string key_system = "";
-  const bool use_hw_secure_codecs = false;
-
   mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New(
       video_profile, gfx::Size(video_config.width, video_config.height),
-      video_config.framerate, key_system, use_hw_secure_codecs);
+      video_config.framerate);
 
   decode_history_ptr_->GetPerfInfo(
       std::move(features),

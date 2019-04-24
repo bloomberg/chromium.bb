@@ -25,9 +25,7 @@ class WebAudioMediaStreamSource final
     : public blink::MediaStreamAudioSource,
       public blink::WebAudioDestinationConsumer {
  public:
-  WebAudioMediaStreamSource(
-      blink::WebMediaStreamSource* blink_source,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit WebAudioMediaStreamSource(blink::WebMediaStreamSource* blink_source);
 
   ~WebAudioMediaStreamSource() override;
 

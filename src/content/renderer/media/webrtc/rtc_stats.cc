@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
 namespace content {
@@ -60,31 +59,17 @@ bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
   return GetStatsWhitelist()->IsWhitelisted(stats);
 }
 
-// Filters stats that should be surfaced to JS. Stats are surfaced if they're
-// standardized or if there is an active origin trial that enables a stat by
-// including one of its group IDs in |exposed_group_ids|.
-std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
-    std::vector<const webrtc::RTCStatsMemberInterface*> stats_members,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+// Filters out any unstandardized members; stats should only be surfaced to JS
+// if they're standardized.
+std::vector<const webrtc::RTCStatsMemberInterface*> StandardizedMembers(
+    std::vector<const webrtc::RTCStatsMemberInterface*> stats_members) {
   // Note that using "is_standarized" avoids having to maintain a whitelist of
   // every single standardized member, as we do at the "stats object" level
   // with "RTCStatsWhitelist".
-  base::EraseIf(
-      stats_members,
-      [&exposed_group_ids](const webrtc::RTCStatsMemberInterface* member) {
-        if (member->is_standardized()) {
-          return false;
-        }
-
-        const std::vector<webrtc::NonStandardGroupId>& ids =
-            member->group_ids();
-        for (const webrtc::NonStandardGroupId& id : exposed_group_ids) {
-          if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
-            return false;
-          }
-        }
-        return true;
-      });
+  base::EraseIf(stats_members,
+                [](const webrtc::RTCStatsMemberInterface* member) {
+                  return !member->is_standardized();
+                });
   return stats_members;
 }
 
@@ -92,11 +77,11 @@ std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
 
 RTCStatsReport::RTCStatsReport(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    blink::RTCStatsFilter filter)
     : stats_report_(stats_report),
       it_(stats_report_->begin()),
       end_(stats_report_->end()),
-      exposed_group_ids_(exposed_group_ids) {
+      filter_(filter) {
   DCHECK(stats_report_);
 }
 
@@ -105,7 +90,7 @@ RTCStatsReport::~RTCStatsReport() {
 
 std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReport::CopyHandle() const {
   return std::unique_ptr<blink::WebRTCStatsReport>(
-      new RTCStatsReport(stats_report_, exposed_group_ids_));
+      new RTCStatsReport(stats_report_, filter_));
 }
 
 std::unique_ptr<blink::WebRTCStats> RTCStatsReport::GetStats(
@@ -114,7 +99,7 @@ std::unique_ptr<blink::WebRTCStats> RTCStatsReport::GetStats(
   if (!stats || !IsWhitelistedStats(*stats))
     return std::unique_ptr<blink::WebRTCStats>();
   return std::unique_ptr<blink::WebRTCStats>(
-      new RTCStats(stats_report_, stats, exposed_group_ids_));
+      new RTCStats(stats_report_, stats, filter_));
 }
 
 std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
@@ -123,7 +108,7 @@ std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
     ++it_;
     if (IsWhitelistedStats(next)) {
       return std::unique_ptr<blink::WebRTCStats>(
-          new RTCStats(stats_report_, &next, exposed_group_ids_));
+          new RTCStats(stats_report_, &next, filter_));
     }
   }
   return std::unique_ptr<blink::WebRTCStats>();
@@ -139,10 +124,12 @@ size_t RTCStatsReport::Size() const {
 RTCStats::RTCStats(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
     const webrtc::RTCStats* stats,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    blink::RTCStatsFilter filter)
     : stats_owner_(stats_owner),
       stats_(stats),
-      stats_members_(FilterMembers(stats->Members(), exposed_group_ids)) {
+      stats_members_(filter == blink::RTCStatsFilter::kIncludeNonStandardMembers
+                         ? stats->Members()
+                         : StandardizedMembers(stats->Members())) {
   DCHECK(stats_owner_);
   DCHECK(stats_);
   DCHECK(stats_owner_->Get(stats_->id()));
@@ -322,20 +309,20 @@ blink::WebVector<blink::WebString> RTCStatsMember::ValueSequenceString() const {
 rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>
 RTCStatsCollectorCallbackImpl::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+    blink::RTCStatsFilter filter) {
   return rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(
       new rtc::RefCountedObject<RTCStatsCollectorCallbackImpl>(
-          std::move(main_thread), std::move(callback), exposed_group_ids));
+          std::move(main_thread), callback.release(), filter));
 }
 
 RTCStatsCollectorCallbackImpl::RTCStatsCollectorCallbackImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    blink::WebRTCStatsReportCallback* callback,
+    blink::RTCStatsFilter filter)
     : main_thread_(std::move(main_thread)),
-      callback_(std::move(callback)),
-      exposed_group_ids_(exposed_group_ids) {}
+      callback_(callback),
+      filter_(filter) {}
 
 RTCStatsCollectorCallbackImpl::~RTCStatsCollectorCallbackImpl() {
   DCHECK(!callback_);
@@ -355,9 +342,10 @@ void RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread(
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(report);
   DCHECK(callback_);
+  callback_->OnStatsDelivered(std::make_unique<RTCStatsReport>(
+      base::WrapRefCounted(report.get()), filter_));
   // Make sure the callback is destroyed in the main thread as well.
-  std::move(callback_).Run(std::make_unique<RTCStatsReport>(
-      base::WrapRefCounted(report.get()), exposed_group_ids_));
+  callback_.reset();
 }
 
 void WhitelistStatsForTesting(const char* type) {

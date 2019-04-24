@@ -31,5 +31,6 @@
 [
     NoInterfaceObject
 ] interface InspectorOverlayHost {
-    void send(DOMString command);
+    void resume();
+    void stepOver();
 };

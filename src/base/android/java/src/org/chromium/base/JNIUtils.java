@@ -13,7 +13,6 @@ import org.chromium.base.annotations.MainDex;
 @MainDex
 public class JNIUtils {
     private static Boolean sSelectiveJniRegistrationEnabled;
-    private static ClassLoader sJniClassLoader;
 
     /**
      * This returns a ClassLoader that is capable of loading Chromium Java code. Such a ClassLoader
@@ -22,18 +21,7 @@ public class JNIUtils {
      */
     @CalledByNative
     public static Object getClassLoader() {
-        if (sJniClassLoader == null) {
-            return JNIUtils.class.getClassLoader();
-        }
-        return sJniClassLoader;
-    }
-
-    /**
-     * Sets the ClassLoader to be used for loading Java classes from native.
-     * @param classLoader the ClassLoader to use.
-     */
-    public static void setClassLoader(ClassLoader classLoader) {
-        sJniClassLoader = classLoader;
+        return JNIUtils.class.getClassLoader();
     }
 
     /**

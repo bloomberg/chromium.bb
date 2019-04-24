@@ -53,8 +53,8 @@ function disableIframesAndVoiceSearchForTesting() {
  *
  * @type {{
  *   numTitleLines: number,
- *   titleColor: Array<number>,
- *   titleColorAgainstDark: Array<number>,
+ *   titleColor: string,
+ *   titleColorAgainstDark: string,
  * }}
  */
 var NTP_DESIGN = {
@@ -96,6 +96,8 @@ var CLASSES = {
   HIDE_PROMO: 'hide-promo',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
+  MATERIAL_DESIGN_ICONS:
+      'md-icons',  // Applies Material Design styles to Most Visited.
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
@@ -114,7 +116,6 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
-  CUSTOM_BG: 'custom-bg',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
   ERROR_NOTIFICATION: 'error-notice',
@@ -130,6 +131,7 @@ var IDS = {
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CONTAINER: 'mv-notice-container',
+  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
   PROMO: 'promo',
@@ -186,11 +188,6 @@ var LOG_TYPE = {
   NTP_CUSTOMIZE_SHORTCUT_CANCEL: 54,
   // 'Done' was clicked in the 'Edit shortcut' dialog.
   NTP_CUSTOMIZE_SHORTCUT_DONE: 55,
-
-  // A middle slot promo was shown.
-  NTP_MIDDLE_SLOT_PROMO_SHOWN: 60,
-  // A promo link was clicked.
-  NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED: 61,
 };
 
 
@@ -266,15 +263,7 @@ var lastBlacklistedTile = null;
  * set if a notification is visible.
  * @type {?Object}
  */
-let delayedHideNotification = null;
-
-
-/**
- * The currently visible notification element. Null if no notification is
- * present.
- * @type {?Object}
- */
-let currNotification = null;
+let delayedHideNotification;
 
 
 /**
@@ -323,15 +312,6 @@ function createExecutableTimeout(timeout, delay) {
 
 
 /**
- * Called by tests to override the executable timeout with a test timeout.
- * @param {!Function} timeout The timeout function. Requires a boolean param.
- */
-function overrideExecutableTimeoutForTesting(timeout) {
-  createExecutableTimeout = timeout;
-}
-
-
-/**
  * Returns theme background info, first checking for history.state.notheme. If
  * the page has notheme set, returns a fallback light-colored theme (or dark-
  * colored theme if dark mode is enabled). This is used when the doodle is
@@ -343,6 +323,7 @@ function getThemeBackgroundInfo() {
       alternateLogo: false,
       backgroundColorRgba:
           (isDarkModeEnabled ? [50, 54, 57, 255] : [255, 255, 255, 255]),
+      colorRgba: [255, 255, 255, 255],
       headerColorRgba: [150, 150, 150, 255],
       linkColorRgba: [6, 55, 116, 255],
       sectionBorderColorRgba: [150, 150, 150, 255],
@@ -364,6 +345,7 @@ function getThemeBackgroundInfo() {
  * when considering darkness. Therefore, dark mode should only be checked if
  * this is the default NTP. Dark mode is considered a dark theme if enabled.
  *
+ * @param {ThemeBackgroundInfo|undefined} info Theme background information.
  * @return {boolean} Whether the theme is dark.
  * @private
  */
@@ -388,7 +370,7 @@ function getIsThemeDark() {
  * is the case when dark mode is enabled and a background image (from a custom
  * background or user theme) is not set.
  *
- * @param {!Object} info Theme background information.
+ * @param {ThemeBackgroundInfo|undefined} info Theme background information.
  * @return {boolean} Whether the chips should be dark.
  * @private
  */
@@ -448,7 +430,7 @@ function renderTheme() {
       customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
     ].join(',').trim();
 
-    if (imageWithOverlay != $(IDS.CUSTOM_BG).style.backgroundImage) {
+    if (imageWithOverlay != document.body.style.backgroundImage) {
       customBackgrounds.closeCustomizationDialog();
       customBackgrounds.clearAttribution();
     }
@@ -456,19 +438,19 @@ function renderTheme() {
     // |image| and |imageWithOverlay| use the same url as their source. Waiting
     // to display the custom background until |image| is fully loaded ensures
     // that |imageWithOverlay| is also loaded.
-    $(IDS.CUSTOM_BG).style.backgroundImage = imageWithOverlay;
+    $('custom-bg').style.backgroundImage = imageWithOverlay;
     var image = new Image();
     image.onload = function() {
-      $(IDS.CUSTOM_BG).style.opacity = '1';
+      $('custom-bg').style.opacity = '1';
     };
     image.src = info.imageUrl;
 
     customBackgrounds.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
   } else {
-    $(IDS.CUSTOM_BG).style.opacity = '0';
+    $('custom-bg').style.opacity = '0';
     window.setTimeout(function() {
-      $(IDS.CUSTOM_BG).style.backgroundImage = '';
+      $('custom-bg').style.backgroundImage = '';
     }, 1000);
     customBackgrounds.clearAttribution();
   }
@@ -592,9 +574,9 @@ function onThemeChange() {
  * @private
  */
 function setCustomThemeStyle(themeInfo) {
-  var textColor = '';
-  var textColorLight = '';
-  var mvxFilter = '';
+  var textColor = null;
+  var textColorLight = null;
+  var mvxFilter = null;
   if (!themeInfo.usingDefaultTheme) {
     textColor = convertToRGBAColor(themeInfo.textColorRgba);
     textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
@@ -608,6 +590,8 @@ function setCustomThemeStyle(themeInfo) {
   document.body.style.setProperty('--text-color-light', textColorLight);
   // Themes reuse the "light" text color for links too.
   document.body.style.setProperty('--text-color-link', textColorLight);
+  $(IDS.NOTIFICATION_CLOSE_BUTTON)
+      .style.setProperty('--theme-filter', mvxFilter);
 }
 
 
@@ -707,8 +691,7 @@ function onAddCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkAddedMsg);
   } else {
-    showErrorNotification(
-        configData.translatedStrings.linkCantCreate, null, null);
+    showErrorNotification(configData.translatedStrings.linkCantCreate);
   }
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
@@ -724,8 +707,7 @@ function onUpdateCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkEditedMsg);
   } else {
-    showErrorNotification(
-        configData.translatedStrings.linkCantEdit, null, null);
+    showErrorNotification(configData.translatedStrings.linkCantEdit);
   }
 }
 
@@ -740,8 +722,7 @@ function onDeleteCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkRemovedMsg);
   } else {
-    showErrorNotification(
-        configData.translatedStrings.linkCantRemove, null, null);
+    showErrorNotification(configData.translatedStrings.linkCantRemove);
   }
 }
 
@@ -753,7 +734,17 @@ function onDeleteCustomLinkDone(success) {
  */
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
-  floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
+
+  if (configData.isGooglePage) {
+    floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
+  } else {
+    var notification = $(IDS.NOTIFICATION);
+    notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
+    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
+    notification.scrollTop;
+    notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  }
+
   $(IDS.UNDO_LINK).focus();
 }
 
@@ -762,8 +753,15 @@ function showNotification(msg) {
  * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
-  floatDownNotification(
-      $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
+  if (configData.isGooglePage) {
+    floatDownNotification(
+        $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER),
+        /*showPromo=*/ true);
+  } else {
+    var notification = $(IDS.NOTIFICATION);
+    notification.classList.add(CLASSES.HIDE_NOTIFICATION);
+    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  }
 }
 
 
@@ -795,24 +793,13 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * Animates the specified notification to float up. Automatically hides any
  * pre-existing notification and sets a delayed timer to hide the new
  * notification.
- * @param {?Element} notification The notification element.
- * @param {?Element} notificationContainer The notification container element.
+ * @param {!Element} notification The notification element.
+ * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  if (!notification || !notificationContainer) {
-    return;
-  }
-
   // Hide any pre-existing notification.
   if (delayedHideNotification) {
-    // Hide the current notification if it's a different type (i.e. error vs
-    // success). Otherwise, simply clear the notification timeout and reset it
-    // later.
-    if (currNotification === notificationContainer) {
-      delayedHideNotification.clear();
-    } else {
-      delayedHideNotification.trigger();
-    }
+    delayedHideNotification.trigger();
     delayedHideNotification = null;
   }
 
@@ -843,22 +830,17 @@ function floatUpNotification(notification, notificationContainer) {
     // case, we do not want to re-show the promo yet.
     floatDownNotification(notification, notificationContainer, !executedEarly);
   }, NOTIFICATION_TIMEOUT);
-  currNotification = notificationContainer;
 }
 
 
 /**
  * Animates the pop-up notification to float down, and clears the timeout to
  * hide the notification.
- * @param {?Element} notification The notification element.
- * @param {?Element} notificationContainer The notification container element.
+ * @param {!Element} notification The notification element.
+ * @param {!Element} notificationContainer The notification container element.
  * @param {boolean} showPromo Do show the promo if present.
  */
 function floatDownNotification(notification, notificationContainer, showPromo) {
-  if (!notification || !notificationContainer) {
-    return;
-  }
-
   if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP)) {
     return;
   }
@@ -867,7 +849,6 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
   if (delayedHideNotification) {
     delayedHideNotification.clear();
     delayedHideNotification = null;
-    currNotification = null;
   }
 
   if (showPromo) {
@@ -890,7 +871,7 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
     $(IDS.UNDO_LINK).blur();
     $(IDS.RESTORE_ALL_LINK).blur();
     if (notification.classList.contains(CLASSES.HAS_LINK)) {
-      notification.classList.remove(CLASSES.HAS_LINK);
+      notification.classlist.remove(CLASSES.HAS_LINK);
       $(IDS.ERROR_NOTIFICATION_LINK).blur();
     }
     // Hide the notification
@@ -984,9 +965,8 @@ function isFakeboxFocused() {
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return $(IDS.FAKEBOX).contains(/** @type HTMLElement */ (event.target)) &&
-      !$(IDS.FAKEBOX_MICROPHONE)
-           .contains(/** @type HTMLElement */ (event.target));
+  return $(IDS.FAKEBOX).contains(event.target) &&
+      !$(IDS.FAKEBOX_MICROPHONE).contains(event.target);
 }
 
 
@@ -1096,11 +1076,21 @@ function showSearchSuggestions() {
     ssScript.async = false;
     document.body.appendChild(ssScript);
     ssScript.onload = function() {
-      injectSearchSuggestions(searchSuggestions);
+      injectSearchSuggestions(search_suggestions);
     };
   }
 }
 
+
+/**
+ * Enables Material Design styles for the Most Visited section. Implicitly
+ * enables Material Design for the rest of NTP.
+ */
+function enableMDIcons() {
+  $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  animations.addRippleAnimations();
+}
 
 /**
  * Prepares the New Tab Page by adding listeners, the most visited pages
@@ -1115,7 +1105,7 @@ function init() {
 
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   $(IDS.NOTIFICATION).addEventListener('transitionend', (event) => {
-    if (event.propertyName === 'opacity') {
+    if (event.properyName === 'opacity') {
       hideNotification();
     }
   });
@@ -1141,6 +1131,8 @@ function init() {
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
 
+  $(IDS.NOTIFICATION_CLOSE_BUTTON).addEventListener('click', hideNotification);
+
   var embeddedSearchApiHandle = window.chrome.embeddedSearch;
 
   ntpApiHandle = embeddedSearchApiHandle.newTabPage;
@@ -1153,7 +1145,7 @@ function init() {
 
   if (configData.isGooglePage) {
     showSearchSuggestions();
-    animations.addRippleAnimations();
+    enableMDIcons();
 
     ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
     ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
@@ -1392,15 +1384,6 @@ function injectPromo(promo) {
   if (promo.promoLogUrl) {
     navigator.sendBeacon(promo.promoLogUrl);
   }
-
-  ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_SHOWN);
-
-  let links = promoContainer.getElementsByTagName('a');
-  if (links[0]) {
-    links[0].onclick = function() {
-      ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
-    };
-  }
 }
 
 
@@ -1467,10 +1450,9 @@ function injectOneGoogleBar(ogb) {
 return {
   init: init,  // Exposed for testing.
   listen: listen,
-  disableIframesAndVoiceSearchForTesting:
-      disableIframesAndVoiceSearchForTesting,
-  overrideExecutableTimeoutForTesting: overrideExecutableTimeoutForTesting
+  disableIframesAndVoiceSearchForTesting: disableIframesAndVoiceSearchForTesting
 };
+
 }
 
 if (!window.localNTPUnitTest) {

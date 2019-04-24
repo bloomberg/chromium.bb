@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
-#include "chrome/browser/plugins/flash_deprecation_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -34,6 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/bloated_renderer/bloated_renderer_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -49,13 +50,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/crx_file/crx_verifier.h"
 #include "components/infobars/core/infobar.h"
 #include "components/nacl/common/buildflags.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -106,8 +105,6 @@ class InfoBarsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
-  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
-      verifier_format_override(crx_file::VerifierFormat::CRX3);
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -232,8 +229,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"data_reduction_proxy_preview",
        IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
+      {"page_load_capping", IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE},
+      {"bloated_renderer", IBD::BLOATED_RENDERER_INFOBAR_DELEGATE},
       {"previews_lite_page", IBD::LITE_PAGE_PREVIEWS_INFOBAR},
-      {"flash_deprecation", IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE},
   };
   auto id = kIdentifiers.find(name);
   expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
@@ -277,9 +275,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
 
     case IBD::THEME_INSTALLED_INFOBAR_DELEGATE:
       ThemeInstalledInfoBarDelegate::Create(
-          GetInfoBarService(),
+          GetInfoBarService(), nullptr,
           ThemeServiceFactory::GetForProfile(browser()->profile()), "New Theme",
-          "id", base::OnceClosure());
+          "id", ThemeService::kDefaultThemeID, true);
       break;
 
     case IBD::NACL_INFOBAR_DELEGATE:
@@ -302,7 +300,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           GetInfoBarService(), nullptr,
           std::make_unique<PluginMetadata>(
               "test-plugin", base::ASCIIToUTF16("Test Plugin"), true, GURL(),
-              GURL(), base::ASCIIToUTF16("Test"), std::string(), false));
+              GURL(), base::ASCIIToUTF16("Test"), std::string()));
       break;
 
     case IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE:
@@ -412,12 +410,17 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       AutomationInfoBarDelegate::Create();
       break;
 
-    case IBD::LITE_PAGE_PREVIEWS_INFOBAR:
-      PreviewsLitePageInfoBarDelegate::Create(GetWebContents());
+    case IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE:
+      PageLoadCappingInfoBarDelegate::Create(
+          GetWebContents(), base::DoNothing(), base::DoNothing());
       break;
 
-    case IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE:
-      FlashDeprecationInfoBarDelegate::Create(GetInfoBarService());
+    case IBD::BLOATED_RENDERER_INFOBAR_DELEGATE:
+      BloatedRendererTabHelper::ShowInfoBar(GetInfoBarService());
+      break;
+
+    case IBD::LITE_PAGE_PREVIEWS_INFOBAR:
+      PreviewsLitePageInfoBarDelegate::Create(GetWebContents());
       break;
 
     default:
@@ -580,11 +583,15 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_previews_lite_page) {
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_flash_deprecation) {
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_bloated_renderer) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_previews_lite_page) {
   ShowAndVerifyUi();
 }
 

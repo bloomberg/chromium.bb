@@ -4,8 +4,6 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
-#include <unistd.h>
-
 #include <memory>
 #include <tuple>
 #include <vector>
@@ -89,7 +87,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
   explicit TestingAppShimHostBootstrap(
       chrome::mojom::AppShimHostBootstrapRequest host_request)
-      : AppShimHostBootstrap(getpid()), test_weak_factory_(this) {
+      : test_weak_factory_(this) {
     // AppShimHost will bind to the request from ServeChannel. For testing
     // purposes, have this request passed in at creation.
     host_bootstrap_binding_.Bind(std::move(host_request));

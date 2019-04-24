@@ -1,8 +1,0 @@
-[document web]
-++[scroll pane]
-++++[page tab] name='Item' selectable
-++++++[heading] name='Item'
-++++++++[text] name='Item'
-++++[page tab] name='Prices' selectable
-++++++[heading] name='Prices'
-++++++++[text] name='Prices'

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "src/base/logging.h"
-#include "src/base/macros.h"
 
 namespace v8 {
 namespace internal {
@@ -46,7 +45,7 @@ class DiyFp {
 
 
   // this = this * other.
-  V8_EXPORT_PRIVATE void Multiply(const DiyFp& other);
+  void Multiply(const DiyFp& other);
 
   // returns a * b;
   static DiyFp Times(const DiyFp& a, const DiyFp& b) {

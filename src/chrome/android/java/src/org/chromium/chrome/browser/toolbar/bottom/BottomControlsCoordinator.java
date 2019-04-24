@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -78,9 +77,7 @@ public class BottomControlsCoordinator {
                 model, new ViewHolder(root), BottomControlsViewBinder::bind);
 
         mMediator = new BottomControlsMediator(model, fullscreenManager,
-                root.getResources().getDimensionPixelOffset(R.dimen.bottom_toolbar_height),
-                root.getResources().getDimensionPixelOffset(
-                        R.dimen.bottom_toolbar_height_with_shadow));
+                root.getResources().getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getTabManagementModule().createTabGroupUi(
@@ -90,13 +87,6 @@ public class BottomControlsCoordinator {
                     root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,
                     searchAcceleratorListener, shareButtonListener, themeColorProvider);
         }
-    }
-
-    /**
-     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
-     */
-    public void setImmersiveModeManager(ImmersiveModeManager immersiveModeManager) {
-        mMediator.setImmersiveModeManager(immersiveModeManager);
     }
 
     /**

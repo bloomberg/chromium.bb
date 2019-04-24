@@ -68,6 +68,15 @@ class ClearMultiviewGL : angle::NonCopyable
                          const uint8_t *values,
                          GLfloat depth,
                          GLint stencil);
+    void clearSideBySideFBO(const gl::FramebufferState &state,
+                            const gl::Rectangle &scissorBase,
+                            ClearCommandType clearCommandType,
+                            GLbitfield mask,
+                            GLenum buffer,
+                            GLint drawbuffer,
+                            const uint8_t *values,
+                            GLfloat depth,
+                            GLint stencil);
     void genericClear(ClearCommandType clearCommandType,
                       GLbitfield mask,
                       GLenum buffer,

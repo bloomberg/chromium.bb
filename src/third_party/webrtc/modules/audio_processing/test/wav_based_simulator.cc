@@ -88,9 +88,9 @@ void WavBasedSimulator::PrepareReverseProcessStreamCall() {
 }
 
 void WavBasedSimulator::Process() {
-  if (settings_.call_order_input_filename) {
+  if (settings_.custom_call_order_filename) {
     call_chain_ = WavBasedSimulator::GetCustomEventChain(
-        *settings_.call_order_input_filename);
+        *settings_.custom_call_order_filename);
   } else {
     call_chain_ = WavBasedSimulator::GetDefaultEventChain();
   }

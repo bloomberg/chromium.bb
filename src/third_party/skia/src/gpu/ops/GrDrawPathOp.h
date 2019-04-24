@@ -22,16 +22,17 @@ class GrRecordingContext;
 class GrDrawPathOpBase : public GrDrawOp {
 protected:
     GrDrawPathOpBase(uint32_t classID, const SkMatrix& viewMatrix, GrPaint&&,
-                     GrPathRendering::FillType, GrAA);
+                     GrPathRendering::FillType, GrAAType);
 
     FixedFunctionFlags fixedFunctionFlags() const override {
-        return (fDoAA)
-                ? FixedFunctionFlags::kUsesHWAA | FixedFunctionFlags::kUsesStencil
-                : FixedFunctionFlags::kUsesStencil;
+        if (GrAATypeIsHW(fAAType)) {
+            return FixedFunctionFlags::kUsesHWAA | FixedFunctionFlags::kUsesStencil;
+        }
+        return FixedFunctionFlags::kUsesStencil;
     }
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
-        return this->doProcessorAnalysis(caps, clip, fsaaType, clampType);
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
+        return this->doProcessorAnalysis(caps, clip, fsaaType);
     }
 
     void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
@@ -46,7 +47,7 @@ protected:
     GrProcessorSet detachProcessors() { return std::move(fProcessorSet); }
     inline GrPipeline::InitArgs pipelineInitArgs(const GrOpFlushState&);
     const GrProcessorSet::Analysis& doProcessorAnalysis(
-            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType);
+            const GrCaps&, const GrAppliedClip*, GrFSAAType);
     const GrProcessorSet::Analysis& processorAnalysis() const {
         SkASSERT(fAnalysis.isInitialized());
         return fAnalysis;
@@ -59,7 +60,7 @@ private:
     SkPMColor4f fInputColor;
     GrProcessorSet::Analysis fAnalysis;
     GrPathRendering::FillType fFillType;
-    bool fDoAA;
+    GrAAType fAAType;
     GrProcessorSet fProcessorSet;
 
     typedef GrDrawOp INHERITED;
@@ -69,8 +70,11 @@ class GrDrawPathOp final : public GrDrawPathOpBase {
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(
-            GrRecordingContext*, const SkMatrix& viewMatrix, GrPaint&&, GrAA, GrPath*);
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext*,
+                                          const SkMatrix& viewMatrix,
+                                          GrPaint&&,
+                                          GrAAType,
+                                          GrPath*);
 
     const char* name() const override { return "DrawPath"; }
 
@@ -81,9 +85,8 @@ public:
 private:
     friend class GrOpMemoryPool; // for ctor
 
-    GrDrawPathOp(const SkMatrix& viewMatrix, GrPaint&& paint, GrAA aa, const GrPath* path)
-            : GrDrawPathOpBase(
-                    ClassID(), viewMatrix, std::move(paint), path->getFillType(), aa)
+    GrDrawPathOp(const SkMatrix& viewMatrix, GrPaint&& paint, GrAAType aaType, const GrPath* path)
+            : GrDrawPathOpBase(ClassID(), viewMatrix, std::move(paint), path->getFillType(), aaType)
             , fPath(path) {
         this->setTransformedBounds(path->getBounds(), viewMatrix, HasAABloat::kNo, IsZeroArea::kNo);
     }

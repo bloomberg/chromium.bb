@@ -75,9 +75,6 @@ class ContextGL : public ContextImpl
     // Path object creation
     std::vector<PathImpl *> createPaths(GLsizei range) override;
 
-    // Memory object creation.
-    MemoryObjectImpl *createMemoryObject() override;
-
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
@@ -164,7 +161,7 @@ class ContextGL : public ContextImpl
                                              const GLfloat *transformValues) override;
 
     // Device loss
-    gl::GraphicsResetStatus getResetStatus() override;
+    GLenum getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -215,8 +212,6 @@ class ContextGL : public ContextImpl
 
     angle::Result memoryBarrier(const gl::Context *context, GLbitfield barriers) override;
     angle::Result memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers) override;
-
-    void setMaxShaderCompilerThreads(GLuint count) override;
 
   private:
     angle::Result setDrawArraysState(const gl::Context *context,

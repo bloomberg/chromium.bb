@@ -29,7 +29,7 @@ protected:
 
     sk_sp<SkShader> onMakeShader(const SkSVGRenderContext&,
                                  const SkColor*, const SkScalar*, int count,
-                                 SkTileMode, const SkMatrix&) const override;
+                                 SkShader::TileMode, const SkMatrix&) const override;
 private:
     SkSVGRadialGradient();
 

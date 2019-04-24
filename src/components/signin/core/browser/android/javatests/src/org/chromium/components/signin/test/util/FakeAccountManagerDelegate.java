@@ -251,12 +251,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public boolean hasFeatures(Account account, String[] features) {
-        @Nullable
-        AccountHolder accountHolder = tryGetAccountHolder(account);
-        if (accountHolder == null) {
-            // Features status is queried asynchronously, so the account could have been removed.
-            return false;
-        }
+        final AccountHolder accountHolder = getAccountHolder(account);
         Set<String> accountFeatures = accountHolder.getFeatures();
         boolean hasAllFeatures = true;
         for (String feature : features) {

@@ -76,28 +76,17 @@ bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
   return true;
 }
 
-security_state::SecurityLevel LocationBarModelDelegateIOS::GetSecurityLevel()
-    const {
+void LocationBarModelDelegateIOS::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
   web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), assume no security style.
   if (!web_state) {
-    return security_state::NONE;
+    *result = security_state::SecurityInfo();
+    return;
   }
   auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  return client->GetSecurityLevel();
-}
-
-std::unique_ptr<security_state::VisibleSecurityState>
-LocationBarModelDelegateIOS::GetVisibleSecurityState() const {
-  web::WebState* web_state = GetActiveWebState();
-  // If there is no active WebState (which can happen during toolbar
-  // initialization), assume no security style.
-  if (!web_state) {
-    return std::make_unique<security_state::VisibleSecurityState>();
-  }
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  return client->GetVisibleSecurityState();
+  client->GetSecurityInfo(result);
 }
 
 scoped_refptr<net::X509Certificate>

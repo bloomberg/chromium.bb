@@ -237,6 +237,7 @@ test.customBackgrounds.testClickCollectionOfflineShowErrorMsg = function() {
 
 
 // TODO(crbug.com/857256): add tests for:
+//  * Image attributions.
 //  * Image upload flow.
 //  * Online/offline.
 
@@ -272,7 +273,7 @@ setupFakeAsyncCollectionLoad = function() {
         previewImageUrl: 'chrome-search://local-ntp/background.jpg'
       }
     ];
-    collErrors = {};
+    coll_errors = {};
   };
 
   // Append a call to onload to the end of the click handler.
@@ -294,7 +295,7 @@ setupFakeAsyncImageLoad = function(tile_id) {
   var oldImageLoader = $(tile_id).onclick;
   $(tile_id).onclick = function(event) {
     oldImageLoader(event);
-    collImg = [
+    coll_img = [
       {
         attributionActionUrl: 'https://www.google.com',
         attributions: ['test1', 'attribution1'],
@@ -331,7 +332,7 @@ setupFakeAsyncImageLoad = function(tile_id) {
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg5'
       }
     ];
-    collImgErrors = {};
+    coll_img_errors = {};
     $('ntp-images-loader').onload();
   }
 };
@@ -346,8 +347,8 @@ setupFakeAsyncImageLoadOffline = function(tile_id) {
   let oldImageLoader = $(tile_id).onclick;
   $(tile_id).onclick = function(event) {
     oldImageLoader(event);
-    collImg = [];
-    collImgErrors = {net_error: true, net_error_no: -106};
+    coll_img = [];
+    coll_img_errors = { net_error: true, net_error_no: -106 };
     $('ntp-images-loader').onload();
   }
 };
@@ -377,7 +378,7 @@ checkImageDialog = function() {
   assertTrue(elementIsVisible($('bg-sel-menu')));
   assertTrue($('bg-sel-menu').classList.contains('is-img-sel'));
   assertTrue(
-      document.getElementsByClassName('bg-sel-tile').length == collImg.length);
+      document.getElementsByClassName('bg-sel-tile').length == coll_img.length);
   assertTrue(elementIsVisible($('bg-sel-back')));
   assertTrue(elementIsVisible($('bg-sel-footer-cancel')));
   assertTrue(elementIsVisible($('bg-sel-footer-done')));

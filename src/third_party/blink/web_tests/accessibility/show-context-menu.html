@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <style>
 #outer {
@@ -29,7 +30,7 @@
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var target = document.getElementById("inner");
     target.addEventListener('contextmenu', function() {

@@ -18,20 +18,10 @@
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
 #include <direct.h>
 
-struct FX_FolderHandle {
+struct CFindFileDataA {
   HANDLE m_Handle;
   bool m_bEnd;
   WIN32_FIND_DATAA m_FindData;
-};
-#else
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-struct FX_FolderHandle {
-  ByteString m_Path;
-  DIR* m_Dir;
 };
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
 
@@ -121,28 +111,23 @@ bool IFX_SeekableStream::WriteString(ByteStringView str) {
   return WriteBlock(str.unterminated_c_str(), str.GetLength());
 }
 
-FX_FolderHandle* FX_OpenFolder(const char* path) {
-  auto handle = pdfium::MakeUnique<FX_FolderHandle>();
+FX_FileHandle* FX_OpenFolder(const char* path) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  handle->m_Handle =
+  auto pData = pdfium::MakeUnique<CFindFileDataA>();
+  pData->m_Handle =
       FindFirstFileExA((ByteString(path) + "/*.*").c_str(), FindExInfoStandard,
-                       &handle->m_FindData, FindExSearchNameMatch, nullptr, 0);
-  if (handle->m_Handle == INVALID_HANDLE_VALUE)
+                       &pData->m_FindData, FindExSearchNameMatch, nullptr, 0);
+  if (pData->m_Handle == INVALID_HANDLE_VALUE)
     return nullptr;
 
-  handle->m_bEnd = false;
+  pData->m_bEnd = false;
+  return pData.release();
 #else
-  DIR* dir = opendir(path);
-  if (!dir)
-    return nullptr;
-
-  handle->m_Path = path;
-  handle->m_Dir = dir;
+  return opendir(path);
 #endif
-  return handle.release();
 }
 
-bool FX_GetNextFile(FX_FolderHandle* handle,
+bool FX_GetNextFile(FX_FileHandle* handle,
                     ByteString* filename,
                     bool* bFolder) {
   if (!handle)
@@ -159,28 +144,23 @@ bool FX_GetNextFile(FX_FolderHandle* handle,
     handle->m_bEnd = true;
   return true;
 #else
-  struct dirent* de = readdir(handle->m_Dir);
+  struct dirent* de = readdir(handle);
   if (!de)
     return false;
-  ByteString fullpath = handle->m_Path + "/" + de->d_name;
-  struct stat deStat;
-  if (stat(fullpath.c_str(), &deStat) < 0)
-    return false;
-
   *filename = de->d_name;
-  *bFolder = S_ISDIR(deStat.st_mode);
+  *bFolder = de->d_type == DT_DIR;
   return true;
 #endif
 }
 
-void FX_CloseFolder(FX_FolderHandle* handle) {
+void FX_CloseFolder(FX_FileHandle* handle) {
   if (!handle)
     return;
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
   FindClose(handle->m_Handle);
-#else
-  closedir(handle->m_Dir);
-#endif
   delete handle;
+#else
+  closedir(handle);
+#endif
 }

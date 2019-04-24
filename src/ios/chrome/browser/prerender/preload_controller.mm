@@ -16,7 +16,6 @@
 #import "components/signin/ios/browser/account_consistency_service.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/history/history_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
@@ -27,8 +26,10 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#include "ios/chrome/browser/ui/prerender_final_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -45,16 +46,6 @@
 using web::WebStatePolicyDecider;
 
 namespace {
-
-// PrerenderFinalStatus values are used in the "Prerender.FinalStatus" histogram
-// and new values needs to be kept in sync with histogram.xml.
-enum PrerenderFinalStatus {
-  PRERENDER_FINAL_STATUS_USED = 0,
-  PRERENDER_FINAL_STATUS_MEMORY_LIMIT_EXCEEDED = 12,
-  PRERENDER_FINAL_STATUS_CANCELLED = 32,
-  PRERENDER_FINAL_STATUS_MAX = 52,
-};
-
 // Delay before starting to prerender a URL.
 const NSTimeInterval kPrerenderDelay = 0.5;
 
@@ -280,7 +271,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   [[tab webController] setNativeProvider:nil];
 
   webState->RemoveObserver(webStateObserver_.get());
-  breakpad::StopMonitoringURLsForWebState(webState.get());
   webState->SetDelegate(nullptr);
   policyDeciderBridge_.reset();
   HistoryTabHelper::FromWebState(webState.get())
@@ -407,7 +397,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   webState_->SetDelegate(webStateDelegate_.get());
   webState_->AddObserver(webStateObserver_.get());
-  breakpad::MonitorURLsForWebState(webState_.get());
   webState_->SetWebUsageEnabled(true);
 
   if (AccountConsistencyService* accountConsistencyService =
@@ -426,7 +415,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
     loadParams.user_agent_override_option =
         web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   }
-  webState_->SetKeepRenderProcessAlive(true);
   webState_->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // LoadIfNecessary is needed because the view is not created (but needed) when
@@ -450,7 +438,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
   [[tab webController] setNativeProvider:nil];
   webState_->RemoveObserver(webStateObserver_.get());
-  breakpad::StopMonitoringURLsForWebState(webState_.get());
   webState_->SetDelegate(nullptr);
   webState_.reset();
 
@@ -512,6 +499,12 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 }
 
 #pragma mark - CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
+  [tab notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
+}
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {

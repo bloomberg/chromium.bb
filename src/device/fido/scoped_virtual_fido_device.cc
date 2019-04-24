@@ -27,18 +27,18 @@ class VirtualFidoDeviceDiscovery
       FidoTransportProtocol transport,
       scoped_refptr<VirtualFidoDevice::State> state,
       ProtocolVersion supported_protocol,
-      const VirtualCtap2Device::Config& ctap2_config)
+      bool enable_pin)
       : FidoDeviceDiscovery(transport),
         state_(std::move(state)),
         supported_protocol_(supported_protocol),
-        ctap2_config_(ctap2_config) {}
+        enable_pin_(enable_pin) {}
   ~VirtualFidoDeviceDiscovery() override = default;
 
  protected:
   void StartInternal() override {
     std::unique_ptr<FidoDevice> device;
     if (supported_protocol_ == ProtocolVersion::kCtap) {
-      device = std::make_unique<VirtualCtap2Device>(state_, ctap2_config_);
+      device = std::make_unique<VirtualCtap2Device>(state_, enable_pin_);
     } else {
       device = std::make_unique<VirtualU2fDevice>(state_);
     }
@@ -53,7 +53,7 @@ class VirtualFidoDeviceDiscovery
  private:
   scoped_refptr<VirtualFidoDevice::State> state_;
   const ProtocolVersion supported_protocol_;
-  const VirtualCtap2Device::Config ctap2_config_;
+  const bool enable_pin_;
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceDiscovery);
 };
 
@@ -70,10 +70,9 @@ void ScopedVirtualFidoDevice::SetTransport(FidoTransportProtocol transport) {
   transport_ = transport;
 }
 
-void ScopedVirtualFidoDevice::SetCtap2Config(
-    const VirtualCtap2Device::Config& config) {
+void ScopedVirtualFidoDevice::EnablePINSupport() {
   supported_protocol_ = ProtocolVersion::kCtap;
-  ctap2_config_ = config;
+  enable_pin_ = true;
 }
 
 VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
@@ -87,7 +86,7 @@ std::unique_ptr<FidoDiscoveryBase> ScopedVirtualFidoDevice::CreateFidoDiscovery(
     return nullptr;
   }
   return std::make_unique<VirtualFidoDeviceDiscovery>(
-      transport_, state_, supported_protocol_, ctap2_config_);
+      transport_, state_, supported_protocol_, enable_pin_);
 }
 
 }  // namespace test

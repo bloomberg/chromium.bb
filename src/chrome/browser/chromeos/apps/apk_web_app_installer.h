@@ -8,22 +8,22 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "components/arc/common/app.mojom.h"
+#include "extensions/common/extension_id.h"
 
-class GURL;
 class Profile;
+
+namespace extensions {
+class BookmarkAppHelper;
+class Extension;
+}  // namespace extensions
 
 namespace service_manager {
 class Connector;
-}
-
-namespace web_app {
-enum class InstallResultCode;
 }
 
 namespace chromeos {
@@ -33,8 +33,7 @@ namespace chromeos {
 class ApkWebAppInstaller {
  public:
   using InstallFinishCallback =
-      base::OnceCallback<void(const web_app::AppId&,
-                              web_app::InstallResultCode)>;
+      base::OnceCallback<void(const extensions::ExtensionId& web_app_id)>;
 
   // Do nothing class purely for the purpose of allowing us to specify
   // a WeakPtr<Owner> member as a proxy for a profile lifetime observer.
@@ -64,13 +63,11 @@ class ApkWebAppInstaller {
              const std::vector<uint8_t>& icon_png_data);
 
   // Calls |callback_| with |id|, and deletes this object. Virtual for testing.
-  virtual void CompleteInstallation(const web_app::AppId& id,
-                                    web_app::InstallResultCode code);
+  virtual void CompleteInstallation(const extensions::ExtensionId& id);
 
-  // Callback method for installation completed response.
-  void OnWebAppCreated(const GURL& app_url,
-                       const web_app::AppId& app_id,
-                       web_app::InstallResultCode code);
+  // Callback method for BookmarkAppHelper::Create.
+  void OnBookmarkAppCreated(const extensions::Extension* extension,
+                            const WebApplicationInfo& web_app_info);
 
   // Callback method for data_decoder::DecodeImage.
   void OnImageDecoded(const SkBitmap& decoded_image);
@@ -78,10 +75,10 @@ class ApkWebAppInstaller {
   // Run the installation. Virtual for testing.
   virtual void DoInstall();
 
-  bool has_web_app_info() const { return web_app_info_ != nullptr; }
-  const WebApplicationInfo& web_app_info() const { return *web_app_info_; }
+  const WebApplicationInfo& web_app_info() const { return web_app_info_; }
 
  private:
+  std::unique_ptr<extensions::BookmarkAppHelper> helper_;
   std::unique_ptr<service_manager::Connector> connector_;
 
   // If |weak_owner_| is ever invalidated while this class is working,
@@ -91,7 +88,7 @@ class ApkWebAppInstaller {
   InstallFinishCallback callback_;
   base::WeakPtr<Owner> weak_owner_;
 
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
+  WebApplicationInfo web_app_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ApkWebAppInstaller);
 };

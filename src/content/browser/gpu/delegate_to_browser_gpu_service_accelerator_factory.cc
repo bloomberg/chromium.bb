@@ -9,7 +9,7 @@
 namespace content {
 
 void DelegateToBrowserGpuServiceAcceleratorFactory::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   VideoCaptureDependencies::CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 

@@ -283,7 +283,9 @@ bool CXFA_TextParser::TagValidate(const WideString& wsName) const {
       0xb182eaae,  // body
       0xdb8ac455,  // html
   };
-  return std::binary_search(std::begin(s_XFATagName), std::end(s_XFATagName),
+  static const int32_t s_iCount = FX_ArraySize(s_XFATagName);
+
+  return std::binary_search(s_XFATagName, s_XFATagName + s_iCount,
                             FX_HashCode_GetW(wsName.AsStringView(), true));
 }
 
@@ -302,7 +304,7 @@ std::unique_ptr<CXFA_TextParser::TagProvider> CXFA_TextParser::ParseTagInfo(
 
     return tagProvider;
   }
-  if (pXMLNode->GetType() == CFX_XMLNode::Type::kText) {
+  if (pXMLNode->GetType() == FX_XMLNODE_Text) {
     tagProvider->m_bTagAvailable = true;
     tagProvider->m_bContent = true;
   }
@@ -554,13 +556,15 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
     return false;
   }
 
-  pdfium::span<const wchar_t> spTabStops = wsValue.AsSpan();
-  size_t iCur = 0;
-  size_t iLast = 0;
+  int32_t iLength = wsValue.GetLength();
+  const wchar_t* pTabStops = wsValue.c_str();
+  int32_t iCur = 0;
+  int32_t iLast = 0;
   WideString wsAlign;
   TabStopStatus eStatus = TabStopStatus::None;
-  while (iCur < spTabStops.size()) {
-    wchar_t ch = spTabStops[iCur];
+  wchar_t ch;
+  while (iCur < iLength) {
+    ch = pTabStops[iCur];
     switch (eStatus) {
       case TabStopStatus::None:
         if (ch <= ' ') {
@@ -572,10 +576,10 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
         break;
       case TabStopStatus::Alignment:
         if (ch == ' ') {
-          wsAlign = WideStringView(spTabStops.subspan(iLast, iCur - iLast));
+          wsAlign = WideStringView(pTabStops + iLast, iCur - iLast);
           eStatus = TabStopStatus::StartLeader;
           iCur++;
-          while (iCur < spTabStops.size() && spTabStops[iCur] <= ' ')
+          while (iCur < iLength && pTabStops[iCur] <= ' ')
             iCur++;
           iLast = iCur;
         } else {
@@ -587,8 +591,8 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
           eStatus = TabStopStatus::Location;
         } else {
           int32_t iCount = 0;
-          while (iCur < spTabStops.size()) {
-            ch = spTabStops[iCur];
+          while (iCur < iLength) {
+            ch = pTabStops[iCur];
             iCur++;
             if (ch == '(') {
               iCount++;
@@ -598,7 +602,7 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
                 break;
             }
           }
-          while (iCur < spTabStops.size() && spTabStops[iCur] <= ' ')
+          while (iCur < iLength && pTabStops[iCur] <= ' ')
             iCur++;
 
           iLast = iCur;
@@ -608,8 +612,7 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
       case TabStopStatus::Location:
         if (ch == ' ') {
           uint32_t dwHashCode = FX_HashCode_GetW(wsAlign.AsStringView(), true);
-          CXFA_Measurement ms(
-              WideStringView(spTabStops.subspan(iLast, iCur - iLast)));
+          CXFA_Measurement ms(WideStringView(pTabStops + iLast, iCur - iLast));
           float fPos = ms.ToUnit(XFA_Unit::Pt);
           pTabstopContext->Append(dwHashCode, fPos);
           wsAlign.clear();
@@ -624,8 +627,7 @@ bool CXFA_TextParser::GetTabstops(CFX_CSSComputedStyle* pStyle,
 
   if (!wsAlign.IsEmpty()) {
     uint32_t dwHashCode = FX_HashCode_GetW(wsAlign.AsStringView(), true);
-    CXFA_Measurement ms(
-        WideStringView(spTabStops.subspan(iLast, iCur - iLast)));
+    CXFA_Measurement ms(WideStringView(pTabStops + iLast, iCur - iLast));
     float fPos = ms.ToUnit(XFA_Unit::Pt);
     pTabstopContext->Append(dwHashCode, fPos);
   }

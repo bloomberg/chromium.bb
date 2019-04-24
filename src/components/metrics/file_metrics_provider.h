@@ -291,7 +291,7 @@ class FileMetricsProvider : public MetricsProvider,
   bool HasIndependentMetrics() override;
   void ProvideIndependentMetrics(
       base::OnceCallback<void(bool)> done_callback,
-      ChromeUserMetricsExtension* uma_proto,
+      SystemProfileProto* system_profile_proto,
       base::HistogramSnapshotManager* snapshot_manager) override;
   bool HasPreviousSessionData() override;
   void RecordInitialHistogramSnapshots(

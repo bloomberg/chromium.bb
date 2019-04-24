@@ -15,7 +15,7 @@ void CSSCustomPropertyDeclaration::TraceAfterDispatch(blink::Visitor* visitor) {
 String CSSCustomPropertyDeclaration::CustomCSSText() const {
   if (value_)
     return value_->TokenRange().Serialize();
-  DCHECK(value_id_ != CSSValueID::kInternalVariableValue);
+  DCHECK(value_id_ != CSSValueInternalVariableValue);
   return getValueName(value_id_);
 }
 

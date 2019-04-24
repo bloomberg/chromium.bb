@@ -44,7 +44,7 @@ class Extension;
 enum class SandboxedUnpackerFailureReason;
 
 namespace declarative_net_request {
-struct IndexAndPersistJSONRulesetResult;
+struct IndexAndPersistRulesResult;
 }
 
 class SandboxedUnpackerClient
@@ -110,15 +110,6 @@ class SandboxedUnpackerClient
 //
 class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
  public:
-  // Overrides the required verifier format for testing purposes. Only one
-  // ScopedVerifierFormatOverrideForTest may exist at a time.
-  class ScopedVerifierFormatOverrideForTest {
-   public:
-    explicit ScopedVerifierFormatOverrideForTest(
-        crx_file::VerifierFormat format);
-    ~ScopedVerifierFormatOverrideForTest();
-  };
-
   // Creates a SandboxedUnpacker that will do work to unpack an extension,
   // passing the |location| and |creation_flags| to Extension::Create. The
   // |extensions_dir| parameter should specify the directory under which we'll
@@ -228,7 +219,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   void OnJSONRulesetIndexed(
       std::unique_ptr<base::DictionaryValue> manifest,
-      declarative_net_request::IndexAndPersistJSONRulesetResult result);
+      declarative_net_request::IndexAndPersistRulesResult result);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();

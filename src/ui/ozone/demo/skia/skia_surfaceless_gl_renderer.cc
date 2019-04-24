@@ -5,8 +5,6 @@
 #include "ui/ozone/demo/skia/skia_surfaceless_gl_renderer.h"
 
 #include <stddef.h>
-#include <memory>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -30,7 +28,6 @@
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -61,7 +58,8 @@ OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
   // The same rectangle in floating point coordinates.
   overlay_candidate.display_rect = display_rect;
 
-  overlay_candidate.crop_rect = crop_rect;
+  // Show the entire buffer by setting the crop to a unity square.
+  overlay_candidate.crop_rect = gfx::RectF(0, 0, 1, 1);
 
   // The demo overlay instance is always ontop and not clipped. Clipped quads
   // cannot be placed in overlays.
@@ -148,13 +146,9 @@ bool SurfacelessSkiaGlRenderer::BufferWrapper::Initialize(
 
 SurfacelessSkiaGlRenderer::SurfacelessSkiaGlRenderer(
     gfx::AcceleratedWidget widget,
-    std::unique_ptr<PlatformWindowSurface> window_surface,
-    const scoped_refptr<gl::GLSurface>& gl_surface,
+    const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
-    : SkiaGlRenderer(widget,
-                     std::move(window_surface),
-                     std::move(gl_surface),
-                     size),
+    : SkiaGlRenderer(widget, surface, size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
@@ -203,12 +197,11 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
 
   float fraction = CurrentFraction();
   gfx::Rect overlay_rect;
-  const gfx::RectF unity_rect = gfx::RectF(0, 0, 1, 1);
 
   OverlayCandidatesOzone::OverlaySurfaceCandidateList overlay_list;
   if (!disable_primary_plane_) {
     overlay_list.push_back(
-        MakeOverlayCandidate(1, gfx::Rect(size_), unity_rect));
+        MakeOverlayCandidate(1, gfx::Rect(size_), gfx::RectF(0, 0, 1, 1)));
     // We know at least the primary plane can be scanned out.
     overlay_list.back().overlay_handled = true;
   }
@@ -222,7 +215,8 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
         stepped_fraction * (size_.width() - overlay_rect.width()),
         (size_.height() - overlay_rect.height()) / 2);
     overlay_rect += offset;
-    overlay_list.push_back(MakeOverlayCandidate(1, overlay_rect, unity_rect));
+    overlay_list.push_back(
+        MakeOverlayCandidate(1, overlay_rect, gfx::RectF(0, 0, 1, 1)));
   }
 
   // The actual validation for a specific overlay configuration is done
@@ -251,14 +245,14 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
     CHECK(overlay_list.front().overlay_handled);
     gl_surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
-        primary_plane_rect_, unity_rect, /* enable_blend */ true,
+        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true,
         /* gpu_fence */ nullptr);
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
     gl_surface_->ScheduleOverlayPlane(
         1, gfx::OVERLAY_TRANSFORM_NONE, overlay_buffer_[back_buffer_]->image(),
-        overlay_rect, unity_rect, /* enable_blend */ true,
+        overlay_rect, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true,
         /* gpu_fence */ nullptr);
   }
 

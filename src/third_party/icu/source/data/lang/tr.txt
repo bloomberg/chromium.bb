@@ -110,7 +110,6 @@ tr{
         car{"Carib"}
         cay{"Kayuga dili"}
         cch{"Atsam"}
-        ccp{"Chakma"}
         ce{"Çeçence"}
         ceb{"Sebuano dili"}
         cgg{"Kigaca"}
@@ -667,6 +666,7 @@ tr{
         Cakm{"Chakma"}
         Cans{"UCAS"}
         Cari{"Karya"}
+        Cham{"Cham"}
         Cher{"Çeroki"}
         Cirt{"Cirth"}
         Copt{"Kıpti"}
@@ -731,11 +731,13 @@ tr{
         Lydi{"Lidya"}
         Mahj{"Mahajani"}
         Mand{"Manden"}
+        Mani{"Mani"}
         Maya{"Maya Hiyeroglifleri"}
         Mend{"Mende"}
         Merc{"Meroitik El Yazısı"}
         Mero{"Meroitik"}
         Mlym{"Malayalam"}
+        Modi{"Modi"}
         Mong{"Moğol"}
         Moon{"Moon"}
         Mroo{"Mro"}
@@ -1036,7 +1038,7 @@ tr{
         VALENCIA{"Valensiyaca"}
         WADEGILE{"Wade-Giles (Latin Alfabesinde Yazımı)"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.44.91"}
     characterLabelPattern{
         all{"{0} — tümü"}
         category-list{"{0}: {1}"}

@@ -363,24 +363,19 @@ class FileManagerPrivateSearchFilesByHashesFunction
   const ChromeExtensionFunctionDetails chrome_details_;
 };
 
-class FileManagerPrivateSearchFilesFunction
-    : public LoggedUIThreadExtensionFunction {
+// Implements the chrome.fileManagerPrivate.isUMAEnabled method.
+class FileManagerPrivateIsUMAEnabledFunction
+    : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateSearchFilesFunction();
-
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchFiles",
-                             FILEMANAGERPRIVATE_SEARCHFILES)
-
+  FileManagerPrivateIsUMAEnabledFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isUMAEnabled",
+                             FILEMANAGERPRIVATE_ISUMAENABLED)
  protected:
-  ~FileManagerPrivateSearchFilesFunction() override = default;
+  ~FileManagerPrivateIsUMAEnabledFunction() override = default;
 
  private:
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
-  void OnSearchByPattern(const std::vector<base::FilePath>& results);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
+  ExtensionFunction::ResponseAction Run() override;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsUMAEnabledFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.setEntryTag method.

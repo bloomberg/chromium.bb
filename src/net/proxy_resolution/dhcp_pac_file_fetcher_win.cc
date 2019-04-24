@@ -275,7 +275,7 @@ DhcpPacFileFetcherWin::DhcpPacFileFetcherWin(
     URLRequestContext* url_request_context)
     : state_(STATE_START),
       num_pending_fetchers_(0),
-      destination_string_(nullptr),
+      destination_string_(NULL),
       url_request_context_(url_request_context),
       task_runner_(base::MakeRefCounted<TaskRunnerWithCap>()) {
   DCHECK(url_request_context_);
@@ -376,7 +376,7 @@ void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
   // and a previous query was cancelled before it completed.
   if (query.get() != last_query_.get())
     return;
-  last_query_ = nullptr;
+  last_query_ = NULL;
 
   DhcpAdapterNamesLoggingInfo* logging_info = query->logging_info();
   logging_info->origin_thread_end_time = base::TimeTicks::Now();
@@ -565,11 +565,14 @@ bool DhcpPacFileFetcherWin::GetCandidateAdapterNames(
     // Return only unicast addresses, and skip information we do not need.
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
-    error = GetAdaptersAddresses(
-        AF_UNSPEC,
-        GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST |
-            GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME,
-        nullptr, adapters.get(), &adapters_size);
+    error = GetAdaptersAddresses(AF_UNSPEC,
+                                 GAA_FLAG_SKIP_ANYCAST |
+                                 GAA_FLAG_SKIP_MULTICAST |
+                                 GAA_FLAG_SKIP_DNS_SERVER |
+                                 GAA_FLAG_SKIP_FRIENDLY_NAME,
+                                 NULL,
+                                 adapters.get(),
+                                 &adapters_size);
     ++num_tries;
   } while (error == ERROR_BUFFER_OVERFLOW && num_tries <= 3);
 
@@ -586,7 +589,7 @@ bool DhcpPacFileFetcherWin::GetCandidateAdapterNames(
     return false;
   }
 
-  IP_ADAPTER_ADDRESSES* adapter = nullptr;
+  IP_ADAPTER_ADDRESSES* adapter = NULL;
   for (adapter = adapters.get(); adapter; adapter = adapter->Next) {
     if (IsDhcpCapableAdapter(adapter)) {
       DCHECK(adapter->AdapterName);

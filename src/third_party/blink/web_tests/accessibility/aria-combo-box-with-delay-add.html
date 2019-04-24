@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <!-- Start with -->
 <div role="main">
   <input id="comboBox"
@@ -16,7 +17,7 @@
 </div>
 
 <script>
-  async_test((t) => {
+  async_test_after_layout_and_paint((t) => {
     let comboBox = accessibilityController.accessibleElementById('comboBox');
     document.getElementById('container').innerHTML =
           '<ul id="stateList" role="listbox"><li id="state1" role="option">Alabama</li><li id="state2" role="option">Alaska</li></ul>';

@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="viewer-zoom-button.html">
@@ -8,7 +7,6 @@
   <template>
     <style>
       :host {
-        --button-position-offset: 48px;
         bottom: 0;
         padding: 48px 0;
         position: fixed;
@@ -17,22 +15,18 @@
         z-index: 3;
       }
 
-      :host([new-print-preview]) {
-        --button-position-offset: 24px;
-      }
-
-      :host([show-on-left_]) {
+      :host-context([dir=rtl]) {
         left: 0;
         right: auto;
       }
 
       #zoom-buttons {
         position: relative;
-        right: var(--button-position-offset);
+        right: 48px;
       }
 
-      :host([show-on-left_]) #zoom-buttons {
-        left: var(--button-position-offset);
+      :host-context([dir=rtl]) #zoom-buttons {
+        left: 48px;
         right: auto;
       }
 
@@ -52,17 +46,11 @@
     </style>
     <div id="zoom-buttons">
       <viewer-zoom-button id="fit-button" on-fabclick="fitToggle" delay="100"
-          new-print-preview="[[newPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           icons="pdf:fullscreen-exit cr:fullscreen">
       </viewer-zoom-button>
       <viewer-zoom-button id="zoom-in-button" icons="pdf:add"
-          new-print-preview="[[newPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
       <viewer-zoom-button id="zoom-out-button" icons="pdf:remove"
-          new-print-preview="[[newPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
     </div>
   </template>

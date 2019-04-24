@@ -92,7 +92,6 @@ class TracingSession : public Consumer {
   void OnDetach(bool) override;
   void OnAttach(bool, const TraceConfig&) override;
   void OnTraceStats(bool, const TraceStats&) override;
-  void OnObservableEvents(const ObservableEvents&) override;
 
  private:
   TracingSession(const TracingSession&) = delete;
@@ -239,11 +238,6 @@ void TracingSession::OnAttach(bool, const TraceConfig&) {
 
 void TracingSession::OnTraceStats(bool, const TraceStats&) {
   // Should never be called, GetTraceStats() is not used here.
-  PERFETTO_DCHECK(false);
-}
-
-void TracingSession::OnObservableEvents(const ObservableEvents&) {
-  // Should never be called, ObserveEvents() is not used here.
   PERFETTO_DCHECK(false);
 }
 

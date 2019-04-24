@@ -645,10 +645,8 @@ class SymbolGroup(BaseSymbol):
 
   @property
   def flags(self):
-    ret = 0
-    for s in self._symbols:
-      ret |= s.flags
-    return ret
+    first = self._symbols[0].flags if self else 0
+    return first if all(s.flags == first for s in self._symbols) else 0
 
   @property
   def object_path(self):
@@ -804,9 +802,6 @@ class SymbolGroup(BaseSymbol):
 
   def WhereIsTemplate(self):
     return self.Filter(lambda s: s.template_name is not s.name)
-
-  def WhereHasFlag(self, flag):
-    return self.Filter(lambda s: s.flags & flag)
 
   def WhereHasComponent(self):
     return self.Filter(lambda s: s.component)

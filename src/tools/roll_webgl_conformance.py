@@ -33,7 +33,7 @@ extra_trybots = [
   # in some non-default configurations.
   {
     "mastername": "luci.chromium.try",
-    "buildernames": ["linux-angle-rel"]
+    "buildernames": ["linux_angle_rel_ng"]
   },
   {
     "mastername": "luci.chromium.try",

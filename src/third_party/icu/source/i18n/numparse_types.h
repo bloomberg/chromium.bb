@@ -49,7 +49,6 @@ enum ParseFlags {
     // PARSE_FLAG_OPTIMIZE = 0x0800, // no longer used
     // PARSE_FLAG_FORCE_BIG_DECIMAL = 0x1000, // not used in ICU4C
     PARSE_FLAG_NO_FOREIGN_CURRENCY = 0x2000,
-    PARSE_FLAG_ALLOW_INFINITE_RECURSION = 0x4000,
 };
 
 
@@ -64,7 +63,7 @@ class CompactUnicodeString {
 
     CompactUnicodeString(const UnicodeString& text)
             : fBuffer(text.length() + 1) {
-        uprv_memcpy(fBuffer.getAlias(), text.getBuffer(), sizeof(UChar) * text.length());
+        memcpy(fBuffer.getAlias(), text.getBuffer(), sizeof(UChar) * text.length());
         fBuffer[text.length()] = 0;
     }
 
@@ -161,7 +160,7 @@ class U_I18N_API ParsedNumber {
 
     bool seenNumber() const;
 
-    double getDouble(UErrorCode& status) const;
+    double getDouble() const;
 
     void populateFormattable(Formattable& output, parse_flags_t parseFlags) const;
 
@@ -267,7 +266,7 @@ class U_I18N_API StringSegment : public UMemory {
     bool operator==(const UnicodeString& other) const;
 
   private:
-    const UnicodeString& fStr;
+    const UnicodeString fStr;
     int32_t fStart;
     int32_t fEnd;
     bool fFoldCase;
@@ -347,7 +346,7 @@ class U_I18N_API NumberParseMatcher {
      */
     virtual void postProcess(ParsedNumber&) const {
         // Default implementation: no-op
-    }
+    };
 
     // String for debugging
     virtual UnicodeString toString() const = 0;

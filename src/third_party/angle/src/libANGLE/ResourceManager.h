@@ -30,7 +30,6 @@ class Context;
 class Sync;
 class Framebuffer;
 struct Limitations;
-class MemoryObject;
 class Path;
 class Program;
 class ProgramPipeline;
@@ -303,24 +302,6 @@ class ProgramPipelineManager
 
   protected:
     ~ProgramPipelineManager() override {}
-};
-
-class MemoryObjectManager : public ResourceManagerBase<HandleAllocator>
-{
-  public:
-    MemoryObjectManager();
-
-    GLuint createMemoryObject(rx::GLImplFactory *factory);
-    void deleteMemoryObject(const Context *context, GLuint handle);
-    MemoryObject *getMemoryObject(GLuint handle) const;
-
-  protected:
-    ~MemoryObjectManager() override;
-
-  private:
-    void reset(const Context *context) override;
-
-    ResourceMap<MemoryObject> mMemoryObjects;
 };
 
 }  // namespace gl

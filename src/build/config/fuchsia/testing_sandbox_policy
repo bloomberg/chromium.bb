@@ -6,20 +6,18 @@
       "vulkan" ],
   "dev": ["null", "zero"],
   "services": [
+      "chromium.web.ContextProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
-      "fuchsia.sys.Environment",
       "fuchsia.sys.Launcher",
-      "fuchsia.sys.Loader",
       "fuchsia.ui.input.ImeService",
       "fuchsia.ui.input.ImeVisibilityService",
       "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.vulkan.loader.Loader",
-      "fuchsia.web.ContextProvider"
+      "fuchsia.vulkan.loader.Loader"
   ]
 }

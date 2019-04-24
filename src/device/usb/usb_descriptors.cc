@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -276,37 +275,37 @@ UsbEndpointDescriptor::UsbEndpointDescriptor(uint8_t address,
   switch (attributes & 0x0F) {
     // Isochronous endpoints only.
     case 0x05:
-      synchronization_type = UsbSynchronizationType::ASYNCHRONOUS;
+      synchronization_type = USB_SYNCHRONIZATION_ASYNCHRONOUS;
       break;
     case 0x09:
-      synchronization_type = UsbSynchronizationType::ADAPTIVE;
+      synchronization_type = USB_SYNCHRONIZATION_ADAPTIVE;
       break;
     case 0x0D:
-      synchronization_type = UsbSynchronizationType::SYNCHRONOUS;
+      synchronization_type = USB_SYNCHRONIZATION_SYNCHRONOUS;
       break;
     default:
-      synchronization_type = UsbSynchronizationType::NONE;
+      synchronization_type = USB_SYNCHRONIZATION_NONE;
   }
   switch (attributes & 0x33) {
     // Isochronous endpoint usages.
     case 0x01:
-      usage_type = UsbUsageType::DATA;
+      usage_type = USB_USAGE_DATA;
       break;
     case 0x11:
-      usage_type = UsbUsageType::FEEDBACK;
+      usage_type = USB_USAGE_FEEDBACK;
       break;
     case 0x21:
-      usage_type = UsbUsageType::EXPLICIT_FEEDBACK;
+      usage_type = USB_USAGE_EXPLICIT_FEEDBACK;
       break;
     // Interrupt endpoint usages.
     case 0x03:
-      usage_type = UsbUsageType::PERIODIC;
+      usage_type = USB_USAGE_PERIODIC;
       break;
     case 0x13:
-      usage_type = UsbUsageType::NOTIFICATION;
+      usage_type = USB_USAGE_NOTIFICATION;
       break;
     default:
-      usage_type = UsbUsageType::RESERVED;
+      usage_type = USB_USAGE_RESERVED;
   }
 }
 

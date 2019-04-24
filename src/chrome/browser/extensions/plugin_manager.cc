@@ -126,13 +126,14 @@ void PluginManager::OnExtensionUnloaded(
 #if BUILDFLAG(ENABLE_NACL)
 
 void PluginManager::RegisterNaClModule(const NaClModuleInfo& info) {
+  DCHECK(FindNaClModule(info.url) == nacl_module_list_.end());
   nacl_module_list_.push_front(info);
 }
 
 void PluginManager::UnregisterNaClModule(const NaClModuleInfo& info) {
   auto iter = FindNaClModule(info.url);
-  if (iter != nacl_module_list_.end())
-    nacl_module_list_.erase(iter);
+  DCHECK(iter != nacl_module_list_.end());
+  nacl_module_list_.erase(iter);
 }
 
 void PluginManager::UpdatePluginListWithNaClModules() {

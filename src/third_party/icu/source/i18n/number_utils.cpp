@@ -70,7 +70,7 @@ const char16_t* utils::getPatternForStyle(const Locale& locale, const char* nsNa
             break;
         default:
             patternKey = "decimalFormat"; // silence compiler error
-            UPRV_UNREACHABLE;
+            U_ASSERT(false);
     }
     LocalUResourceBundlePointer res(ures_open(nullptr, locale.getName(), &status));
     if (U_FAILURE(status)) { return u""; }
@@ -237,9 +237,7 @@ void DecNum::multiplyBy(const DecNum& rhs, UErrorCode& status) {
 
 void DecNum::divideBy(const DecNum& rhs, UErrorCode& status) {
     uprv_decNumberDivide(fData, fData, rhs.fData, &fContext);
-    if ((fContext.status & DEC_Inexact) != 0) {
-        // Ignore.
-    } else if (fContext.status != 0) {
+    if (fContext.status != 0) {
         status = U_INTERNAL_PROGRAM_ERROR;
     }
 }

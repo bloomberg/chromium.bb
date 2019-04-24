@@ -36,6 +36,12 @@ FEFlood::FEFlood(Filter* filter, const Color& flood_color, float flood_opacity)
   FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
+FEFlood* FEFlood::Create(Filter* filter,
+                         const Color& flood_color,
+                         float flood_opacity) {
+  return MakeGarbageCollected<FEFlood>(filter, flood_color, flood_opacity);
+}
+
 Color FEFlood::FloodColor() const {
   return flood_color_;
 }
@@ -62,7 +68,8 @@ sk_sp<PaintFilter> FEFlood::CreateImageFilter() {
   Color color = FloodColor().CombineWithAlpha(FloodOpacity());
   PaintFilter::CropRect rect = GetCropRect();
   return sk_make_sp<ColorFilterPaintFilter>(
-      SkColorFilters::Blend(color.Rgb(), SkBlendMode::kSrc), nullptr, &rect);
+      SkColorFilter::MakeModeFilter(color.Rgb(), SkBlendMode::kSrc), nullptr,
+      &rect);
 }
 
 WTF::TextStream& FEFlood::ExternalRepresentation(WTF::TextStream& ts,

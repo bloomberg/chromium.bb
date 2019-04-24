@@ -40,7 +40,6 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
@@ -51,7 +50,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -88,8 +86,7 @@ void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
     request.SetAppCacheHostID(host_id);
 }
 
-void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
-                                                        const KURL& url,
+void ApplicationCacheHost::WillStartLoadingMainResource(const KURL& url,
                                                         const String& method) {
   if (!IsApplicationCacheEnabled())
     return;
@@ -99,7 +96,7 @@ void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
 
   DCHECK(document_loader_->GetFrame());
   LocalFrame& frame = *document_loader_->GetFrame();
-  host_ = frame.Client()->CreateApplicationCacheHost(loader, this);
+  host_ = frame.Client()->CreateApplicationCacheHost(this);
   if (!host_)
     return;
 
@@ -136,7 +133,7 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
 
   LocalFrame* frame = document_loader_->GetFrame();
   Document* document = frame->GetDocument();
-  if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
+  if (document->IsSandboxed(kSandboxOrigin)) {
     // Prevent sandboxes from establishing application caches.
     SelectCacheWithoutManifest();
     return;
@@ -160,11 +157,9 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
     // navigation algorithm. The navigation will not result in the same resource
     // being loaded, because "foreign" entries are never picked during
     // navigation. see ApplicationCacheGroup::selectCache()
-    FrameLoadRequest request(document, ResourceRequest(document->Url()));
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-      request.SetInputStartTime(input_event->TimeStamp());
-    frame->Navigate(request, WebFrameLoadType::kReplaceCurrentItem);
+    frame->ScheduleNavigation(*document, document->Url(),
+                              WebFrameLoadType::kReplaceCurrentItem,
+                              UserGestureStatus::kNone);
   }
 }
 
@@ -215,13 +210,12 @@ void ApplicationCacheHost::NotifyApplicationCache(
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
   if (!host_)
-    return CacheInfo(NullURL(), 0, 0, 0, 0);
+    return CacheInfo(NullURL(), 0, 0, 0);
 
   WebApplicationCacheHost::CacheInfo web_info;
   host_->GetAssociatedCacheInfo(&web_info);
   return CacheInfo(web_info.manifest_url, web_info.creation_time,
-                   web_info.update_time, web_info.response_sizes,
-                   web_info.padding_sizes);
+                   web_info.update_time, web_info.total_size);
 }
 
 int ApplicationCacheHost::GetHostID() const {
@@ -237,11 +231,11 @@ void ApplicationCacheHost::FillResourceList(ResourceInfoList* resources) {
   WebVector<WebApplicationCacheHost::ResourceInfo> web_resources;
   host_->GetResourceList(&web_resources);
   for (size_t i = 0; i < web_resources.size(); ++i) {
-    resources->push_back(ResourceInfo(
-        web_resources[i].url, web_resources[i].is_master,
-        web_resources[i].is_manifest, web_resources[i].is_fallback,
-        web_resources[i].is_foreign, web_resources[i].is_explicit,
-        web_resources[i].response_size, web_resources[i].padding_size));
+    resources->push_back(
+        ResourceInfo(web_resources[i].url, web_resources[i].is_master,
+                     web_resources[i].is_manifest, web_resources[i].is_fallback,
+                     web_resources[i].is_foreign, web_resources[i].is_explicit,
+                     web_resources[i].size));
   }
 }
 
@@ -277,8 +271,8 @@ void ApplicationCacheHost::DispatchDOMEvent(
     event =
         ProgressEvent::Create(event_type, true, progress_done, progress_total);
   } else if (id == mojom::AppCacheEventID::APPCACHE_ERROR_EVENT) {
-    event = MakeGarbageCollected<ApplicationCacheErrorEvent>(
-        error_reason, error_url, error_status, error_message);
+    event = ApplicationCacheErrorEvent::Create(error_reason, error_url,
+                                               error_status, error_message);
   } else {
     event = Event::Create(event_type);
   }

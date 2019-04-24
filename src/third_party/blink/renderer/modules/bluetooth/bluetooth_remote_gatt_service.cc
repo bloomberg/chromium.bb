@@ -140,7 +140,7 @@ ScriptPromise BluetoothRemoteGATTService::GetCharacteristicsImpl(
                               "the service again after reconnecting."));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   device_->gatt()->AddToActiveAlgorithms(resolver);
 

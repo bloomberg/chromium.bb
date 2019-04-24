@@ -55,7 +55,7 @@ void HTMLTableColElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr)
-    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   else
     HTMLTablePartElement::CollectStyleForPresentationAttribute(name, value,
                                                                style);

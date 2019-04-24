@@ -42,7 +42,7 @@ class GaiaOAuthClient::Core
         num_retries_(0),
         max_retries_(0),
         url_loader_factory_(url_loader_factory),
-        delegate_(nullptr),
+        delegate_(NULL),
         request_type_(NO_PENDING_REQUEST),
         weak_ptr_factory_(this) {
     backoff_policy_.num_errors_to_ignore =

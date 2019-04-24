@@ -23,9 +23,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/scheduler/compositor_timing_history.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_compositor_frame_reporting_controller.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -160,11 +158,9 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
   inner_viewport_scroll_layer->SetScrollable(inner_bounds);
-  inner_viewport_scroll_layer->SetHitTestable(true);
   inner_viewport_scroll_layer->SetBounds(outer_bounds);
   outer_viewport_container_layer->SetBounds(outer_bounds);
   outer_scroll_layer->SetScrollable(outer_bounds);
-  outer_scroll_layer->SetHitTestable(true);
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
@@ -188,7 +184,6 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   outer_viewport_scroll_layer->SetBounds(scroll_bounds);
   outer_viewport_scroll_layer->SetIsDrawable(true);
-  outer_viewport_scroll_layer->SetHitTestable(true);
   CreateVirtualViewportLayers(root_layer, outer_viewport_scroll_layer,
                               inner_bounds, outer_bounds, host);
 }
@@ -227,10 +222,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0,
                           std::move(image_worker_task_runner)),
-        test_hooks_(test_hooks) {
-    compositor_frame_reporting_controller_ =
-        std::make_unique<FakeCompositorFrameReportingController>();
-  }
+        test_hooks_(test_hooks) {}
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider() override {
     return test_hooks_->CreateRasterBufferProvider(this);
@@ -445,7 +437,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidBeginMainFrame() override { test_hooks_->DidBeginMainFrame(); }
 
-  void WillUpdateLayers() override {}
   void DidUpdateLayers() override {}
 
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
@@ -914,7 +905,6 @@ void LayerTreeTest::SetupTree() {
                                              initial_device_scale_factor_,
                                              viz::LocalSurfaceIdAllocation());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
-  layer_tree_host()->root_layer()->SetHitTestable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
 

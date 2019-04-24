@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webdriver/#interface
+// https://w3c.github.io/webdriver/webdriver-spec.html#interface
 
 [
-    Exposed=Window,
+    NoInterfaceObject, // Always used on target of 'implements'
+    Exposed=(Window),
     RuntimeEnabled=AutomationControlled
-] interface mixin NavigatorAutomationInformation {
+] interface NavigatorAutomationInformation {
     readonly attribute boolean webdriver;
 };

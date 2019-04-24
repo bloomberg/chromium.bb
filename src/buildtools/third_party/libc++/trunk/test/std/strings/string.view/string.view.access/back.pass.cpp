@@ -18,10 +18,7 @@
 
 template <typename CharT>
 bool test ( const CharT *s, size_t len ) {
-    typedef std::basic_string_view<CharT> SV;
-    SV sv ( s, len );
-    ASSERT_SAME_TYPE(decltype(sv.back()), typename SV::const_reference);
-    LIBCPP_ASSERT_NOEXCEPT(   sv.back());
+    std::basic_string_view<CharT> sv ( s, len );
     assert ( sv.length() == len );
     assert ( sv.back() == s[len-1] );
     return &sv.back() == s + len - 1;

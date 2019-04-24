@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include "build/build_config.h"
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_extension.h"
@@ -64,7 +63,7 @@ const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
 constexpr double kDoubleCorrect = 0.000000000000001;
 #endif
 
@@ -100,7 +99,7 @@ void AlertIfPossible(CJS_EventContext* pContext, const WideString& swMsg) {
                               JSPLATFORM_ALERT_ICON_STATUS);
 }
 
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
 ByteString CalculateString(double dValue,
                            int iDec,
                            int* iDec2,
@@ -171,7 +170,7 @@ bool IsDigitSeparatorOrDecimalMark(int c) {
   return c == '.' || c == ',';
 }
 
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
 bool IsStyleWithDigitSeparator(int style) {
   return style == 0 || style == 2;
 }
@@ -194,7 +193,7 @@ char DecimalMarkForStyle(int style) {
   return IsStyleWithCommaDecimalMark(style) ? ',' : '.';
 }
 
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
 void NormalizeDecimalMark(ByteString* str) {
   str->Replace(",", ".");
 }
@@ -583,7 +582,7 @@ WideString CJS_PublicMethods::PrintDateUsingFormat(double dDate,
 CJS_Result CJS_PublicMethods::AFNumber_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
   if (params.size() != 6)
     return CJS_Result::Failure(JSMessage::kParamError);
 
@@ -779,7 +778,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
 CJS_Result CJS_PublicMethods::AFPercent_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if !defined(OS_ANDROID)
+#if _FX_OS_ != _FX_OS_ANDROID_
   if (params.size() < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 

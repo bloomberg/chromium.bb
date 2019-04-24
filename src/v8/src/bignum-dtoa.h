@@ -52,9 +52,8 @@ enum BignumDtoaMode {
 //   Halfway cases are again rounded up.
 // 'BignumDtoa' expects the given buffer to be big enough to hold all digits
 // and a terminating null-character.
-V8_EXPORT_PRIVATE void BignumDtoa(double v, BignumDtoaMode mode,
-                                  int requested_digits, Vector<char> buffer,
-                                  int* length, int* point);
+void BignumDtoa(double v, BignumDtoaMode mode, int requested_digits,
+                Vector<char> buffer, int* length, int* point);
 
 }  // namespace internal
 }  // namespace v8

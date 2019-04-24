@@ -36,7 +36,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
 
   GetDocument().body()->setContentEditable("false", ASSERT_NO_EXCEPTION);
   GetDocument().setDesignMode("on");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(
@@ -45,8 +45,8 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
           .Build(),
       SetSelectionOptions());
 
-  auto* command = MakeGarbageCollected<FormatBlockCommand>(
-      GetDocument(), html_names::kFooterTag);
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), html_names::kFooterTag);
   command->Apply();
 
   EXPECT_EQ(
@@ -70,7 +70,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
           .Build(),
       SetSelectionOptions());
 
-  auto* command = MakeGarbageCollected<IndentOutdentCommand>(
+  IndentOutdentCommand* command = IndentOutdentCommand::Create(
       GetDocument(), IndentOutdentCommand::kIndent);
   command->Apply();
 
@@ -95,7 +95,7 @@ TEST_F(ApplyBlockElementCommandTest, IndentHeadingIntoBlockquote) {
                                .Build(),
                            SetSelectionOptions());
 
-  auto* command = MakeGarbageCollected<IndentOutdentCommand>(
+  IndentOutdentCommand* command = IndentOutdentCommand::Create(
       GetDocument(), IndentOutdentCommand::kIndent);
   command->Apply();
 
@@ -120,8 +120,8 @@ TEST_F(ApplyBlockElementCommandTest, InsertPlaceHolderAtDisconnectedPosition) {
       SetSelectionTextToBody(
           "^<input><input class=\"input\" style=\"position:absolute\">|"),
       SetSelectionOptions());
-  auto* command = MakeGarbageCollected<FormatBlockCommand>(GetDocument(),
-                                                           html_names::kPreTag);
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Crash happens here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(
@@ -136,8 +136,8 @@ TEST_F(ApplyBlockElementCommandTest, FormatBlockCrossingUserModifyBoundary) {
       SetSelectionTextToBody(
           "^<b style=\"-webkit-user-modify:read-only\"><button></button></b>|"),
       SetSelectionOptions());
-  auto* command = MakeGarbageCollected<FormatBlockCommand>(GetDocument(),
-                                                           html_names::kPreTag);
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Shouldn't crash here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(
@@ -155,8 +155,8 @@ TEST_F(ApplyBlockElementCommandTest,
                              "style=\"-webkit-user-modify:read-only\"><button><"
                              "/button></kbd>|"),
       SetSelectionOptions());
-  auto* command = MakeGarbageCollected<FormatBlockCommand>(GetDocument(),
-                                                           html_names::kPreTag);
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Shouldn't crash here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(

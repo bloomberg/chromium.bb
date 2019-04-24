@@ -56,17 +56,15 @@
 
 namespace blink {
 
-static const CSSValueID kDisplayWritingModeMap[] = {CSSValueID::kHorizontalTb,
-                                                    CSSValueID::kVerticalRl,
-                                                    CSSValueID::kVerticalLr};
+static const CSSValueID kDisplayWritingModeMap[] = {
+    CSSValueHorizontalTb, CSSValueVerticalRl, CSSValueVerticalLr};
 static_assert(base::size(kDisplayWritingModeMap) ==
                   VTTCue::kNumberOfWritingDirections,
               "displayWritingModeMap should have the same number of elements "
               "as VTTCue::NumberOfWritingDirections");
 
 static const CSSValueID kDisplayAlignmentMap[] = {
-    CSSValueID::kStart, CSSValueID::kCenter, CSSValueID::kEnd,
-    CSSValueID::kLeft, CSSValueID::kRight};
+    CSSValueStart, CSSValueCenter, CSSValueEnd, CSSValueLeft, CSSValueRight};
 static_assert(base::size(kDisplayAlignmentMap) == VTTCue::kNumberOfAlignments,
               "displayAlignmentMap should have the same number of elements as "
               "VTTCue::NumberOfAlignments");
@@ -155,39 +153,37 @@ void VTTCueBox::ApplyCSSProperties(
   // settings:
 
   // the 'position' property must be set to 'absolute'
-  SetInlineStyleProperty(CSSPropertyID::kPosition, CSSValueID::kAbsolute);
+  SetInlineStyleProperty(CSSPropertyPosition, CSSValueAbsolute);
 
   //  the 'unicode-bidi' property must be set to 'plaintext'
-  SetInlineStyleProperty(CSSPropertyID::kUnicodeBidi,
-                         CSSValueID::kWebkitPlaintext);
+  SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueWebkitPlaintext);
 
   // the 'direction' property must be set to direction
-  SetInlineStyleProperty(CSSPropertyID::kDirection,
-                         display_parameters.direction);
+  SetInlineStyleProperty(CSSPropertyDirection, display_parameters.direction);
 
   // the 'writing-mode' property must be set to writing-mode
-  SetInlineStyleProperty(CSSPropertyID::kWebkitWritingMode,
+  SetInlineStyleProperty(CSSPropertyWebkitWritingMode,
                          display_parameters.writing_mode);
 
   const FloatPoint& position = display_parameters.position;
 
   // the 'top' property must be set to top,
-  SetInlineStyleProperty(CSSPropertyID::kTop, position.Y(),
+  SetInlineStyleProperty(CSSPropertyTop, position.Y(),
                          CSSPrimitiveValue::UnitType::kPercentage);
 
   // the 'left' property must be set to left
-  SetInlineStyleProperty(CSSPropertyID::kLeft, position.X(),
+  SetInlineStyleProperty(CSSPropertyLeft, position.X(),
                          CSSPrimitiveValue::UnitType::kPercentage);
 
   // the 'width' property must be set to width, and the 'height' property  must
   // be set to height
-  if (display_parameters.writing_mode == CSSValueID::kHorizontalTb) {
-    SetInlineStyleProperty(CSSPropertyID::kWidth, display_parameters.size,
+  if (display_parameters.writing_mode == CSSValueHorizontalTb) {
+    SetInlineStyleProperty(CSSPropertyWidth, display_parameters.size,
                            CSSPrimitiveValue::UnitType::kPercentage);
-    SetInlineStyleProperty(CSSPropertyID::kHeight, CSSValueID::kAuto);
+    SetInlineStyleProperty(CSSPropertyHeight, CSSValueAuto);
   } else {
-    SetInlineStyleProperty(CSSPropertyID::kWidth, CSSValueID::kAuto);
-    SetInlineStyleProperty(CSSPropertyID::kHeight, display_parameters.size,
+    SetInlineStyleProperty(CSSPropertyWidth, CSSValueAuto);
+    SetInlineStyleProperty(CSSPropertyHeight, display_parameters.size,
                            CSSPrimitiveValue::UnitType::kPercentage);
   }
 
@@ -195,8 +191,7 @@ void VTTCueBox::ApplyCSSProperties(
   // be set to the value in the second cell of the row of the table below
   // whose first cell is the value of the corresponding cue's WebVTT cue
   // text alignment:
-  SetInlineStyleProperty(CSSPropertyID::kTextAlign,
-                         display_parameters.text_align);
+  SetInlineStyleProperty(CSSPropertyTextAlign, display_parameters.text_align);
 
   // TODO(foolip): The position adjustment for non-snap-to-lines cues has
   // been removed from the spec:
@@ -211,24 +206,23 @@ void VTTCueBox::ApplyCSSProperties(
     // of the way across the height of the video's rendering area, while
     // maintaining the relative positions of the boxes in boxes to each
     // other.
-    SetInlineStyleProperty(CSSPropertyID::kTransform,
+    SetInlineStyleProperty(CSSPropertyTransform,
                            String::Format("translate(-%.2f%%, -%.2f%%)",
                                           position.X(), position.Y()));
-    SetInlineStyleProperty(CSSPropertyID::kWhiteSpace, CSSValueID::kPre);
+    SetInlineStyleProperty(CSSPropertyWhiteSpace, CSSValuePre);
   }
 
   // The snap-to-lines position is propagated to LayoutVTTCue.
   snap_to_lines_position_ = display_parameters.snap_to_lines_position;
 }
 
-LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
-                                            LegacyLayout legacy) {
+LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style) {
   // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
   // longer necessary, since cues having the region parameter set do not have
   // any positioning parameters. Also, in this case, the regions themselves
   // have positioning information.
   if (style.GetPosition() == EPosition::kRelative)
-    return HTMLDivElement::CreateLayoutObject(style, legacy);
+    return HTMLDivElement::CreateLayoutObject(style);
 
   return new LayoutVTTCue(this, snap_to_lines_position_);
 }
@@ -580,7 +574,7 @@ static CSSValueID DetermineTextDirection(DocumentFragment* vtt_root) {
 
     node = NodeTraversal::Next(*node);
   }
-  return IsLtr(text_direction) ? CSSValueID::kLtr : CSSValueID::kRtl;
+  return IsLtr(text_direction) ? CSSValueLtr : CSSValueRtl;
 }
 
 double VTTCue::CalculateComputedTextPosition() const {
@@ -624,9 +618,9 @@ VTTCue::CueAlignment VTTCue::CalculateComputedCueAlignment() const {
 
 VTTDisplayParameters::VTTDisplayParameters()
     : size(std::numeric_limits<float>::quiet_NaN()),
-      direction(CSSValueID::kNone),
-      text_align(CSSValueID::kNone),
-      writing_mode(CSSValueID::kNone),
+      direction(CSSValueNone),
+      text_align(CSSValueNone),
+      writing_mode(CSSValueNone),
       snap_to_lines_position(std::numeric_limits<float>::quiet_NaN()) {}
 
 VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
@@ -637,7 +631,7 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
   // Steps 1 and 2.
   display_parameters.direction = DetermineTextDirection(vtt_node_tree_.Get());
 
-  if (display_parameters.direction == CSSValueID::kRtl)
+  if (display_parameters.direction == CSSValueRtl)
     UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderRtl);
 
   // Note: The 'text-align' property is also determined here so that
@@ -744,8 +738,8 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
                      : std::numeric_limits<float>::quiet_NaN();
 
   DCHECK(std::isfinite(display_parameters.size));
-  DCHECK_NE(display_parameters.direction, CSSValueID::kNone);
-  DCHECK_NE(display_parameters.writing_mode, CSSValueID::kNone);
+  DCHECK_NE(display_parameters.direction, CSSValueNone);
+  DCHECK_NE(display_parameters.writing_mode, CSSValueNone);
   return display_parameters;
 }
 
@@ -818,8 +812,8 @@ VTTCueBox* VTTCue::GetDisplayTree() {
     VTTDisplayParameters display_parameters = CalculateDisplayParameters();
     display_tree_->ApplyCSSProperties(display_parameters);
   } else {
-    display_tree_->SetInlineStyleProperty(CSSPropertyID::kPosition,
-                                          CSSValueID::kRelative);
+    display_tree_->SetInlineStyleProperty(CSSPropertyPosition,
+                                          CSSValueRelative);
   }
 
   // Apply user override settings for text tracks
@@ -1109,24 +1103,19 @@ void VTTCue::ApplyUserOverrideCSSProperties() {
     return;
 
   SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kBackgroundColor,
+                                   CSSPropertyBackgroundColor,
                                    settings->GetTextTrackBackgroundColor());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontFamily,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyFontFamily,
                                    settings->GetTextTrackFontFamily());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontStyle,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyFontStyle,
                                    settings->GetTextTrackFontStyle());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontVariant,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyFontVariant,
                                    settings->GetTextTrackFontVariant());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyID::kColor,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyColor,
                                    settings->GetTextTrackTextColor());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kTextShadow,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyTextShadow,
                                    settings->GetTextTrackTextShadow());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontSize,
+  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyFontSize,
                                    settings->GetTextTrackTextSize());
 }
 

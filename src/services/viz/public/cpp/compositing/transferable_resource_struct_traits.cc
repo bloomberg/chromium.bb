@@ -9,7 +9,6 @@
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
 

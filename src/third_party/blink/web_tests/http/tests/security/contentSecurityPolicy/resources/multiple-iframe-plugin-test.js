@@ -40,7 +40,7 @@ function testImpl(experimental) {
 
     iframe.onload = function() {
         if (window.internals)
-            internals.updateLayoutAndRunPostLayoutTasks(iframe);
+            internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(iframe);
         testImpl(experimental);
     };
     document.body.appendChild(iframe);

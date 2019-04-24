@@ -72,7 +72,7 @@ bool DOMWindow::IsWindowOrWorkerGlobalScope() const {
 
 Location* DOMWindow::location() const {
   if (!location_)
-    location_ = MakeGarbageCollected<Location>(const_cast<DOMWindow*>(this));
+    location_ = Location::Create(const_cast<DOMWindow*>(this));
   return location_.Get();
 }
 
@@ -251,19 +251,18 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   KURL target_url = local_dom_window
                         ? local_dom_window->document()->Url()
                         : KURL(NullURL(), target_origin->ToString());
-  if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin) ||
-      accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin)) {
+  if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
+      accessing_window->document()->IsSandboxed(kSandboxOrigin)) {
     message = "Blocked a frame at \"" +
               SecurityOrigin::Create(active_url)->ToString() +
               "\" from accessing a frame at \"" +
               SecurityOrigin::Create(target_url)->ToString() + "\". ";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(
-            WebSandboxFlags::kOrigin) &&
-        accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) &&
+        accessing_window->document()->IsSandboxed(kSandboxOrigin))
       return "Sandbox access violation: " + message +
              " Both frames are sandboxed and lack the \"allow-same-origin\" "
              "flag.";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin))
       return "Sandbox access violation: " + message +
              " The frame being accessed is sandboxed and lacks the "
              "\"allow-same-origin\" flag.";
@@ -334,8 +333,7 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
       !allow_scripts_to_close_windows) {
     active_document->domWindow()->GetFrameConsole()->AddMessage(
         ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
             "Scripts may close only the windows that were opened by it."));
     return;
   }
@@ -495,18 +493,9 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  MessageEvent* event = MessageEvent::Create(
-      std::move(channels), std::move(message), source_origin, String(), source,
-      user_activation, options->transferUserActivation());
-
-  // Transfer user activation state in the source's renderer when
-  // |transferUserActivation| is true.
-  LocalFrame* source_frame = source->GetFrame();
-  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-      options->transferUserActivation() &&
-      LocalFrame::HasTransientUserActivation(source_frame)) {
-    GetFrame()->TransferActivationFrom(source_frame);
-  }
+  MessageEvent* event =
+      MessageEvent::Create(std::move(channels), std::move(message),
+                           source_origin, String(), source, user_activation);
 
   SchedulePostMessage(event, std::move(target), source_document);
 }

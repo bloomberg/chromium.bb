@@ -85,9 +85,9 @@
    * debugging!
    */
   Redux.freezingReducer = reducer => {
-    const replacement = (rootState, ...args) => {
+    const replacement = (rootState, action) => {
       cp.deepFreeze(rootState);
-      return reducer(rootState, ...args);
+      return reducer(rootState, action);
     };
     Object.defineProperty(replacement, 'name', {value: reducer.name});
     return replacement;

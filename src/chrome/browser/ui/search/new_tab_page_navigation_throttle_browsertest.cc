@@ -24,7 +24,8 @@ class NewTabPageNavigationThrottleTest : public InProcessBrowserTest {
  public:
   NewTabPageNavigationThrottleTest()
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_test_server()->AddDefaultHandlers(GetChromeTestDataDir());
+    https_test_server()->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   }
 
   void SetNewTabPage(const std::string& ntp_url) {

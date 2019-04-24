@@ -150,7 +150,7 @@ std::unique_ptr<SessionDescriptionInterface> CreateSessionDescription(
     std::unique_ptr<cricket::SessionDescription> description) {
   auto jsep_description = absl::make_unique<JsepSessionDescription>(type);
   bool initialize_success = jsep_description->Initialize(
-      std::move(description), session_id, session_version);
+      description.release(), session_id, session_version);
   RTC_DCHECK(initialize_success);
   return std::move(jsep_description);
 }
@@ -185,7 +185,7 @@ JsepSessionDescription::JsepSessionDescription(
 JsepSessionDescription::~JsepSessionDescription() {}
 
 bool JsepSessionDescription::Initialize(
-    std::unique_ptr<cricket::SessionDescription> description,
+    cricket::SessionDescription* description,
     const std::string& session_id,
     const std::string& session_version) {
   if (!description)
@@ -193,16 +193,9 @@ bool JsepSessionDescription::Initialize(
 
   session_id_ = session_id;
   session_version_ = session_version;
-  description_ = std::move(description);
+  description_.reset(description);
   candidate_collection_.resize(number_of_mediasections());
   return true;
-}
-
-bool JsepSessionDescription::Initialize(
-    cricket::SessionDescription* description,
-    const std::string& session_id,
-    const std::string& session_version) {
-  return Initialize(absl::WrapUnique(description), session_id, session_version);
 }
 
 bool JsepSessionDescription::AddCandidate(

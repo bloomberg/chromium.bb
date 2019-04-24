@@ -17,16 +17,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/hash/sha1.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,11 +68,10 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_database.h"
+#include "components/safe_browsing/db/v4_feature_list.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
-#include "components/safe_browsing/features.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,7 +83,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_navigation_observer.h"
 #include "crypto/sha2.h"
 #include "net/cookies/cookie_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -586,15 +583,6 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   bool ShowingInterstitialPage(Browser* browser) {
     WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
-    if (base::FeatureList::IsEnabled(kCommittedSBInterstitials)) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(contents);
-      return helper &&
-             (helper
-                  ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
-              nullptr);
-    }
     InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != nullptr;
   }
@@ -655,30 +643,15 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWithWhitelist) {
   Mock::VerifyAndClearExpectations(&observer_);
   // There should be an InterstitialPage.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            contents);
-    security_interstitials::SecurityInterstitialPage* interstitial =
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
-    ASSERT_TRUE(helper);
-    // TODO(carlosil): 1 is CMD_PROCEED, this should be changed to the enum
-    // values once CommandReceived is changed to accept integers.
-    content::TestNavigationObserver observer(contents);
-    interstitial->CommandReceived("1");
-    observer.WaitForNavigationFinished();
-  } else {
-    InterstitialPage* interstitial_page = contents->GetInterstitialPage();
-    ASSERT_TRUE(interstitial_page);
-    // Proceed through it.
-    content::WindowedNotificationObserver load_stop_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &contents->GetController()));
-    interstitial_page->Proceed();
-    load_stop_observer.Wait();
-  }
+  InterstitialPage* interstitial_page = contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  // Proceed through it.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &contents->GetController()));
+  interstitial_page->Proceed();
+  load_stop_observer.Wait();
   EXPECT_FALSE(ShowingInterstitialPage());
 
   // Navigate to kEmptyPage again -- should hit the whitelist this time.
@@ -745,10 +718,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
                        SubResourceHitWithMainFrameReferrer) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL second_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL bad_url = embedded_test_server()->GetURL(kMalwareImg);
@@ -780,10 +749,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
                        SubResourceHitWithMainFrameRendererInitiatedSlowLoad) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL second_url = embedded_test_server()->GetURL(kMalwareDelayedLoadsPage);
   GURL third_url = embedded_test_server()->GetURL(kNeverCompletesPath);
@@ -820,8 +785,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   // a site that does not respond.  Should show interstitial and have first page
   // in referrer.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("navigateAndLoadMalwareImage()"),
-      base::NullCallback());
+      base::ASCIIToUTF16("navigateAndLoadMalwareImage()"));
   load_stop_observer.Wait();
 
   EXPECT_TRUE(ShowingInterstitialPage());
@@ -835,10 +799,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
                        SubResourceHitWithMainFrameBrowserInitiatedSlowLoad) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL second_url = embedded_test_server()->GetURL(kMalwareDelayedLoadsPage);
   GURL third_url = embedded_test_server()->GetURL(kNeverCompletesPath);
@@ -879,8 +839,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   // While the top-level navigation is pending, run javascript
   // function in the page which loads the malware image.
-  rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("loadMalwareImage()"),
-                                 base::NullCallback());
+  rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("loadMalwareImage()"));
 
   // Wait for interstitial to show.
   load_stop_observer.Wait();
@@ -895,10 +854,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 }
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   // Allow popups.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
@@ -914,8 +869,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   content::RenderFrameHost* main_rfh = main_contents->GetMainFrame();
 
   content::WebContentsAddedObserver web_contents_added_observer;
-  main_rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("w=window.open();"),
-                                      base::NullCallback());
+  main_rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("w=window.open();"));
   WebContents* new_tab_contents = web_contents_added_observer.GetWebContents();
   content::RenderFrameHost* new_tab_rfh = new_tab_contents->GetMainFrame();
   // A fresh WebContents should not have any NavigationEntries yet. (See
@@ -929,10 +883,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   new_tab_rfh->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("var img=new Image();"
                          "img.src=\"" +
-                         img_url.spec() +
-                         "\";"
-                         "document.body.appendChild(img);"),
-      base::NullCallback());
+                         img_url.spec() + "\";"
+                                          "document.body.appendChild(img);"));
 
   // Wait for interstitial to show.
   content::WaitForInterstitialAttach(new_tab_contents);
@@ -1086,10 +1038,6 @@ using V4SafeBrowsingServiceJsRequestInterstitialTest =
 // deleted when the old database backend is removed.
 IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestInterstitialTest,
                        MalwareBlocked) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL base_url = embedded_test_server()->GetURL(kMalwareJsRequestPage);
   JsRequestTestParam param = GetParam();
   GURL js_request_url = ConstructJsRequestURL(base_url, param.request_type);
@@ -1292,10 +1240,6 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
 // Irrespective of the threat_type classification, if the iframe URL is marked
 // as Malware, an interstitial should be shown.
 IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareIFrame) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL iframe_url = embedded_test_server()->GetURL(kMalwareIFrame);
 
@@ -1319,10 +1263,6 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareIFrame) {
 // Depending on the threat_type classification, if an embedded resource is
 // marked as Malware, an interstitial may be shown.
 IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareImg) {
-  // TODO(carlosil): Re-enable once committed SB subresource interstitials are
-  // functional.
-  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
-    return;
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
 

@@ -21,16 +21,20 @@ class SaturatedGain : public AudioPostProcessor2 {
   ~SaturatedGain() override;
 
   // AudioPostProcessor implementation:
-  bool SetConfig(const Config& config) override;
-  const Status& GetStatus() override;
-  void ProcessFrames(float* data,
-                     int frames,
-                     float volume,
-                     float volume_dbfs) override;
+  bool SetSampleRate(int sample_rate) override;
+  int ProcessFrames(float* data,
+                    int frames,
+                    float volume,
+                    float volume_dbfs) override;
+  int GetRingingTimeInFrames() override;
+  int NumOutputChannels() override;
+  float* GetOutputBuffer() override;
   bool UpdateParameters(const std::string& message) override;
 
  private:
-  Status status_;
+  int channels_;
+  int sample_rate_;
+  float* data_ = nullptr;
   float last_volume_dbfs_;
   SlewVolume slew_volume_;
   float gain_;

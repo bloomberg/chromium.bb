@@ -17,11 +17,11 @@ cimport cpython
 
 cdef class Call:
 
-  def __cinit__(self, _VTable vtable not None):
+  def __cinit__(self):
     # Create an *empty* call
     fork_handlers_and_grpc_init()
     self.c_call = NULL
-    self.references = [vtable]
+    self.references = []
 
   def _start_batch(self, operations, tag, retain_self):
     if not self.is_valid:
@@ -85,10 +85,9 @@ cdef class Call:
     return result
 
   def __dealloc__(self):
-    with nogil:
-      if self.c_call != NULL:
-        grpc_call_unref(self.c_call)
-      grpc_shutdown_blocking()
+    if self.c_call != NULL:
+      grpc_call_unref(self.c_call)
+    grpc_shutdown_blocking()
 
   # The object *should* always be valid from Python. Used for debugging.
   @property

@@ -39,6 +39,8 @@
 #error "This file requires ARC support."
 #endif
 
+using web::test::ElementSelector;
+
 namespace {
 
 using chrome_test_util::BackButton;
@@ -672,7 +674,7 @@ void FocusOmnibox() {
       selectElementWithMatcher:web::WebViewInWebState(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        [ElementSelector selectorWithElementID:kLinkID],
+                        ElementSelector::ElementSelectorId(kLinkID),
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(

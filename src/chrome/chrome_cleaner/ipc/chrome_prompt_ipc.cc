@@ -21,21 +21,6 @@
 
 namespace chrome_cleaner {
 
-namespace {
-
-void OnTryDeleteExtensionsCallback(
-    base::OnceClosure delete_allowed_callback,
-    base::OnceClosure delete_not_allowed_callback,
-    uint32_t version) {
-  if (version >= 3) {
-    std::move(delete_allowed_callback).Run();
-  } else {
-    std::move(delete_not_allowed_callback).Run();
-  }
-}
-
-}  // namespace
-
 ChromePromptIPC::ChromePromptIPC(const std::string& chrome_mojo_pipe_token,
                                  scoped_refptr<MojoTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
@@ -91,17 +76,6 @@ void ChromePromptIPC::PostDisableExtensionsTask(
           extension_ids,
           base::BindOnce(&ChromePromptIPC::OnChromeResponseReceivedExtensions,
                          base::Unretained(this), std::move(callback))));
-}
-
-void ChromePromptIPC::TryDeleteExtensions(
-    base::OnceClosure delete_allowed_callback,
-    base::OnceClosure delete_not_allowed_callback) {
-  const auto& version_callback = base::BindRepeating(
-      &chrome_cleaner::OnTryDeleteExtensionsCallback,
-      AdaptCallbackForRepeating(std::move(delete_allowed_callback)),
-      AdaptCallbackForRepeating(std::move(delete_not_allowed_callback)));
-
-  (*chrome_prompt_service_).QueryVersion(std::move(version_callback));
 }
 
 void ChromePromptIPC::OnChromeResponseReceived(

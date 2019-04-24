@@ -13,6 +13,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace content {
+
 namespace background_fetch {
 
 // Exponential bucket spacing for UKM event data.
@@ -60,4 +61,5 @@ void RecordBackgroundFetchUkmEvent(
 }
 
 }  // namespace background_fetch
+
 }  // namespace content

@@ -17,6 +17,10 @@ class ModuleScriptLoader;
 class CORE_EXPORT ModuleScriptLoaderRegistry final
     : public GarbageCollected<ModuleScriptLoaderRegistry> {
  public:
+  static ModuleScriptLoaderRegistry* Create() {
+    return MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  }
+
   ModuleScriptLoaderRegistry() = default;
 
   void Trace(blink::Visitor*);

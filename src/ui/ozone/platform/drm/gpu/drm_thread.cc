@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
 #include <gbm.h>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -56,6 +55,7 @@ uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
       return GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
              GBM_BO_USE_HW_VIDEO_DECODER;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
   }
 }
@@ -181,18 +181,20 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   }
 }
 
-void DrmThread::CreateBufferFromHandle(
+void DrmThread::CreateBufferFromFds(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle,
+    std::vector<base::ScopedFD> fds,
+    const std::vector<gfx::NativePixmapPlane>& planes,
     std::unique_ptr<GbmBuffer>* out_buffer,
     scoped_refptr<DrmFramebuffer>* out_framebuffer) {
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
   DCHECK(drm);
 
-  std::unique_ptr<GbmBuffer> buffer = drm->gbm_device()->CreateBufferFromHandle(
-      ui::GetFourCCFormatFromBufferFormat(format), size, std::move(handle));
+  std::unique_ptr<GbmBuffer> buffer = drm->gbm_device()->CreateBufferFromFds(
+      ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
+      planes);
   if (!buffer)
     return;
 
@@ -205,10 +207,6 @@ void DrmThread::CreateBufferFromHandle(
 
   *out_buffer = std::move(buffer);
   *out_framebuffer = std::move(framebuffer);
-}
-
-void DrmThread::SetClearOverlayCacheCallback(base::RepeatingClosure callback) {
-  display_manager_->SetClearOverlayCacheCallback(std::move(callback));
 }
 
 void DrmThread::SchedulePageFlip(

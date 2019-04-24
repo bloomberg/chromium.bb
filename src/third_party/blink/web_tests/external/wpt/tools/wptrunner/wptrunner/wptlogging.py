@@ -1,7 +1,7 @@
 import logging
 import sys
 import threading
-from six import StringIO
+from StringIO import StringIO
 from multiprocessing import Queue
 
 from mozlog import commandline, stdadapter, set_default_logger

@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/desks/desks_util.h"
 #include "base/i18n/rtl.h"
 #include "base/test/icu_test_util.h"
 #include "ui/aura/window.h"
@@ -31,7 +30,7 @@ using DefaultFrameHeaderTest = AshTestBase;
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
@@ -49,7 +48,7 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
 
 TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   FrameBackButton back;
 
@@ -67,7 +66,7 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
 TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
   base::test::ScopedRestoreICUDefaultLocale restore_locale;
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
 
   DefaultFrameHeader frame_header(
@@ -83,7 +82,7 @@ TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
 // Ensure the right frame colors are used.
 TEST_F(DefaultFrameHeaderTest, FrameColors) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);

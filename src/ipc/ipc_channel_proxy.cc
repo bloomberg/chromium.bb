@@ -221,10 +221,7 @@ void ChannelProxy::Context::Clear() {
 }
 
 // Called on the IPC::Channel thread
-void ChannelProxy::Context::OnSendMessage(std::unique_ptr<Message> message,
-                                          const char* debug_name) {
-  const char* context = debug_name ? debug_name : "";
-  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_event(context);
+void ChannelProxy::Context::OnSendMessage(std::unique_ptr<Message> message) {
   if (!channel_) {
     OnChannelClosed();
     return;
@@ -386,10 +383,10 @@ void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
     support->AddGenericAssociatedInterface(name, factory);
 }
 
-void ChannelProxy::Context::Send(Message* message, const char* debug_name) {
+void ChannelProxy::Context::Send(Message* message) {
   ipc_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&ChannelProxy::Context::OnSendMessage, this,
-                                base::WrapUnique(message), debug_name));
+                                base::WrapUnique(message)));
 }
 
 //-----------------------------------------------------------------------------
@@ -516,11 +513,11 @@ void ChannelProxy::Close() {
 
 bool ChannelProxy::Send(Message* message) {
   DCHECK(!message->is_sync()) << "Need to use IPC::SyncChannel";
-  SendInternal(message, TRACE_HEAP_PROFILER_API_GET_CURRENT_TASK_CONTEXT());
+  SendInternal(message);
   return true;
 }
 
-void ChannelProxy::SendInternal(Message* message, const char* debug_name) {
+void ChannelProxy::SendInternal(Message* message) {
   DCHECK(did_init_);
 
   // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
@@ -538,7 +535,7 @@ void ChannelProxy::SendInternal(Message* message, const char* debug_name) {
   Logging::GetInstance()->OnSendMessage(message);
 #endif
 
-  context_->Send(message, debug_name);
+  context_->Send(message);
 }
 
 void ChannelProxy::AddFilter(MessageFilter* filter) {

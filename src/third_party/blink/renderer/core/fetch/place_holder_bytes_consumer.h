@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_PLACE_HOLDER_BYTES_CONSUMER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 
 namespace blink {
@@ -34,7 +35,7 @@ class CORE_EXPORT PlaceHolderBytesConsumer final : public BytesConsumer {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  Member<BytesConsumer> underlying_;
+  TraceWrapperMember<BytesConsumer> underlying_;
   Member<Client> client_;
   bool is_cancelled_ = false;
 };

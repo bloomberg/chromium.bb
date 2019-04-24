@@ -22,8 +22,9 @@ class WeakIdentifierMapTest : public ::testing::Test {
   void TearDown() override;
 
   void CollectGarbage() {
-    ThreadState::Current()->CollectAllGarbageForTesting(
-        BlinkGC::kNoHeapPointersOnStack);
+    ThreadState::Current()->CollectGarbage(
+        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   }
 };
 

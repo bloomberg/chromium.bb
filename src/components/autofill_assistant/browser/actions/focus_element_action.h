@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 
 namespace autofill_assistant {
-
 // An action to focus a given element on Web. Scrolling to it first if required.
 class FocusElementAction : public Action {
  public:
@@ -25,11 +24,10 @@ class FocusElementAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
-                        const Selector& selector,
                         bool element_found);
   void OnFocusElement(ActionDelegate* delegate,
                       ProcessActionCallback callback,
-                      const ClientStatus& status);
+                      bool status);
 
   base::WeakPtrFactory<FocusElementAction> weak_ptr_factory_;
 

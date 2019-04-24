@@ -38,7 +38,7 @@ static_assert(sizeof(CSSPropertyValue) == sizeof(SameSizeAsCSSPropertyValue),
 
 CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
   if (!is_set_from_shorthand_)
-    return CSSPropertyID::kInvalid;
+    return CSSPropertyInvalid;
 
   Vector<StylePropertyShorthand, 4> shorthands;
   getMatchingShorthandsForLonghand(Property().PropertyID(), &shorthands);
@@ -49,10 +49,9 @@ CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
 }
 
 CSSPropertyName CSSPropertyValue::Name() const {
-  if (Id() != CSSPropertyID::kVariable)
+  if (Id() != CSSPropertyVariable)
     return CSSPropertyName(Id());
-  return CSSPropertyName(
-      To<CSSCustomPropertyDeclaration>(value_.Get())->GetName());
+  return CSSPropertyName(ToCSSCustomPropertyDeclaration(value_)->GetName());
 }
 
 bool CSSPropertyValue::operator==(const CSSPropertyValue& other) const {

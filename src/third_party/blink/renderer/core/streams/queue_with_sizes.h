@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_QUEUE_WITH_SIZES_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -54,7 +55,7 @@ class CORE_EXPORT QueueWithSizes final
  private:
   class ValueSizePair;
 
-  HeapDeque<Member<ValueSizePair>> queue_;
+  HeapDeque<TraceWrapperMember<ValueSizePair>> queue_;
   double queue_total_size_ = 0;
 };
 

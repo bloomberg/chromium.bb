@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var binding = apiBridge ||
+              require('binding').Binding.create('chromeWebViewInternal');
 var contextMenusHandlers = require('contextMenusHandlers');
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   var handlers = contextMenusHandlers.create(true /* isWebview */);
@@ -21,3 +23,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest(
       'contextMenusRemoveAll', handlers.requestHandlers.removeAll);
 });
+
+if (!apiBridge)
+  exports.$set('ChromeWebView', binding.generate());

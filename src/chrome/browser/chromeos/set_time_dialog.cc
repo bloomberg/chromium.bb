@@ -7,17 +7,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
 
 namespace {
 
-// Dialog width and height in DIPs.
-const int kDefaultWidth = 530;
-const int kDefaultHeightWithTimezone = 286;
-const int kDefaultHeightWithoutTimezone = 228;
+const int kDefaultWidth = 490;
+const int kDefaultHeight = 235;
 
 }  // namespace
 
@@ -28,13 +25,6 @@ void SetTimeDialog::ShowDialog(gfx::NativeWindow parent) {
   dialog->ShowSystemDialog(parent);
 }
 
-// static
-bool SetTimeDialog::ShouldShowTimezone() {
-  // After login the user should set the timezone via Settings, which applies
-  // additional restrictions.
-  return !LoginState::Get()->IsUserLoggedIn();
-}
-
 SetTimeDialog::SetTimeDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUISetTimeURL),
                               base::string16() /* title */) {}
@@ -42,9 +32,7 @@ SetTimeDialog::SetTimeDialog()
 SetTimeDialog::~SetTimeDialog() = default;
 
 void SetTimeDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kDefaultWidth, ShouldShowTimezone()
-                                   ? kDefaultHeightWithTimezone
-                                   : kDefaultHeightWithoutTimezone);
+  size->SetSize(kDefaultWidth, kDefaultHeight);
 }
 
 }  // namespace chromeos

@@ -22,6 +22,7 @@ const char* const kWebPrefsToObserve[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     prefs::kAnimationPolicy,
 #endif
+    prefs::kDataSaverEnabled,
     prefs::kDefaultCharset,
     prefs::kDisable3DAPIs,
     prefs::kEnableHyperlinkAuditing,

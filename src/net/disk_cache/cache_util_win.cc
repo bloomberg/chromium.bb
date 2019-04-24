@@ -18,7 +18,7 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
   // wrong, that version will attempt to move file by file and fail at the end.
   if (!MoveFileEx(base::as_wcstr(from_path.value()),
                   base::as_wcstr(to_path.value()), 0)) {
-    PLOG(ERROR) << "Unable to move the cache";
+    LOG(ERROR) << "Unable to move the cache: " << GetLastError();
     return false;
   }
   return true;
@@ -35,8 +35,8 @@ bool DeleteCacheFile(const base::FilePath& name) {
     DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
     DWORD access = SYNCHRONIZE;
     base::win::ScopedHandle file(CreateFile(base::as_wcstr(name.value()),
-                                            access, sharing, nullptr,
-                                            OPEN_EXISTING, 0, nullptr));
+                                            access, sharing, NULL,
+                                            OPEN_EXISTING, 0, NULL));
     if (file.IsValid())
       return false;
 

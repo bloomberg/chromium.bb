@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_SCOPED_UI_RESOURCE_H_
 #define CC_RESOURCES_SCOPED_UI_RESOURCE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -25,10 +26,7 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
   static std::unique_ptr<ScopedUIResource> Create(
       UIResourceManager* ui_resource_manager,
       const UIResourceBitmap& bitmap);
-  ScopedUIResource(const ScopedUIResource&) = delete;
   ~ScopedUIResource() override;
-
-  ScopedUIResource& operator=(const ScopedUIResource&) = delete;
 
   // UIResourceClient implementation.
   UIResourceBitmap GetBitmap(UIResourceId uid, bool resource_lost) override;
@@ -44,6 +42,9 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
   UIResourceBitmap bitmap_;
   UIResourceManager* ui_resource_manager_;
   UIResourceId id_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedUIResource);
 };
 
 }  // namespace cc

@@ -6,9 +6,8 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_PARSING_PASSWORD_FIELD_PREDICTION_H_
 
 #include <stdint.h>
-#include <vector>
+#include <map>
 
-#include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
@@ -31,18 +30,13 @@ CredentialFieldType DeriveFromServerFieldType(autofill::ServerFieldType type);
 
 // Contains server predictions for a field.
 struct PasswordFieldPrediction {
-  // Field identifier generated in Blink on non-iOS platforms.
-  uint32_t renderer_id;
-#if defined(OS_IOS)
-  base::string16 unique_id;
-#endif
   autofill::ServerFieldType type;
   bool may_use_prefilled_placeholder = false;
 };
 
 // Contains server predictions for a form. Keys are unique renderer ids of
 // fields.
-using FormPredictions = std::vector<PasswordFieldPrediction>;
+using FormPredictions = std::map<uint32_t, PasswordFieldPrediction>;
 
 // Extracts all password related server predictions from |form_structure|.
 FormPredictions ConvertToFormPredictions(

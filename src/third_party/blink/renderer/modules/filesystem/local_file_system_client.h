@@ -41,12 +41,16 @@ namespace blink {
 
 class LocalFileSystemClient final : public FileSystemClient {
  public:
-  LocalFileSystemClient();
+  MODULES_EXPORT static std::unique_ptr<FileSystemClient> Create();
+
   ~LocalFileSystemClient() override;
 
   bool RequestFileSystemAccessSync(ExecutionContext*) override;
   void RequestFileSystemAccessAsync(ExecutionContext*,
                                     base::OnceCallback<void(bool)>) override;
+
+ private:
+  LocalFileSystemClient();
 };
 
 }  // namespace blink

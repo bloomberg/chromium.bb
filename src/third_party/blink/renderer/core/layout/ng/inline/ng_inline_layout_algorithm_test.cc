@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 namespace {
@@ -38,8 +37,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   )HTML");
 
   // Perform 1st Layout.
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
   NGLogicalSize size(LayoutUnit(50), LayoutUnit(20));
 
@@ -53,22 +52,19 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGInlineChildLayoutContext context;
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(constraint_space, nullptr, &context);
-  auto* line1 =
-      To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment());
+  auto* line1 = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
 
   // Perform 2nd layout with the break token from the 1st line.
   scoped_refptr<const NGLayoutResult> layout_result2 =
       inline_node.Layout(constraint_space, line1->BreakToken(), &context);
-  auto* line2 =
-      To<NGPhysicalLineBoxFragment>(layout_result2->PhysicalFragment());
+  auto* line2 = ToNGPhysicalLineBoxFragment(layout_result2->PhysicalFragment());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Perform 3rd layout with the break token from the 2nd line.
   scoped_refptr<const NGLayoutResult> layout_result3 =
       inline_node.Layout(constraint_space, line2->BreakToken(), &context);
-  auto* line3 =
-      To<NGPhysicalLineBoxFragment>(layout_result3->PhysicalFragment());
+  auto* line3 = ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 }
 
@@ -89,12 +85,12 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateHyphen) {
       GetBoxFragmentByElementId("container");
   EXPECT_EQ(2u, block->Children().size());
   const NGPhysicalLineBoxFragment& line1 =
-      To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
+      ToNGPhysicalLineBoxFragment(*block->Children()[0].get());
 
   // The hyphen is in its own NGPhysicalTextFragment.
   EXPECT_EQ(2u, line1.Children().size());
   EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
-  const auto& hyphen = To<NGPhysicalTextFragment>(*line1.Children()[1].get());
+  const auto& hyphen = ToNGPhysicalTextFragment(*line1.Children()[1].get());
   EXPECT_EQ(String(u"\u2010"), hyphen.Text().ToString());
   // It should have the same LayoutObject as the hyphened word.
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), hyphen.GetLayoutObject());
@@ -118,13 +114,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateEllipsis) {
   scoped_refptr<const NGPhysicalBoxFragment> block =
       GetBoxFragmentByElementId("container");
   EXPECT_EQ(1u, block->Children().size());
-  const auto& line1 =
-      To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
+  const NGPhysicalLineBoxFragment& line1 =
+      ToNGPhysicalLineBoxFragment(*block->Children()[0].get());
 
   // The ellipsis is in its own NGPhysicalTextFragment.
   EXPECT_EQ(2u, line1.Children().size());
   EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
-  const auto& ellipsis = To<NGPhysicalTextFragment>(*line1.Children()[1].get());
+  const auto& ellipsis = ToNGPhysicalTextFragment(*line1.Children()[1].get());
   EXPECT_EQ(String(u"\u2026"), ellipsis.Text().ToString());
   // It should have the same LayoutObject as the clipped word.
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), ellipsis.GetLayoutObject());
@@ -157,20 +153,21 @@ TEST_F(NGInlineLayoutAlgorithmTest,
       </oof-container>
     </div>
   )HTML");
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* container = block_flow->CurrentFragment();
   ASSERT_TRUE(container);
   EXPECT_EQ(LayoutUnit(), container->Size().height);
 
   EXPECT_EQ(2u, container->Children().size());
-  const auto& linebox =
-      To<NGPhysicalLineBoxFragment>(*container->Children()[0]);
+  const NGPhysicalLineBoxFragment& linebox =
+      ToNGPhysicalLineBoxFragment(*container->Children()[0]);
 
   EXPECT_EQ(1u, linebox.Children().size());
   EXPECT_EQ(NGPhysicalSize(), linebox.Size());
 
-  const auto& oof_container = To<NGPhysicalBoxFragment>(*linebox.Children()[0]);
+  const NGPhysicalBoxFragment& oof_container =
+      ToNGPhysicalBoxFragment(*linebox.Children()[0]);
   EXPECT_EQ(NGPhysicalSize(), oof_container.Size());
 }
 
@@ -194,13 +191,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, BoxForEndMargin) {
     <!-- This line wraps, and only 2nd line has a border. -->
     <div id=container>12 <span>3 45</span> 6</div>
   )HTML");
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
   EXPECT_EQ(2u, block_box->Children().size());
-  const auto& line_box1 =
-      To<NGPhysicalLineBoxFragment>(*block_box->Children()[0].get());
+  const NGPhysicalLineBoxFragment& line_box1 =
+      ToNGPhysicalLineBoxFragment(*block_box->Children()[0].get());
   EXPECT_EQ(2u, line_box1.Children().size());
 
   // The <span> generates a box fragment for the 2nd line because it has a
@@ -227,15 +224,14 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
     </style>
     <div id=container>test</div>
   )HTML");
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   NGBlockNode block_node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<const NGLayoutResult> layout_result = block_node.Layout(space);
 
-  auto* block_box =
-      To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
+  auto* block_box = ToNGPhysicalBoxFragment(layout_result->PhysicalFragment());
   EXPECT_TRUE(layout_result->BfcBlockOffset().has_value());
   EXPECT_EQ(0, *layout_result->BfcBlockOffset());
   EXPECT_EQ(0, layout_result->BfcLineOffset());
@@ -261,8 +257,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
     </style>
     <div id=container><img src="#" width="96" height="96"></div>
   )HTML");
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
   NGInlineChildLayoutContext context;
   NGConstraintSpace space =
@@ -270,7 +266,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(space, nullptr, &context);
 
-  auto* line = To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment());
+  auto* line = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
   EXPECT_EQ(LayoutUnit(96), line->Size().height);
   NGPhysicalOffset img_offset = line->Children()[0].Offset();
   EXPECT_EQ(LayoutUnit(0), img_offset.top);
@@ -313,9 +309,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   std::tie(html_fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
-      To<NGPhysicalBoxFragment>(html_fragment->Children()[0].get());
+      ToNGPhysicalBoxFragment(html_fragment->Children()[0].get());
   auto* container_fragment =
-      To<NGPhysicalBoxFragment>(body_fragment->Children()[0].get());
+      ToNGPhysicalBoxFragment(body_fragment->Children()[0].get());
   Vector<NGPhysicalOffset> line_offsets;
   for (const auto& child : container_fragment->Children()) {
     if (!child->IsLineBox())
@@ -361,8 +357,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
     </div>
   )HTML");
 
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
 
@@ -492,23 +488,16 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
     </style>
     <div id="container">Hello</div>
   )HTML");
-  auto* block_flow =
-      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
-  const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
-  ASSERT_TRUE(paint_fragment);
-  const NGPhysicalFragment& box_fragment = paint_fragment->PhysicalFragment();
+  Element* element = GetElementById("container");
+  NGConstraintSpace space;
+  scoped_refptr<const NGPhysicalBoxFragment> box_fragment;
+  std::tie(box_fragment, space) = RunBlockLayoutAlgorithmForElement(element);
 
-  EXPECT_EQ(LayoutUnit(10), box_fragment.Size().height);
+  EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);
 
-  NGPhysicalOffsetRect ink_overflow = paint_fragment->InkOverflow();
+  NGPhysicalOffsetRect ink_overflow = box_fragment->ContentsInkOverflow();
   EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
   EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
-
-  // |ContentsInkOverflow| should match to |InkOverflow|, except the width
-  // because |<div id=container>| might be wider than the content.
-  EXPECT_EQ(ink_overflow.offset, paint_fragment->ContentsInkOverflow().offset);
-  EXPECT_EQ(ink_overflow.size.height,
-            paint_fragment->ContentsInkOverflow().size.height);
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced

@@ -232,7 +232,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* request,
 }
 
 void URLLoaderImpl::OnAuthRequired(net::URLRequest* request,
-                                   const net::AuthChallengeInfo& auth_info) {
+                                   net::AuthChallengeInfo* auth_info) {
   NOTIMPLEMENTED();
   DCHECK_EQ(net_request_.get(), request);
   request->CancelAuth();

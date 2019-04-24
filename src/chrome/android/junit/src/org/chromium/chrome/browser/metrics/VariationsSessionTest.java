@@ -10,12 +10,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.content.Context;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
@@ -30,7 +33,7 @@ public class VariationsSessionTest {
         private Callback<String> mCallback;
 
         @Override
-        protected void getRestrictMode(Callback<String> callback) {
+        protected void getRestrictMode(Context context, Callback<String> callback) {
             mCallback = callback;
         }
 
@@ -51,7 +54,7 @@ public class VariationsSessionTest {
 
     @Test
     public void testStart() {
-        mSession.start();
+        mSession.start(ContextUtils.getApplicationContext());
         verify(mSession, never()).nativeStartVariationsSession(any(String.class));
 
         String restrictValue = "test";
@@ -61,7 +64,7 @@ public class VariationsSessionTest {
 
     @Test
     public void testGetRestrictModeValue() {
-        mSession.getRestrictModeValue(new Callback<String>() {
+        mSession.getRestrictModeValue(ContextUtils.getApplicationContext(), new Callback<String>() {
             @Override
             public void onResult(String restrictMode) {}
         });
@@ -69,7 +72,7 @@ public class VariationsSessionTest {
         mSession.runCallback(restrictValue);
         verify(mSession, never()).nativeStartVariationsSession(any(String.class));
 
-        mSession.start();
+        mSession.start(ContextUtils.getApplicationContext());
         verify(mSession, times(1)).nativeStartVariationsSession(restrictValue);
     }
 }

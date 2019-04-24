@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import optparse
 import os.path
 import shutil
@@ -238,7 +236,7 @@ def ParseStandardCommandLine(context):
   context['skip_run'] = options.skip_run
 
   for key, value in sorted(context.config.items()):
-    print('%s=%s' % (key, value))
+    print '%s=%s' % (key, value)
 
 
 def EnsureDirectoryExists(path):
@@ -267,13 +265,13 @@ def TryToCleanPath(path, file_name_filter=lambda fn: True):
   """
   if os.path.exists(path):
     if file_name_filter(path):
-      print('Trying to remove %s' % path)
+      print 'Trying to remove %s' % path
       try:
         RemovePath(path)
       except Exception:
-        print('Failed to remove %s' % path)
+        print 'Failed to remove %s' % path
     else:
-      print('Skipping %s' % path)
+      print 'Skipping %s' % path
 
 
 def Retry(op, *args):
@@ -293,10 +291,10 @@ def Retry(op, *args):
         op(*args)
         break
       except Exception:
-        print("FAILED: %s %s" % (op.__name__, repr(args)))
+        print "FAILED: %s %s" % (op.__name__, repr(args))
         count += 1
         if count < 5:
-          print("RETRY: %s %s" % (op.__name__, repr(args)))
+          print "RETRY: %s %s" % (op.__name__, repr(args))
           time.sleep(pow(2, count))
         else:
           # Don't mask the exception.
@@ -314,12 +312,12 @@ def PermissionsFixOnError(func, path, exc_info):
 
 
 def _RemoveDirectory(path):
-  print('Removing %s' % path)
+  print 'Removing %s' % path
   if os.path.exists(path):
     shutil.rmtree(path, onerror=PermissionsFixOnError)
-    print('    Succeeded.')
+    print '    Succeeded.'
   else:
-    print('    Path does not exist, nothing to do.')
+    print '    Path does not exist, nothing to do.'
 
 
 def RemoveDirectory(path):
@@ -384,7 +382,7 @@ def RemoveSconsBuildDirectories():
 
 # Execute a command using Python's subprocess module.
 def Command(context, cmd, cwd=None):
-  print('Running command: %s' % ' '.join(cmd))
+  print 'Running command: %s' % ' '.join(cmd)
 
   # Python's subprocess has a quirk.  A subprocess can execute with an
   # arbitrary, user-defined environment.  The first argument of the command,
@@ -412,12 +410,12 @@ def Command(context, cmd, cwd=None):
       # Provide a nicer failure message.
       # If subprocess cannot find the executable, it will throw a cryptic
       # exception.
-      print('Executable %r cannot be found.' % cmd[0])
+      print 'Executable %r cannot be found.' % cmd[0]
       retcode = 1
   finally:
     os.environ['PATH'] = script_path
 
-  print('Command return code: %d' % retcode)
+  print 'Command return code: %d' % retcode
   if retcode != 0:
     raise StepFailed()
   return retcode
@@ -498,8 +496,8 @@ class Step(object):
   # Called on entry to a 'with' block.
   def __enter__(self):
     sys.stdout.flush()
-    print()
-    print('@@@BUILD_STEP %s@@@' % self.name)
+    print
+    print '@@@BUILD_STEP %s@@@' % self.name
     self.status.ReportBegin(self.name)
 
   # The method is called on exit from a 'with' block - even for non-local
@@ -517,23 +515,23 @@ class Step(object):
       step_failed = False
     elif isinstance(exception, StepFailed):
       step_failed = True
-      print()
-      print('Halting build step because of failure.')
-      print()
+      print
+      print 'Halting build step because of failure.'
+      print
     else:
       step_failed = True
-      print()
-      print('The build step threw an exception...')
-      print()
+      print
+      print 'The build step threw an exception...'
+      print
       traceback.print_exception(type, exception, trace, file=sys.stdout)
-      print()
+      print
 
     if step_failed:
       self.status.ReportFail(self.name)
-      print('@@@STEP_FAILURE@@@')
+      print '@@@STEP_FAILURE@@@'
       if self.halt_on_fail:
-        print()
-        print('Entire build halted because %s failed.' % self.name)
+        print
+        print 'Entire build halted because %s failed.' % self.name
         sys.stdout.flush()
         raise StopBuild()
     else:
@@ -546,12 +544,12 @@ class Step(object):
 
 # Adds an arbitrary link inside the build stage on the waterfall.
 def StepLink(text, link):
-  print('@@@STEP_LINK@%s@%s@@@' % (text, link))
+  print '@@@STEP_LINK@%s@%s@@@' % (text, link)
 
 
 # Adds arbitrary text inside the build stage on the waterfall.
 def StepText(text):
-  print('@@@STEP_TEXT@%s@@@' % (text))
+  print '@@@STEP_TEXT@%s@@@' % (text)
 
 
 class BuildStatus(object):
@@ -576,15 +574,15 @@ class BuildStatus(object):
 
   # Handy info when this script is run outside of the buildbot.
   def DisplayBuildStatus(self):
-    print()
+    print
     for step, status in self.steps:
-      print('%-40s[%s]' % (step, status))
-    print()
+      print '%-40s[%s]' % (step, status)
+    print
 
     if self.ever_failed:
-      print('Build failed.')
+      print 'Build failed.'
     else:
-      print('Build succeeded.')
+      print 'Build succeeded.'
 
   def ReturnValue(self):
     return int(self.ever_failed)
@@ -659,9 +657,9 @@ def RunBuild(script, status):
   #   Otherwise these go back to the preamble.
   with Step('summary', status):
     if status.ever_failed:
-      print('There were failed stages.')
+      print 'There were failed stages.'
     else:
-      print('Success.')
+      print 'Success.'
     # Display a summary of the build.
     status.DisplayBuildStatus()
 

@@ -16,9 +16,10 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -26,7 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/shill/fake_shill_manager_client.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,6 +44,7 @@ namespace chromeos {
 
 OobeBaseTest::OobeBaseTest() {
   set_exit_when_last_browser_closes(false);
+  set_chromeos_user_ = false;
 }
 
 OobeBaseTest::~OobeBaseTest() {}
@@ -50,6 +52,8 @@ OobeBaseTest::~OobeBaseTest() {}
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {}
 
 void OobeBaseTest::SetUp() {
+  mixin_host_.SetUp();
+
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -61,10 +65,12 @@ void OobeBaseTest::SetUp() {
   // spawning sandbox host process. See crbug.com/322732.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
-  MixinBasedInProcessBrowserTest::SetUp();
+  extensions::ExtensionApiTest::SetUp();
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
+  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
+
   if (ShouldForceWebUiLogin())
     command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
@@ -73,7 +79,22 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+  mixin_host_.SetUpCommandLine(command_line);
+}
+
+void OobeBaseTest::SetUpDefaultCommandLine(base::CommandLine* command_line) {
+  mixin_host_.SetUpDefaultCommandLine(command_line);
+  extensions::ExtensionApiTest::SetUpDefaultCommandLine(command_line);
+}
+
+void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
+  network_portal_detector_ = new NetworkPortalDetectorTestImpl();
+  network_portal_detector::InitializeForTesting(network_portal_detector_);
+  network_portal_detector_->SetDefaultNetworkForTesting(
+      FakeShillManagerClient::kFakeEthernetNetworkGuid);
+
+  mixin_host_.SetUpInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
@@ -92,38 +113,80 @@ void OobeBaseTest::SetUpOnMainThread() {
 
   LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
-  if (ShouldWaitForOobeUI()) {
-    WaitForOobeUI();
-  }
-
-  MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-}
-
-void OobeBaseTest::TearDownOnMainThread() {
-  MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  // Embedded test server should always be shutdown after any https forwarders.
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-}
-
-bool OobeBaseTest::ShouldForceWebUiLogin() {
-  return true;
-}
-
-bool OobeBaseTest::ShouldWaitForOobeUI() {
-  return true;
-}
-
-content::WebUI* OobeBaseTest::GetLoginUI() {
-  return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
-}
-
-void OobeBaseTest::WaitForOobeUI() {
   // Wait for OobeUI to finish loading.
   base::RunLoop run_loop;
   if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
           run_loop.QuitClosure())) {
     run_loop.Run();
   }
+
+  mixin_host_.SetUpOnMainThread();
+  extensions::ExtensionApiTest::SetUpOnMainThread();
+}
+
+void OobeBaseTest::TearDownOnMainThread() {
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  mixin_host_.TearDownOnMainThread();
+  extensions::ExtensionApiTest::TearDownOnMainThread();
+}
+
+void OobeBaseTest::TearDownInProcessBrowserTestFixture() {
+  mixin_host_.TearDownInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+}
+
+void OobeBaseTest::TearDown() {
+  mixin_host_.TearDown();
+  extensions::ExtensionApiTest::TearDown();
+}
+
+bool OobeBaseTest::ShouldForceWebUiLogin() {
+  return true;
+}
+
+void OobeBaseTest::SimulateNetworkOffline() {
+  NetworkPortalDetector::CaptivePortalState offline_state;
+  offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
+  network_portal_detector_->SetDetectionResultsForTesting(
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, offline_state);
+  network_portal_detector_->NotifyObserversForTesting();
+}
+
+base::Closure OobeBaseTest::SimulateNetworkOfflineClosure() {
+  return base::Bind(&OobeBaseTest::SimulateNetworkOffline,
+                    base::Unretained(this));
+}
+
+void OobeBaseTest::SimulateNetworkOnline() {
+  NetworkPortalDetector::CaptivePortalState online_state;
+  online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+  online_state.response_code = 204;
+  network_portal_detector_->SetDetectionResultsForTesting(
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, online_state);
+  network_portal_detector_->NotifyObserversForTesting();
+}
+
+base::Closure OobeBaseTest::SimulateNetworkOnlineClosure() {
+  return base::Bind(&OobeBaseTest::SimulateNetworkOnline,
+                    base::Unretained(this));
+}
+
+void OobeBaseTest::SimulateNetworkPortal() {
+  NetworkPortalDetector::CaptivePortalState portal_state;
+  portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+  network_portal_detector_->SetDetectionResultsForTesting(
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, portal_state);
+  network_portal_detector_->NotifyObserversForTesting();
+}
+
+base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
+  return base::Bind(&OobeBaseTest::SimulateNetworkPortal,
+                    base::Unretained(this));
+}
+
+content::WebUI* OobeBaseTest::GetLoginUI() {
+  return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
@@ -155,15 +218,13 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   content::DOMMessageQueue message_queue;
   std::string js =
       R"((function() {
-            var authenticator = $AuthenticatorId;
+            var authenticator = $('gaia-signin').gaiaAuthHost_;
             var f = function() {
               authenticator.removeEventListener('$Event', f);
               window.domAutomationController.send('Done');
             };
             authenticator.addEventListener('$Event', f);
           })();)";
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
-                                     authenticator_id_);
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
   test::OobeJS().Evaluate(js);
 
@@ -183,14 +244,24 @@ void OobeBaseTest::WaitForSigninScreen() {
   login_screen_load_observer_->Wait();
 }
 
-test::JSChecker OobeBaseTest::SigninFrameJS() {
+void OobeBaseTest::ExecuteJsInSigninFrame(const std::string& js) {
   content::RenderFrameHost* frame = signin::GetAuthFrame(
       LoginDisplayHost::default_host()->GetOobeWebContents(),
       gaia_frame_parent_);
-  test::JSChecker result = test::JSChecker(frame);
-  // Fake GAIA / fake SAML pages do not use polymer-based UI.
-  result.set_polymer_ui(false);
-  return result;
+  ASSERT_TRUE(content::ExecuteScript(frame, js));
+}
+
+void OobeBaseTest::SetSignFormField(const std::string& field_id,
+                                    const std::string& field_value) {
+  std::string js =
+      "(function(){"
+      "document.getElementById('$FieldId').value = '$FieldValue';"
+      "var e = new Event('input');"
+      "document.getElementById('$FieldId').dispatchEvent(e);"
+      "})();";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
+  ExecuteJsInSigninFrame(js);
 }
 
 }  // namespace chromeos

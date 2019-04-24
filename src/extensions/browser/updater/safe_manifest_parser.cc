@@ -64,10 +64,8 @@ bool ParseSingleAppTag(const base::Value& app_element,
   const base::Value* updatecheck =
       data_decoder::GetXmlElementChildWithTag(app_element, updatecheck_name);
 
-  if (GetXmlElementAttribute(*updatecheck, "status") == "noupdate") {
-    result->info = GetXmlElementAttribute(*updatecheck, "info");
+  if (GetXmlElementAttribute(*updatecheck, "status") == "noupdate")
     return true;
-  }
 
   // Get the optional minimum browser version.
   result->browser_min_version =

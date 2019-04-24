@@ -5,14 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkRRect.h"
+#include "SkAnimTimer.h"
+#include "SkColor.h"
 #include "SkRandom.h"
+#include "SkRRect.h"
 
+#include "SkSGColor.h"
 #include "SkSGDraw.h"
 #include "SkSGGroup.h"
-#include "SkSGPaint.h"
 #include "SkSGPath.h"
 #include "SkSGRect.h"
 #include "SkSGScene.h"
@@ -191,7 +192,7 @@ protected:
         fScene->render(canvas);
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(const SkAnimTimer& timer) override {
         // onAnimate may fire before the first draw.
         if (fScene) {
             SkScalar dt = (timer.msec() - fLastTick) * fTimeScale;

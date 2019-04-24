@@ -26,7 +26,4 @@ interface IWebApkApi {
     // Display a notification with a specified channel name.
     void notifyNotificationWithChannel(String platformTag, int platformID,
                                        in Notification notification, String channelName);
-
-   // Finishes and removes the WebAPK's task. Returns true on success.
-   boolean finishAndRemoveTaskSdk23();
 }

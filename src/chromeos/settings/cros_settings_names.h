@@ -155,8 +155,6 @@ extern const char kLoginAuthenticationBehavior[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kAllowBluetooth[];
 
-COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kDeviceWiFiAllowed[];
-
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceQuirksDownloadEnabled[];
 
@@ -164,7 +162,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kLoginVideoCaptureAllowedUrls[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kDeviceLoginScreenExtensions[];
+extern const char kDeviceLoginScreenAppInstallList[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceLoginScreenLocales[];
@@ -215,9 +213,6 @@ extern const char kDeviceRebootOnUserSignout[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceWilcoDtcAllowed[];
-
-COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kDeviceDockMacAddressSource[];
 
 }  // namespace chromeos
 

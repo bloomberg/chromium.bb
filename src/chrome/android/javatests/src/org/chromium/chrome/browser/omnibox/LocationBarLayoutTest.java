@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -28,7 +29,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
@@ -116,17 +116,17 @@ public class LocationBarLayoutTest {
         mTestLocationBarModel = new TestLocationBarModel();
         mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
     }
 
     private void setUrlToPageUrl(LocationBarLayout locationBar) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { getLocationBar().updateLoadingState(true); });
+        ThreadUtils.runOnUiThreadBlocking(() -> { getLocationBar().updateLoadingState(true); });
     }
 
     private String getUrlText(UrlBar urlBar) {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
+            return ThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex);
         }
@@ -154,7 +154,7 @@ public class LocationBarLayoutTest {
 
     private void setUrlBarTextAndFocus(String text)
             throws ExecutionException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
+        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
                 getLocationBar().onUrlFocusChange(true);
@@ -166,8 +166,10 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText()
+    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
+    public void testNotShowingVoiceSearchButtonIfUrlBarContainsTextAndFlagIsDisabled()
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("testing");
 
@@ -177,8 +179,36 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty()
+    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
+    public void testShowingVoiceSearchButtonIfUrlBarIsEmptyAndFlagIsDisabled()
+            throws ExecutionException, InterruptedException {
+        setUrlBarTextAndFocus("");
+
+        Assert.assertNotEquals(getDeleteButton().getVisibility(), View.VISIBLE);
+        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
+    public void testShowingVoiceAndDeleteButtonsShowingIfUrlBarContainsText()
+            throws ExecutionException, InterruptedException {
+        setUrlBarTextAndFocus("testing");
+
+        Assert.assertEquals(getDeleteButton().getVisibility(), View.VISIBLE);
+        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
+    public void testShowingOnlyVoiceButtonIfUrlBarIsEmpty()
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("");
 
@@ -220,11 +250,11 @@ public class LocationBarLayoutTest {
 
         Assert.assertEquals(TRIMMED_URL, getUrlText(urlBar));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
+        ThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
 
         Assert.assertEquals(VERBOSE_URL, getUrlText(urlBar));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, urlBar.getSelectionStart());
             Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
         });

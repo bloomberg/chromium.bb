@@ -8,12 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/completion_once_callback.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 
 //-----------------------------------------------------------------------------
@@ -117,29 +116,27 @@ typedef internal::TestCompletionCallbackTemplate<int64_t>
 
 class TestCompletionCallback : public TestCompletionCallbackBase {
  public:
-  TestCompletionCallback() {}
+  TestCompletionCallback();
   ~TestCompletionCallback() override;
 
-  CompletionOnceCallback callback() {
-    return base::BindOnce(&TestCompletionCallback::SetResult,
-                          base::Unretained(this));
-  }
+  const CompletionCallback& callback() const { return callback_; }
 
  private:
+  const CompletionCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(TestCompletionCallback);
 };
 
 class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
  public:
-  TestInt64CompletionCallback() {}
+  TestInt64CompletionCallback();
   ~TestInt64CompletionCallback() override;
 
-  Int64CompletionOnceCallback callback() {
-    return base::BindOnce(&TestInt64CompletionCallback::SetResult,
-                          base::Unretained(this));
-  }
+  const Int64CompletionCallback& callback() const { return callback_; }
 
  private:
+  const Int64CompletionCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(TestInt64CompletionCallback);
 };
 

@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -40,6 +39,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/one_shot_event.h"
 
 ToolbarActionsModel::ToolbarActionsModel(
     Profile* profile,
@@ -59,8 +59,8 @@ ToolbarActionsModel::ToolbarActionsModel(
       load_error_reporter_observer_(this),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE, base::BindOnce(&ToolbarActionsModel::OnReady,
-                                weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::Bind(&ToolbarActionsModel::OnReady,
+                            weak_ptr_factory_.GetWeakPtr()));
   visible_icon_count_ =
       prefs_->GetInteger(extensions::pref_names::kToolbarSize);
 
@@ -156,27 +156,22 @@ void ToolbarActionsModel::OnExtensionActionUpdated(
 }
 
 std::vector<std::unique_ptr<ToolbarActionViewController>>
-ToolbarActionsModel::CreateActions(Browser* browser,
-                                   ToolbarActionsBar* main_bar,
-                                   bool in_overflow_mode) {
+ToolbarActionsModel::CreateActions(Browser* browser, ToolbarActionsBar* bar) {
   DCHECK(browser);
-  DCHECK(main_bar);
+  DCHECK(bar);
   std::vector<std::unique_ptr<ToolbarActionViewController>> action_list;
 
   // action_ids() might not equate to |action_ids_| in the case where a
   // subset is highlighted.
-  for (const ActionId& action_id : action_ids()) {
-    action_list.push_back(
-        CreateActionForId(browser, main_bar, in_overflow_mode, action_id));
-  }
+  for (const ActionId& action_id : action_ids())
+    action_list.push_back(CreateActionForId(browser, bar, action_id));
 
   return action_list;
 }
 
 std::unique_ptr<ToolbarActionViewController>
 ToolbarActionsModel::CreateActionForId(Browser* browser,
-                                       ToolbarActionsBar* main_bar,
-                                       bool in_overflow_mode,
+                                       ToolbarActionsBar* bar,
                                        const ActionId& action_id) {
   // We should never have uninitialized actions in action_ids().
   DCHECK(!action_id.empty());
@@ -187,8 +182,7 @@ ToolbarActionsModel::CreateActionForId(Browser* browser,
   // Create and add an ExtensionActionViewController for the extension.
   return std::make_unique<ExtensionActionViewController>(
       extension, browser,
-      extension_action_manager_->GetExtensionAction(*extension), main_bar,
-      in_overflow_mode);
+      extension_action_manager_->GetExtensionAction(*extension), bar);
 }
 
 void ToolbarActionsModel::OnExtensionLoaded(

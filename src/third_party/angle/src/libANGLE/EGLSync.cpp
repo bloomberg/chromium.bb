@@ -30,23 +30,19 @@ void Sync::onDestroy(const Display *display)
 
 Sync::~Sync() {}
 
-Error Sync::initialize(const Display *display, const gl::Context *context)
+Error Sync::initialize(const Display *display)
 {
-    return mFence->initialize(display, context, mType);
+    return mFence->initialize(display, mType);
 }
 
-Error Sync::clientWait(const Display *display,
-                       const gl::Context *context,
-                       EGLint flags,
-                       EGLTime timeout,
-                       EGLint *outResult)
+Error Sync::clientWait(const Display *display, EGLint flags, EGLTime timeout, EGLint *outResult)
 {
-    return mFence->clientWait(display, context, flags, timeout, outResult);
+    return mFence->clientWait(display, flags, timeout, outResult);
 }
 
-Error Sync::serverWait(const Display *display, const gl::Context *context, EGLint flags)
+Error Sync::serverWait(const Display *display, EGLint flags)
 {
-    return mFence->serverWait(display, context, flags);
+    return mFence->serverWait(display, flags);
 }
 
 Error Sync::getStatus(const Display *display, EGLint *outStatus) const

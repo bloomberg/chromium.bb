@@ -8,7 +8,6 @@ dictionary XRWebGLLayerInit {
   boolean depth = true;
   boolean stencil = false;
   boolean alpha = true;
-  boolean ignoreDepthValues = false;
   boolean multiview = false;
   double framebufferScaleFactor = 1.0;
 };

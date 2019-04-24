@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_raster_invalidator.h"
 
-#include "base/bind_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
@@ -19,7 +18,7 @@ using ::testing::UnorderedElementsAre;
 class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
                                          public PaintTestConfigurations {
  protected:
-  DisplayItemRasterInvalidatorTest() : invalidator_(base::DoNothing()) {}
+  DisplayItemRasterInvalidatorTest() : invalidator_([](const IntRect&) {}) {}
 
   Vector<RasterInvalidationInfo> GenerateRasterInvalidations() {
     GetPaintController().CommitNewDisplayItems();
@@ -47,8 +46,8 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
 INSTANTIATE_PAINT_TEST_SUITE_P(DisplayItemRasterInvalidatorTest);
 
 TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 300, 300));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 200, 200));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -70,9 +69,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrder) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -101,9 +100,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrder) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -127,9 +126,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -153,9 +152,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -166,7 +165,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  first.SetVisualRect(IntRect(100, 100, 200, 100));
+  first.SetVisualRect(LayoutRect(100, 100, 200, 100));
   first.Invalidate(PaintInvalidationReason::kIncremental);
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
@@ -181,9 +180,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient third("third", IntRect(125, 100, 200, 50));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient third("third", LayoutRect(125, 100, 200, 50));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -205,7 +204,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
-  IntRect initial_rect(100, 100, 100, 100);
+  LayoutRect initial_rect(100, 100, 100, 100);
   std::unique_ptr<FakeDisplayItemClient> clients[6];
   for (size_t i = 0; i < base::size(clients); i++) {
     clients[i] = std::make_unique<FakeDisplayItemClient>(
@@ -221,12 +220,12 @@ TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  clients[0]->SetVisualRect(IntRect(100, 100, 150, 100));
-  clients[1]->SetVisualRect(IntRect(100, 100, 100, 150));
-  clients[2]->SetVisualRect(IntRect(100, 100, 150, 80));
-  clients[3]->SetVisualRect(IntRect(100, 100, 80, 150));
-  clients[4]->SetVisualRect(IntRect(100, 100, 150, 150));
-  clients[5]->SetVisualRect(IntRect(100, 100, 80, 80));
+  clients[0]->SetVisualRect(LayoutRect(100, 100, 150, 100));
+  clients[1]->SetVisualRect(LayoutRect(100, 100, 100, 150));
+  clients[2]->SetVisualRect(LayoutRect(100, 100, 150, 80));
+  clients[3]->SetVisualRect(LayoutRect(100, 100, 80, 150));
+  clients[4]->SetVisualRect(LayoutRect(100, 100, 150, 150));
+  clients[5]->SetVisualRect(LayoutRect(100, 100, 80, 80));
   for (auto& client : clients) {
     client->Invalidate(PaintInvalidationReason::kIncremental);
     DrawRect(context, *client, kBackgroundType,
@@ -270,8 +269,8 @@ TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
 
 TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   FakeDisplayItemClient chunk("chunk");
-  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
+  FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -283,7 +282,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   InitRootChunk();
   first.Invalidate();
   second.Invalidate();
-  second.SetVisualRect(IntRect(150, 250, 100, 100));
+  second.SetVisualRect(LayoutRect(150, 250, 100, 100));
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
@@ -314,8 +313,8 @@ TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
+  FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -326,7 +325,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate();
-  first.SetVisualRect(IntRect(150, 150, 100, 100));
+  first.SetVisualRect(LayoutRect(150, 150, 100, 100));
   second.Invalidate();
   DrawRect(context, first, kBackgroundType, FloatRect(150, 150, 100, 100));
   DrawRect(context, first, kForegroundType, FloatRect(150, 150, 100, 100));
@@ -345,7 +344,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate();
-  first.SetVisualRect(IntRect(100, 100, 150, 150));
+  first.SetVisualRect(LayoutRect(100, 100, 150, 150));
   second.Invalidate();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
@@ -361,10 +360,12 @@ TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1",
+                                   LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2",
+                                   LayoutRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -403,10 +404,12 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1",
+                                   LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2",
+                                   LayoutRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -449,10 +452,12 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1",
+                                   LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2",
+                                   LayoutRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
@@ -496,8 +501,8 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
-  FakeDisplayItemClient multicol("multicol", IntRect(100, 100, 200, 200));
-  FakeDisplayItemClient content("content", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient multicol("multicol", LayoutRect(100, 100, 200, 200));
+  FakeDisplayItemClient content("content", LayoutRect(100, 100, 100, 100));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -553,7 +558,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
-  FakeDisplayItemClient content("content", IntRect(100, 100, 250, 250));
+  FakeDisplayItemClient content("content", LayoutRect(100, 100, 250, 250));
   GraphicsContext context(GetPaintController());
 
   FloatRect rect1(100, 100, 50, 50);
@@ -585,7 +590,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
-  FakeDisplayItemClient client("client", IntRect(100, 100, 300, 300));
+  FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -595,7 +600,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
   // Test partial rect invalidation without other invalidations.
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
+  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
 
   // Partial invalidation.
@@ -603,13 +608,13 @@ TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
               UnorderedElementsAre(RasterInvalidationInfo{
                   &client, "client", IntRect(150, 160, 170, 180),
                   PaintInvalidationReason::kRectangle}));
-  EXPECT_EQ(IntRect(), client.PartialInvalidationVisualRect());
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
   invalidator_.SetTracksRasterInvalidations(false);
 
   // Test partial rect invalidation with full invalidation.
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
+  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
   client.Invalidate();
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
 
@@ -618,14 +623,14 @@ TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
               UnorderedElementsAre(RasterInvalidationInfo{
                   &client, "client", IntRect(100, 100, 300, 300),
                   PaintInvalidationReason::kFull}));
-  EXPECT_EQ(IntRect(), client.PartialInvalidationVisualRect());
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
   invalidator_.SetTracksRasterInvalidations(false);
 
   // Test partial rect invalidation with incremental invalidation.
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
-  client.SetVisualRect(IntRect(100, 100, 300, 400));
+  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
+  client.SetVisualRect(LayoutRect(100, 100, 300, 400));
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 400));
 
   // Both partial invalidation and incremental invalidation.

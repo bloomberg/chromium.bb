@@ -13,7 +13,8 @@ namespace chromeos {
 
 class MockArcTermsOfServiceScreen : public ArcTermsOfServiceScreen {
  public:
-  MockArcTermsOfServiceScreen(ArcTermsOfServiceScreenView* view,
+  MockArcTermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
+                              ArcTermsOfServiceScreenView* view,
                               const ScreenExitCallback& exit_callback);
   ~MockArcTermsOfServiceScreen() override;
 

@@ -137,10 +137,11 @@ std::string BrowserActionTestUtilViews::GetExtensionId(int index) {
 }
 
 std::string BrowserActionTestUtilViews::GetTooltip(int index) {
-  base::string16 tooltip = GetContainer(browser_, test_helper_.get())
-                               ->GetToolbarActionViewAt(index)
-                               ->GetTooltipText(gfx::Point());
-  return base::UTF16ToUTF8(tooltip);
+  base::string16 text;
+  GetContainer(browser_, test_helper_.get())
+      ->GetToolbarActionViewAt(index)
+      ->GetTooltipText(gfx::Point(), &text);
+  return base::UTF16ToUTF8(text);
 }
 
 gfx::NativeView BrowserActionTestUtilViews::GetPopupNativeView() {

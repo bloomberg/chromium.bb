@@ -29,7 +29,7 @@ VCMFrameBuffer::VCMFrameBuffer()
 
 VCMFrameBuffer::~VCMFrameBuffer() {}
 
-webrtc::VideoFrameType VCMFrameBuffer::FrameType() const {
+webrtc::FrameType VCMFrameBuffer::FrameType() const {
   return _sessionInfo.FrameType();
 }
 
@@ -94,7 +94,7 @@ VCMFrameBufferEnum VCMFrameBuffer::InsertPacket(
     // We only take the ntp timestamp of the first packet of a frame.
     ntp_time_ms_ = packet.ntp_time_ms_;
     _codec = packet.codec();
-    if (packet.frameType != VideoFrameType::kEmptyFrame) {
+    if (packet.frameType != kEmptyFrame) {
       // first media packet
       SetState(kStateIncomplete);
     }
@@ -102,7 +102,8 @@ VCMFrameBufferEnum VCMFrameBuffer::InsertPacket(
 
   uint32_t requiredSizeBytes =
       size() + packet.sizeBytes +
-      (packet.insertStartCode ? kH264StartCodeLengthBytes : 0);
+      (packet.insertStartCode ? kH264StartCodeLengthBytes : 0) +
+      EncodedImage::GetBufferPaddingBytes(packet.codec());
   if (requiredSizeBytes >= capacity()) {
     const uint8_t* prevBuffer = data();
     const uint32_t increments =

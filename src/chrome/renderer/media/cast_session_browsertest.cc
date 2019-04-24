@@ -8,7 +8,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 typedef ChromeRenderViewTest CastSessionBrowserTest;
 
@@ -16,13 +15,12 @@ typedef ChromeRenderViewTest CastSessionBrowserTest;
 // chrome renderer.
 TEST_F(CastSessionBrowserTest, CreateAndDestroy) {
   chrome_render_thread_->set_io_task_runner(
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+      base::ThreadTaskRunnerHandle::Get());
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
   client->RenderThreadStarted();
 
-  scoped_refptr<CastSession> session(
-      new CastSession(blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+  scoped_refptr<CastSession> session(new CastSession());
 
   // Causes CastSession to destruct.
   session = NULL;

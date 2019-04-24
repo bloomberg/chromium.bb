@@ -5,8 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_SURFACELESS_WAYLAND_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_SURFACELESS_WAYLAND_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
@@ -16,7 +14,6 @@
 
 namespace ui {
 
-class WaylandConnectionProxy;
 class WaylandSurfaceFactory;
 
 // A GLSurface for Wayland Ozone platform that uses surfaceless drawing. Drawing
@@ -26,7 +23,6 @@ class WaylandSurfaceFactory;
 class GbmSurfacelessWayland : public gl::SurfacelessEGL {
  public:
   GbmSurfacelessWayland(WaylandSurfaceFactory* surface_factory,
-                        WaylandConnectionProxy* connection,
                         gfx::AcceleratedWidget widget);
 
   void QueueOverlayPlane(OverlayPlane plane);
@@ -59,10 +55,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
 
-  void OnSubmission(uint32_t buffer_id, const gfx::SwapResult& swap_result);
-  void OnPresentation(uint32_t buffer_id,
-                      const gfx::PresentationFeedback& feedback);
-
  private:
   ~GbmSurfacelessWayland() override;
 
@@ -74,10 +66,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
     void Flush();
 
     bool ready = false;
-
-    // The id of the buffer, which represents this frame.
-    uint32_t buffer_id = 0;
-
+    gfx::SwapResult swap_result = gfx::SwapResult::SWAP_FAILED;
     // A region of the updated content in a corresponding frame. It's used to
     // advice Wayland which part of a buffer is going to be updated. Passing {0,
     // 0, 0, 0} results in a whole buffer update on the Wayland compositor side.
@@ -92,14 +81,18 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
-  WaylandSurfaceFactory* const surface_factory_;
-  WaylandConnectionProxy* const connection_;
+  void OnScheduleBufferSwapDone(gfx::SwapResult result,
+                                const gfx::PresentationFeedback& feedback);
+  void OnSubmission(gfx::SwapResult result,
+                    std::unique_ptr<gfx::GpuFence> out_fence);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
+
+  WaylandSurfaceFactory* surface_factory_;
   std::vector<OverlayPlane> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
-  std::vector<std::unique_ptr<PendingFrame>> pending_presentation_frames_;
   std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;

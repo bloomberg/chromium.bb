@@ -26,7 +26,6 @@
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/time_utils.h"
-#include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
 
 #import "base/RTCLogging.h"
@@ -115,15 +114,15 @@ AudioDeviceIOS::AudioDeviceIOS()
       num_playout_callbacks_(0),
       last_output_volume_change_time_(0) {
   LOGI() << "ctor" << ios::GetCurrentThreadDescription();
-  io_thread_checker_.Detach();
-  thread_checker_.Detach();
+  io_thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
   thread_ = rtc::Thread::Current();
 
   audio_session_observer_ = [[RTCNativeAudioSessionDelegateAdapter alloc] initWithObserver:this];
 }
 
 AudioDeviceIOS::~AudioDeviceIOS() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   LOGI() << "~dtor" << ios::GetCurrentThreadDescription();
   Terminate();
   audio_session_observer_ = nil;
@@ -132,14 +131,14 @@ AudioDeviceIOS::~AudioDeviceIOS() {
 void AudioDeviceIOS::AttachAudioBuffer(AudioDeviceBuffer* audioBuffer) {
   LOGI() << "AttachAudioBuffer";
   RTC_DCHECK(audioBuffer);
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   audio_device_buffer_ = audioBuffer;
 }
 
 AudioDeviceGeneric::InitStatus AudioDeviceIOS::Init() {
   LOGI() << "Init";
-  io_thread_checker_.Detach();
-  thread_checker_.Detach();
+  io_thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
 
   RTC_DCHECK_RUN_ON(&thread_checker_);
   if (initialized_) {
@@ -322,7 +321,7 @@ int32_t AudioDeviceIOS::PlayoutDelay(uint16_t& delayMS) const {
 int AudioDeviceIOS::GetPlayoutAudioParameters(AudioParameters* params) const {
   LOGI() << "GetPlayoutAudioParameters";
   RTC_DCHECK(playout_parameters_.is_valid());
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   *params = playout_parameters_;
   return 0;
 }
@@ -330,7 +329,7 @@ int AudioDeviceIOS::GetPlayoutAudioParameters(AudioParameters* params) const {
 int AudioDeviceIOS::GetRecordAudioParameters(AudioParameters* params) const {
   LOGI() << "GetRecordAudioParameters";
   RTC_DCHECK(record_parameters_.is_valid());
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   *params = record_parameters_;
   return 0;
 }
@@ -518,19 +517,6 @@ void AudioDeviceIOS::HandleInterruptionEnd() {
           "Updating audio unit state.",
          is_interrupted_);
   is_interrupted_ = false;
-  if (webrtc::field_trial::IsEnabled("WebRTC-Audio-iOS-Holding")) {
-    // Work around an issue where audio does not restart properly after an interruption
-    // by restarting the audio unit when the interruption ends.
-    if (audio_unit_->GetState() == VoiceProcessingAudioUnit::kStarted) {
-      audio_unit_->Stop();
-      PrepareForNewStart();
-    }
-    if (audio_unit_->GetState() == VoiceProcessingAudioUnit::kInitialized) {
-      audio_unit_->Uninitialize();
-    }
-    // Allocate new buffers given the potentially new stream format.
-    SetupAudioBuffersForActiveAudioSession();
-  }
   UpdateAudioUnit([RTCAudioSession sharedInstance].canPlayOrRecord);
 }
 
@@ -911,7 +897,7 @@ void AudioDeviceIOS::ShutdownPlayOrRecord() {
 
   // Detach thread checker for the AURemoteIO::IOThread to ensure that the
   // next session uses a fresh thread id.
-  io_thread_checker_.Detach();
+  io_thread_checker_.DetachFromThread();
 
   // Remove audio session notification observers.
   RTCAudioSession* session = [RTCAudioSession sharedInstance];
@@ -928,7 +914,7 @@ void AudioDeviceIOS::PrepareForNewStart() {
   // restart. It will result in audio callbacks from a new native I/O thread
   // which means that we must detach thread checkers here to be prepared for an
   // upcoming new audio stream.
-  io_thread_checker_.Detach();
+  io_thread_checker_.DetachFromThread();
 }
 
 bool AudioDeviceIOS::IsInterrupted() {

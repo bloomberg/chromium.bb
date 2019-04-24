@@ -36,15 +36,15 @@ View* ViewTargeterDelegate::TargetForRect(View* root, const gfx::Rect& rect) {
   // |rect_view_distance| is used to keep track of the distance
   // between the center point of |rect_view| and the center
   // point of |rect|.
-  View* rect_view = nullptr;
+  View* rect_view = NULL;
   int rect_view_distance = INT_MAX;
 
   // |point_view| represents the view that would have been returned
   // from this function call if point-based targeting were used.
-  View* point_view = nullptr;
+  View* point_view = NULL;
 
   View::Views children = root->GetChildrenInZOrder();
-  DCHECK_EQ(root->children().size(), children.size());
+  DCHECK_EQ(root->child_count(), static_cast<int>(children.size()));
   for (auto* child : base::Reversed(children)) {
     if (!child->CanProcessEventsWithinSubtree())
       continue;

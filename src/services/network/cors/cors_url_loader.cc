@@ -55,6 +55,7 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
+    const base::RepeatingCallback<void(int)>& request_finalizer,
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
@@ -67,6 +68,7 @@ CorsURLLoader::CorsURLLoader(
       network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
+      request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
@@ -162,6 +164,8 @@ void CorsURLLoader::FollowRedirect(
   }
   DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
 
+  if (request_finalizer_)
+    request_finalizer_.Run(request_id_);
   network_client_binding_.Unbind();
 
   StartRequest();
@@ -405,11 +409,16 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
+  base::OnceCallback<void()> preflight_finalizer;
+  if (request_finalizer_)
+    preflight_finalizer = base::BindOnce(request_finalizer_, request_id_);
+
   preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
-      request_, tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
-      network_loader_factory_);
+      request_id_, request_, tainted_,
+      net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      network_loader_factory_, std::move(preflight_finalizer));
 }
 
 void CorsURLLoader::StartNetworkRequest(

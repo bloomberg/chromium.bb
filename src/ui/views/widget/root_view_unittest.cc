@@ -24,7 +24,7 @@ using RootViewTest = ViewsTestBase;
 class DeleteOnKeyEventView : public View {
  public:
   explicit DeleteOnKeyEventView(bool* set_on_key) : set_on_key_(set_on_key) {}
-  ~DeleteOnKeyEventView() override = default;
+  ~DeleteOnKeyEventView() override {}
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     *set_on_key_ = true;
@@ -76,8 +76,12 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
 // Tracks whether a context menu is shown.
 class TestContextMenuController : public ContextMenuController {
  public:
-  TestContextMenuController() = default;
-  ~TestContextMenuController() override = default;
+  TestContextMenuController()
+      : show_context_menu_calls_(0),
+        menu_source_view_(NULL),
+        menu_source_type_(ui::MENU_SOURCE_NONE) {
+  }
+  ~TestContextMenuController() override {}
 
   int show_context_menu_calls() const { return show_context_menu_calls_; }
   View* menu_source_view() const { return menu_source_view_; }
@@ -85,7 +89,7 @@ class TestContextMenuController : public ContextMenuController {
 
   void Reset() {
     show_context_menu_calls_ = 0;
-    menu_source_view_ = nullptr;
+    menu_source_view_ = NULL;
     menu_source_type_ = ui::MENU_SOURCE_NONE;
   }
 
@@ -99,9 +103,9 @@ class TestContextMenuController : public ContextMenuController {
   }
 
  private:
-  int show_context_menu_calls_ = 0;
-  View* menu_source_view_ = nullptr;
-  ui::MenuSourceType menu_source_type_ = ui::MENU_SOURCE_NONE;
+  int show_context_menu_calls_;
+  View* menu_source_view_;
+  ui::MenuSourceType menu_source_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };
@@ -137,7 +141,7 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, controller.show_context_menu_calls());
-  EXPECT_EQ(nullptr, controller.menu_source_view());
+  EXPECT_EQ(NULL, controller.menu_source_view());
   EXPECT_EQ(ui::MENU_SOURCE_NONE, controller.menu_source_type());
   controller.Reset();
 
@@ -166,9 +170,10 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
 // View which handles all gesture events.
 class GestureHandlingView : public View {
  public:
-  GestureHandlingView() = default;
+  GestureHandlingView() {
+  }
 
-  ~GestureHandlingView() override = default;
+  ~GestureHandlingView() override {}
 
   void OnGestureEvent(ui::GestureEvent* event) override { event->SetHandled(); }
 
@@ -394,7 +399,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   root_view->OnMouseExited(exit_event);
 
   EXPECT_TRUE(view_destroyed);
-  EXPECT_TRUE(content->children().empty());
+  EXPECT_FALSE(content->has_children());
 }
 
 // Verifies deleting a View in OnMouseEntered() doesn't crash.
@@ -435,7 +440,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   root_view->OnMouseMoved(moved_event2);
 
   EXPECT_TRUE(view_destroyed);
-  EXPECT_TRUE(content->children().empty());
+  EXPECT_FALSE(content->has_children());
 }
 
 namespace {
@@ -447,7 +452,7 @@ class DeleteWidgetOnMouseExit : public View {
       : widget_(widget) {
   }
 
-  ~DeleteWidgetOnMouseExit() override = default;
+  ~DeleteWidgetOnMouseExit() override {}
 
   void OnMouseExited(const ui::MouseEvent& event) override {
     delete widget_;
@@ -546,7 +551,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
 namespace {
 class RootViewTestDialogDelegate : public DialogDelegateView {
  public:
-  RootViewTestDialogDelegate() = default;
+  RootViewTestDialogDelegate() {}
 
   int layout_count() const { return layout_count_; }
 

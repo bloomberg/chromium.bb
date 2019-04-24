@@ -14,8 +14,6 @@
 
 #include "mock_dawn.h"
 
-using namespace testing;
-
 namespace {
     {% for type in by_category["object"] %}
         {% for method in native_methods(type) if len(method.arguments) < 10 %}
@@ -40,7 +38,7 @@ namespace {
 ProcTableAsClass::~ProcTableAsClass() {
 }
 
-void ProcTableAsClass::GetProcTableAndDevice(DawnProcTable* table, DawnDevice* device) {
+void ProcTableAsClass::GetProcTableAndDevice(dawnProcTable* table, dawnDevice* device) {
     *device = GetNewDevice();
 
     {% for type in by_category["object"] %}
@@ -50,7 +48,7 @@ void ProcTableAsClass::GetProcTableAndDevice(DawnProcTable* table, DawnDevice* d
     {% endfor %}
 }
 
-void ProcTableAsClass::DeviceSetErrorCallback(DawnDevice self, DawnDeviceErrorCallback callback, DawnCallbackUserdata userdata) {
+void ProcTableAsClass::DeviceSetErrorCallback(dawnDevice self, dawnDeviceErrorCallback callback, dawnCallbackUserdata userdata) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
     object->deviceErrorCallback = callback;
     object->userdata1 = userdata;
@@ -58,7 +56,7 @@ void ProcTableAsClass::DeviceSetErrorCallback(DawnDevice self, DawnDeviceErrorCa
     OnDeviceSetErrorCallback(self, callback, userdata);
 }
 
-void ProcTableAsClass::BufferMapReadAsync(DawnBuffer self, DawnBufferMapReadCallback callback, DawnCallbackUserdata userdata) {
+void ProcTableAsClass::BufferMapReadAsync(dawnBuffer self, dawnBufferMapReadCallback callback, dawnCallbackUserdata userdata) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
     object->mapReadCallback = callback;
     object->userdata1 = userdata;
@@ -66,7 +64,7 @@ void ProcTableAsClass::BufferMapReadAsync(DawnBuffer self, DawnBufferMapReadCall
     OnBufferMapReadAsyncCallback(self, callback, userdata);
 }
 
-void ProcTableAsClass::BufferMapWriteAsync(DawnBuffer self, DawnBufferMapWriteCallback callback, DawnCallbackUserdata userdata) {
+void ProcTableAsClass::BufferMapWriteAsync(dawnBuffer self, dawnBufferMapWriteCallback callback, dawnCallbackUserdata userdata) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
     object->mapWriteCallback = callback;
     object->userdata1 = userdata;
@@ -74,10 +72,10 @@ void ProcTableAsClass::BufferMapWriteAsync(DawnBuffer self, DawnBufferMapWriteCa
     OnBufferMapWriteAsyncCallback(self, callback, userdata);
 }
 
-void ProcTableAsClass::FenceOnCompletion(DawnFence self,
+void ProcTableAsClass::FenceOnCompletion(dawnFence self,
                                          uint64_t value,
-                                         DawnFenceOnCompletionCallback callback,
-                                         DawnCallbackUserdata userdata) {
+                                         dawnFenceOnCompletionCallback callback,
+                                         dawnCallbackUserdata userdata) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
     object->fenceOnCompletionCallback = callback;
     object->userdata1 = userdata;
@@ -85,25 +83,40 @@ void ProcTableAsClass::FenceOnCompletion(DawnFence self,
     OnFenceOnCompletionCallback(self, value, callback, userdata);
 }
 
-void ProcTableAsClass::CallDeviceErrorCallback(DawnDevice device, const char* message) {
+void ProcTableAsClass::CallDeviceErrorCallback(dawnDevice device, const char* message) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(device);
     object->deviceErrorCallback(message, object->userdata1);
 }
-void ProcTableAsClass::CallMapReadCallback(DawnBuffer buffer, DawnBufferMapAsyncStatus status, const void* data, uint32_t dataLength) {
+void ProcTableAsClass::CallBuilderErrorCallback(void* builder , dawnBuilderErrorStatus status, const char* message) {
+    auto object = reinterpret_cast<ProcTableAsClass::Object*>(builder);
+    object->builderErrorCallback(status, message, object->userdata1, object->userdata2);
+}
+void ProcTableAsClass::CallMapReadCallback(dawnBuffer buffer, dawnBufferMapAsyncStatus status, const void* data, uint32_t dataLength) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(buffer);
     object->mapReadCallback(status, data, dataLength, object->userdata1);
 }
 
-void ProcTableAsClass::CallMapWriteCallback(DawnBuffer buffer, DawnBufferMapAsyncStatus status, void* data, uint32_t dataLength) {
+void ProcTableAsClass::CallMapWriteCallback(dawnBuffer buffer, dawnBufferMapAsyncStatus status, void* data, uint32_t dataLength) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(buffer);
     object->mapWriteCallback(status, data, dataLength, object->userdata1);
 }
 
-void ProcTableAsClass::CallFenceOnCompletionCallback(DawnFence fence,
-                                                     DawnFenceCompletionStatus status) {
+void ProcTableAsClass::CallFenceOnCompletionCallback(dawnFence fence,
+                                                     dawnFenceCompletionStatus status) {
     auto object = reinterpret_cast<ProcTableAsClass::Object*>(fence);
     object->fenceOnCompletionCallback(status, object->userdata1);
 }
+
+{% for type in by_category["object"] if type.is_builder %}
+    void ProcTableAsClass::{{as_MethodSuffix(type.name, Name("set error callback"))}}({{as_cType(type.name)}} self, dawnBuilderErrorCallback callback, dawnCallbackUserdata userdata1, dawnCallbackUserdata userdata2) {
+        auto object = reinterpret_cast<ProcTableAsClass::Object*>(self);
+        object->builderErrorCallback = callback;
+        object->userdata1 = userdata1;
+        object->userdata2 = userdata2;
+
+        OnBuilderSetErrorCallback(reinterpret_cast<dawnBufferBuilder>(self), callback, userdata1, userdata2);
+    }
+{% endfor %}
 
 {% for type in by_category["object"] %}
     {{as_cType(type.name)}} ProcTableAsClass::GetNew{{type.name.CamelCase()}}() {
@@ -114,10 +127,4 @@ void ProcTableAsClass::CallFenceOnCompletionCallback(DawnFence fence,
 {% endfor %}
 
 MockProcTable::MockProcTable() {
-}
-
-void MockProcTable::IgnoreAllReleaseCalls() {
-    {% for type in by_category["object"] %}
-        EXPECT_CALL(*this, {{as_MethodSuffix(type.name, Name("release"))}}(_)).Times(AnyNumber());
-    {% endfor %}
 }

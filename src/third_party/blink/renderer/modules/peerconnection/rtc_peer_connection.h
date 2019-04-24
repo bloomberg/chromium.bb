@@ -40,7 +40,6 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -74,7 +73,6 @@ class RTCPeerConnectionTest;
 class RTCRtpReceiver;
 class RTCRtpSender;
 class RTCRtpTransceiverInit;
-class RTCSctpTransport;
 class RTCSessionDescription;
 class RTCSessionDescriptionInit;
 class ScriptState;
@@ -204,14 +202,15 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void removeStream(MediaStream*, ExceptionState&);
 
-  // Calls LegacyCallbackBasedGetStats() or PromiseBasedGetStats() (or rejects
-  // with an exception) depending on type, see rtc_peer_connection.idl.
-  ScriptPromise getStats(ScriptState* script_state);
-  ScriptPromise getStats(ScriptState* script_state,
-                         ScriptValue callback_or_selector);
-  ScriptPromise getStats(ScriptState* script_state,
-                         ScriptValue callback_or_selector,
-                         ScriptValue legacy_selector);
+  // Calls one of the below versions (or rejects with an exception) depending on
+  // type, see RTCPeerConnection.idl.
+  ScriptPromise getStats(ScriptState*, blink::ScriptValue callback_or_selector);
+  // Calls LegacyCallbackBasedGetStats().
+  ScriptPromise getStats(ScriptState*,
+                         V8RTCStatsCallback* success_callback,
+                         MediaStreamTrack* selector = nullptr);
+  // Calls PromiseBasedGetStats().
+  ScriptPromise getStats(ScriptState*, MediaStreamTrack* selector = nullptr);
   ScriptPromise LegacyCallbackBasedGetStats(
       ScriptState*,
       V8RTCStatsCallback* success_callback,
@@ -228,7 +227,6 @@ class MODULES_EXPORT RTCPeerConnection final
   void removeTrack(RTCRtpSender*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(track, kTrack)
 
-  RTCSctpTransport* sctp() const;
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
                                     const RTCDataChannelInit*,
@@ -288,7 +286,6 @@ class MODULES_EXPORT RTCPeerConnection final
       webrtc::PeerConnectionInterface::PeerConnectionState) override;
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
-  void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
   void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(
@@ -331,9 +328,6 @@ class MODULES_EXPORT RTCPeerConnection final
       bool success);
   void NoteVoidRequestCompleted(RTCSetSessionDescriptionOperation operation,
                                 bool success);
-  static void GenerateCertificateCompleted(
-      ScriptPromiseResolver* resolver,
-      rtc::scoped_refptr<rtc::RTCCertificate> certificate);
   // Checks if the document that the peer connection lives in has ever executed
   // getUserMedia().
   bool HasDocumentMedia() const;
@@ -514,8 +508,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // This handle notifies scheduler about an active connection associated
   // with a frame. Handle should be destroyed when connection is closed.
-  FrameScheduler::SchedulingAffectingFeatureHandle
-      feature_handle_for_scheduler_;
+  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
+      connection_handle_for_scheduler_;
 
   bool negotiation_needed_;
   bool stopped_;
@@ -525,7 +519,6 @@ class MODULES_EXPORT RTCPeerConnection final
   String last_offer_;
   String last_answer_;
 
-  Member<RTCSctpTransport> sctp_transport_;
   bool has_data_channels_;  // For RAPPOR metrics
   // In Plan B, senders and receivers are added or removed independently of one
   // another. In Unified Plan, senders and receivers are created in pairs as

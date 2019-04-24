@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import sys
 import pathtools
 
@@ -144,7 +142,7 @@ class LogManager(object):
     if args:
       m = m % args
     for o in outs:
-      print(m, file=o)
+      print >> o, m
 
 
 def StringifyCommand(cmd):

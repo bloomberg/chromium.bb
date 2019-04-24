@@ -37,12 +37,10 @@ public:
 	void fill(VkDeviceSize dstOffset, VkDeviceSize fillSize, uint32_t data);
 	void update(VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData);
 	void* getOffsetPointer(VkDeviceSize offset) const;
-	inline VkDeviceSize getSize() const { return size; }
-	uint8_t* end() const;
 
 	// DataOffset is the offset in bytes from the Buffer to the pointer to the
 	// buffer's data memory.
-	static const int DataOffset;
+	static const size_t DataOffset;
 
 private:
 	void*                 memory = nullptr;

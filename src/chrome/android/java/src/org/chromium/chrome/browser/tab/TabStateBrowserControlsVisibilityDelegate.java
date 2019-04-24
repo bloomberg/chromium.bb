@@ -63,7 +63,7 @@ public class TabStateBrowserControlsVisibilityDelegate
                 if (!mIsFullscreenWaitingForLoad) return;
 
                 mIsFullscreenWaitingForLoad = false;
-                TabFullscreenHandler.updateEnabledState(mTab);
+                mTab.updateFullscreenEnabledState();
             }
 
             private void cancelEnableFullscreenLoadDelay() {
@@ -94,13 +94,13 @@ public class TabStateBrowserControlsVisibilityDelegate
                 mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
                 mHandler.sendEmptyMessageDelayed(
                         MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, getLoadDelayMs());
-                TabFullscreenHandler.updateEnabledState(mTab);
+                mTab.updateFullscreenEnabledState();
             }
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(url);
-                TabFullscreenHandler.updateEnabledState(mTab);
+                mTab.updateFullscreenEnabledState();
             }
 
             @Override
@@ -108,13 +108,12 @@ public class TabStateBrowserControlsVisibilityDelegate
                 // Handle the case where a commit or prerender swap notification failed to arrive
                 // and the enable fullscreen message was never enqueued.
                 scheduleEnableFullscreenLoadDelayIfNecessary();
-                TabFullscreenHandler.updateEnabledState(mTab); ///?
             }
 
             @Override
             public void onPageLoadFailed(Tab tab, int errorCode) {
                 cancelEnableFullscreenLoadDelay();
-                TabFullscreenHandler.updateEnabledState(mTab);
+                mTab.updateFullscreenEnabledState();
             }
 
             @Override

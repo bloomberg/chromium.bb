@@ -39,7 +39,6 @@ static bool ios_get_path_in_bundle(const char path[], SkString* result) {
 
     // Convert the string reference into an SkString
     result->set(CFStringGetCStringPtr(imagePath, encodingMethod));
-    CFRelease(imagePath);
     return true;
 }
 #endif

@@ -698,10 +698,7 @@
       "os": {
         "type": "linux"
       },
-      "direct_rendering_version": {
-        "op" : ">=",
-        "value": "2"
-      },
+      "direct_rendering": false,
       "features": [
         "test_feature_1"
       ]

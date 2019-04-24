@@ -183,7 +183,7 @@ fil{
         MF{"Saint Martin"}
         MG{"Madagascar"}
         MH{"Marshall Islands"}
-        MK{"North Macedonia"}
+        MK{"Macedonia (FYROM)"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -287,8 +287,6 @@ fil{
         VU{"Vanuatu"}
         WF{"Wallis & Futuna"}
         WS{"Samoa"}
-        XA{"Mga Pseudo-Accent"}
-        XB{"Pseudo-Bidi"}
         XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
@@ -307,8 +305,7 @@ fil{
         CG{"Congo (Republika)"}
         CI{"Ivory Coast"}
         CZ{"Czech Republic"}
-        FK{"Falkland Islands (Islas Malvinas)"}
         TL{"East Timor"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.91"}
 }

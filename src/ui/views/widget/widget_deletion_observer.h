@@ -20,7 +20,7 @@ class VIEWS_EXPORT WidgetDeletionObserver : public WidgetObserver {
   ~WidgetDeletionObserver() override;
 
   // Returns true if the widget passed in the constructor is still alive.
-  bool IsWidgetAlive() { return widget_ != nullptr; }
+  bool IsWidgetAlive() { return widget_ != NULL; }
 
   // Overridden from WidgetObserver.
   void OnWidgetDestroying(Widget* widget) override;

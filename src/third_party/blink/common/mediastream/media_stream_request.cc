@@ -104,6 +104,7 @@ MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) {
   name = other.name;
   input = other.input;
   session_id = other.session_id;
+  camera_calibration = other.camera_calibration;
   if (other.display_media_info.has_value())
     display_media_info = other.display_media_info->Clone();
 }
@@ -122,6 +123,7 @@ MediaStreamDevice& MediaStreamDevice::operator=(
   name = other.name;
   input = other.input;
   session_id = other.session_id;
+  camera_calibration = other.camera_calibration;
   if (other.display_media_info.has_value())
     display_media_info = other.display_media_info->Clone();
   return *this;

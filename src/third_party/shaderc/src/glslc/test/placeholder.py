@@ -23,7 +23,6 @@ argument to the instantiate_*() methods.
 import os
 import tempfile
 from string import Template
-from builtins import bytes
 
 
 class PlaceHolderException(Exception):
@@ -98,7 +97,7 @@ class StdinShader(PlaceHolder):
 
     def instantiate_for_glslc_args(self, testcase):
         """Writes the source code back to the TestCase instance."""
-        testcase.stdin_shader = bytes(self.source, 'utf-8')
+        testcase.stdin_shader = self.source
         self.filename = '-'
         return self.filename
 

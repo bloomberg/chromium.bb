@@ -116,7 +116,6 @@ source_file_types = {
   '.cc': 'cxx',
   '.cpp': 'cxx',
   '.cxx': 'cxx',
-  '.mm': 'cxx',
   '.c': 'c',
   '.s': 'asm',
   '.S': 'asm',

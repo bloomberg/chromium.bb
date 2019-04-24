@@ -180,10 +180,13 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     USING_FAST_MALLOC(DerivedFontData);
 
    public:
-    DerivedFontData() = default;
+    static std::unique_ptr<DerivedFontData> Create();
 
     scoped_refptr<SimpleFontData> small_caps;
     scoped_refptr<SimpleFontData> emphasis_mark;
+
+   private:
+    DerivedFontData() = default;
 
     DISALLOW_COPY_AND_ASSIGN(DerivedFontData);
   };

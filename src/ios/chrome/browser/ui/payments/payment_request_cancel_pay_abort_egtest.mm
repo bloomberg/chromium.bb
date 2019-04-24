@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <vector>
 
 #include "base/ios/ios_util.h"
@@ -168,13 +166,10 @@ const char kNoShippingPage[] =
 // Promise returned by response.complete() with an appropriate response message.
 - (void)testOpenAndPay {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  NSError* profileError = [self addAutofillProfile:profile];
-  GREYAssertNil(profileError, profileError.localizedDescription);
-
+  [self addAutofillProfile:profile];
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(profile.guid());
-  NSError* creditCardError = [self addCreditCard:card];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  [self addCreditCard:card];
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 

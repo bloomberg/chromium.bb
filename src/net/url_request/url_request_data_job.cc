@@ -59,7 +59,7 @@ int URLRequestDataJob::GetData(std::string* mime_type,
 
   // TODO(tyoshino): Get the headers and export via
   // URLRequestJob::GetResponseInfo().
-  return BuildResponse(url, mime_type, charset, data, nullptr);
+  return BuildResponse(url, mime_type, charset, data, NULL);
 }
 
 URLRequestDataJob::~URLRequestDataJob() = default;

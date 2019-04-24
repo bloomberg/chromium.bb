@@ -58,7 +58,7 @@ def Request(url, method='GET', body=None,
 
   if parameters:
     # URL-encode the parameters.
-    for key, value in parameters.items():
+    for key, value in parameters.iteritems():
       if value is None:
         del parameters[key]
       if isinstance(value, bool):

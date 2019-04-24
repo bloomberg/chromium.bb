@@ -79,8 +79,6 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
 
-  void UpdateLoaderFactories(base::OnceClosure callback);
-
   enum WorkerState {
     WORKER_NOT_READY,
     WORKER_READY,

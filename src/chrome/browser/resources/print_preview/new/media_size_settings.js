@@ -14,14 +14,19 @@ Polymer({
   },
 
   observers:
-      ['onMediaSizeSettingChange_(settings.mediaSize.*, capability.option)'],
+      ['onMediaSizeSettingChange_(settings.mediaSize.value, ' +
+       'capability.option)'],
 
-  /** @private */
-  onMediaSizeSettingChange_: function() {
+  /**
+   * @param {*} value The new value of the media size setting.
+   * @private
+   */
+  onMediaSizeSettingChange_: function(value) {
     if (!this.capability) {
       return;
     }
-    const valueToSet = JSON.stringify(this.getSettingValue('mediaSize'));
+
+    const valueToSet = JSON.stringify(value);
     for (const option of
          /** @type {!Array<!print_preview_new.SelectOption>} */ (
              this.capability.option)) {

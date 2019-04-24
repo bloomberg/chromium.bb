@@ -8,7 +8,6 @@ found in the LICENSE file.
 <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/dashboard/spa/option-group.html">
-<script src="/dashboard/spa/import-module.js">
 
 <test-fixture id="test">
   <template>
@@ -82,7 +81,6 @@ suite('option-group', function() {
   });
 
   test('select simple', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     const checkbox = tr.ui.b.findDeepElementWithTextContent(optionGroup, /aaa/);
@@ -92,7 +90,6 @@ suite('option-group', function() {
   });
 
   test('deselect simple', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     optionGroup.dispatch(Redux.UPDATE('test', {selectedOptions: ['aaa']}));
@@ -103,7 +100,6 @@ suite('option-group', function() {
   });
 
   test('select all descendents', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     const bLeaf = tr.ui.b.findDeepElementWithTextContent(optionGroup, /bbb/);
@@ -114,7 +110,6 @@ suite('option-group', function() {
   });
 
   test('deselect all descendents', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     optionGroup.dispatch(Redux.UPDATE('test', {selectedOptions: [
@@ -127,7 +122,6 @@ suite('option-group', function() {
   });
 
   test('select tri-state single', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     optionGroup.dispatch(Redux.UPDATE('test', {selectedOptions: []}));
@@ -138,7 +132,6 @@ suite('option-group', function() {
   });
 
   test('select tri-state all descendents', async function() {
-    await importModule('./cp-checkbox.js');
     const optionGroup = fixture('test');
     await cp.afterRender();
     optionGroup.dispatch(Redux.UPDATE('test', {selectedOptions: ['bbb:ddd']}));

@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -33,43 +32,64 @@ import org.chromium.ui.text.SpanApplier;
  * Controls the Search Promo.
  */
 public class ContextualSearchPromoControl extends OverlayPanelInflater {
-    /** The interface used to talk to the Panel. */
-    private final ContextualSearchPromoHost mHost;
-
-    /** The pixel density. */
+    /**
+     * The pixel density.
+     */
     private final float mDpToPx;
 
-    /** The background color of the promo. */
-    private final int mBackgroundColor;
-
-    /** Whether the Promo is visible. */
+    /**
+     * Whether the Promo is visible.
+     */
     private boolean mIsVisible;
 
-    /** Whether the Promo is mandatory. */
+    /**
+     * Whether the Promo is mandatory.
+     */
     private boolean mIsMandatory;
 
-    /** The opacity of the Promo. */
+    /**
+     * The opacity of the Promo.
+     */
     private float mOpacity;
 
-    /** The height of the Promo in pixels. */
+    /**
+     * The height of the Promo in pixels.
+     */
     private float mHeightPx;
 
-    /** The height of the Promo content in pixels. */
+    /**
+     * The height of the Promo content in pixels.
+     */
     private float mContentHeightPx;
 
-    /** Whether the Promo View is showing. */
+    /**
+     * Whether the Promo View is showing.
+     */
     private boolean mIsShowingView;
 
-    /** The Y position of the Promo View. */
+    /**
+     * The Y position of the Promo View.
+     */
     private float mPromoViewY;
 
-    /** Whether the Promo was in a state that could be interacted. */
+    /**
+     * Whether the Promo was in a state that could be interacted.
+     */
     private boolean mWasInteractive;
 
-    /** Whether the user's choice has been handled. */
+    /**
+     * Whether the user's choice has been handled.
+     */
     private boolean mHasHandledChoice;
 
-    /** The delegate that is used to communicate with the Panel. */
+    /**
+     * The interface used to talk to the Panel.
+     */
+    private ContextualSearchPromoHost mHost;
+
+    /**
+     * The delegate that is used to communicate with the Panel.
+     */
     public interface ContextualSearchPromoHost {
         /**
          * Notifies that the user has opted in.
@@ -103,8 +123,6 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater {
                 R.id.contextual_search_promo, context, container, resourceLoader);
 
         mDpToPx = context.getResources().getDisplayMetrics().density;
-        mBackgroundColor = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.contextual_search_promo_background_color);
 
         mHost = host;
     }
@@ -201,13 +219,6 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater {
      */
     public float getOpacity() {
         return mOpacity;
-    }
-
-    /**
-     * @return The background color for the promo, which controls areas outside the content.
-     */
-    public int getBackgroundColor() {
-        return mBackgroundColor;
     }
 
     // ============================================================================================

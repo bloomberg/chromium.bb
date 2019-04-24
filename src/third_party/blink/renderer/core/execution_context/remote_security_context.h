@@ -21,6 +21,7 @@ class CORE_EXPORT RemoteSecurityContext
 
   void Trace(blink::Visitor*) override;
 
+  static RemoteSecurityContext* Create();
   void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
   void ResetSandboxFlags();

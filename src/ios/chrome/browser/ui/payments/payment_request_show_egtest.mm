@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/strings/grit/components_strings.h"
@@ -49,13 +47,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [super setUp];
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  NSError* profileError = [self addAutofillProfile:profile];
-  GREYAssertNil(profileError, profileError.localizedDescription);
+  [self addAutofillProfile:profile];
 
   autofill::CreditCard localCard = autofill::test::GetCreditCard();  // Visa.
   localCard.set_billing_address_id(profile.guid());
-  NSError* creditCardError = [self addCreditCard:localCard];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  [self addCreditCard:localCard];
 }
 
 #pragma mark - Tests

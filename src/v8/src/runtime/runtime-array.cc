@@ -80,7 +80,7 @@ Object RemoveArrayHolesGeneric(Isolate* isolate, Handle<JSReceiver> receiver,
 
   uint32_t num_undefined = 0;
   uint32_t current_pos = 0;
-  uint32_t num_indices = keys.is_null() ? limit : keys->length();
+  int num_indices = keys.is_null() ? limit : keys->length();
 
   // Compact keys with undefined values and moves non-undefined
   // values to the front.
@@ -91,7 +91,7 @@ Object RemoveArrayHolesGeneric(Isolate* isolate, Handle<JSReceiver> receiver,
   //       is used to track free spots in the array starting at the beginning.
   //       Holes and 'undefined' are considered free spots.
   //       A hole is when HasElement(receiver, key) is false.
-  for (uint32_t i = 0; i < num_indices; ++i) {
+  for (int i = 0; i < num_indices; ++i) {
     uint32_t key = keys.is_null() ? i : NumberToUint32(keys->get(i));
 
     // We only care about array indices that are smaller than the limit.
@@ -163,8 +163,7 @@ Object RemoveArrayHolesGeneric(Isolate* isolate, Handle<JSReceiver> receiver,
   // DCHECK_LE(current_pos, num_indices);
 
   // Deleting everything after the undefineds up unto the limit.
-  for (uint32_t i = num_indices; i > 0;) {
-    --i;
+  for (int i = num_indices - 1; i >= 0; --i) {
     uint32_t key = keys.is_null() ? i : NumberToUint32(keys->get(i));
     if (key < current_pos) break;
     if (key >= limit) continue;
@@ -211,11 +210,10 @@ Object RemoveArrayHoles(Isolate* isolate, Handle<JSReceiver> receiver,
     Handle<Map> new_map =
         JSObject::GetElementsTransitionMap(object, HOLEY_ELEMENTS);
 
-    AllocationType allocation = ObjectInYoungGeneration(*object)
-                                    ? AllocationType::kYoung
-                                    : AllocationType::kOld;
+    PretenureFlag tenure =
+        ObjectInYoungGeneration(*object) ? NOT_TENURED : TENURED;
     Handle<FixedArray> fast_elements =
-        isolate->factory()->NewFixedArray(dict->NumberOfElements(), allocation);
+        isolate->factory()->NewFixedArray(dict->NumberOfElements(), tenure);
     dict->CopyValuesTo(*fast_elements);
 
     JSObject::SetMapAndElements(object, new_map, fast_elements);
@@ -620,8 +618,8 @@ RUNTIME_FUNCTION(Runtime_NewArray) {
     allocation_site = site;
   }
 
-  Handle<JSArray> array = Handle<JSArray>::cast(factory->NewJSObjectFromMap(
-      initial_map, AllocationType::kYoung, allocation_site));
+  Handle<JSArray> array = Handle<JSArray>::cast(
+      factory->NewJSObjectFromMap(initial_map, NOT_TENURED, allocation_site));
 
   factory->NewJSArrayStorage(array, 0, 0, DONT_INITIALIZE_ARRAY_ELEMENTS);
 

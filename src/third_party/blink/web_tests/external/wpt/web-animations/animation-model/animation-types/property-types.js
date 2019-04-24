@@ -473,14 +473,14 @@ const lengthPercentageOrCalcType = {
 };
 
 const positiveNumberType = {
-  testInterpolation: (property, setup, expectedUnit='') => {
+  testInterpolation: (property, setup) => {
     test(t => {
       const idlName = propertyToIDL(property);
       const target = createTestElement(t, setup);
       const animation = target.animate({ [idlName]: [1.1, 1.5] },
                                        { duration: 1000, fill: 'both' });
       testAnimationSamples(animation, idlName,
-                           [{ time: 500,  expected: '1.3' + expectedUnit }]);
+                           [{ time: 500,  expected: '1.3' }]);
     }, `${property} supports animating as a positive number`);
   },
 
@@ -2622,7 +2622,7 @@ const rectType = {
 const dasharrayType = {
   testInterpolation: (property, setup) => {
     percentageType.testInterpolation(property, setup);
-    positiveNumberType.testInterpolation(property, setup, 'px');
+    positiveNumberType.testInterpolation(property, setup);
 
     test(t => {
       const idlName = propertyToIDL(property);
@@ -2633,7 +2633,7 @@ const dasharrayType = {
                                        { duration: 1000, fill: 'both' });
       testAnimationSamples(
           animation, idlName,
-          [{ time: 500,  expected: '6px, 12px, 8px, 12px, 10px, 6px, 10px, 16px, 4px, 8px, 14px, 10px' }]);
+          [{ time: 500,  expected: '6, 12, 8, 12, 10, 6, 10, 16, 4, 8, 14, 10' }]);
     }, `${property} supports animating as a dasharray (mismatched length)`);
 
     test(t => {
@@ -2645,8 +2645,8 @@ const dasharrayType = {
                                        { duration: 1000, fill: 'both' });
       testAnimationSamples(
           animation, idlName,
-          [{ time: 500,  expected: '4px, 40%, 4px, 6px' }]);
-    }, `${property} supports animating as a dasharray (mixed lengths and percentages)`);
+          [{ time: 500,  expected: '4, 40%, 4, 6' }]);
+    }, `${property} supports animating as a dasharray (mixed number and percentage)`);
 
   },
 
@@ -2665,7 +2665,7 @@ const dasharrayType = {
                                        { duration: 1000, composite });
       testAnimationSamples(
           animation, idlName,
-          [{ time: 0, expected: '1px, 2px, 3px, 4px, 5px' }]);
+          [{ time: 0, expected: '1, 2, 3, 4, 5' }]);
     }, `${property}: dasharray`);
   },
 

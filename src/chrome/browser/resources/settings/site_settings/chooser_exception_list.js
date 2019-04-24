@@ -109,10 +109,6 @@ Polymer({
     switch (this.chooserType) {
       case settings.ChooserType.USB_DEVICES:
         this.emptyListMessage_ = this.i18n('noUsbDevicesFound');
-        break;
-      case settings.ChooserType.SERIAL_PORTS:
-        this.emptyListMessage_ = this.i18n('noSerialPortsFound');
-        break;
       default:
         this.emptyListMessage_ = '';
     }

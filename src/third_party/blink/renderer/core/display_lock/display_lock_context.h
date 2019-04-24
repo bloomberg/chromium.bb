@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -55,14 +56,7 @@ class CORE_EXPORT DisplayLockContext final
     kUpdating,
     kCommitting,
     kUnlocked,
-  };
-
-  // The type of style that was blocked by this display lock.
-  enum StyleType {
-    kStyleUpdateNotRequired,
-    kStyleUpdateSelf,
-    kStyleUpdateChildren,
-    kStyleUpdateDescendants
+    kPendingAcquire,
   };
 
   // See GetScopedPendingFrameRect() for description.
@@ -117,11 +111,9 @@ class CORE_EXPORT DisplayLockContext final
   ScriptPromise commit(ScriptState*);
   ScriptPromise updateAndCommit(ScriptState*);
 
-  enum LifecycleTarget { kSelf, kChildren };
-
   // Lifecycle observation / state functions.
-  bool ShouldStyle(LifecycleTarget) const;
-  void DidStyle(LifecycleTarget);
+  bool ShouldStyle() const;
+  void DidStyle();
   bool ShouldLayout() const;
   void DidLayout();
   bool ShouldPrePaint() const;
@@ -140,8 +132,10 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldCommitForActivation() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked.
-  bool IsLocked() const { return state_ != kUnlocked; }
+  // lock is locked any time the state is not kUnlocked or kPendingAcquire.
+  bool IsLocked() const {
+    return state_ != kUnlocked && state_ != kPendingAcquire;
+  }
 
   // Called when the layout tree is attached. This is used to verify
   // containment.
@@ -169,34 +163,11 @@ class CORE_EXPORT DisplayLockContext final
   void AddToWhitespaceReattachSet(Element& element);
 
   // LifecycleNotificationObserver overrides.
-  void WillStartLifecycleUpdate(const LocalFrameView&) override;
-  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
-
-  // Inform the display lock that it prevented a style change. This is used to
-  // invalidate style when we need to update it in the future.
-  void NotifyStyleRecalcWasBlocked(StyleType type) {
-    blocked_style_traversal_type_ =
-        std::max(blocked_style_traversal_type_, type);
-  }
-
-  // Notify this element will be disconnected.
-  void NotifyWillDisconnect();
-
-  void SetNeedsPrePaintSubtreeWalk(
-      bool needs_effective_allowed_touch_action_update) {
-    needs_effective_allowed_touch_action_update_ =
-        needs_effective_allowed_touch_action_update;
-    needs_prepaint_subtree_walk_ = true;
-  }
-
-  const LayoutRect& GetLockedFrameRect() const {
-    DCHECK(locked_frame_rect_);
-    return *locked_frame_rect_;
-  }
+  void WillStartLifecycleUpdate() override;
+  void DidFinishLifecycleUpdate() override;
 
  private:
   friend class DisplayLockContextTest;
-  friend class DisplayLockBudgetTest;
   friend class DisplayLockSuspendedHandle;
   friend class DisplayLockBudget;
 
@@ -226,10 +197,9 @@ class CORE_EXPORT DisplayLockContext final
   void MarkElementsForWhitespaceReattachment();
 
   // The following functions propagate dirty bits from the locked element up to
-  // the ancestors in order to be reached, and update dirty bits for the element
-  // as well if needed. They return true if the element or its subtree were
-  // dirty, and false otherwise.
-  bool MarkForStyleRecalcIfNeeded();
+  // the ancestors in order to be reached. They return true if the element or
+  // its subtree were dirty, and false otherwise.
+  bool MarkAncestorsForStyleRecalcIfNeeded();
   bool MarkAncestorsForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
@@ -280,12 +250,6 @@ class CORE_EXPORT DisplayLockContext final
   // exists. Otherwise, falls back to checking computed style.
   bool ElementSupportsDisplayLocking() const;
 
-  // Returns true if the element is connected to a document that has a view.
-  // If we're not connected,  or if we're connected but the document doesn't
-  // have a view (e.g. templates) we shouldn't do style calculations etc and
-  // when acquiring this lock should immediately resolve the acquire promise.
-  bool ConnectedToView() const;
-
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> commit_resolver_;
@@ -310,12 +274,6 @@ class CORE_EXPORT DisplayLockContext final
   bool update_forced_ = false;
   bool timeout_task_is_scheduled_ = false;
   bool activatable_ = false;
-
-  bool is_locked_after_connect_ = false;
-  StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
-
-  bool needs_effective_allowed_touch_action_update_ = false;
-  bool needs_prepaint_subtree_walk_ = false;
 
   base::WeakPtrFactory<DisplayLockContext> weak_factory_;
 };

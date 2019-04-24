@@ -60,11 +60,11 @@
 #include "services/ws/public/mojom/gpu.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
-#include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -97,6 +97,7 @@ class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
 class ResourceMessageFilter;
+class ServiceWorkerDispatcherHost;
 class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
@@ -217,6 +218,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost::KeepAliveClientType) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
+  void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
@@ -631,6 +633,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* FindReusableProcessHostForSiteInstance(
       SiteInstanceImpl* site_instance);
 
+  void CreateMediaStreamDispatcherHost(
+      MediaStreamManager* media_stream_manager,
+      blink::mojom::MediaStreamDispatcherHostRequest request);
   void CreateMediaStreamTrackMetricsHost(
       blink::mojom::MediaStreamTrackMetricsHostRequest request);
 
@@ -872,6 +877,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter>
       indexed_db_factory_;
+
+  std::unique_ptr<ServiceWorkerDispatcherHost, BrowserThread::DeleteOnIOThread>
+      service_worker_dispatcher_host_;
 
   scoped_refptr<CacheStorageDispatcherHost> cache_storage_dispatcher_host_;
 

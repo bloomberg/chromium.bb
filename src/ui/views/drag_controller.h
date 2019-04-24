@@ -41,7 +41,7 @@ class VIEWS_EXPORT DragController {
                                    const gfx::Point& p) = 0;
 
  protected:
-  virtual ~DragController() = default;
+  virtual ~DragController() {}
 };
 
 }  // namespace views

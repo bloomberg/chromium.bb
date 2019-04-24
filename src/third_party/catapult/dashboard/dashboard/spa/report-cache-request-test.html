@@ -139,39 +139,19 @@ suite('ReportCacheRequest', function() {
     window.fetch = originalFetch;
   });
 
-  async function deleteDatabase(parameters) {
-    const databaseName = ReportCacheRequest.databaseName(parameters);
-    await testUtils.flushWriterForTest();
-    await testUtils.deleteDatabaseForTest(databaseName);
-  }
-
-  test('channelName', async function() {
-    const parameters = {
-      id: 10,
-      name: 'channelName',
-      modified: new Date(0),
-      revisions: [1, 2, 3],
-    };
-    await deleteDatabase(parameters);
-
-    const response = mockApiResponse(parameters);
-    mockFetch(response);
-
-    const request = new ReportCacheRequest(new MockFetchEvent(parameters));
-    const channelName = await request.computeChannelName();
-    assert.strictEqual(channelName, 'http://example.com/path?id=10&modified=0&revisions=1%2C2%2C3');
-  });
-
   // Results from the network should be yielded when there is no existing data
   // in the cache.
   test('yields only network', async() => {
     const parameters = {
-      id: 11,
+      id: 123,
       name: 'name',
       modified: new Date(0),
       revisions: [1, 2, 3],
     };
-    await deleteDatabase(parameters);
+
+    const databaseName = ReportCacheRequest.databaseName(parameters);
+    await testUtils.flushWriterForTest();
+    await testUtils.deleteDatabaseForTest(databaseName);
 
     const response = mockApiResponse(parameters);
     mockFetch(response);
@@ -190,12 +170,15 @@ suite('ReportCacheRequest', function() {
   // results in addition to the network.
   test('yields cache and network', async() => {
     const parameters = {
-      id: 12,
+      id: 123,
       name: 'name',
       modified: new Date(0),
       revisions: [1, 2, 3],
     };
-    await deleteDatabase(parameters);
+
+    const databaseName = ReportCacheRequest.databaseName(parameters);
+    await testUtils.flushWriterForTest();
+    await testUtils.deleteDatabaseForTest(databaseName);
 
     const response = mockApiResponse(parameters);
     mockFetch(response);
@@ -226,13 +209,13 @@ suite('ReportCacheRequest', function() {
   test('yields new data for different ids', async() => {
     const parameters = {
       a: {
-        id: 13,
+        id: 123,
         name: 'name',
         modified: new Date(0),
         revisions: [1, 2, 3],
       },
       b: {
-        id: 14,
+        id: 321,
         name: 'name',
         modified: new Date(0),
         revisions: [1, 2, 3],
@@ -280,12 +263,15 @@ suite('ReportCacheRequest', function() {
   // clear of any previous data.
   test('yields new data for different modified dates', async() => {
     const parameters = {
-      id: 15,
+      id: 123,
       name: 'name',
       modified: new Date(0),
       revisions: [1, 2, 3],
     };
-    await deleteDatabase(parameters);
+
+    const databaseName = ReportCacheRequest.databaseName(parameters);
+    await testUtils.flushWriterForTest();
+    await testUtils.deleteDatabaseForTest(databaseName);
 
     let response = mockApiResponse(parameters);
     mockFetch(response);
@@ -333,12 +319,15 @@ suite('ReportCacheRequest', function() {
   // When revisions change, the cache should not yield non-relevant data.
   test('yields new data for different revisions', async() => {
     const parameters = {
-      id: 16,
+      id: 123,
       name: 'name',
       modified: new Date(0),
       revisions: [1, 2, 3],
     };
-    await deleteDatabase(parameters);
+
+    const databaseName = ReportCacheRequest.databaseName(parameters);
+    await testUtils.flushWriterForTest();
+    await testUtils.deleteDatabaseForTest(databaseName);
 
     let response = mockApiResponse(parameters);
 

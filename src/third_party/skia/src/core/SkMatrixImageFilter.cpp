@@ -8,6 +8,7 @@
 #include "SkMatrixImageFilter.h"
 
 #include "SkCanvas.h"
+#include "SkColorSpaceXformer.h"
 #include "SkImageFilterPriv.h"
 #include "SkReadBuffer.h"
 #include "SkSpecialImage.h"
@@ -94,6 +95,15 @@ sk_sp<SkSpecialImage> SkMatrixImageFilter::onFilterImage(SkSpecialImage* source,
     offset->fX = dstBounds.fLeft;
     offset->fY = dstBounds.fTop;
     return surf->makeImageSnapshot();
+}
+
+sk_sp<SkImageFilter> SkMatrixImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
+    SkASSERT(1 == this->countInputs());
+    auto input = xformer->apply(this->getInput(0));
+    if (input.get() != this->getInput(0)) {
+        return SkMatrixImageFilter::Make(fTransform, fFilterQuality, std::move(input));
+    }
+    return this->refMe();
 }
 
 SkRect SkMatrixImageFilter::computeFastBounds(const SkRect& src) const {

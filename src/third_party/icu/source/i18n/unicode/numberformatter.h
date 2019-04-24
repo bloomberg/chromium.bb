@@ -11,11 +11,9 @@
 #include "unicode/dcfmtsym.h"
 #include "unicode/currunit.h"
 #include "unicode/fieldpos.h"
-#include "unicode/formattedvalue.h"
 #include "unicode/fpositer.h"
 #include "unicode/measunit.h"
 #include "unicode/nounit.h"
-#include "unicode/parseerr.h"
 #include "unicode/plurrule.h"
 #include "unicode/ucurr.h"
 #include "unicode/unum.h"
@@ -44,27 +42,25 @@
  *     .format(1234)
  *     .toString();  // €1.2K in en-US
  *
- * // Create a formatter in a singleton by value for use later:
+ * // Create a formatter in a singleton for use later:
  * static const LocalizedNumberFormatter formatter = NumberFormatter::withLocale(...)
  *     .unit(NoUnit::percent())
  *     .precision(Precision::fixedFraction(3));
  * formatter.format(5.9831).toString();  // 5.983% in en-US
  *
- * // Create a "template" in a singleton unique_ptr but without setting a locale until the call site:
- * std::unique_ptr<UnlocalizedNumberFormatter> template = NumberFormatter::with()
+ * // Create a "template" in a singleton but without setting a locale until the call site:
+ * static const UnlocalizedNumberFormatter template = NumberFormatter::with()
  *     .sign(UNumberSignDisplay::UNUM_SIGN_ALWAYS)
- *     .unit(MeasureUnit::getMeter())
- *     .unitWidth(UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME)
- *     .clone();
- * template->locale(...).format(1234).toString();  // +1,234 meters in en-US
+ *     .adoptUnit(MeasureUnit::createMeter(status))
+ *     .unitWidth(UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME);
+ * template.locale(...).format(1234).toString();  // +1,234 meters in en-US
  * </pre>
  *
  * <p>
  * This API offers more features than DecimalFormat and is geared toward new users of ICU.
  *
  * <p>
- * NumberFormatter instances (i.e., LocalizedNumberFormatter and UnlocalizedNumberFormatter)
- * are immutable and thread safe. This means that invoking a configuration method has no
+ * NumberFormatter instances are immutable and thread safe. This means that invoking a configuration method has no
  * effect on the receiving instance; you must store and use the new number formatter instance it returns instead.
  *
  * <pre>
@@ -112,7 +108,6 @@ class IntegerWidth;
 
 namespace impl {
 
-// can't be #ifndef U_HIDE_INTERNAL_API; referenced throughout this file in public classes
 /**
  * Datatype for minimum/maximum fraction digits. Must be able to hold kMaxIntFracSig.
  *
@@ -120,21 +115,20 @@ namespace impl {
  */
 typedef int16_t digits_t;
 
-// can't be #ifndef U_HIDE_INTERNAL_API; needed for struct initialization
 /**
  * Use a default threshold of 3. This means that the third time .format() is called, the data structures get built
  * using the "safe" code path. The first two calls to .format() will trigger the unsafe code path.
  *
  * @internal
  */
-static constexpr int32_t kInternalDefaultThreshold = 3;
+static constexpr int32_t DEFAULT_THRESHOLD = 3;
 
 // Forward declarations:
 class Padder;
 struct MacroProps;
 struct MicroProps;
 class DecimalQuantity;
-class UFormattedNumberData;
+struct UFormattedNumberData;
 class NumberFormatterImpl;
 struct ParsedPatternInfo;
 class ScientificModifier;
@@ -152,7 +146,6 @@ class GeneratorHelpers;
 class DecNum;
 class NumberRangeFormatterImpl;
 struct RangeMacroProps;
-struct UFormattedNumberImpl;
 
 /**
  * Used for NumberRangeFormatter and implemented in numrange_fluent.cpp.
@@ -446,6 +439,34 @@ class U_I18N_API ScientificNotation : public Notation {
  */
 typedef Precision SignificantDigitsPrecision;
 
+// Typedefs for ICU 60/61 compatibility.
+// These will be removed in ICU 64.
+// See http://bugs.icu-project.org/trac/ticket/13746
+
+/**
+ * This will be removed in ICU 64.  See ICU-13746.
+ * @deprecated ICU 63
+ */
+typedef Precision Rounder;
+
+/**
+ * This will be removed in ICU 64.  See ICU-13746.
+ * @deprecated ICU 63
+ */
+typedef FractionPrecision FractionRounder;
+
+/**
+ * This will be removed in ICU 64.  See ICU-13746.
+ * @deprecated ICU 63
+ */
+typedef IncrementPrecision IncrementRounder;
+
+/**
+ * This will be removed in ICU 64.  See ICU-13746.
+ * @deprecated ICU 63
+ */
+typedef CurrencyPrecision CurrencyRounder;
+
 /**
  * A class that defines the rounding precision to be used when formatting numbers in NumberFormatter.
  *
@@ -462,11 +483,10 @@ class U_I18N_API Precision : public UMemory {
      *
      * <p>
      * <strong>NOTE:</strong> When formatting a <em>double</em>, this method, along with {@link #minFraction} and
-     * {@link #minSignificantDigits}, will trigger complex algorithm similar to <em>Dragon4</em> to determine the
-     * low-order digits and the number of digits to display based on the value of the double.
-     * If the number of fraction places or significant digits can be bounded, consider using {@link #maxFraction}
-     * or {@link #maxSignificantDigits} instead to maximize performance.
-     * For more information, read the following blog post.
+     * {@link #minDigits}, will trigger complex algorithm similar to <em>Dragon4</em> to determine the low-order digits
+     * and the number of digits to display based on the value of the double. If the number of fraction places or
+     * significant digits can be bounded, consider using {@link #maxFraction} or {@link #maxDigits} instead to maximize
+     * performance. For more information, read the following blog post.
      *
      * <p>
      * http://www.serpentine.com/blog/2011/06/29/here-be-dragons-advances-in-problems-you-didnt-even-know-you-had/
@@ -560,7 +580,7 @@ class U_I18N_API Precision : public UMemory {
      * pad with zeros to ensure that this number of significant digits/figures are always shown.
      *
      * <p>
-     * This method is equivalent to {@link #minMaxSignificantDigits} with both arguments equal.
+     * This method is equivalent to {@link #minMaxDigits} with both arguments equal.
      *
      * @param minMaxSignificantDigits
      *            The minimum and maximum number of significant digits to display (rounding if too long or padding with
@@ -608,6 +628,31 @@ class U_I18N_API Precision : public UMemory {
     static SignificantDigitsPrecision minMaxSignificantDigits(int32_t minSignificantDigits,
                                                               int32_t maxSignificantDigits);
 
+#ifndef U_HIDE_DEPRECATED_API
+    // Compatiblity methods that will be removed in ICU 64.
+    // See http://bugs.icu-project.org/trac/ticket/13746
+
+    /** @deprecated ICU 62 */
+    static inline SignificantDigitsPrecision fixedDigits(int32_t a) {
+        return fixedSignificantDigits(a);
+    }
+
+    /** @deprecated ICU 62 */
+    static inline SignificantDigitsPrecision minDigits(int32_t a) {
+        return minSignificantDigits(a);
+    }
+
+    /** @deprecated ICU 62 */
+    static inline SignificantDigitsPrecision maxDigits(int32_t a) {
+        return maxSignificantDigits(a);
+    }
+
+    /** @deprecated ICU 62 */
+    static inline SignificantDigitsPrecision minMaxDigits(int32_t a, int32_t b) {
+        return minMaxSignificantDigits(a, b);
+    }
+#endif  /* U_HIDE_DEPRECATED_API */
+
     /**
      * Show numbers rounded if necessary to the closest multiple of a certain rounding increment. For example, if the
      * rounding increment is 0.5, then round 1.2 to 1 and round 1.3 to 1.5.
@@ -648,6 +693,21 @@ class U_I18N_API Precision : public UMemory {
      */
     static CurrencyPrecision currency(UCurrencyUsage currencyUsage);
 
+#ifndef U_HIDE_DEPRECATED_API
+    /**
+     * Sets the rounding mode to use when picking the direction to round (up or down). Common values
+     * include HALF_EVEN, HALF_UP, and FLOOR. The default is HALF_EVEN.
+     *
+     * @param roundingMode
+     *            The RoundingMode to use.
+     * @return A Precision for passing to the NumberFormatter precision() setter.
+     * @deprecated ICU 62 Use the top-level roundingMode() setting instead.
+     *            This method will be removed in ICU 64.
+     *            See http://bugs.icu-project.org/trac/ticket/13746
+     */
+    Precision withMode(UNumberFormatRoundingMode roundingMode) const;
+#endif  /* U_HIDE_DEPRECATED_API */
+
   private:
     enum PrecisionType {
         RND_BOGUS,
@@ -655,18 +715,7 @@ class U_I18N_API Precision : public UMemory {
         RND_FRACTION,
         RND_SIGNIFICANT,
         RND_FRACTION_SIGNIFICANT,
-
-        // Used for strange increments like 3.14.
         RND_INCREMENT,
-
-        // Used for increments with 1 as the only digit. This is different than fraction
-        // rounding because it supports having additional trailing zeros. For example, this
-        // class is used to round with the increment 0.010.
-        RND_INCREMENT_ONE,
-
-        // Used for increments with 5 as the only digit (nickel rounding).
-        RND_INCREMENT_FIVE,
-
         RND_CURRENCY,
         RND_ERROR
     } fType;
@@ -686,14 +735,13 @@ class U_I18N_API Precision : public UMemory {
         } fracSig;
         /** @internal */
         struct IncrementSettings {
-            // For RND_INCREMENT, RND_INCREMENT_ONE, and RND_INCREMENT_FIVE
             /** @internal */
             double fIncrement;
             /** @internal */
             impl::digits_t fMinFrac;
             /** @internal */
             impl::digits_t fMaxFrac;
-        } increment;
+        } increment; // For RND_INCREMENT
         UCurrencyUsage currencyUsage; // For RND_CURRENCY
         UErrorCode errorCode; // For RND_ERROR
     } fUnion;
@@ -1266,7 +1314,7 @@ class U_I18N_API Grouper : public UMemory {
      */
     UNumberGroupingStrategy fStrategy;
 
-    Grouper() : fGrouping1(-3) {}
+    Grouper() : fGrouping1(-3) {};
 
     bool isBogus() const {
         return fGrouping1 == -3;
@@ -1411,7 +1459,7 @@ struct U_I18N_API MacroProps : public UMemory {
     const CurrencySymbols* currencySymbols = nullptr;  // no ownership
 
     /** @internal */
-    int32_t threshold = kInternalDefaultThreshold;
+    int32_t threshold = DEFAULT_THRESHOLD;
 
     /** @internal */
     Locale locale;
@@ -1492,10 +1540,11 @@ class U_I18N_API NumberFormatterSettings {
      * All units will be properly localized with locale data, and all units are compatible with notation styles,
      * rounding precisions, and other number formatter settings.
      *
-     * Pass this method any instance of {@link MeasureUnit}. For units of measure:
+     * Pass this method any instance of {@link MeasureUnit}. For units of measure (which often involve the
+     * factory methods that return a pointer):
      *
      * <pre>
-     * NumberFormatter::with().unit(MeasureUnit::getMeter())
+     * NumberFormatter::with().adoptUnit(MeasureUnit::createMeter(status))
      * </pre>
      *
      * Currency:
@@ -1538,9 +1587,11 @@ class U_I18N_API NumberFormatterSettings {
 
     /**
      * Like unit(), but takes ownership of a pointer.  Convenient for use with the MeasureFormat factory
-     * methods that return pointers that need ownership.
+     * methods, which return pointers that need ownership.  Example:
      *
-     * Note: consider using the MeasureFormat factory methods that return by value.
+     * <pre>
+     * NumberFormatter::with().adoptUnit(MeasureUnit::createMeter(status))
+     * </pre>
      *
      * @param unit
      *            The unit to render.
@@ -1566,13 +1617,8 @@ class U_I18N_API NumberFormatterSettings {
      * Sets a unit to be used in the denominator. For example, to format "3 m/s", pass METER to the unit and SECOND to
      * the perUnit.
      *
-     * Pass this method any instance of {@link MeasureUnit}. Example:
-     *
-     * <pre>
-     * NumberFormatter::with()
-     *      .unit(MeasureUnit::getMeter())
-     *      .perUnit(MeasureUnit::getSecond())
-     * </pre>
+     * Pass this method any instance of {@link MeasureUnit}.  Since MeasureUnit factory methods return pointers, the
+     * {@link #adoptPerUnit} version of this method is often more useful.
      *
      * The default is not to display any unit in the denominator.
      *
@@ -1599,9 +1645,13 @@ class U_I18N_API NumberFormatterSettings {
 
     /**
      * Like perUnit(), but takes ownership of a pointer.  Convenient for use with the MeasureFormat factory
-     * methods that return pointers that need ownership.
+     * methods, which return pointers that need ownership.  Example:
      *
-     * Note: consider using the MeasureFormat factory methods that return by value.
+     * <pre>
+     * NumberFormatter::with()
+     *      .adoptUnit(MeasureUnit::createMeter(status))
+     *      .adoptPerUnit(MeasureUnit::createSecond(status))
+     * </pre>
      *
      * @param perUnit
      *            The unit to render in the denominator.
@@ -1665,6 +1715,16 @@ class U_I18N_API NumberFormatterSettings {
      * @draft ICU 62
      */
     Derived precision(const Precision& precision) &&;
+
+#ifndef U_HIDE_DEPRECATED_API
+    // Compatibility method that will be removed in ICU 64.
+    // Use precision() instead.
+    // See http://bugs.icu-project.org/trac/ticket/13746
+    /** @deprecated ICU 62 */
+    Derived rounding(const Rounder& rounder) const & {
+        return precision(rounder);
+    }
+#endif  /* U_HIDE_DEPRECATED_API */
 
     /**
      * Specifies how to determine the direction to round a number when it has more digits than fit in the
@@ -2081,28 +2141,6 @@ class U_I18N_API NumberFormatterSettings {
     UnicodeString toSkeleton(UErrorCode& status) const;
 
     /**
-     * Returns the current (Un)LocalizedNumberFormatter as a LocalPointer
-     * wrapping a heap-allocated copy of the current object.
-     *
-     * This is equivalent to new-ing the move constructor with a value object
-     * as the argument.
-     *
-     * @return A wrapped (Un)LocalizedNumberFormatter pointer, or a wrapped
-     *         nullptr on failure.
-     * @draft ICU 64
-     */
-    LocalPointer<Derived> clone() const &;
-
-    /**
-     * Overload of clone for use on an rvalue reference.
-     *
-     * @return A wrapped (Un)LocalizedNumberFormatter pointer, or a wrapped
-     *         nullptr on failure.
-     * @draft ICU 64
-     */
-    LocalPointer<Derived> clone() &&;
-
-    /**
      * Sets the UErrorCode if an error occurred in the fluent chain.
      * Preserves older error codes in the outErrorCode.
      * @return TRUE if U_FAILURE(outErrorCode)
@@ -2115,7 +2153,7 @@ class U_I18N_API NumberFormatterSettings {
         }
         fMacros.copyErrorTo(outErrorCode);
         return U_FAILURE(outErrorCode);
-    }
+    };
 
     // NOTE: Uses default copy and move constructors.
 
@@ -2135,8 +2173,6 @@ class U_I18N_API NumberFormatterSettings {
 
 /**
  * A NumberFormatter that does not yet have a locale. In order to format numbers, a locale must be specified.
- *
- * Instances of this class are immutable and thread-safe.
  *
  * @see NumberFormatter
  * @draft ICU 60
@@ -2215,8 +2251,6 @@ class U_I18N_API UnlocalizedNumberFormatter
 
 /**
  * A NumberFormatter that has a locale associated with it; this means .format() methods are available.
- *
- * Instances of this class are immutable and thread-safe.
  *
  * @see NumberFormatter
  * @draft ICU 60
@@ -2399,78 +2433,88 @@ class U_I18N_API LocalizedNumberFormatter
  * The result of a number formatting operation. This class allows the result to be exported in several data types,
  * including a UnicodeString and a FieldPositionIterator.
  *
- * Instances of this class are immutable and thread-safe.
- *
  * @draft ICU 60
  */
-class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
+class U_I18N_API FormattedNumber : public UMemory {
   public:
-
+#ifndef U_HIDE_DEPRECATED_API
     /**
-     * Default constructor; makes an empty FormattedNumber.
-     * @draft ICU 64
+     * Returns a UnicodeString representation of the formatted number.
+     *
+     * @return a UnicodeString containing the localized number.
+     * @deprecated ICU 62 Use the version of this method with an error code instead.
+     *                This method was never @stable and will be removed in a future release.
+     *                See http://bugs.icu-project.org/trac/ticket/13746
      */
-    FormattedNumber()
-        : fData(nullptr), fErrorCode(U_INVALID_STATE_ERROR) {}
+    UnicodeString toString() const;
+#endif  /* U_HIDE_DEPRECATED_API */
 
     /**
-     * Move constructor: Leaves the source FormattedNumber in an undefined state.
+     * Returns a UnicodeString representation of the formatted number.
+     *
+     * @param status
+     *            Set if an error occurs while formatting the number to the UnicodeString.
+     * @return a UnicodeString containing the localized number.
      * @draft ICU 62
      */
-    FormattedNumber(FormattedNumber&& src) U_NOEXCEPT;
+    UnicodeString toString(UErrorCode& status) const;
 
+#ifndef U_HIDE_DEPRECATED_API
     /**
-     * Destruct an instance of FormattedNumber.
-     * @draft ICU 60
+     * Appends the formatted number to an Appendable.
+     *
+     * @param appendable
+     *            The Appendable to which to append the formatted number string.
+     * @return The same Appendable, for chaining.
+     * @deprecated ICU 62 Use the version of this method with an error code instead.
+     *                This method was never @stable and will be removed in a future release.
+     *                See http://bugs.icu-project.org/trac/ticket/13746
+     * @see Appendable
      */
-    virtual ~FormattedNumber() U_OVERRIDE;
-
-    /** Copying not supported; use move constructor instead. */
-    FormattedNumber(const FormattedNumber&) = delete;
-
-    /** Copying not supported; use move assignment instead. */
-    FormattedNumber& operator=(const FormattedNumber&) = delete;
+    Appendable &appendTo(Appendable &appendable);
+#endif  /* U_HIDE_DEPRECATED_API */
 
     /**
-     * Move assignment: Leaves the source FormattedNumber in an undefined state.
+     * Appends the formatted number to an Appendable.
+     *
+     * @param appendable
+     *            The Appendable to which to append the formatted number string.
+     * @param status
+     *            Set if an error occurs while formatting the number to the Appendable.
+     * @return The same Appendable, for chaining.
      * @draft ICU 62
+     * @see Appendable
      */
-    FormattedNumber& operator=(FormattedNumber&& src) U_NOEXCEPT;
+    Appendable &appendTo(Appendable &appendable, UErrorCode& status) const;
 
-    // Copybrief: this method is older than the parent method
+#ifndef U_HIDE_DEPRECATED_API
     /**
-     * @copybrief FormattedValue::toString()
+     * Determine the start and end indices of the first occurrence of the given <em>field</em> in the output string.
+     * This allows you to determine the locations of the integer part, fraction part, and sign.
      *
-     * For more information, see FormattedValue::toString()
+     * <p>
+     * If multiple different field attributes are needed, this method can be called repeatedly, or if <em>all</em> field
+     * attributes are needed, consider using populateFieldPositionIterator().
      *
-     * @draft ICU 62
+     * <p>
+     * If a field occurs multiple times in an output string, such as a grouping separator, this method will only ever
+     * return the first occurrence. Use populateFieldPositionIterator() to access all occurrences of an attribute.
+     *
+     * @param fieldPosition
+     *            The FieldPosition to populate with the start and end indices of the desired field.
+     * @param status
+     *            Set if an error occurs while populating the FieldPosition.
+     * @deprecated ICU 62 Use {@link #nextFieldPosition} instead. This method will be removed in a future
+     *             release. See http://bugs.icu-project.org/trac/ticket/13746
+     * @see UNumberFormatFields
      */
-    UnicodeString toString(UErrorCode& status) const U_OVERRIDE;
-
-    // Copydoc: this method is new in ICU 64
-    /** @copydoc FormattedValue::toTempString() */
-    UnicodeString toTempString(UErrorCode& status) const U_OVERRIDE;
-
-    // Copybrief: this method is older than the parent method
-    /**
-     * @copybrief FormattedValue::appendTo()
-     *
-     * For more information, see FormattedValue::appendTo()
-     *
-     * @draft ICU 62
-     */
-    Appendable &appendTo(Appendable& appendable, UErrorCode& status) const U_OVERRIDE;
-
-    // Copydoc: this method is new in ICU 64
-    /** @copydoc FormattedValue::nextPosition() */
-    UBool nextPosition(ConstrainedFieldPosition& cfpos, UErrorCode& status) const U_OVERRIDE;
+    void populateFieldPosition(FieldPosition &fieldPosition, UErrorCode &status);
+#endif  /* U_HIDE_DEPRECATED_API */
 
     /**
      * Determines the start (inclusive) and end (exclusive) indices of the next occurrence of the given
      * <em>field</em> in the output string. This allows you to determine the locations of, for example,
      * the integer part, fraction part, or symbols.
-     *
-     * This is a simpler but less powerful alternative to {@link #nextPosition}.
      *
      * If a field occurs just once, calling this method will find that occurrence and return it. If a
      * field occurs multiple times, this method may be called repeatedly with the following pattern:
@@ -2483,7 +2527,7 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
      * </pre>
      *
      * This method is useful if you know which field to query. If you want all available field position
-     * information, use {@link #nextPosition} or {@link #getAllFieldPositions}.
+     * information, use #getAllFieldPositions().
      *
      * @param fieldPosition
      *            Input+output variable. On input, the "field" property determines which field to look
@@ -2500,13 +2544,30 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
      */
     UBool nextFieldPosition(FieldPosition& fieldPosition, UErrorCode& status) const;
 
+#ifndef U_HIDE_DEPRECATED_API
     /**
      * Export the formatted number to a FieldPositionIterator. This allows you to determine which characters in
      * the output string correspond to which <em>fields</em>, such as the integer part, fraction part, and sign.
      *
-     * This is an alternative to the more powerful #nextPosition() API.
+     * <p>
+     * If information on only one field is needed, consider using populateFieldPosition() instead.
      *
-     * If information on only one field is needed, use #nextPosition() or #nextFieldPosition() instead.
+     * @param iterator
+     *            The FieldPositionIterator to populate with all of the fields present in the formatted number.
+     * @param status
+     *            Set if an error occurs while populating the FieldPositionIterator.
+     * @deprecated ICU 62 Use {@link #getAllFieldPositions} instead. This method will be removed in a
+     *             future release. See http://bugs.icu-project.org/trac/ticket/13746
+     * @see UNumberFormatFields
+     */
+    void populateFieldPositionIterator(FieldPositionIterator &iterator, UErrorCode &status);
+#endif  /* U_HIDE_DEPRECATED_API */
+
+    /**
+     * Export the formatted number to a FieldPositionIterator. This allows you to determine which characters in
+     * the output string correspond to which <em>fields</em>, such as the integer part, fraction part, and sign.
+     *
+     * If information on only one field is needed, use #nextFieldPosition() instead.
      *
      * @param iterator
      *            The FieldPositionIterator to populate with all of the fields present in the formatted number.
@@ -2533,9 +2594,39 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
 
 #endif  /* U_HIDE_INTERNAL_API */
 
+    /**
+     * Copying not supported; use move constructor instead.
+     */
+    FormattedNumber(const FormattedNumber&) = delete;
+
+    /**
+     * Copying not supported; use move assignment instead.
+     */
+    FormattedNumber& operator=(const FormattedNumber&) = delete;
+
+    /**
+     * Move constructor:
+     * Leaves the source FormattedNumber in an undefined state.
+     * @draft ICU 62
+     */
+    FormattedNumber(FormattedNumber&& src) U_NOEXCEPT;
+
+    /**
+     * Move assignment:
+     * Leaves the source FormattedNumber in an undefined state.
+     * @draft ICU 62
+     */
+    FormattedNumber& operator=(FormattedNumber&& src) U_NOEXCEPT;
+
+    /**
+     * Destruct an instance of FormattedNumber, cleaning up any memory it might own.
+     * @draft ICU 60
+     */
+    ~FormattedNumber();
+
   private:
     // Can't use LocalPointer because UFormattedNumberData is forward-declared
-    const impl::UFormattedNumberData *fData;
+    const impl::UFormattedNumberData *fResults;
 
     // Error code for the terminal methods
     UErrorCode fErrorCode;
@@ -2545,16 +2636,13 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
      * @internal
      */
     explicit FormattedNumber(impl::UFormattedNumberData *results)
-        : fData(results), fErrorCode(U_ZERO_ERROR) {}
+        : fResults(results), fErrorCode(U_ZERO_ERROR) {};
 
     explicit FormattedNumber(UErrorCode errorCode)
-        : fData(nullptr), fErrorCode(errorCode) {}
+        : fResults(nullptr), fErrorCode(errorCode) {};
 
     // To give LocalizedNumberFormatter format methods access to this class's constructor:
     friend class LocalizedNumberFormatter;
-
-    // To give C API access to internals
-    friend struct impl::UFormattedNumberImpl;
 };
 
 /**
@@ -2588,9 +2676,6 @@ class U_I18N_API NumberFormatter final {
      * Call this method at the beginning of a NumberFormatter fluent chain to create an instance based
      * on a given number skeleton string.
      *
-     * It is possible for an error to occur while parsing. See the overload of this method if you are
-     * interested in the location of a possible parse error.
-     *
      * @param skeleton
      *            The skeleton string off of which to base this NumberFormatter.
      * @param status
@@ -2599,26 +2684,6 @@ class U_I18N_API NumberFormatter final {
      * @draft ICU 62
      */
     static UnlocalizedNumberFormatter forSkeleton(const UnicodeString& skeleton, UErrorCode& status);
-
-    /**
-     * Call this method at the beginning of a NumberFormatter fluent chain to create an instance based
-     * on a given number skeleton string.
-     *
-     * If an error occurs while parsing the skeleton string, the offset into the skeleton string at
-     * which the error occurred will be saved into the UParseError, if provided.
-     *
-     * @param skeleton
-     *            The skeleton string off of which to base this NumberFormatter.
-     * @param perror
-     *            A parse error struct populated if an error occurs when parsing.
- *                If no error occurs, perror.offset will be set to -1.
-     * @param status
-     *            Set to U_NUMBER_SKELETON_SYNTAX_ERROR if the skeleton was invalid.
-     * @return An UnlocalizedNumberFormatter, to be used for chaining.
-     * @draft ICU 64
-     */
-    static UnlocalizedNumberFormatter forSkeleton(const UnicodeString& skeleton,
-                                                  UParseError& perror, UErrorCode& status);
 
     /**
      * Use factory methods instead of the constructor to create a NumberFormatter.

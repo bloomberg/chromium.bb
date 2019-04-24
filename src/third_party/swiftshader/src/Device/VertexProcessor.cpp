@@ -94,32 +94,19 @@ namespace sw
 	void VertexProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precacheVertex ? "sw-vertex" : 0);
 	}
 
-	const VertexProcessor::State VertexProcessor::update(VkPrimitiveTopology topology)
+	const VertexProcessor::State VertexProcessor::update(DrawType drawType)
 	{
 		State state;
 
 		state.shaderID = context->vertexShader->getSerialID();
 
-		switch(topology)
-		{
-		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
-			state.verticesPerPrimitive = 1;
-			break;
-		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
-			state.verticesPerPrimitive = 2;
-			break;
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
-		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
-			state.verticesPerPrimitive = 3;
-			break;
-		default:
-			UNIMPLEMENTED("topology %d", int(topology));
-		}
+		// Note: Quads aren't handled for verticesPerPrimitive, but verticesPerPrimitive is used for transform feedback,
+		//       which is an OpenGL ES 3.0 feature, and OpenGL ES 3.0 doesn't support quads as a primitive type.
+		DrawType type = static_cast<DrawType>(static_cast<unsigned int>(drawType) & 0xF);
+		state.verticesPerPrimitive = 1 + (type >= DRAW_LINELIST) + (type >= DRAW_TRIANGLELIST);
 
 		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
 		{
@@ -142,7 +129,7 @@ namespace sw
 
 		if(!routine)   // Create one
 		{
-			VertexRoutine *generator = new VertexProgram(state, context->pipelineLayout, context->vertexShader, context->descriptorSets);
+			VertexRoutine *generator = new VertexProgram(state, context->pipelineLayout, context->vertexShader);
 			generator->generate();
 			routine = (*generator)("VertexRoutine_%0.8X", state.shaderID);
 			delete generator;

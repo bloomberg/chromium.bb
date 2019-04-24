@@ -26,7 +26,8 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+//
+// Author: wan@google.com (Zhanyong Wan)
 //
 // Tests using global test environments.
 
@@ -53,7 +54,7 @@ class MyEnvironment : public testing::Environment {
   // Depending on the value of failure_in_set_up_, SetUp() will
   // generate a non-fatal failure, generate a fatal failure, or
   // succeed.
-  void SetUp() override {
+  virtual void SetUp() {
     set_up_was_run_ = true;
 
     switch (failure_in_set_up_) {
@@ -69,7 +70,7 @@ class MyEnvironment : public testing::Environment {
   }
 
   // Generates a non-fatal failure.
-  void TearDown() override {
+  virtual void TearDown() {
     tear_down_was_run_ = true;
     ADD_FAILURE() << "Expected non-fatal failure in global tear-down.";
   }

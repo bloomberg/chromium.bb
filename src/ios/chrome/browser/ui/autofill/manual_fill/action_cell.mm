@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -13,6 +12,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// The multiplier for the base system spacing at the top margin.
+static const CGFloat TopBaseSystemSpacingMultiplier = 0.8;
+
+// The multiplier for the base system spacing at the bottom margin.
+static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
+
+}  // namespace
 
 @interface ManualFillActionItem ()
 
@@ -104,24 +113,21 @@
                            forState:UIControlStateNormal];
   }
   self.action = action;
-  if (enabled) {
-    self.dynamicConstraints = [[NSMutableArray alloc] initWithArray:@[
-      [self.contentView.topAnchor
-          constraintEqualToAnchor:self.titleButton.topAnchor],
-      [self.contentView.bottomAnchor
-          constraintEqualToAnchor:self.titleButton.bottomAnchor],
-    ]];
-  } else {
-    self.dynamicConstraints = [[NSMutableArray alloc] initWithArray:@[
-      [self.titleButton.topAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                         multiplier:1.0],
-      [self.contentView.bottomAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.titleButton
-                                                        .bottomAnchor
-                                         multiplier:1.0],
-    ]];
-  }
+
+  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+  [verticalLeadViews addObject:self.titleButton];
+
+  // When disabled, the label is in 'message' mode, and needs to be centered
+  // differently because it is in the data area rather than in the action area.
+  CGFloat topMultiplier =
+      enabled ? TopBaseSystemSpacingMultiplier : TopSystemSpacingMultiplier;
+  CGFloat bottomMultiplier = enabled ? BottomBaseSystemSpacingMultiplier
+                                     : MiddleSystemSpacingMultiplier;
+
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalLeadViews, self.contentView,
+      topMultiplier, MiddleSystemSpacingMultiplier, bottomMultiplier);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
@@ -133,11 +139,9 @@
   UIView* guide = self.contentView;
   self.grayLine = CreateGraySeparatorForContainer(guide);
 
-  self.titleButton = [ManualFillCellButton buttonWithType:UIButtonTypeCustom];
-  [self.titleButton addTarget:self
-                       action:@selector(userDidTapTitleButton:)
-             forControlEvents:UIControlEventTouchUpInside];
-
+  self.titleButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapTitleButton:), self);
+  self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   [self.contentView addSubview:self.titleButton];
 
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =

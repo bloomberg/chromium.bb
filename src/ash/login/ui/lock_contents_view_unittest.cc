@@ -25,7 +25,6 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -36,7 +35,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
@@ -1298,60 +1297,6 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
   EXPECT_TRUE(pin_view->visible());
 }
 
-TEST_F(LockContentsViewKeyboardUnitTest,
-       RotationWithKeyboardDoesNotCoverInput) {
-  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LockContentsView* contents =
-      LockScreen::TestApi(LockScreen::Get()).contents_view();
-  ASSERT_NE(nullptr, contents);
-
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          contents->GetWidget()->GetNativeWindow());
-
-  for (int user_count = 1; user_count < 10; user_count++) {
-    SetUserCount(user_count);
-    display_manager()->SetDisplayRotation(
-        display.id(), display::Display::ROTATE_0,
-        display::Display::RotationSource::ACTIVE);
-
-    ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
-    const int height_when_keyboard_shown = contents->height();
-    ASSERT_NO_FATAL_FAILURE(HideKeyboard());
-    const int height_when_keyboard_hidden = contents->height();
-    EXPECT_LT(height_when_keyboard_shown, height_when_keyboard_hidden);
-
-    ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
-
-    EXPECT_EQ(height_when_keyboard_shown, contents->height());
-    // Rotate the display to 90 degrees (portrait).
-    display_manager()->SetDisplayRotation(
-        display.id(), display::Display::ROTATE_90,
-        display::Display::RotationSource::ACTIVE);
-
-    // Rotate the display back to 0 degrees (landscape).
-    display_manager()->SetDisplayRotation(
-        display.id(), display::Display::ROTATE_0,
-        display::Display::RotationSource::ACTIVE);
-    EXPECT_EQ(height_when_keyboard_shown, contents->height());
-
-    ASSERT_NO_FATAL_FAILURE(HideKeyboard());
-
-    EXPECT_EQ(height_when_keyboard_hidden, contents->height());
-    // Rotate the display to 90 degrees (portrait).
-    display_manager()->SetDisplayRotation(
-        display.id(), display::Display::ROTATE_90,
-        display::Display::RotationSource::ACTIVE);
-
-    // Rotate the display back to 0 degrees (landscape).
-    display_manager()->SetDisplayRotation(
-        display.id(), display::Display::ROTATE_0,
-        display::Display::RotationSource::ACTIVE);
-
-    EXPECT_EQ(height_when_keyboard_hidden, contents->height());
-  }
-}
-
 // Verifies that swapping auth users while the virtual keyboard is active
 // focuses the other user's password field.
 TEST_F(LockContentsViewKeyboardUnitTest, SwitchUserWhileKeyboardShown) {
@@ -1819,28 +1764,23 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   EXPECT_FALSE(pin_view->visible());
   EXPECT_FALSE(disabled_auth_message->visible());
   // Setting auth disabled will hide the password field and show the message.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+  DataDispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
   EXPECT_FALSE(password_view->visible());
   EXPECT_FALSE(pin_view->visible());
   EXPECT_TRUE(disabled_auth_message->visible());
   // Setting auth enabled will hide the message and show the password field.
-  DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
+  DataDispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                          base::nullopt);
   EXPECT_TRUE(password_view->visible());
   EXPECT_FALSE(pin_view->visible());
   EXPECT_FALSE(disabled_auth_message->visible());
 
   // Set auth disabled again.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+  DataDispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
   EXPECT_FALSE(password_view->visible());
   EXPECT_FALSE(pin_view->visible());
   EXPECT_TRUE(disabled_auth_message->visible());
@@ -1850,7 +1790,8 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   EXPECT_FALSE(pin_view->visible());
   EXPECT_TRUE(disabled_auth_message->visible());
   // Set auth enabled again. Both password field and PIN keyboard are shown.
-  DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
+  DataDispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                          base::nullopt);
   EXPECT_TRUE(password_view->visible());
   EXPECT_TRUE(pin_view->visible());
   EXPECT_FALSE(disabled_auth_message->visible());
@@ -1876,29 +1817,25 @@ TEST_F(LockContentsViewUnitTest,
 
   EXPECT_TRUE(note_action_button->visible());
   // Setting auth disabled hides the note action button.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+  DataDispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
   EXPECT_FALSE(note_action_button->visible());
   // Setting auth enabled shows the note action button.
-  DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
+  DataDispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                          base::nullopt);
   EXPECT_TRUE(note_action_button->visible());
 
   // Set auth disabled again.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+  DataDispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
   EXPECT_FALSE(note_action_button->visible());
   // Set the lock screen note state to |kNotAvailable| while the note action
   // button is hidden.
   tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kNotAvailable);
-  DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
+  DataDispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                          base::nullopt);
   // The note action button remains hidden after setting auth enabled.
   EXPECT_FALSE(note_action_button->visible());
 }
@@ -1920,12 +1857,9 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   LoginUserView* user_view = auth_test_api.user_view();
 
   // The message is visible after disabling auth and it receives initial focus.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+  DataDispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
   EXPECT_TRUE(disabled_auth_message->visible());
   EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
   // Tabbing from the message will move focus to the user view.
@@ -2336,40 +2270,6 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithNoUsers) {
   EXPECT_TRUE(lock->GetFocusManager()->GetFocusedView());
   lock->OnFocusLeavingSystemTray(true /* reverse */);
   EXPECT_TRUE(lock->GetFocusManager()->GetFocusedView());
-}
-
-TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogOpen) {
-  auto* lock = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      DataDispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
-  SetWidget(CreateWidgetWithContent(lock));
-
-  // FocusOobeDialog called when OOBE dialog visible.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
-  EXPECT_CALL(*client, FocusOobeDialog()).Times(1);
-
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::GAIA_SIGNIN);
-  lock->OnFocusLeavingSystemTray(false /* reverse */);
-  Shell::Get()->login_screen_controller()->FlushForTesting();
-}
-
-TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
-  auto* lock = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      DataDispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
-  SetWidget(CreateWidgetWithContent(lock));
-
-  // FocusOobeDialog not called when OOBE dialog not visible.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
-  EXPECT_CALL(*client, FocusOobeDialog()).Times(0);
-
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::HIDDEN);
-  lock->OnFocusLeavingSystemTray(false /* reverse */);
-  Shell::Get()->login_screen_controller()->FlushForTesting();
 }
 
 }  // namespace ash

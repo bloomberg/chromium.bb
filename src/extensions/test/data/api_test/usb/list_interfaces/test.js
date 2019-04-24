@@ -10,7 +10,6 @@ var tests = [
       var device = devices[0];
       usb.listInterfaces(device, function (result) {
         chrome.test.assertNoLastError();
-        usb.closeDevice(device);
         chrome.test.succeed();
       });
     });

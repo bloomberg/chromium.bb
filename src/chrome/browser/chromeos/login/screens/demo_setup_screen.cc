@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 
 namespace {
 
@@ -19,9 +21,10 @@ constexpr char kUserActionPowerwash[] = "powerwash";
 
 namespace chromeos {
 
-DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
+DemoSetupScreen::DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
+                                 DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_DEMO_SETUP),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
@@ -50,7 +53,9 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionClose) {
     exit_callback_.Run(Result::CANCELED);
   } else if (action_id == kUserActionPowerwash) {
-    SessionManagerClient::Get()->StartDeviceWipe();
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->StartDeviceWipe();
   } else {
     BaseScreen::OnUserAction(action_id);
   }

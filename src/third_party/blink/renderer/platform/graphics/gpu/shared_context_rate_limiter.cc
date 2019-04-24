@@ -15,6 +15,11 @@
 
 namespace blink {
 
+std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::Create(
+    unsigned max_pending_ticks) {
+  return base::WrapUnique(new SharedContextRateLimiter(max_pending_ticks));
+}
+
 SharedContextRateLimiter::SharedContextRateLimiter(unsigned max_pending_ticks)
     : max_pending_ticks_(max_pending_ticks), can_use_sync_queries_(false) {
   context_provider_ =

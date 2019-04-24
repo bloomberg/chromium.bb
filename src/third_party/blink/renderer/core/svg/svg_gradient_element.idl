@@ -39,5 +39,5 @@
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration   spreadMethod;
 };
 
-SVGGradientElement includes SVGURIReference;
-// SVGGradientElement includes SVGUnitTypes;
+SVGGradientElement implements SVGURIReference;
+// SVGGradientElement implements SVGUnitTypes;

@@ -148,7 +148,7 @@ TEST_F(VirtualKeyboardControllerTest,
   Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
 
   // Should show the keyboard by enabling it temporarily.
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
   EXPECT_FALSE(keyboard_controller()->IsEnableFlagSet(
       KeyboardEnableFlag::kShelfEnabled));
 
@@ -158,7 +158,7 @@ TEST_F(VirtualKeyboardControllerTest,
 
   EXPECT_TRUE(keyboard_controller()->IsEnableFlagSet(
       KeyboardEnableFlag::kShelfEnabled));
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
 
   // Keyset should be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
@@ -172,7 +172,7 @@ TEST_F(VirtualKeyboardControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // The keyboard should still be disabled again.
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
   EXPECT_FALSE(keyboard_controller()->IsEnableFlagSet(
       KeyboardEnableFlag::kShelfEnabled));
 
@@ -195,7 +195,7 @@ TEST_F(VirtualKeyboardControllerTest,
 
   EXPECT_TRUE(keyboard_controller()->IsEnableFlagSet(
       KeyboardEnableFlag::kShelfEnabled));
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
 
   // Keyset should be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
@@ -211,7 +211,7 @@ TEST_F(VirtualKeyboardControllerTest,
   // The keyboard should still be enabled.
   EXPECT_TRUE(keyboard_controller()->IsEnableFlagSet(
       KeyboardEnableFlag::kShelfEnabled));
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
 
   // Keyset should still be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
@@ -270,13 +270,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
   keyboard_devices.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
   // Remove the internal keyboard. Virtual keyboard should now show.
   ws::InputDeviceClientTestApi().SetKeyboardDevices({});
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
   // Replug in the internal keyboard. Virtual keyboard should hide.
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
@@ -286,10 +286,10 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB,
                             "Touchscreen", gfx::Size(800, 600), 0));
   ws::InputDeviceClientTestApi().SetTouchscreenDevices(devices);
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
   // Remove touchscreen. Keyboard should hide.
   ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
@@ -302,28 +302,28 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   keyboard_devices.push_back(
       ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
   GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
   GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Remove external keyboard. Should be notified that the keyboard is not
   // suppressed.
   ResetObserver();
   ws::InputDeviceClientTestApi().SetKeyboardDevices({});
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_FALSE(IsVirtualKeyboardSuppressed());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_FALSE(IsVirtualKeyboardSuppressed());
 }
 
 // Tests handling multiple keyboards. Catches crbug.com/430252
@@ -336,7 +336,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
   keyboards.push_back(
       ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboards);
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 // Tests tablet mode interaction without disabling the internal keyboard.
@@ -350,13 +350,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringTabletMode) {
   keyboard_devices.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
   // Toggle tablet mode on.
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
   // Toggle tablet mode off.
   TabletModeControllerTestApi().LeaveTabletMode();
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 // Tests that keyboard gets suppressed in tablet mode.
@@ -374,32 +374,32 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInTabletMode) {
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
   // Toggle tablet mode on.
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
   GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
   GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_TRUE(IsVirtualKeyboardSuppressed());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Remove external keyboard. Should be notified that the keyboard is not
   // suppressed.
   ResetObserver();
   keyboard_devices.pop_back();
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
-  EXPECT_TRUE(notified());
-  EXPECT_FALSE(IsVirtualKeyboardSuppressed());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
+  ASSERT_TRUE(notified());
+  ASSERT_FALSE(IsVirtualKeyboardSuppressed());
   // Toggle tablet mode oFF.
   TabletModeControllerTestApi().LeaveTabletMode();
-  EXPECT_FALSE(keyboard_controller()->IsEnabled());
+  ASSERT_FALSE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 class VirtualKeyboardControllerAlwaysEnabledTest
@@ -431,7 +431,7 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
   keyboard_devices.push_back(
       ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
-  EXPECT_TRUE(keyboard_controller()->IsEnabled());
+  ASSERT_TRUE(keyboard_controller()->IsKeyboardEnableRequested());
 }
 
 // Test for http://crbug.com/297858. |GetContainerForDefaultDisplay| should

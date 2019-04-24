@@ -288,13 +288,13 @@ public:
     }
 
     _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
-    const_reference front() const _NOEXCEPT
+    const_reference front() const
     {
         return _LIBCPP_ASSERT(!empty(), "string_view::front(): string is empty"), __data[0];
     }
 
     _LIBCPP_CONSTEXPR _LIBCPP_INLINE_VISIBILITY
-    const_reference back() const _NOEXCEPT
+    const_reference back() const
     {
         return _LIBCPP_ASSERT(!empty(), "string_view::back(): string is empty"), __data[__size-1];
     }

@@ -341,9 +341,6 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  // When the context goes away, reject any pending script promise resolvers.
-  virtual void RejectPendingResolvers();
-
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
 
@@ -367,6 +364,8 @@ class MODULES_EXPORT BaseAudioContext
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
  private:
+  friend class AudioContextAutoplayTest;
+
   // Unique ID for each context.
   const String uuid_;
 
@@ -379,6 +378,10 @@ class MODULES_EXPORT BaseAudioContext
 
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
+
+  // When the context is going away, reject any pending script promise
+  // resolvers.
+  virtual void RejectPendingResolvers();
 
   // Set to |true| by the audio thread when it posts a main-thread task to
   // perform delayed state sync'ing updates that needs to be done on the main

@@ -27,14 +27,14 @@ namespace {
 constexpr float kInkDropVisibleOpacity = 0.06f;
 
 // The duration of the crossfade animation when swapping the button's images.
-constexpr int kSwapImagesAnimationDurationMs = 200;
+const int kSwapImagesAnimationDurationMs = 200;
 
 // The duration of the fade out animation of the old icon during a crossfade
 // animation as a ratio of |kSwapImagesAnimationDurationMs|.
-constexpr float kFadeOutRatio = 0.5f;
+const float kFadeOutRatio = 0.5f;
 
 // The ratio applied to the button's alpha when the button is disabled.
-constexpr float kDisabledButtonAlphaRatio = 0.5f;
+const float kDisabledButtonAlphaRatio = 0.5f;
 
 }  // namespace
 

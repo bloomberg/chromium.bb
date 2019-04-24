@@ -144,7 +144,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (enterVrHandled.getAndSet(true)) return;
-            assert !VrModule.isInstalled();
+            assert !VrModuleProvider.isModuleInstalled();
             onVrModuleInstallFailure(activity);
         }, WAITING_FOR_MODULE_TIMEOUT_MS);
     }
@@ -197,7 +197,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             onVrModuleInstallFailure(activity);
             return;
         }
-        assert VrModule.isInstalled();
+        assert VrModuleProvider.isModuleInstalled();
 
         ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC.record(true);
 

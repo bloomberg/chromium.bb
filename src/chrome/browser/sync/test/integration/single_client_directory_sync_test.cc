@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/syncable/directory.h"
 #include "sql/test/test_helpers.h"
@@ -62,7 +62,8 @@ void WaitForExistingTasksOnTaskRunner(
 // A status change checker that waits for an unrecoverable sync error to occur.
 class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncUnrecoverableErrorChecker(syncer::ProfileSyncService* service)
+  explicit SyncUnrecoverableErrorChecker(
+      browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -77,7 +78,7 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  syncer::ProfileSyncService* sync_service = GetSyncService(0);
+  browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   FilePath directory_path = sync_service->GetSyncClientForTest()
                                 ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
@@ -106,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Flush the directory to the backing store and wait until the flush
   // completes.
-  syncer::ProfileSyncService* sync_service = GetSyncService(0);
+  browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   sync_service->FlushDirectory();
   scoped_refptr<base::SingleThreadTaskRunner> sync_thread_task_runner =
       sync_service->GetSyncThreadTaskRunnerForTest();

@@ -44,26 +44,16 @@ class GamepadComparisonsTest : public testing::Test {
     InitGamepadVector(p.linear_acceleration);
   }
 
-  Gamepad* CreateGamepad() {
-    TimeTicks dummy_time_origin =
-        TimeTicks() + TimeDelta::FromMicroseconds(1000);
-    TimeTicks dummy_time_floor =
-        TimeTicks() + TimeDelta::FromMicroseconds(2000);
-    return MakeGarbageCollected<Gamepad>(nullptr, 0, dummy_time_origin,
-                                         dummy_time_floor);
-  }
-
-  GamepadList* CreateEmptyGamepadList() {
-    return MakeGarbageCollected<GamepadList>();
-  }
+  GamepadList* CreateEmptyGamepadList() { return GamepadList::Create(); }
 
   GamepadList* CreateGamepadListWithNeutralGamepad() {
     double axes[1] = {0.0};
     device::GamepadButton buttons[1] = {{false, false, 0.0}};
     device::GamepadPose null_pose;
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -76,9 +66,10 @@ class GamepadComparisonsTest : public testing::Test {
     double axes[1] = {0.95};
     device::GamepadButton buttons[1] = {{false, false, 0.0}};
 
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -90,9 +81,10 @@ class GamepadComparisonsTest : public testing::Test {
     double axes[1] = {0.0};
     device::GamepadButton buttons[1] = {{true, true, 1.0}};
 
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -109,9 +101,10 @@ class GamepadComparisonsTest : public testing::Test {
         device::GamepadButton::kDefaultButtonPressedThreshold - 0.01,
     }};
 
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -128,9 +121,10 @@ class GamepadComparisonsTest : public testing::Test {
         device::GamepadButton::kDefaultButtonPressedThreshold + 0.01,
     }};
 
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -143,9 +137,10 @@ class GamepadComparisonsTest : public testing::Test {
     device::GamepadButton buttons[1] = {{false, false, 0.0}};
     device::GamepadPose pose;
     InitGamepadPose(pose);
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);
@@ -161,9 +156,10 @@ class GamepadComparisonsTest : public testing::Test {
     InitGamepadPose(pose);
     // Modify the linear velocity.
     pose.linear_velocity.x = 100.f;
-    auto* list = MakeGarbageCollected<GamepadList>();
-    auto* gamepad = CreateGamepad();
+    auto* list = GamepadList::Create();
+    auto* gamepad = Gamepad::Create(nullptr);
     gamepad->SetId("gamepad");
+    gamepad->SetIndex(0);
     gamepad->SetAxes(1, axes);
     gamepad->SetButtons(1, buttons);
     gamepad->SetConnected(true);

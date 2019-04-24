@@ -145,8 +145,7 @@ JsonParser<seq_one_byte>::JsonParser(Isolate* isolate, Handle<String> source)
       position_(-1),
       properties_(&zone_) {
   source_ = String::Flatten(isolate, source_);
-  allocation_ = (source_length_ >= kPretenureTreshold) ? AllocationType::kOld
-                                                       : AllocationType::kYoung;
+  pretenure_ = (source_length_ >= kPretenureTreshold) ? TENURED : NOT_TENURED;
 
   // Optimized fast case where we only have Latin1 characters.
   if (seq_one_byte) {
@@ -366,7 +365,7 @@ template <bool seq_one_byte>
 Handle<Object> JsonParser<seq_one_byte>::ParseJsonObject() {
   HandleScope scope(isolate());
   Handle<JSObject> json_object =
-      factory()->NewJSObject(object_constructor(), allocation_);
+      factory()->NewJSObject(object_constructor(), pretenure_);
   Handle<Map> map(json_object->map(), isolate());
   int descriptor = 0;
   VectorSegment<ZoneVector<Handle<Object>>> properties(&properties_);
@@ -604,18 +603,18 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonArray() {
     case PACKED_ELEMENTS:
     case PACKED_SMI_ELEMENTS: {
       Handle<FixedArray> elems =
-          factory()->NewFixedArray(elements_size, allocation_);
+          factory()->NewFixedArray(elements_size, pretenure_);
       for (int i = 0; i < elements_size; i++) elems->set(i, *elements[i]);
-      json_array = factory()->NewJSArrayWithElements(elems, kind, allocation_);
+      json_array = factory()->NewJSArrayWithElements(elems, kind, pretenure_);
       break;
     }
     case PACKED_DOUBLE_ELEMENTS: {
       Handle<FixedDoubleArray> elems = Handle<FixedDoubleArray>::cast(
-          factory()->NewFixedDoubleArray(elements_size, allocation_));
+          factory()->NewFixedDoubleArray(elements_size, pretenure_));
       for (int i = 0; i < elements_size; i++) {
         elems->set(i, elements[i]->Number());
       }
-      json_array = factory()->NewJSArrayWithElements(elems, kind, allocation_);
+      json_array = factory()->NewJSArrayWithElements(elems, kind, pretenure_);
       break;
     }
     default:
@@ -689,7 +688,7 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonNumber() {
     buffer.Dispose();
   }
   SkipWhitespace();
-  return factory()->NewNumber(number, allocation_);
+  return factory()->NewNumber(number, pretenure_);
 }
 
 template <typename StringType>
@@ -707,18 +706,18 @@ inline void SeqStringSet(Handle<SeqOneByteString> seq_str, int i, uc32 c) {
 
 template <typename StringType>
 inline Handle<StringType> NewRawString(Factory* factory, int length,
-                                       AllocationType allocation);
+                                       PretenureFlag pretenure);
 
 template <>
 inline Handle<SeqTwoByteString> NewRawString(Factory* factory, int length,
-                                             AllocationType allocation) {
-  return factory->NewRawTwoByteString(length, allocation).ToHandleChecked();
+                                             PretenureFlag pretenure) {
+  return factory->NewRawTwoByteString(length, pretenure).ToHandleChecked();
 }
 
 template <>
 inline Handle<SeqOneByteString> NewRawString(Factory* factory, int length,
-                                             AllocationType allocation) {
-  return factory->NewRawOneByteString(length, allocation).ToHandleChecked();
+                                             PretenureFlag pretenure) {
+  return factory->NewRawOneByteString(length, pretenure).ToHandleChecked();
 }
 
 // Scans the rest of a JSON string starting from position_ and writes
@@ -732,7 +731,7 @@ Handle<String> JsonParser<seq_one_byte>::SlowScanJsonString(
   int max_length = count + source_length_ - position_;
   int length = Min(max_length, Max(kInitialSpecialStringLength, 2 * count));
   Handle<StringType> seq_string =
-      NewRawString<StringType>(factory(), length, allocation_);
+      NewRawString<StringType>(factory(), length, pretenure_);
 
   {
     DisallowHeapAllocation no_gc;
@@ -940,7 +939,7 @@ Handle<String> JsonParser<seq_one_byte>::ScanJsonString() {
   } while (c0_ != '"');
   int length = position_ - beg_pos;
   Handle<String> result =
-      factory()->NewRawOneByteString(length, allocation_).ToHandleChecked();
+      factory()->NewRawOneByteString(length, pretenure_).ToHandleChecked();
   DisallowHeapAllocation no_gc;
   uint8_t* dest = SeqOneByteString::cast(*result)->GetChars(no_gc);
   String::WriteToFlat(*source_, dest, beg_pos, position_);

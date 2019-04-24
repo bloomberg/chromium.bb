@@ -70,7 +70,7 @@ public class SurveyInfoBar extends InfoBar {
      */
     private SurveyInfoBar(String siteId, boolean showAsBottomSheet, int displayLogoResId,
             SurveyInfoBarDelegate surveyInfoBarDelegate) {
-        super(displayLogoResId, 0, null, null);
+        super(displayLogoResId, null, null);
 
         mSiteId = siteId;
         mShowAsBottomSheet = showAsBottomSheet;

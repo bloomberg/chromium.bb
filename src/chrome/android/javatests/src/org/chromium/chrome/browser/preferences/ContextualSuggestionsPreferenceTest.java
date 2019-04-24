@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.contextual_suggestions.EmptyEnabledStateMonitor;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
@@ -25,7 +26,6 @@ import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for ContextualSuggestionsPreference.
@@ -103,7 +103,7 @@ public class ContextualSuggestionsPreferenceTest {
 
     @After
     public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> setSwitchState(mInitialSwitchState));
+        ThreadUtils.runOnUiThreadBlocking(() -> setSwitchState(mInitialSwitchState));
         ModuleFactoryOverrides.clearOverrides();
     }
 
@@ -111,7 +111,7 @@ public class ContextualSuggestionsPreferenceTest {
     @SmallTest
     @Feature({"ContextualSuggestions"})
     public void testSwitch_Toggle() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mEnabledStateMonitor.setSettingsEnabled(true);
 
             // Check initial state matches preference.
@@ -141,7 +141,7 @@ public class ContextualSuggestionsPreferenceTest {
     @SmallTest
     @Feature({"ContextualSuggestions"})
     public void testSwitch_SettingsStateChanged() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure switch is checked.
             mEnabledStateMonitor.setSettingsEnabled(true);
             setSwitchState(true);

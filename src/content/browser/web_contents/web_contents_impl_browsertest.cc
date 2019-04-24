@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     || defined(THREAD_SANITIZER)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else
-#define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
+#define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
 #endif
 // Test that RenderViewHost is created and updated at the size specified by
 // WebContentsDelegate::GetSizeForNewRenderView().
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   // Create a new server with a different site.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   std::unique_ptr<RenderViewSizeDelegate> delegate(
@@ -1810,8 +1810,6 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
   NavigateToURL(shell, GURL("data:text/html," + html));
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
-  EXPECT_EQ(expect_onunload || expect_onbeforeunload,
-            shell->web_contents()->NeedToFireBeforeUnload());
   EXPECT_EQ(expect_onunload,
             rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
   EXPECT_EQ(expect_onbeforeunload, rfh->GetSuddenTerminationDisablerState(
@@ -1822,22 +1820,6 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        SuddenTerminationDisablerNone) {
   const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
-  NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
-                                                  false, false);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebContentsImplBrowserTest,
-    SuddenTerminationDisablerNoneProcessTerminationDisallowed) {
-  const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
-  // The WebContents termination disabler should be independent of the
-  // RenderProcessHost termination disabler, as process termination can depend
-  // on more than the presence of a beforeunload/unload handler.
-  shell()
-      ->web_contents()
-      ->GetMainFrame()
-      ->GetProcess()
-      ->SetSuddenTerminationAllowed(false);
   NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
                                                   false, false);
 }

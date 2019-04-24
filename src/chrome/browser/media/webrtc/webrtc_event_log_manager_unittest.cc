@@ -4357,8 +4357,7 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Bool(),
         // The upload-supporting network type to be used.
         ::testing::Values(network::mojom::ConnectionType::CONNECTION_ETHERNET,
-                          network::mojom::ConnectionType::CONNECTION_WIFI,
-                          network::mojom::ConnectionType::CONNECTION_UNKNOWN),
+                          network::mojom::ConnectionType::CONNECTION_WIFI),
         // The upload-unsupporting network type to be used.
         ::testing::Values(network::mojom::ConnectionType::CONNECTION_NONE,
                           network::mojom::ConnectionType::CONNECTION_4G)));

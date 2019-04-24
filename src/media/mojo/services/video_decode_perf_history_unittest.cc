@@ -10,14 +10,12 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
@@ -120,19 +118,6 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
   }
 
  private:
-  friend class VideoDecodePerfHistoryTest;
-
-  // Private method for immediate retrieval of stats for test helpers.
-  std::unique_ptr<DecodeStatsEntry> GetDecodeStatsSync(
-      const VideoDescKey& key) {
-    auto entry_it = entries_.find(key.Serialize());
-    if (entry_it == entries_.end()) {
-      return nullptr;
-    } else {
-      return std::make_unique<DecodeStatsEntry>(entry_it->second);
-    }
-  }
-
   bool fail_next_append_ = false;
   bool fail_next_get_ = false;
 
@@ -143,13 +128,6 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
 
 class VideoDecodePerfHistoryTest : public testing::Test {
  public:
-  // Indicates what type of UKM verification should be performed upon saving
-  // new stats to the perf history.
-  enum class UkmVerifcation {
-    kNoUkmsAdded,
-    kSaveTriggersUkm,
-  };
-
   void SetUp() override {
     test_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     perf_history_ = std::make_unique<VideoDecodePerfHistory>(
@@ -185,159 +163,26 @@ class VideoDecodePerfHistoryTest : public testing::Test {
 
   MOCK_METHOD1(MockGetVideoDecodeStatsDBCB, void(VideoDecodeStatsDB* db));
 
-  // Internal check that the UKM verification is complete before the test exits.
-  MOCK_METHOD0(UkmVerifyDoneCb, void());
-
-  void SavePerfRecord(UkmVerifcation ukm_verification,
-                      const url::Origin& origin,
+  void SavePerfRecord(const url::Origin& origin,
                       bool is_top_frame,
                       mojom::PredictionFeatures features,
                       mojom::PredictionTargets targets,
                       uint64_t player_id) {
-    // Manually associate URL with |source_id|. In production this happens
-    // externally at a higher layer.
+    // Null saved done CB. Save is verified separately via GetPerfInfo() after
+    // save completes.
+    base::OnceClosure save_done_cb;
+
     const ukm::SourceId source_id = test_recorder_->GetNewSourceID();
     test_recorder_->UpdateSourceURL(source_id, origin.GetURL());
 
-    // Use save callback to verify UKM reporting.
-    base::OnceClosure save_done_cb;
-    switch (ukm_verification) {
-      case UkmVerifcation::kSaveTriggersUkm: {
-        // Expect UKM report with given properties upon successful save. Use
-        // old stats values from DB to set expectations about what API would
-        // have claimed pre-save.
-        std::unique_ptr<DecodeStatsEntry> old_stats =
-            GetStatsForFeatures(features);
-        save_done_cb =
-            base::BindOnce(&VideoDecodePerfHistoryTest::VerifyLastUkmReport,
-                           base::Unretained(this), origin, is_top_frame,
-                           features, targets, player_id, std::move(old_stats));
-        break;
-      }
-      case UkmVerifcation::kNoUkmsAdded: {
-        // Expect no additional UKM entries upon failing to save. Capture the
-        // current entry count before save to verify no new entries are added.
-        size_t current_num_entries =
-            test_recorder_->GetEntriesByName(UkmEntry::kEntryName).size();
-        save_done_cb = base::BindOnce(
-            &VideoDecodePerfHistoryTest::VerifyNoUkmReportForFailedSave,
-            base::Unretained(this), current_num_entries);
-        break;
-      }
-    }
-
-    // Check that the UKM verification is complete before the test exits.
-    EXPECT_CALL(*this, UkmVerifyDoneCb());
-
-    perf_history_->GetSaveCallback().Run(
-        source_id, learning::FeatureValue(kOrigin.host()), is_top_frame,
-        features, targets, player_id, std::move(save_done_cb));
+    perf_history_->GetSaveCallback().Run(source_id, is_top_frame, features,
+                                         targets, player_id,
+                                         std::move(save_done_cb));
   }
 
  protected:
   using VideoDescKey = VideoDecodeStatsDB::VideoDescKey;
   using DecodeStatsEntry = VideoDecodeStatsDB::DecodeStatsEntry;
-
-  // Private helper to public test methods. This bypasses  VPH::GetPerfInfo()
-  // to synchronously grab stats from the fake DB. Tests should instead use
-  // the VPH::GetPerfInfo().
-  std::unique_ptr<DecodeStatsEntry> GetStatsForFeatures(
-      mojom::PredictionFeatures features) {
-    VideoDecodeStatsDB::VideoDescKey video_key =
-        VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-            features.profile, features.video_size, features.frames_per_sec,
-            features.key_system, features.use_hw_secure_codecs);
-    return GetFakeDB()->GetDecodeStatsSync(video_key);
-  }
-
-  // Lookup up the most recent recorded entry and verify its properties against
-  // method arguments.
-  void VerifyLastUkmReport(const url::Origin& origin,
-                           bool is_top_frame,
-                           mojom::PredictionFeatures features,
-                           mojom::PredictionTargets new_targets,
-                           uint64_t player_id,
-                           std::unique_ptr<DecodeStatsEntry> old_stats) {
-#define EXPECT_UKM(name, value) \
-  test_recorder_->ExpectEntryMetric(entry, name, value)
-#define EXPECT_NO_UKM(name) \
-  EXPECT_FALSE(test_recorder_->EntryHasMetric(entry, name))
-
-    const auto& entries =
-        test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
-    ASSERT_GE(entries.size(), 1U);
-    auto* entry = entries.back();
-
-    // Verify stream properties. Make a key to ensure we check bucketed values.
-    VideoDecodeStatsDB::VideoDescKey key =
-        VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-            features.profile, features.video_size, features.frames_per_sec,
-            features.key_system, features.use_hw_secure_codecs);
-    test_recorder_->ExpectEntrySourceHasUrl(entry, origin.GetURL());
-    EXPECT_UKM(UkmEntry::kVideo_InTopFrameName, is_top_frame);
-    EXPECT_UKM(UkmEntry::kVideo_PlayerIDName, player_id);
-    EXPECT_UKM(UkmEntry::kVideo_CodecProfileName, key.codec_profile);
-    EXPECT_UKM(UkmEntry::kVideo_FramesPerSecondName, key.frame_rate);
-    EXPECT_UKM(UkmEntry::kVideo_NaturalHeightName, key.size.height());
-    EXPECT_UKM(UkmEntry::kVideo_NaturalWidthName, key.size.width());
-    if (key.key_system.empty()) {
-      EXPECT_NO_UKM(UkmEntry::kVideo_EME_KeySystemName);
-      EXPECT_NO_UKM(UkmEntry::kVideo_EME_UseHwSecureCodecsName);
-    } else {
-      EXPECT_UKM(UkmEntry::kVideo_EME_KeySystemName,
-                 GetKeySystemIntForUKM(key.key_system));
-      EXPECT_UKM(UkmEntry::kVideo_EME_UseHwSecureCodecsName,
-                 key.use_hw_secure_codecs);
-    }
-
-    // Verify past stats.
-    bool past_is_smooth = false;
-    bool past_is_efficient = false;
-    perf_history_->AssessStats(old_stats.get(), &past_is_smooth,
-                               &past_is_efficient);
-    EXPECT_UKM(UkmEntry::kPerf_ApiWouldClaimIsSmoothName, past_is_smooth);
-    EXPECT_UKM(UkmEntry::kPerf_ApiWouldClaimIsPowerEfficientName,
-               past_is_efficient);
-    // Zero it out to make verification readable.
-    if (!old_stats)
-      old_stats.reset(new DecodeStatsEntry(0, 0, 0));
-    EXPECT_UKM(UkmEntry::kPerf_PastVideoFramesDecodedName,
-               old_stats->frames_decoded);
-    EXPECT_UKM(UkmEntry::kPerf_PastVideoFramesDroppedName,
-               old_stats->frames_dropped);
-    EXPECT_UKM(UkmEntry::kPerf_PastVideoFramesPowerEfficientName,
-               old_stats->frames_power_efficient);
-
-    // Verify latest stats.
-    VideoDecodeStatsDB::DecodeStatsEntry new_stats(
-        new_targets.frames_decoded, new_targets.frames_dropped,
-        new_targets.frames_power_efficient);
-    bool new_is_smooth = false;
-    bool new_is_efficient = false;
-    perf_history_->AssessStats(&new_stats, &new_is_smooth, &new_is_efficient);
-    EXPECT_UKM(UkmEntry::kPerf_RecordIsSmoothName, new_is_smooth);
-    EXPECT_UKM(UkmEntry::kPerf_RecordIsPowerEfficientName, new_is_efficient);
-    EXPECT_UKM(UkmEntry::kPerf_VideoFramesDecodedName,
-               new_stats.frames_decoded);
-    EXPECT_UKM(UkmEntry::kPerf_VideoFramesDroppedName,
-               new_stats.frames_dropped);
-    EXPECT_UKM(UkmEntry::kPerf_VideoFramesPowerEfficientName,
-               new_stats.frames_power_efficient);
-
-#undef EXPECT_UKM
-#undef EXPECT_NO_UKM
-
-    UkmVerifyDoneCb();
-  }
-
-  void VerifyNoUkmReportForFailedSave(size_t expected_num_ukm_entries) {
-    // Verify no new UKM entries appear after failed save.
-    const auto& entries =
-        test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
-    EXPECT_EQ(expected_num_ukm_entries, entries.size());
-
-    UkmVerifyDoneCb();
-  }
 
   static constexpr double kMinPowerEfficientDecodedFramePercent =
       VideoDecodePerfHistory::kMinPowerEfficientDecodedFramePercent;
@@ -350,28 +195,22 @@ class VideoDecodePerfHistoryTest : public testing::Test {
   std::unique_ptr<VideoDecodePerfHistory> perf_history_;
 };
 
-struct PerfHistoryTestParams {
-  const bool defer_initialize;
-  const std::string key_system;
-  const bool use_hw_secure_codecs;
-};
-
 // When bool param is true, tests should wait until the end to run
 // GetFakeDB()->CompleteInitialize(). Otherwise run PreInitializeDB() at the
 // test start.
 class VideoDecodePerfHistoryParamTest
-    : public testing::WithParamInterface<PerfHistoryTestParams>,
+    : public testing::WithParamInterface<bool>,
       public VideoDecodePerfHistoryTest {};
 
 TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // First add 2 records to the history. The second record has a higher frame
@@ -390,15 +229,13 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
       kFramesDecoded * GetMaxSmoothDroppedFramesPercent() + 1;
 
   // Add the entries.
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-                 MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRate,
-                              params.key_system, params.use_hw_secure_codecs),
+  SavePerfRecord(kOrigin, kIsTopFrame,
+                 MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRate),
                  MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                              kNotPowerEfficientFramesDecoded),
                  kPlayerId);
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-                 MakeFeatures(kKnownProfile, kKownSize, kNotSmoothFrameRate,
-                              params.key_system, params.use_hw_secure_codecs),
+  SavePerfRecord(kOrigin, kIsTopFrame,
+                 MakeFeatures(kKnownProfile, kKownSize, kNotSmoothFrameRate),
                  MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
                              kNotPowerEfficientFramesDecoded),
                  kPlayerId);
@@ -406,16 +243,14 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
   // Verify perf history returns is_smooth = true for the smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = false for the NOT smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kKnownProfile, kKownSize, kNotSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kKnownProfile, kKownSize, kNotSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
@@ -429,7 +264,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
@@ -441,11 +276,11 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // First add 3 records to the history:
@@ -471,23 +306,20 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
 
   // Add the entries.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
-                   params.key_system, params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame,
+      MakeFeatures(kPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kPowerEfficientFramesDecoded),
       kPlayerId);
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate,
-                   params.key_system, params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame,
+      MakeFeatures(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate,
-                   params.key_system, params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame,
+      MakeFeatures(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate),
       MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
                   kPowerEfficientFramesDecoded),
       kPlayerId);
@@ -495,24 +327,21 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
   // Verify perf history returns is_smooth = true, is_power_efficient = true.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = true, is_power_efficient = false.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = false, is_power_efficient = true.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
@@ -522,13 +351,12 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
   const VideoCodecProfile kUnknownProfile = VP9PROFILE_PROFILE2;
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kUnknownProfile, kKownSize, kNotSmoothFrameRate,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kUnknownProfile, kKownSize, kNotSmoothFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
@@ -537,9 +365,9 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
 }
 
 TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_FailedInitialize) {
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   // Fail initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ false);
 
   const VideoCodecProfile kProfile = VP9PROFILE_PROFILE0;
@@ -550,13 +378,12 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_FailedInitialize) {
   // and power efficient performance.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kProfile, kSize, kFrameRate, params.key_system,
-                      params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Fail deferred DB initialization (see comment at top of test).
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(false);
 
     // Allow initialize-deferred API calls to complete.
@@ -568,11 +395,11 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // Add a simple record to the history.
@@ -583,17 +410,14 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   const int kManyFramesDropped = kFramesDecoded / 2;
   const int kFramesPowerEfficient = kFramesDecoded;
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
-                   params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
       MakeTargets(kFramesDecoded, kManyFramesDropped, kFramesPowerEfficient),
       kPlayerId);
 
   // Verify its there before we ClearHistory(). Note that perf is NOT smooth.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kProfile, kSize, kFrameRate, params.key_system,
-                      params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
@@ -609,17 +433,33 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   // "smooth" when it claimed NOT smooth just moments before.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kProfile, kSize, kFrameRate, params.key_system,
-                      params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     scoped_task_environment_.RunUntilIdle();
+  }
+
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, kOrigin.GetURL());
+
+#define EXPECT_UKM(name, value) \
+  test_recorder_->ExpectEntryMetric(entry, name, value)
+
+    EXPECT_UKM(UkmEntry::kVideo_InTopFrameName, kIsTopFrame);
+    EXPECT_UKM(UkmEntry::kVideo_PlayerIDName, kPlayerId);
+    EXPECT_UKM(UkmEntry::kVideo_CodecProfileName, kProfile);
+    EXPECT_UKM(UkmEntry::kVideo_FramesPerSecondName, kFrameRate);
+#undef EXPECT_UKM
+
+    // TODO(chcunningham): Expand UKM tests to include absence tests.
   }
 }
 
@@ -627,11 +467,11 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetVideoDecodeStatsDB) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // Request a pointer to VideoDecodeStatsDB and verify the callback.
@@ -649,7 +489,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetVideoDecodeStatsDB) {
   scoped_task_environment_.RunUntilIdle();
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
@@ -662,11 +502,11 @@ TEST_P(VideoDecodePerfHistoryParamTest,
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ false);
 
   // Request a pointer to VideoDecodeStatsDB and verify the callback provides
@@ -679,60 +519,8 @@ TEST_P(VideoDecodePerfHistoryParamTest,
   scoped_task_environment_.RunUntilIdle();
 
   // Complete failed deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(false);
-
-    // Allow initialize-deferred API calls to complete.
-    scoped_task_environment_.RunUntilIdle();
-  }
-}
-
-TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseGetForAppend) {
-  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
-  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
-  // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
-
-  // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
-    PreInitializeDB(/* success */ true);
-
-  // Create a record that is neither smooth nor power efficient. After we fail
-  // to save this record we should find smooth = power_efficient = true (the
-  // default for no-data-found).
-  const VideoCodecProfile kProfile = VP9PROFILE_PROFILE0;
-  const gfx::Size kSize(100, 200);
-  const int kFrameRate = 30;
-  const int kFramesDecoded = 1000;
-  const int kFramesDropped =
-      kFramesDecoded * GetMaxSmoothDroppedFramesPercent() + 1;
-  const int kFramesPowerEfficient = 0;
-
-  // Fail the "get" step of the save (we always get existing stats prior to
-  // save for UKM reporting).
-  GetFakeDB()->set_fail_next_get(true);
-
-  // Attempt (and fail) the save. UKM report depends on successful retrieval
-  // of stats from the DB, so no UKM reporting should occur here.
-  SavePerfRecord(
-      UkmVerifcation::kNoUkmsAdded, kOrigin, kIsTopFrame,
-      MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
-                   params.use_hw_secure_codecs),
-      MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
-      kPlayerId);
-
-  // Verify perf history still returns is_smooth = power_efficient = true since
-  // no data was successfully saved for the given configuration.
-  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
-  perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kProfile, kSize, kFrameRate, params.key_system,
-                      params.use_hw_secure_codecs),
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
-                     base::Unretained(this)));
-
-  // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
-    GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     scoped_task_environment_.RunUntilIdle();
@@ -743,10 +531,11 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // Force the DB to fail on the next append.
@@ -763,13 +552,9 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
       kFramesDecoded * GetMaxSmoothDroppedFramesPercent() + 1;
   const int kFramesPowerEfficient = 0;
 
-  // Attempt (and fail) the save. Note that we still expect UKM to be reported
-  // because we successfully retrieved stats from the DB, we just fail to append
-  // the new stats. UKM reporting occurs between retrieval and appending.
+  // Attempt (and fail) the save.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
-                   params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
       MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
       kPlayerId);
 
@@ -777,13 +562,30 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
   // no data was successfully saved for the given configuration.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kProfile, kSize, kFrameRate, params.key_system,
-                      params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Try again, but this time fail the "get" step of the save (we always get
+  // existing stats prior to save for UKM reporting).
+  GetFakeDB()->set_fail_next_get(true);
+
+  // Attempt (and fail) the save.
+  SavePerfRecord(
+      kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
+      MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
+      kPlayerId);
+
+  // Verify perf history still returns is_smooth = power_efficient = true since
+  // no data was successfully saved for the given configuration.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
@@ -809,10 +611,9 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
             previous_smooth_dropped_frames_threshold);
 
   // Override field trial.
-  std::map<std::string, std::string> trial_params;
-  trial_params
-      [VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercentParamName] =
-          base::NumberToString(new_smooth_dropped_frames_threshold);
+  std::map<std::string, std::string> params;
+  params[VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercentParamName] =
+      std::to_string(new_smooth_dropped_frames_threshold);
 
   field_trial_list.reset();
   field_trial_list.reset(new base::FieldTrialList(nullptr));
@@ -821,7 +622,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   const std::string kTrialName = "TrialName";
   const std::string kGroupName = "GroupName";
 
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, trial_params);
+  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
   base::FieldTrial* field_trial =
       base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
 
@@ -832,10 +633,10 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   base::FeatureList::ClearInstanceForTesting();
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
-  std::map<std::string, std::string> actual_trial_params;
+  std::map<std::string, std::string> actual_params;
   EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
-      media::kMediaCapabilitiesWithParameters, &actual_trial_params));
-  EXPECT_EQ(trial_params, actual_trial_params);
+      media::kMediaCapabilitiesWithParameters, &actual_params));
+  EXPECT_EQ(params, actual_params);
 
   EXPECT_EQ(new_smooth_dropped_frames_threshold,
             GetMaxSmoothDroppedFramesPercent());
@@ -843,11 +644,11 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
-  PerfHistoryTestParams params = GetParam();
+  bool defer_initialize = GetParam();
   testing::InSequence dummy;
 
   // Complete initialization in advance of API calls when not asked to defer.
-  if (!params.defer_initialize)
+  if (!defer_initialize)
     PreInitializeDB(/* success */ true);
 
   // First add 2 records to the history. The second record has a higher frame
@@ -870,16 +671,14 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
 
   // Add the entry.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-      MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRatePrevious,
-                   params.key_system, params.use_hw_secure_codecs),
+      kOrigin, kIsTopFrame,
+      MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRatePrevious),
       MakeTargets(kFramesDecoded, kSmoothFramesDroppedPrevious,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
 
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
-                 MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRateNew,
-                              params.key_system, params.use_hw_secure_codecs),
+  SavePerfRecord(kOrigin, kIsTopFrame,
+                 MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRateNew),
                  MakeTargets(kFramesDecoded, kSmoothFramesDroppedNew,
                              kNotPowerEfficientFramesDecoded),
                  kPlayerId);
@@ -888,8 +687,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   // smooth per previous smooth threshold.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRatePrevious,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRatePrevious),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
@@ -897,13 +695,12 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   // smooth per new smooth theshold.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
-      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRateNew,
-                      params.key_system, params.use_hw_secure_codecs),
+      MakeFeaturesPtr(kKnownProfile, kKownSize, kSmoothFrameRateNew),
       base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
-  if (params.defer_initialize) {
+  if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
@@ -911,15 +708,8 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   }
 }
 
-const PerfHistoryTestParams kPerfHistoryTestParams[] = {
-    {true, "", false},
-    {false, "", false},
-    {true, "com.widevine.alpha", false},
-    {true, "com.widevine.alpha", true},
-};
-
 INSTANTIATE_TEST_SUITE_P(VaryDBInitTiming,
                          VideoDecodePerfHistoryParamTest,
-                         ::testing::ValuesIn(kPerfHistoryTestParams));
+                         ::testing::Values(true, false));
 
 }  // namespace media

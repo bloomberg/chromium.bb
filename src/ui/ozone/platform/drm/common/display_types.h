@@ -5,8 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_DRM_COMMON_DISPLAY_TYPES_H_
 #define UI_OZONE_PLATFORM_DRM_COMMON_DISPLAY_TYPES_H_
 
-#include <memory>
-
 namespace display {
 class DisplaySnapshot;
 }  // namespace display

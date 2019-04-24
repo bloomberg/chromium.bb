@@ -86,6 +86,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   HttpResponseHeaders* GetResponseHeaders() const override;
   IPEndPoint GetSocketAddress() const override;
   const ProxyServer& ProxyServerUsed() const override;
+  bool WasFetchedViaProxy() const override;
   bool WasCached() const override;
   int64_t GetReceivedResponseContentLength() const override;
   int64_t GetTotalReceivedBytes() const override;

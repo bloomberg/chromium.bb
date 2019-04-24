@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -119,7 +119,7 @@ public class ShareIntentTest {
     @LargeTest
     @RetryOnFailure
     public void testShareIntent() throws ExecutionException, InterruptedException {
-        MockChromeActivity mockActivity = TestThreadUtils.runOnUiThreadBlocking(() -> {
+        MockChromeActivity mockActivity = ThreadUtils.runOnUiThreadBlocking(() -> {
             // Sets a test component as last shared and "shareDirectly" option is set so that
             // the share selector menu is not opened. The start activity is overriden, so the
             // package and class names do not matter.
@@ -130,9 +130,8 @@ public class ShareIntentTest {
         // Skips the capture of screenshot and notifies with an empty file.
         ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(true);
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mockActivity.onShareMenuItemSelected(
-                                true /* shareDirectly */, false /* isIncognito */));
+        ThreadUtils.runOnUiThreadBlocking(() -> mockActivity.onShareMenuItemSelected(
+                    true /* shareDirectly */, false /* isIncognito */));
 
         mockActivity.waitForFileCheck();
 

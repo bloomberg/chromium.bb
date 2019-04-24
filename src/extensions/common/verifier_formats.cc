@@ -7,7 +7,9 @@
 namespace extensions {
 
 crx_file::VerifierFormat GetWebstoreVerifierFormat() {
-  return crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
+  // TODO(waffles@chromium.org): This should be CRX3_WITH_PUBLISHER_PROOF, but
+  // we have not decided how to sign the test data yet.
+  return crx_file::VerifierFormat::CRX3;
 }
 
 crx_file::VerifierFormat GetPolicyVerifierFormat(
@@ -23,7 +25,8 @@ crx_file::VerifierFormat GetExternalVerifierFormat() {
 }
 
 crx_file::VerifierFormat GetTestVerifierFormat() {
-  return crx_file::VerifierFormat::CRX3;
+  // TODO(crbug.com/740715): Eliminate CRX2.
+  return crx_file::VerifierFormat::CRX2_OR_CRX3;
 }
 
 }  // namespace extensions

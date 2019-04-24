@@ -25,7 +25,7 @@ namespace dawn_wire { namespace server {
         Server* server;
         ObjectHandle buffer;
         uint32_t requestSerial;
-        uint64_t size;
+        uint32_t size;
         bool isWrite;
     };
 
@@ -37,47 +37,44 @@ namespace dawn_wire { namespace server {
 
     class Server : public ServerBase {
       public:
-        Server(DawnDevice device, const DawnProcTable& procs, CommandSerializer* serializer);
+        Server(dawnDevice device, const dawnProcTable& procs, CommandSerializer* serializer);
         ~Server();
 
         const char* HandleCommands(const char* commands, size_t size);
-
-        bool InjectTexture(DawnTexture texture, uint32_t id, uint32_t generation);
 
       private:
         void* GetCmdSpace(size_t size);
 
         // Forwarding callbacks
-        static void ForwardDeviceError(const char* message, DawnCallbackUserdata userdata);
-        static void ForwardBufferMapReadAsync(DawnBufferMapAsyncStatus status,
+        static void ForwardDeviceError(const char* message, dawnCallbackUserdata userdata);
+        static void ForwardBufferMapReadAsync(dawnBufferMapAsyncStatus status,
                                               const void* ptr,
-                                              uint64_t dataLength,
-                                              DawnCallbackUserdata userdata);
-        static void ForwardBufferMapWriteAsync(DawnBufferMapAsyncStatus status,
+                                              uint32_t dataLength,
+                                              dawnCallbackUserdata userdata);
+        static void ForwardBufferMapWriteAsync(dawnBufferMapAsyncStatus status,
                                                void* ptr,
-                                               uint64_t dataLength,
-                                               DawnCallbackUserdata userdata);
-        static void ForwardFenceCompletedValue(DawnFenceCompletionStatus status,
-                                               DawnCallbackUserdata userdata);
+                                               uint32_t dataLength,
+                                               dawnCallbackUserdata userdata);
+        static void ForwardFenceCompletedValue(dawnFenceCompletionStatus status,
+                                               dawnCallbackUserdata userdata);
 
         // Error callbacks
         void OnDeviceError(const char* message);
-        void OnBufferMapReadAsyncCallback(DawnBufferMapAsyncStatus status,
+        void OnBufferMapReadAsyncCallback(dawnBufferMapAsyncStatus status,
                                           const void* ptr,
-                                          uint64_t dataLength,
+                                          uint32_t dataLength,
                                           MapUserdata* userdata);
-        void OnBufferMapWriteAsyncCallback(DawnBufferMapAsyncStatus status,
+        void OnBufferMapWriteAsyncCallback(dawnBufferMapAsyncStatus status,
                                            void* ptr,
-                                           uint64_t dataLength,
+                                           uint32_t dataLength,
                                            MapUserdata* userdata);
-        void OnFenceCompletedValueUpdated(DawnFenceCompletionStatus status,
-                                          FenceCompletionUserdata* userdata);
+        void OnFenceCompletedValueUpdated(FenceCompletionUserdata* userdata);
 
 #include "dawn_wire/server/ServerPrototypes_autogen.inl"
 
         CommandSerializer* mSerializer = nullptr;
         WireDeserializeAllocator mAllocator;
-        DawnProcTable mProcs;
+        dawnProcTable mProcs;
     };
 
 }}  // namespace dawn_wire::server

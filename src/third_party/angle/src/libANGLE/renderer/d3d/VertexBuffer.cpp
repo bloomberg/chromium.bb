@@ -159,7 +159,6 @@ angle::Result StreamingVertexBufferInterface::reserveSpace(const gl::Context *co
         mWritePosition = 0;
     }
 
-    mReservedSpace = size;
     return angle::Result::Continue;
 }
 
@@ -182,6 +181,7 @@ angle::Result StreamingVertexBufferInterface::storeDynamicAttribute(
     checkedPosition += spaceRequired;
     ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), checkedPosition.IsValid());
 
+    ANGLE_TRY(reserveSpace(context, mReservedSpace));
     mReservedSpace = 0;
 
     ANGLE_TRY(mVertexBuffer->storeVertexAttributes(context, attrib, binding, currentValueType,
@@ -215,7 +215,7 @@ angle::Result StreamingVertexBufferInterface::reserveVertexSpace(const gl::Conte
     // Protect against integer overflow
     ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), alignedRequiredSpace.IsValid());
 
-    ANGLE_TRY(reserveSpace(context, alignedRequiredSpace.ValueOrDie()));
+    mReservedSpace = alignedRequiredSpace.ValueOrDie();
 
     return angle::Result::Continue;
 }

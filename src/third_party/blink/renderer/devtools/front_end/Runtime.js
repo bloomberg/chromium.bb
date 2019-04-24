@@ -549,9 +549,8 @@ var Runtime = class {  // eslint-disable-line
   }
 
   /**
-   * @param {function(new:T)} constructorFunction
-   * @return {!T}
-   * @template T
+   * @param {!Function} constructorFunction
+   * @return {!Object}
    */
   sharedInstance(constructorFunction) {
     if (Runtime._instanceSymbol in constructorFunction &&

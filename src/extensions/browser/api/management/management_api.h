@@ -5,9 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_MANAGEMENT_MANAGEMENT_API_H_
 #define EXTENSIONS_BROWSER_API_MANAGEMENT_MANAGEMENT_API_H_
 
-#include <memory>
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -21,8 +18,9 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/preload_check.h"
 
-namespace extensions {
+struct WebApplicationInfo;
 
+namespace extensions {
 class ExtensionRegistry;
 class RequirementsChecker;
 
@@ -204,7 +202,8 @@ class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
 
   ManagementGenerateAppForLinkFunction();
 
-  void FinishCreateWebApp(const std::string& web_app_id, bool install_success);
+  void FinishCreateBookmarkApp(const Extension* extension,
+                               const WebApplicationInfo& web_app_info);
 
  protected:
   ~ManagementGenerateAppForLinkFunction() override;
@@ -213,23 +212,6 @@ class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
 
  private:
   std::unique_ptr<AppForLinkDelegate> app_for_link_delegate_;
-};
-
-class ManagementInstallReplacementWebAppFunction
-    : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("management.installReplacementWebApp",
-                             MANAGEMENT_INSTALLREPLACEMENTWEBAPP)
-
-  ManagementInstallReplacementWebAppFunction();
-
- protected:
-  ~ManagementInstallReplacementWebAppFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void FinishCreateWebApp(ManagementAPIDelegate::InstallWebAppResult result);
 };
 
 class ManagementEventRouter : public ExtensionRegistryObserver {

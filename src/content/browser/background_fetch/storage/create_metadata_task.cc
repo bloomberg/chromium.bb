@@ -21,11 +21,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
+
 namespace background_fetch {
 
 namespace {
@@ -354,11 +354,6 @@ void CreateMetadataTask::StoreMetadata() {
 
 void CreateMetadataTask::DidStoreMetadata(
     blink::ServiceWorkerStatusCode status) {
-  int64_t trace_id = blink::cache_storage::CreateTraceId();
-  TRACE_EVENT_WITH_FLOW0("CacheStorage",
-                         "CacheStorageMigrationTask::DidStoreMetadata",
-                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
-
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -372,19 +367,13 @@ void CreateMetadataTask::DidStoreMetadata(
   // Create cache entries.
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      /* cache_name= */ registration_id_.unique_id(), trace_id,
+      /* cache_name= */ registration_id_.unique_id(),
       base::BindOnce(&CreateMetadataTask::DidOpenCache,
-                     weak_factory_.GetWeakPtr(), trace_id));
+                     weak_factory_.GetWeakPtr()));
 }
 
-void CreateMetadataTask::DidOpenCache(int64_t trace_id,
-                                      CacheStorageCacheHandle handle,
+void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
                                       blink::mojom::CacheStorageError error) {
-  TRACE_EVENT_WITH_FLOW0("CacheStorage",
-                         "CacheStorageMigrationTask::DidReopenCache",
-                         TRACE_ID_GLOBAL(trace_id),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
     return;
@@ -407,7 +396,7 @@ void CreateMetadataTask::DidOpenCache(int64_t trace_id,
   }
 
   handle.value()->BatchOperation(
-      std::move(operations), trace_id,
+      std::move(operations), /* fail_on_duplicates= */ false,
       base::BindOnce(&CreateMetadataTask::DidStoreRequests,
                      weak_factory_.GetWeakPtr(), handle.Clone()),
       base::DoNothing());
@@ -430,13 +419,13 @@ void CreateMetadataTask::DidStoreRequests(
 
 void CreateMetadataTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  auto registration_data = blink::mojom::BackgroundFetchRegistrationData::New();
+  auto registration = blink::mojom::BackgroundFetchRegistration::New();
 
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    bool converted = ToBackgroundFetchRegistration(*metadata_proto_,
-                                                   registration_data.get());
+    bool converted =
+        ToBackgroundFetchRegistration(*metadata_proto_, registration.get());
     if (!converted) {
       // Database corrupted.
       SetStorageErrorAndFinish(
@@ -445,7 +434,7 @@ void CreateMetadataTask::FinishWithError(
     }
 
     for (auto& observer : data_manager()->observers()) {
-      observer.OnRegistrationCreated(registration_id_, *registration_data,
+      observer.OnRegistrationCreated(registration_id_, *registration,
                                      options_.Clone(), icon_, requests_.size(),
                                      start_paused_);
     }
@@ -453,7 +442,7 @@ void CreateMetadataTask::FinishWithError(
 
   ReportStorageError();
 
-  std::move(callback_).Run(error, std::move(registration_data));
+  std::move(callback_).Run(error, std::move(registration));
   Finished();  // Destroys |this|.
 }
 
@@ -462,4 +451,5 @@ std::string CreateMetadataTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
+
 }  // namespace content

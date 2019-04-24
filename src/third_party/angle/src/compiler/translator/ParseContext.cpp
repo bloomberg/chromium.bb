@@ -611,7 +611,7 @@ bool TParseContext::checkCanBeLValue(const TSourceLoc &line, const char *op, TIn
         return true;
     }
 
-    std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+    std::stringstream reasonStream;
     reasonStream << "l-value required";
     if (!message.empty())
     {
@@ -902,7 +902,7 @@ bool TParseContext::checkIsNotOpaqueType(const TSourceLoc &line,
     {
         if (ContainsSampler(pType.userDef))
         {
-            std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+            std::stringstream reasonStream;
             reasonStream << reason << " (structure contains a sampler)";
             std::string reasonStr = reasonStream.str();
             error(line, reasonStr.c_str(), getBasicString(pType.type));
@@ -1347,7 +1347,7 @@ void TParseContext::declarationQualifierErrorCheck(const sh::TQualifier qualifie
 
     // If multiview extension is enabled, "in" qualifier is allowed in the vertex shader in previous
     // parsing steps. So it needs to be checked here.
-    if (isExtensionEnabled(TExtension::OVR_multiview2) && mShaderVersion < 300 &&
+    if (isExtensionEnabled(TExtension::OVR_multiview) && mShaderVersion < 300 &&
         qualifier == EvqVertexIn)
     {
         error(location, "storage qualifier supported in GLSL ES 3.00 and above only", "in");
@@ -2366,6 +2366,11 @@ void TParseContext::checkAtomicCounterOffsetDoesNotOverlap(bool forceAppend,
                                                            const TSourceLoc &loc,
                                                            TType *type)
 {
+    if (!IsAtomicCounter(type->getBasicType()))
+    {
+        return;
+    }
+
     const size_t size = type->isArray() ? kAtomicCounterArrayStride * type->getArraySizeProduct()
                                         : kAtomicCounterSize;
     TLayoutQualifier layoutQualifier = type->getLayoutQualifier();
@@ -2386,17 +2391,6 @@ void TParseContext::checkAtomicCounterOffsetDoesNotOverlap(bool forceAppend,
     }
     layoutQualifier.offset = offset;
     type->setLayoutQualifier(layoutQualifier);
-}
-
-void TParseContext::checkAtomicCounterOffsetAlignment(const TSourceLoc &location, const TType &type)
-{
-    TLayoutQualifier layoutQualifier = type.getLayoutQualifier();
-
-    // OpenGL ES 3.1 Table 6.5, Atomic counter offset must be a multiple of 4
-    if (layoutQualifier.offset % 4 != 0)
-    {
-        error(location, "Offset must be multiple of 4", "atomic counter");
-    }
 }
 
 void TParseContext::checkGeometryShaderInputAndSetArraySize(const TSourceLoc &location,
@@ -2501,12 +2495,7 @@ TIntermDeclaration *TParseContext::parseSingleDeclaration(
 
         checkCanBeDeclaredWithoutInitializer(identifierOrTypeLocation, identifier, type);
 
-        if (IsAtomicCounter(type->getBasicType()))
-        {
-            checkAtomicCounterOffsetDoesNotOverlap(false, identifierOrTypeLocation, type);
-
-            checkAtomicCounterOffsetAlignment(identifierOrTypeLocation, *type);
-        }
+        checkAtomicCounterOffsetDoesNotOverlap(false, identifierOrTypeLocation, type);
 
         TVariable *variable = nullptr;
         if (declareVariable(identifierOrTypeLocation, identifier, type, &variable))
@@ -2548,12 +2537,7 @@ TIntermDeclaration *TParseContext::parseSingleArrayDeclaration(
 
     checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, arrayType);
 
-    if (IsAtomicCounter(arrayType->getBasicType()))
-    {
-        checkAtomicCounterOffsetDoesNotOverlap(false, identifierLocation, arrayType);
-
-        checkAtomicCounterOffsetAlignment(identifierLocation, *arrayType);
-    }
+    checkAtomicCounterOffsetDoesNotOverlap(false, identifierLocation, arrayType);
 
     TIntermDeclaration *declaration = new TIntermDeclaration();
     declaration->setLine(identifierLocation);
@@ -2711,12 +2695,7 @@ void TParseContext::parseDeclarator(TPublicType &publicType,
 
     checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, type);
 
-    if (IsAtomicCounter(type->getBasicType()))
-    {
-        checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, type);
-
-        checkAtomicCounterOffsetAlignment(identifierLocation, *type);
-    }
+    checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, type);
 
     TVariable *variable = nullptr;
     if (declareVariable(identifierLocation, identifier, type, &variable))
@@ -2753,12 +2732,7 @@ void TParseContext::parseArrayDeclarator(TPublicType &elementType,
 
         checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, arrayType);
 
-        if (IsAtomicCounter(arrayType->getBasicType()))
-        {
-            checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, arrayType);
-
-            checkAtomicCounterOffsetAlignment(identifierLocation, *arrayType);
-        }
+        checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, arrayType);
 
         TVariable *variable = nullptr;
         if (declareVariable(identifierLocation, identifier, arrayType, &variable))
@@ -3092,7 +3066,7 @@ void TParseContext::parseGlobalLayoutQualifier(const TTypeQualifierBuilder &type
                 if (mComputeShaderLocalSize[i] < 1 ||
                     mComputeShaderLocalSize[i] > maxComputeWorkGroupSizeValue)
                 {
-                    std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+                    std::stringstream reasonStream;
                     reasonStream << "invalid value: Value must be at least 1 and no greater than "
                                  << maxComputeWorkGroupSizeValue;
                     const std::string &reason = reasonStream.str();
@@ -3132,7 +3106,7 @@ void TParseContext::parseGlobalLayoutQualifier(const TTypeQualifierBuilder &type
             return;
         }
     }
-    else if (isExtensionEnabled(TExtension::OVR_multiview2) &&
+    else if (isExtensionEnabled(TExtension::OVR_multiview) &&
              typeQualifier.qualifier == EvqVertexIn)
     {
         // This error is only specified in WebGL, but tightens unspecified behavior in the native
@@ -3917,7 +3891,7 @@ void TParseContext::checkIsBelowStructNestingLimit(const TSourceLoc &line, const
     // one to the field's struct nesting.
     if (1 + field.type()->getDeepestStructNesting() > kWebGLMaxStructNesting)
     {
-        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+        std::stringstream reasonStream;
         if (field.type()->getStruct()->symbolType() == SymbolType::Empty)
         {
             // This may happen in case there are nested struct definitions. While they are also
@@ -4111,7 +4085,7 @@ int TParseContext::checkIndexLessThan(bool outOfRangeIndexIsError,
     ASSERT(index >= 0);
     if (index >= arraySize)
     {
-        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+        std::stringstream reasonStream;
         reasonStream << reason << " '" << index << "'";
         std::string token = reasonStream.str();
         outOfRangeError(outOfRangeIndexIsError, location, reason, "[]");
@@ -4413,7 +4387,7 @@ void TParseContext::parseLocalSize(const ImmutableString &qualifierType,
     checkLayoutQualifierSupported(qualifierTypeLine, qualifierType, 310);
     if (intValue < 1)
     {
-        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
+        std::stringstream reasonStream;
         reasonStream << "out of range: " << getWorkGroupSizeString(index) << " must be positive";
         std::string reason = reasonStream.str();
         error(intValueLine, reason.c_str(), intValueString.c_str());
@@ -4561,7 +4535,7 @@ TLayoutQualifier TParseContext::parseLayoutQualifier(const ImmutableString &qual
     }
     else if (qualifierType == "num_views" && mShaderType == GL_VERTEX_SHADER)
     {
-        if (checkCanUseExtension(qualifierTypeLine, TExtension::OVR_multiview2))
+        if (checkCanUseExtension(qualifierTypeLine, TExtension::OVR_multiview))
         {
             parseNumViews(intValue, intValueLine, intValueString, &qualifier.numViews);
         }
@@ -4623,7 +4597,7 @@ TStorageQualifierWrapper *TParseContext::parseInQualifier(const TSourceLoc &loc)
     {
         case GL_VERTEX_SHADER:
         {
-            if (mShaderVersion < 300 && !isExtensionEnabled(TExtension::OVR_multiview2))
+            if (mShaderVersion < 300 && !isExtensionEnabled(TExtension::OVR_multiview))
             {
                 error(loc, "storage qualifier supported in GLSL ES 3.00 and above only", "in");
             }
@@ -5698,7 +5672,7 @@ void TParseContext::checkTextureOffsetConst(TIntermAggregate *functionCall)
                 int offsetValue = values[i].getIConst();
                 if (offsetValue > maxOffsetValue || offsetValue < minOffsetValue)
                 {
-                    std::stringstream tokenStream = sh::InitializeStream<std::stringstream>();
+                    std::stringstream tokenStream;
                     tokenStream << offsetValue;
                     std::string token = tokenStream.str();
                     error(offset->getLine(), "Texture offset value out of valid range",

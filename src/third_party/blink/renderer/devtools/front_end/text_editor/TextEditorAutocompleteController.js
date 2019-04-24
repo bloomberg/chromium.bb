@@ -30,7 +30,7 @@ TextEditor.TextEditorAutocompleteController = class {
     this._lastHintText = '';
     /** @type {?UI.SuggestBox} */
     this._suggestBox = null;
-    /** @type {?UI.SuggestBox.Suggestion} */
+    /** @type {?string} */
     this._currentSuggestion = null;
     this._hintElement = createElementWithClass('span', 'auto-complete-text');
 
@@ -393,14 +393,14 @@ TextEditor.TextEditorAutocompleteController = class {
 
   /**
    * @override
-   * @param {?UI.SuggestBox.Suggestion} suggestion
+   * @param {string} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {
     const oldSuggestion = this._currentSuggestion;
     this._currentSuggestion = suggestion;
-    this._setHint(suggestion ? suggestion.text : '');
-    if ((oldSuggestion ? oldSuggestion.text : '') !== (suggestion ? suggestion.text : ''))
+    this._setHint(suggestion);
+    if (oldSuggestion !== suggestion)
       this._textEditor.dispatchEventToListeners(UI.TextEditor.Events.SuggestionChanged);
   }
 
@@ -410,7 +410,7 @@ TextEditor.TextEditorAutocompleteController = class {
   acceptSuggestion() {
     const selections = this._codeMirror.listSelections().slice();
     const queryLength = this._queryRange.endColumn - this._queryRange.startColumn;
-    const suggestion = this._currentSuggestion.text;
+    const suggestion = this._currentSuggestion;
     this._codeMirror.operation(() => {
       for (let i = selections.length - 1; i >= 0; --i) {
         const start = selections[i].head;
@@ -435,7 +435,7 @@ TextEditor.TextEditorAutocompleteController = class {
       const range =
           new TextUtils.TextRange(last.line, last.column, selection.head.line, selection.head.ch - queryLength);
       text += this._textEditor.text(range);
-      text += this._currentSuggestion.text;
+      text += this._currentSuggestion;
       last = {line: selection.head.line, column: selection.head.ch};
     }
     const range = new TextUtils.TextRange(last.line, last.column, Infinity, Infinity);

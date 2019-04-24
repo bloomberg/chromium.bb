@@ -30,6 +30,8 @@ const char kCredentialAlgorithmMapKey[] = "alg";
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
+const base::TimeDelta kHidKeepAliveDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 const char kFormatKey[] = "fmt";
 const char kAttestationStatementKey[] = "attStmt";

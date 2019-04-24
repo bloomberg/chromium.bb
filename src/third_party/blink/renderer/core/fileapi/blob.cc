@@ -84,7 +84,8 @@ Blob::~Blob() = default;
 Blob* Blob::Create(
     ExecutionContext* context,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blob_parts,
-    const BlobPropertyBag* options) {
+    const BlobPropertyBag* options,
+    ExceptionState& exception_state) {
   DCHECK(options->hasType());
 
   DCHECK(options->hasEndings());
@@ -92,7 +93,7 @@ Blob* Blob::Create(
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
-  auto blob_data = std::make_unique<BlobData>();
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(options->type()));
 
   PopulateBlobData(blob_data.get(), blob_parts,
@@ -108,7 +109,7 @@ Blob* Blob::Create(const unsigned char* data,
                    const String& content_type) {
   DCHECK(data);
 
-  auto blob_data = std::make_unique<BlobData>();
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(content_type);
   blob_data->AppendBytes(data, size);
   uint64_t blob_size = blob_data->length();
@@ -143,8 +144,8 @@ void Blob::PopulateBlobData(
 }
 
 // static
-void Blob::ClampSliceOffsets(uint64_t size, int64_t& start, int64_t& end) {
-  DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
+void Blob::ClampSliceOffsets(long long size, long long& start, long long& end) {
+  DCHECK_NE(size, -1);
 
   // Convert the negative value that is used to select from the end.
   if (start < 0)
@@ -157,25 +158,25 @@ void Blob::ClampSliceOffsets(uint64_t size, int64_t& start, int64_t& end) {
     start = 0;
   if (end < 0)
     end = 0;
-  if (static_cast<uint64_t>(start) >= size) {
+  if (start >= size) {
     start = 0;
     end = 0;
   } else if (end < start) {
     end = start;
-  } else if (static_cast<uint64_t>(end) > size) {
+  } else if (end > size) {
     end = size;
   }
 }
 
-Blob* Blob::slice(int64_t start,
-                  int64_t end,
+Blob* Blob::slice(long long start,
+                  long long end,
                   const String& content_type,
                   ExceptionState& exception_state) const {
   uint64_t size = this->size();
   ClampSliceOffsets(size, start, end);
 
   uint64_t length = end - start;
-  auto blob_data = std::make_unique<BlobData>();
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));

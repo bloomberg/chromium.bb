@@ -22,26 +22,26 @@ bool FillLayersEqual(const FillLayer& a_layers, const FillLayer& b_layers) {
   const FillLayer* b_layer = &b_layers;
   while (a_layer && b_layer) {
     switch (property) {
-      case CSSPropertyID::kBackgroundPositionX:
-      case CSSPropertyID::kWebkitMaskPositionX:
+      case CSSPropertyBackgroundPositionX:
+      case CSSPropertyWebkitMaskPositionX:
         if (a_layer->PositionX() != b_layer->PositionX())
           return false;
         if (a_layer->BackgroundXOrigin() != b_layer->BackgroundXOrigin())
           return false;
         break;
-      case CSSPropertyID::kBackgroundPositionY:
-      case CSSPropertyID::kWebkitMaskPositionY:
+      case CSSPropertyBackgroundPositionY:
+      case CSSPropertyWebkitMaskPositionY:
         if (a_layer->PositionY() != b_layer->PositionY())
           return false;
         if (a_layer->BackgroundYOrigin() != b_layer->BackgroundYOrigin())
           return false;
         break;
-      case CSSPropertyID::kBackgroundSize:
-      case CSSPropertyID::kWebkitMaskSize:
+      case CSSPropertyBackgroundSize:
+      case CSSPropertyWebkitMaskSize:
         if (!(a_layer->SizeLength() == b_layer->SizeLength()))
           return false;
         break;
-      case CSSPropertyID::kBackgroundImage:
+      case CSSPropertyBackgroundImage:
         if (!DataEquivalent(a_layer->GetImage(), b_layer->GetImage()))
           return false;
         break;
@@ -69,313 +69,313 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
                           b.GetRegisteredVariable(name));
   }
   switch (property.GetCSSProperty().PropertyID()) {
-    case CSSPropertyID::kBackgroundColor:
+    case CSSPropertyBackgroundColor:
       return a.BackgroundColor() == b.BackgroundColor() &&
              a.VisitedLinkBackgroundColor() == b.VisitedLinkBackgroundColor();
-    case CSSPropertyID::kBackgroundImage:
-      return FillLayersEqual<CSSPropertyID::kBackgroundImage>(
+    case CSSPropertyBackgroundImage:
+      return FillLayersEqual<CSSPropertyBackgroundImage>(a.BackgroundLayers(),
+                                                         b.BackgroundLayers());
+    case CSSPropertyBackgroundPositionX:
+      return FillLayersEqual<CSSPropertyBackgroundPositionX>(
           a.BackgroundLayers(), b.BackgroundLayers());
-    case CSSPropertyID::kBackgroundPositionX:
-      return FillLayersEqual<CSSPropertyID::kBackgroundPositionX>(
+    case CSSPropertyBackgroundPositionY:
+      return FillLayersEqual<CSSPropertyBackgroundPositionY>(
           a.BackgroundLayers(), b.BackgroundLayers());
-    case CSSPropertyID::kBackgroundPositionY:
-      return FillLayersEqual<CSSPropertyID::kBackgroundPositionY>(
-          a.BackgroundLayers(), b.BackgroundLayers());
-    case CSSPropertyID::kBackgroundSize:
-      return FillLayersEqual<CSSPropertyID::kBackgroundSize>(
-          a.BackgroundLayers(), b.BackgroundLayers());
-    case CSSPropertyID::kBaselineShift:
+    case CSSPropertyBackgroundSize:
+      return FillLayersEqual<CSSPropertyBackgroundSize>(a.BackgroundLayers(),
+                                                        b.BackgroundLayers());
+    case CSSPropertyBaselineShift:
       return a.BaselineShiftValue() == b.BaselineShiftValue();
-    case CSSPropertyID::kBorderBottomColor:
+    case CSSPropertyBorderBottomColor:
       return a.BorderBottomColor() == b.BorderBottomColor() &&
              a.VisitedLinkBorderBottomColor() ==
                  b.VisitedLinkBorderBottomColor();
-    case CSSPropertyID::kBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomLeftRadius:
       return a.BorderBottomLeftRadius() == b.BorderBottomLeftRadius();
-    case CSSPropertyID::kBorderBottomRightRadius:
+    case CSSPropertyBorderBottomRightRadius:
       return a.BorderBottomRightRadius() == b.BorderBottomRightRadius();
-    case CSSPropertyID::kBorderBottomWidth:
+    case CSSPropertyBorderBottomWidth:
       return a.BorderBottomWidth() == b.BorderBottomWidth();
-    case CSSPropertyID::kBorderImageOutset:
+    case CSSPropertyBorderImageOutset:
       return a.BorderImageOutset() == b.BorderImageOutset();
-    case CSSPropertyID::kBorderImageSlice:
+    case CSSPropertyBorderImageSlice:
       return a.BorderImageSlices() == b.BorderImageSlices();
-    case CSSPropertyID::kBorderImageSource:
+    case CSSPropertyBorderImageSource:
       return DataEquivalent(a.BorderImageSource(), b.BorderImageSource());
-    case CSSPropertyID::kBorderImageWidth:
+    case CSSPropertyBorderImageWidth:
       return a.BorderImageWidth() == b.BorderImageWidth();
-    case CSSPropertyID::kBorderLeftColor:
+    case CSSPropertyBorderLeftColor:
       return a.BorderLeftColor() == b.BorderLeftColor() &&
              a.VisitedLinkBorderLeftColor() == b.VisitedLinkBorderLeftColor();
-    case CSSPropertyID::kBorderLeftWidth:
+    case CSSPropertyBorderLeftWidth:
       return a.BorderLeftWidth() == b.BorderLeftWidth();
-    case CSSPropertyID::kBorderRightColor:
+    case CSSPropertyBorderRightColor:
       return a.BorderRightColor() == b.BorderRightColor() &&
              a.VisitedLinkBorderRightColor() == b.VisitedLinkBorderRightColor();
-    case CSSPropertyID::kBorderRightWidth:
+    case CSSPropertyBorderRightWidth:
       return a.BorderRightWidth() == b.BorderRightWidth();
-    case CSSPropertyID::kBorderTopColor:
+    case CSSPropertyBorderTopColor:
       return a.BorderTopColor() == b.BorderTopColor() &&
              a.VisitedLinkBorderTopColor() == b.VisitedLinkBorderTopColor();
-    case CSSPropertyID::kBorderTopLeftRadius:
+    case CSSPropertyBorderTopLeftRadius:
       return a.BorderTopLeftRadius() == b.BorderTopLeftRadius();
-    case CSSPropertyID::kBorderTopRightRadius:
+    case CSSPropertyBorderTopRightRadius:
       return a.BorderTopRightRadius() == b.BorderTopRightRadius();
-    case CSSPropertyID::kBorderTopWidth:
+    case CSSPropertyBorderTopWidth:
       return a.BorderTopWidth() == b.BorderTopWidth();
-    case CSSPropertyID::kBottom:
+    case CSSPropertyBottom:
       return a.Bottom() == b.Bottom();
-    case CSSPropertyID::kBoxShadow:
+    case CSSPropertyBoxShadow:
       return DataEquivalent(a.BoxShadow(), b.BoxShadow());
-    case CSSPropertyID::kCaretColor:
+    case CSSPropertyCaretColor:
       return a.CaretColor() == b.CaretColor() &&
              a.VisitedLinkCaretColor() == b.VisitedLinkCaretColor();
-    case CSSPropertyID::kClip:
+    case CSSPropertyClip:
       return a.Clip() == b.Clip();
-    case CSSPropertyID::kColor:
+    case CSSPropertyColor:
       return a.GetColor() == b.GetColor() &&
              a.VisitedLinkColor() == b.VisitedLinkColor();
-    case CSSPropertyID::kFill: {
+    case CSSPropertyFill: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.FillPaint().EqualTypeOrColor(b_svg.FillPaint()) &&
              a_svg.VisitedLinkFillPaint().EqualTypeOrColor(
                  b_svg.VisitedLinkFillPaint());
     }
-    case CSSPropertyID::kFillOpacity:
+    case CSSPropertyFillOpacity:
       return a.FillOpacity() == b.FillOpacity();
-    case CSSPropertyID::kFlexBasis:
+    case CSSPropertyFlexBasis:
       return a.FlexBasis() == b.FlexBasis();
-    case CSSPropertyID::kFlexGrow:
+    case CSSPropertyFlexGrow:
       return a.FlexGrow() == b.FlexGrow();
-    case CSSPropertyID::kFlexShrink:
+    case CSSPropertyFlexShrink:
       return a.FlexShrink() == b.FlexShrink();
-    case CSSPropertyID::kFloodColor:
+    case CSSPropertyFloodColor:
       return a.FloodColor() == b.FloodColor();
-    case CSSPropertyID::kFloodOpacity:
+    case CSSPropertyFloodOpacity:
       return a.FloodOpacity() == b.FloodOpacity();
-    case CSSPropertyID::kFontSize:
-      // CSSPropertyID::kFontSize: Must pass a specified size to setFontSize if
-      // Text Autosizing is enabled, but a computed size if text zoom is enabled
-      // (if neither is enabled it's irrelevant as they're probably the same).
+    case CSSPropertyFontSize:
+      // CSSPropertyFontSize: Must pass a specified size to setFontSize if Text
+      // Autosizing is enabled, but a computed size if text zoom is enabled (if
+      // neither is enabled it's irrelevant as they're probably the same).
       // FIXME: Should we introduce an option to pass the computed font size
       // here, allowing consumers to enable text zoom rather than Text
       // Autosizing? See http://crbug.com/227545.
       return a.SpecifiedFontSize() == b.SpecifiedFontSize();
-    case CSSPropertyID::kFontSizeAdjust:
+    case CSSPropertyFontSizeAdjust:
       return a.FontSizeAdjust() == b.FontSizeAdjust();
-    case CSSPropertyID::kFontStretch:
+    case CSSPropertyFontStretch:
       return a.GetFontStretch() == b.GetFontStretch();
-    case CSSPropertyID::kFontVariationSettings:
+    case CSSPropertyFontVariationSettings:
       return DataEquivalent(a.GetFontDescription().VariationSettings(),
                             b.GetFontDescription().VariationSettings());
-    case CSSPropertyID::kFontWeight:
+    case CSSPropertyFontWeight:
       return a.GetFontWeight() == b.GetFontWeight();
-    case CSSPropertyID::kHeight:
+    case CSSPropertyHeight:
       return a.Height() == b.Height();
-    case CSSPropertyID::kLeft:
+    case CSSPropertyLeft:
       return a.Left() == b.Left();
-    case CSSPropertyID::kLetterSpacing:
+    case CSSPropertyLetterSpacing:
       return a.LetterSpacing() == b.LetterSpacing();
-    case CSSPropertyID::kLightingColor:
+    case CSSPropertyLightingColor:
       return a.LightingColor() == b.LightingColor();
-    case CSSPropertyID::kLineHeight:
+    case CSSPropertyLineHeight:
       return a.SpecifiedLineHeight() == b.SpecifiedLineHeight();
-    case CSSPropertyID::kListStyleImage:
+    case CSSPropertyListStyleImage:
       return DataEquivalent(a.ListStyleImage(), b.ListStyleImage());
-    case CSSPropertyID::kMarginBottom:
+    case CSSPropertyMarginBottom:
       return a.MarginBottom() == b.MarginBottom();
-    case CSSPropertyID::kMarginLeft:
+    case CSSPropertyMarginLeft:
       return a.MarginLeft() == b.MarginLeft();
-    case CSSPropertyID::kMarginRight:
+    case CSSPropertyMarginRight:
       return a.MarginRight() == b.MarginRight();
-    case CSSPropertyID::kMarginTop:
+    case CSSPropertyMarginTop:
       return a.MarginTop() == b.MarginTop();
-    case CSSPropertyID::kMaxHeight:
+    case CSSPropertyMaxHeight:
       return a.MaxHeight() == b.MaxHeight();
-    case CSSPropertyID::kMaxWidth:
+    case CSSPropertyMaxWidth:
       return a.MaxWidth() == b.MaxWidth();
-    case CSSPropertyID::kMinHeight:
+    case CSSPropertyMinHeight:
       return a.MinHeight() == b.MinHeight();
-    case CSSPropertyID::kMinWidth:
+    case CSSPropertyMinWidth:
       return a.MinWidth() == b.MinWidth();
-    case CSSPropertyID::kObjectPosition:
+    case CSSPropertyObjectPosition:
       return a.ObjectPosition() == b.ObjectPosition();
-    case CSSPropertyID::kOffsetAnchor:
+    case CSSPropertyOffsetAnchor:
       return a.OffsetAnchor() == b.OffsetAnchor();
-    case CSSPropertyID::kOffsetDistance:
+    case CSSPropertyOffsetDistance:
       return a.OffsetDistance() == b.OffsetDistance();
-    case CSSPropertyID::kOffsetPath:
+    case CSSPropertyOffsetPath:
       return DataEquivalent(a.OffsetPath(), b.OffsetPath());
-    case CSSPropertyID::kOffsetPosition:
+    case CSSPropertyOffsetPosition:
       return a.OffsetPosition() == b.OffsetPosition();
-    case CSSPropertyID::kOffsetRotate:
+    case CSSPropertyOffsetRotate:
       return a.OffsetRotate() == b.OffsetRotate();
-    case CSSPropertyID::kOpacity:
+    case CSSPropertyOpacity:
       return a.Opacity() == b.Opacity();
-    case CSSPropertyID::kOrder:
+    case CSSPropertyOrder:
       return a.Order() == b.Order();
-    case CSSPropertyID::kOrphans:
+    case CSSPropertyOrphans:
       return a.Orphans() == b.Orphans();
-    case CSSPropertyID::kOutlineColor:
+    case CSSPropertyOutlineColor:
       return a.OutlineColor() == b.OutlineColor() &&
              a.VisitedLinkOutlineColor() == b.VisitedLinkOutlineColor();
-    case CSSPropertyID::kOutlineOffset:
+    case CSSPropertyOutlineOffset:
       return a.OutlineOffset() == b.OutlineOffset();
-    case CSSPropertyID::kOutlineWidth:
+    case CSSPropertyOutlineWidth:
       return a.OutlineWidth() == b.OutlineWidth();
-    case CSSPropertyID::kPaddingBottom:
+    case CSSPropertyPaddingBottom:
       return a.PaddingBottom() == b.PaddingBottom();
-    case CSSPropertyID::kPaddingLeft:
+    case CSSPropertyPaddingLeft:
       return a.PaddingLeft() == b.PaddingLeft();
-    case CSSPropertyID::kPaddingRight:
+    case CSSPropertyPaddingRight:
       return a.PaddingRight() == b.PaddingRight();
-    case CSSPropertyID::kPaddingTop:
+    case CSSPropertyPaddingTop:
       return a.PaddingTop() == b.PaddingTop();
-    case CSSPropertyID::kRight:
+    case CSSPropertyRight:
       return a.Right() == b.Right();
-    case CSSPropertyID::kShapeImageThreshold:
+    case CSSPropertyShapeImageThreshold:
       return a.ShapeImageThreshold() == b.ShapeImageThreshold();
-    case CSSPropertyID::kShapeMargin:
+    case CSSPropertyShapeMargin:
       return a.ShapeMargin() == b.ShapeMargin();
-    case CSSPropertyID::kShapeOutside:
+    case CSSPropertyShapeOutside:
       return DataEquivalent(a.ShapeOutside(), b.ShapeOutside());
-    case CSSPropertyID::kStopColor:
+    case CSSPropertyStopColor:
       return a.StopColor() == b.StopColor();
-    case CSSPropertyID::kStopOpacity:
+    case CSSPropertyStopOpacity:
       return a.StopOpacity() == b.StopOpacity();
-    case CSSPropertyID::kStroke: {
+    case CSSPropertyStroke: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.StrokePaint().EqualTypeOrColor(b_svg.StrokePaint()) &&
              a_svg.VisitedLinkStrokePaint().EqualTypeOrColor(
                  b_svg.VisitedLinkStrokePaint());
     }
-    case CSSPropertyID::kStrokeDasharray:
+    case CSSPropertyStrokeDasharray:
       return a.StrokeDashArray() == b.StrokeDashArray();
-    case CSSPropertyID::kStrokeDashoffset:
+    case CSSPropertyStrokeDashoffset:
       return a.StrokeDashOffset() == b.StrokeDashOffset();
-    case CSSPropertyID::kStrokeMiterlimit:
+    case CSSPropertyStrokeMiterlimit:
       return a.StrokeMiterLimit() == b.StrokeMiterLimit();
-    case CSSPropertyID::kStrokeOpacity:
+    case CSSPropertyStrokeOpacity:
       return a.StrokeOpacity() == b.StrokeOpacity();
-    case CSSPropertyID::kStrokeWidth:
+    case CSSPropertyStrokeWidth:
       return a.StrokeWidth() == b.StrokeWidth();
-    case CSSPropertyID::kTextDecorationColor:
+    case CSSPropertyTextDecorationColor:
       return a.TextDecorationColor() == b.TextDecorationColor() &&
              a.VisitedLinkTextDecorationColor() ==
                  b.VisitedLinkTextDecorationColor();
-    case CSSPropertyID::kTextDecorationSkipInk:
+    case CSSPropertyTextDecorationSkipInk:
       return a.TextDecorationSkipInk() == b.TextDecorationSkipInk();
-    case CSSPropertyID::kTextIndent:
+    case CSSPropertyTextIndent:
       return a.TextIndent() == b.TextIndent();
-    case CSSPropertyID::kTextShadow:
+    case CSSPropertyTextShadow:
       return DataEquivalent(a.TextShadow(), b.TextShadow());
-    case CSSPropertyID::kTextSizeAdjust:
+    case CSSPropertyTextSizeAdjust:
       return a.GetTextSizeAdjust() == b.GetTextSizeAdjust();
-    case CSSPropertyID::kTop:
+    case CSSPropertyTop:
       return a.Top() == b.Top();
-    case CSSPropertyID::kVerticalAlign:
+    case CSSPropertyVerticalAlign:
       return a.VerticalAlign() == b.VerticalAlign() &&
              (a.VerticalAlign() != EVerticalAlign::kLength ||
               a.GetVerticalAlignLength() == b.GetVerticalAlignLength());
-    case CSSPropertyID::kVisibility:
+    case CSSPropertyVisibility:
       return a.Visibility() == b.Visibility();
-    case CSSPropertyID::kWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
       return a.HorizontalBorderSpacing() == b.HorizontalBorderSpacing();
-    case CSSPropertyID::kWebkitBorderVerticalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
       return a.VerticalBorderSpacing() == b.VerticalBorderSpacing();
-    case CSSPropertyID::kClipPath:
+    case CSSPropertyClipPath:
       return DataEquivalent(a.ClipPath(), b.ClipPath());
-    case CSSPropertyID::kColumnCount:
+    case CSSPropertyColumnCount:
       return a.ColumnCount() == b.ColumnCount();
-    case CSSPropertyID::kColumnGap:
+    case CSSPropertyColumnGap:
       return a.ColumnGap() == b.ColumnGap();
-    case CSSPropertyID::kRowGap:
+    case CSSPropertyRowGap:
       return a.RowGap() == b.RowGap();
-    case CSSPropertyID::kColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
       return a.ColumnRuleColor() == b.ColumnRuleColor() &&
              a.VisitedLinkColumnRuleColor() == b.VisitedLinkColumnRuleColor();
-    case CSSPropertyID::kColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
       return a.ColumnRuleWidth() == b.ColumnRuleWidth();
-    case CSSPropertyID::kColumnWidth:
+    case CSSPropertyColumnWidth:
       return a.ColumnWidth() == b.ColumnWidth();
-    case CSSPropertyID::kFilter:
+    case CSSPropertyFilter:
       return a.Filter() == b.Filter();
-    case CSSPropertyID::kBackdropFilter:
+    case CSSPropertyBackdropFilter:
       return a.BackdropFilter() == b.BackdropFilter();
-    case CSSPropertyID::kWebkitMaskBoxImageOutset:
+    case CSSPropertyWebkitMaskBoxImageOutset:
       return a.MaskBoxImageOutset() == b.MaskBoxImageOutset();
-    case CSSPropertyID::kWebkitMaskBoxImageSlice:
+    case CSSPropertyWebkitMaskBoxImageSlice:
       return a.MaskBoxImageSlices() == b.MaskBoxImageSlices();
-    case CSSPropertyID::kWebkitMaskBoxImageSource:
+    case CSSPropertyWebkitMaskBoxImageSource:
       return DataEquivalent(a.MaskBoxImageSource(), b.MaskBoxImageSource());
-    case CSSPropertyID::kWebkitMaskBoxImageWidth:
+    case CSSPropertyWebkitMaskBoxImageWidth:
       return a.MaskBoxImageWidth() == b.MaskBoxImageWidth();
-    case CSSPropertyID::kWebkitMaskImage:
+    case CSSPropertyWebkitMaskImage:
       return DataEquivalent(a.MaskImage(), b.MaskImage());
-    case CSSPropertyID::kWebkitMaskPositionX:
-      return FillLayersEqual<CSSPropertyID::kWebkitMaskPositionX>(
-          a.MaskLayers(), b.MaskLayers());
-    case CSSPropertyID::kWebkitMaskPositionY:
-      return FillLayersEqual<CSSPropertyID::kWebkitMaskPositionY>(
-          a.MaskLayers(), b.MaskLayers());
-    case CSSPropertyID::kWebkitMaskSize:
-      return FillLayersEqual<CSSPropertyID::kWebkitMaskSize>(a.MaskLayers(),
+    case CSSPropertyWebkitMaskPositionX:
+      return FillLayersEqual<CSSPropertyWebkitMaskPositionX>(a.MaskLayers(),
                                                              b.MaskLayers());
-    case CSSPropertyID::kPerspective:
+    case CSSPropertyWebkitMaskPositionY:
+      return FillLayersEqual<CSSPropertyWebkitMaskPositionY>(a.MaskLayers(),
+                                                             b.MaskLayers());
+    case CSSPropertyWebkitMaskSize:
+      return FillLayersEqual<CSSPropertyWebkitMaskSize>(a.MaskLayers(),
+                                                        b.MaskLayers());
+    case CSSPropertyPerspective:
       return a.Perspective() == b.Perspective();
-    case CSSPropertyID::kPerspectiveOrigin:
+    case CSSPropertyPerspectiveOrigin:
       return a.PerspectiveOriginX() == b.PerspectiveOriginX() &&
              a.PerspectiveOriginY() == b.PerspectiveOriginY();
-    case CSSPropertyID::kWebkitTextStrokeColor:
+    case CSSPropertyWebkitTextStrokeColor:
       return a.TextStrokeColor() == b.TextStrokeColor() &&
              a.VisitedLinkTextStrokeColor() == b.VisitedLinkTextStrokeColor();
-    case CSSPropertyID::kTransform:
+    case CSSPropertyTransform:
       return a.Transform() == b.Transform();
-    case CSSPropertyID::kTranslate:
+    case CSSPropertyTranslate:
       return DataEquivalent<TransformOperation>(a.Translate(), b.Translate());
-    case CSSPropertyID::kRotate:
+    case CSSPropertyRotate:
       return DataEquivalent<TransformOperation>(a.Rotate(), b.Rotate());
-    case CSSPropertyID::kScale:
+    case CSSPropertyScale:
       return DataEquivalent<TransformOperation>(a.Scale(), b.Scale());
-    case CSSPropertyID::kTransformOrigin:
+    case CSSPropertyTransformOrigin:
       return a.TransformOriginX() == b.TransformOriginX() &&
              a.TransformOriginY() == b.TransformOriginY() &&
              a.TransformOriginZ() == b.TransformOriginZ();
-    case CSSPropertyID::kWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitPerspectiveOriginX:
       return a.PerspectiveOriginX() == b.PerspectiveOriginX();
-    case CSSPropertyID::kWebkitPerspectiveOriginY:
+    case CSSPropertyWebkitPerspectiveOriginY:
       return a.PerspectiveOriginY() == b.PerspectiveOriginY();
-    case CSSPropertyID::kWebkitTransformOriginX:
+    case CSSPropertyWebkitTransformOriginX:
       return a.TransformOriginX() == b.TransformOriginX();
-    case CSSPropertyID::kWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginY:
       return a.TransformOriginY() == b.TransformOriginY();
-    case CSSPropertyID::kWebkitTransformOriginZ:
+    case CSSPropertyWebkitTransformOriginZ:
       return a.TransformOriginZ() == b.TransformOriginZ();
-    case CSSPropertyID::kWidows:
+    case CSSPropertyWidows:
       return a.Widows() == b.Widows();
-    case CSSPropertyID::kWidth:
+    case CSSPropertyWidth:
       return a.Width() == b.Width();
-    case CSSPropertyID::kWordSpacing:
+    case CSSPropertyWordSpacing:
       return a.WordSpacing() == b.WordSpacing();
-    case CSSPropertyID::kD:
+    case CSSPropertyD:
       return DataEquivalent(a.SvgStyle().D(), b.SvgStyle().D());
-    case CSSPropertyID::kCx:
+    case CSSPropertyCx:
       return a.SvgStyle().Cx() == b.SvgStyle().Cx();
-    case CSSPropertyID::kCy:
+    case CSSPropertyCy:
       return a.SvgStyle().Cy() == b.SvgStyle().Cy();
-    case CSSPropertyID::kX:
+    case CSSPropertyX:
       return a.SvgStyle().X() == b.SvgStyle().X();
-    case CSSPropertyID::kY:
+    case CSSPropertyY:
       return a.SvgStyle().Y() == b.SvgStyle().Y();
-    case CSSPropertyID::kR:
+    case CSSPropertyR:
       return a.SvgStyle().R() == b.SvgStyle().R();
-    case CSSPropertyID::kRx:
+    case CSSPropertyRx:
       return a.SvgStyle().Rx() == b.SvgStyle().Rx();
-    case CSSPropertyID::kRy:
+    case CSSPropertyRy:
       return a.SvgStyle().Ry() == b.SvgStyle().Ry();
-    case CSSPropertyID::kZIndex:
+    case CSSPropertyZIndex:
       return a.HasAutoZIndex() == b.HasAutoZIndex() &&
              (a.HasAutoZIndex() || a.ZIndex() == b.ZIndex());
     default:

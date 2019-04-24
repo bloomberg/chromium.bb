@@ -16,16 +16,14 @@
 
 namespace content {
 
-Service::Service(
-    ServiceDelegate* delegate,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
-    : delegate_(delegate), service_binding_(this, std::move(receiver)) {
-  binders_.Add(base::BindRepeating(
-      [](Service* service,
-         mojo::PendingReceiver<mojom::NavigableContentsFactory> receiver) {
+Service::Service(ServiceDelegate* delegate,
+                 service_manager::mojom::ServiceRequest request)
+    : delegate_(delegate), service_binding_(this, std::move(request)) {
+  binders_.AddInterface(base::BindRepeating(
+      [](Service* service, mojom::NavigableContentsFactoryRequest request) {
         service->AddNavigableContentsFactory(
-            std::make_unique<NavigableContentsFactoryImpl>(
-                service, std::move(receiver)));
+            std::make_unique<NavigableContentsFactoryImpl>(service,
+                                                           std::move(request)));
       },
       this));
 }
@@ -39,7 +37,7 @@ void Service::ForceQuit() {
   // requests will be handled.
   navigable_contents_factories_.clear();
   navigable_contents_.clear();
-  binders_.Clear();
+  binders_.RemoveInterface<mojom::NavigableContentsFactory>();
   Terminate();
 }
 
@@ -64,10 +62,10 @@ void Service::RemoveNavigableContents(NavigableContentsImpl* contents) {
   navigable_contents_.erase(contents);
 }
 
-void Service::OnConnect(const service_manager::ConnectSourceInfo& source,
-                        const std::string& interface_name,
-                        mojo::ScopedMessagePipeHandle pipe) {
-  binders_.TryBind(interface_name, &pipe);
+void Service::OnBindInterface(const service_manager::BindSourceInfo& source,
+                              const std::string& interface_name,
+                              mojo::ScopedMessagePipeHandle pipe) {
+  binders_.BindInterface(interface_name, std::move(pipe));
 }
 
 }  // namespace content

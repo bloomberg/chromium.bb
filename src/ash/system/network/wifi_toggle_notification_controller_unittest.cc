@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,7 +24,7 @@ class WifiToggleNotificationControllerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
-    chromeos::shill_clients::InitializeFakes();
+    chromeos::DBusThreadManager::Initialize();
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
@@ -39,7 +39,7 @@ class WifiToggleNotificationControllerTest : public AshTestBase {
     chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::shill_clients::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  private:

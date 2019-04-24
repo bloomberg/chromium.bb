@@ -262,18 +262,12 @@ bool VulkanWindowContext::createSwapchain(int width, int height,
     // If mailbox mode is available, use it, as it is the lowest-latency non-
     // tearing mode. If not, fall back to FIFO which is always available.
     VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
-    bool hasImmediate = false;
     for (uint32_t i = 0; i < presentModeCount; ++i) {
         // use mailbox
         if (VK_PRESENT_MODE_MAILBOX_KHR == presentModes[i]) {
-            mode = VK_PRESENT_MODE_MAILBOX_KHR;
+            mode = presentModes[i];
+            break;
         }
-        if (VK_PRESENT_MODE_IMMEDIATE_KHR == presentModes[i]) {
-            hasImmediate = true;
-        }
-    }
-    if (params.fDisableVsync && hasImmediate) {
-        mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo;
@@ -514,10 +508,8 @@ void VulkanWindowContext::swapBuffers() {
     GrBackendSemaphore beSemaphore;
     beSemaphore.initVulkan(backbuffer->fRenderSemaphore);
 
-    GrFlushInfo info;
-    info.fNumSemaphores = 1;
-    info.fSignalSemaphores = &beSemaphore;
-    surface->flush(SkSurface::BackendSurfaceAccess::kPresent, info);
+    surface->flush(SkSurface::BackendSurfaceAccess::kPresent, SkSurface::kNone_FlushFlags,
+                   1, &beSemaphore);
 
     // Submit present operation to present queue
     const VkPresentInfoKHR presentInfo =

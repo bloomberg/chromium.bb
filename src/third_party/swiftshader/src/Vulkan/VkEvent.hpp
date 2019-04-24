@@ -34,12 +34,9 @@ public:
 		return 0;
 	}
 
-	bool signal()
+	void signal()
 	{
 		status = VK_EVENT_SET;
-		bool wasWaiting = waiting;
-		waiting = false;
-		return wasWaiting;
 	}
 
 	void reset()
@@ -52,19 +49,8 @@ public:
 		return status;
 	}
 
-	bool wait()
-	{
-		if(status != VK_EVENT_SET)
-		{
-			waiting = true;
-		}
-
-		return waiting;
-	}
-
 private:
 	VkResult status = VK_EVENT_RESET;
-	bool waiting = false;
 };
 
 static inline Event* Cast(VkEvent object)

@@ -96,7 +96,8 @@ bool ScientificModifier::isStrong() const {
 bool ScientificModifier::containsField(UNumberFormatFields field) const {
     (void)field;
     // This method is not used for inner modifiers.
-    UPRV_UNREACHABLE;
+    U_ASSERT(false);
+    return false;
 }
 
 void ScientificModifier::getParameters(Parameters& output) const {

@@ -7,6 +7,7 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
+      <script src="../../../resources/run-after-layout-and-paint.js"></script>
       <style>
       .layer {
           position: absolute;
@@ -17,7 +18,6 @@
       </style>
       <div id="parent-layer"></div>
     `);
-  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
       function doActions()
       {

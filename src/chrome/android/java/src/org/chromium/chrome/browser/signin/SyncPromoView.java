@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * A View that shows the user the next step they must complete to start syncing their data (eg.
@@ -208,6 +207,6 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
     @Override
     public void androidSyncSettingsChanged() {
         // AndroidSyncSettings calls this method from non-UI threads.
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, this::update);
+        ThreadUtils.runOnUiThread(this::update);
     }
 }

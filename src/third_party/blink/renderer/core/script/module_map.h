@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -31,6 +32,10 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   class Entry;
 
  public:
+  static ModuleMap* Create(Modulator* modulator) {
+    return MakeGarbageCollected<ModuleMap>(modulator);
+  }
+
   explicit ModuleMap(Modulator*);
 
   void Trace(blink::Visitor*);
@@ -52,7 +57,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   Modulator* GetModulator() { return modulator_; }
 
  private:
-  using MapImpl = HeapHashMap<KURL, Member<Entry>>;
+  using MapImpl = HeapHashMap<KURL, TraceWrapperMember<Entry>>;
 
   // A module map is a map of absolute URLs to map entry.
   MapImpl map_;

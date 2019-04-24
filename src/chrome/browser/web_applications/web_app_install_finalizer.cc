@@ -53,7 +53,6 @@ WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
 void WebAppInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
-    const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

@@ -41,19 +41,18 @@ void HTMLDivElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
-        DeprecatedEqualIgnoringCase(value, "center")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitCenter);
-    } else if (DeprecatedEqualIgnoringCase(value, "left")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitLeft);
-    } else if (DeprecatedEqualIgnoringCase(value, "right")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitRight);
-    } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
+        DeprecatedEqualIgnoringCase(value, "center"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitCenter);
+    else if (DeprecatedEqualIgnoringCase(value, "left"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitLeft);
+    else if (DeprecatedEqualIgnoringCase(value, "right"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitRight);
+    else
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
-    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

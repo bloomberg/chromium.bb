@@ -25,17 +25,12 @@ namespace ppapi {
 // A fake version of V8ObjectVar for testing.
 class V8ObjectVar : public ppapi::Var {
  public:
-  V8ObjectVar(const PPP_Class_Deprecated* ppp_class, void* ppp_class_data)
-      : ppp_class_(ppp_class), ppp_class_data_(ppp_class_data) {}
-  ~V8ObjectVar() override { ppp_class_->Deallocate(ppp_class_data_); }
+  V8ObjectVar() {}
+  ~V8ObjectVar() override {}
 
   // Var overrides.
   V8ObjectVar* AsV8ObjectVar() override { return this; }
   PP_VarType GetType() const override { return PP_VARTYPE_OBJECT; }
-
- private:
-  const PPP_Class_Deprecated* ppp_class_;
-  void* ppp_class_data_;
 };
 
 namespace proxy {
@@ -115,9 +110,9 @@ PPP_Instance_1_0 ppp_instance_mock = { &DidCreate, &DidDestroy };
 
 // Mock PPB_Var_Deprecated, so that we can emulate creating an Object Var.
 PP_Var CreateObject(PP_Instance /*instance*/,
-                    const PPP_Class_Deprecated* ppp_class,
-                    void* ppp_class_data) {
-  V8ObjectVar* obj_var = new V8ObjectVar(ppp_class, ppp_class_data);
+                    const PPP_Class_Deprecated* /*ppp_class*/,
+                    void* /*ppp_class_data*/) {
+  V8ObjectVar* obj_var = new V8ObjectVar;
   return obj_var->GetPPVar();
 }
 

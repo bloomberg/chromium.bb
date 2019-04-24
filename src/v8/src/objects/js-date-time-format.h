@@ -21,7 +21,6 @@
 #include "src/objects/object-macros.h"
 
 namespace U_ICU_NAMESPACE {
-class DateIntervalFormat;
 class Locale;
 class SimpleDateFormat;
 }  // namespace U_ICU_NAMESPACE
@@ -57,20 +56,9 @@ class JSDateTimeFormat : public JSObject {
       Isolate* isolate, Handle<JSDateTimeFormat> date_time_format,
       Handle<Object> date);
 
-  // ecma402/#sec-Intl.DateTimeFormat.prototype.formatToParts
-  V8_WARN_UNUSED_RESULT static MaybeHandle<JSArray> FormatToParts(
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object> FormatToParts(
       Isolate* isolate, Handle<JSDateTimeFormat> date_time_format,
       double date_value);
-
-  // ecma402/#sec-intl.datetimeformat.prototype.formatRange
-  V8_WARN_UNUSED_RESULT static MaybeHandle<String> FormatRange(
-      Isolate* isolate, Handle<JSDateTimeFormat> date_time_format,
-      double x_date_value, double y_date_value);
-
-  // ecma402/sec-Intl.DateTimeFormat.prototype.formatRangeToParts
-  V8_WARN_UNUSED_RESULT static MaybeHandle<JSArray> FormatRangeToParts(
-      Isolate* isolate, Handle<JSDateTimeFormat> date_time_format,
-      double x_date_value, double y_date_value);
 
   // ecma-402/#sec-todatetimeoptions
   enum class RequiredOption { kDate, kTime, kAny };
@@ -83,7 +71,7 @@ class JSDateTimeFormat : public JSObject {
       Isolate* isolate, Handle<Object> date, Handle<Object> locales,
       Handle<Object> options, RequiredOption required, DefaultsOption defaults);
 
-  V8_EXPORT_PRIVATE static const std::set<std::string>& GetAvailableLocales();
+  static const std::set<std::string>& GetAvailableLocales();
 
   Handle<String> HourCycleAsString() const;
   DECL_CAST(JSDateTimeFormat)
@@ -92,13 +80,12 @@ class JSDateTimeFormat : public JSObject {
   enum class DateTimeStyle { kUndefined, kFull, kLong, kMedium, kShort };
 
 // Layout description.
-#define JS_DATE_TIME_FORMAT_FIELDS(V)          \
-  V(kICULocaleOffset, kTaggedSize)             \
-  V(kICUSimpleDateFormatOffset, kTaggedSize)   \
-  V(kICUDateIntervalFormatOffset, kTaggedSize) \
-  V(kBoundFormatOffset, kTaggedSize)           \
-  V(kFlagsOffset, kTaggedSize)                 \
-  /* Total size. */                            \
+#define JS_DATE_TIME_FORMAT_FIELDS(V)        \
+  V(kICULocaleOffset, kTaggedSize)           \
+  V(kICUSimpleDateFormatOffset, kTaggedSize) \
+  V(kBoundFormatOffset, kTaggedSize)         \
+  V(kFlagsOffset, kTaggedSize)               \
+  /* Total size. */                          \
   V(kSize, 0)
 
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
@@ -143,7 +130,6 @@ class JSDateTimeFormat : public JSObject {
 
   DECL_ACCESSORS(icu_locale, Managed<icu::Locale>)
   DECL_ACCESSORS(icu_simple_date_format, Managed<icu::SimpleDateFormat>)
-  DECL_ACCESSORS(icu_date_interval_format, Managed<icu::DateIntervalFormat>)
   DECL_ACCESSORS(bound_format, Object)
   DECL_INT_ACCESSORS(flags)
 

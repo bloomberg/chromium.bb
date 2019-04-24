@@ -20,7 +20,9 @@ using content::WebContents;
 namespace resource_coordinator {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      time_to_purge_(base::TimeDelta::FromMinutes(30)),
+      is_purged_(false) {}
 
 TabManager::WebContentsData::~WebContentsData() {}
 
@@ -53,6 +55,14 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
   g_browser_process->GetTabManager()->OnWebContentsDestroyed(web_contents());
 }
 
+TimeTicks TabManager::WebContentsData::LastInactiveTime() {
+  return tab_data_.last_inactive_time;
+}
+
+void TabManager::WebContentsData::SetLastInactiveTime(TimeTicks timestamp) {
+  tab_data_.last_inactive_time = timestamp;
+}
+
 // static
 void TabManager::WebContentsData::CopyState(
     content::WebContents* old_contents,
@@ -71,7 +81,8 @@ TabManager::WebContentsData::Data::Data()
       is_restored_in_foreground(false) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
-  return tab_loading_state == right.tab_loading_state &&
+  return last_inactive_time == right.last_inactive_time &&
+         tab_loading_state == right.tab_loading_state &&
          is_in_session_restore == right.is_in_session_restore &&
          is_restored_in_foreground == right.is_restored_in_foreground;
 }

@@ -24,14 +24,13 @@ class WasmCode;
 // Forward declarations.
 class AbstractCode;
 class FrameArray;
-class IncrementalStringBuilder;
 class JSMessageObject;
 class LookupIterator;
 class SharedFunctionInfo;
 class SourceInfo;
 class WasmInstanceObject;
 
-class V8_EXPORT_PRIVATE MessageLocation {
+class MessageLocation {
  public:
   MessageLocation(Handle<Script> script, int start_pos, int end_pos);
   MessageLocation(Handle<Script> script, int start_pos, int end_pos,
@@ -84,8 +83,7 @@ class StackFrameBase {
   virtual bool IsConstructor() = 0;
   virtual bool IsStrict() const = 0;
 
-  MaybeHandle<String> ToString();
-  virtual void ToString(IncrementalStringBuilder& builder) = 0;
+  virtual MaybeHandle<String> ToString() = 0;
 
   // Used to signal that the requested field is unknown.
   static const int kNone = -1;
@@ -129,7 +127,7 @@ class JSStackFrame : public StackFrameBase {
   bool IsConstructor() override { return is_constructor_; }
   bool IsStrict() const override { return is_strict_; }
 
-  void ToString(IncrementalStringBuilder& builder) override;
+  MaybeHandle<String> ToString() override;
 
  private:
   JSStackFrame() = default;
@@ -178,7 +176,7 @@ class WasmStackFrame : public StackFrameBase {
   bool IsStrict() const override { return false; }
   bool IsInterpreted() const { return code_ == nullptr; }
 
-  void ToString(IncrementalStringBuilder& builder) override;
+  MaybeHandle<String> ToString() override;
 
  protected:
   Handle<Object> Null() const;
@@ -213,7 +211,7 @@ class AsmJsWasmStackFrame : public WasmStackFrame {
   int GetLineNumber() override;
   int GetColumnNumber() override;
 
-  void ToString(IncrementalStringBuilder& builder) override;
+  MaybeHandle<String> ToString() override;
 
  private:
   friend class FrameArrayIterator;
@@ -279,14 +277,14 @@ class MessageFormatter {
  public:
   static const char* TemplateString(MessageTemplate index);
 
-  V8_EXPORT_PRIVATE static MaybeHandle<String> Format(Isolate* isolate,
-                                                      MessageTemplate index,
-                                                      Handle<String> arg0,
-                                                      Handle<String> arg1,
-                                                      Handle<String> arg2);
+  static MaybeHandle<String> FormatMessage(Isolate* isolate,
+                                           MessageTemplate index,
+                                           Handle<String> arg0,
+                                           Handle<String> arg1,
+                                           Handle<String> arg2);
 
-  static Handle<String> Format(Isolate* isolate, MessageTemplate index,
-                               Handle<Object> arg);
+  static Handle<String> FormatMessage(Isolate* isolate, MessageTemplate index,
+                                      Handle<Object> arg);
 };
 
 
@@ -295,14 +293,13 @@ class MessageFormatter {
 class MessageHandler {
  public:
   // Returns a message object for the API to use.
-  V8_EXPORT_PRIVATE static Handle<JSMessageObject> MakeMessageObject(
+  static Handle<JSMessageObject> MakeMessageObject(
       Isolate* isolate, MessageTemplate type, const MessageLocation* location,
       Handle<Object> argument, Handle<FixedArray> stack_frames);
 
   // Report a formatted message (needs JS allocation).
-  V8_EXPORT_PRIVATE static void ReportMessage(Isolate* isolate,
-                                              const MessageLocation* loc,
-                                              Handle<JSMessageObject> message);
+  static void ReportMessage(Isolate* isolate, const MessageLocation* loc,
+                            Handle<JSMessageObject> message);
 
   static void DefaultMessageReport(Isolate* isolate, const MessageLocation* loc,
                                    Handle<Object> message_obj);

@@ -34,8 +34,7 @@ class SkiaTiger8svgDesktopPageSet(story.StorySet):
 
     urls_list = [
       # Why: from skbug.com/4713
-      ('https://storage.googleapis.com/skia-infra-testdata/images-for-skps/'
-       'tiger-8.svg'),
+      'http://www.googledrive.com/host/0B5nDjttF0gt9QzJjdjRNVlNvems',
     ]
 
     for url in urls_list:

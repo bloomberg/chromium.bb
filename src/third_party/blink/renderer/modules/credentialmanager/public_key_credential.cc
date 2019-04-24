@@ -25,6 +25,15 @@ void OnIsUserVerifyingComplete(
 }
 }  // namespace
 
+PublicKeyCredential* PublicKeyCredential::Create(
+    const String& id,
+    DOMArrayBuffer* raw_id,
+    AuthenticatorResponse* response,
+    const AuthenticationExtensionsClientOutputs* extension_outputs) {
+  return MakeGarbageCollected<PublicKeyCredential>(id, raw_id, response,
+                                                   extension_outputs);
+}
+
 PublicKeyCredential::PublicKeyCredential(
     const String& id,
     DOMArrayBuffer* raw_id,
@@ -38,7 +47,7 @@ PublicKeyCredential::PublicKeyCredential(
 ScriptPromise
 PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
     ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Ignore calls if the current realm execution context is no longer valid,

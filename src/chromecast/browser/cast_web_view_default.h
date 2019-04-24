@@ -22,7 +22,6 @@ namespace content {
 class BrowserContext;
 class RenderViewHost;
 class SiteInstance;
-struct MediaPlayerId;
 }  // namespace content
 
 namespace chromecast {
@@ -61,10 +60,10 @@ class CastWebViewDefault : public CastWebView,
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const content::MediaPlayerId& id) override;
+                           const MediaPlayerId& id) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const content::MediaPlayerId& id,
+      const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
 
   // WebContentsDelegate implementation:

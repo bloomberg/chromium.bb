@@ -21,9 +21,9 @@ class Linkage;
 
 
 // Lowers JS-level operators to runtime and IC calls in the "generic" case.
-class JSGenericLowering final : public AdvancedReducer {
+class JSGenericLowering final : public Reducer {
  public:
-  JSGenericLowering(JSGraph* jsgraph, Editor* editor);
+  explicit JSGenericLowering(JSGraph* jsgraph);
   ~JSGenericLowering() final;
 
   const char* reducer_name() const override { return "JSGenericLowering"; }

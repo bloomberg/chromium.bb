@@ -32,7 +32,6 @@ enum ErrorState {
   SYNC_SERVICE_UNAVAILABLE,
   SYNC_NEEDS_PASSPHRASE,
   SYNC_UNRECOVERABLE_ERROR,
-  SYNC_SYNC_SETTINGS_NOT_CONFIRMED,
   SYNC_ERROR_COUNT
 };
 
@@ -50,9 +49,6 @@ NSString* GetSyncErrorDescriptionForSyncSetupService(
       return l10n_util::GetNSString(IDS_IOS_SYNC_LOGIN_INFO_OUT_OF_DATE);
     case SyncSetupService::kSyncServiceNeedsPassphrase:
       return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(
-          IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION);
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceUnrecoverableError:
@@ -80,8 +76,6 @@ NSString* GetSyncErrorMessageForBrowserState(
       return l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_COULD_NOT_CONNECT);
     case SyncSetupService::kSyncServiceUnrecoverableError:
       return l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_UNRECOVERABLE);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED);
   }
 }
 
@@ -99,11 +93,7 @@ NSString* GetSyncErrorButtonTitleForBrowserState(
       return l10n_util::GetNSString(IDS_IOS_SYNC_ENTER_PASSPHRASE);
     case SyncSetupService::kSyncServiceUnrecoverableError:
       return l10n_util::GetNSString(IDS_IOS_SYNC_SIGN_IN_AGAIN);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_ACTION);
-    case SyncSetupService::kNoSyncServiceError:
-    case SyncSetupService::kSyncServiceServiceUnavailable:
-    case SyncSetupService::kSyncServiceCouldNotConnect:
+    default:
       return nil;
   }
 }
@@ -123,11 +113,6 @@ bool ShouldShowSyncSignin(SyncSetupService::SyncServiceState syncState) {
 bool ShouldShowSyncPassphraseSettings(
     SyncSetupService::SyncServiceState syncState) {
   return syncState == SyncSetupService::kSyncServiceNeedsPassphrase;
-}
-
-bool ShouldShowGoogleServicesSettings(
-    SyncSetupService::SyncServiceState syncState) {
-  return syncState == SyncSetupService::kSyncSettingsNotConfirmed;
 }
 
 bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
@@ -175,9 +160,6 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
     case SyncSetupService::kSyncServiceUnrecoverableError:
       loggedErrorState = SYNC_UNRECOVERABLE_ERROR;
       break;
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      loggedErrorState = SYNC_SYNC_SETTINGS_NOT_CONFIRMED;
-      break;
   }
   UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState,
                             SYNC_ERROR_COUNT);
@@ -199,7 +181,6 @@ bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
     case SyncSetupService::kSyncServiceUnrecoverableError:
-    case SyncSetupService::kSyncSettingsNotConfirmed:
       return false;
   }
 }

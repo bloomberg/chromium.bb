@@ -31,7 +31,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/color.h"
 
-@class NSColor;
+OBJC_CLASS NSColor;
 
 namespace blink {
 

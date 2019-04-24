@@ -93,11 +93,9 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
         DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kWidth, 0,
-          CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyWidth, 0, CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kHeight, 0,
-          CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyHeight, 0, CSSPrimitiveValue::UnitType::kPixels);
     }
   } else {
     HTMLPlugInElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -124,7 +122,7 @@ void HTMLEmbedElement::ParseAttribute(
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
       if (!image_loader_)
-        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
+        image_loader_ = HTMLImageLoader::Create(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else if (GetLayoutObject()) {
       // Check if this Embed can transition from potentially-active to active

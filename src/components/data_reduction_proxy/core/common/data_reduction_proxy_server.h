@@ -16,7 +16,8 @@ namespace data_reduction_proxy {
 // A class that stores information about a single data reduction proxy server.
 class DataReductionProxyServer {
  public:
-  explicit DataReductionProxyServer(const net::ProxyServer& proxy_server);
+  DataReductionProxyServer(const net::ProxyServer& proxy_server,
+                           ProxyServer_ProxyType proxy_type);
 
   DataReductionProxyServer(const DataReductionProxyServer& other) = default;
 
@@ -43,6 +44,7 @@ class DataReductionProxyServer {
 
  private:
   net::ProxyServer proxy_server_;
+  ProxyServer_ProxyType proxy_type_;
 };
 
 }  // namespace data_reduction_proxy

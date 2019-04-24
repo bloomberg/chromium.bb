@@ -12,9 +12,10 @@
 
 namespace sksg {
 
-sk_sp<SkShader> Gradient::onRevalidateShader() {
+void Gradient::onApplyToPaint(SkPaint* paint) const {
     if (fColorStops.empty()) {
-        return nullptr;
+        paint->setShader(nullptr);
+        return;
     }
 
     std::vector<SkColor>  colors;
@@ -30,7 +31,7 @@ sk_sp<SkShader> Gradient::onRevalidateShader() {
     }
 
     // TODO: detect even stop distributions, pass null for positions.
-    return this->onMakeShader(colors, positions);
+    paint->setShader(this->onMakeShader(colors, positions));
 }
 
 sk_sp<SkShader> LinearGradient::onMakeShader(const std::vector<SkColor>& colors,

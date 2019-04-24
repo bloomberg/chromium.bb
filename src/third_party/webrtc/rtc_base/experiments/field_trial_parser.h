@@ -11,13 +11,10 @@
 #define RTC_BASE_EXPERIMENTS_FIELD_TRIAL_PARSER_H_
 
 #include <stdint.h>
-
 #include <initializer_list>
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
-
 #include "absl/types/optional.h"
 
 // Field trial parser functionality. Provides funcitonality to parse field trial
@@ -27,7 +24,7 @@
 // ignored. Parameters are declared with a given type for which an
 // implementation of ParseTypedParameter should be provided. The
 // ParseTypedParameter implementation is given whatever is between the : and the
-// ,. If the key is provided without : a FieldTrialOptional will use nullopt.
+// ,. FieldTrialOptional will use nullopt if the key is provided without :.
 
 // Example string: "my_optional,my_int:3,my_string:hello"
 
@@ -50,14 +47,10 @@ class FieldTrialParameterInterface {
       std::string raw_string);
   void MarkAsUsed() { used_ = true; }
   virtual bool Parse(absl::optional<std::string> str_value) = 0;
-
-  virtual void ParseDone() {}
-
-  std::vector<FieldTrialParameterInterface*> sub_parameters_;
-
-  std::string key_;
+  std::string Key() const;
 
  private:
+  std::string key_;
   bool used_ = false;
 };
 
@@ -82,8 +75,6 @@ class FieldTrialParameter : public FieldTrialParameterInterface {
   T Get() const { return value_; }
   operator T() const { return Get(); }
   const T* operator->() const { return &value_; }
-
-  void SetForTest(T value) { value_ = value; }
 
  protected:
   bool Parse(absl::optional<std::string> str_value) override {
@@ -192,7 +183,7 @@ class FieldTrialOptional : public FieldTrialParameterInterface {
   const T& Value() const { return value_.value(); }
   const T& operator*() const { return value_.value(); }
   const T* operator->() const { return &value_.value(); }
-  explicit operator bool() const { return value_.has_value(); }
+  operator bool() const { return value_.has_value(); }
 
  protected:
   bool Parse(absl::optional<std::string> str_value) override {

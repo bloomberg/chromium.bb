@@ -49,8 +49,7 @@ class ThemeProperties {
     COLOR_NTP_TEXT,
     COLOR_NTP_LINK,
     COLOR_NTP_HEADER,
-    COLOR_CONTROL_BUTTON_BACKGROUND,
-    COLOR_TOOLBAR_BUTTON_ICON,
+    COLOR_BUTTON_BACKGROUND,
 
     TINT_BUTTONS,
     TINT_FRAME,
@@ -87,13 +86,17 @@ class ThemeProperties {
   // The enum takes on values >= 1000 as not to overlap with
   // OverwritableByUserThemeProperties.
   enum NotOverwritableByUserThemeProperty {
+    COLOR_CONTROL_BACKGROUND = 1000,
+
     // The color of the border drawn around the location bar.
-    COLOR_LOCATION_BAR_BORDER = 1000,
+    COLOR_LOCATION_BAR_BORDER,
 
     // The color of the line separating the bottom of the toolbar from the
     // contents.
     COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
 
+    // The color of a normal toolbar button's icon.
+    COLOR_TOOLBAR_BUTTON_ICON,
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
 
@@ -108,14 +111,14 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
+    // Colors used for the detached (NTP) bookmark bar.
+    COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
+    COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
+
     // Color used for various 'shelves' and 'bars'.
     COLOR_DOWNLOAD_SHELF,
     COLOR_INFOBAR,
     COLOR_STATUS_BUBBLE,
-
-    // Colors used when displaying hover cards.
-    COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND,
-    COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). If you're adding a throbber elsewhere, such as in

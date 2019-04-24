@@ -12,11 +12,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
+#include "content/public/browser/browser_context.h"
 
 namespace {
 const int64_t kDownloadId = 42LL;
@@ -24,17 +24,18 @@ const int64_t kDownloadId = 42LL;
 
 namespace offline_pages {
 
-std::unique_ptr<KeyedService> BuildTestOfflinePageModel(SimpleFactoryKey* key) {
+std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
+    content::BrowserContext* context) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
   base::FilePath store_path =
-      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+      context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
 
   base::FilePath private_archives_dir =
-      key->GetPath().Append(chrome::kOfflinePageArchivesDirname);
+      context->GetPath().Append(chrome::kOfflinePageArchivesDirname);
   base::FilePath public_archives_dir("/sdcard/Download");
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.

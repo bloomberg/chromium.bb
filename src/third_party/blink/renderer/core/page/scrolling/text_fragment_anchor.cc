@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 
 namespace blink {
@@ -21,32 +20,31 @@ namespace blink {
 namespace {
 
 constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
-constexpr size_t kTextFragmentIdentifierPrefixArrayLength =
+constexpr size_t kTextFragmentIdentifierPrefixLength =
     base::size(kTextFragmentIdentifierPrefix);
 
-bool ParseTargetTextIdentifier(
-    const String& fragment,
-    std::vector<TextFragmentSelector>* out_selectors) {
-  DCHECK(out_selectors);
+bool ParseTargetTextIdentifier(const String& fragment,
+                               String* start,
+                               String* end) {
+  if (fragment.Find(kTextFragmentIdentifierPrefix) != 0)
+    return false;
 
-  size_t start_pos = 0;
-  size_t end_pos = 0;
-  while (end_pos != kNotFound) {
-    if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos)
-      return false;
+  size_t comma_pos = fragment.find(',');
+  size_t start_pos = kTextFragmentIdentifierPrefixLength - 1;
 
-    // The prefix array length includes the \0 string terminator.
-    start_pos += kTextFragmentIdentifierPrefixArrayLength - 1;
-    end_pos = fragment.find('&', start_pos);
+  if (comma_pos == kNotFound) {
+    *start = fragment.Substring(start_pos);
+    *end = "";
+  } else {
+    *start = fragment.Substring(start_pos, comma_pos - start_pos);
 
-    String target_text;
-    if (end_pos == kNotFound) {
-      target_text = fragment.Substring(start_pos);
-    } else {
-      target_text = fragment.Substring(start_pos, end_pos - start_pos);
-      start_pos = end_pos + 1;
-    }
-    out_selectors->push_back(TextFragmentSelector::Create(target_text));
+    size_t second_start_pos = comma_pos + 1;
+    size_t end_pos = fragment.find('&', comma_pos);
+
+    if (end_pos == kNotFound)
+      *end = fragment.Substring(second_start_pos);
+    else
+      *end = fragment.Substring(second_start_pos, end_pos - second_start_pos);
   }
 
   return true;
@@ -56,38 +54,33 @@ bool ParseTargetTextIdentifier(
 
 TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
                                                   LocalFrame& frame) {
-  std::vector<TextFragmentSelector> selectors;
+  String start;
+  String end;
 
-  if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
+  if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &start, &end))
     return nullptr;
 
-  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+  String decoded_start = DecodeURLEscapeSequences(start, DecodeURLMode::kUTF8);
+  String decoded_end = DecodeURLEscapeSequences(end, DecodeURLMode::kUTF8);
+
+  return MakeGarbageCollected<TextFragmentAnchor>(decoded_start, decoded_end,
+                                                  frame);
 }
 
-TextFragmentAnchor::TextFragmentAnchor(
-    const std::vector<TextFragmentSelector>& text_fragment_selectors,
-    LocalFrame& frame)
-    : frame_(&frame) {
-  DCHECK(!text_fragment_selectors.empty());
+TextFragmentAnchor::TextFragmentAnchor(const String& start,
+                                       const String& end,
+                                       LocalFrame& frame)
+    : start_(start), end_(end), finder_(*this), frame_(&frame) {
   DCHECK(frame_->View());
-
-  text_fragment_finders_.reserve(text_fragment_selectors.size());
-  for (TextFragmentSelector selector : text_fragment_selectors)
-    text_fragment_finders_.emplace_back(*this, selector);
 }
 
 bool TextFragmentAnchor::Invoke() {
   if (search_finished_)
     return false;
 
-  frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
-      DocumentMarker::MarkerTypes::TextMatch());
-
-  if (!user_scrolled_)
-    first_match_needs_scroll_ = true;
-
-  for (auto& finder : text_fragment_finders_)
-    finder.FindMatch(*frame_->GetDocument());
+  // TODO(bokan): We need to add the capability to match a snippet based on
+  // it's start and end. https://crbug.com/924964.
+  finder_.FindMatch(start_, *frame_->GetDocument());
 
   // Scrolling into view from the call above might cause us to set
   // search_finished_ so recompute here.
@@ -102,7 +95,7 @@ void TextFragmentAnchor::DidScroll(ScrollType type) {
   if (!IsExplicitScrollType(type))
     return;
 
-  user_scrolled_ = true;
+  search_finished_ = true;
 }
 
 void TextFragmentAnchor::PerformPreRafActions() {}
@@ -122,28 +115,30 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   if (search_finished_)
     return;
 
-  if (first_match_needs_scroll_) {
-    first_match_needs_scroll_ = false;
+  Document& document = *frame_->GetDocument();
 
-    LayoutRect bounding_box = LayoutRect(ComputeTextRect(range));
+  document.Markers().RemoveMarkersOfTypes(
+      DocumentMarker::MarkerTypes::TextMatch());
 
-    DCHECK(range.Nodes().begin() != range.Nodes().end());
+  LayoutRect bounding_box = LayoutRect(ComputeTextRect(range));
 
-    Node& node = *range.Nodes().begin();
+  DCHECK(range.Nodes().begin() != range.Nodes().end());
 
-    DCHECK(node.GetLayoutObject());
+  Node& node = *range.Nodes().begin();
 
-    node.GetLayoutObject()->ScrollRectToVisible(
-        bounding_box,
-        WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                ScrollAlignment::kAlignCenterIfNeeded,
-                                kProgrammaticScroll));
-  }
+  DCHECK(node.GetLayoutObject());
+
+  node.GetLayoutObject()->ScrollRectToVisible(
+      bounding_box,
+      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                              ScrollAlignment::kAlignCenterIfNeeded,
+                              kProgrammaticScroll));
+
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
-  frame_->GetDocument()->Markers().AddTextMatchMarker(
-      dom_range, TextMatchMarker::MatchStatus::kActive);
+  document.Markers().AddTextMatchMarker(dom_range,
+                                        TextMatchMarker::MatchStatus::kActive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);
 }
 

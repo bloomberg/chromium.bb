@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -28,9 +27,9 @@
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -118,16 +117,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          /*show_in_launcher=*/true, InternalAppName::kDiscover,
          /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
   }
-
-  if (get_all || plugin_vm::IsPluginVmAllowedForProfile(profile)) {
-    internal_app_list->push_back(
-        {plugin_vm::kPluginVmAppId, IDS_PLUGIN_VM_APP_NAME,
-         IDR_LOGO_PLUGIN_VM_DEFAULT_192,
-         /*recommendable=*/true,
-         /*searchable=*/true,
-         /*show_in_launcher=*/true, InternalAppName::kPluginVm,
-         /*searchable_string_resource_id=*/0});
-  }
   return *internal_app_list;
 }
 
@@ -188,26 +177,20 @@ void ShowWebStore(Profile* profile,
 void OnGetMigrationProperty(Profile* profile,
                             int event_flags,
                             const base::Optional<std::string>& result) {
-  AppListClientImpl* const controller = AppListClientImpl::GetInstance();
+  const char* app_id = arc::kCameraAppId;
   if (!result.has_value() || result.value() != "true") {
     VLOG(1) << "GCA migration is not finished. Launch migration app.";
-    if (arc::LaunchApp(profile, arc::kCameraMigrationAppId, event_flags,
-                       arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
-                       controller->GetAppListDisplayId())) {
-      VLOG(1) << "Launched GCA migration.";
-      return;
-    }
-    LOG(ERROR) << "Failed to launch GCA migration. "
-               << "Launching camera without migration";
+    app_id = arc::kCameraMigrationAppId;
   }
 
-  if (arc::LaunchApp(profile, arc::kCameraAppId, event_flags,
+  AppListClientImpl* controller = AppListClientImpl::GetInstance();
+  if (arc::LaunchApp(profile, app_id, event_flags,
                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
                      controller->GetAppListDisplayId())) {
-    VLOG(1) << "Launched GCA.";
+    VLOG(1) << "Launched "
+            << (app_id == arc::kCameraAppId ? " GCA." : "GCA migration.");
     return;
   }
-
   if (arc::LaunchApp(profile, arc::kLegacyCameraAppId, event_flags,
                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
                      controller->GetAppListDisplayId())) {
@@ -251,8 +234,7 @@ void OnArcFeaturesRead(Profile* profile,
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
   bool is_android_camera_app_registered =
       arc_enabled &&
-      (ArcAppListPrefs::Get(profile)->IsRegistered(arc::kCameraAppId) ||
-       ArcAppListPrefs::Get(profile)->IsRegistered(arc::kLegacyCameraAppId));
+      ArcAppListPrefs::Get(profile)->IsRegistered(arc::kCameraAppId);
   bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
 
@@ -283,7 +265,7 @@ void OpenInternalApp(const std::string& app_id,
   if (app_id == kInternalAppIdKeyboardShortcutViewer) {
     keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
   } else if (app_id == kInternalAppIdSettings) {
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
+    chrome::ShowSettingsSubPageForProfile(profile, std::string());
   } else if (app_id == kInternalAppIdCamera) {
     // In case Camera app is already running, use it to prevent appearing double
     // apps, from Chrome and Android domains.
@@ -301,15 +283,11 @@ void OpenInternalApp(const std::string& app_id,
           base::BindOnce(&OnArcFeaturesRead, profile, event_flags));
     }
   } else if (app_id == kInternalAppIdDiscover) {
+#if defined(OS_CHROMEOS)
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));
     chromeos::DiscoverWindowManager::GetInstance()
         ->ShowChromeDiscoverPageForProfile(profile);
-  } else if (app_id == plugin_vm::kPluginVmAppId) {
-    if (plugin_vm::IsPluginVmEnabled(profile)) {
-      // TODO(http://crbug.com/904853): Start PluginVm.
-    } else {
-      plugin_vm::ShowPluginVmLauncherView(profile);
-    }
+#endif
   }
 }
 

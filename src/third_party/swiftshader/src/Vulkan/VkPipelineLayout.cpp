@@ -31,16 +31,6 @@ PipelineLayout::PipelineLayout(const VkPipelineLayoutCreateInfo* pCreateInfo, vo
 	size_t pushConstantRangesSize = pCreateInfo->pushConstantRangeCount * sizeof(VkPushConstantRange);
 	pushConstantRanges = reinterpret_cast<VkPushConstantRange*>(hostMem);
 	memcpy(pushConstantRanges, pCreateInfo->pPushConstantRanges, pushConstantRangesSize);
-	hostMem += pushConstantRangesSize;
-
-	dynamicOffsetBases = reinterpret_cast<uint32_t*>(hostMem);
-	uint32_t dynamicOffsetBase = 0;
-	for (uint32_t i = 0; i < setLayoutCount; i++)
-	{
-		ASSERT_OR_RETURN(dynamicOffsetBase < MAX_DESCRIPTOR_SET_COMBINED_BUFFERS_DYNAMIC);
-		dynamicOffsetBases[i] = dynamicOffsetBase;
-		dynamicOffsetBase += setLayouts[i]->getDynamicDescriptorCount();
-	}
 }
 
 void PipelineLayout::destroy(const VkAllocationCallbacks* pAllocator)
@@ -51,8 +41,7 @@ void PipelineLayout::destroy(const VkAllocationCallbacks* pAllocator)
 size_t PipelineLayout::ComputeRequiredAllocationSize(const VkPipelineLayoutCreateInfo* pCreateInfo)
 {
 	return (pCreateInfo->setLayoutCount * sizeof(DescriptorSetLayout*)) +
-	       (pCreateInfo->pushConstantRangeCount * sizeof(VkPushConstantRange)) +
-		   (pCreateInfo->setLayoutCount * sizeof(uint32_t)); // dynamicOffsetBases
+	       (pCreateInfo->pushConstantRangeCount * sizeof(VkPushConstantRange));
 }
 
 size_t PipelineLayout::getNumDescriptorSets() const
@@ -60,16 +49,10 @@ size_t PipelineLayout::getNumDescriptorSets() const
 	return setLayoutCount;
 }
 
-DescriptorSetLayout const* PipelineLayout::getDescriptorSetLayout(size_t descriptorSet) const
+size_t PipelineLayout::getBindingOffset(size_t descriptorSet, size_t binding) const
 {
 	ASSERT(descriptorSet < setLayoutCount);
-	return setLayouts[descriptorSet];
-}
-
-uint32_t PipelineLayout::getDynamicOffsetBase(size_t descriptorSet) const
-{
-	ASSERT(descriptorSet < setLayoutCount);
-	return dynamicOffsetBases[descriptorSet];
+	return setLayouts[descriptorSet]->getBindingOffset(binding);
 }
 
 } // namespace vk

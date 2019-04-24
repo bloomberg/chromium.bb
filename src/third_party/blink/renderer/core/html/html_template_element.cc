@@ -50,7 +50,7 @@ HTMLTemplateElement::~HTMLTemplateElement() = default;
 
 DocumentFragment* HTMLTemplateElement::content() const {
   if (!content_)
-    content_ = MakeGarbageCollected<TemplateContentDocumentFragment>(
+    content_ = TemplateContentDocumentFragment::Create(
         GetDocument().EnsureTemplateDocument(),
         const_cast<HTMLTemplateElement*>(this));
 

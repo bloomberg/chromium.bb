@@ -39,6 +39,10 @@ class CORE_EXPORT DOMImplementation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static DOMImplementation* Create(Document& document) {
+    return MakeGarbageCollected<DOMImplementation>(document);
+  }
+
   explicit DOMImplementation(Document&);
 
   // DOM methods & attributes for DOMImplementation

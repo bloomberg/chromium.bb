@@ -110,12 +110,17 @@ class PLATFORM_EXPORT JSONValue {
 
 class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
  public:
-  explicit JSONBasicValue(bool value)
-      : JSONValue(kTypeBoolean), bool_value_(value) {}
-  explicit JSONBasicValue(int value)
-      : JSONValue(kTypeInteger), integer_value_(value) {}
-  explicit JSONBasicValue(double value)
-      : JSONValue(kTypeDouble), double_value_(value) {}
+  static std::unique_ptr<JSONBasicValue> Create(bool value) {
+    return base::WrapUnique(new JSONBasicValue(value));
+  }
+
+  static std::unique_ptr<JSONBasicValue> Create(int value) {
+    return base::WrapUnique(new JSONBasicValue(value));
+  }
+
+  static std::unique_ptr<JSONBasicValue> Create(double value) {
+    return base::WrapUnique(new JSONBasicValue(value));
+  }
 
   bool AsBoolean(bool* output) const override;
   bool AsDouble(double* output) const override;
@@ -124,6 +129,13 @@ class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
   std::unique_ptr<JSONValue> Clone() const override;
 
  private:
+  explicit JSONBasicValue(bool value)
+      : JSONValue(kTypeBoolean), bool_value_(value) {}
+  explicit JSONBasicValue(int value)
+      : JSONValue(kTypeInteger), integer_value_(value) {}
+  explicit JSONBasicValue(double value)
+      : JSONValue(kTypeDouble), double_value_(value) {}
+
   union {
     bool bool_value_;
     double double_value_;
@@ -133,24 +145,33 @@ class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
 
 class PLATFORM_EXPORT JSONString : public JSONValue {
  public:
-  explicit JSONString(const String& value)
-      : JSONValue(kTypeString), string_value_(value) {}
-  explicit JSONString(const char* value)
-      : JSONValue(kTypeString), string_value_(value) {}
+  static std::unique_ptr<JSONString> Create(const String& value) {
+    return base::WrapUnique(new JSONString(value));
+  }
+
+  static std::unique_ptr<JSONString> Create(const char* value) {
+    return base::WrapUnique(new JSONString(value));
+  }
 
   bool AsString(String* output) const override;
   void WriteJSON(StringBuilder* output) const override;
   std::unique_ptr<JSONValue> Clone() const override;
 
  private:
+  explicit JSONString(const String& value)
+      : JSONValue(kTypeString), string_value_(value) {}
+  explicit JSONString(const char* value)
+      : JSONValue(kTypeString), string_value_(value) {}
+
   String string_value_;
 };
 
 class PLATFORM_EXPORT JSONObject : public JSONValue {
  public:
   using Entry = std::pair<String, JSONValue*>;
-
-  JSONObject();
+  static std::unique_ptr<JSONObject> Create() {
+    return base::WrapUnique(new JSONObject());
+  }
 
   static JSONObject* Cast(JSONValue* value) {
     if (!value || value->GetType() != kTypeObject)
@@ -210,6 +231,7 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
   void PrettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
  private:
+  JSONObject();
   template <typename T>
   void Set(const String& key, std::unique_ptr<T>& value) {
     DCHECK(value);
@@ -224,6 +246,9 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
 
 class PLATFORM_EXPORT JSONArray : public JSONValue {
  public:
+  static std::unique_ptr<JSONArray> Create() {
+    return base::WrapUnique(new JSONArray());
+  }
 
   static JSONArray* Cast(JSONValue* value) {
     if (!value || value->GetType() != kTypeArray)
@@ -241,7 +266,6 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
   static void Cast(JSONArray*) = delete;
   static void Cast(std::unique_ptr<JSONArray>) = delete;
 
-  JSONArray();
   ~JSONArray() override;
 
   void WriteJSON(StringBuilder* output) const override;
@@ -262,6 +286,7 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
   void PrettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
  private:
+  JSONArray();
   Vector<std::unique_ptr<JSONValue>> data_;
 };
 

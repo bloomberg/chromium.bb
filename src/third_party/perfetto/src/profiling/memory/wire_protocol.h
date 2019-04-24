@@ -39,18 +39,11 @@ class UnixSocketRaw;
 
 namespace profiling {
 
-struct ClientConfiguration {
-  // On average, sample one allocation every interval bytes,
-  // If interval == 1, sample every allocation.
-  // Must be >= 1.
-  uint64_t interval;
-};
-
 // Types needed for the wire format used for communication between the client
 // and heapprofd. The basic format of a record is
 // record size (uint64_t) | record type (RecordType = uint64_t) | record
 // If record type is malloc, the record format is AllocMetdata | raw stack.
-// If the record type is free, the record is a sequence of FreeBatchEntry.
+// If the record type is free, the record is a sequence of FreePageEntry.
 
 // Use uint64_t to make sure the following data is aligned as 64bit is the
 // strongest alignment requirement.
@@ -77,7 +70,7 @@ constexpr size_t kMaxRegisterDataSize =
   );
 // clang-format on
 
-constexpr size_t kFreeBatchSize = 1024;
+constexpr size_t kFreePageSize = 1024;
 
 enum class RecordType : uint64_t {
   Free = 0,
@@ -102,16 +95,21 @@ struct AllocMetadata {
   unwindstack::ArchEnum arch;
 };
 
-struct FreeBatchEntry {
+struct FreePageEntry {
   uint64_t sequence_number;
   uint64_t addr;
 };
 
-struct FreeBatch {
-  uint64_t num_entries;
-  FreeBatchEntry entries[kFreeBatchSize];
+struct ClientConfiguration {
+  // On average, sample one allocation every interval bytes,
+  // If interval == 1, sample every allocation.
+  // Must be >= 1.
+  uint64_t interval;
+};
 
-  FreeBatch() { num_entries = 0; }
+struct FreeMetadata {
+  uint64_t num_entries;
+  FreePageEntry entries[kFreePageSize];
 };
 
 enum HandshakeFDs : size_t {
@@ -124,7 +122,7 @@ struct WireMessage {
   RecordType record_type;
 
   AllocMetadata* alloc_header;
-  FreeBatch* free_header;
+  FreeMetadata* free_header;
 
   char* payload;
   size_t payload_size;

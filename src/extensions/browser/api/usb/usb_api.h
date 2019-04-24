@@ -14,36 +14,29 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace extensions {
 
 class DevicePermissionEntry;
 class DevicePermissionsPrompt;
 class DevicePermissionsManager;
-class UsbDeviceResource;
 
-class UsbExtensionFunction : public UIThreadExtensionFunction {
- protected:
-  UsbExtensionFunction();
-  ~UsbExtensionFunction() override;
-
-  UsbDeviceManager* usb_device_manager();
-
- private:
-  UsbDeviceManager* usb_device_manager_ = nullptr;
-};
-
-class UsbPermissionCheckingFunction : public UsbExtensionFunction {
+class UsbPermissionCheckingFunction : public UIThreadExtensionFunction {
  protected:
   UsbPermissionCheckingFunction();
   ~UsbPermissionCheckingFunction() override;
 
-  bool HasDevicePermission(const device::mojom::UsbDeviceInfo& device);
+  bool HasDevicePermission(scoped_refptr<device::UsbDevice> device);
   void RecordDeviceLastUsed();
 
  private:
@@ -51,18 +44,15 @@ class UsbPermissionCheckingFunction : public UsbExtensionFunction {
   scoped_refptr<DevicePermissionEntry> permission_entry_;
 };
 
-class UsbConnectionFunction : public UsbExtensionFunction {
+class UsbConnectionFunction : public UIThreadExtensionFunction {
  protected:
   UsbConnectionFunction();
   ~UsbConnectionFunction() override;
 
-  UsbDeviceResource* GetResourceFromHandle(
-      const api::usb::ConnectionHandle& handle);
-  device::mojom::UsbDevice* GetDeviceFromHandle(
-      const api::usb::ConnectionHandle& handle);
-  const device::mojom::UsbDeviceInfo* GetDeviceInfoFromHandle(
-      const api::usb::ConnectionHandle& handle);
-  void ReleaseDeviceResource(const api::usb::ConnectionHandle& handle);
+  scoped_refptr<device::UsbDeviceHandle> GetDeviceHandle(
+      const extensions::api::usb::ConnectionHandle& handle);
+  void ReleaseDeviceHandle(
+      const extensions::api::usb::ConnectionHandle& handle);
 };
 
 class UsbTransferFunction : public UsbConnectionFunction {
@@ -70,24 +60,12 @@ class UsbTransferFunction : public UsbConnectionFunction {
   UsbTransferFunction();
   ~UsbTransferFunction() override;
 
-  void OnCompleted(device::mojom::UsbTransferStatus status,
-                   std::unique_ptr<base::DictionaryValue> transfer_info);
-  void OnTransferInCompleted(device::mojom::UsbTransferStatus status,
-                             const std::vector<uint8_t>& data);
-  void OnTransferOutCompleted(device::mojom::UsbTransferStatus status);
+  void OnCompleted(device::UsbTransferStatus status,
+                   scoped_refptr<base::RefCountedBytes> data,
+                   size_t length);
 };
 
-class UsbGenericTransferFunction : public UsbTransferFunction {
- protected:
-  UsbGenericTransferFunction();
-  ~UsbGenericTransferFunction() override;
-
-  // InterruptTransfer::Params and BulkTransfer::Params
-  template <typename T>
-  ExtensionFunction::ResponseAction DoTransfer(T params);
-};
-
-class UsbFindDevicesFunction : public UsbExtensionFunction {
+class UsbFindDevicesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.findDevices", USB_FINDDEVICES)
 
@@ -100,10 +78,8 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
   ResponseAction Run() override;
 
   void OnGetDevicesComplete(
-      std::vector<device::mojom::UsbDeviceInfoPtr> devices);
-  void OnDeviceOpened(const std::string& guid,
-                      device::mojom::UsbDevicePtr device_ptr,
-                      device::mojom::UsbOpenDeviceError error);
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
+  void OnDeviceOpened(scoped_refptr<device::UsbDeviceHandle> device_handle);
   void OpenComplete();
 
   uint16_t vendor_id_;
@@ -127,14 +103,14 @@ class UsbGetDevicesFunction : public UsbPermissionCheckingFunction {
   ResponseAction Run() override;
 
   void OnGetDevicesComplete(
-      std::vector<device::mojom::UsbDeviceInfoPtr> devices);
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
   std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbGetDevicesFunction);
 };
 
-class UsbGetUserSelectedDevicesFunction : public UsbExtensionFunction {
+class UsbGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.getUserSelectedDevices",
                              USB_GETUSERSELECTEDDEVICES)
@@ -196,9 +172,7 @@ class UsbOpenDeviceFunction : public UsbPermissionCheckingFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnDeviceOpened(std::string guid,
-                      device::mojom::UsbDevicePtr device_ptr,
-                      device::mojom::UsbOpenDeviceError error);
+  void OnDeviceOpened(scoped_refptr<device::UsbDeviceHandle> device_handle);
 
   DISALLOW_COPY_AND_ASSIGN(UsbOpenDeviceFunction);
 };
@@ -215,7 +189,7 @@ class UsbSetConfigurationFunction : public UsbConnectionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnComplete(const std::string& guid, uint8_t config_value, bool success);
+  void OnComplete(bool success);
 
   DISALLOW_COPY_AND_ASSIGN(UsbSetConfigurationFunction);
 };
@@ -332,7 +306,7 @@ class UsbControlTransferFunction : public UsbTransferFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbControlTransferFunction);
 };
 
-class UsbBulkTransferFunction : public UsbGenericTransferFunction {
+class UsbBulkTransferFunction : public UsbTransferFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.bulkTransfer", USB_BULKTRANSFER)
 
@@ -347,7 +321,7 @@ class UsbBulkTransferFunction : public UsbGenericTransferFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbBulkTransferFunction);
 };
 
-class UsbInterruptTransferFunction : public UsbGenericTransferFunction {
+class UsbInterruptTransferFunction : public UsbTransferFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.interruptTransfer", USB_INTERRUPTTRANSFER)
 
@@ -362,7 +336,7 @@ class UsbInterruptTransferFunction : public UsbGenericTransferFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbInterruptTransferFunction);
 };
 
-class UsbIsochronousTransferFunction : public UsbTransferFunction {
+class UsbIsochronousTransferFunction : public UsbConnectionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.isochronousTransfer", USB_ISOCHRONOUSTRANSFER)
 
@@ -374,11 +348,9 @@ class UsbIsochronousTransferFunction : public UsbTransferFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnTransferInCompleted(
-      const std::vector<uint8_t>& data,
-      std::vector<device::mojom::UsbIsochronousPacketPtr> packets);
-  void OnTransferOutCompleted(
-      std::vector<device::mojom::UsbIsochronousPacketPtr> packets);
+  void OnCompleted(
+      scoped_refptr<base::RefCountedBytes> data,
+      const std::vector<device::UsbDeviceHandle::IsochronousPacket>& packets);
 
   DISALLOW_COPY_AND_ASSIGN(UsbIsochronousTransferFunction);
 };
@@ -397,7 +369,7 @@ class UsbResetDeviceFunction : public UsbConnectionFunction {
 
   void OnComplete(bool success);
 
-  std::unique_ptr<api::usb::ResetDevice::Params> parameters_;
+  std::unique_ptr<extensions::api::usb::ResetDevice::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbResetDeviceFunction);
 };

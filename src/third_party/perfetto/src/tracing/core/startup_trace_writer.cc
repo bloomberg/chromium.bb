@@ -141,40 +141,31 @@ StartupTraceWriter::~StartupTraceWriter() {
 
 bool StartupTraceWriter::BindToArbiter(SharedMemoryArbiterImpl* arbiter,
                                        BufferID target_buffer) {
-  // Create and destroy trace writer without holding lock, since this will post
-  // a task and task posting may trigger a trace event, which would cause a
-  // deadlock. This may create a few more trace writers than necessary in cases
-  // where a concurrent write is in progress (other than causing some
-  // computational overhead, this is not problematic).
-  auto trace_writer = arbiter->CreateTraceWriter(target_buffer);
+  std::lock_guard<std::mutex> lock(lock_);
 
-  {
-    std::lock_guard<std::mutex> lock(lock_);
+  PERFETTO_DCHECK(!trace_writer_);
 
-    PERFETTO_DCHECK(!trace_writer_);
+  // Can't bind while the writer thread is writing.
+  if (write_in_progress_)
+    return false;
 
-    // Can't bind while the writer thread is writing.
-    if (write_in_progress_)
-      return false;
-
-    // If there's a pending trace packet, it should have been completed by the
-    // writer thread before write_in_progress_ is reset.
-    if (cur_packet_) {
-      PERFETTO_DCHECK(cur_packet_->is_finalized());
-      cur_packet_.reset();
-    }
-
-    trace_writer_ = std::move(trace_writer);
-    ChunkID next_chunk_id = CommitLocalBufferChunks(
-        arbiter, trace_writer_->writer_id(), target_buffer);
-
-    // The real TraceWriter should start writing at the subsequent chunk ID.
-    bool success = trace_writer_->SetFirstChunkId(next_chunk_id);
-    PERFETTO_DCHECK(success);
-
-    memory_stream_writer_.reset();
-    memory_buffer_.reset();
+  // If there's a pending trace packet, it should have been completed by the
+  // writer thread before write_in_progress_ is reset.
+  if (cur_packet_) {
+    PERFETTO_DCHECK(cur_packet_->is_finalized());
+    cur_packet_.reset();
   }
+
+  trace_writer_ = arbiter->CreateTraceWriter(target_buffer);
+  ChunkID next_chunk_id = CommitLocalBufferChunks(
+      arbiter, trace_writer_->writer_id(), target_buffer);
+
+  // The real TraceWriter should start writing at the subsequent chunk ID.
+  bool success = trace_writer_->SetFirstChunkId(next_chunk_id);
+  PERFETTO_DCHECK(success);
+
+  memory_stream_writer_.reset();
+  memory_buffer_.reset();
 
   return true;
 }

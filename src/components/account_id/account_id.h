@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <functional>
 #include <ostream>
 #include <string>
 

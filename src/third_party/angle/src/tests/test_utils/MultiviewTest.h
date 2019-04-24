@@ -19,18 +19,22 @@ namespace angle
 // fragments.
 GLuint CreateSimplePassthroughProgram(int numViews);
 
-// Create a 2D texture array to use for multiview rendering. Texture ids should be
+// Create a set of textures to use for multiview rendering. If multiviewLayout is
+// GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE, then 2D textures are created. If multiviewLayout is
+// GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE, then 2D texture arrays are created. Texture ids should be
 // created beforehand. If depthTexture or stencilTexture is 0, it will not be initialized.
 // If samples is 0, then non-multisampled textures are created. Otherwise multisampled textures are
 // created with the requested sample count.
-void CreateMultiviewBackingTextures(int samples,
+void CreateMultiviewBackingTextures(GLenum multiviewLayout,
+                                    int samples,
                                     int viewWidth,
                                     int height,
                                     int numLayers,
                                     std::vector<GLuint> colorTextures,
                                     GLuint depthTexture,
                                     GLuint depthStencilTexture);
-void CreateMultiviewBackingTextures(int samples,
+void CreateMultiviewBackingTextures(GLenum multiviewLayout,
+                                    int samples,
                                     int viewWidth,
                                     int height,
                                     int numLayers,
@@ -39,8 +43,11 @@ void CreateMultiviewBackingTextures(int samples,
                                     GLuint depthStencilTexture);
 
 // Attach multiview textures to the framebuffer denoted by target. If there are multiple color
-// textures they get attached to different color attachments starting from 0.
+// textures they get attached to different color attachments starting from 0. If multiviewLayout is
+// GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE, then the viewport offsets are set so that the views
+// are tightly packed inside the attachments.
 void AttachMultiviewTextures(GLenum target,
+                             GLenum multiviewLayout,
                              int viewWidth,
                              int numViews,
                              int baseViewIndex,
@@ -48,6 +55,7 @@ void AttachMultiviewTextures(GLenum target,
                              GLuint depthTexture,
                              GLuint depthStencilTexture);
 void AttachMultiviewTextures(GLenum target,
+                             GLenum multiviewLayout,
                              int viewWidth,
                              int numViews,
                              int baseViewIndex,
@@ -93,17 +101,17 @@ class MultiviewTestBase : public ANGLETestBase
 
     void MultiviewTestBaseTearDown() { ANGLETestBase::ANGLETestTearDown(); }
 
-    // Requests the OVR_multiview2 extension and returns true if the operation succeeds.
+    // Requests the ANGLE_multiview extension and returns true if the operation succeeds.
     bool requestMultiviewExtension(bool requireMultiviewMultisample)
     {
-        if (extensionRequestable("GL_OVR_multiview2"))
+        if (extensionRequestable("GL_ANGLE_multiview"))
         {
-            glRequestExtensionANGLE("GL_OVR_multiview2");
+            glRequestExtensionANGLE("GL_ANGLE_multiview");
         }
 
-        if (!extensionEnabled("GL_OVR_multiview2"))
+        if (!extensionEnabled("GL_ANGLE_multiview"))
         {
-            std::cout << "Test skipped due to missing GL_OVR_multiview2." << std::endl;
+            std::cout << "Test skipped due to missing GL_ANGLE_multiview." << std::endl;
             return false;
         }
 

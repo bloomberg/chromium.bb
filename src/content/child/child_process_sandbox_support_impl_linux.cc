@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/trace_event/trace_event.h"
 #include "components/services/font/public/cpp/font_loader.h"
 #include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "third_party/blink/public/platform/linux/out_of_process_font.h"
@@ -30,8 +29,6 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
     blink::WebUChar32 character,
     const char* preferred_locale,
     blink::OutOfProcessFont* fallback_font) {
-  TRACE_EVENT0("fonts", "WebSandboxSupportLinux::GetFallbackFontForCharacter");
-
   {
     base::AutoLock lock(lock_);
     const auto iter = unicode_font_families_.find(character);
@@ -70,10 +67,6 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
 void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
     const char* font_unique_name,
     blink::OutOfProcessFont* fallback_font) {
-  TRACE_EVENT0(
-      "fonts",
-      "WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName");
-
   font_service::mojom::FontIdentityPtr font_identity;
   std::string family_name;
   if (!font_loader_->MatchFontByPostscriptNameOrFullFontName(font_unique_name,
@@ -96,9 +89,6 @@ void WebSandboxSupportLinux::GetWebFontRenderStyleForStrike(
     bool is_italic,
     float device_scale_factor,
     blink::WebFontRenderStyle* out) {
-  TRACE_EVENT0("fonts",
-               "WebSandboxSupportLinux::GetWebFontRenderStyleForStrike");
-
   font_service::mojom::FontIdentityPtr font_identity;
 
   *out = blink::WebFontRenderStyle();

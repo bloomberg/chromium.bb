@@ -6,10 +6,16 @@
     {
         runAfterLayoutAndPaint(function() {
             document.getElementsByTagName('canvas')[0].style.top = "60px";
-        }, true);
+            if (window.testRunner)
+                testRunner.notifyDone();
+        });
     }
 </script>
 <body onload="init()">
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+</script>
 <span id="description" style="color: white">
 This test is only useful as a pixel test. You should see red canvas of size 100x100.
 </span>
@@ -25,6 +31,7 @@ body {
 <script>
 
 if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     document.getElementById("description").style.position = "absolute";
     document.getElementById("description").style.top = "-5000px";
 }

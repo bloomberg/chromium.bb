@@ -12,7 +12,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
@@ -37,17 +36,16 @@ class ContentServiceBrowserTest : public ContentBrowserTest {
 
  protected:
   content::mojom::NavigableContentsFactory* GetFactory() {
-    if (!factory_.is_bound()) {
+    if (!factory_) {
       auto* connector = BrowserContext::GetConnectorFor(
           shell()->web_contents()->GetBrowserContext());
-      connector->Connect(content::mojom::kServiceName,
-                         factory_.BindNewPipeAndPassReceiver());
+      connector->BindInterface(content::mojom::kServiceName, &factory_);
     }
     return factory_.get();
   }
 
  private:
-  mojo::Remote<content::mojom::NavigableContentsFactory> factory_;
+  content::mojom::NavigableContentsFactoryPtr factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentServiceBrowserTest);
 };

@@ -15,6 +15,7 @@ namespace blink {
 
 class CSSCustomPropertyDeclaration;
 class CSSParserTokenRange;
+class CSSPendingSubstitutionValue;
 class CSSVariableData;
 class CSSVariableReferenceValue;
 class PropertyRegistration;
@@ -22,12 +23,6 @@ class PropertyRegistry;
 class StyleInheritedVariables;
 class StyleNonInheritedVariables;
 class StyleResolverState;
-
-namespace cssvalue {
-
-class CSSPendingSubstitutionValue;
-
-}
 
 class CORE_EXPORT CSSVariableResolver {
   STACK_ALLOCATED();
@@ -54,12 +49,6 @@ class CORE_EXPORT CSSVariableResolver {
   virtual void ApplyAnimation(const AtomicString& name) {}
 
  private:
-  // The maximum number of tokens that may be produced by a var()
-  // reference.
-  //
-  // https://drafts.csswg.org/css-variables/#long-variables
-  static const size_t kMaxSubstitutionTokens = 16384;
-
   struct Options {
     STACK_ALLOCATED();
 
@@ -107,11 +96,11 @@ class CORE_EXPORT CSSVariableResolver {
     // properties themselves (e.g. color). When a high-priority property refers
     // to a custom property with an (inner) var()-reference, that custom
     // property is resolved "on the fly" with absolutize=false. This means that
-    // the equivalent token stream for the computed value of that custom
-    // property is not stored on ComputedStyle. Storing the token stream on
-    // ComputedStyle can only be done with absolutize=true, otherwise we can
-    // permanently end up with the wrong token stream if an unregistered
-    // property references a registered property, for instance.
+    // 1) a non- absolute value is returned, and 2) the resolved token stream
+    // for that custom property is not stored on the ComputedStyle. Storing the
+    // token stream on the ComputedStyle can only be done with absolutize=true,
+    // otherwise can permanently end up with the wrong token stream if one
+    // unregistered property reference a registered property, for instance.
     bool absolutize = false;
   };
 
@@ -129,7 +118,7 @@ class CORE_EXPORT CSSVariableResolver {
 
   const CSSValue* ResolvePendingSubstitutions(
       CSSPropertyID,
-      const cssvalue::CSSPendingSubstitutionValue&,
+      const CSSPendingSubstitutionValue&,
       const Options&);
   const CSSValue* ResolveVariableReferences(CSSPropertyID,
                                             const CSSVariableReferenceValue&,
@@ -179,6 +168,7 @@ class CORE_EXPORT CSSVariableResolver {
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
                                                        const Options&,
+                                                       bool resolve_urls,
                                                        bool& cycle_detected);
   // Like ResolveCustomProperty, but returns the incoming CSSVariableData if
   // no resolution is needed.
@@ -187,6 +177,9 @@ class CORE_EXPORT CSSVariableResolver {
       CSSVariableData*,
       const Options&,
       bool& cycle_detected);
+
+  bool ShouldResolveRelativeUrls(const AtomicString& name,
+                                 const CSSVariableData&);
 
   bool IsVariableDisallowed(const CSSVariableData&,
                             const Options&,
@@ -219,8 +212,6 @@ class CORE_EXPORT CSSVariableResolver {
   // need to be tracked for additional cycles, and invalidation only
   // applies back to cycle starts.
   HashSet<AtomicString> cycle_start_points_;
-
-  friend class CSSVariableResolverTest;
 };
 
 }  // namespace blink

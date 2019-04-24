@@ -79,7 +79,7 @@ enum Coprocessor {
 // Machine instruction Operands
 
 // Class Operand represents a shifter operand in data processing instructions
-class V8_EXPORT_PRIVATE Operand {
+class Operand {
  public:
   // immediate
   V8_INLINE explicit Operand(int32_t immediate,
@@ -182,8 +182,9 @@ class V8_EXPORT_PRIVATE Operand {
   friend class Assembler;
 };
 
+
 // Class MemOperand represents a memory operand in load and store instructions
-class V8_EXPORT_PRIVATE MemOperand {
+class MemOperand {
  public:
   // [rn +/- offset]      Offset/NegOffset
   // [rn +/- offset]!     PreIndex/NegPreIndex
@@ -239,9 +240,10 @@ class V8_EXPORT_PRIVATE MemOperand {
   friend class Assembler;
 };
 
+
 // Class NeonMemOperand represents a memory operand in load and
 // store NEON instructions
-class V8_EXPORT_PRIVATE NeonMemOperand {
+class NeonMemOperand {
  public:
   // [rn {:align}]       Offset
   // [rn {:align}]!      PostIndex
@@ -261,6 +263,7 @@ class V8_EXPORT_PRIVATE NeonMemOperand {
   Register rm_;  // register increment
   int align_;
 };
+
 
 // Class NeonListOperand represents a list of NEON registers
 class NeonListOperand {
@@ -1396,7 +1399,7 @@ class PatchingAssembler : public Assembler {
 // state, even if the list is modified by some other means. Note that this scope
 // can be nested but the destructors need to run in the opposite order as the
 // constructors. We do not have assertions for this.
-class V8_EXPORT_PRIVATE UseScratchRegisterScope {
+class UseScratchRegisterScope {
  public:
   explicit UseScratchRegisterScope(Assembler* assembler);
   ~UseScratchRegisterScope();

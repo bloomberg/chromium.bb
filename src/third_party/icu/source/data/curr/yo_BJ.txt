@@ -22,10 +22,6 @@ yo_BJ{
             "BIF",
             "Faransi ti Orílɛ́ède Bùùrúndì",
         }
-        BRL{
-            "R$",
-            "Owó ti Orílɛ̀-èdè Brazil",
-        }
         BWP{
             "BWP",
             "Pula ti Orílɛ́ède Bɔ̀tìsúwánà",
@@ -70,13 +66,9 @@ yo_BJ{
             "ETB",
             "Biri ti Orílɛ́ède Eutopia",
         }
-        EUR{
-            "€",
-            "owó Yúrò",
-        }
         GBP{
             "£",
-            "Pɔ́n-ùn ti Orilɛ̀-èdè Gɛ̀ɛ́sì",
+            "Pɔɔn ti Orílɛ́ède Bírítísì",
         }
         GHC{
             "GHC",
@@ -152,11 +144,7 @@ yo_BJ{
         }
         NGN{
             "₦",
-            "Náìrà ti Orílɛ̀-èdè Nàìjíríà",
-        }
-        RUB{
-            "₽",
-            "Owó ruble ti ilɛ̀ Rɔ́shíà",
+            "Naira ti Orílɛ́ède Nàìjíríà",
         }
         RWF{
             "RWF",
@@ -182,10 +170,6 @@ yo_BJ{
             "SHP",
             "Pɔɔun ti Orílɛ́ède ̣Elena",
         }
-        SLL{
-            "SLL",
-            "Lioni",
-        }
         SOS{
             "SOS",
             "Sile ti Orílɛ́ède Somali",
@@ -197,10 +181,6 @@ yo_BJ{
         STN{
             "STN",
             "Dobira ti Orílɛ́ède Sao tome Ati Pirisipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
         }
         TND{
             "TND",
@@ -215,8 +195,8 @@ yo_BJ{
             "Siile ti Orílɛ́ède Uganda",
         }
         USD{
-            "$",
-            "Dɔ́là",
+            "US$",
+            "Dɔla ti Orílɛ́ède Amerika",
         }
         XAF{
             "FCFA",
@@ -225,10 +205,6 @@ yo_BJ{
         XOF{
             "CFA",
             "Faransi ti Orílɛ́ède BIKEAO",
-        }
-        XXX{
-            "¤",
-            "owóníná àìmɔ̀",
         }
         ZAR{
             "ZAR",
@@ -247,35 +223,5 @@ yo_BJ{
             "Dɔla ti Orílɛ́ède Siibabuwe",
         }
     }
-    Currencies%narrow{
-        BRL{"R$"}
-        CNY{"¥"}
-        EUR{"€"}
-        GBP{"£"}
-        INR{"₹"}
-        JPY{"¥"}
-        RUB{"₽"}
-        USD{"$"}
-    }
-    CurrencyPlurals{
-        BRL{
-            other{"Awon owó ti Orílɛ̀-èdè Brazil"}
-        }
-        EUR{
-            other{"Awon owó Yúrò"}
-        }
-        RUB{
-            other{"Owó ruble ti ilɛ̀ Rɔ́shíà"}
-        }
-        USD{
-            other{"Dɔ́là ti Orílɛ̀-Èdè Amɛ́ríkà"}
-        }
-        XXX{
-            other{"owóníná àìmɔ̀"}
-        }
-    }
-    CurrencyUnitPatterns{
-        other{"{0} {1}"}
-    }
-    Version{"2.1.48.77"}
+    Version{"2.1.44.53"}
 }

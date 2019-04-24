@@ -25,15 +25,12 @@
 #include "third_party/blink/renderer/core/svg/svg_path_query.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_point_tear_off.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(svg_names::kPathTag, document),
-      path_(MakeGarbageCollected<SVGAnimatedPath>(this,
-                                                  svg_names::kDAttr,
-                                                  CSSPropertyID::kD)) {
+      path_(SVGAnimatedPath::Create(this, svg_names::kDAttr, CSSPropertyD)) {
   AddToPropertyMap(path_);
 }
 
@@ -67,12 +64,12 @@ Path SVGPathElement::AsPath() const {
 }
 
 float SVGPathElement::getTotalLength() {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
   return SVGPathQuery(PathByteStream()).GetTotalLength();
 }
 
 SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
   SVGPathQuery path_query(PathByteStream());
   if (length < 0) {
     length = 0;

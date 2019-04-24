@@ -23,10 +23,8 @@
 #include <memory>
 
 #include "perfetto/base/string_view.h"
-#include "perfetto/protozero/field.h"
 #include "src/trace_processor/ftrace_descriptors.h"
 #include "src/trace_processor/trace_blob_view.h"
-#include "src/trace_processor/trace_parser.h"
 #include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
@@ -53,58 +51,64 @@ inline bool operator==(const SystraceTracePoint& x,
 
 bool ParseSystraceTracePoint(base::StringView, SystraceTracePoint* out);
 
-class ProtoTraceParser : public TraceParser {
+class ProtoTraceParser {
  public:
-  using ConstBytes = protozero::ConstBytes;
   explicit ProtoTraceParser(TraceProcessorContext*);
   virtual ~ProtoTraceParser();
 
-  // TraceParser implementation.
-  virtual void ParseTracePacket(int64_t timestamp,
-                                TraceSorter::TimestampedTracePiece);
+  // virtual for testing.
+  virtual void ParseTracePacket(int64_t timestamp, TraceBlobView);
   virtual void ParseFtracePacket(uint32_t cpu,
                                  int64_t timestamp,
-                                 TraceSorter::TimestampedTracePiece);
-  void ParseProcessTree(ConstBytes);
-  void ParseProcessStats(int64_t timestamp, ConstBytes);
-  void ParseSchedSwitch(uint32_t cpu, int64_t timestamp, ConstBytes);
-  void ParseSchedWakeup(int64_t timestamp, ConstBytes);
-  void ParseTaskNewTask(int64_t timestamp, uint32_t source_tid, ConstBytes);
-  void ParseTaskRename(ConstBytes);
-  void ParseCpuFreq(int64_t timestamp, ConstBytes);
-  void ParseCpuIdle(int64_t timestamp, ConstBytes);
-  void ParsePrint(uint32_t cpu, int64_t timestamp, uint32_t pid, ConstBytes);
-  void ParseSysStats(int64_t ts, ConstBytes);
-  void ParseRssStat(int64_t ts, uint32_t pid, ConstBytes);
+                                 TraceBlobView);
+  void ParseProcessTree(TraceBlobView);
+  void ParseProcessStats(int64_t timestamp, TraceBlobView);
+  void ParseProcessStatsProcess(int64_t timestamp, TraceBlobView);
+  void ParseSchedSwitch(uint32_t cpu, int64_t timestamp, TraceBlobView);
+  void ParseSchedWakeup(int64_t timestamp, TraceBlobView);
+  void ParseTaskNewTask(int64_t ts, uint32_t source_tid, TraceBlobView);
+  void ParseTaskRename(int64_t ts, TraceBlobView);
+  void ParseCpuFreq(int64_t timestamp, TraceBlobView);
+  void ParseCpuIdle(int64_t timestamp, TraceBlobView);
+  void ParsePrint(uint32_t cpu, int64_t timestamp, uint32_t pid, TraceBlobView);
+  void ParseThread(TraceBlobView);
+  void ParseProcess(TraceBlobView);
+  void ParseSysStats(int64_t ts, TraceBlobView);
+  void ParseMemInfo(int64_t ts, TraceBlobView);
+  void ParseVmStat(int64_t ts, TraceBlobView);
+  void ParseCpuTimes(int64_t ts, TraceBlobView);
+  void ParseIrqCount(int64_t ts, TraceBlobView, bool is_soft);
+  void ParseRssStat(int64_t ts, uint32_t pid, TraceBlobView);
   void ParseIonHeapGrowOrShrink(int64_t ts,
                                 uint32_t pid,
-                                ConstBytes,
+                                TraceBlobView,
                                 bool grow);
-  void ParseSignalDeliver(int64_t ts, uint32_t pid, ConstBytes);
-  void ParseSignalGenerate(int64_t ts, ConstBytes);
-  void ParseLowmemoryKill(int64_t ts, ConstBytes);
-  void ParseBatteryCounters(int64_t ts, ConstBytes);
-  void ParsePowerRails(ConstBytes);
-  void ParseOOMScoreAdjUpdate(int64_t ts, ConstBytes);
-  void ParseMmEventRecord(int64_t ts, uint32_t pid, ConstBytes);
-  void ParseSysEvent(int64_t ts, uint32_t pid, bool is_enter, ConstBytes);
-  void ParseClockSnapshot(ConstBytes);
-  void ParseAndroidLogPacket(ConstBytes);
-  void ParseAndroidLogEvent(ConstBytes);
-  void ParseAndroidLogStats(ConstBytes);
+  void ParseSignalDeliver(int64_t ts, uint32_t pid, TraceBlobView);
+  void ParseSignalGenerate(int64_t ts, TraceBlobView);
+  void ParseLowmemoryKill(int64_t ts, TraceBlobView);
+  void ParseBatteryCounters(int64_t ts, TraceBlobView);
+  void ParseOOMScoreAdjUpdate(int64_t ts, TraceBlobView);
+  void ParseMmEventRecordField(int64_t ts, uint32_t pid, TraceBlobView);
+  void ParseSysEvent(int64_t ts, uint32_t pid, bool is_enter, TraceBlobView);
+  void ParseClockSnapshot(TraceBlobView);
+  std::pair<int /*type*/, int64_t> ParseClockField(TraceBlobView);
+  void ParseAndroidLogPacket(TraceBlobView);
+  void ParseAndroidLogEvent(TraceBlobView);
+  void ParseAndroidLogBinaryArg(TraceBlobView, char** str, size_t avail);
+  void ParseAndroidLogStats(TraceBlobView);
   void ParseGenericFtrace(int64_t timestamp,
                           uint32_t cpu,
                           uint32_t pid,
-                          ConstBytes view);
+                          TraceBlobView view);
+  void ParseGenericFtraceField(RowId generic_row_id, TraceBlobView view);
   void ParseTypedFtraceToRaw(uint32_t ftrace_id,
                              int64_t timestamp,
                              uint32_t cpu,
                              uint32_t pid,
-                             ConstBytes view);
-  void ParseTraceStats(ConstBytes);
-  void ParseFtraceStats(ConstBytes);
-  void ParseProfilePacket(ConstBytes);
-  void ParseSystemInfo(ConstBytes);
+                             TraceBlobView view);
+  void ParseTraceStats(TraceBlobView);
+  void ParseFtraceStats(TraceBlobView);
+  void ParseProfilePacket(TraceBlobView);
 
  private:
   TraceProcessorContext* context_;
@@ -119,7 +123,7 @@ class ProtoTraceParser : public TraceParser {
   const StringId num_irq_name_id_;
   const StringId num_softirq_name_id_;
   const StringId cpu_times_user_ns_id_;
-  const StringId cpu_times_user_nice_ns_id_;
+  const StringId cpu_times_user_ice_ns_id_;
   const StringId cpu_times_system_mode_ns_id_;
   const StringId cpu_times_idle_ns_id_;
   const StringId cpu_times_io_wait_ns_id_;
@@ -138,12 +142,12 @@ class ProtoTraceParser : public TraceParser {
   std::vector<StringId> meminfo_strs_id_;
   std::vector<StringId> vmstat_strs_id_;
   std::vector<StringId> rss_members_;
-  std::vector<StringId> power_rails_strs_id_;
 
+  static constexpr size_t kFtraceMaxFieldCount = 32;
   struct FtraceMessageStrings {
     // The string id of name of the event field (e.g. sched_switch's id).
     StringId message_name_id = 0;
-    std::array<StringId, kMaxFtraceEventFields> field_name_ids;
+    std::array<StringId, kFtraceMaxFieldCount> field_name_ids;
   };
   std::vector<FtraceMessageStrings> ftrace_message_strings_;
 
@@ -167,6 +171,9 @@ class ProtoTraceParser : public TraceParser {
   static constexpr size_t kMmEventCounterSize = 7;
   std::array<MmEventCounterNames, kMmEventCounterSize> mm_event_counter_names_;
 
+  // Keep this in sync with the Linux syscall count.
+  static constexpr size_t kSysNameIdSize = 13;
+  std::array<StringId, kSysNameIdSize> sys_name_ids_;
 };
 
 }  // namespace trace_processor

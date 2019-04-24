@@ -185,7 +185,8 @@ class NeverRunsExternalProtocolHandlerDelegate
   void BlockRequest() override {}
 
   void RunExternalProtocolDialog(const GURL& url,
-                                 content::WebContents* web_contents,
+                                 int render_process_host_id,
+                                 int routing_id,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {
     NOTREACHED();
@@ -363,7 +364,7 @@ DestructionWaiter::DestructionWaiter(TestPrerenderContents* prerender_contents,
     saw_correct_status_ = true;
     return;
   }
-  if (prerender_contents->final_status() != FINAL_STATUS_UNKNOWN) {
+  if (prerender_contents->final_status() != FINAL_STATUS_MAX) {
     // The contents was already destroyed by the time this was called.
     MarkDestruction(prerender_contents->final_status());
   } else {
@@ -399,7 +400,7 @@ void DestructionWaiter::DestructionMarker::OnPrerenderStop(
 
 TestPrerender::TestPrerender()
     : contents_(nullptr),
-      final_status_(FINAL_STATUS_UNKNOWN),
+      final_status_(FINAL_STATUS_MAX),
       number_of_loads_(0),
       expected_number_of_loads_(0),
       started_(false),

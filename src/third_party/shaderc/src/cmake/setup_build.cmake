@@ -36,16 +36,18 @@ endif(WIN32)
 if (ANDROID)
 # For android let's preemptively find the correct packages so that
 # child projects (glslang, googletest) do not fail to find them.
-
-# Tests in glslc and SPIRV-Tools tests require Python 3, or a Python 2
-# with the "future" package.  Require Python 3 because we can't force
-# developers to manually install the "future" package.
-find_host_package(PythonInterp 3 REQUIRED)
+find_host_package(PythonInterp)
 find_host_package(BISON)
-else()
-find_package(PythonInterp 3 REQUIRED)
 endif()
 
+foreach(PROGRAM echo python)
+  string(TOUPPER ${PROGRAM} PROG_UC)
+  if (ANDROID)
+    find_host_program(${PROG_UC}_EXE ${PROGRAM} REQUIRED)
+  else()
+    find_program(${PROG_UC}_EXE ${PROGRAM} REQUIRED)
+  endif()
+endforeach(PROGRAM)
 
 option(ENABLE_CODE_COVERAGE "Enable collecting code coverage." OFF)
 if (ENABLE_CODE_COVERAGE)
@@ -81,7 +83,7 @@ if (ENABLE_CODE_COVERAGE)
     # The symptom is that some .gcno files are wrong after code change and
     # recompiling. We don't know the exact reason yet. Figure it out.
     # Remove all .gcno files in the directory recursively.
-    COMMAND ${PYTHON_EXECUTABLE}
+    COMMAND ${PYTHON_EXE}
     ${shaderc_SOURCE_DIR}/utils/remove-file-by-suffix.py . ".gcno"
     # .gcno files are not tracked by CMake. So no recompiling is triggered
     # even if they are missing. Unfortunately, we just removed all of them

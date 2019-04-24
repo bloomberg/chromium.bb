@@ -26,8 +26,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_mac.h"
 
 #include <Carbon/Carbon.h>
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_policy.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -43,38 +41,42 @@
 #include "third_party/blink/renderer/platform/mac/local_current_graphics_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual
 // overflow.
 
+@interface NSColor (WebNSColorDetails)
++ (NSImage*)_linenPatternImage;
+@end
+
 @interface BlinkScrollbarObserver : NSObject {
   blink::Scrollbar* _scrollbar;
-  base::scoped_nsobject<ScrollbarPainter> _scrollbarPainter;
+  RetainPtr<ScrollbarPainter> _scrollbarPainter;
   BOOL _suppressSetScrollbarsHidden;
 }
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-                painter:(const base::scoped_nsobject<ScrollbarPainter>&)painter;
+                painter:(const RetainPtr<ScrollbarPainter>&)painter;
 @end
 
 @implementation BlinkScrollbarObserver
 
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-                painter:
-                    (const base::scoped_nsobject<ScrollbarPainter>&)painter {
+                painter:(const RetainPtr<ScrollbarPainter>&)painter {
   if (!(self = [super init]))
     return nil;
   _scrollbar = scrollbar;
   _scrollbarPainter = painter;
-  [_scrollbarPainter addObserver:self
-                      forKeyPath:@"knobAlpha"
-                         options:0
-                         context:nil];
+  [_scrollbarPainter.Get() addObserver:self
+                            forKeyPath:@"knobAlpha"
+                               options:0
+                               context:nil];
   return self;
 }
 
 - (id)painter {
-  return _scrollbarPainter;
+  return _scrollbarPainter.Get();
 }
 
 - (void)setSuppressSetScrollbarsHidden:(BOOL)value {
@@ -82,7 +84,7 @@
 }
 
 - (void)dealloc {
-  [_scrollbarPainter removeObserver:self forKeyPath:@"knobAlpha"];
+  [_scrollbarPainter.Get() removeObserver:self forKeyPath:@"knobAlpha"];
   [super dealloc];
 }
 
@@ -92,7 +94,7 @@
                        context:(void*)context {
   if ([keyPath isEqualToString:@"knobAlpha"]) {
     if (!_suppressSetScrollbarsHidden) {
-      BOOL visible = [_scrollbarPainter knobAlpha] > 0;
+      BOOL visible = [_scrollbarPainter.Get() knobAlpha] > 0;
       _scrollbar->SetScrollbarsHiddenIfOverlay(!visible);
     }
   }
@@ -115,8 +117,7 @@ static ScrollbarSet& GetScrollbarSet() {
   return *set;
 }
 
-typedef HeapHashMap<WeakMember<Scrollbar>,
-                    base::scoped_nsobject<BlinkScrollbarObserver>>
+typedef HeapHashMap<WeakMember<Scrollbar>, RetainPtr<BlinkScrollbarObserver>>
     ScrollbarPainterMap;
 
 static ScrollbarPainterMap& GetScrollbarPainterMap() {
@@ -206,13 +207,15 @@ void ScrollbarThemeMac::RegisterScrollbar(Scrollbar& scrollbar) {
   GetScrollbarSet().insert(&scrollbar);
 
   bool is_horizontal = scrollbar.Orientation() == kHorizontalScrollbar;
-  base::scoped_nsobject<ScrollbarPainter> scrollbar_painter(
+  RetainPtr<ScrollbarPainter> scrollbar_painter(
+      kAdoptNS,
       [[NSClassFromString(@"NSScrollerImp")
           scrollerImpWithStyle:RecommendedScrollerStyle()
                    controlSize:(NSControlSize)scrollbar.GetControlSize()
                     horizontal:is_horizontal
           replacingScrollerImp:nil] retain]);
-  base::scoped_nsobject<BlinkScrollbarObserver> observer(
+  RetainPtr<BlinkScrollbarObserver> observer(
+      kAdoptNS,
       [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar
                                                 painter:scrollbar_painter]);
 
@@ -229,9 +232,9 @@ void ScrollbarThemeMac::UnregisterScrollbar(Scrollbar& scrollbar) {
 void ScrollbarThemeMac::SetNewPainterForScrollbar(
     Scrollbar& scrollbar,
     ScrollbarPainter new_painter) {
-  base::scoped_nsobject<ScrollbarPainter> scrollbar_painter(
-      [new_painter retain]);
-  base::scoped_nsobject<BlinkScrollbarObserver> observer(
+  RetainPtr<ScrollbarPainter> scrollbar_painter(kAdoptNS, [new_painter retain]);
+  RetainPtr<BlinkScrollbarObserver> observer(
+      kAdoptNS,
       [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar
                                                 painter:scrollbar_painter]);
   GetScrollbarPainterMap().Set(&scrollbar, observer);
@@ -241,8 +244,9 @@ void ScrollbarThemeMac::SetNewPainterForScrollbar(
 
 ScrollbarPainter ScrollbarThemeMac::PainterForScrollbar(
     const Scrollbar& scrollbar) const {
-  return
-      [GetScrollbarPainterMap().at(const_cast<Scrollbar*>(&scrollbar)) painter];
+  return [GetScrollbarPainterMap()
+              .at(const_cast<Scrollbar*>(&scrollbar))
+              .Get() painter];
 }
 
 void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
@@ -290,10 +294,9 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
 
   {
     LocalCurrentGraphicsContext local_context(context, local_rect);
-    base::scoped_nsobject<BlinkScrollbarObserver> observer(
-        GetScrollbarPainterMap().at(const_cast<Scrollbar*>(&scrollbar)),
-        base::scoped_policy::RETAIN);
-    ScrollbarPainter scrollbar_painter = [observer painter];
+    RetainPtr<BlinkScrollbarObserver> observer =
+        GetScrollbarPainterMap().at(const_cast<Scrollbar*>(&scrollbar));
+    ScrollbarPainter scrollbar_painter = [observer.Get() painter];
     [scrollbar_painter setEnabled:scrollbar.Enabled()];
     // drawKnob aligns the thumb to right side of the draw rect.
     // If the vertical overlay scrollbar is on the left, use trackWidth instead
@@ -309,7 +312,7 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     [scrollbar_painter setDoubleValue:0];
     [scrollbar_painter setKnobProportion:1];
 
-    [observer setSuppressSetScrollbarsHidden:YES];
+    [observer.Get() setSuppressSetScrollbarsHidden:YES];
     CGFloat old_knob_alpha = [scrollbar_painter knobAlpha];
     [scrollbar_painter setKnobAlpha:1];
 
@@ -322,7 +325,7 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     [scrollbar_painter
         setBoundsSize:NSSizeFromCGSize(CGSize(scrollbar.FrameRect().Size()))];
     [scrollbar_painter setKnobAlpha:old_knob_alpha];
-    [observer setSuppressSetScrollbarsHidden:NO];
+    [observer.Get() setSuppressSetScrollbarsHidden:NO];
   }
 
   if (opacity != 1.0f)

@@ -35,7 +35,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -153,7 +153,7 @@ class DemoSetupTest : public LoginManagerTest {
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     DisableConfirmationDialogAnimations();
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    WizardController::default_controller()->is_official_build_ = true;
     DisconnectAllNetworks();
   }
 
@@ -442,7 +442,6 @@ class DemoSetupTest : public LoginManagerTest {
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };

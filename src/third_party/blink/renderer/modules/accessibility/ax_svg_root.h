@@ -38,6 +38,8 @@ class AXObjectCacheImpl;
 
 class AXSVGRoot final : public AXLayoutObject {
  public:
+  static AXSVGRoot* Create(LayoutObject*, AXObjectCacheImpl&);
+
   AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);
   ~AXSVGRoot() override;
 

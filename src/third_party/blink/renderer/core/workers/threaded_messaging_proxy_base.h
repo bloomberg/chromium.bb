@@ -55,7 +55,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   void CountFeature(WebFeature);
   void CountDeprecation(WebFeature);
 
-  void ReportConsoleMessage(mojom::ConsoleMessageSource,
+  void ReportConsoleMessage(MessageSource,
                             mojom::ConsoleMessageLevel,
                             const String& message,
                             std::unique_ptr<SourceLocation>);

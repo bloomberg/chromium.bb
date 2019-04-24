@@ -23,13 +23,11 @@
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
-#include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #include "chrome/browser/profiles/force_safe_search_policy_handler.h"
 #include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
-#include "chrome/browser/spellchecker/spellcheck_language_blacklist_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
 #include "chrome/browser/ssl/secure_origin_policy_handler.h"
 #include "chrome/common/buildflags.h"
@@ -43,7 +41,6 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -90,7 +87,7 @@
 #include "chrome/browser/policy/printing_restrictions_policy_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
-#include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/arc/arc_prefs.h"
 #include "components/drive/drive_pref_names.h"
@@ -103,6 +100,7 @@
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
+#include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -162,6 +160,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kWPADQuickCheckEnabled,
     prefs::kQuickCheckEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kPacHttpsUrlStrippingEnabled,
+    prefs::kPacHttpsUrlStrippingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kQuicAllowed,
     prefs::kQuicAllowed,
@@ -285,6 +286,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kRequireOnlineRevocationChecksForLocalAnchors,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
+    base::Value::Type::BOOLEAN },
+  { key::kEnableSymantecLegacyInfrastructure,
+    prefs::kCertEnableSymantecLegacyInfrastructure,
     base::Value::Type::BOOLEAN },
   { key::kAuthSchemes,
     prefs::kAuthSchemes,
@@ -458,9 +462,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kExtensionAllowInsecureUpdates,
     extensions::pref_names::kInsecureExtensionUpdatesEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kUninstallBlacklistedExtensions,
-    extensions::pref_names::kUninstallBlacklistedExtensions,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -662,6 +663,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportArcStatusEnabled,
     prefs::kReportArcStatusEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kEcryptfsMigrationStrategy,
+    arc::prefs::kEcryptfsMigrationStrategy,
+    base::Value::Type::INTEGER },
   { key::kSchedulerConfiguration,
     prefs::kSchedulerConfiguration,
     base::Value::Type::STRING },
@@ -725,42 +729,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVoiceInteractionHotwordEnabled,
     arc::prefs::kVoiceInteractionHotwordEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kDevicePowerPeakShiftEnabled,
-    ash::prefs::kPowerPeakShiftEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kDevicePowerPeakShiftBatteryThreshold,
-    ash::prefs::kPowerPeakShiftBatteryThreshold,
-    base::Value::Type::INTEGER },
-  { key::kDevicePowerPeakShiftDayConfig,
-    ash::prefs::kPowerPeakShiftDayConfig,
-    base::Value::Type::DICTIONARY },
-  { key::kDeviceBootOnAcEnabled,
-    ash::prefs::kBootOnAcEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kSamlInSessionPasswordChangeEnabled,
-    prefs::kSamlInSessionPasswordChangeEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kSamlPasswordExpirationAdvanceWarningDays,
-    prefs::kSamlPasswordExpirationAdvanceWarningDays,
-    base::Value::Type::INTEGER },
- {  key::kDeviceAdvancedBatteryChargeModeEnabled,
-    ash::prefs::kAdvancedBatteryChargeModeEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kDeviceAdvancedBatteryChargeModeDayConfig,
-    ash::prefs::kAdvancedBatteryChargeModeDayConfig,
-    base::Value::Type::DICTIONARY },
-  { key::kDeviceBatteryChargeMode,
-    ash::prefs::kBatteryChargeMode,
-    base::Value::Type::INTEGER },
-  { key::kDeviceBatteryChargeCustomStartCharging,
-    ash::prefs::kBatteryChargeCustomStartCharging,
-    base::Value::Type::INTEGER },
-  { key::kDeviceBatteryChargeCustomStopCharging,
-    ash::prefs::kBatteryChargeCustomStopCharging,
-    base::Value::Type::INTEGER },
-  { key::kDeviceUsbPowerShareEnabled,
-    ash::prefs::kUsbPowerShareEnabled,
-    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
@@ -803,7 +771,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 
 #if defined(OS_ANDROID)
   { key::kDataCompressionProxyEnabled,
-    data_reduction_proxy::prefs::kDataSaverEnabled,
+    prefs::kDataSaverEnabled,
     base::Value::Type::BOOLEAN },
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
@@ -823,8 +791,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrintPreviewUseSystemDefaultPrinter,
     prefs::kPrintPreviewUseSystemDefaultPrinter,
     base::Value::Type::BOOLEAN },
-  { key::kCloudPolicyOverridesPlatformPolicy,
-    policy_prefs::kCloudPolicyOverridesPlatformPolicy,
+  { key::kCloudPolicyOverridesMachinePolicy,
+    policy_prefs::kCloudPolicyOverridesMachinePolicy,
     base::Value::Type::BOOLEAN },
   { key::kCloudReportingEnabled,
     prefs::kCloudReportingEnabled,
@@ -990,9 +958,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnterpriseHardwarePlatformAPIEnabled,
     prefs::kEnterpriseHardwarePlatformAPIEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kSignedHTTPExchangeEnabled,
-    prefs::kSignedHTTPExchangeEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kAllowPopupsDuringPageUnload,
     prefs::kAllowPopupsDuringPageUnload,
     base::Value::Type::BOOLEAN },
@@ -1121,8 +1086,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  handlers->AddHandler(
-      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
 
 // On most platforms, there is a legacy policy
 // kUnsafelyTreatInsecureOriginAsSecure which has been replaced by
@@ -1166,8 +1129,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   handlers->AddHandler(std::make_unique<SpellcheckLanguagePolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<SpellcheckLanguageBlacklistPolicyHandler>());
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1181,7 +1142,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<extensions::ExtensionInstallForcelistPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<
-          extensions::ExtensionInstallLoginScreenExtensionsPolicyHandler>());
+          extensions::ExtensionInstallLoginScreenAppListPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionURLPatternListPolicyHandler>(
           key::kExtensionInstallSources,
@@ -1192,11 +1153,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
-  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kWebAppInstallForceList, prefs::kWebAppInstallForceList,
-      chrome_schema, SCHEMA_STRICT,
-      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
-      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -1256,6 +1212,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema.GetValidationSchema(),
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  // At the moment, the WebUsbAllowDevicesForUrls policy is not supported on
+  // Android because the Site Settings UI is not yet capable of displaying
+  // policy managed USB items.
+  // TODO(https://crbug.com/931459): Move this statement outside of this
+  // preprocessor if statement once Android supports the policy.
+  handlers->AddHandler(
+      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -1395,8 +1358,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<ExternalDataPolicyHandler>(key::kWallpaperImage));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kNativePrintersBulkConfiguration));
-  handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
-      key::kDeviceWilcoDtcConfiguration));
   handlers->AddHandler(base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
       key::kSessionLocales, NULL, chrome_schema, SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
@@ -1434,6 +1395,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
+
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,
@@ -1445,8 +1407,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       chrome_schema, SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  handlers->AddHandler(
-      std::make_unique<EcryptfsMigrationStrategyPolicyHandler>());
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

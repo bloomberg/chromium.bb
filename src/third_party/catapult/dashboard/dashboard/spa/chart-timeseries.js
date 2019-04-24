@@ -5,33 +5,6 @@
 'use strict';
 tr.exportTo('cp', () => {
   class ChartTimeseries extends cp.ElementBase {
-    static get template() {
-      return Polymer.html`
-        <style>
-          :host {
-            display: block;
-          }
-          place-holder {
-            @apply --chart-placeholder;
-          }
-        </style>
-
-        <template is="dom-if" if="[[showPlaceholder(isLoading, lines)]]">
-          <place-holder>
-            <slot></slot>
-          </place-holder>
-        </template>
-
-        <template is="dom-if" if="[[!showPlaceholder(isLoading, lines)]]">
-          <chart-base
-              state-path="[[statePath]]"
-              on-get-tooltip="onGetTooltip_"
-              on-mouse-leave-main="onMouseLeaveMain_">
-          </chart-base>
-        </template>
-      `;
-    }
-
     showPlaceholder(isLoading, lines) {
       return !isLoading && this.isEmpty_(lines);
     }
@@ -86,7 +59,7 @@ tr.exportTo('cp', () => {
     },
     zeroYAxis: options => false,
     fixedXAxis: options => false,
-    mode: options => cp.MODE.NORMALIZE_UNIT,
+    mode: options => 'normalizeUnit',
     levelOfDetail: options => options.levelOfDetail || cp.LEVEL_OF_DETAIL.XY,
   };
 
@@ -142,9 +115,6 @@ tr.exportTo('cp', () => {
 
     getTooltip: (statePath, mainRect, line, lineIndex, datum) =>
       async(dispatch, getState) => {
-        // Warning: If this action does not dispatch synchronously, then it is
-        // possible for the tooltip to get stuck if hideTooltip is dispatched
-        // while awaiting here.
         dispatch(Redux.CHAIN(
             {
               type: ChartTimeseries.reducers.getTooltip.name,
@@ -268,7 +238,7 @@ tr.exportTo('cp', () => {
         if (data.length === 0) continue;
 
         let unit = timeserieses[0][0].unit;
-        if (state.mode === cp.MODE.DELTA) {
+        if (state.mode === 'delta') {
           unit = unit.correspondingDeltaUnit;
           const offset = data[0].y;
           for (const datum of data) datum.y -= offset;
@@ -295,15 +265,13 @@ tr.exportTo('cp', () => {
     // state.yAxis.ticks.
     mouseYTicks: (state, {line}, rootState) => {
       if (!state.yAxis.generateTicks) return state;
-      const isNormalizeLine = (
-        state.mode === cp.MODE.NORMALIZE_LINE || state.mode === cp.MODE.CENTER);
-      if (!isNormalizeLine &&
+      if (!((state.mode === 'normalizeLine') || (state.mode === 'center')) &&
           (state.yAxis.ticksForUnitName.size === 1)) {
         return state;
       }
       let ticks = [];
       if (line) {
-        if (isNormalizeLine) {
+        if (state.mode === 'normalizeLine' || state.mode === 'center') {
           ticks = line.ticks;
         } else {
           ticks = state.yAxis.ticksForUnitName.get(
@@ -321,31 +289,6 @@ tr.exportTo('cp', () => {
       }
 
       const rows = [];
-
-      if (state.brushRevisions.length === 0) {
-        rows.push({
-          colspan: 2, color: 'var(--primary-color-dark, blue)',
-          name: 'Click for details'
-        });
-      } else {
-        let isBrushed = false;
-        for (const range of ChartTimeseries.revisionRanges(
-            state.brushRevisions)) {
-          isBrushed = range.min < datum.x && datum.x < range.max;
-          if (isBrushed) break;
-        }
-        if (isBrushed) {
-          rows.push({
-            colspan: 2, color: 'var(--primary-color-dark, blue)',
-            name: 'Click to reset details'
-          });
-        } else {
-          rows.push({
-            colspan: 2, color: 'var(--primary-color-dark, blue)',
-            name: cp.CTRL_KEY_NAME + '+click to compare details'
-          });
-        }
-      }
 
       if (datum.icon === 'cp:clock') {
         const days = Math.floor(tr.b.convertUnit(
@@ -374,24 +317,14 @@ tr.exportTo('cp', () => {
 
       rows.push({name: 'value', value: line.unit.format(datum.y)});
 
-      let foundRevision = false;
-      for (const [rName, value] of Object.entries(
-          datum.datum.revisions || {})) {
-        const {name} = ChartTimeseries.revisionLink(
-            rootState.revisionInfo, rName);
+      rows.push({name: 'revision', value: datum.datum.revision});
+      for (const [name, value] of Object.entries(datum.datum.revisions || {})) {
         rows.push({name, value});
-
-        if (!foundRevision) {
-          foundRevision = (parseInt(datum.datum.revision) === value);
-        }
-      }
-      if (!foundRevision) {
-        rows.push({name: 'revision', value: datum.datum.revision});
       }
 
       rows.push({
-        name: 'Upload timestamp',
-        value: tr.b.formatDate(datum.datum.timestamp),
+        name: 'uploaded',
+        value: datum.datum.timestamp.toString(),
       });
 
       rows.push({name: 'build type', value: line.descriptor.buildType});
@@ -450,25 +383,19 @@ tr.exportTo('cp', () => {
     },
   };
 
+  // Snap to nearest existing revision
   ChartTimeseries.brushRevisions = state => {
     const brushes = state.brushRevisions.map(x => {
-      const xPctRange = tr.b.math.Range.fromExplicitRange(0, 100);
+      let closestDatum;
       for (const line of state.lines) {
-        const index = tr.b.findLowIndexInSortedArray(
+        const datum = tr.b.findClosestElementInSortedArray(
             line.data, d => d.x, x);
-        if (!line.data[index]) continue;
-        // Now, line.data[index].x >= x
-
-        const thisMax = line.data[index].xPct;
-        const thisMin = (index > 0) ? line.data[index - 1].xPct : thisMax;
-
-        if (thisMax === x) return {x, xPct: line.data[index].xPct + '%'};
-
-        xPctRange.min = Math.max(xPctRange.min, thisMin);
-        xPctRange.max = Math.min(xPctRange.max, thisMax);
+        if (closestDatum === undefined ||
+            (Math.abs(closestDatum.x - x) > Math.abs(datum.x - x))) {
+          closestDatum = datum;
+        }
       }
-      if (xPctRange.isEmpty) return {x: 0, xPct: '0%'};
-      return {x, xPct: xPctRange.center + '%'};
+      return {x, xPct: closestDatum.xPct + '%'};
     });
     return {...state, xAxis: {...state.xAxis, brushes}};
   };
@@ -606,35 +533,19 @@ tr.exportTo('cp', () => {
 
   ChartTimeseries.aggregateTimeserieses = (
       lineDescriptor, timeserieses, levelOfDetail, range) => {
-    const isXY = (levelOfDetail === cp.LEVEL_OF_DETAIL.XY);
     const lineData = [];
     const iter = new cp.TimeseriesMerger(timeserieses, range);
     for (const [x, datum] of iter) {
-      const icon = isXY ? {} : getIcon(datum);
       lineData.push({
-        datum, x, y: datum[lineDescriptor.statistic], ...icon,
+        datum,
+        x,
+        y: datum[lineDescriptor.statistic],
+        ...getIcon(datum),
       });
     }
 
     lineData.sort((a, b) => a.x - b.x);
     return lineData;
-  };
-
-  ChartTimeseries.revisionRanges = brushRevisions => {
-    const revisionRanges = [];
-    for (let i = 0; i < brushRevisions.length; i += 2) {
-      revisionRanges.push(tr.b.math.Range.fromExplicitRange(
-          brushRevisions[i], brushRevisions[i + 1]));
-    }
-    return revisionRanges;
-  };
-
-  ChartTimeseries.revisionLink = (revisionInfo, rName, r1, r2) => {
-    if (!revisionInfo) return {name: rName};
-    const info = revisionInfo[rName];
-    if (!info) return {name: rName};
-    const url = info.url.replace('{{R1}}', r1 || r2).replace('{{R2}}', r2);
-    return {name: info.name, url};
   };
 
   cp.ElementBase.register(ChartTimeseries);

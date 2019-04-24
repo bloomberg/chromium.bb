@@ -7,16 +7,12 @@
 version.py -- Chromium version string substitution utility.
 """
 
-from __future__ import print_function
-
 import argparse
 import os
 import sys
 
-import android_chrome_version
 
-
-def FetchValuesFromFile(values_dict, file_name):
+def fetch_values_from_file(values_dict, file_name):
   """
   Fetches KEYWORD=VALUE settings from the specified file.
 
@@ -31,12 +27,10 @@ def FetchValuesFromFile(values_dict, file_name):
     values_dict[key] = val
 
 
-def FetchValues(file_list, is_official_build=None):
+def fetch_values(file_list, is_official_build=None):
   """
-  Returns a dictionary of values to be used for substitution.
-
-  Populates the dictionary with KEYWORD=VALUE settings from the files in
-  'file_list'.
+  Returns a dictionary of values to be used for substitution, populating
+  the dictionary with KEYWORD=VALUE settings from the files in 'file_list'.
 
   Explicitly adds the following value from internal calculations:
 
@@ -53,12 +47,12 @@ def FetchValues(file_list, is_official_build=None):
   )
 
   for file_name in file_list:
-    FetchValuesFromFile(values, file_name)
+    fetch_values_from_file(values, file_name)
 
   return values
 
 
-def SubstTemplate(contents, values):
+def subst_template(contents, values):
   """
   Returns the template with substituted values from the specified dictionary.
 
@@ -70,31 +64,29 @@ def SubstTemplate(contents, values):
   contains any @KEYWORD@ strings expecting them to be recursively
   substituted, okay?
   """
-  for key, val in values.items():
+  for key, val in values.iteritems():
     try:
       contents = contents.replace('@' + key + '@', val)
     except TypeError:
-      print(repr(key), repr(val))
+      print repr(key), repr(val)
   return contents
 
 
-def SubstFile(file_name, values):
+def subst_file(file_name, values):
   """
-  Returns the contents of the specified file_name with substituted values.
+  Returns the contents of the specified file_name with substituted
+  values from the specified dictionary.
 
-  Substituted values come from the specified dictionary.
-
-  This is like SubstTemplate, except it operates on a file.
+  This is like subst_template, except it operates on a file.
   """
   template = open(file_name, 'r').read()
-  return SubstTemplate(template, values)
+  return subst_template(template, values);
 
 
-def WriteIfChanged(file_name, contents):
+def write_if_changed(file_name, contents):
   """
-  Writes the specified contents to the specified file_name.
-
-  Does nothing if the contents aren't different than the current contents.
+  Writes the specified contents to the specified file_name
+  iff the contents are different than the current contents.
   """
   try:
     old_contents = open(file_name, 'r').read()
@@ -107,8 +99,7 @@ def WriteIfChanged(file_name, contents):
   open(file_name, 'w').write(contents)
 
 
-def BuildParser():
-  """Build argparse parser, with added arguments."""
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('-f', '--file', action='append', default=[],
                       help='Read variables from FILE.')
@@ -118,55 +109,30 @@ def BuildParser():
                       help='Write substituted strings to FILE.')
   parser.add_argument('-t', '--template', default=None,
                       help='Use TEMPLATE as the strings to substitute.')
-  parser.add_argument(
-      '-e',
-      '--eval',
-      action='append',
-      default=[],
-      help='Evaluate VAL after reading variables. Can be used '
-      'to synthesize variables. e.g. -e \'PATCH_HI=int('
-      'PATCH)//256.')
-  parser.add_argument(
-      '-a',
-      '--arch',
-      default=None,
-      choices=android_chrome_version.ARCH_CHOICES,
-      help='Set which cpu architecture the build is for.')
-  parser.add_argument('--os', default=None, help='Set the target os.')
+  parser.add_argument('-e', '--eval', action='append', default=[],
+                      help='Evaluate VAL after reading variables. Can be used '
+                           'to synthesize variables. e.g. -e \'PATCH_HI=int('
+                           'PATCH)/256.')
   parser.add_argument('--official', action='store_true',
                       help='Whether the current build should be an official '
                            'build, used in addition to the environment '
                            'variable.')
-  parser.add_argument(
-      '--next',
-      action='store_true',
-      help='Whether the current build should be a "next" '
-      'build, which targets pre-release versions of '
-      'Android')
   parser.add_argument('args', nargs=argparse.REMAINDER,
                       help='For compatibility: INPUT and OUTPUT can be '
                            'passed as positional arguments.')
-  return parser
+  options = parser.parse_args()
 
-
-def BuildEvals(options, parser):
-  """Construct a dict of passed '-e' arguments for evaluating."""
   evals = {}
   for expression in options.eval:
     try:
       evals.update(dict([expression.split('=', 1)]))
     except ValueError:
       parser.error('-e requires VAR=VAL')
-  return evals
 
-
-def ModifyOptionsCompat(options, parser):
-  """Support compatibility with old versions.
-
-  Specifically, for old versions that considered the first two
-  positional arguments shorthands for --input and --output.
-  """
-  while len(options.args) and (options.input is None or options.output is None):
+  # Compatibility with old versions that considered the first two positional
+  # arguments shorthands for --input and --output.
+  while len(options.args) and (options.input is None or \
+                               options.output is None):
     if options.input is None:
       options.input = options.args.pop(0)
     elif options.output is None:
@@ -174,48 +140,17 @@ def ModifyOptionsCompat(options, parser):
   if options.args:
     parser.error('Unexpected arguments: %r' % options.args)
 
-
-def GenerateValues(options, evals):
-  """Construct a dict of raw values used to generate output.
-
-  e.g. this could return a dict like
-  {
-    'BUILD': 74,
-  }
-
-  which would be used to resolve a template like
-  'build = "@BUILD@"' into 'build = "74"'
-
-  """
-  values = FetchValues(options.file, options.official)
-
-  for key, val in evals.items():
+  values = fetch_values(options.file, options.official)
+  for key, val in evals.iteritems():
     values[key] = str(eval(val, globals(), values))
 
-  if options.os == 'android':
-    android_chrome_version_codes = android_chrome_version.GenerateVersionCodes(
-        values, options.arch, options.next)
-    values.update(android_chrome_version_codes)
-
-  return values
-
-
-def GenerateOutputContents(options, values):
-  """Construct output string (e.g. from template).
-
-  Arguments:
-  options -- argparse parsed arguments
-  values -- dict with raw values used to resolve the keywords in a template
-    string
-  """
-
   if options.template is not None:
-    return SubstTemplate(options.template, values)
+    contents = subst_template(options.template, values)
   elif options.input:
-    return SubstFile(options.input, values)
+    contents = subst_file(options.input, values)
   else:
     # Generate a default set of version information.
-    return """MAJOR=%(MAJOR)s
+    contents = """MAJOR=%(MAJOR)s
 MINOR=%(MINOR)s
 BUILD=%(BUILD)s
 PATCH=%(PATCH)s
@@ -223,34 +158,10 @@ LASTCHANGE=%(LASTCHANGE)s
 OFFICIAL_BUILD=%(OFFICIAL_BUILD)s
 """ % values
 
-
-def BuildOutput(args):
-  """Gets all input and output values needed for writing output."""
-  # Build argparse parser with arguments
-  parser = BuildParser()
-  options = parser.parse_args(args)
-
-  # Get dict of passed '-e' arguments for evaluating
-  evals = BuildEvals(options, parser)
-  # For compatibility with interface that considered first two positional
-  # arguments shorthands for --input and --output.
-  ModifyOptionsCompat(options, parser)
-
-  # Get the raw values that will be used the generate the output
-  values = GenerateValues(options, evals)
-  # Get the output string
-  contents = GenerateOutputContents(options, values)
-
-  return {'options': options, 'contents': contents}
-
-
-def main():
-  output = BuildOutput(sys.argv[1:])
-
-  if output['options'].output is not None:
-    WriteIfChanged(output['options'].output, output['contents'])
+  if options.output is not None:
+    write_if_changed(options.output, contents)
   else:
-    print(output['contents'])
+    print contents
 
   return 0
 

@@ -13,17 +13,18 @@
 # limitations under the License.
 
 
-cdef gpr_timespec _timespec_from_time(object time) except *:
+cdef gpr_timespec _timespec_from_time(object time):
+  cdef gpr_timespec timespec
   if time is None:
     return gpr_inf_future(GPR_CLOCK_REALTIME)
   else:
-    return gpr_time_from_nanos(
-      <int64_t>(<double>time * GPR_NS_PER_SEC),
-      GPR_CLOCK_REALTIME,
-    )
+    timespec.seconds = time
+    timespec.nanoseconds = (time - float(timespec.seconds)) * 1e9
+    timespec.clock_type = GPR_CLOCK_REALTIME
+    return timespec
 
 
 cdef double _time_from_timespec(gpr_timespec timespec) except *:
   cdef gpr_timespec real_timespec = gpr_convert_clock_type(
       timespec, GPR_CLOCK_REALTIME)
-  return gpr_timespec_to_micros(real_timespec) / GPR_US_PER_SEC
+  return <double>real_timespec.seconds + <double>real_timespec.nanoseconds / 1e9

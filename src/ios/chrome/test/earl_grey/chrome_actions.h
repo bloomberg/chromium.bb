@@ -5,12 +5,11 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_
 
-#import <Foundation/Foundation.h>
-
 #include <string>
 
-@class ElementSelector;
-@protocol GREYAction;
+#import <EarlGrey/EarlGrey.h>
+
+#include "ios/web/public/test/element_selector.h"
 
 namespace chrome_test_util {
 
@@ -20,8 +19,9 @@ namespace chrome_test_util {
 // in the webview. If |triggers_context_menu| is false, the converse is true.
 // This action doesn't fail if the context menu isn't displayed; calling code
 // should check for that separately with a matcher.
-id<GREYAction> LongPressElementForContextMenu(ElementSelector* selector,
-                                              bool triggers_context_menu);
+id<GREYAction> LongPressElementForContextMenu(
+    web::test::ElementSelector selector,
+    bool triggers_context_menu);
 
 // Action to turn the switch of a SettingsSwitchCell to the given |on| state.
 id<GREYAction> TurnSettingsSwitchOn(BOOL on);

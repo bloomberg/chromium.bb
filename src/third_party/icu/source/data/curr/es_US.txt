@@ -48,15 +48,12 @@ es_US{
         VEF{"Bs"}
     }
     CurrencyPlurals{
-        MWK{
-            one{"kwacha malauí"}
+        KGS{
+            one{"som"}
         }
         MYR{
             one{"ringit"}
             other{"ringits"}
-        }
-        RON{
-            one{"leu rumano"}
         }
         STN{
             one{"dobra santotomense"}
@@ -79,5 +76,5 @@ es_US{
             other{"francos CFA de África Occidental"}
         }
     }
-    Version{"2.1.47.86"}
+    Version{"2.1.43.65"}
 }

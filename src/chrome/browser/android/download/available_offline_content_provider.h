@@ -31,6 +31,7 @@ class AvailableOfflineContentProvider
 
   // chrome::mojom::AvailableOfflineContentProvider methods.
   void List(ListCallback callback) override;
+  void Summarize(SummarizeCallback) override;
   void LaunchItem(const std::string& item_id,
                   const std::string& name_space) override;
   void LaunchDownloadsPage(bool open_prefetched_articles_tab) override;
@@ -41,6 +42,10 @@ class AvailableOfflineContentProvider
       chrome::mojom::AvailableOfflineContentProviderRequest request);
 
  private:
+  void SummarizeFinalize(
+      AvailableOfflineContentProvider::SummarizeCallback callback,
+      const std::vector<offline_items_collection::OfflineItem>& all_items);
+
   void ListFinalize(
       AvailableOfflineContentProvider::ListCallback callback,
       offline_items_collection::OfflineContentAggregator* aggregator,

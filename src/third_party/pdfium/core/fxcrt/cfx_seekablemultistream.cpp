@@ -47,7 +47,7 @@ bool CFX_SeekableMultiStream::ReadBlockAtOffset(void* buffer,
     const auto& acc = m_Data[index];
     uint32_t dwSize = acc->GetSize();
     size_t dwRead = std::min(size, static_cast<size_t>(dwSize - offset));
-    memcpy(buffer, acc->GetSpan().subspan(offset, dwRead).data(), dwRead);
+    memcpy(buffer, acc->GetData() + offset, dwRead);
     size -= dwRead;
     if (size == 0)
       return true;

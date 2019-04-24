@@ -605,7 +605,7 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
   void SetUp() override {
     BitmapImageTest::SetUp();
 
-    auto decoder = std::make_unique<MockImageDecoder>(this);
+    auto decoder = MockImageDecoder::Create(this);
     decoder->SetSize(10, 10);
     image_->SetDecoderForTesting(
         DeferredImageDecoder::CreateForTesting(std::move(decoder)));

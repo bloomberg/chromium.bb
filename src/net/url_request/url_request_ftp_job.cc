@@ -47,7 +47,7 @@ URLRequestFtpJob::URLRequestFtpJob(
       priority_(DEFAULT_PRIORITY),
       proxy_resolution_service_(
           request_->context()->proxy_resolution_service()),
-      http_response_info_(nullptr),
+      http_response_info_(NULL),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache),
@@ -146,7 +146,7 @@ void URLRequestFtpJob::Kill() {
 }
 
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
-  proxy_resolve_request_ = nullptr;
+  proxy_resolve_request_ = NULL;
 
   if (result != OK) {
     OnStartCompletedAsync(result);
@@ -301,24 +301,22 @@ bool URLRequestFtpJob::NeedsAuth() {
   return auth_data_.get() && auth_data_->state == AUTH_STATE_NEED_AUTH;
 }
 
-std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
+void URLRequestFtpJob::GetAuthChallengeInfo(
+    scoped_refptr<AuthChallengeInfo>* result) {
   DCHECK(NeedsAuth());
 
   if (http_response_info_) {
-    if (!http_response_info_->auth_challenge.has_value())
-      return nullptr;
-    return std::make_unique<AuthChallengeInfo>(
-        http_response_info_->auth_challenge.value());
+    *result = http_response_info_->auth_challenge;
+    return;
   }
 
-  std::unique_ptr<AuthChallengeInfo> result =
-      std::make_unique<AuthChallengeInfo>();
-  result->is_proxy = false;
-  result->challenger = url::Origin::Create(request_->url());
+  scoped_refptr<AuthChallengeInfo> auth_info(new AuthChallengeInfo);
+  auth_info->is_proxy = false;
+  auth_info->challenger = url::Origin::Create(request_->url());
   // scheme and realm are kept empty.
-  DCHECK(result->scheme.empty());
-  DCHECK(result->realm.empty());
-  return result;
+  DCHECK(auth_info->scheme.empty());
+  DCHECK(auth_info->realm.empty());
+  result->swap(auth_info);
 }
 
 void URLRequestFtpJob::SetAuth(const AuthCredentials& credentials) {
@@ -385,7 +383,7 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
   }
   auth_data_->state = AUTH_STATE_NEED_AUTH;
 
-  FtpAuthCache::Entry* cached_auth = nullptr;
+  FtpAuthCache::Entry* cached_auth = NULL;
   if (ftp_transaction_ && ftp_transaction_->GetResponseInfo()->needs_auth)
     cached_auth = ftp_auth_cache_->Lookup(origin);
   if (cached_auth) {

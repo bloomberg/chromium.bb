@@ -46,7 +46,6 @@ cr.define('cr.ui', function() {
       // it is used in element's aria-activedescendant attribute.
       if (!this.isSeparator()) {
         this.setAttribute('role', 'menuitem');
-        this.setAttribute('tabindex', this.getAttribute('tabindex') || -1);
       }
 
       let iconUrl;

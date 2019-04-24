@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -82,14 +81,9 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
-  if (browser_view_->browser()->is_type_tabbed() ||
-      browser_view_->browser()->is_devtools()) {
+  if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
-    // DevTools counts as a popup, but DevToolsWindow::CreateDevToolsBrowser
-    // ensures there is always a size available. Without this, the tools
-    // launch on the wrong display and can have sizing issues when
-    // repositioned to the saved bounds in Widget::SetInitialBounds.
     chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                              &params.bounds,
                                              &params.show_state);
@@ -120,12 +114,11 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
   return native_browser_frame_->GetMinimizeButtonOffset();
 }
 
-gfx::Rect BrowserFrame::GetBoundsForTabStripRegion(
+gfx::Rect BrowserFrame::GetBoundsForTabStrip(
     const views::View* tabstrip) const {
   // This can be invoked before |browser_frame_view_| has been set.
-  return browser_frame_view_
-             ? browser_frame_view_->GetBoundsForTabStripRegion(tabstrip)
-             : gfx::Rect();
+  return browser_frame_view_ ?
+      browser_frame_view_->GetBoundsForTabStrip(tabstrip) : gfx::Rect();
 }
 
 int BrowserFrame::GetTopInset() const {
@@ -172,18 +165,16 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
 }
 
 bool BrowserFrame::ShouldUseTheme() const {
-  // Browser windows are always themed (including popups).
-  if (!WebAppBrowserController::IsForExperimentalWebAppBrowser(
-          browser_view_->browser())) {
+  // Main browser windows are always themed.
+  if (browser_view_->IsBrowserTypeNormal())
     return true;
-  }
 
   // The system GTK theme should always be respected if the user has opted to
   // use it.
   if (IsUsingGtkTheme(browser_view_->browser()->profile()))
     return true;
 
-  // Hosted apps on non-GTK use default colors.
+  // Other window types (popups, hosted apps) on non-GTK use the default theme.
   return false;
 }
 
@@ -257,11 +248,10 @@ void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
     menu_runner_.reset(new views::MenuRunner(
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-        base::BindRepeating(&BrowserFrame::OnMenuClosed,
-                            base::Unretained(this))));
+        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
-                            views::MenuAnchorPosition::kTopLeft, source_type);
+                            views::MENU_ANCHOR_TOPLEFT, source_type);
   }
 }
 

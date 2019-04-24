@@ -58,7 +58,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
 
     observed_.Add(window());
   }
-  ~ClientSideNonClientFrameView() override = default;
+  ~ClientSideNonClientFrameView() override {}
 
  private:
   gfx::Insets GetClientInsets() const {
@@ -134,8 +134,10 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    if (key == aura::client::kTopViewInset)
+    if (key == aura::client::kTopViewInset) {
       InvalidateLayout();
+      widget_->GetRootView()->Layout();
+    }
   }
 
   aura::Window* window() const {
@@ -149,10 +151,10 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
 };
 
 void OnMoveLoopEnd(bool* out_success,
-                   base::OnceClosure quit_closure,
+                   base::Closure quit_closure,
                    bool in_success) {
   *out_success = in_success;
-  std::move(quit_closure).Run();
+  quit_closure.Run();
 }
 
 }  // namespace
@@ -398,6 +400,17 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
   if (!params.accept_events)
     window()->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+
+  // Sets the has-content info for the occlusion tracker that runs on the Window
+  // Service side.
+  // TODO(edcourtney): Remove this once we plumb through the window's
+  // transparent value through mus. That, in combination with the layer type
+  // will let the occlusion tracker determine if the window should affect
+  // occlusion.
+  content_window()->SetProperty(
+      aura::client::kClientWindowHasContent,
+      params.layer_type != ui::LAYER_NOT_DRAWN &&
+          params.opacity == Widget::InitParams::OPAQUE_WINDOW);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -966,7 +979,7 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
   if (non_client_view) {
-    non_client_view->InvalidateLayout();
+    non_client_view->Layout();
     non_client_view->SchedulePaint();
   }
 

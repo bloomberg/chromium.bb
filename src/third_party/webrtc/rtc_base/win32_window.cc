@@ -42,29 +42,29 @@ bool Win32Window::Create(HWND parent,
   }
 
   if (!window_class_) {
-    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                                GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                            reinterpret_cast<LPCWSTR>(&Win32Window::WndProc),
-                            &instance_)) {
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                               GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           reinterpret_cast<LPCWSTR>(&Win32Window::WndProc),
+                           &instance_)) {
       RTC_LOG_GLE(LS_ERROR) << "GetModuleHandleEx failed";
       return false;
     }
 
     // Class not registered, register it.
-    WNDCLASSEXW wcex;
+    WNDCLASSEX wcex;
     memset(&wcex, 0, sizeof(wcex));
     wcex.cbSize = sizeof(wcex);
     wcex.hInstance = instance_;
     wcex.lpfnWndProc = &Win32Window::WndProc;
     wcex.lpszClassName = kWindowBaseClassName;
-    window_class_ = ::RegisterClassExW(&wcex);
+    window_class_ = ::RegisterClassEx(&wcex);
     if (!window_class_) {
       RTC_LOG_GLE(LS_ERROR) << "RegisterClassEx failed";
       return false;
     }
   }
-  wnd_ = ::CreateWindowExW(exstyle, kWindowBaseClassName, title, style, x, y,
-                           cx, cy, parent, nullptr, instance_, this);
+  wnd_ = ::CreateWindowEx(exstyle, kWindowBaseClassName, title, style, x, y, cx,
+                          cy, parent, nullptr, instance_, this);
   return (nullptr != wnd_);
 }
 

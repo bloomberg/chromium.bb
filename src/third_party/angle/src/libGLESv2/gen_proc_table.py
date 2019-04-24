@@ -5,7 +5,6 @@
 #
 # gen_proc_table.py:
 #  Code generation for entry point loading tables.
-#  NOTE: don't run this script directly. Run scripts/run_code_generation.py.
 
 # TODO(jmadill): Should be part of entry point generation.
 
@@ -56,51 +55,30 @@ size_t g_numProcs = {num_procs};
 sys.path.append('../libANGLE/renderer')
 import angle_format
 
-def main():
+json_data = angle_format.load_json(data_source_name)
 
-    # auto_script parameters.
-    if len(sys.argv) > 1:
-        inputs = [data_source_name]
-        outputs = [out_file_name]
+all_functions = {}
 
-        if sys.argv[1] == 'inputs':
-            print ','.join(inputs)
-        elif sys.argv[1] == 'outputs':
-            print ','.join(outputs)
+for description, functions in json_data.iteritems():
+    for function in functions:
+        if function.startswith("gl"):
+            all_functions[function] = "gl::" + function[2:]
+            # Special handling for EGL_ANGLE_explicit_context extension
+            if support_egl_ANGLE_explicit_context:
+                all_functions[function + "ContextANGLE"] = "gl::" + function[2:] + "ContextANGLE"
+        elif function.startswith("egl"):
+            all_functions[function] = "EGL_" + function[3:]
         else:
-            print('Invalid script parameters')
-            return 1
-        return 0
+            all_functions[function] = function
 
-    json_data = angle_format.load_json(data_source_name)
+proc_data = [('    {"%s", P(%s)}' % (func, angle_func)) for func, angle_func in sorted(all_functions.iteritems())]
 
-    all_functions = {}
-
-    for description, functions in json_data.iteritems():
-        for function in functions:
-            if function.startswith("gl"):
-                all_functions[function] = "gl::" + function[2:]
-                # Special handling for EGL_ANGLE_explicit_context extension
-                if support_egl_ANGLE_explicit_context:
-                    all_functions[function + "ContextANGLE"] = "gl::" + function[2:] + "ContextANGLE"
-            elif function.startswith("egl"):
-                all_functions[function] = "EGL_" + function[3:]
-            else:
-                all_functions[function] = function
-
-    proc_data = [('    {"%s", P(%s)}' % (func, angle_func)) for func, angle_func in sorted(all_functions.iteritems())]
-
-    with open(out_file_name, 'w') as out_file:
-        output_cpp = template_cpp.format(
-            script_name = sys.argv[0],
-            data_source_name = data_source_name,
-            copyright_year = date.today().year,
-            proc_data = ",\n".join(proc_data),
-            num_procs = len(proc_data))
-        out_file.write(output_cpp)
-        out_file.close()
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
+with open(out_file_name, 'wb') as out_file:
+    output_cpp = template_cpp.format(
+        script_name = sys.argv[0],
+        data_source_name = data_source_name,
+        copyright_year = date.today().year,
+        proc_data = ",\n".join(proc_data),
+        num_procs = len(proc_data))
+    out_file.write(output_cpp)
+    out_file.close()

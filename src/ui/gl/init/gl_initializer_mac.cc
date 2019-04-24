@@ -228,9 +228,6 @@ void InitializeDebugGLBindings() {
 
 void ShutdownGLPlatform() {
   ClearBindingsGL();
-#if BUILDFLAG(USE_EGL_ON_MAC)
-  ClearBindingsEGL();
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
 }
 
 }  // namespace init

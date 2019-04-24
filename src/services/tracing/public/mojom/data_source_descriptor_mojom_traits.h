@@ -22,9 +22,6 @@ class StructTraits<tracing::mojom::DataSourceRegistrationDataView,
   static const std::string& name(const perfetto::DataSourceDescriptor& src) {
     return src.name();
   }
-  static bool will_notify_on_start(const perfetto::DataSourceDescriptor& src) {
-    return src.will_notify_on_start();
-  }
   static bool will_notify_on_stop(const perfetto::DataSourceDescriptor& src) {
     return src.will_notify_on_stop();
   }

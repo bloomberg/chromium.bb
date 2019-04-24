@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -16,12 +15,11 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
-import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -41,7 +39,6 @@ import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
-import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -56,29 +53,22 @@ public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
-    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-    private static ChromeApplication sInstance;
+    private DiscardableReferencePool mReferencePool;
 
-    /** Lock on creation of sComponent. */
-    private static final Object sLock = new Object();
     @Nullable
-    private static volatile ChromeAppComponent sComponent;
+    private static ChromeAppComponent sComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        // These can't go in attachBaseContext because Context.getApplicationContext() (which they
-        // use under-the-hood) does not work until after it returns.
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
-        MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
     }
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        sInstance = this;
-        boolean isBrowserProcess = isBrowserProcess();
+        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
@@ -93,7 +83,6 @@ public class ChromeApplication extends Application {
             // (see ChildProcessService.java).
             CommandLineInitUtil.initCommandLine(
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
-            AppHooks.get().initCommandLine(CommandLine.getInstance());
 
             // Requires command-line flags.
             TraceEvent.maybeEnableEarlyTracing();
@@ -125,6 +114,8 @@ public class ChromeApplication extends Application {
         // these values are set before any crashes are reported.
         ModuleInstaller.updateCrashKeys();
 
+        MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
+
         if (!ContextUtils.isIsolatedProcess()) {
             // Incremental install disables process isolation, so things in this block will actually
             // be run for incremental apks, but not normal apks.
@@ -135,16 +126,11 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
-        JNIUtils.setClassLoader(getClassLoader());
     }
 
     private static Boolean shouldUseDebugFlags() {
         return ChromePreferenceManager.getInstance().readBoolean(
                 ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
-    }
-
-    private static boolean isBrowserProcess() {
-        return !ContextUtils.getProcessName().contains(":");
     }
 
     private static void updateMemoryPressurePolling(@ApplicationState int newState) {
@@ -201,8 +187,12 @@ public class ChromeApplication extends Application {
      * @return The DiscardableReferencePool for the application.
      */
     @MainDex
-    public static DiscardableReferencePool getReferencePool() {
-        return sInstance.mReferencePool;
+    public DiscardableReferencePool getReferencePool() {
+        ThreadUtils.assertOnUiThread();
+        if (mReferencePool == null) {
+            mReferencePool = new DiscardableReferencePool();
+        }
+        return mReferencePool;
     }
 
     @Override
@@ -232,23 +222,10 @@ public class ChromeApplication extends Application {
         });
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // TODO(huayinz): Add observer pattern for application configuration changes.
-        if (isBrowserProcess()) {
-            SystemNightModeMonitor.getInstance().onApplicationConfigurationChanged();
-        }
-    }
-
     /** Returns the application-scoped component. */
     public static ChromeAppComponent getComponent() {
         if (sComponent == null) {
-            synchronized (sLock) {
-                if (sComponent == null) {
-                    sComponent = createComponent();
-                }
-            }
+            sComponent = createComponent();
         }
         return sComponent;
     }

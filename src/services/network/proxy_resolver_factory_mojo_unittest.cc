@@ -671,33 +671,32 @@ TEST_F(ProxyResolverFactoryMojoTest,
   // When the ResolverRequest pipe is dropped, the ProxyResolverFactory
   // shouldn't notice, and should just continue to wait for a response on the
   // other pipe.
-  net::TestCompletionCallback create_callback;
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            proxy_resolver_factory_mojo_->CreateProxyResolver(
-                pac_script, &proxy_resolver_mojo_, create_callback.callback(),
-                &request));
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(
+      net::ERR_IO_PENDING,
+      proxy_resolver_factory_mojo_->CreateProxyResolver(
+          pac_script, &proxy_resolver_mojo_, callback.callback(), &request));
   EXPECT_TRUE(request);
   mock_proxy_resolver_factory_->WaitForNextRequest();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(create_callback.have_result());
+  EXPECT_FALSE(callback.have_result());
 
   // The client pipe reports success!
   mock_proxy_resolver_factory_->RespondToBlockedClientsWithResult(net::OK);
-  EXPECT_EQ(net::OK, create_callback.WaitForResult());
+  EXPECT_EQ(net::OK, callback.WaitForResult());
 
   // Proxy resolutions should fail with ERR_PAC_SCRIPT_TERMINATED, however. That
   // error should normally cause the ProxyResolutionService to destroy the
   // resolver.
   net::ProxyInfo results;
   std::unique_ptr<net::ProxyResolver::Request> pac_request;
-  net::TestCompletionCallback delete_callback;
   EXPECT_EQ(net::ERR_PAC_SCRIPT_TERMINATED,
-            delete_callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
                 GURL(kExampleUrl), &results,
                 base::BindOnce(
                     &ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
-                    base::Unretained(this), delete_callback.callback()),
+                    base::Unretained(this), callback.callback()),
                 &pac_request, net::NetLogWithSource())));
 }
 

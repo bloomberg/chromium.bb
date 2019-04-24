@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -30,15 +31,19 @@ GeolocationHandler::GeolocationHandler()
     : cellular_enabled_(false), wifi_enabled_(false), weak_ptr_factory_(this) {}
 
 GeolocationHandler::~GeolocationHandler() {
-  if (ShillManagerClient::Get())
-    ShillManagerClient::Get()->RemovePropertyChangedObserver(this);
+  ShillManagerClient* manager_client =
+      DBusThreadManager::Get()->GetShillManagerClient();
+  if (manager_client)
+    manager_client->RemovePropertyChangedObserver(this);
 }
 
 void GeolocationHandler::Init() {
-  ShillManagerClient::Get()->GetProperties(
+  ShillManagerClient* manager_client =
+      DBusThreadManager::Get()->GetShillManagerClient();
+  manager_client->GetProperties(
       base::Bind(&GeolocationHandler::ManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-  ShillManagerClient::Get()->AddPropertyChangedObserver(this);
+  manager_client->AddPropertyChangedObserver(this);
 }
 
 bool GeolocationHandler::GetWifiAccessPoints(
@@ -129,7 +134,7 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
 }
 
 void GeolocationHandler::RequestGeolocationObjects() {
-  ShillManagerClient::Get()->GetNetworksForGeolocation(
+  DBusThreadManager::Get()->GetShillManagerClient()->GetNetworksForGeolocation(
       base::Bind(&GeolocationHandler::GeolocationCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }

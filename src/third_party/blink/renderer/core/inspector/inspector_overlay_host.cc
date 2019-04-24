@@ -30,20 +30,25 @@
 
 namespace blink {
 
-InspectorOverlayHost::InspectorOverlayHost(Delegate* delegate)
-    : delegate_(delegate) {}
+InspectorOverlayHost::InspectorOverlayHost(Listener* listener)
+    : listener_(listener) {}
 
-void InspectorOverlayHost::send(const String& message) {
-  if (delegate_)
-    delegate_->Dispatch(message);
+void InspectorOverlayHost::resume() {
+  if (listener_)
+    listener_->OverlayResumed();
 }
 
-void InspectorOverlayHost::ClearDelegate() {
-  delegate_.Clear();
+void InspectorOverlayHost::stepOver() {
+  if (listener_)
+    listener_->OverlaySteppedOver();
+}
+
+void InspectorOverlayHost::ClearListener() {
+  listener_.Clear();
 }
 
 void InspectorOverlayHost::Trace(blink::Visitor* visitor) {
-  visitor->Trace(delegate_);
+  visitor->Trace(listener_);
   ScriptWrappable::Trace(visitor);
 }
 

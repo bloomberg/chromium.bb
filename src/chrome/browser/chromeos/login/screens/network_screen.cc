@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/grit/chromium_strings.h"
@@ -36,9 +37,10 @@ NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
       manager->GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 }
 
-NetworkScreen::NetworkScreen(NetworkScreenView* view,
+NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
+                             NetworkScreenView* view,
                              const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_NETWORK),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_NETWORK),
       view_(view),
       exit_callback_(exit_callback),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()),

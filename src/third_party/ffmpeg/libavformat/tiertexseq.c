@@ -60,7 +60,7 @@ typedef struct SeqDemuxContext {
 } SeqDemuxContext;
 
 
-static int seq_probe(const AVProbeData *p)
+static int seq_probe(AVProbeData *p)
 {
     int i;
 

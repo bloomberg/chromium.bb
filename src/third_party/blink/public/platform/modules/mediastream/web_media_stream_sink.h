@@ -13,14 +13,15 @@ namespace blink {
 
 // MediaStreamSink is the base interface for MediaStreamAudioSink and
 // MediaStreamVideoSink. It allows an implementation to receive notifications
-// about state changes on a WebMediaStreamSource object or such an
-// object underlying a WebMediaStreamTrack.
+// about state changes on a blink::WebMediaStreamSource object or such an
+// object underlying a blink::WebMediaStreamTrack.
 class BLINK_PLATFORM_EXPORT WebMediaStreamSink {
  public:
-  virtual void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) {}
+  virtual void OnReadyStateChanged(
+      blink::WebMediaStreamSource::ReadyState state) {}
   virtual void OnEnabledChanged(bool enabled) {}
   virtual void OnContentHintChanged(
-      WebMediaStreamTrack::ContentHintType content_hint) {}
+      blink::WebMediaStreamTrack::ContentHintType content_hint) {}
 
  protected:
   virtual ~WebMediaStreamSink() {}

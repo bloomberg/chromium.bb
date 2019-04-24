@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/pref_names.h"
 
 namespace {
 
@@ -29,12 +30,12 @@ void PrepareLanguageModels(ios::ChromeBrowserState* const chrome_state,
   // Create all of the models required based on the state of experiments. There
   // may be more than one, the primary one is set below.
   if (override_model_mode == language::OverrideLanguageModel::HEURISTIC) {
-    manager->AddModel(language::LanguageModelManager::ModelType::HEURISTIC,
-                      std::make_unique<language::HeuristicLanguageModel>(
-                          chrome_state->GetPrefs(),
-                          GetApplicationContext()->GetApplicationLocale(),
-                          language::prefs::kAcceptLanguages,
-                          language::prefs::kUserLanguageProfile));
+    manager->AddModel(
+        language::LanguageModelManager::ModelType::HEURISTIC,
+        std::make_unique<language::HeuristicLanguageModel>(
+            chrome_state->GetPrefs(),
+            GetApplicationContext()->GetApplicationLocale(),
+            prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile));
   }
 
   // language::OverrideLanguageModel::GEO is not supported on iOS yet.
@@ -44,7 +45,7 @@ void PrepareLanguageModels(ios::ChromeBrowserState* const chrome_state,
                       std::make_unique<language::BaselineLanguageModel>(
                           chrome_state->GetPrefs(),
                           GetApplicationContext()->GetApplicationLocale(),
-                          language::prefs::kAcceptLanguages));
+                          prefs::kAcceptLanguages));
   }
 
   // Set the primary Language Model to use based on the state of experiments.

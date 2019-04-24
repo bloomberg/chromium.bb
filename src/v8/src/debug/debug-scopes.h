@@ -128,8 +128,8 @@ class ScopeIterator {
 
   void UnwrapEvaluationContext();
 
-  using Visitor =
-      std::function<bool(Handle<String> name, Handle<Object> value)>;
+  typedef std::function<bool(Handle<String> name, Handle<Object> value)>
+      Visitor;
 
   Handle<JSObject> WithContextExtension();
 

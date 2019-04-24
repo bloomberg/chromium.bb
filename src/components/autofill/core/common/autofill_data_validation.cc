@@ -39,7 +39,8 @@ bool IsValidFormFieldData(const FormFieldData& field) {
 }
 
 bool IsValidFormData(const FormData& form) {
-  if (!IsValidString16(form.name) || !IsValidGURL(form.url) ||
+  if (!IsValidString16(form.name) ||
+      !IsValidGURL(form.origin) ||
       !IsValidGURL(form.action))
     return false;
 

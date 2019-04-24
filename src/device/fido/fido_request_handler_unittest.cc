@@ -16,7 +16,6 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
-#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_request_handler.h"
 #include "device/fido/fido_task.h"
 #include "device/fido/fido_test_data.h"
@@ -127,15 +126,11 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override {}
 
-  bool SupportsPIN() const override { return false; }
-
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override {
     NOTREACHED();
   }
-
-  void SetMightCreateResidentCredential(bool v) override {}
 
   void FinishCollectPIN() override { NOTREACHED(); }
 
@@ -156,18 +151,10 @@ class FakeFidoTask : public FidoTask {
       : FidoTask(device), callback_(std::move(callback)), weak_factory_(this) {}
   ~FakeFidoTask() override = default;
 
-  void Cancel() override {
-    if (token_) {
-      device()->Cancel(*token_);
-      token_.reset();
-    }
-  }
-
   void StartTask() override {
-    token_ = device()->DeviceTransact(
-        std::vector<uint8_t>(),
-        base::BindOnce(&FakeFidoTask::CompletionCallback,
-                       weak_factory_.GetWeakPtr()));
+    device()->DeviceTransact(std::vector<uint8_t>(),
+                             base::BindOnce(&FakeFidoTask::CompletionCallback,
+                                            weak_factory_.GetWeakPtr()));
   }
 
   void CompletionCallback(
@@ -197,7 +184,6 @@ class FakeFidoTask : public FidoTask {
   }
 
  private:
-  base::Optional<FidoDevice::CancelToken> token_;
   FakeTaskCallback callback_;
   base::WeakPtrFactory<FakeFidoTask> weak_factory_;
 };
@@ -229,29 +215,11 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
     // at this point.
     device_authenticator->SetTaskForTesting(std::make_unique<FakeFidoTask>(
         device_authenticator->device(),
-        base::BindOnce(&FakeFidoRequestHandler::HandleResponse,
+        base::BindOnce(&FakeFidoRequestHandler::OnAuthenticatorResponse,
                        weak_factory_.GetWeakPtr(), authenticator)));
   }
 
  private:
-  void HandleResponse(FidoAuthenticator* authenticator,
-                      CtapDeviceResponseCode status,
-                      base::Optional<std::vector<uint8_t>> response) {
-    const base::Optional<FidoReturnCode> maybe_result =
-        ConvertDeviceResponseCodeToFidoReturnCode(status);
-    if (!maybe_result) {
-      FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
-                      << " from " << authenticator->GetDisplayName();
-      active_authenticators().erase(authenticator->GetId());
-      return;
-    }
-
-    if (!is_complete()) {
-      CancelActiveAuthenticators(authenticator->GetId());
-    }
-    OnAuthenticatorResponse(authenticator, *maybe_result, std::move(response));
-  }
-
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_;
 };
 
@@ -354,14 +322,14 @@ TEST_F(FidoRequestHandlerTest, TestAuthenticatorHandlerReset) {
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  EXPECT_CALL(*device0, Cancel(_));
+  EXPECT_CALL(*device0, Cancel());
   auto device1 = std::make_unique<MockFidoDevice>();
   device1->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo,
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
   device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  EXPECT_CALL(*device1, Cancel(_));
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -383,7 +351,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   // Device is unresponsive and cancel command is invoked afterwards.
   device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  EXPECT_CALL(*device0, Cancel(_));
+  EXPECT_CALL(*device0, Cancel());
 
   // Represents a connected device that response successfully.
   auto device1 = std::make_unique<MockFidoDevice>();
@@ -431,7 +399,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
                                        CreateFakeSuccessDeviceResponse(),
                                        base::TimeDelta::FromMicroseconds(10));
   // Cancel command is invoked after receiving response from |device0|.
-  EXPECT_CALL(*device1, Cancel(_));
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -483,7 +451,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   device2->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeDeviceProcesssingError(),
                                        base::TimeDelta::FromMicroseconds(10));
-  EXPECT_CALL(*device2, Cancel(_));
+  EXPECT_CALL(*device2, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -514,7 +482,7 @@ TEST_F(FidoRequestHandlerTest,
 
   auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  EXPECT_CALL(*device1, Cancel(_));
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -540,7 +508,7 @@ TEST_F(FidoRequestHandlerTest,
 
   auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  EXPECT_CALL(*device1, Cancel(_));
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));

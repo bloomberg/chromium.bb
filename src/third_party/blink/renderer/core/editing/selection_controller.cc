@@ -60,6 +60,9 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
+SelectionController* SelectionController::Create(LocalFrame& frame) {
+  return MakeGarbageCollected<SelectionController>(frame);
+}
 
 SelectionController::SelectionController(LocalFrame& frame)
     : frame_(&frame),
@@ -481,9 +484,9 @@ void SelectionController::UpdateSelectionForMouseDrag(
   if (!target)
     return;
 
-  // TODO(editing-dev): Use of UpdateStyleAndLayout
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   const PositionWithAffinity& raw_target_position =
       Selection().SelectionHasFocus()
@@ -543,17 +546,10 @@ void SelectionController::UpdateSelectionForMouseDrag(
                                          Selection().Granularity())
           : SelectionInFlatTree::Builder().Collapse(adjusted_position).Build();
 
-  // When |adjusted_selection| is caret, it's already canonical. No need to re-
-  // canonicalize it.
-  const SelectionInFlatTree new_visible_selection =
-      adjusted_selection.IsRange()
-          ? CreateVisibleSelection(adjusted_selection).AsSelection()
-          : adjusted_selection;
-
   const bool selection_is_directional =
       should_extend_selection ? Selection().IsDirectional() : false;
   SetNonDirectionalSelectionIfNeeded(
-      new_visible_selection,
+      CreateVisibleSelection(adjusted_selection).AsSelection(),
       SetSelectionOptions::Builder()
           .SetGranularity(Selection().Granularity())
           .SetIsDirectional(selection_is_directional)
@@ -579,9 +575,9 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
   if (!this->Selection().IsAvailable())
     return false;
 
-  // TODO(editing-dev): Use of UpdateStyleAndLayout
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const SelectionInFlatTree visible_selection =
       CreateVisibleSelection(selection).AsSelection();
 
@@ -1071,9 +1067,9 @@ bool SelectionController::HandleMouseReleaseEvent(
       drag_start_pos == FlooredIntPoint(event.Event().PositionInRootFrame()) &&
       Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange() &&
       event.Event().button != WebPointerProperties::Button::kRight) {
-    // TODO(editing-dev): Use of UpdateStyleAndLayout
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    frame_->GetDocument()->UpdateStyleAndLayout();
+    frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     SelectionInFlatTree::Builder builder;
     Node* node = event.InnerNode();
@@ -1234,9 +1230,9 @@ void SelectionController::SendContextMenuEvent(
 
 void SelectionController::PassMousePressEventToSubframe(
     const MouseEventWithHitTestResults& mev) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // If we're clicking into a frame that is selected, the frame will appear
   // greyed out even though we're clicking on the selection.  This looks

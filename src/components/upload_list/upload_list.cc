@@ -51,26 +51,15 @@ UploadList::~UploadList() = default;
 
 void UploadList::Load(base::OnceClosure callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  load_callback_ = std::move(callback);
+  callback_ = std::move(callback);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, LoadingTaskTraits(),
       base::Bind(&UploadList::LoadUploadList, this),
       base::Bind(&UploadList::OnLoadComplete, this));
 }
 
-void UploadList::Clear(const base::Time& begin,
-                       const base::Time& end,
-                       base::OnceClosure callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  clear_callback_ = std::move(callback);
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, LoadingTaskTraits(),
-      base::BindOnce(&UploadList::ClearUploadList, this, begin, end),
-      base::BindOnce(&UploadList::OnClearComplete, this));
-}
-
-void UploadList::CancelLoadCallback() {
-  load_callback_.Reset();
+void UploadList::CancelCallback() {
+  callback_.Reset();
 }
 
 void UploadList::RequestSingleUploadAsync(const std::string& local_id) {
@@ -96,11 +85,6 @@ void UploadList::RequestSingleUpload(const std::string& local_id) {
 
 void UploadList::OnLoadComplete(const std::vector<UploadInfo>& uploads) {
   uploads_ = uploads;
-  if (!load_callback_.is_null())
-    std::move(load_callback_).Run();
-}
-
-void UploadList::OnClearComplete() {
-  if (!clear_callback_.is_null())
-    std::move(clear_callback_).Run();
+  if (!callback_.is_null())
+    std::move(callback_).Run();
 }

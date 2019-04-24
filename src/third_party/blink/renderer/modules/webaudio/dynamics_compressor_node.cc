@@ -156,7 +156,7 @@ void DynamicsCompressorHandler::SetChannelCount(
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange<uint32_t>(
+        ExceptionMessages::IndexOutsideRange<unsigned long>(
             "channelCount", channel_count, 1,
             ExceptionMessages::kInclusiveBound, 2,
             ExceptionMessages::kInclusiveBound));

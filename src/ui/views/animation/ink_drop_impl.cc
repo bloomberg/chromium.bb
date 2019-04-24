@@ -19,29 +19,29 @@ namespace {
 
 // The duration, in milliseconds for the highlight state fade in/out animations
 // when it is triggered by a hover changed event.
-constexpr int kHighlightFadeInOnHoverChangeDurationMs = 250;
-constexpr int kHighlightFadeOutOnHoverChangeDurationMs = 250;
+const int kHighlightFadeInOnHoverChangeDurationMs = 250;
+const int kHighlightFadeOutOnHoverChangeDurationMs = 250;
 
 // The duration, in milliseconds for the highlight state fade in/out animations
 // when it is triggered by a focus changed event.
-constexpr int kHighlightFadeInOnFocusChangeDurationMs = 0;
-constexpr int kHighlightFadeOutOnFocusChangeDurationMs = 0;
+const int kHighlightFadeInOnFocusChangeDurationMs = 0;
+const int kHighlightFadeOutOnFocusChangeDurationMs = 0;
 
 // The duration, in milliseconds, for showing/hiding the highlight when
 // triggered by ripple visibility changes for the HIDE_ON_RIPPLE
 // AutoHighlightMode.
-constexpr int kHighlightFadeInOnRippleHidingDurationMs = 250;
-constexpr int kHighlightFadeOutOnRippleShowingDurationMs = 120;
+const int kHighlightFadeInOnRippleHidingDurationMs = 250;
+const int kHighlightFadeOutOnRippleShowingDurationMs = 120;
 
 // The duration, in milliseconds, for showing/hiding the highlight when
 // triggered by ripple visibility changes for the SHOW_ON_RIPPLE
 // AutoHighlightMode.
-constexpr int kHighlightFadeInOnRippleShowingDurationMs = 250;
-constexpr int kHighlightFadeOutOnRippleHidingDurationMs = 120;
+const int kHighlightFadeInOnRippleShowingDurationMs = 250;
+const int kHighlightFadeOutOnRippleHidingDurationMs = 120;
 
 // The amount of time in milliseconds that |highlight_| should delay after a
 // ripple animation before fading in, for highlight due to mouse hover.
-constexpr int kHoverFadeInAfterRippleDelayMs = 1000;
+const int kHoverFadeInAfterRippleDelayMs = 1000;
 
 // Returns true if an ink drop with the given |ink_drop_state| should
 // automatically transition to the InkDropState::HIDDEN state.
@@ -380,13 +380,13 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::AnimationEnded(
 
 void InkDropImpl::HideHighlightOnRippleHiddenState::
     StartHighlightAfterRippleTimer() {
-  highlight_after_ripple_timer_ = std::make_unique<base::OneShotTimer>();
+  highlight_after_ripple_timer_.reset(new base::OneShotTimer);
   highlight_after_ripple_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kHoverFadeInAfterRippleDelayMs),
-      base::BindOnce(&InkDropImpl::HideHighlightOnRippleHiddenState::
-                         HighlightAfterRippleTimerFired,
-                     base::Unretained(this)));
+      base::Bind(&InkDropImpl::HideHighlightOnRippleHiddenState::
+                     HighlightAfterRippleTimerFired,
+                 base::Unretained(this)));
 }
 
 void InkDropImpl::HideHighlightOnRippleHiddenState::

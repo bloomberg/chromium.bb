@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/default_task_queue_factory.h"
 #include "api/test/mock_frame_encryptor.h"
 #include "audio/audio_send_stream.h"
 #include "audio/audio_state.h"
@@ -28,7 +27,7 @@
 #include "modules/rtp_rtcp/mocks/mock_rtcp_bandwidth_observer.h"
 #include "modules/rtp_rtcp/mocks/mock_rtcp_rtt_stats.h"
 #include "modules/rtp_rtcp/mocks/mock_rtp_rtcp.h"
-#include "rtc_base/task_queue_for_test.h"
+#include "rtc_base/task_queue.h"
 #include "system_wrappers/include/clock.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
@@ -39,13 +38,13 @@ namespace webrtc {
 namespace test {
 namespace {
 
-using ::testing::_;
-using ::testing::Eq;
-using ::testing::Field;
-using ::testing::Invoke;
-using ::testing::Ne;
-using ::testing::Return;
-using ::testing::StrEq;
+using testing::_;
+using testing::Eq;
+using testing::Ne;
+using testing::Field;
+using testing::Invoke;
+using testing::Return;
+using testing::StrEq;
 
 const uint32_t kSsrc = 1234;
 const char* kCName = "foo_name";
@@ -87,7 +86,7 @@ std::unique_ptr<MockAudioEncoder> SetupAudioEncoderMock(
   for (const auto& spec : kCodecSpecs) {
     if (format == spec.format) {
       std::unique_ptr<MockAudioEncoder> encoder(
-          new ::testing::NiceMock<MockAudioEncoder>());
+          new testing::NiceMock<MockAudioEncoder>());
       ON_CALL(*encoder.get(), SampleRateHz())
           .WillByDefault(Return(spec.info.sample_rate_hz));
       ON_CALL(*encoder.get(), NumChannels())
@@ -128,15 +127,12 @@ rtc::scoped_refptr<MockAudioEncoderFactory> SetupEncoderFactoryMock() {
 struct ConfigHelper {
   ConfigHelper(bool audio_bwe_enabled, bool expect_set_encoder_call)
       : clock_(1000000),
-        task_queue_factory_(CreateDefaultTaskQueueFactory()),
         stream_config_(/*send_transport=*/nullptr, /*media_transport=*/nullptr),
         audio_processing_(new rtc::RefCountedObject<MockAudioProcessing>()),
         bitrate_allocator_(&clock_, &limit_observer_),
-        worker_queue_(task_queue_factory_->CreateTaskQueue(
-            "ConfigHelper_worker_queue",
-            TaskQueueFactory::Priority::NORMAL)),
+        worker_queue_("ConfigHelper_worker_queue"),
         audio_encoder_(nullptr) {
-    using ::testing::Invoke;
+    using testing::Invoke;
 
     AudioState::Config config;
     config.audio_mixer = AudioMixerImpl::Create();
@@ -165,13 +161,11 @@ struct ConfigHelper {
   }
 
   std::unique_ptr<internal::AudioSendStream> CreateAudioSendStream() {
-    EXPECT_CALL(rtp_transport_, GetWorkerQueue())
-        .WillRepeatedly(Return(&worker_queue_));
     return std::unique_ptr<internal::AudioSendStream>(
         new internal::AudioSendStream(
             Clock::GetRealTimeClock(), stream_config_, audio_state_,
-            task_queue_factory_.get(), &rtp_transport_, &bitrate_allocator_,
-            &event_log_, &rtcp_rtt_stats_, absl::nullopt,
+            &worker_queue_, &rtp_transport_, &bitrate_allocator_, &event_log_,
+            &rtcp_rtt_stats_, absl::nullopt,
             std::unique_ptr<voe::ChannelSendInterface>(channel_send_)));
   }
 
@@ -191,7 +185,7 @@ struct ConfigHelper {
 
   void SetupDefaultChannelSend(bool audio_bwe_enabled) {
     EXPECT_TRUE(channel_send_ == nullptr);
-    channel_send_ = new ::testing::StrictMock<MockChannelSend>();
+    channel_send_ = new testing::StrictMock<MockChannelSend>();
     EXPECT_CALL(*channel_send_, GetRtpRtcp()).WillRepeatedly(Invoke([this]() {
       return &this->rtp_rtcp_;
     }));
@@ -246,7 +240,8 @@ struct ConfigHelper {
     EXPECT_TRUE(channel_send_);
     EXPECT_CALL(*channel_send_, SetSendTelephoneEventPayloadType(
                                     kTelephoneEventPayloadType,
-                                    kTelephoneEventPayloadFrequency));
+                                    kTelephoneEventPayloadFrequency))
+        .WillOnce(Return(true));
     EXPECT_CALL(
         *channel_send_,
         SendTelephoneEventOutband(kTelephoneEventCode, kTelephoneEventDuration))
@@ -254,9 +249,9 @@ struct ConfigHelper {
   }
 
   void SetupMockForGetStats() {
-    using ::testing::DoAll;
-    using ::testing::SetArgPointee;
-    using ::testing::SetArgReferee;
+    using testing::DoAll;
+    using testing::SetArgPointee;
+    using testing::SetArgReferee;
 
     std::vector<ReportBlock> report_blocks;
     webrtc::ReportBlock block = kReportBlock;
@@ -292,22 +287,21 @@ struct ConfigHelper {
 
  private:
   SimulatedClock clock_;
-  std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   rtc::scoped_refptr<AudioState> audio_state_;
   AudioSendStream::Config stream_config_;
-  ::testing::StrictMock<MockChannelSend>* channel_send_ = nullptr;
+  testing::StrictMock<MockChannelSend>* channel_send_ = nullptr;
   rtc::scoped_refptr<MockAudioProcessing> audio_processing_;
   AudioProcessingStats audio_processing_stats_;
-  ::testing::StrictMock<MockRtcpBandwidthObserver> bandwidth_observer_;
-  ::testing::NiceMock<MockRtcEventLog> event_log_;
-  ::testing::NiceMock<MockRtpTransportControllerSend> rtp_transport_;
-  ::testing::NiceMock<MockRtpRtcp> rtp_rtcp_;
+  testing::StrictMock<MockRtcpBandwidthObserver> bandwidth_observer_;
+  testing::NiceMock<MockRtcEventLog> event_log_;
+  testing::NiceMock<MockRtpTransportControllerSend> rtp_transport_;
+  testing::NiceMock<MockRtpRtcp> rtp_rtcp_;
   MockRtcpRttStats rtcp_rtt_stats_;
-  ::testing::NiceMock<MockLimitObserver> limit_observer_;
+  testing::NiceMock<MockLimitObserver> limit_observer_;
   BitrateAllocator bitrate_allocator_;
   // |worker_queue| is defined last to ensure all pending tasks are cancelled
   // and deleted before any other members.
-  TaskQueueForTest worker_queue_;
+  rtc::TaskQueue worker_queue_;
   std::unique_ptr<AudioEncoder> audio_encoder_;
 };
 }  // namespace
@@ -457,7 +451,6 @@ TEST(AudioSendStreamTest, SendCodecCanApplyVad) {
             stolen_encoder = std::move(*encoder);
             return true;
           }));
-  EXPECT_CALL(*helper.channel_send(), RegisterCngPayloadType(105, 8000));
 
   auto send_stream = helper.CreateAudioSendStream();
 
@@ -507,9 +500,7 @@ TEST(AudioSendStreamTest, DontRecreateEncoder) {
   // to ConfigHelper (say to WillRepeatedly) would silently make this test
   // useless.
   EXPECT_CALL(*helper.channel_send(), SetEncoderForMock(_, _))
-      .WillOnce(Return());
-
-  EXPECT_CALL(*helper.channel_send(), RegisterCngPayloadType(105, 8000));
+      .WillOnce(Return(true));
 
   helper.config().send_codec_spec =
       AudioSendStream::Config::SendCodecSpec(9, kG722Format);
@@ -537,7 +528,7 @@ TEST(AudioSendStreamTest, ReconfigureTransportCcResetsFirst) {
   }
 
   // CallEncoder will be called to re-set overhead.
-  EXPECT_CALL(*helper.channel_send(), CallEncoder(::testing::_)).Times(1);
+  EXPECT_CALL(*helper.channel_send(), CallEncoder(testing::_)).Times(1);
 
   send_stream->Reconfigure(new_config);
 }
@@ -548,7 +539,7 @@ TEST(AudioSendStreamTest, OnTransportOverheadChanged) {
   auto new_config = helper.config();
 
   // CallEncoder will be called on overhead change.
-  EXPECT_CALL(*helper.channel_send(), CallEncoder(::testing::_)).Times(1);
+  EXPECT_CALL(*helper.channel_send(), CallEncoder(testing::_)).Times(1);
 
   const size_t transport_overhead_per_packet_bytes = 333;
   send_stream->SetTransportOverhead(transport_overhead_per_packet_bytes);
@@ -563,7 +554,7 @@ TEST(AudioSendStreamTest, OnAudioOverheadChanged) {
   auto new_config = helper.config();
 
   // CallEncoder will be called on overhead change.
-  EXPECT_CALL(*helper.channel_send(), CallEncoder(::testing::_)).Times(1);
+  EXPECT_CALL(*helper.channel_send(), CallEncoder(testing::_)).Times(1);
 
   const size_t audio_overhead_per_packet_bytes = 555;
   send_stream->OnOverheadChanged(audio_overhead_per_packet_bytes);
@@ -577,7 +568,7 @@ TEST(AudioSendStreamTest, OnAudioAndTransportOverheadChanged) {
   auto new_config = helper.config();
 
   // CallEncoder will be called when each of overhead changes.
-  EXPECT_CALL(*helper.channel_send(), CallEncoder(::testing::_)).Times(2);
+  EXPECT_CALL(*helper.channel_send(), CallEncoder(testing::_)).Times(2);
 
   const size_t transport_overhead_per_packet_bytes = 333;
   send_stream->SetTransportOverhead(transport_overhead_per_packet_bytes);

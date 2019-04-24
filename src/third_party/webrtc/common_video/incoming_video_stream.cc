@@ -31,7 +31,7 @@ IncomingVideoStream::IncomingVideoStream(
           TaskQueueFactory::Priority::HIGH)) {}
 
 IncomingVideoStream::~IncomingVideoStream() {
-  RTC_DCHECK(main_thread_checker_.IsCurrent());
+  RTC_DCHECK(main_thread_checker_.CalledOnValidThread());
 }
 
 void IncomingVideoStream::OnFrame(const VideoFrame& video_frame) {

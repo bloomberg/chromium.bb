@@ -5,13 +5,9 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 
 #include "base/location.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/metrics_hashes.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/install_static/install_details.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 typedef metrics::SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
@@ -21,7 +17,7 @@ namespace {
 // Helper function for checking if this is an official build. Used instead of
 // the macro to allow checking for successful code compilation on non-official
 // builds.
-bool IsGoogleChromeBuild() {
+bool IsOfficialBuild() {
 #if defined(GOOGLE_CHROME_BUILD)
   return true;
 #else
@@ -53,7 +49,7 @@ GoogleUpdateMetricsProviderWin::~GoogleUpdateMetricsProviderWin() {
 
 void GoogleUpdateMetricsProviderWin::AsyncInit(
     const base::Closure& done_callback) {
-  if (!IsGoogleChromeBuild()) {
+  if (!IsOfficialBuild()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, done_callback);
     return;
   }
@@ -69,16 +65,9 @@ void GoogleUpdateMetricsProviderWin::AsyncInit(
 
 void GoogleUpdateMetricsProviderWin::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
-  // Do nothing for chromium builds.
-  if (!IsGoogleChromeBuild())
+  if (!IsOfficialBuild())
     return;
-  // Convert wstring to string.
-  std::string update_cohort_name = base::WideToUTF8(
-      install_static::InstallDetails::Get().update_cohort_name());
-  // TODO(nikunjb): Once update_cohort_name is added to system profile
-  // update the code here.
-  base::UmaHistogramSparse("GoogleUpdate.InstallDetails.UpdateCohort",
-                           base::HashMetricName(update_cohort_name));
+
   metrics::SystemProfileProto::GoogleUpdate* google_update =
       system_profile_proto->mutable_google_update();
 
@@ -118,7 +107,7 @@ GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics
 GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking() {
   GoogleUpdateMetrics google_update_metrics;
 
-  if (!IsGoogleChromeBuild())
+  if (!IsOfficialBuild())
     return google_update_metrics;
 
   const bool is_system_install = GoogleUpdateSettings::IsSystemInstall();

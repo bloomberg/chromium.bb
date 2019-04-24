@@ -33,7 +33,7 @@ typedef struct ASSContext {
     unsigned readorder;
 } ASSContext;
 
-static int ass_probe(const AVProbeData *p)
+static int ass_probe(AVProbeData *p)
 {
     char buf[13];
     FFTextReader tr;

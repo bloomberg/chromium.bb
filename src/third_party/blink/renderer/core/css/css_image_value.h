@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -117,10 +116,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   mutable Member<StyleImage> cached_image_;
 };
 
-template <>
-struct DowncastTraits<CSSImageValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsImageValue(); }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, IsImageValue());
 
 }  // namespace blink
 

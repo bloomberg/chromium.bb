@@ -7,18 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-namespace web {
-class BrowsingDataRemover;
-}
-
 // Protocol used to observe the BrowsingDataRemover.
 @protocol BrowsingDataRemoverObserver
-
-// Called when the |dataRemover| is about to remove browsing data.
-- (void)willRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover;
-
-// Called when the |dataRemover| has finished removing browsing data.
-- (void)didRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover;
 
 @end
 

@@ -53,8 +53,7 @@ class ExceptionHandlerClient {
   void SetCanSetPtracer(bool can_set_ptracer);
 
  private:
-  int SendCrashDumpRequest(const ClientInformation& info,
-                           VMAddress stack_pointer);
+  int SendCrashDumpRequest(const ClientInformation& info);
   int WaitForCrashDumpComplete();
 
   int server_sock_;

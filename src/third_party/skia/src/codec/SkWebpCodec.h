@@ -12,7 +12,6 @@
 #include "SkEncodedImageFormat.h"
 #include "SkFrameHolder.h"
 #include "SkImageInfo.h"
-#include "SkScalingCodec.h"
 #include "SkTypes.h"
 
 #include <vector>
@@ -23,7 +22,7 @@ extern "C" {
     void WebPDemuxDelete(WebPDemuxer* dmux);
 }
 
-class SkWebpCodec final : public SkScalingCodec {
+class SkWebpCodec final : public SkCodec {
 public:
     // Assumes IsWebp was called and returned true.
     static std::unique_ptr<SkCodec> MakeFromStream(std::unique_ptr<SkStream>, Result*);
@@ -31,6 +30,10 @@ public:
 protected:
     Result onGetPixels(const SkImageInfo&, void*, size_t, const Options&, int*) override;
     SkEncodedImageFormat onGetEncodedFormat() const override { return SkEncodedImageFormat::kWEBP; }
+
+    SkISize onGetScaledDimensions(float desiredScale) const override;
+
+    bool onDimensionsSupported(const SkISize&) override;
 
     bool onGetValidSubset(SkIRect* /* desiredSubset */) const override;
 
@@ -99,6 +102,6 @@ private:
     // succeed.
     bool        fFailed;
 
-    typedef SkScalingCodec INHERITED;
+    typedef SkCodec INHERITED;
 };
 #endif // SkWebpCodec_DEFINED

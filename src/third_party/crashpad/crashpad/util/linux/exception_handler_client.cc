@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "util/file/file_io.h"
 #include "util/linux/ptrace_broker.h"
-#include "util/misc/from_pointer_cast.h"
 #include "util/posix/signals.h"
 
 namespace crashpad {
@@ -36,9 +35,7 @@ ExceptionHandlerClient::ExceptionHandlerClient(int sock)
 ExceptionHandlerClient::~ExceptionHandlerClient() = default;
 
 int ExceptionHandlerClient::RequestCrashDump(const ClientInformation& info) {
-  VMAddress sp = FromPointerCast<VMAddress>(&sp);
-
-  int status = SendCrashDumpRequest(info, sp);
+  int status = SendCrashDumpRequest(info);
   if (status != 0) {
     return status;
   }
@@ -64,11 +61,10 @@ void ExceptionHandlerClient::SetCanSetPtracer(bool can_set_ptracer) {
   can_set_ptracer_ = can_set_ptracer;
 }
 
-int ExceptionHandlerClient::SendCrashDumpRequest(const ClientInformation& info,
-                                                 VMAddress stack_pointer) {
+int ExceptionHandlerClient::SendCrashDumpRequest(
+    const ClientInformation& info) {
   ClientToServerMessage message;
   message.type = ClientToServerMessage::kCrashDumpRequest;
-  message.requesting_thread_stack_address = stack_pointer;
   message.client_info = info;
 
   iovec iov;

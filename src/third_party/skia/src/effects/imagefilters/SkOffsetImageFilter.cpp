@@ -6,6 +6,7 @@
  */
 
 #include "SkOffsetImageFilter.h"
+#include "SkColorSpaceXformer.h"
 #include "SkCanvas.h"
 #include "SkImageFilterPriv.h"
 #include "SkMatrix.h"
@@ -76,6 +77,17 @@ sk_sp<SkSpecialImage> SkOffsetImageFilter::onFilterImage(SkSpecialImage* source,
         offset->fY = bounds.fTop;
         return surf->makeImageSnapshot();
     }
+}
+
+sk_sp<SkImageFilter> SkOffsetImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
+    SkASSERT(1 == this->countInputs());
+
+    auto input = xformer->apply(this->getInput(0));
+    if (input.get() != this->getInput(0)) {
+        return SkOffsetImageFilter::Make(fOffset.fX, fOffset.fY, std::move(input),
+                                         this->getCropRectIfSet());
+    }
+    return this->refMe();
 }
 
 SkRect SkOffsetImageFilter::computeFastBounds(const SkRect& src) const {

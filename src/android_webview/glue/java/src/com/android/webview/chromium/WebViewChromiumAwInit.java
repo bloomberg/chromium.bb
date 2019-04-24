@@ -39,7 +39,6 @@ import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
-import org.chromium.base.JNIUtils;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -134,8 +133,6 @@ public class WebViewChromiumAwInit {
             }
 
             final Context context = ContextUtils.getApplicationContext();
-
-            JNIUtils.setClassLoader(WebViewChromiumAwInit.class.getClassLoader());
 
             // We are rewriting Java resources in the background.
             // NOTE: Any reference to Java resources will cause a crash.

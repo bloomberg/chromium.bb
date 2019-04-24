@@ -12,16 +12,17 @@ import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -29,8 +30,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -42,10 +41,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
@@ -252,10 +247,17 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, addBillingAddress},
                 mPaymentRequestTestRule.getReadyToEdit());
-        mPaymentRequestTestRule.setTextInEditorAndWait(
-                new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy", "Mountain View", "CA",
-                        "94043", "650-253-0000"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy", "Mountain View", "CA",
+                            "94043", "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        } else {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Bob", "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043",
+                            "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        }
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
@@ -267,9 +269,15 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"5454545454545454", "12", "Bob", "Google", "1600 Amphitheatre Pkwy",
-                        "Mountain View", "CA", "94043", "+16502530000"});
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            mPaymentRequestTestRule.expectResultContains(new String[] {"5454545454545454", "12",
+                    "Bob", "Google", "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043",
+                    "+16502530000"});
+        } else {
+            mPaymentRequestTestRule.expectResultContains(
+                    new String[] {"5454545454545454", "12", "Bob", "1600 Amphitheatre Pkwy",
+                            "Mountain View", "CA", "94043", "+16502530000"});
+        }
     }
 
     /** Quickly pressing on "add card" and then [X] should not crash. */
@@ -284,7 +292,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly press on "add card" and then [X].
         int callCount = mPaymentRequestTestRule.getReadyToEdit().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getPaymentMethodSectionForTest()
                     .findViewById(R.id.payments_add_option_button)
@@ -315,7 +323,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly press on [X] and then "add card."
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getDialogForTest()
                     .findViewById(R.id.close_button)
@@ -342,7 +350,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly press on "add card" and then "cancel."
         int callCount = mPaymentRequestTestRule.getReadyToEdit().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getPaymentMethodSectionForTest()
                     .findViewById(R.id.payments_add_option_button)
@@ -373,7 +381,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly press on "cancel" and then "add card."
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getDialogForTest()
                     .findViewById(R.id.button_secondary)
@@ -401,7 +409,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly dismiss and then press on "pay."
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getDialogForTest()
@@ -426,7 +434,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly dismiss and then press on [X].
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest().onBackPressed();
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getDialogForTest()
@@ -451,7 +459,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Quickly press on [X] and then dismiss.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mPaymentRequestTestRule.getPaymentRequestUI()
                     .getDialogForTest()
                     .findViewById(R.id.close_button)

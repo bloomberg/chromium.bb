@@ -100,8 +100,13 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
         base::ASCIIToUTF16("\n"));
     EXPECT_EQ(expected, base::UTF8ToUTF16(accessible_name));
 
-    EXPECT_EQ(pair.tooltip ? expected : base::string16(),
-              button->GetTooltipText(gfx::Point()));
+    base::string16 tooltip_text;
+    button->GetTooltipText(gfx::Point(), &tooltip_text);
+    if (pair.tooltip) {
+      EXPECT_EQ(expected, tooltip_text);
+    } else {
+      EXPECT_EQ(base::string16(), tooltip_text);
+    }
   }
 }
 
@@ -119,7 +124,10 @@ TEST_F(HoverButtonTest, CustomTooltip) {
     button->set_auto_compute_tooltip(false);
     button->SetTooltipText(custom_tooltip);
     button->SetSize(gfx::Size(kButtonWidth, 40));
-    EXPECT_EQ(custom_tooltip, button->GetTooltipText(gfx::Point()));
+
+    base::string16 tooltip_text;
+    button->GetTooltipText(gfx::Point(), &tooltip_text);
+    EXPECT_EQ(custom_tooltip, tooltip_text);
 
     // Make sure the accessible name is still set.
     ui::AXNodeData data;

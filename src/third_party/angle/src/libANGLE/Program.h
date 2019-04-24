@@ -783,6 +783,7 @@ class Program final : angle::NonCopyable, public LabeledObject
     }
 
     bool isValidated() const;
+    bool samplesFromTexture(const State &state, GLuint textureID) const;
 
     const AttributesMask &getActiveAttribLocationsMask() const
     {

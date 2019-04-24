@@ -11,7 +11,7 @@
     [MeasureAs=AsyncClipboardAPIRead,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<sequence<ClipboardItem>> read();
+    ] Promise<Blob> read();
 
     [MeasureAs=AsyncClipboardAPIReadText,
      CallWith=ScriptState
@@ -21,7 +21,7 @@
     [MeasureAs=AsyncClipboardAPIWrite,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<void> write(sequence<ClipboardItem> data);
+    ] Promise<void> write(Blob data);
 
     [MeasureAs=AsyncClipboardAPIWriteText,
      CallWith=ScriptState

@@ -19,8 +19,10 @@ onload = function() {
         // We went foward and back again.
         // If the scroll position is restored correctly the red div won't be visible.
         delete window.localStorage.stage;
-        if (window.testRunner)
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
             testRunner.notifyDone();
+        }
     } else {
         window.localStorage.stage = 'two';
         window.scrollTo(0, 200);

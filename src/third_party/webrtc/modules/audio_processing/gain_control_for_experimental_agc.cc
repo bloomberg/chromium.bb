@@ -20,11 +20,13 @@ namespace webrtc {
 int GainControlForExperimentalAgc::instance_counter_ = 0;
 
 GainControlForExperimentalAgc::GainControlForExperimentalAgc(
-    GainControl* gain_control)
+    GainControl* gain_control,
+    rtc::CriticalSection* crit_capture)
     : data_dumper_(
           new ApmDataDumper(rtc::AtomicOps::Increment(&instance_counter_))),
       real_gain_control_(gain_control),
-      volume_(0) {}
+      volume_(0),
+      crit_capture_(crit_capture) {}
 
 GainControlForExperimentalAgc::~GainControlForExperimentalAgc() = default;
 
@@ -37,6 +39,7 @@ bool GainControlForExperimentalAgc::is_enabled() const {
 }
 
 int GainControlForExperimentalAgc::set_stream_analog_level(int level) {
+  rtc::CritScope cs_capture(crit_capture_);
   data_dumper_->DumpRaw("experimental_gain_control_set_stream_analog_level", 1,
                         &level);
   do_log_level_ = true;
@@ -44,7 +47,8 @@ int GainControlForExperimentalAgc::set_stream_analog_level(int level) {
   return AudioProcessing::kNoError;
 }
 
-int GainControlForExperimentalAgc::stream_analog_level() const {
+int GainControlForExperimentalAgc::stream_analog_level() {
+  rtc::CritScope cs_capture(crit_capture_);
   if (do_log_level_) {
     data_dumper_->DumpRaw("experimental_gain_control_stream_analog_level", 1,
                           &volume_);
@@ -103,10 +107,12 @@ bool GainControlForExperimentalAgc::stream_is_saturated() const {
 }
 
 void GainControlForExperimentalAgc::SetMicVolume(int volume) {
+  rtc::CritScope cs_capture(crit_capture_);
   volume_ = volume;
 }
 
 int GainControlForExperimentalAgc::GetMicVolume() {
+  rtc::CritScope cs_capture(crit_capture_);
   return volume_;
 }
 

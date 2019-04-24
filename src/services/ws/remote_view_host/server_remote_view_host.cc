@@ -11,10 +11,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/wm/core/ime_util_chromeos.h"
-#endif
-
 namespace ws {
 
 ServerRemoteViewHost::ServerRemoteViewHost(WindowService* window_service)
@@ -27,11 +23,6 @@ ServerRemoteViewHost::ServerRemoteViewHost(WindowService* window_service)
   embedding_root_->SetName("ServerRemoteViewHostWindow");
   embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   embedding_root_->Init(ui::LAYER_NOT_DRAWN);
-
-#if defined(OS_CHROMEOS)
-  helper_ =
-      std::make_unique<wm::EnsureWindowNotInRectHelper>(embedding_root_.get());
-#endif
 }
 
 ServerRemoteViewHost::~ServerRemoteViewHost() = default;

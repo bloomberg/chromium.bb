@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/view.h"
 
 namespace gfx {
 class Rect;
@@ -19,6 +18,8 @@ class Size;
 }  // namespace gfx
 
 namespace views {
+
+class View;
 
 // A Layout manager that arranges child views vertically or horizontally in a
 // side-by-side fashion with spacing around and between the child views. The
@@ -106,10 +107,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // SSSSSSSSSSSSSSSSSSSS
   // --------------------
   //
-  explicit BoxLayout(Orientation orientation,
-                     const gfx::Insets& inside_border_insets = gfx::Insets(),
-                     int between_child_spacing = 0,
-                     bool collapse_margins_spacing = false);
+  BoxLayout(Orientation orientation,
+            const gfx::Insets& inside_border_insets = gfx::Insets(),
+            int between_child_spacing = 0,
+            bool collapse_margins_spacing = false);
   ~BoxLayout() override;
 
   void set_main_axis_alignment(MainAxisAlignment main_axis_alignment) {
@@ -189,8 +190,8 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     bool visible() const;
 
    private:
-    View* view_ = nullptr;
-    const BoxLayout* layout_ = nullptr;
+    View* view_;
+    const BoxLayout* layout_;
     gfx::Insets margins_;
 
     DISALLOW_COPY_AND_ASSIGN(ViewWrapper);
@@ -294,9 +295,9 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // child views.
   gfx::Size NonChildSize(const View* host) const;
 
-  // The next visible view at or after pos. If no other views are visible,
-  // returns null.
-  View* NextVisibleView(View::Views::const_iterator pos) const;
+  // The next visible view at > index. If no other views are visible, return
+  // nullptr.
+  View* NextVisibleView(int index) const;
 
   // Return the first visible view in the host or nullptr if none are visible.
   View* FirstVisibleView() const;

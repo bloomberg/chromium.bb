@@ -27,15 +27,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_
 
 #include <iosfwd>
-
-#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "ui/gfx/geometry/rect.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -44,6 +41,13 @@ typedef struct CGRect CGRect;
 #import <Foundation/Foundation.h>
 #endif
 #endif
+
+struct SkRect;
+struct SkIRect;
+
+namespace gfx {
+class Rect;
+}
 
 namespace blink {
 
@@ -65,9 +69,7 @@ class PLATFORM_EXPORT IntRect {
   constexpr explicit IntRect(const FloatRect&) = delete;
   constexpr explicit IntRect(const LayoutRect&) = delete;
 
-  constexpr explicit IntRect(const gfx::Rect& r)
-      : IntRect(r.x(), r.y(), r.width(), r.height()) {}
-  explicit IntRect(SkIRect& r) : IntRect(r.x(), r.y(), r.width(), r.height()) {}
+  explicit IntRect(const gfx::Rect& rect);
 
   constexpr IntPoint Location() const { return location_; }
   constexpr IntSize Size() const { return size_; }
@@ -181,13 +183,10 @@ class PLATFORM_EXPORT IntRect {
   explicit operator CGRect() const;
 #endif
 
-  operator SkRect() const { return SkRect::MakeLTRB(X(), Y(), MaxX(), MaxY()); }
-  operator SkIRect() const {
-    return SkIRect::MakeLTRB(X(), Y(), MaxX(), MaxY());
-  }
-  constexpr operator gfx::Rect() const {
-    return gfx::Rect(X(), Y(), Width(), Height());
-  }
+  operator SkRect() const;
+  operator SkIRect() const;
+
+  operator gfx::Rect() const;
 
   String ToString() const;
 
@@ -222,8 +221,8 @@ inline IntRect UnionRectEvenIfEmpty(const IntRect& a, const IntRect& b) {
 PLATFORM_EXPORT IntRect UnionRectEvenIfEmpty(const Vector<IntRect>&);
 
 constexpr IntRect SaturatedRect(const IntRect& r) {
-  return IntRect(r.X(), r.Y(), base::ClampAdd(r.X(), r.Width()) - r.X(),
-                 base::ClampAdd(r.Y(), r.Height()) - r.Y());
+  return IntRect(r.X(), r.Y(), ClampAdd(r.X(), r.Width()) - r.X(),
+                 ClampAdd(r.Y(), r.Height()) - r.Y());
 }
 
 constexpr bool operator==(const IntRect& a, const IntRect& b) {

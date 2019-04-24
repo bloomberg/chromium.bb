@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -115,17 +114,6 @@ const char* kTabReloadCountHistogramNames[] = {
     "Discarding.ReloadsPer10Minutes.Proactive",
     "Discarding.ReloadsPer10Minutes.Urgent",
 };
-
-static_assert(base::size(kTabDiscardCountHistogramNames) ==
-                  static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) +
-                      1,
-              "There must be an entry in kTabDiscardCountHistogramNames for "
-              "each discard reason.");
-static_assert(base::size(kTabReloadCountHistogramNames) ==
-                  static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) +
-                      1,
-              "There must be an entry in kTabReloadCountHistogramNames for "
-              "each discard reason.");
 
 const TabStatsDataStore::TabsStats& TabStatsTracker::tab_stats() const {
   return tab_stats_data_store_->tab_stats();
@@ -365,7 +353,7 @@ void TabStatsTracker::OnInterval(
 
 void TabStatsTracker::OnTabDiscardCountReportInterval() {
   for (size_t reason = 0;
-       reason < static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue) + 1;
+       reason < static_cast<size_t>(LifecycleUnitDiscardReason::kMaxValue);
        reason++) {
     base::UmaHistogramCounts100(
         kTabDiscardCountHistogramNames[reason],

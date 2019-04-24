@@ -27,7 +27,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace WTF {
@@ -103,8 +102,6 @@ TEST(TreeNodeTest, RemoveSingle) {
 }
 
 class Trio {
-  STACK_ALLOCATED();
-
  public:
   Trio()
       : root(TestTree::Create()),

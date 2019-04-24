@@ -13,9 +13,9 @@
 
 namespace leveldb {
 
-// Update CMakeLists.txt if you change these
+// Update Makefile if you change these
 static const int kMajorVersion = 1;
-static const int kMinorVersion = 21;
+static const int kMinorVersion = 20;
 
 struct Options;
 struct ReadOptions;

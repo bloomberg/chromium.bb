@@ -5,7 +5,6 @@
 #include "extensions/browser/api/usb/usb_device_resource.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -13,10 +12,12 @@
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/usb_device_handle.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/common/api/usb.h"
 
 using content::BrowserThread;
+using device::UsbDeviceHandle;
 
 namespace extensions {
 
@@ -32,13 +33,13 @@ ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
 }
 
 UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
-                                     const std::string& guid,
-                                     device::mojom::UsbDevicePtr device)
-    : ApiResource(owner_extension_id),
-      guid_(guid),
-      device_(std::move(device)) {}
+                                     scoped_refptr<UsbDeviceHandle> device)
+    : ApiResource(owner_extension_id), device_(device) {
+}
 
-UsbDeviceResource::~UsbDeviceResource() {}
+UsbDeviceResource::~UsbDeviceResource() {
+  device_->Close();
+}
 
 bool UsbDeviceResource::IsPersistent() const {
   return false;

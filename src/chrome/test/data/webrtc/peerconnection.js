@@ -783,8 +783,6 @@ function isWhitelistedLegacyStat(stat) {
       "googTrackId",
       "googTimingFrameInfo",
       "googTypingNoiseState",
-      "googWritable",
-      "googFirstFrameReceivedToDecodedMs"
-    ]);
+      "googWritable" ]);
   return whitelist.has(stat);
 }

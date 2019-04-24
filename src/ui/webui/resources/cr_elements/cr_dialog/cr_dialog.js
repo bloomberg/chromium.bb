@@ -22,8 +22,6 @@
 Polymer({
   is: 'cr-dialog',
 
-  behaviors: [CrContainerShadowBehavior],
-
   properties: {
     open: {
       type: Boolean,
@@ -115,10 +113,10 @@ Polymer({
   attached: function() {
     const mutationObserverCallback = function() {
       if (this.$.dialog.open) {
-        this.enableShadowBehavior(true);
+        this.addIntersectionObserver_();
         this.addKeydownListener_();
       } else {
-        this.enableShadowBehavior(false);
+        this.removeIntersectionObserver_();
         this.removeKeydownListener_();
       }
     }.bind(this);
@@ -139,10 +137,56 @@ Polymer({
 
   /** @override */
   detached: function() {
+    this.removeIntersectionObserver_();
     this.removeKeydownListener_();
     if (this.mutationObserver_) {
       this.mutationObserver_.disconnect();
       this.mutationObserver_ = null;
+    }
+  },
+
+  /** @private */
+  addIntersectionObserver_: function() {
+    if (this.intersectionObserver_) {
+      return;
+    }
+
+    const bodyContainer = this.$$('.body-container');
+
+    const bottomMarker = this.$.bodyBottomMarker;
+    const topMarker = this.$.bodyTopMarker;
+
+    const callback = function(entries) {
+      // In some rare cases, there could be more than one entry per observed
+      // element, in which case the last entry's result stands.
+      for (let i = 0; i < entries.length; i++) {
+        const target = entries[i].target;
+        assert(target == bottomMarker || target == topMarker);
+
+        const classToToggle =
+            target == bottomMarker ? 'bottom-scrollable' : 'top-scrollable';
+
+        bodyContainer.classList.toggle(
+            classToToggle, entries[i].intersectionRatio == 0);
+      }
+    };
+
+    this.intersectionObserver_ = new IntersectionObserver(
+        callback,
+        /** @type {IntersectionObserverInit} */ ({
+          root: bodyContainer,
+          rootMargin: '1px 0px',
+          threshold: 0,
+        }));
+    this.intersectionObserver_.observe(bottomMarker);
+    this.intersectionObserver_.observe(topMarker);
+  },
+
+  /** @private */
+  removeIntersectionObserver_: function() {
+    if (this.intersectionObserver_) {
+      this.intersectionObserver_.disconnect();
+      this.intersectionObserver_ = null;
     }
   },
 
@@ -254,6 +298,11 @@ Polymer({
    */
   getNative: function() {
     return this.$.dialog;
+  },
+
+  /** @return {!PaperIconButtonElement} */
+  getCloseButton: function() {
+    return this.$.close;
   },
 
   /**

@@ -21,7 +21,6 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/view_class_properties.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -80,11 +79,6 @@ class MoreButton : public views::Button {
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
-
-    auto path = std::make_unique<SkPath>();
-    path->addRoundRect(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())),
-                       kTrayItemSize / 2, kTrayItemSize / 2);
-    SetProperty(views::kHighlightPathKey, path.release());
   }
 
   ~MoreButton() override = default;
@@ -131,12 +125,14 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller)
                         kSystemMenuVolumeHighIcon,
                         IDS_ASH_STATUS_TRAY_VOLUME),
       more_button_(new MoreButton(controller)) {
+  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
   AddChildView(more_button_);
   Update(false /* by_user */);
 }
 
 UnifiedVolumeView::~UnifiedVolumeView() {
+  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
@@ -170,7 +166,7 @@ void UnifiedVolumeView::OnOutputNodeVolumeChanged(uint64_t node_id,
   Update(true /* by_user */);
 }
 
-void UnifiedVolumeView::OnOutputMuteChanged(bool mute_on) {
+void UnifiedVolumeView::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
   Update(true /* by_user */);
 }
 

@@ -85,8 +85,7 @@ TextTrackContainer* TextTrackContainer::Create(
   return element;
 }
 
-LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,
-                                                     LegacyLayout) {
+LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
   // TODO(mstensho): Should use LayoutObjectFactory to create the right type of
   // object here, to enable LayoutNG, but currently we can't, because this will
   // typically be a child of LayoutVideo (a legacy type), and we'll typically
@@ -126,7 +125,7 @@ void TextTrackContainer::UpdateDefaultFontSize(
   current_font_size = font_size;
   if (current_font_size == old_font_size)
     return;
-  SetInlineStyleProperty(CSSPropertyID::kFontSize, default_font_size_,
+  SetInlineStyleProperty(CSSPropertyFontSize, default_font_size_,
                          CSSPrimitiveValue::UnitType::kPixels);
 }
 

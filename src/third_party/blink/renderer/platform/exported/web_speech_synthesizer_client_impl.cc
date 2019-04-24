@@ -72,18 +72,15 @@ void WebSpeechSynthesizerClientImpl::SpeakingErrorOccurred(
 
 void WebSpeechSynthesizerClientImpl::WordBoundaryEventOccurred(
     const WebSpeechSynthesisUtterance& utterance,
-    unsigned char_index,
-    unsigned char_length) {
-  client_->BoundaryEventOccurred(utterance, kSpeechWordBoundary, char_index,
-                                 char_length);
+    unsigned char_index) {
+  client_->BoundaryEventOccurred(utterance, kSpeechWordBoundary, char_index);
 }
 
 void WebSpeechSynthesizerClientImpl::SentenceBoundaryEventOccurred(
     const WebSpeechSynthesisUtterance& utterance,
-    unsigned char_index,
-    unsigned char_length) {
-  client_->BoundaryEventOccurred(utterance, kSpeechSentenceBoundary, char_index,
-                                 char_length);
+    unsigned char_index) {
+  client_->BoundaryEventOccurred(utterance, kSpeechSentenceBoundary,
+                                 char_index);
 }
 
 void WebSpeechSynthesizerClientImpl::Trace(blink::Visitor* visitor) {

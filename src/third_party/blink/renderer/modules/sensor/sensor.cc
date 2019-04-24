@@ -65,8 +65,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
           "Maximum allowed frequency value for this sensor type is %.0f Hz.",
           max_allowed_frequency);
       ConsoleMessage* console_message = ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kInfo, std::move(message));
+          kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+          std::move(message));
       execution_context->AddConsoleMessage(console_message);
     }
   }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "cc/animation/animation_export.h"
@@ -39,9 +40,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
  public:
   static scoped_refptr<ElementAnimations> Create(AnimationHost* host,
                                                  ElementId element_id);
-
-  ElementAnimations(const ElementAnimations&) = delete;
-  ElementAnimations& operator=(const ElementAnimations&) = delete;
 
   bool AnimationHostIs(AnimationHost* host) const {
     return animation_host_ == host;
@@ -111,26 +109,19 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   bool AnimationsPreserveAxisAlignment() const;
 
-  // Returns the maximum of starting animation scale along any dimension at any
-  // destination in active scale animations, or kNotScaled if there is no active
-  // scale animation or the starting scale cannot be computed.
-  float AnimationStartScale(ElementListType list_type) const;
+  // Sets |start_scale| to the maximum of starting animation scale along any
+  // dimension at any destination in active animations. Returns false if the
+  // starting scale cannot be computed.
+  bool AnimationStartScale(ElementListType list_type, float* start_scale) const;
 
-  // Returns the maximum scale along any dimension at any destination in active
-  // scale animations, or kNotScaled if there is no active scale animation or
-  // the maximum scale cannot be computed.
-  float MaximumTargetScale(ElementListType list_type) const;
+  // Sets |max_scale| to the maximum scale along any dimension at any
+  // destination in active animations. Returns false if the maximum scale cannot
+  // be computed.
+  bool MaximumTargetScale(ElementListType list_type, float* max_scale) const;
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetNeedsPushProperties();
-
-  // Initializes client animation state by calling client's
-  // ElementIsAnimatingChanged() method with the current animation state.
-  void InitClientAnimationState();
-  // Updates client animation state by calling client's
-  // ElementIsAnimatingChanged() method with the state containing properties
-  // that have changed since the last update.
   void UpdateClientAnimationState();
 
   void NotifyClientFloatAnimated(float opacity,
@@ -208,10 +199,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
-  float active_maximum_scale_;
-  float active_starting_scale_;
-  float pending_maximum_scale_;
-  float pending_starting_scale_;
+
+  DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
 
 }  // namespace cc

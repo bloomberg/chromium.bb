@@ -42,7 +42,6 @@
 <translation id="152234381334907219">Hindi Kailanman Na-save</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">I-scan ang QR Code</translation>
-<translation id="1552525382687785070">Na-disable ng Iyong Administrator ang Pag-sync</translation>
 <translation id="1558704936695638228">Pindutin nang matagal para sa higit pang opsyon sa tab</translation>
 <translation id="1580783302095112590">Naipadala na ang mail.</translation>
 <translation id="1582732959743469162">Ihihinto nito ang lahat ng progreso para sa iyong kasalukuyang pag-download.</translation>
@@ -85,7 +84,6 @@
 <translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng tab na incognito</translation>
 <translation id="2139867232736819575">Maghanap para sa Text na Kinopya Mo</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
-<translation id="2179182049312275900">Puwede mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="2198757192731523470">Maaaring gamitin ng Google ang iyong history para i-personalize ang Search, mga ad, at iba pang serbisyo ng Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> (na) hindi pa nababasang artikulo sa Listahan ng Babasahin</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
@@ -104,7 +102,6 @@
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
 <translation id="2481538920734869610">MAGDAGDAG NG ACCOUNT</translation>
-<translation id="2497852260688568942">Na-disable ng iyong administrator ang pag-sync</translation>
 <translation id="2523184218357549926">Ipinapadala sa Google ang mga URL ng mga page na binibisita mo</translation>
 <translation id="2523363575747517183">Paulit-ulit na sinusubukang buksan ng website na ito ang isa pang application.</translation>
 <translation id="2529021024822217800">Buksan Lahat</translation>
@@ -203,9 +200,9 @@
 <translation id="4038354071007134711">Walang application sa device ang makakabukas nito.</translation>
 <translation id="4042870976416480368">Hanapin sa Page</translation>
 <translation id="4049507953662678203">Tiyaking mayroon kang koneksyon sa network, at subukang muli.</translation>
-<translation id="4071530748369333746">Kanselahin ang Pag-sync?</translation>
 <translation id="4082688844002261427">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at higit pa</translation>
 <translation id="408404951701638773">Mas madali nang puntahan ang search bar</translation>
+<translation id="4084682180776658562">Bookmark</translation>
 <translation id="411254640334432676">Hindi na-download.</translation>
 <translation id="4112644173421521737">Maghanap</translation>
 <translation id="4121993058175073134">Upang makapagpadala ng net-export data, paki-configure ang iyong email account sa app ng Mga Setting.</translation>
@@ -217,6 +214,7 @@
 <translation id="4272631900155121838">Upang mag-scan ng QR code, i-enable ang camera mula sa mga setting</translation>
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="430793432425771671">I-sync Lahat</translation>
+<translation id="4342284590510997375">Bago</translation>
 <translation id="4359125752503270327">Magbubukas ang page na ito sa ibang application.</translation>
 <translation id="4370827530403103842">Hindi gumagana ang pag-sync. I-tap upang ayusin.</translation>
 <translation id="4375040482473363939">Paghahanap ng QR code</translation>
@@ -272,7 +270,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
 <translation id="5244474230056479698">Sini-sync sa <ph name="EMAIL" /></translation>
-<translation id="5245322853195994030">Kanselahin ang Pag-sync</translation>
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
@@ -366,9 +363,9 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6656103420185847513">I-edit ang Folder</translation>
 <translation id="6657585470893396449">Password</translation>
-<translation id="6668619169535738264">I-edit ang Bookmark</translation>
 <translation id="667999046851023355">Dokumento</translation>
 <translation id="6691331417640343772">Pamahalaan ang naka-sync na data sa Google Dashboard</translation>
+<translation id="6709334795756764830">I-edit ang Bookmark</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Hindi Ma-export ang Mga Password</translation>
 <translation id="6780034285637185932">Zip Code</translation>
@@ -409,7 +406,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7291368939935408496">Inihahanda ang Mga Password...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> (na) porsyento ang na-download na</translation>
 <translation id="7346909386216857016">Ok, nakuha ko</translation>
-<translation id="7348502496356775519">Bookmark</translation>
 <translation id="7383797227493018512">Listahan ng Babasahin</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Hindi na masi-sync sa Google Account mo ang mga pagbabago sa iyong mga bookmark, history, password, at iba pang setting. Gayunpaman, mananatiling naka-store sa Google account mo ang iyong kasalukuyang data.</translation>
@@ -457,7 +453,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8073670137947914548">Tapos na ang pag-download</translation>
 <translation id="8076014560081431679">Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Available ang pag-download ng file. Available ang mga opsyon malapit sa ibaba ng screen.</translation>
-<translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8205564605687841303">Kanselahin</translation>
 <translation id="8225985093977202398">Mga Naka-cache na Larawan at File</translation>
 <translation id="8261506727792406068">I-delete</translation>

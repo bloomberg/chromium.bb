@@ -35,11 +35,11 @@ import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -586,8 +586,7 @@ public class AwContentsTest {
 
     private @RendererPriority int getRendererPriorityOnUiThread(final AwContents awContents)
             throws Exception {
-        return TestThreadUtils.runOnUiThreadBlocking(
-                () -> awContents.getEffectivePriorityForTesting());
+        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getEffectivePriorityForTesting());
     }
 
     private void setRendererPriorityOnUiThread(final AwContents awContents,
@@ -716,7 +715,7 @@ public class AwContentsTest {
 
     private AwRenderProcess getRenderProcessOnUiThread(final AwContents awContents)
             throws Exception {
-        return TestThreadUtils.runOnUiThreadBlocking(() -> awContents.getRenderProcess());
+        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getRenderProcess());
     }
 
     @Test
@@ -925,8 +924,11 @@ public class AwContentsTest {
     }
 
     private int getHistogramSampleCount(String name) throws Throwable {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mHistogramTotalCount = RecordHistogram.getHistogramTotalCountForTesting(name);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mHistogramTotalCount = RecordHistogram.getHistogramTotalCountForTesting(name);
+            }
         });
         return mHistogramTotalCount;
     }

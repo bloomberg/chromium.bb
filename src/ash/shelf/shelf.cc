@@ -19,7 +19,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
@@ -143,12 +142,8 @@ bool Shelf::IsVisible() const {
   return shelf_layout_manager_->IsVisible();
 }
 
-const aura::Window* Shelf::GetWindow() const {
-  return shelf_widget_ ? shelf_widget_->GetNativeWindow() : nullptr;
-}
-
 aura::Window* Shelf::GetWindow() {
-  return const_cast<aura::Window*>(const_cast<const Shelf*>(this)->GetWindow());
+  return shelf_widget_ ? shelf_widget_->GetNativeWindow() : nullptr;
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
@@ -231,11 +226,6 @@ void Shelf::UpdateVisibilityState() {
     shelf_layout_manager_->UpdateVisibilityState();
 }
 
-void Shelf::SetSuspendVisibilityUpdate(bool value) {
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->set_suspend_visibility_update(value);
-}
-
 void Shelf::MaybeUpdateShelfBackground() {
   if (!shelf_layout_manager_)
     return;
@@ -249,8 +239,30 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
+int Shelf::GetAccessibilityPanelHeight() const {
+  return shelf_layout_manager_
+             ? shelf_layout_manager_->accessibility_panel_height()
+             : 0;
+}
+
+void Shelf::SetAccessibilityPanelHeight(int height) {
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->SetAccessibilityPanelHeight(height);
+}
+
+int Shelf::GetDockedMagnifierHeight() const {
+  return shelf_layout_manager_
+             ? shelf_layout_manager_->docked_magnifier_height()
+             : 0;
+}
+
 gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
+}
+
+gfx::Rect Shelf::GetUserWorkAreaBounds() const {
+  return shelf_layout_manager_ ? shelf_layout_manager_->user_work_area_bounds()
+                               : gfx::Rect();
 }
 
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
@@ -267,8 +279,7 @@ bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {
 }
 
 void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
-  if (Shell::Get()->app_list_controller())
-    Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
+  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {
@@ -293,14 +304,7 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
 }
 
 gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
-  // If status area widget is shown without the shelf, system tray should be
-  // aligned above status area widget (shown at the same place as if shelf was
-  // visible).
-  const WorkAreaInsets* const work_area_insets = GetWorkAreaInsets();
-  gfx::Rect work_area = shelf_layout_manager_->IsShowingStatusAreaWithoutShelf()
-                            ? work_area_insets->ComputeStableWorkArea()
-                            : work_area_insets->user_work_area_bounds();
-
+  gfx::Rect work_area = GetUserWorkAreaBounds();
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -329,14 +333,13 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   state.visual_bounds = bounds;
   state.occluded_bounds = bounds;
   state.displaced_bounds = gfx::Rect();
-  WorkAreaInsets* work_area_insets = GetWorkAreaInsets();
-  work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
-  work_area_insets->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
-  work_area_insets->OnKeyboardWorkspaceOccludedBoundsChanged(
+  shelf_layout_manager_->OnKeyboardVisibilityStateChanged(state.is_visible);
+  shelf_layout_manager_->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
+  shelf_layout_manager_->OnKeyboardWorkspaceOccludedBoundsChanged(
       state.occluded_bounds);
-  work_area_insets->OnKeyboardWorkspaceDisplacingBoundsChanged(
+  shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanged(
       state.displaced_bounds);
-  work_area_insets->OnKeyboardAppearanceChanged(state);
+  shelf_layout_manager_->OnKeyboardAppearanceChanged(state);
 }
 
 ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {
@@ -379,12 +382,6 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
     return;
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
-}
-
-WorkAreaInsets* Shelf::GetWorkAreaInsets() const {
-  const aura::Window* window = GetWindow();
-  DCHECK(window);
-  return WorkAreaInsets::ForWindow(window->GetRootWindow());
 }
 
 }  // namespace ash

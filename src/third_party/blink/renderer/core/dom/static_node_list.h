@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -43,6 +44,10 @@ class StaticNodeTypeList final : public NodeList {
  public:
   static StaticNodeTypeList* Adopt(HeapVector<Member<NodeType>>& nodes);
 
+  static StaticNodeTypeList* CreateEmpty() {
+    return MakeGarbageCollected<StaticNodeTypeList>();
+  }
+
   ~StaticNodeTypeList() override;
 
   unsigned length() const override;
@@ -51,7 +56,7 @@ class StaticNodeTypeList final : public NodeList {
   void Trace(Visitor*) override;
 
  private:
-  HeapVector<Member<NodeType>> nodes_;
+  HeapVector<TraceWrapperMember<NodeType>> nodes_;
 };
 
 using StaticNodeList = StaticNodeTypeList<Node>;

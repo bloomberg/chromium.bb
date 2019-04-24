@@ -15,11 +15,10 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/queued_task.h"
-#include "api/task_queue/task_queue_base.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/task_queue.h"
 #include "rtc_base/thread_checker.h"
 
 namespace webrtc {
@@ -27,9 +26,9 @@ namespace webrtc {
 class RepeatingTaskHandle;
 
 namespace webrtc_repeating_task_impl {
-class RepeatingTaskBase : public QueuedTask {
+class RepeatingTaskBase : public rtc::QueuedTask {
  public:
-  RepeatingTaskBase(TaskQueueBase* task_queue, TimeDelta first_delay);
+  RepeatingTaskBase(rtc::TaskQueue* task_queue, TimeDelta first_delay);
   ~RepeatingTaskBase() override;
   virtual TimeDelta RunClosure() = 0;
 
@@ -38,8 +37,9 @@ class RepeatingTaskBase : public QueuedTask {
 
   bool Run() final;
   void Stop() RTC_RUN_ON(task_queue_);
+  void PostStop();
 
-  TaskQueueBase* const task_queue_;
+  rtc::TaskQueue* const task_queue_;
   // This is always finite, except for the special case where it's PlusInfinity
   // to signal that the task should stop.
   Timestamp next_run_time_ RTC_GUARDED_BY(task_queue_);
@@ -49,7 +49,7 @@ class RepeatingTaskBase : public QueuedTask {
 template <class Closure>
 class RepeatingTaskImpl final : public RepeatingTaskBase {
  public:
-  RepeatingTaskImpl(TaskQueueBase* task_queue,
+  RepeatingTaskImpl(rtc::TaskQueue* task_queue,
                     TimeDelta first_delay,
                     Closure&& closure)
       : RepeatingTaskBase(task_queue, first_delay),
@@ -76,8 +76,8 @@ class RepeatingTaskImpl final : public RepeatingTaskBase {
 // not thread safe.
 class RepeatingTaskHandle {
  public:
-  RepeatingTaskHandle() = default;
-  ~RepeatingTaskHandle() = default;
+  RepeatingTaskHandle();
+  ~RepeatingTaskHandle();
   RepeatingTaskHandle(RepeatingTaskHandle&& other);
   RepeatingTaskHandle& operator=(RepeatingTaskHandle&& other);
   RepeatingTaskHandle(const RepeatingTaskHandle&) = delete;
@@ -91,7 +91,7 @@ class RepeatingTaskHandle {
   // perfectly fine to destroy the handle while the task is running, since the
   // repeated task is owned by the TaskQueue.
   template <class Closure>
-  static RepeatingTaskHandle Start(TaskQueueBase* task_queue,
+  static RepeatingTaskHandle Start(rtc::TaskQueue* task_queue,
                                    Closure&& closure) {
     auto repeating_task = absl::make_unique<
         webrtc_repeating_task_impl::RepeatingTaskImpl<Closure>>(
@@ -100,11 +100,15 @@ class RepeatingTaskHandle {
     task_queue->PostTask(std::move(repeating_task));
     return RepeatingTaskHandle(repeating_task_ptr);
   }
+  template <class Closure>
+  static RepeatingTaskHandle Start(Closure&& closure) {
+    return Start(rtc::TaskQueue::Current(), std::forward<Closure>(closure));
+  }
 
   // DelayedStart is equivalent to Start except that the first invocation of the
   // closure will be delayed by the given amount.
   template <class Closure>
-  static RepeatingTaskHandle DelayedStart(TaskQueueBase* task_queue,
+  static RepeatingTaskHandle DelayedStart(rtc::TaskQueue* task_queue,
                                           TimeDelta first_delay,
                                           Closure&& closure) {
     auto repeating_task = absl::make_unique<
@@ -114,12 +118,23 @@ class RepeatingTaskHandle {
     task_queue->PostDelayedTask(std::move(repeating_task), first_delay.ms());
     return RepeatingTaskHandle(repeating_task_ptr);
   }
+  template <class Closure>
+  static RepeatingTaskHandle DelayedStart(TimeDelta first_delay,
+                                          Closure&& closure) {
+    return DelayedStart(rtc::TaskQueue::Current(), first_delay,
+                        std::forward<Closure>(closure));
+  }
 
   // Stops future invocations of the repeating task closure. Can only be called
   // from the TaskQueue where the task is running. The closure is guaranteed to
   // not be running after Stop() returns unless Stop() is called from the
   // closure itself.
   void Stop();
+
+  // Stops future invocations of the repeating task closure. The closure might
+  // still be running when PostStop() returns, but there will be no future
+  // invocation.
+  void PostStop();
 
   // Returns true if Start() or DelayedStart() was called most recently. Returns
   // false initially and if Stop() or PostStop() was called most recently.
@@ -128,8 +143,10 @@ class RepeatingTaskHandle {
  private:
   explicit RepeatingTaskHandle(
       webrtc_repeating_task_impl::RepeatingTaskBase* repeating_task);
+  rtc::SequencedTaskChecker sequence_checker_;
   // Owned by the task queue.
-  webrtc_repeating_task_impl::RepeatingTaskBase* repeating_task_ = nullptr;
+  webrtc_repeating_task_impl::RepeatingTaskBase* repeating_task_
+      RTC_GUARDED_BY(sequence_checker_) = nullptr;
 };
 
 }  // namespace webrtc

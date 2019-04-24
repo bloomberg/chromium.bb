@@ -1,0 +1,42 @@
+syntax = 'proto3';
+package chromite.api;
+
+import "build_api.proto";
+import "common.proto";
+
+
+// Test archive messages and service.
+
+// Message for creating archives.
+// Example Json:
+// {"build_target":{"name":"board"},"output_directory":"/tmp/archives"}
+message CreateArchiveRequest {
+  // The board whose tarballs are being created.
+  BuildTarget build_target = 1;
+  // The directory where the completed archive(s) should be saved.
+  string output_directory = 2;
+}
+
+// Information about an archive file.
+message ArchiveFile {
+  // File path.
+  string path = 1;
+}
+
+// Response from creating archives.
+message CreateArchiveResponse {
+  // The created archive files.
+  repeated ArchiveFile files = 1;
+}
+
+// Service to create a variety of autotest archives.
+service ArchiveService {
+  // The controller implementing the service.
+  option (service_options) = {
+    module: "autotest_archive",
+  };
+
+  // Create the HW Test archive.
+  rpc CreateHwTestArchives(CreateArchiveRequest)
+    returns (CreateArchiveResponse);
+}

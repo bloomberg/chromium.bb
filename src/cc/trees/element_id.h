@@ -12,7 +12,7 @@
 #include <iosfwd>
 #include <memory>
 
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "cc/cc_export.h"
 
 namespace base {
@@ -25,6 +25,8 @@ class TracedValue;
 namespace cc {
 
 using ElementIdType = uint64_t;
+
+static const ElementIdType kInvalidElementId = 0;
 
 // Element ids are chosen by cc's clients and can be used as a stable identifier
 // across updates.
@@ -45,17 +47,14 @@ using ElementIdType = uint64_t;
 // targets. A Layer's element id can change over the Layer's lifetime because
 // non-default ElementIds are only set during an animation's lifetime.
 struct CC_EXPORT ElementId {
-  explicit ElementId(ElementIdType id) : id_(id) {
-    DCHECK_NE(id, kInvalidElementId);
-  }
-
-  ElementId() : id_(kInvalidElementId) {}
+  explicit ElementId(ElementIdType id) : id_(id) {}
+  ElementId() : ElementId(kInvalidElementId) {}
 
   bool operator==(const ElementId& o) const { return id_ == o.id_; }
   bool operator!=(const ElementId& o) const { return !(*this == o); }
   bool operator<(const ElementId& o) const { return id_ < o.id_; }
 
-  // Returns true if the ElementId has been initialized with a valid id.
+  // An ElementId's conversion to a boolean value depends only on its primaryId.
   explicit operator bool() const { return !!id_; }
 
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
@@ -67,7 +66,6 @@ struct CC_EXPORT ElementId {
 
  private:
   friend struct ElementIdHash;
-  static const ElementIdType kInvalidElementId;
 
   // The compositor treats this as an opaque handle and should not know how to
   // interpret these bits. Non-blink cc clients typically operate in terms of

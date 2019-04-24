@@ -18,34 +18,34 @@ using protocol::Response;
 
 namespace {
 
-String MessageSourceValue(mojom::ConsoleMessageSource source) {
-  DCHECK(source != mojom::ConsoleMessageSource::kConsoleApi);
+String MessageSourceValue(MessageSource source) {
+  DCHECK(source != kConsoleAPIMessageSource);
   switch (source) {
-    case mojom::ConsoleMessageSource::kXml:
+    case kXMLMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Xml;
-    case mojom::ConsoleMessageSource::kJavaScript:
+    case kJSMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Javascript;
-    case mojom::ConsoleMessageSource::kNetwork:
+    case kNetworkMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Network;
-    case mojom::ConsoleMessageSource::kStorage:
+    case kStorageMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Storage;
-    case mojom::ConsoleMessageSource::kAppCache:
+    case kAppCacheMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Appcache;
-    case mojom::ConsoleMessageSource::kRendering:
+    case kRenderingMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Rendering;
-    case mojom::ConsoleMessageSource::kSecurity:
+    case kSecurityMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Security;
-    case mojom::ConsoleMessageSource::kOther:
+    case kOtherMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Other;
-    case mojom::ConsoleMessageSource::kDeprecation:
+    case kDeprecationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Deprecation;
-    case mojom::ConsoleMessageSource::kWorker:
+    case kWorkerMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Worker;
-    case mojom::ConsoleMessageSource::kViolation:
+    case kViolationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Violation;
-    case mojom::ConsoleMessageSource::kIntervention:
+    case kInterventionMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Intervention;
-    case mojom::ConsoleMessageSource::kRecommendation:
+    case kRecommendationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Recommendation;
     default:
       return protocol::Log::LogEntry::SourceEnum::Other;
@@ -123,10 +123,10 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
     entry->setStackTrace(std::move(stack_trace));
   if (message->Location()->LineNumber())
     entry->setLineNumber(message->Location()->LineNumber() - 1);
-  if (message->Source() == mojom::ConsoleMessageSource::kWorker &&
+  if (message->Source() == kWorkerMessageSource &&
       !message->WorkerId().IsEmpty())
     entry->setWorkerId(message->WorkerId());
-  if (message->Source() == mojom::ConsoleMessageSource::kNetwork &&
+  if (message->Source() == kNetworkMessageSource &&
       !message->RequestIdentifier().IsNull()) {
     entry->setNetworkRequestId(message->RequestIdentifier());
   }
@@ -256,8 +256,8 @@ void InspectorLogAgent::ReportLongLayout(base::TimeDelta duration) {
       "Forced reflow while executing JavaScript took %" PRId64 "ms",
       duration.InMilliseconds());
   ConsoleMessage* message = ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kViolation,
-      mojom::ConsoleMessageLevel::kVerbose, message_text);
+      kViolationMessageSource, mojom::ConsoleMessageLevel::kVerbose,
+      message_text);
   ConsoleMessageAdded(message);
 }
 
@@ -266,8 +266,8 @@ void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                base::TimeDelta time,
                                                SourceLocation* location) {
   ConsoleMessage* message = ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kViolation,
-      mojom::ConsoleMessageLevel::kVerbose, text, location->Clone());
+      kViolationMessageSource, mojom::ConsoleMessageLevel::kVerbose, text,
+      location->Clone());
   ConsoleMessageAdded(message);
 }
 

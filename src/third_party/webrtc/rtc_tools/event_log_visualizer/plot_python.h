@@ -23,13 +23,10 @@ class PythonPlot final : public Plot {
 
 class PythonPlotCollection final : public PlotCollection {
  public:
-  explicit PythonPlotCollection(bool shared_xaxis = false);
+  PythonPlotCollection();
   ~PythonPlotCollection() override;
   void Draw() override;
   Plot* AppendNewPlot() override;
-
- private:
-  bool shared_xaxis_;
 };
 
 }  // namespace webrtc

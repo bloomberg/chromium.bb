@@ -45,7 +45,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
         hint_(hint),
         wait_till_set_(wait_till_set) {}
 
-  ~WMStateWaiter() override = default;
+  ~WMStateWaiter() override {}
 
  private:
   // X11PropertyChangeWaiter:
@@ -68,9 +68,10 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 // A NonClientFrameView with a window mask with the bottom right corner cut out.
 class ShapedNonClientFrameView : public NonClientFrameView {
  public:
-  ShapedNonClientFrameView() = default;
+  ShapedNonClientFrameView() {
+  }
 
-  ~ShapedNonClientFrameView() override = default;
+  ~ShapedNonClientFrameView() override {}
 
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override { return bounds(); }
@@ -107,9 +108,10 @@ class ShapedNonClientFrameView : public NonClientFrameView {
 
 class ShapedWidgetDelegate : public WidgetDelegateView {
  public:
-  ShapedWidgetDelegate() = default;
+  ShapedWidgetDelegate() {
+  }
 
-  ~ShapedWidgetDelegate() override = default;
+  ~ShapedWidgetDelegate() override {}
 
   // WidgetDelegateView:
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
@@ -143,7 +145,7 @@ std::vector<gfx::Rect> GetShapeRects(XID xid) {
   std::vector<gfx::Rect> shape_vector;
   for (int i = 0; i < shape_rects_size; ++i) {
     const XRectangle& rect = shape_rects[i];
-    shape_vector.emplace_back(rect.x, rect.y, rect.width, rect.height);
+    shape_vector.push_back(gfx::Rect(rect.x, rect.y, rect.width, rect.height));
   }
   return shape_vector;
 }
@@ -160,13 +162,19 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
   return false;
 }
 
+// Flush the message loop.
+void RunAllPendingInMessageLoop() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
 }  // namespace
 
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
   DesktopWindowTreeHostX11Test()
       : event_source_(ui::PlatformEventSource::GetInstance()) {}
-  ~DesktopWindowTreeHostX11Test() override = default;
+  ~DesktopWindowTreeHostX11Test() override {}
 
   void SetUp() override {
     set_native_widget_type(NativeWidgetType::kDesktop);
@@ -251,7 +259,7 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
     }
 
     // Ensure that the task which is posted when a window is resized is run.
-    base::RunLoop().RunUntilIdle();
+    RunAllPendingInMessageLoop();
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
@@ -298,7 +306,7 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
 
   // Setting the shape to NULL resets the shape back to the entire
   // window bounds.
-  widget2->SetShape(nullptr);
+  widget2->SetShape(NULL);
   shape_rects = GetShapeRects(xid2);
   ASSERT_FALSE(shape_rects.empty());
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 5, 5));
@@ -446,8 +454,8 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
 // A Widget that allows setting the min/max size for the widget.
 class CustomSizeWidget : public Widget {
  public:
-  CustomSizeWidget() = default;
-  ~CustomSizeWidget() override = default;
+  CustomSizeWidget() {}
+  ~CustomSizeWidget() override {}
 
   void set_min_size(const gfx::Size& size) { min_size_ = size; }
   void set_max_size(const gfx::Size& size) { max_size_ = size; }
@@ -486,8 +494,8 @@ TEST_F(DesktopWindowTreeHostX11Test, SetBoundsWithMinMax) {
 
 class MouseEventRecorder : public ui::EventHandler {
  public:
-  MouseEventRecorder() = default;
-  ~MouseEventRecorder() override = default;
+  MouseEventRecorder() {}
+  ~MouseEventRecorder() override {}
 
   void Reset() { mouse_events_.clear(); }
 
@@ -509,8 +517,8 @@ class MouseEventRecorder : public ui::EventHandler {
 class DesktopWindowTreeHostX11HighDPITest
     : public DesktopWindowTreeHostX11Test {
  public:
-  DesktopWindowTreeHostX11HighDPITest() = default;
-  ~DesktopWindowTreeHostX11HighDPITest() override = default;
+  DesktopWindowTreeHostX11HighDPITest() {}
+  ~DesktopWindowTreeHostX11HighDPITest() override {}
 
   void PretendCapture(views::Widget* capture_widget) {
     DesktopWindowTreeHostX11* capture_host = nullptr;

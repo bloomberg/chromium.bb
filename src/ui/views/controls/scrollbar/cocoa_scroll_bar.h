@@ -10,7 +10,7 @@
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar.h"
 #include "ui/views/views_export.h"
 #import "ui/views_bridge_mac/views_scrollbar_bridge.h"
 
@@ -19,7 +19,7 @@ namespace views {
 class CocoaScrollBarThumb;
 
 // The transparent scrollbar for Mac which overlays its contents.
-class VIEWS_EXPORT CocoaScrollBar : public ScrollBar,
+class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
                                     public ViewsScrollbarBridgeDelegate,
                                     public ui::ImplicitAnimationObserver,
                                     public gfx::AnimationDelegate {
@@ -59,7 +59,7 @@ class VIEWS_EXPORT CocoaScrollBar : public ScrollBar,
   bool IsScrollbarFullyHidden() const;
 
  protected:
-  // ScrollBar:
+  // BaseScrollBar:
   gfx::Rect GetTrackBounds() const override;
 
   // ScrollBar:
@@ -72,7 +72,7 @@ class VIEWS_EXPORT CocoaScrollBar : public ScrollBar,
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  friend class ScrollBar;  // For ScrollBar::GetHideTimerForTesting().
+  friend class BaseScrollBar;  // For BaseScrollBar::GetHideTimerForTest().
 
   // Methods to change the visibility of the scrollbar.
   void ShowScrollbar();

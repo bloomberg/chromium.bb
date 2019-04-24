@@ -23,7 +23,9 @@
 
 namespace sw
 {
+	extern bool complementaryDepthBuffer;
 	extern TranscendentalPrecision logPrecision;
+	extern bool leadingVertexFirst;
 
 	SetupRoutine::SetupRoutine(const SetupProcessor::State &state) : state(state)
 	{
@@ -107,21 +109,32 @@ namespace sw
 
 				d = IfThenElse(A > 0.0f, d, Int(0));
 
-				If(frontFacing)
+				if(state.twoSidedStencil)
 				{
-					*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-					*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+					If(frontFacing)
+					{
+						*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+						*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+					}
+					Else
+					{
+						*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+						*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+					}
 				}
-				Else
+
+				if(state.vFace)
 				{
-					*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-					*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+					*Pointer<Float>(primitive + OFFSET(Primitive,area)) = 0.5f * A;
 				}
 			}
 			else
 			{
-				*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-				*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+				if(state.twoSidedStencil)
+				{
+					*Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask)) = Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+					*Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask)) = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+				}
 			}
 
 			Int n = *Pointer<Int>(polygon + OFFSET(Polygon,n));
@@ -426,6 +439,11 @@ namespace sw
 					Float bias = Max(Abs(Float(A.x)), Abs(Float(B.x)));
 					bias *= *Pointer<Float>(data + OFFSET(DrawData,slopeDepthBias));
 
+					if(complementaryDepthBuffer)
+					{
+						bias = -bias;
+					}
+
 					c += bias;
 				}
 
@@ -510,7 +528,7 @@ namespace sw
 		}
 		else
 		{
-			int leadingVertex = OFFSET(Triangle,v0);
+			int leadingVertex = leadingVertexFirst ? OFFSET(Triangle,v0) : OFFSET(Triangle,v2);
 			Float C = *Pointer<Float>(triangle + leadingVertex + attribute);
 
 			*Pointer<Float4>(primitive + planeEquation + 0, 16) = Float4(0, 0, 0, 0);

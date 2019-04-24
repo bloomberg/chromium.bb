@@ -14,7 +14,6 @@
 #include <memory>
 #include <vector>
 
-#include "api/transport/field_trial_based_config.h"
 #include "modules/remote_bitrate_estimator/remote_estimator_proxy.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/critical_section.h"
@@ -39,7 +38,7 @@ class ReceiveSideCongestionController : public CallStatsObserver,
                                 size_t payload_size,
                                 const RTPHeader& header);
 
-  void SetSendPeriodicFeedback(bool send_periodic_feedback);
+  void SetSendFeedbackOnRequestOnly(bool send_feedback_on_request_only);
   // TODO(nisse): Delete these methods, design a more specific interface.
   virtual RemoteBitrateEstimator* GetRemoteBitrateEstimator(bool send_side_bwe);
   virtual const RemoteBitrateEstimator* GetRemoteBitrateEstimator(
@@ -94,7 +93,6 @@ class ReceiveSideCongestionController : public CallStatsObserver,
     RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(WrappingBitrateEstimator);
   };
 
-  const FieldTrialBasedConfig field_trial_config_;
   WrappingBitrateEstimator remote_bitrate_estimator_;
   RemoteEstimatorProxy remote_estimator_proxy_;
 };

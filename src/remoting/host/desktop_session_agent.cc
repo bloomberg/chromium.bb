@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -72,50 +72,43 @@ void DesktopSessionClipboardStub::InjectClipboardEvent(
   desktop_session_agent_->InjectClipboardEvent(event);
 }
 
-// webrtc::SharedMemory implementation that creates a
-// base::ReadOnlySharedMemoryRegion.
+// webrtc::SharedMemory implementation that creates base::SharedMemory.
 class SharedMemoryImpl : public webrtc::SharedMemory {
  public:
   static std::unique_ptr<SharedMemoryImpl>
   Create(size_t size, int id, const base::Closure& on_deleted_callback) {
-    auto region_mapping = base::ReadOnlySharedMemoryRegion::Create(size);
-    if (!region_mapping.IsValid())
+    std::unique_ptr<base::SharedMemory> memory(new base::SharedMemory());
+    if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
-    // The SharedMemoryImpl constructor is private, so std::make_unique can't be
-    // used.
-    return base::WrapUnique(new SharedMemoryImpl(std::move(region_mapping), id,
-                                                 on_deleted_callback));
+    return base::WrapUnique(
+        new SharedMemoryImpl(std::move(memory), size, id, on_deleted_callback));
   }
 
   ~SharedMemoryImpl() override { on_deleted_callback_.Run(); }
 
-  const base::ReadOnlySharedMemoryRegion& region() const {
-    return region_mapping_.region;
-  }
+  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:
-  SharedMemoryImpl(base::MappedReadOnlyRegion region_mapping,
+  SharedMemoryImpl(std::unique_ptr<base::SharedMemory> memory,
+                   size_t size,
                    int id,
                    const base::Closure& on_deleted_callback)
-      : SharedMemory(
-            region_mapping.mapping.memory(),
-            region_mapping.mapping.size(),
+      : SharedMemory(memory->memory(),
+                     size,
 // webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on Windows.
 #if defined(OS_WIN)
-            base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
-                region_mapping.region.Duplicate())
-                .PassPlatformHandle()
-                .Take(),
+                     memory->handle().GetHandle(),
 #else
-            0,
+                     0,
 #endif
-            id),
-        on_deleted_callback_(on_deleted_callback) {
-    region_mapping_ = std::move(region_mapping);
+                     id),
+        on_deleted_callback_(on_deleted_callback),
+        shared_memory_(std::move(memory)) {
   }
 
   base::Closure on_deleted_callback_;
-  base::MappedReadOnlyRegion region_mapping_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
+
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryImpl);
 };
 
@@ -149,7 +142,7 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
 
       send_message_callback_.Run(
           std::make_unique<ChromotingDesktopNetworkMsg_CreateSharedBuffer>(
-              buffer->id(), buffer->region().Duplicate(), buffer->size()));
+              buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
     }
 
     return std::move(buffer);

@@ -23,21 +23,25 @@ class NGPhysicalLineBoxFragmentTest : public NGLayoutTest {
     DCHECK(layout_object) << container;
     DCHECK(layout_object->IsLayoutBlockFlow()) << container;
     const NGPhysicalBoxFragment* root_fragment =
-        To<LayoutBlockFlow>(layout_object)->CurrentFragment();
+        ToLayoutBlockFlow(layout_object)->CurrentFragment();
     DCHECK(root_fragment) << container;
 
     for (const auto& child :
          NGInlineFragmentTraversal::DescendantsOf(*root_fragment)) {
       if (child.fragment->IsLineBox())
-        return To<NGPhysicalLineBoxFragment>(child.fragment.get());
+        return ToNGPhysicalLineBoxFragment(child.fragment.get());
     }
     NOTREACHED();
     return nullptr;
   }
 };
 
-#define EXPECT_TEXT_FRAGMENT(text, fragment) \
-  { EXPECT_EQ(text, To<NGPhysicalTextFragment>(fragment)->Text().ToString()); }
+#define EXPECT_TEXT_FRAGMENT(text, fragment)                                \
+  {                                                                         \
+    EXPECT_TRUE(fragment);                                                  \
+    EXPECT_TRUE(fragment->IsText());                                        \
+    EXPECT_EQ(text, ToNGPhysicalTextFragment(fragment)->Text().ToString()); \
+  }
 
 #define EXPECT_BOX_FRAGMENT(id, fragment)               \
   {                                                     \

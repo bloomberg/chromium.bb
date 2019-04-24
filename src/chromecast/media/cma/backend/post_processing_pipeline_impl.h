@@ -32,16 +32,15 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
                              int channels);
   ~PostProcessingPipelineImpl() override;
 
-  double ProcessFrames(float* data,
-                       int num_frames,
-                       float current_volume,
-                       bool is_silence) override;
+  int ProcessFrames(float* data,
+                    int num_frames,
+                    float current_volume,
+                    bool is_silence) override;
 
   float* GetOutputBuffer() override;
-  int NumOutputChannels() const override;
+  int NumOutputChannels() override;
 
-  bool SetOutputSampleRate(int sample_rate) override;
-  int GetInputSampleRate() const override;
+  bool SetSampleRate(int sample_rate) override;
   bool IsRinging() override;
 
   // Send string |config| to post processor |name|.
@@ -55,7 +54,6 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   // structs.
   typedef struct {
     std::unique_ptr<AudioPostProcessor2> ptr;
-    double output_frames_per_input_frame;
     std::string name;
   } PostProcessorInfo;
 
@@ -63,11 +61,10 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   void UpdateCastVolume(float multiplier);
 
   std::string name_;
-  int input_sample_rate_ = 0;
-  int output_sample_rate_ = 0;
+  int sample_rate_ = 0;
   int ringing_time_in_frames_ = 0;
   int silence_frames_processed_ = 0;
-  double delay_s_ = 0;
+  int total_delay_frames_ = 0;
   float current_multiplier_ = 0.0;
   float cast_volume_ = 0.0;
   float current_dbfs_ = 0.0;

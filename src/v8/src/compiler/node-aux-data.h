@@ -56,11 +56,11 @@ class NodeAuxData {
 template <class T, T def()>
 class NodeAuxData<T, def>::const_iterator {
  public:
-  using iterator_category = std::forward_iterator_tag;
-  using difference_type = int;
-  using value_type = std::pair<size_t, T>;
-  using pointer = value_type*;
-  using reference = value_type&;
+  typedef std::forward_iterator_tag iterator_category;
+  typedef int difference_type;
+  typedef std::pair<size_t, T> value_type;
+  typedef value_type* pointer;
+  typedef value_type& reference;
 
   const_iterator(const ZoneVector<T>* data, size_t current)
       : data_(data), current_(current) {}

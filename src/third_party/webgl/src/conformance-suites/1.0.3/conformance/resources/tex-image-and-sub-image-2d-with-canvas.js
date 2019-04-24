@@ -203,7 +203,7 @@ function generateTest(pixelFormat, pixelType, prologue) {
                     return;
                 }
             }
-            wtu.dispatchTask(runNextTest);
+            wtu.waitForComposite(runNextTest);
         }
         runNextTest();
     }

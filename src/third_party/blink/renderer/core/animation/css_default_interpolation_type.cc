@@ -28,7 +28,7 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
     return nullptr;
   }
   return InterpolationValue(
-      std::make_unique<InterpolableList>(0),
+      InterpolableList::Create(0),
       CSSDefaultNonInterpolableValue::Create(
           ToCSSPropertySpecificKeyframe(keyframe).Value()));
 }

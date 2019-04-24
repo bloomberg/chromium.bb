@@ -45,7 +45,9 @@ struct CryptoAPIInjector {
  private:
   friend struct base::LazyInstanceTraitsBase<CryptoAPIInjector>;
 
-  CryptoAPIInjector() : original_function(nullptr), original_handle(nullptr) {
+  CryptoAPIInjector()
+      : original_function(NULL),
+        original_handle(NULL) {
     HCRYPTOIDFUNCSET registered_functions =
         CryptInitOIDFunctionSet(CRYPT_OID_OPEN_STORE_PROV_FUNC, 0);
 
@@ -70,9 +72,10 @@ struct CryptoAPIInjector {
     // Inject kFunctionToIntercept at the front of the linked list that
     // crypt32 uses when CertOpenStore is called, replacing the existing
     // registered function.
-    ok = CryptInstallOIDFunctionAddress(
-        nullptr, 0, CRYPT_OID_OPEN_STORE_PROV_FUNC, 1, &kFunctionToIntercept,
-        CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
+    ok = CryptInstallOIDFunctionAddress(NULL, 0,
+                                        CRYPT_OID_OPEN_STORE_PROV_FUNC, 1,
+                                        &kFunctionToIntercept,
+                                        CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
     DCHECK(ok);
   }
 
@@ -81,7 +84,7 @@ struct CryptoAPIInjector {
   // may still be running when ~AtExitManager is called, so the LazyInstance
   // must be leaky.
   ~CryptoAPIInjector() {
-    original_function = nullptr;
+    original_function = NULL;
     CryptFreeOIDFunctionAddress(original_handle, NULL);
   }
 };
@@ -147,7 +150,7 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
       reinterpret_cast<const BYTE*>(
           CRYPTO_BUFFER_data(certificate->cert_buffer())),
       base::checked_cast<DWORD>(CRYPTO_BUFFER_len(certificate->cert_buffer())),
-      CERT_STORE_ADD_NEW, nullptr);
+      CERT_STORE_ADD_NEW, NULL);
   if (!ok) {
     // If the certificate is already added, return successfully.
     return GetLastError() == static_cast<DWORD>(CRYPT_E_EXISTS);
@@ -161,9 +164,9 @@ void TestRootCerts::Clear() {
   empty_ = true;
 
   for (PCCERT_CONTEXT prev_cert =
-           CertEnumCertificatesInStore(temporary_roots_, nullptr);
+           CertEnumCertificatesInStore(temporary_roots_, NULL);
        prev_cert;
-       prev_cert = CertEnumCertificatesInStore(temporary_roots_, nullptr))
+       prev_cert = CertEnumCertificatesInStore(temporary_roots_, NULL))
     CertDeleteCertificateFromStore(prev_cert);
 }
 
@@ -173,7 +176,7 @@ bool TestRootCerts::IsEmpty() const {
 
 HCERTCHAINENGINE TestRootCerts::GetChainEngine() const {
   if (IsEmpty())
-    return nullptr;  // Default chain engine will suffice.
+    return NULL;  // Default chain engine will suffice.
 
   // Windows versions before 8 don't accept the struct size for later versions.
   // We report the size of the old struct since we don't need the new members.
@@ -194,7 +197,7 @@ HCERTCHAINENGINE TestRootCerts::GetChainEngine() const {
   engine_config.dwFlags =
       CERT_CHAIN_ENABLE_CACHE_AUTO_UPDATE |
       CERT_CHAIN_ENABLE_SHARE_STORE;
-  HCERTCHAINENGINE chain_engine = nullptr;
+  HCERTCHAINENGINE chain_engine = NULL;
   BOOL ok = CertCreateCertificateChainEngine(&engine_config, &chain_engine);
   DCHECK(ok);
   return chain_engine;
@@ -206,9 +209,9 @@ TestRootCerts::~TestRootCerts() {
 
 void TestRootCerts::Init() {
   empty_ = true;
-  temporary_roots_ =
-      CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,
-                    CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG, nullptr);
+  temporary_roots_ = CertOpenStore(
+      CERT_STORE_PROV_MEMORY, 0, NULL,
+      CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG, NULL);
   DCHECK(temporary_roots_);
 }
 

@@ -31,7 +31,9 @@ base::string16 FormatUrlToSubdomain(const GURL& url) {
 }  // namespace
 
 TabUIHelper::TabUIData::TabUIData(const GURL& url)
-    : title(FormatUrlToSubdomain(url)), favicon(favicon::GetDefaultFavicon()) {}
+    : title(FormatUrlToSubdomain(url)),
+      favicon(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_DEFAULT_FAVICON)) {}
 
 TabUIHelper::TabUIHelper(content::WebContents* contents)
     : WebContentsObserver(contents), weak_ptr_factory_(this) {}

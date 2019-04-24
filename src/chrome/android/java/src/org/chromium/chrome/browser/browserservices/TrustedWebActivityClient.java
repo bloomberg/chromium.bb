@@ -27,7 +27,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -35,31 +34,22 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 /**
  * Uses a Trusted Web Activity client to display notifications.
  */
-@Singleton
 public class TrustedWebActivityClient {
     private final TrustedWebActivityServiceConnectionManager mConnection;
     private final TrustedWebActivityUmaRecorder mRecorder;
-
-    /** Interface for callbacks to {@link #checkNotificationPermission}. */
-    public interface NotificationPermissionCheckCallback {
-        /** May be called as a result of {@link #checkNotificationPermission}. */
-        void onPermissionCheck(ComponentName answeringApp, boolean enabled);
-    }
+    private final NotificationUmaTracker mNotificationUmaTracker;
 
     /**
      * Creates a TrustedWebActivityService.
      */
-    @Inject
     public TrustedWebActivityClient(TrustedWebActivityServiceConnectionManager connection,
-            TrustedWebActivityUmaRecorder recorder) {
+            TrustedWebActivityUmaRecorder recorder, NotificationUmaTracker notificationUmaTracker) {
         mConnection = connection;
         mRecorder = recorder;
+        mNotificationUmaTracker = notificationUmaTracker;
     }
 
     /**
@@ -73,44 +63,19 @@ public class TrustedWebActivityClient {
     }
 
     /**
-     * Checks whether the TWA of the given origin has the notification permission granted.
-     * @param callback Will be called on a background thread with whether the permission is granted.
-     * @return {@code false} if no such TWA exists (in which case the callback will not be called).
-     */
-    public boolean checkNotificationPermission(Origin origin,
-            NotificationPermissionCheckCallback callback) {
-        Resources res = ContextUtils.getApplicationContext().getResources();
-        String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        return mConnection.execute(origin.uri(), origin.toString(), service ->
-                callback.onPermissionCheck(service.getComponentName(),
-                        service.areNotificationsEnabled(channelDisplayName)));
-    }
-
-    /**
      * Displays a notification through a Trusted Web Activity client.
      * @param scope The scope of the Service Worker that triggered the notification.
      * @param platformTag A notification tag.
      * @param platformId A notification id.
      * @param builder A builder for the notification to display.
      *                The Trusted Web Activity client may override the small icon.
-     * @param notificationUmaTracker To log Notification UMA.
      */
     public void notifyNotification(Uri scope, String platformTag, int platformId,
-            NotificationBuilderBase builder, NotificationUmaTracker notificationUmaTracker) {
+            NotificationBuilderBase builder) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        Origin origin = new Origin(scope);
 
-        mConnection.execute(scope, origin.toString(), service -> {
-            if (!service.areNotificationsEnabled(channelDisplayName)) {
-                NotificationPermissionUpdater.onDelegatedNotificationDisabled(origin,
-                        service.getComponentName());
-
-                // Attempting to notify when notifications are disabled won't have any effect, but
-                // returning here just saves us from doing unnecessary work.
-                return;
-            }
-
+        mConnection.execute(scope, new Origin(scope).toString(), service -> {
             fallbackToIconFromServiceIfNecessary(builder, service);
 
             NotificationMetadata metadata = new NotificationMetadata(
@@ -120,7 +85,7 @@ public class TrustedWebActivityClient {
 
             service.notify(platformTag, platformId, notification, channelDisplayName);
 
-            notificationUmaTracker.onNotificationShown(
+            mNotificationUmaTracker.onNotificationShown(
                     NotificationUmaTracker.SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES,
                     notification);
         });

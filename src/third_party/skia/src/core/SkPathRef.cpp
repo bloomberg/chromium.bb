@@ -243,11 +243,6 @@ void SkPathRef::CreateTransformedCopy(sk_sp<SkPathRef>* dst,
         (*dst)->fRRectOrOvalStartIdx = start;
     }
 
-    if (dst->get() == &src) {
-        (*dst)->callGenIDChangeListeners();
-        (*dst)->fGenerationID = 0;
-    }
-
     SkDEBUGCODE((*dst)->validate();)
 }
 

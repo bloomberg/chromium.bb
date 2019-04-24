@@ -45,11 +45,6 @@ bool ShouldShowSyncSignin(SyncSetupService::SyncServiceState syncState);
 bool ShouldShowSyncPassphraseSettings(
     SyncSetupService::SyncServiceState syncState);
 
-// Returns true if Google services settings should be displayed based on
-// |syncState|.
-bool ShouldShowGoogleServicesSettings(
-    SyncSetupService::SyncServiceState syncState);
-
 // Returns true if sync settings should be displayed based on |syncState|.
 bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState);
 

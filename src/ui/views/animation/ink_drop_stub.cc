@@ -6,9 +6,9 @@
 
 namespace views {
 
-InkDropStub::InkDropStub() = default;
+InkDropStub::InkDropStub() {}
 
-InkDropStub::~InkDropStub() = default;
+InkDropStub::~InkDropStub() {}
 
 void InkDropStub::HostSizeChanged(const gfx::Size& new_size) {}
 

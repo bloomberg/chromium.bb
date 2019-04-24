@@ -487,7 +487,7 @@ TEST_F(ActivityTrackerTest, ProcessDeathTest) {
 
   // Get callbacks for process exit.
   global->SetProcessExitCallback(
-      BindRepeating(&ActivityTrackerTest::HandleProcessExit, Unretained(this)));
+      Bind(&ActivityTrackerTest::HandleProcessExit, Unretained(this)));
 
   // Pretend than another process has started.
   global->RecordProcessLaunch(other_process_id, FILE_PATH_LITERAL("foo --bar"));

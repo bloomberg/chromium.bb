@@ -13,12 +13,29 @@ android_library("dom_distiller_core_java") {
     "java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
     "java/src/org/chromium/components/dom_distiller/core/DistilledPagePrefs.java",
   ]
-  srcjar_deps = [ ":jni_enums" ]
+
+  srcjar_deps = [
+    ":dom_distiller_core_font_family_javagen",
+    ":dom_distiller_core_theme_javagen",
+  ]
 }
 
-java_cpp_enum("jni_enums") {
-  visibility = [ ":*" ]
+java_cpp_template("dom_distiller_core_font_family_javagen") {
+  package_path = "org/chromium/components/dom_distiller/core"
   sources = [
-    "//components/dom_distiller/core/distilled_page_prefs.h",
+    "java/src/org/chromium/components/dom_distiller/core/FontFamily.template",
+  ]
+  inputs = [
+    "../font_family_list.h",
+  ]
+}
+
+java_cpp_template("dom_distiller_core_theme_javagen") {
+  package_path = "org/chromium/components/dom_distiller/core"
+  sources = [
+    "java/src/org/chromium/components/dom_distiller/core/Theme.template",
+  ]
+  inputs = [
+    "../theme_list.h",
   ]
 }

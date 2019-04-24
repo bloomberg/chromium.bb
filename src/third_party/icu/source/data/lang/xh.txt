@@ -2,7 +2,10 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 xh{
     Languages{
+        af{"isiBhulu"}
+        en{"isiNgesi"}
         xh{"isiXhosa"}
+        zu{"isiZulu"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.88"}
 }

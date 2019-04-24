@@ -30,41 +30,31 @@ ThreadLocalPointer<const PendingTask>* GetTLSForCurrentPendingTask() {
 
 }  // namespace
 
-const PendingTask* TaskAnnotator::CurrentTaskForThread() {
-  return GetTLSForCurrentPendingTask()->Get();
-}
-
 TaskAnnotator::TaskAnnotator() = default;
 
 TaskAnnotator::~TaskAnnotator() = default;
 
 void TaskAnnotator::WillQueueTask(const char* trace_event_name,
-                                  PendingTask* pending_task,
-                                  const char* task_queue_name) {
+                                  PendingTask* pending_task) {
   DCHECK(trace_event_name);
   DCHECK(pending_task);
-  DCHECK(task_queue_name);
-  TRACE_EVENT_WITH_FLOW1(
-      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
-      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
-      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_DISALLOW_POSTTASK,
-      "task_queue_name", task_queue_name);
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         trace_event_name,
+                         TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(!pending_task->task_backtrace[0])
       << "Task backtrace was already set, task posted twice??";
-  if (pending_task->task_backtrace[0])
-    return;
-
-  const PendingTask* parent_task = GetTLSForCurrentPendingTask()->Get();
-  if (!parent_task)
-    return;
-  pending_task->task_backtrace[0] = parent_task->posted_from.program_counter();
-  std::copy(parent_task->task_backtrace.begin(),
-            parent_task->task_backtrace.end() - 1,
-            pending_task->task_backtrace.begin() + 1);
-  pending_task->task_backtrace_overflow =
-      parent_task->task_backtrace_overflow ||
-      parent_task->task_backtrace.back() != nullptr;
+  if (!pending_task->task_backtrace[0]) {
+    const PendingTask* parent_task = GetTLSForCurrentPendingTask()->Get();
+    if (parent_task) {
+      pending_task->task_backtrace[0] =
+          parent_task->posted_from.program_counter();
+      std::copy(parent_task->task_backtrace.begin(),
+                parent_task->task_backtrace.end() - 1,
+                pending_task->task_backtrace.begin() + 1);
+    }
+  }
 }
 
 void TaskAnnotator::RunTask(const char* trace_event_name,
@@ -78,18 +68,13 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
       TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
 
-  // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
-  // to determine long tasks.
-  // See https://crbug.com/681863 and https://crbug.com/874982
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RunTask");
-
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure
   // it is on the stack if the task crashes. Be careful not to assume that the
   // variable itself will have the expected value when displayed by the
   // optimizer in an optimized build. Look at a memory dump of the stack.
   static constexpr int kStackTaskTraceSnapshotSize =
-      PendingTask::kTaskBacktraceLength + 3;
+      std::tuple_size<decltype(pending_task->task_backtrace)>::value + 3;
   std::array<const void*, kStackTaskTraceSnapshotSize> task_backtrace;
 
   // Store a marker to locate |task_backtrace| content easily on a memory

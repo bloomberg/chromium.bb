@@ -101,9 +101,19 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   variations::testing::ClearAllVariationParams();
 }
 
-TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefault) {
+#if defined(OS_ANDROID)
+
+TEST(PreviewsExperimentsTest, TestClientLoFiEnabledByDefaultOnAndroid) {
+  EXPECT_TRUE(params::IsClientLoFiEnabled());
+}
+
+#else  // !defined(OS_ANDROID)
+
+TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefaultOnNonAndroid) {
   EXPECT_FALSE(params::IsClientLoFiEnabled());
 }
+
+#endif  // defined(OS_ANDROID)
 
 TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;

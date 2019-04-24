@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Tests for MultiDevice unified setup WebUI. Chrome OS only. */
+/** @fileoverview Tests for MultiDevice unified setup WebUI. */
+
+GEN('#if defined(OS_CHROMEOS)');
 
 /** @const {string} Path to source root. */
 var ROOT_PATH = '../../../../../';
@@ -48,3 +50,5 @@ TEST_F('MultiDeviceSetupBrowserTest', 'StartSetupPage', function() {
   multidevice_setup.registerStartSetupPageTests();
   mocha.run();
 });
+
+GEN('#endif');

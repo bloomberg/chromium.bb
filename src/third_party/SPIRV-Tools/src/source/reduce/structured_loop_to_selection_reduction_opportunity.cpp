@@ -21,13 +21,9 @@
 namespace spvtools {
 namespace reduce {
 
-using opt::BasicBlock;
-using opt::IRContext;
-using opt::Instruction;
-using opt::Operand;
-
 namespace {
 const uint32_t kMergeNodeIndex = 0;
+const uint32_t kContinueNodeIndex = 1;
 }  // namespace
 
 bool StructuredLoopToSelectionReductionOpportunity::PreconditionHolds() {
@@ -47,11 +43,15 @@ void StructuredLoopToSelectionReductionOpportunity::Apply() {
 
   // (1) Redirect edges that point to the loop's continue target to their
   // closest merge block.
-  RedirectToClosestMergeBlock(loop_construct_header_->ContinueBlockId());
+  RedirectToClosestMergeBlock(
+      loop_construct_header_->GetLoopMergeInst()->GetSingleWordOperand(
+          kContinueNodeIndex));
 
   // (2) Redirect edges that point to the loop's merge block to their closest
   // merge block (which might be that of an enclosing selection, for instance).
-  RedirectToClosestMergeBlock(loop_construct_header_->MergeBlockId());
+  RedirectToClosestMergeBlock(
+      loop_construct_header_->GetLoopMergeInst()->GetSingleWordOperand(
+          kMergeNodeIndex));
 
   // (3) Turn the loop construct header into a selection.
   ChangeLoopToSelection();
@@ -127,8 +127,12 @@ void StructuredLoopToSelectionReductionOpportunity::RedirectEdge(
 
   // original_target_id must either be the merge target or continue construct
   // for the loop being operated on.
-  assert(original_target_id == loop_construct_header_->MergeBlockId() ||
-         original_target_id == loop_construct_header_->ContinueBlockId());
+  assert(original_target_id ==
+             loop_construct_header_->GetMergeInst()->GetSingleWordOperand(
+                 kMergeNodeIndex) ||
+         original_target_id ==
+             loop_construct_header_->GetMergeInst()->GetSingleWordOperand(
+                 kContinueNodeIndex));
 
   auto terminator = context_->cfg()->block(source_id)->terminator();
 
@@ -213,11 +217,11 @@ void StructuredLoopToSelectionReductionOpportunity::ChangeLoopToSelection() {
   // the "else" branch be the merge block.
   auto terminator = loop_construct_header_->terminator();
   if (terminator->opcode() == SpvOpBranch) {
-    opt::analysis::Bool temp;
-    const opt::analysis::Bool* bool_type =
+    analysis::Bool temp;
+    const analysis::Bool* bool_type =
         context_->get_type_mgr()->GetRegisteredType(&temp)->AsBool();
     auto const_mgr = context_->get_constant_mgr();
-    auto true_const = const_mgr->GetConstant(bool_type, {1});
+    auto true_const = const_mgr->GetConstant(bool_type, {true});
     auto true_const_result_id =
         const_mgr->GetDefiningInstruction(true_const)->result_id();
     auto original_branch_id = terminator->GetSingleWordOperand(0);
@@ -246,10 +250,6 @@ void StructuredLoopToSelectionReductionOpportunity::FixNonDominatedIdUses() {
       context_->get_def_use_mgr()->ForEachUse(&def, [this, &block, &def](
                                                         Instruction* use,
                                                         uint32_t index) {
-        // Ignore uses outside of blocks, such as in OpDecorate.
-        if (context_->get_instr_block(use) == nullptr) {
-          return;
-        }
         // If a use is not appropriately dominated by its definition,
         // replace the use with an OpUndef, unless the definition is an
         // access chain, in which case replace it with some (possibly fresh)

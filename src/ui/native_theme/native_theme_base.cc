@@ -606,7 +606,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setShader(cc::PaintShader::MakeLinearGradient(
-      gradient_bounds, colors, nullptr, 3, SkTileMode::kClamp));
+      gradient_bounds, colors, nullptr, 3, SkShader::kClamp_TileMode));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
   flags.setShader(nullptr);
@@ -687,7 +687,7 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setShader(cc::PaintShader::MakeLinearGradient(
-      gradient_bounds, colors, nullptr, 2, SkTileMode::kClamp));
+      gradient_bounds, colors, nullptr, 2, SkShader::kClamp_TileMode));
 
   canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), flags);
   flags.setShader(nullptr);

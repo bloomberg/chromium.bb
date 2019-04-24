@@ -16,7 +16,8 @@
 namespace sync_sessions {
 
 const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced{
-    "DeferRecyclingOfSyncTabNodesIfUnsynced", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DeferRecyclingOfSyncTabNodesIfUnsynced",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -24,7 +25,7 @@ namespace {
 // due to data not having been committed yet. After that time, the data will
 // be dropped.
 constexpr base::TimeDelta kMaxUnmappedButUnsyncedLocalTabAge =
-    base::TimeDelta::FromMinutes(10);
+    base::TimeDelta::FromDays(1);
 // This is a generous cap to avoid issues with situations like sync being in
 // error state (e.g. auth error) during which many tabs could be opened and
 // closed, and still the information would not be committed.
@@ -543,7 +544,9 @@ std::set<int> SyncedSessionTracker::CleanupLocalTabs(
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
   CleanupSessionImpl(local_session_tag_, is_tab_node_unsynced_cb);
-  return session->tab_node_pool.CleanupFreeTabNodes();
+  std::set<int> deleted_node_ids;
+  session->tab_node_pool.CleanupTabNodes(&deleted_node_ids);
+  return deleted_node_ids;
 }
 
 int SyncedSessionTracker::LookupTabNodeFromTabId(const std::string& session_tag,

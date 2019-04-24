@@ -18,11 +18,8 @@
 #include "unicode/uchar.h"
 #include "unicode/uscript.h"
 #include "unicode/uloc.h"
-#include "bytesinkutil.h"
-#include "charstr.h"
 #include "cmemory.h"
 #include "cstring.h"
-#include "ulocimp.h"
 
 static const UScriptCode JAPANESE[3] = { USCRIPT_KATAKANA, USCRIPT_HIRAGANA, USCRIPT_HAN };
 static const UScriptCode KOREAN[2] = { USCRIPT_HANGUL, USCRIPT_HAN };
@@ -101,6 +98,7 @@ uscript_getCode(const char* nameOrAbbrOrLocale,
                 int32_t capacity,
                 UErrorCode* err){
     UBool triedCode;
+    char likely[ULOC_FULLNAME_CAPACITY];
     UErrorCode internalErrorCode;
     int32_t length;
 
@@ -127,13 +125,10 @@ uscript_getCode(const char* nameOrAbbrOrLocale,
     if(U_FAILURE(*err) || length != 0) {
         return length;
     }
-    icu::CharString likely;
-    {
-        icu::CharStringByteSink sink(&likely);
-        ulocimp_addLikelySubtags(nameOrAbbrOrLocale, sink, &internalErrorCode);
-    }
+    (void)uloc_addLikelySubtags(nameOrAbbrOrLocale,
+                                likely, UPRV_LENGTHOF(likely), &internalErrorCode);
     if(U_SUCCESS(internalErrorCode) && internalErrorCode != U_STRING_NOT_TERMINATED_WARNING) {
-        length = getCodesFromLocale(likely.data(), fillIn, capacity, err);
+        length = getCodesFromLocale(likely, fillIn, capacity, err);
         if(U_FAILURE(*err) || length != 0) {
             return length;
         }

@@ -37,18 +37,17 @@
 #include "test/mock_audio_decoder.h"
 #include "test/mock_audio_decoder_factory.h"
 
-using ::testing::_;
 using ::testing::AtLeast;
-using ::testing::DoAll;
-using ::testing::InSequence;
-using ::testing::Invoke;
-using ::testing::IsNull;
-using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::_;
 using ::testing::SetArgPointee;
 using ::testing::SetArrayArgument;
+using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::WithArg;
+using ::testing::Pointee;
+using ::testing::IsNull;
 
 namespace webrtc {
 

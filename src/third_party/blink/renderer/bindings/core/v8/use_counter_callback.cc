@@ -162,7 +162,6 @@ void UseCounterCallback(v8::Isolate* isolate,
       break;
     case v8::Isolate::kAtomicsWake:
       blink_feature = WebFeature::kV8AtomicsWake;
-      deprecated = true;
       break;
     case v8::Isolate::kCollator:
       blink_feature = WebFeature::kCollator;

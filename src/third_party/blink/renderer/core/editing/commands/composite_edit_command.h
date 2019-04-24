@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/editing/commands/editing_state.h"
 #include "third_party/blink/renderer/core/editing/commands/undo_step.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -229,12 +228,11 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   Member<UndoStep> undo_step_;
 };
 
-template <>
-struct DowncastTraits<CompositeEditCommand> {
-  static bool AllowFrom(const EditCommand& command) {
-    return command.IsCompositeEditCommand();
-  }
-};
+DEFINE_TYPE_CASTS(CompositeEditCommand,
+                  EditCommand,
+                  command,
+                  command->IsCompositeEditCommand(),
+                  command.IsCompositeEditCommand());
 
 }  // namespace blink
 

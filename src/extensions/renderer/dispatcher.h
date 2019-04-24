@@ -58,7 +58,7 @@ class RenderThread;
 namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
-class NativeExtensionBindingsSystem;
+class ExtensionBindingsSystem;
 class IPCMessageSender;
 class ScriptContext;
 class ScriptContextSetIterable;
@@ -163,16 +163,13 @@ class Dispatcher : public content::RenderThreadObserver,
   };
   // Returns a list of resources for the JS modules to add to the source map.
   static std::vector<JsResourceInfo> GetJsResources();
-  static void RegisterNativeHandlers(
-      ModuleSystem* module_system,
-      ScriptContext* context,
-      Dispatcher* dispatcher,
-      NativeExtensionBindingsSystem* bindings_system,
-      V8SchemaRegistry* v8_schema_registry);
+  static void RegisterNativeHandlers(ModuleSystem* module_system,
+                                     ScriptContext* context,
+                                     Dispatcher* dispatcher,
+                                     ExtensionBindingsSystem* bindings_system,
+                                     V8SchemaRegistry* v8_schema_registry);
 
-  NativeExtensionBindingsSystem* bindings_system() {
-    return bindings_system_.get();
-  }
+  ExtensionBindingsSystem* bindings_system() { return bindings_system_.get(); }
 
  private:
   // The RendererPermissionsPolicyDelegateTest.CannotScriptWebstore test needs
@@ -255,7 +252,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context,
-                              NativeExtensionBindingsSystem* bindings_system,
+                              ExtensionBindingsSystem* bindings_system,
                               V8SchemaRegistry* v8_schema_registry);
 
   // Updates a web page context with any content capabilities granted by active
@@ -272,10 +269,10 @@ class Dispatcher : public content::RenderThreadObserver,
   // |context|.
   void RequireGuestViewModules(ScriptContext* context);
 
-  // Creates the NativeExtensionBindingsSystem. Note: this may be called on any
+  // Creates the ExtensionBindingsSystem. Note: this may be called on any
   // thread, and thus cannot mutate any state or rely on state which can be
   // mutated in Dispatcher.
-  std::unique_ptr<NativeExtensionBindingsSystem> CreateBindingsSystem(
+  std::unique_ptr<ExtensionBindingsSystem> CreateBindingsSystem(
       std::unique_ptr<IPCMessageSender> ipc_sender);
 
   // The delegate for this dispatcher to handle embedder-specific logic.
@@ -304,7 +301,7 @@ class Dispatcher : public content::RenderThreadObserver,
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
 
   // The bindings system associated with the main thread.
-  std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
+  std::unique_ptr<ExtensionBindingsSystem> bindings_system_;
 
   // The platforms system font family and size;
   std::string system_font_family_;

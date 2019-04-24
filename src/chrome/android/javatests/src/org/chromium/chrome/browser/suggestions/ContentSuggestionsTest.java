@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,7 +30,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Misc. Content Suggestions instrumentation tests.
@@ -75,7 +75,7 @@ public class ContentSuggestionsTest {
     private NewTabPage loadNTPWithSearchSuggestState(final boolean enabled)
             throws InterruptedException {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> PrefServiceBridge.getInstance().setSearchSuggestEnabled(enabled));
 
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);

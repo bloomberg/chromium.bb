@@ -90,6 +90,13 @@ class DataReductionProxyChromeSettings
   // Public for testing.
   void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs);
 
+  // Override the default pref name for enabling the Data Reduction Proxy.
+  // Used in tests.
+  void set_data_reduction_proxy_enabled_pref_name_for_test(
+      const std::string& pref_name) {
+    data_reduction_proxy_enabled_pref_name_ = pref_name;
+  }
+
   void SetIgnoreLongTermBlackListRules(
       bool ignore_long_term_black_list_rules) override;
 
@@ -105,6 +112,8 @@ class DataReductionProxyChromeSettings
   // migration action taken.
   ProxyPrefMigrationResult MigrateDataReductionProxyOffProxyPrefsHelper(
       PrefService* prefs);
+
+  std::string data_reduction_proxy_enabled_pref_name_;
 
   // Null before InitDataReductionProxySettings is called.
   Profile* profile_;

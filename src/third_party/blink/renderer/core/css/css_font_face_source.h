@@ -46,12 +46,7 @@ class CORE_EXPORT CSSFontFaceSource
  public:
   virtual ~CSSFontFaceSource();
 
-  // Describes whether this a LocalFontFaceSource can be retrieved locally
-  // without blocking. If the local lookup needs to be done asynchronously
-  // because it takes longer or requires preparation steps, this return false.
-  // Allows for LocalFontFaceSource to operate in two modes: synchronous and
-  // asynchronously.
-  virtual bool IsLocalNonBlocking() const { return false; }
+  virtual bool IsLocal() const { return false; }
   virtual bool IsLoading() const { return false; }
   virtual bool IsLoaded() const { return true; }
   virtual bool IsValid() const { return true; }
@@ -59,11 +54,7 @@ class CORE_EXPORT CSSFontFaceSource
   scoped_refptr<SimpleFontData> GetFontData(const FontDescription&,
                                             const FontSelectionCapabilities&);
 
-  // TODO(https://crbug.com/947461): IsLocalFontAvailable must not have a
-  // FontDescription argument.
-  virtual bool IsLocalFontAvailable(const FontDescription&) const {
-    return false;
-  }
+  virtual bool IsLocalFontAvailable(const FontDescription&) { return false; }
   virtual void BeginLoadIfNeeded() {}
   virtual void SetDisplay(FontDisplay) {}
 
@@ -72,7 +63,6 @@ class CORE_EXPORT CSSFontFaceSource
 
   // For UMA reporting
   virtual bool HadBlankText() { return false; }
-  virtual void PaintRequested() {}
 
   virtual void Trace(blink::Visitor* visitor) {}
 

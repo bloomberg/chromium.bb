@@ -24,8 +24,8 @@ class View;
 // such a mask by extending this class.
 class VIEWS_EXPORT MaskedTargeterDelegate : public ViewTargeterDelegate {
  public:
-  MaskedTargeterDelegate() = default;
-  ~MaskedTargeterDelegate() override = default;
+  MaskedTargeterDelegate() {}
+  ~MaskedTargeterDelegate() override {}
 
   // Sets the hit-test mask for the view which implements this interface,
   // in that view's local coordinate space. Returns whether a valid mask

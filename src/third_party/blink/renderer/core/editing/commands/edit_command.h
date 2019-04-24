@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -92,12 +91,11 @@ class CORE_EXPORT SimpleEditCommand : public EditCommand {
   bool IsSimpleEditCommand() const final { return true; }
 };
 
-template <>
-struct DowncastTraits<SimpleEditCommand> {
-  static bool AllowFrom(const EditCommand& command) {
-    return command.IsSimpleEditCommand();
-  }
-};
+DEFINE_TYPE_CASTS(SimpleEditCommand,
+                  EditCommand,
+                  command,
+                  command->IsSimpleEditCommand(),
+                  command.IsSimpleEditCommand());
 
 }  // namespace blink
 

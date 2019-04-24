@@ -15,7 +15,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
@@ -76,6 +76,9 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {}
+  void GetAccountInfoFromGaiaId(
+      const std::string& gaia_id,
+      GetAccountInfoFromGaiaIdCallback callback) override {}
   void GetAccessToken(const std::string& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,
@@ -147,7 +150,6 @@ class FakeDeviceActions : mojom::DeviceActions {
   void VerifyAndroidApp(
       std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
       VerifyAndroidAppCallback callback) override {}
-  void LaunchAndroidIntent(const std::string& intent) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 
@@ -162,18 +164,13 @@ class AssistantServiceTest : public testing::Test {
     // which are irrelevant for these tests.
     test_connector_factory_.set_ignore_unknown_service_requests(true);
 
-    PowerManagerClient::InitializeFake();
+    PowerManagerClient::Initialize();
     FakePowerManagerClient::Get()->SetTabletMode(
         PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 
-    shared_url_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &url_loader_factory_);
-
     service_ = std::make_unique<Service>(
         test_connector_factory_.RegisterInstance(mojom::kServiceName),
-        nullptr /* network_connection_tracker */,
-        shared_url_loader_factory_->Clone());
+        nullptr /* network_connection_tracker */, nullptr /* io_task_runner */);
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
@@ -189,15 +186,17 @@ class AssistantServiceTest : public testing::Test {
         std::make_unique<FakeAssistantManagerServiceImpl>();
     fake_assistant_manager_ = fake_assistant_manager.get();
     service_->SetAssistantManagerForTesting(std::move(fake_assistant_manager));
-
-    GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
-                        fake_device_actions_.CreateInterfacePtrAndBind());
-    platform_.FlushForTesting();
-    base::RunLoop().RunUntilIdle();
   }
 
-  ~AssistantServiceTest() override {
-    service_.reset();
+  void SetUp() override {
+    GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
+                        fake_device_actions_.CreateInterfacePtrAndBind());
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &url_loader_factory_);
+    platform_.FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+
     PowerManagerClient::Shutdown();
   }
 
@@ -211,6 +210,10 @@ class AssistantServiceTest : public testing::Test {
 
   FakeAssistantManagerServiceImpl* assistant_manager_service() {
     return fake_assistant_manager_;
+  }
+
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return power_manager_client_;
   }
 
   base::TestMockTimeTaskRunner* mock_task_runner() {
@@ -230,6 +233,7 @@ class AssistantServiceTest : public testing::Test {
   FakeDeviceActions fake_device_actions_;
 
   FakeAssistantManagerServiceImpl* fake_assistant_manager_;
+  chromeos::FakePowerManagerClient* power_manager_client_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -277,7 +281,7 @@ TEST_F(AssistantServiceTest, RetryRefreshTokenAfterFailure) {
 
 TEST_F(AssistantServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
   auto current_count = identity_accessor()->get_access_token_count();
-  FakePowerManagerClient::Get()->SendSuspendDone();
+  power_manager_client()->SendSuspendDone();
   base::RunLoop().RunUntilIdle();
 
   // Token requested immediately after suspend done.

@@ -18,10 +18,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_shill_profile_client.h"
+#include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -147,7 +146,7 @@ class TestNetworkStateHandlerObserver
 class NetworkConfigurationHandlerTest : public testing::Test {
  public:
   NetworkConfigurationHandlerTest() {
-    shill_clients::InitializeFakes();
+    DBusThreadManager::Initialize();
 
     network_state_handler_ = NetworkStateHandler::InitializeForTest();
     // Note: NetworkConfigurationHandler's contructor is private, so
@@ -170,7 +169,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     network_configuration_handler_.reset();
     network_state_handler_.reset();
 
-    shill_clients::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   void SuccessCallback(const std::string& callback_name) {
@@ -259,7 +258,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
                                 const std::string& key,
                                 std::string* result) {
     ShillServiceClient::TestInterface* service_test =
-        ShillServiceClient::Get()->GetTestInterface();
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     const base::DictionaryValue* properties =
         service_test->GetServiceProperties(service_path);
     if (!properties)
@@ -297,12 +296,14 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     return true;
   }
 
-  ShillServiceClient::TestInterface* GetShillServiceClient() {
-    return ShillServiceClient::Get()->GetTestInterface();
+  FakeShillServiceClient* GetShillServiceClient() {
+    return static_cast<FakeShillServiceClient*>(
+        DBusThreadManager::Get()->GetShillServiceClient());
   }
 
-  ShillProfileClient::TestInterface* GetShillProfileClient() {
-    return ShillProfileClient::Get()->GetTestInterface();
+  FakeShillProfileClient* GetShillProfileClient() {
+    return static_cast<FakeShillProfileClient*>(
+        DBusThreadManager::Get()->GetShillProfileClient());
   }
 
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
@@ -675,7 +676,7 @@ TEST_F(NetworkConfigurationHandlerTest, AlwaysOnVpn) {
       shill::kAlwaysOnVpnPackageProperty, base::Value(vpn_package),
       base::DoNothing(), base::Bind(&ErrorCallback));
 
-  ShillManagerClient::Get()->GetProperties(
+  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
       Bind(&NetworkConfigurationHandlerTest::ManagerGetPropertiesCallback,
            base::Unretained(this), "ManagerGetProperties"));
   base::RunLoop().RunUntilIdle();

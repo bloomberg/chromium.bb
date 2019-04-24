@@ -1,4 +1,5 @@
 // META: global=jsshell
+// META: script=/wasm/jsapi/wasm-constants.js
 // META: script=/wasm/jsapi/wasm-module-builder.js
 // META: script=/wasm/jsapi/bad-imports.js
 

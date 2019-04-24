@@ -454,40 +454,40 @@ void SetSamplerParameterBase(Context *context,
     switch (pname)
     {
         case GL_TEXTURE_WRAP_S:
-            sampler->setWrapS(context, ConvertToGLenum(pname, params[0]));
+            sampler->setWrapS(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_WRAP_T:
-            sampler->setWrapT(context, ConvertToGLenum(pname, params[0]));
+            sampler->setWrapT(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_WRAP_R:
-            sampler->setWrapR(context, ConvertToGLenum(pname, params[0]));
+            sampler->setWrapR(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_MIN_FILTER:
-            sampler->setMinFilter(context, ConvertToGLenum(pname, params[0]));
+            sampler->setMinFilter(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_MAG_FILTER:
-            sampler->setMagFilter(context, ConvertToGLenum(pname, params[0]));
+            sampler->setMagFilter(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_MAX_ANISOTROPY_EXT:
-            sampler->setMaxAnisotropy(context, CastQueryValueTo<GLfloat>(pname, params[0]));
+            sampler->setMaxAnisotropy(CastQueryValueTo<GLfloat>(pname, params[0]));
             break;
         case GL_TEXTURE_COMPARE_MODE:
-            sampler->setCompareMode(context, ConvertToGLenum(pname, params[0]));
+            sampler->setCompareMode(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_COMPARE_FUNC:
-            sampler->setCompareFunc(context, ConvertToGLenum(pname, params[0]));
+            sampler->setCompareFunc(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_MIN_LOD:
-            sampler->setMinLod(context, CastQueryValueTo<GLfloat>(pname, params[0]));
+            sampler->setMinLod(CastQueryValueTo<GLfloat>(pname, params[0]));
             break;
         case GL_TEXTURE_MAX_LOD:
-            sampler->setMaxLod(context, CastQueryValueTo<GLfloat>(pname, params[0]));
+            sampler->setMaxLod(CastQueryValueTo<GLfloat>(pname, params[0]));
             break;
         case GL_TEXTURE_SRGB_DECODE_EXT:
-            sampler->setSRGBDecode(context, ConvertToGLenum(pname, params[0]));
+            sampler->setSRGBDecode(ConvertToGLenum(pname, params[0]));
             break;
         case GL_TEXTURE_BORDER_COLOR:
-            sampler->setBorderColor(context, ConvertToColor<isPureInteger>(params));
+            sampler->setBorderColor(ConvertToColor<isPureInteger>(params));
             break;
         default:
             UNREACHABLE();
@@ -1077,13 +1077,28 @@ void QueryFramebufferAttachmentParameteriv(const Context *context,
             *params = attachmentObject->layer();
             break;
 
-        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR:
+        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_ANGLE:
             *params = attachmentObject->getNumViews();
             break;
 
-        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
+        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_MULTIVIEW_LAYOUT_ANGLE:
+            *params = static_cast<GLint>(attachmentObject->getMultiviewLayout());
+            break;
+
+        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_ANGLE:
             *params = attachmentObject->getBaseViewIndex();
             break;
+
+        case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_VIEWPORT_OFFSETS_ANGLE:
+        {
+            const std::vector<Offset> &offsets = attachmentObject->getMultiviewViewportOffsets();
+            for (size_t i = 0u; i < offsets.size(); ++i)
+            {
+                params[i * 2u]      = offsets[i].x;
+                params[i * 2u + 1u] = offsets[i].y;
+            }
+        }
+        break;
 
         case GL_FRAMEBUFFER_ATTACHMENT_LAYERED_EXT:
             *params = attachmentObject->isLayered();

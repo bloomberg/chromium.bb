@@ -46,8 +46,8 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
     }
   };
 
-  NativeViewHostWindowObserver() = default;
-  ~NativeViewHostWindowObserver() override = default;
+  NativeViewHostWindowObserver() {}
+  ~NativeViewHostWindowObserver() override {}
 
   const std::vector<EventDetails>& events() const { return events_; }
 
@@ -89,7 +89,8 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
 
 class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
  public:
-  NativeViewHostAuraTest() = default;
+  NativeViewHostAuraTest() {
+  }
 
   NativeViewHostAura* native_host() {
     return static_cast<NativeViewHostAura*>(GetNativeWrapper());
@@ -442,7 +443,7 @@ namespace {
 
 class TestFocusChangeListener : public FocusChangeListener {
  public:
-  explicit TestFocusChangeListener(FocusManager* focus_manager)
+  TestFocusChangeListener(FocusManager* focus_manager)
       : focus_manager_(focus_manager) {
     focus_manager_->AddFocusChangeListener(this);
   }

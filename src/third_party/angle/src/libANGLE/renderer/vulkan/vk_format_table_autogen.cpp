@@ -5,7 +5,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// vk_format_table_autogen.cpp:
+// vk_format_table:
 //   Queries for full Vulkan format information based on GL format.
 
 #include "libANGLE/renderer/vulkan/vk_format_utils.h"
@@ -751,15 +751,7 @@ void Format::initialize(RendererVk *renderer, const angle::Format &angleFormat)
             break;
 
         case angle::FormatID::ETC1_R8G8B8_UNORM_BLOCK:
-            internalFormat               = GL_ETC1_RGB8_OES;
-            textureFormatID              = angle::FormatID::ETC2_R8G8B8_UNORM_BLOCK;
-            vkTextureFormat              = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
-            textureInitializerFunction   = nullptr;
-            bufferFormatID               = angle::FormatID::NONE;
-            vkBufferFormat               = VK_FORMAT_UNDEFINED;
-            vkBufferFormatIsPacked       = false;
-            vertexLoadFunction           = nullptr;
-            vertexLoadRequiresConversion = true;
+            // This format is not implemented in Vulkan.
             break;
 
         case angle::FormatID::ETC2_R8G8B8A1_SRGB_BLOCK:

@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/video_coding/codecs/test/video_codec_unittest.h"
 #include "modules/video_coding/include/video_error_codes.h"

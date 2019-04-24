@@ -4,7 +4,10 @@
 
 // Custom binding for the developerPrivate API.
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+var binding =
+    apiBridge || require('binding').Binding.create('developerPrivate');
+
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // Converts the argument of |functionName| from DirectoryEntry to URL.
@@ -57,3 +60,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     }, callback);
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

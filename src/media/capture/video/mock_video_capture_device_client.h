@@ -47,7 +47,6 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
   void OnIncomingCapturedBufferExt(
       Buffer buffer,
       const media::VideoCaptureFormat& format,
-      const gfx::ColorSpace& color_space,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,
@@ -58,10 +57,9 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     const media::VideoCaptureFormat&,
                     base::TimeTicks,
                     base::TimeDelta));
-  MOCK_METHOD7(DoOnIncomingCapturedBufferExt,
+  MOCK_METHOD6(DoOnIncomingCapturedBufferExt,
                void(Buffer& buffer,
                     const media::VideoCaptureFormat& format,
-                    const gfx::ColorSpace& color_space,
                     base::TimeTicks reference_time,
                     base::TimeDelta timestamp,
                     gfx::Rect visible_rect,

@@ -15,7 +15,6 @@
 
 #include "modules/desktop_capture/desktop_capture_types.h"
 #include "modules/desktop_capture/desktop_geometry.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -85,7 +84,7 @@ class MouseCursorMonitor {
   // the specified screen.
   //
   // Deprecated: use Create() function.
-  static RTC_EXPORT MouseCursorMonitor* CreateForScreen(
+  static MouseCursorMonitor* CreateForScreen(
       const DesktopCaptureOptions& options,
       ScreenId screen);
 

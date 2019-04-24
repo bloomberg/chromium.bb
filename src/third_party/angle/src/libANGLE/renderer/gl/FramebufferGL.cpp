@@ -75,7 +75,7 @@ void BindFramebufferAttachment(const FunctionsGL *functions,
                      texture->getType() == TextureType::_3D ||
                      texture->getType() == TextureType::_2DMultisampleArray)
             {
-                if (attachment->isMultiview())
+                if (attachment->getMultiviewLayout() == GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE)
                 {
                     ASSERT(functions->framebufferTexture);
                     functions->framebufferTexture(GL_FRAMEBUFFER, attachmentPoint,
@@ -136,7 +136,7 @@ bool RequiresMultiviewClear(const FramebufferState &state, bool scissorTestEnabl
     {
         if (colorAttachment.isAttached())
         {
-            if (!colorAttachment.isMultiview())
+            if (colorAttachment.getMultiviewLayout() == GL_NONE)
             {
                 return false;
             }
@@ -149,7 +149,7 @@ bool RequiresMultiviewClear(const FramebufferState &state, bool scissorTestEnabl
     const FramebufferAttachment *depthAttachment = state.getDepthAttachment();
     if (depthAttachment)
     {
-        if (!depthAttachment->isMultiview())
+        if (depthAttachment->getMultiviewLayout() == GL_NONE)
         {
             return false;
         }
@@ -160,7 +160,7 @@ bool RequiresMultiviewClear(const FramebufferState &state, bool scissorTestEnabl
     const FramebufferAttachment *stencilAttachment = state.getStencilAttachment();
     if (stencilAttachment)
     {
-        if (!stencilAttachment->isMultiview())
+        if (stencilAttachment->getMultiviewLayout() == GL_NONE)
         {
             return false;
         }
@@ -173,11 +173,16 @@ bool RequiresMultiviewClear(const FramebufferState &state, bool scissorTestEnabl
     {
         return false;
     }
-    if (attachment->isMultiview())
+    switch (attachment->getMultiviewLayout())
     {
-        // If all layers of each texture array are active, then there is no need to issue a
-        // special multiview clear.
-        return !allTextureArraysAreFullyAttached;
+        case GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE:
+            // If all layers of each texture array are active, then there is no need to issue a
+            // special multiview clear.
+            return !allTextureArraysAreFullyAttached;
+        case GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE:
+            return (scissorTestEnabled == true);
+        default:
+            UNREACHABLE();
     }
     return false;
 }
@@ -709,6 +714,9 @@ angle::Result FramebufferGL::syncState(const gl::Context *context,
 
     if (attachment && mState.id() == context->getState().getDrawFramebuffer()->id())
     {
+        const bool isSideBySide =
+            (attachment->getMultiviewLayout() == GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE);
+        stateManager->setSideBySide(isSideBySide);
         stateManager->updateMultiviewBaseViewLayerIndexUniform(context->getState().getProgram(),
                                                                getState());
     }

@@ -17,25 +17,19 @@ namespace content {
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class DevToolsURLLoaderInterceptor;
-class RenderProcessHost;
 struct InterceptedRequestInfo;
 
 namespace protocol {
 
 class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
  public:
-  using UpdateLoaderFactoriesCallback =
-      base::RepeatingCallback<void(base::OnceClosure)>;
-
-  FetchHandler(DevToolsIOContext* io_context,
-               UpdateLoaderFactoriesCallback update_loader_factories_callback);
+  explicit FetchHandler(DevToolsIOContext* io_context);
   ~FetchHandler() override;
 
   static std::vector<FetchHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   bool MaybeCreateProxyForInterception(
-      RenderProcessHost* rph,
-      const base::UnguessableToken& frame_token,
+      RenderFrameHostImpl* rfh,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request);
@@ -46,9 +40,8 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   Response Disable() override;
 
   // Protocol methods.
-  void Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
-              Maybe<bool> handleAuth,
-              std::unique_ptr<EnableCallback> callback) override;
+  Response Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
+                  Maybe<bool> handleAuth) override;
 
   void FailRequest(const String& fetchId,
                    const String& errorReason,
@@ -90,7 +83,6 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   DevToolsIOContext* const io_context_;
   std::unique_ptr<Fetch::Frontend> frontend_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> interceptor_;
-  UpdateLoaderFactoriesCallback update_loader_factories_callback_;
   base::WeakPtrFactory<FetchHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchHandler);

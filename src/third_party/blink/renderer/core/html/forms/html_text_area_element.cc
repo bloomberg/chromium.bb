@@ -130,15 +130,15 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kWrapAttr) {
     if (ShouldWrapText()) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValueID::kPreWrap);
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kOverflowWrap, CSSValueID::kBreakWord);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+                                              CSSValuePreWrap);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
+                                              CSSValueBreakWord);
     } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValueID::kPre);
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kOverflowWrap, CSSValueID::kNormal);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+                                              CSSValuePre);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
+                                              CSSValueNormal);
     }
   } else {
     TextControlElement::CollectStyleForPresentationAttribute(name, value,
@@ -210,8 +210,7 @@ void HTMLTextAreaElement::ParseAttribute(
   }
 }
 
-LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&,
-                                                      LegacyLayout) {
+LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutTextControlMultiLine(this);
 }
 
@@ -333,9 +332,9 @@ void HTMLTextAreaElement::HandleBeforeTextInsertedEvent(
   // that case, and nothing in the text field will be removed.
   unsigned selection_length = 0;
   if (IsFocused()) {
-    // TODO(editing-dev): Use of UpdateStyleAndLayout
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     selection_length = ComputeLengthForAPIValue(
         GetDocument().GetFrame()->Selection().SelectedText());
@@ -460,7 +459,26 @@ String HTMLTextAreaElement::defaultValue() const {
 }
 
 void HTMLTextAreaElement::setDefaultValue(const String& default_value) {
-  setTextContent(default_value);
+  // To preserve comments, remove only the text nodes, then add a single text
+  // node.
+  HeapVector<Member<Node>> text_nodes;
+  for (Node* n = firstChild(); n; n = n->nextSibling()) {
+    if (n->IsTextNode())
+      text_nodes.push_back(n);
+  }
+  for (const auto& text : text_nodes)
+    RemoveChild(text.Get(), IGNORE_EXCEPTION_FOR_TESTING);
+
+  // Normalize line endings.
+  String value = default_value;
+  value.Replace("\r\n", "\n");
+  value.Replace('\r', '\n');
+
+  InsertBefore(GetDocument().createTextNode(value), firstChild(),
+               IGNORE_EXCEPTION_FOR_TESTING);
+
+  if (!is_dirty_)
+    SetNonDirtyValue(value);
 }
 
 void HTMLTextAreaElement::SetSuggestedValue(const String& value) {
@@ -589,8 +607,8 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     placeholder->SetInlineStyleProperty(
-        CSSPropertyID::kDisplay,
-        IsPlaceholderVisible() ? CSSValueID::kBlock : CSSValueID::kNone, true);
+        CSSPropertyDisplay,
+        IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
     UserAgentShadowRoot()->InsertBefore(placeholder, InnerEditorElement());
   }
   placeholder->setTextContent(placeholder_text);

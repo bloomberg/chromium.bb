@@ -43,9 +43,6 @@ Elements.InspectElementModeController = class {
     SDK.OverlayModel.setInspectNodeHandler(this._inspectNode.bind(this));
     SDK.targetManager.observeModels(SDK.OverlayModel, this);
 
-    this._showDetailedInspectTooltipSetting = Common.settings.moduleSetting('showDetailedInspectTooltip');
-    this._showDetailedInspectTooltipSetting.addChangeListener(this._showDetailedInspectTooltipChanged.bind(this));
-
     document.addEventListener('keydown', event => {
       if (event.keyCode !== UI.KeyboardShortcut.Keys.Esc.code)
         return;
@@ -65,7 +62,7 @@ Elements.InspectElementModeController = class {
     // much later than the InspectorFrontendAPI.enterInspectElementMode event.
     if (this._mode === Protocol.Overlay.InspectMode.None)
       return;
-    overlayModel.setInspectMode(this._mode, this._showDetailedInspectTooltipSetting.get());
+    overlayModel.setInspectMode(this._mode);
   }
 
   /**
@@ -105,7 +102,7 @@ Elements.InspectElementModeController = class {
       return;
     this._mode = mode;
     for (const overlayModel of SDK.targetManager.models(SDK.OverlayModel))
-      overlayModel.setInspectMode(mode, this._showDetailedInspectTooltipSetting.get());
+      overlayModel.setInspectMode(mode);
     this._toggleSearchAction.setToggled(this._isInInspectElementMode());
   }
 
@@ -122,10 +119,6 @@ Elements.InspectElementModeController = class {
    */
   async _inspectNode(node) {
     Elements.ElementsPanel.instance().revealAndSelectNode(node, true, true);
-  }
-
-  _showDetailedInspectTooltipChanged() {
-    this._setMode(this._mode);
   }
 };
 

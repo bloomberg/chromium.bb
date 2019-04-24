@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "media/capture/video/chromeos/request_manager.h"
-#include "media/capture/video/chromeos/reprocess_manager.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 
 #include <map>
@@ -185,7 +184,7 @@ class RequestManagerTest : public ::testing::Test {
     std::vector<cros::mojom::Camera3StreamPtr> streams;
 
     auto preview_stream = cros::mojom::Camera3Stream::New();
-    preview_stream->id = static_cast<uint64_t>(StreamType::kPreviewOutput);
+    preview_stream->id = static_cast<uint64_t>(StreamType::kPreview);
     preview_stream->stream_type =
         cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
     preview_stream->width = kDefaultCaptureFormat.frame_size.width();
@@ -200,7 +199,7 @@ class RequestManagerTest : public ::testing::Test {
     streams.push_back(std::move(preview_stream));
 
     auto still_capture_stream = cros::mojom::Camera3Stream::New();
-    still_capture_stream->id = static_cast<uint64_t>(StreamType::kJpegOutput);
+    still_capture_stream->id = static_cast<uint64_t>(StreamType::kStillCapture);
     still_capture_stream->stream_type =
         cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
     still_capture_stream->width = kDefaultCaptureFormat.frame_size.width();
@@ -223,8 +222,7 @@ class RequestManagerTest : public ::testing::Test {
     auto error_msg = cros::mojom::Camera3ErrorMsg::New();
     error_msg->frame_number = frame_number;
     // There is only the preview stream.
-    error_msg->error_stream_id =
-        static_cast<uint64_t>(StreamType::kPreviewOutput);
+    error_msg->error_stream_id = static_cast<uint64_t>(StreamType::kPreview);
     error_msg->error_code = error_code;
     auto notify_msg = cros::mojom::Camera3NotifyMsg::New();
     notify_msg->message = cros::mojom::Camera3NotifyMsgMessage::New();
@@ -490,6 +488,24 @@ TEST_F(RequestManagerTest, BufferErrorTest) {
 }
 
 // Test that preview and still capture buffers can be correctly submitted.
-// TODO(crbug.com/917574): Add reprocess tests and take photo test.
+TEST_F(RequestManagerTest, TakePhotoTest) {
+  EXPECT_CALL(*GetMockCaptureInterface(), DoProcessCaptureRequest(_, _))
+      .Times(AtLeast(1))
+      .WillRepeatedly(Invoke(this, &RequestManagerTest::ProcessCaptureRequest));
+
+  request_manager_->SetUpStreamsAndBuffers(
+      kDefaultCaptureFormat,
+      GetFakeStaticMetadata(/* partial_result_count */ 1),
+      PrepareCaptureStream(/* max_buffers */ 1));
+  request_manager_->StartPreview(cros::mojom::CameraMetadata::New());
+  request_manager_->TakePhoto(
+      GetFakeStaticMetadata(/* partial_result_count */ 1),
+      base::BindOnce([](RequestManagerTest* test,
+                        mojom::BlobPtr blob) { test->QuitCaptureLoop(); },
+                     base::Unretained(this)));
+
+  // Wait until a captured frame is received by MockVideoCaptureClient.
+  DoLoop();
+}
 
 }  // namespace media

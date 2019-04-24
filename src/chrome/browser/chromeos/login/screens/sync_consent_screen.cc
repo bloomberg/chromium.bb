@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -54,8 +53,7 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
             [](Profile* profile) {
               profile->GetPrefs()->ClearPref(
                   prefs::kShowSyncSettingsOnSessionStart);
-              chrome::ShowSettingsSubPageForProfile(profile,
-                                                    chrome::kSyncSetupSubPage);
+              chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
             },
             base::Unretained(profile)),
         kSyncConsentSettingsShowDelay);
@@ -63,9 +61,10 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
 }
 
 SyncConsentScreen::SyncConsentScreen(
+    BaseScreenDelegate* base_screen_delegate,
     SyncConsentScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_SYNC_CONSENT),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_SYNC_CONSENT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

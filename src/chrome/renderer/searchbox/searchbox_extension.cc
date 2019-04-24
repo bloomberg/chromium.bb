@@ -55,16 +55,11 @@ namespace internal {  // for testing.
 // Returns an array with the RGBA color components.
 v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
                                       const RGBAColor& color) {
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> color_array = v8::Array::New(isolate, 4);
-  color_array->CreateDataProperty(context, 0, v8::Int32::New(isolate, color.r))
-      .Check();
-  color_array->CreateDataProperty(context, 1, v8::Int32::New(isolate, color.g))
-      .Check();
-  color_array->CreateDataProperty(context, 2, v8::Int32::New(isolate, color.b))
-      .Check();
-  color_array->CreateDataProperty(context, 3, v8::Int32::New(isolate, color.a))
-      .Check();
+  color_array->Set(0, v8::Int32::New(isolate, color.r));
+  color_array->Set(1, v8::Int32::New(isolate, color.g));
+  color_array->Set(2, v8::Int32::New(isolate, color.b));
+  color_array->Set(3, v8::Int32::New(isolate, color.a));
   return color_array;
 }
 
@@ -75,6 +70,8 @@ namespace {
 const char kCSSBackgroundImageFormat[] = "-webkit-image-set("
     "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND?%s) 1x, "
     "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND@2x?%s) 2x)";
+
+const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 
 const char kCSSBackgroundPositionCenter[] = "center";
 const char kCSSBackgroundPositionLeft[] = "left";
@@ -205,6 +202,23 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // True if dark mode should be applied to the NTP.
   // Value is always valid.
   builder.Set("usingDarkMode", theme_info.using_dark_mode);
+
+  // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
+  // B are between 0 and 255 inclusive, and A is a double between 0 and 1
+  // inclusive.
+  // This is the CSS "background-color" format.
+  // Value is always valid.
+  // TODO(jfweitz): Remove this field after GWS is modified to use the new
+  // backgroundColorRgba field.
+  builder.Set(
+      "colorRgba",
+      // Convert the alpha using NumberToString because StringPrintf will
+      // use locale specific formatters (e.g., use , instead of . in
+      // German).
+      base::StringPrintf(
+          kCSSBackgroundColorFormat, theme_info.background_color.r,
+          theme_info.background_color.g, theme_info.background_color.b,
+          base::NumberToString(theme_info.background_color.a / 255.0).c_str()));
 
   // Theme color for background as an array with the RGBA components in order.
   // Value is always valid.
@@ -730,17 +744,12 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
 
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Object> v8_mv_items =
       v8::Array::New(isolate, instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
     InstantRestrictedID rid = instant_mv_items[i].first;
-    v8_mv_items
-        ->CreateDataProperty(
-            context, i,
-            GenerateMostVisitedItem(isolate, device_pixel_ratio, render_view_id,
-                                    rid))
-        .Check();
+    v8_mv_items->Set(i, GenerateMostVisitedItem(isolate, device_pixel_ratio,
+                                                render_view_id, rid));
   }
   return v8_mv_items;
 }

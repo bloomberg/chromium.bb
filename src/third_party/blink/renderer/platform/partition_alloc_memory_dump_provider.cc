@@ -7,7 +7,6 @@
 #include <unordered_map>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -48,7 +47,7 @@ class PartitionStatsDumperImpl final : public base::PartitionStatsDumper {
 
  private:
   base::trace_event::ProcessMemoryDump* memory_dump_;
-  uint64_t uid_;
+  unsigned long uid_;
   size_t total_active_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PartitionStatsDumperImpl);
@@ -81,10 +80,10 @@ void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
   DCHECK(memory_stats->is_valid);
   std::string dump_name = GetPartitionDumpName(partition_name);
   if (memory_stats->is_direct_map) {
-    dump_name.append(base::StringPrintf("/directMap_%" PRIu64, ++uid_));
+    dump_name.append(base::StringPrintf("/directMap_%lu", ++uid_));
   } else {
-    dump_name.append(
-        base::StringPrintf("/bucket_%" PRIu32, memory_stats->bucket_slot_size));
+    dump_name.append(base::StringPrintf(
+        "/bucket_%u", static_cast<unsigned>(memory_stats->bucket_slot_size)));
   }
 
   base::trace_event::MemoryAllocatorDump* allocator_dump =

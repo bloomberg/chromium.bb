@@ -1,6 +1,0 @@
-region
-++document
-++++group
-++++++description Name='This text contains '
-++++++description Name='subscript'
-++++++description Name=' text.'

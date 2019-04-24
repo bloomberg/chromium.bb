@@ -16,14 +16,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 GrOpFlushState::GrOpFlushState(GrGpu* gpu, GrResourceProvider* resourceProvider,
-                               GrResourceCache* cache, GrTokenTracker* tokenTracker,
+                               GrTokenTracker* tokenTracker,
                                sk_sp<GrBufferAllocPool::CpuBufferCache> cpuBufferCache)
         : fVertexPool(gpu, cpuBufferCache)
         , fIndexPool(gpu, std::move(cpuBufferCache))
         , fGpu(gpu)
         , fResourceProvider(resourceProvider)
-        , fTokenTracker(tokenTracker)
-        , fDeinstantiateProxyTracker(cache) {}
+        , fTokenTracker(tokenTracker) {}
 
 const GrCaps& GrOpFlushState::caps() const {
     return *fGpu->caps();
@@ -35,11 +34,11 @@ GrGpuRTCommandBuffer* GrOpFlushState::rtCommandBuffer() {
 
 void GrOpFlushState::executeDrawsAndUploadsForMeshDrawOp(
         const GrOp* op, const SkRect& chainBounds, GrProcessorSet&& processorSet,
-        GrPipeline::InputFlags pipelineFlags, const GrUserStencilSettings* stencilSettings) {
+        uint32_t pipelineFlags, const GrUserStencilSettings* stencilSettings) {
     SkASSERT(this->rtCommandBuffer());
 
     GrPipeline::InitArgs pipelineArgs;
-    pipelineArgs.fInputFlags = pipelineFlags;
+    pipelineArgs.fFlags = pipelineFlags;
     pipelineArgs.fDstProxy = this->dstProxy();
     pipelineArgs.fCaps = &this->caps();
     pipelineArgs.fResourceProvider = this->resourceProvider();

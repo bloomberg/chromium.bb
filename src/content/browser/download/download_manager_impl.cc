@@ -235,17 +235,11 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       bool transient,
       const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override {
-    int auto_resume_count = 0;
-    if (base::FeatureList::IsEnabled(
-            download::features::kDownloadDBForNewDownloads)) {
-      auto_resume_count = download::DownloadItemImpl::kMaxAutoResumeAttempts;
-    }
-
     return new download::DownloadItemImpl(
         delegate, guid, download_id, current_path, target_path, url_chain,
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
-        received_bytes, total_bytes, auto_resume_count, hash, state,
+        received_bytes, total_bytes, 0 /* auto_resume_count */, hash, state,
         danger_type, interrupt_reason, false /* paused */,
         false /* allow_metered */, opened, last_access_time, transient,
         received_slices);
@@ -323,6 +317,7 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
 DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       shutdown_needed_(true),
+      initialized_(false),
       history_db_initialized_(false),
       in_progress_cache_initialized_(false),
       browser_context_(browser_context),
@@ -344,7 +339,9 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   if (!in_progress_manager_) {
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
-            this, base::FilePath(), base::BindRepeating(&IsOriginSecure),
+            this,
+            IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
+            base::BindRepeating(&IsOriginSecure),
             base::BindRepeating(&DownloadRequestUtils::IsURLSafe));
   } else {
     in_progress_manager_->set_delegate(this);
@@ -644,8 +641,6 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
   // setters (e.g. Cancel) work.
   for (auto& observer : observers_)
     observer.OnDownloadCreated(this, download);
-  OnNewDownloadCreated(download);
-
   OnDownloadStarted(download, on_started);
 }
 
@@ -928,11 +923,10 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
   return count;
 }
 
-bool DownloadManagerImpl::DownloadUrl(
+void DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params) {
   DownloadUrl(std::move(params), nullptr /* blob_data_handle */,
               nullptr /* blob_url_loader_factory */);
-  return true;
 }
 
 void DownloadManagerImpl::DownloadUrl(
@@ -1049,7 +1043,6 @@ void DownloadManagerImpl::OnDownloadCreated(
   downloads_by_guid_[item->GetGuid()] = item;
   for (auto& observer : observers_)
     observer.OnDownloadCreated(this, item);
-  OnNewDownloadCreated(item);
   DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
 }
 
@@ -1079,7 +1072,9 @@ void DownloadManagerImpl::PostInitialization(
 
   // Download manager is only initialized if both history db and in progress
   // cache are initialized.
-  if (!history_db_initialized_ || !in_progress_cache_initialized_)
+  initialized_ = history_db_initialized_ && in_progress_cache_initialized_;
+
+  if (!initialized_)
     return;
 
 #if defined(OS_ANDROID)
@@ -1126,7 +1121,6 @@ void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
 }
 
 void DownloadManagerImpl::OnDownloadManagerInitialized() {
-  OnInitialized();
   in_progress_manager_->OnAllInprogressDownloadsLoaded();
   for (auto& observer : observers_)
     observer.OnManagerInitialized();
@@ -1196,8 +1190,7 @@ void DownloadManagerImpl::OnUrlDownloadStopped(
   }
 }
 
-void DownloadManagerImpl::GetAllDownloads(
-    download::SimpleDownloadManager::DownloadVector* downloads) {
+void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
   for (const auto& it : downloads_) {
     downloads->push_back(it.second.get());
   }
@@ -1311,7 +1304,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         base::MakeRefCounted<FileDownloadURLLoaderFactoryGetter>(
             params->url(), browser_context_->GetPath(),
             browser_context_->GetSharedCorsOriginAccessList());
-  } else if (rfh && params->url().SchemeIs(content::kChromeUIScheme)) {
+  } else if (params->url().SchemeIs(content::kChromeUIScheme)) {
     url_loader_factory_getter =
         base::MakeRefCounted<WebUIDownloadURLLoaderFactoryGetter>(
             rfh, params->url());
@@ -1333,7 +1326,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
             params->url(), rfh, /*is_navigation=*/false,
             storage_partition->GetFileSystemContext(), storage_domain);
-  } else if (rfh && !IsURLHandledByNetworkService(params->url())) {
+  } else if (!IsURLHandledByNetworkService(params->url())) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap
         non_network_url_loader_factories;
     GetContentClient()

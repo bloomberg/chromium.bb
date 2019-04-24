@@ -134,23 +134,10 @@ Object DeclareGlobal(
 }
 
 Object DeclareGlobals(Isolate* isolate, Handle<FixedArray> declarations,
-                      int flags, Handle<JSFunction> closure) {
+                      int flags, Handle<FeedbackVector> feedback_vector) {
   HandleScope scope(isolate);
   Handle<JSGlobalObject> global(isolate->global_object());
   Handle<Context> context(isolate->context(), isolate);
-
-  Handle<FeedbackVector> feedback_vector = Handle<FeedbackVector>::null();
-  Handle<ClosureFeedbackCellArray> closure_feedback_cell_array =
-      Handle<ClosureFeedbackCellArray>::null();
-  if (closure->has_feedback_vector()) {
-    feedback_vector =
-        Handle<FeedbackVector>(closure->feedback_vector(), isolate);
-    closure_feedback_cell_array = Handle<ClosureFeedbackCellArray>(
-        feedback_vector->closure_feedback_cell_array(), isolate);
-  } else {
-    closure_feedback_cell_array = Handle<ClosureFeedbackCellArray>(
-        closure->closure_feedback_cell_array(), isolate);
-  }
 
   // Traverse the name/value pairs and set the properties.
   int length = declarations->length();
@@ -167,16 +154,26 @@ Object DeclareGlobals(Isolate* isolate, Handle<FixedArray> declarations,
 
     Handle<Object> value;
     if (is_function) {
-      DCHECK(possibly_feedback_cell_slot->IsSmi());
+      // If feedback vector was not allocated for this function, then we don't
+      // have any information about number of closures. Use NoFeedbackCell to
+      // indicate that.
       Handle<FeedbackCell> feedback_cell =
-          closure_feedback_cell_array->GetFeedbackCell(
-              Smi::ToInt(*possibly_feedback_cell_slot));
+          isolate->factory()->no_feedback_cell();
+      if (!feedback_vector.is_null()) {
+        DCHECK(possibly_feedback_cell_slot->IsSmi());
+        FeedbackSlot feedback_cells_slot(
+            Smi::ToInt(*possibly_feedback_cell_slot));
+        feedback_cell = Handle<FeedbackCell>(
+            FeedbackCell::cast(feedback_vector->Get(feedback_cells_slot)
+                                   ->GetHeapObjectAssumeStrong()),
+            isolate);
+      }
       // Copy the function and update its context. Use it as value.
       Handle<SharedFunctionInfo> shared =
           Handle<SharedFunctionInfo>::cast(initial_value);
       Handle<JSFunction> function =
           isolate->factory()->NewFunctionFromSharedFunctionInfo(
-              shared, context, feedback_cell, AllocationType::kOld);
+              shared, context, feedback_cell, TENURED);
       value = function;
     } else {
       value = isolate->factory()->undefined_value();
@@ -184,8 +181,10 @@ Object DeclareGlobals(Isolate* isolate, Handle<FixedArray> declarations,
 
     // Compute the property attributes. According to ECMA-262,
     // the property must be non-configurable except in eval.
+    bool is_native = DeclareGlobalsNativeFlag::decode(flags);
     bool is_eval = DeclareGlobalsEvalFlag::decode(flags);
     int attr = NONE;
+    if (is_function && is_native) attr |= READ_ONLY;
     if (!is_eval) attr |= DONT_DELETE;
 
     // ES#sec-globaldeclarationinstantiation 5.d:
@@ -210,7 +209,12 @@ RUNTIME_FUNCTION(Runtime_DeclareGlobals) {
   CONVERT_SMI_ARG_CHECKED(flags, 1);
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, closure, 2);
 
-  return DeclareGlobals(isolate, declarations, flags, closure);
+  Handle<FeedbackVector> feedback_vector = Handle<FeedbackVector>();
+  if (closure->has_feedback_vector()) {
+    feedback_vector =
+        Handle<FeedbackVector>(closure->feedback_vector(), isolate);
+  }
+  return DeclareGlobals(isolate, declarations, flags, feedback_vector);
 }
 
 namespace {
@@ -399,8 +403,8 @@ Handle<JSObject> NewSloppyArguments(Isolate* isolate, Handle<JSFunction> callee,
   if (argument_count > 0) {
     if (parameter_count > 0) {
       int mapped_count = Min(argument_count, parameter_count);
-      Handle<FixedArray> parameter_map = isolate->factory()->NewFixedArray(
-          mapped_count + 2, AllocationType::kYoung);
+      Handle<FixedArray> parameter_map =
+          isolate->factory()->NewFixedArray(mapped_count + 2, NOT_TENURED);
       parameter_map->set_map(
           ReadOnlyRoots(isolate).sloppy_arguments_elements_map());
       result->set_map(isolate->native_context()->fast_aliased_arguments_map());
@@ -409,8 +413,8 @@ Handle<JSObject> NewSloppyArguments(Isolate* isolate, Handle<JSFunction> callee,
       // Store the context and the arguments array at the beginning of the
       // parameter map.
       Handle<Context> context(isolate->context(), isolate);
-      Handle<FixedArray> arguments = isolate->factory()->NewFixedArray(
-          argument_count, AllocationType::kYoung);
+      Handle<FixedArray> arguments =
+          isolate->factory()->NewFixedArray(argument_count, NOT_TENURED);
       parameter_map->set(0, *context);
       parameter_map->set(1, *arguments);
 
@@ -445,8 +449,8 @@ Handle<JSObject> NewSloppyArguments(Isolate* isolate, Handle<JSFunction> callee,
     } else {
       // If there is no aliasing, the arguments object elements are not
       // special in any way.
-      Handle<FixedArray> elements = isolate->factory()->NewFixedArray(
-          argument_count, AllocationType::kYoung);
+      Handle<FixedArray> elements =
+          isolate->factory()->NewFixedArray(argument_count, NOT_TENURED);
       result->set_elements(*elements);
       for (int i = 0; i < argument_count; ++i) {
         elements->set(i, parameters[i]);
@@ -606,7 +610,7 @@ RUNTIME_FUNCTION(Runtime_NewClosure) {
   Handle<Context> context(isolate->context(), isolate);
   Handle<JSFunction> function =
       isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          shared, context, feedback_cell, AllocationType::kYoung);
+          shared, context, feedback_cell, NOT_TENURED);
   return *function;
 }
 
@@ -620,7 +624,7 @@ RUNTIME_FUNCTION(Runtime_NewClosure_Tenured) {
   // directly to properties.
   Handle<JSFunction> function =
       isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          shared, context, feedback_cell, AllocationType::kOld);
+          shared, context, feedback_cell, TENURED);
   return *function;
 }
 

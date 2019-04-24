@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
-#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
@@ -44,19 +43,6 @@ void SetDevToolsAttachedOnIO(
     if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
       version->SetDevToolsAttached(attached);
   }
-}
-
-void UpdateLoaderFactoriesOnIO(
-    base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64_t version_id,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle) {
-  auto* version =
-      context_weak ? context_weak->GetLiveVersion(version_id) : nullptr;
-  if (!version)
-    return;
-  version->embedded_worker()->UpdateLoaderFactories(
-      std::move(script_bundle), std::move(subresource_bundle));
 }
 
 }  // namespace
@@ -138,12 +124,7 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
 bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
-      GetId(), devtools_worker_token_, GetIOContext(), base::DoNothing())));
-  session->AddHandler(base::WrapUnique(new protocol::FetchHandler(
-      GetIOContext(),
-      base::BindRepeating(
-          &ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories,
-          base::Unretained(this)))));
+      GetId(), devtools_worker_token_, GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
@@ -199,25 +180,6 @@ void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
                      attached));
-}
-
-void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
-    base::OnceClosure callback) {
-  RenderProcessHost* rph = RenderProcessHost::FromID(worker_process_id_);
-  if (!rph) {
-    std::move(callback).Run();
-    return;
-  }
-  const url::Origin origin = url::Origin::Create(url_);
-  auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
-  auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&UpdateLoaderFactoriesOnIO, context_weak_, version_id_,
-                     std::move(script_bundle), std::move(subresource_bundle)),
-      std::move(callback));
 }
 
 }  // namespace content

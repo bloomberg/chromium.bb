@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 
-#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 
@@ -19,8 +18,9 @@ AuthTokenValidatorImpl::AuthTokenValidatorImpl(
 AuthTokenValidatorImpl::~AuthTokenValidatorImpl() = default;
 
 bool AuthTokenValidatorImpl::IsAuthTokenValid(const std::string& auth_token) {
-  return quick_unlock_storage_ && quick_unlock_storage_->GetAuthToken() &&
-         auth_token == quick_unlock_storage_->GetAuthToken()->Identifier();
+  return quick_unlock_storage_ &&
+         !quick_unlock_storage_->GetAuthTokenExpired() &&
+         auth_token == quick_unlock_storage_->GetAuthToken();
 }
 
 void AuthTokenValidatorImpl::Shutdown() {

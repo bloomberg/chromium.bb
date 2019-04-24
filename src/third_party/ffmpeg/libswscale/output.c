@@ -853,6 +853,11 @@ yuv2422_1_c_template(SwsContext *c, const int16_t *buf0,
                 V  = av_clip_uint8(V);
             }
 
+            Y1 = av_clip_uint8(Y1);
+            Y2 = av_clip_uint8(Y2);
+            U  = av_clip_uint8(U);
+            V  = av_clip_uint8(V);
+
             output_pixels(i * 4, Y1, U, Y2, V);
         }
     } else {
@@ -869,6 +874,11 @@ yuv2422_1_c_template(SwsContext *c, const int16_t *buf0,
                 U  = av_clip_uint8(U);
                 V  = av_clip_uint8(V);
             }
+
+            Y1 = av_clip_uint8(Y1);
+            Y2 = av_clip_uint8(Y2);
+            U  = av_clip_uint8(U);
+            V  = av_clip_uint8(V);
 
             output_pixels(i * 4, Y1, U, Y2, V);
         }

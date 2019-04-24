@@ -198,7 +198,7 @@ class PersistentValueMapBase {
    * Call V8::RegisterExternallyReferencedObject with the map value for given
    * key.
    */
-  V8_DEPRECATED(
+  V8_DEPRECATE_SOON(
       "Used TracedGlobal and EmbedderHeapTracer::RegisterEmbedderReference",
       inline void RegisterExternallyReferencedObject(K& key));
 

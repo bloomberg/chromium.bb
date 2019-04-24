@@ -29,7 +29,7 @@ class TestPredicateWaiter : public TestConditionWaiter {
 
   const PredicateCheck is_fulfilled_;
 
-  base::RetainingOneShotTimer timer_;
+  base::RepeatingTimer timer_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPredicateWaiter);

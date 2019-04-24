@@ -29,9 +29,9 @@ class VIEWS_EXAMPLES_EXPORT ToggleButtonExample : public ExampleBase,
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // The only control in this test.
-  ToggleButton* button_ = nullptr;
+  ToggleButton* button_;
 
-  int count_ = 0;
+  int count_;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleButtonExample);
 };

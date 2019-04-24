@@ -4,7 +4,6 @@
 
 #include "components/sync/model/metadata_batch.h"
 
-#include <memory>
 #include <utility>
 
 namespace syncer {
@@ -26,10 +25,10 @@ EntityMetadataMap MetadataBatch::TakeAllMetadata() {
   return std::move(metadata_map_);
 }
 
-void MetadataBatch::AddMetadata(
-    const std::string& storage_key,
-    std::unique_ptr<sync_pb::EntityMetadata> metadata) {
-  metadata_map_.insert(std::make_pair(storage_key, std::move(metadata)));
+void MetadataBatch::AddMetadata(const std::string& storage_key,
+                                const sync_pb::EntityMetadata& metadata) {
+  // TODO(crbug.com/914396): protos are movable. avoid unnecessary copy here.
+  metadata_map_.insert(std::make_pair(storage_key, metadata));
 }
 
 const sync_pb::ModelTypeState& MetadataBatch::GetModelTypeState() const {

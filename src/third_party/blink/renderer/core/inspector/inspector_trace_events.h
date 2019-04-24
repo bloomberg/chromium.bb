@@ -83,33 +83,33 @@ class CORE_EXPORT InspectorTraceEvents
  public:
   InspectorTraceEvents() = default;
 
-  void WillSendRequest(uint64_t identifier,
+  void WillSendRequest(unsigned long identifier,
                        DocumentLoader*,
                        const KURL& fetch_context_url,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
-  void WillSendNavigationRequest(uint64_t identifier,
+  void WillSendNavigationRequest(unsigned long identifier,
                                  DocumentLoader*,
                                  const KURL&,
                                  const AtomicString& http_method,
                                  EncodedFormData*);
-  void DidReceiveResourceResponse(uint64_t identifier,
+  void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
-                                  const Resource*);
-  void DidReceiveData(uint64_t identifier,
+                                  Resource*);
+  void DidReceiveData(unsigned long identifier,
                       DocumentLoader*,
                       const char* data,
                       uint64_t data_length);
-  void DidFinishLoading(uint64_t identifier,
+  void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,
                         TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
-  void DidFailLoading(uint64_t identifier,
+  void DidFailLoading(unsigned long identifier,
                       DocumentLoader*,
                       const ResourceError&);
 
@@ -248,7 +248,7 @@ extern const char kTextControlChanged[];
 // size related invalidations.
 extern const char kSvgChanged[];
 extern const char kScrollbarChanged[];
-extern const char kDisplayLock[];
+extern const char kDisplayLockCommitting[];
 }  // namespace layout_invalidation_reason
 
 // LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
@@ -266,20 +266,20 @@ std::unique_ptr<TracedValue> Data(const LayoutObject&);
 
 namespace inspector_change_resource_priority_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   const ResourceLoadPriority&);
 }
 
 namespace inspector_send_request_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   LocalFrame*,
                                   const ResourceRequest&);
 }
 
 namespace inspector_send_navigation_request_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   LocalFrame*,
                                   const KURL&,
                                   const AtomicString& http_method);
@@ -287,21 +287,21 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
 
 namespace inspector_receive_response_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   LocalFrame*,
                                   const ResourceResponse&);
 }
 
 namespace inspector_receive_data_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   LocalFrame*,
                                   uint64_t encoded_data_length);
 }
 
 namespace inspector_resource_finish_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
-                                  uint64_t identifier,
+                                  unsigned long identifier,
                                   TimeTicks finish_time,
                                   bool did_fail,
                                   int64_t encoded_data_length,
@@ -412,7 +412,7 @@ std::unique_ptr<TracedValue> Data(LocalFrame*,
 }
 
 namespace inspector_parse_script_event {
-std::unique_ptr<TracedValue> Data(uint64_t identifier, const String& url);
+std::unique_ptr<TracedValue> Data(unsigned long identifier, const String& url);
 }
 
 namespace inspector_compile_script_event {

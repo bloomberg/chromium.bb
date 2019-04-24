@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_BARCODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_BARCODE_H_
 
-#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-shared.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -24,19 +22,12 @@ class MODULES_EXPORT DetectedBarcode final : public ScriptWrappable {
   static DetectedBarcode* Create();
   static DetectedBarcode* Create(String,
                                  DOMRectReadOnly*,
-                                 shape_detection::mojom::BarcodeFormat,
                                  HeapVector<Member<Point2D>>);
-  static WebString BarcodeFormatToString(
-      const shape_detection::mojom::BarcodeFormat format);
 
-  DetectedBarcode(String,
-                  DOMRectReadOnly*,
-                  shape_detection::mojom::BarcodeFormat,
-                  HeapVector<Member<Point2D>>);
+  DetectedBarcode(String, DOMRectReadOnly*, HeapVector<Member<Point2D>>);
 
   const String& rawValue() const;
   DOMRectReadOnly* boundingBox() const;
-  String format() const;
   const HeapVector<Member<Point2D>>& cornerPoints() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
@@ -45,7 +36,6 @@ class MODULES_EXPORT DetectedBarcode final : public ScriptWrappable {
  private:
   const String raw_value_;
   const Member<DOMRectReadOnly> bounding_box_;
-  const shape_detection::mojom::BarcodeFormat format_;
   const HeapVector<Member<Point2D>> corner_points_;
 };
 

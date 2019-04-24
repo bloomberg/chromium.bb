@@ -83,6 +83,12 @@ bool SQLStatement::OnErrorV8Impl::OnError(SQLTransaction* transaction,
   return return_value;
 }
 
+SQLStatement* SQLStatement::Create(Database* database,
+                                   OnSuccessCallback* callback,
+                                   OnErrorCallback* error_callback) {
+  return MakeGarbageCollected<SQLStatement>(database, callback, error_callback);
+}
+
 SQLStatement::SQLStatement(Database* database,
                            OnSuccessCallback* callback,
                            OnErrorCallback* error_callback)
@@ -130,8 +136,8 @@ bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
   // error, because then we need to jump to the transaction error callback.
   if (error) {
     if (error_callback) {
-      callback_error = error_callback->OnError(
-          transaction, MakeGarbageCollected<SQLError>(*error));
+      callback_error =
+          error_callback->OnError(transaction, SQLError::Create(*error));
     }
   } else if (callback) {
     callback_error =

@@ -10,9 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/navigable_contents_delegate.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
@@ -123,9 +121,9 @@ class ContentServiceTest : public testing::Test {
   TestServiceDelegate& delegate() { return delegate_; }
 
   template <typename T>
-  void ConnectReceiver(mojo::PendingReceiver<T> receiver) {
-    connector_factory_.GetDefaultConnector()->Connect(
-        content::mojom::kServiceName, std::move(receiver));
+  void BindInterface(mojo::InterfaceRequest<T> request) {
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        content::mojom::kServiceName, std::move(request));
   }
 
  private:
@@ -138,8 +136,8 @@ class ContentServiceTest : public testing::Test {
 };
 
 TEST_F(ContentServiceTest, NavigableContentsCreation) {
-  mojo::Remote<mojom::NavigableContentsFactory> factory;
-  ConnectReceiver(factory.BindNewPipeAndPassReceiver());
+  mojom::NavigableContentsFactoryPtr factory;
+  BindInterface(mojo::MakeRequest(&factory));
 
   base::RunLoop loop;
 
@@ -151,12 +149,13 @@ TEST_F(ContentServiceTest, NavigableContentsCreation) {
         loop.Quit();
       }));
 
-  mojo::Remote<mojom::NavigableContents> contents;
+  mojom::NavigableContentsPtr contents;
   TestNavigableContentsClient client_impl;
-  mojo::Receiver<mojom::NavigableContentsClient> client_receiver(&client_impl);
+  mojom::NavigableContentsClientPtr client;
+  mojo::Binding<mojom::NavigableContentsClient> client_binding(
+      &client_impl, mojo::MakeRequest(&client));
   factory->CreateContents(mojom::NavigableContentsParams::New(),
-                          contents.BindNewPipeAndPassReceiver(),
-                          client_receiver.BindNewPipeAndPassRemote());
+                          mojo::MakeRequest(&contents), std::move(client));
   loop.Run();
 
   base::RunLoop navigation_loop;

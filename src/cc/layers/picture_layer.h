@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/invalidation_region.h"
 #include "cc/benchmarks/micro_benchmark_controller.h"
@@ -21,9 +22,6 @@ class RecordingSource;
 class CC_EXPORT PictureLayer : public Layer {
  public:
   static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
-
-  PictureLayer(const PictureLayer&) = delete;
-  PictureLayer& operator=(const PictureLayer&) = delete;
 
   void ClearClient();
 
@@ -100,6 +98,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   int update_source_frame_number_;
   LayerMaskType mask_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
 
 }  // namespace cc

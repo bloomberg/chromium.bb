@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
@@ -56,13 +57,13 @@ class GpuHost;
 
 namespace ash {
 
-class AshDBusHelper;
 class NetworkConnectDelegateMus;
 
 // Used to export Ash's mojo services, specifically the interfaces defined in
 // Ash's manifest.json. Also responsible for creating the
 // UI-Service/WindowService when ash runs out of process.
 class ASH_EXPORT AshService : public service_manager::Service,
+                              public service_manager::mojom::ServiceFactory,
                               public ws::gpu_host::GpuHostDelegate {
  public:
   explicit AshService(service_manager::mojom::ServiceRequest request);
@@ -73,10 +74,12 @@ class ASH_EXPORT AshService : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle handle) override;
-  void CreatePackagedServiceInstance(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
-      CreatePackagedServiceInstanceCallback callback) override;
+
+  // service_manager::mojom::ServiceFactory:
+  void CreateService(
+      service_manager::mojom::ServiceRequest service,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override;
 
  private:
   // Does initialization necessary when ash runs out of process. This is called
@@ -85,6 +88,9 @@ class ASH_EXPORT AshService : public service_manager::Service,
 
   void InitializeDBusClients();
 
+  void BindServiceFactory(
+      service_manager::mojom::ServiceFactoryRequest request);
+
   void CreateFrameSinkManager();
 
   // ui::ws::GpuHostDelegate:
@@ -92,6 +98,8 @@ class ASH_EXPORT AshService : public service_manager::Service,
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
+  mojo::BindingSet<service_manager::mojom::ServiceFactory>
+      service_factory_bindings_;
 
   std::unique_ptr<::wm::WMState> wm_state_;
 
@@ -110,8 +118,6 @@ class ASH_EXPORT AshService : public service_manager::Service,
   std::unique_ptr<aura::Env> env_;
 
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
-
-  std::unique_ptr<AshDBusHelper> ash_dbus_helper_;
 
   std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
@@ -93,9 +94,12 @@ TEST_P(SSLPlatformKeyAndroidTest, Matches) {
   scoped_refptr<SSLPrivateKey> key = WrapJavaPrivateKey(cert.get(), java_key);
   ASSERT_TRUE(key);
 
-  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type,
-                                                       true /* supports_pss */),
-            key->GetAlgorithmPreferences());
+  // All Android keys are expected to have the default preferences.
+  bool supports_pss = base::android::BuildInfo::GetInstance()->sdk_int() >=
+                      base::android::SDK_VERSION_NOUGAT;
+  EXPECT_EQ(
+      SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type, supports_pss),
+      key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), key_bytes);
 }

@@ -10,14 +10,15 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
-public class NotificationTestRule extends ChromeTabbedActivityTestRule {
+public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedActivity> {
     /** The maximum time to wait for a criteria to become valid. */
     private static final long MAX_TIME_TO_POLL_MS = scaleTimeout(6000);
 
@@ -35,6 +36,10 @@ public class NotificationTestRule extends ChromeTabbedActivityTestRule {
     private static final long POLLING_INTERVAL_MS = 50;
 
     private MockNotificationManagerProxy mMockNotificationManager;
+
+    public NotificationTestRule() {
+        super(ChromeTabbedActivity.class);
+    }
 
     private void setUp() throws Exception {
         // The NotificationPlatformBridge must be overriden prior to the browser process starting.
@@ -52,11 +57,14 @@ public class NotificationTestRule extends ChromeTabbedActivityTestRule {
      */
     public void setNotificationContentSettingForOrigin(final @ContentSettingValues int setting,
             String origin) throws InterruptedException, TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // The notification content setting does not consider the embedder origin.
-            PermissionInfo notificationInfo =
-                    new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
-            notificationInfo.setContentSetting(setting);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // The notification content setting does not consider the embedder origin.
+                PermissionInfo notificationInfo =
+                        new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
+                notificationInfo.setContentSetting(setting);
+            }
         });
 
         String permission = runJavaScriptCodeInCurrentTab("Notification.permission");

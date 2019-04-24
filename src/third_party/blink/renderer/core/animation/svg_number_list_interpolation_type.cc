@@ -5,12 +5,9 @@
 #include "third_party/blink/renderer/core/animation/svg_number_list_interpolation_type.h"
 
 #include <memory>
-#include <utility>
-
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -20,14 +17,15 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertNeutral(
   wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingLengthChecker>(underlying_length));
+      UnderlyingLengthChecker::Create(underlying_length));
 
   if (underlying_length == 0)
     return nullptr;
 
-  auto result = std::make_unique<InterpolableList>(underlying_length);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(underlying_length);
   for (wtf_size_t i = 0; i < underlying_length; i++)
-    result->Set(i, std::make_unique<InterpolableNumber>(0));
+    result->Set(i, InterpolableNumber::Create(0));
   return InterpolationValue(std::move(result));
 }
 
@@ -37,11 +35,10 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertSVGValue(
     return nullptr;
 
   const SVGNumberList& number_list = ToSVGNumberList(svg_value);
-  auto result = std::make_unique<InterpolableList>(number_list.length());
-  for (wtf_size_t i = 0; i < number_list.length(); i++) {
-    result->Set(
-        i, std::make_unique<InterpolableNumber>(number_list.at(i)->Value()));
-  }
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(number_list.length());
+  for (wtf_size_t i = 0; i < number_list.length(); i++)
+    result->Set(i, InterpolableNumber::Create(number_list.at(i)->Value()));
   return InterpolationValue(std::move(result));
 }
 
@@ -62,12 +59,13 @@ static void PadWithZeroes(std::unique_ptr<InterpolableValue>& list_pointer,
   if (list.length() >= padded_length)
     return;
 
-  auto result = std::make_unique<InterpolableList>(padded_length);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(padded_length);
   wtf_size_t i = 0;
   for (; i < list.length(); i++)
     result->Set(i, std::move(list.GetMutable(i)));
   for (; i < padded_length; i++)
-    result->Set(i, std::make_unique<InterpolableNumber>(0));
+    result->Set(i, InterpolableNumber::Create(0));
   list_pointer = std::move(result);
 }
 
@@ -98,12 +96,11 @@ void SVGNumberListInterpolationType::Composite(
 SVGPropertyBase* SVGNumberListInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  auto* result = MakeGarbageCollected<SVGNumberList>();
+  SVGNumberList* result = SVGNumberList::Create();
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  for (wtf_size_t i = 0; i < list.length(); i++) {
-    result->Append(MakeGarbageCollected<SVGNumber>(
-        ToInterpolableNumber(list.Get(i))->Value()));
-  }
+  for (wtf_size_t i = 0; i < list.length(); i++)
+    result->Append(
+        SVGNumber::Create(ToInterpolableNumber(list.Get(i))->Value()));
   return result;
 }
 

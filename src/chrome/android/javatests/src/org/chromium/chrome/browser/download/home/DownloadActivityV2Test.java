@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
@@ -30,7 +31,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -71,8 +71,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
         features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
-        features.put(ChromeFeatureList.DOWNLOAD_RENAME, true);
-        features.put(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES, false);
         ChromeFeatureList.setTestFeatures(features);
 
         StubbedOfflineContentProvider stubbedOfflineContentProvider =
@@ -114,7 +112,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testLaunchingActivity() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
+        ThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
 
         onView(withText("page 1")).check(matches(isDisplayed()));
         onView(withText("page 2")).check(matches(isDisplayed()));

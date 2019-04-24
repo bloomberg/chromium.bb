@@ -15,10 +15,8 @@
 class ChromeAuthenticatorRequestDelegateTest
     : public ChromeRenderViewHostTestHarness {};
 
-static constexpr char kRelyingPartyID[] = "example.com";
-
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TestTransportPrefType) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   EXPECT_FALSE(delegate.GetLastTransportUsed());
   delegate.UpdateLastTransportUsed(device::FidoTransportProtocol::kInternal);
   const auto transport = delegate.GetLastTransportUsed();
@@ -31,7 +29,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   static constexpr char kTestPairedDeviceAddress[] = "paired_device_address";
   static constexpr char kTestPairedDeviceAddress2[] = "paired_device_address2";
 
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
 
   auto* const address_list = delegate.GetPreviouslyPairedFidoBleDeviceIds();
   ASSERT_TRUE(address_list);
@@ -75,7 +73,7 @@ std::string TouchIdMetadataSecret(
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   std::string secret = TouchIdMetadataSecret(delegate);
   EXPECT_EQ(secret.size(), 32u);
   EXPECT_EQ(secret, TouchIdMetadataSecret(delegate));
@@ -85,10 +83,9 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_EqualForSameProfile) {
   // Different delegates on the same BrowserContext (Profile) should return the
   // same secret.
-  EXPECT_EQ(TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)),
-            TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)));
+  EXPECT_EQ(
+      TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(main_rfh())),
+      TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(main_rfh())));
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
@@ -98,14 +95,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   auto browser_context = base::WrapUnique(CreateBrowserContext());
   auto web_contents = content::WebContentsTester::CreateTestWebContents(
       browser_context.get(), nullptr);
-  EXPECT_NE(TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                main_rfh(), kRelyingPartyID)),
-            TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
-                web_contents->GetMainFrame(), kRelyingPartyID)));
+  EXPECT_NE(
+      TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(main_rfh())),
+      TouchIdMetadataSecret(
+          ChromeAuthenticatorRequestDelegate(web_contents->GetMainFrame())));
   // Ensure this second secret is actually valid.
-  EXPECT_EQ(32u, TouchIdMetadataSecret(
-                     ChromeAuthenticatorRequestDelegate(
-                         web_contents->GetMainFrame(), kRelyingPartyID))
+  EXPECT_EQ(32u, TouchIdMetadataSecret(ChromeAuthenticatorRequestDelegate(
+                                           web_contents->GetMainFrame()))
                      .size());
 }
 #endif

@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
@@ -223,9 +222,7 @@ bool P2PSocketUdp::HandleReadResult(int result) {
       }
     }
 
-    client_->DataReceived(
-        recv_address_, data,
-        base::TimeTicks() + base::TimeDelta::FromNanoseconds(rtc::TimeNanos()));
+    client_->DataReceived(recv_address_, data, base::TimeTicks::Now());
 
     delegate_->DumpPacket(
         base::make_span(reinterpret_cast<uint8_t*>(&data[0]), data.size()),
@@ -240,7 +237,7 @@ bool P2PSocketUdp::HandleReadResult(int result) {
 }
 
 bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
-  int64_t send_time_us = rtc::TimeMicros();
+  base::TimeTicks send_time = base::TimeTicks::Now();
 
   // The peer is considered not connected until the first incoming STUN
   // request/response. In that state the renderer is allowed to send only STUN
@@ -265,7 +262,7 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
       // and in the same order it generates them, so we need to respond even
       // when the packet is dropped.
       client_->SendComplete(P2PSendPacketMetrics(
-          packet.id, packet.packet_options.packet_id, send_time_us / 1000));
+          packet.id, packet.packet_options.packet_id, send_time));
       // Do not reset the socket.
       return true;
     }
@@ -292,12 +289,13 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
     }
   }
 
-  cricket::ApplyPacketOptions(
-      reinterpret_cast<uint8_t*>(packet.data->data()), packet.size,
-      packet.packet_options.packet_time_params, send_time_us);
+  cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(packet.data->data()),
+                              packet.size,
+                              packet.packet_options.packet_time_params,
+                              (send_time - base::TimeTicks()).InMicroseconds());
   auto callback_binding =
       base::Bind(&P2PSocketUdp::OnSend, base::Unretained(this), packet.id,
-                 packet.packet_options.packet_id, send_time_us / 1000);
+                 packet.packet_options.packet_id, send_time);
 
   // TODO(crbug.com/656607): Pass traffic annotation after DatagramSocketServer
   // is updated.
@@ -315,8 +313,8 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
-    if (!HandleSendResult(packet.id, packet.packet_options.packet_id,
-                          send_time_us / 1000, result)) {
+    if (!HandleSendResult(packet.id, packet.packet_options.packet_id, send_time,
+                          result)) {
       return false;
     }
   }
@@ -331,14 +329,14 @@ bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
 
 void P2PSocketUdp::OnSend(uint64_t packet_id,
                           int32_t transport_sequence_number,
-                          int64_t send_time_ms,
+                          base::TimeTicks send_time,
                           int result) {
   DCHECK(send_pending_);
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   send_pending_ = false;
 
-  if (!HandleSendResult(packet_id, transport_sequence_number, send_time_ms,
+  if (!HandleSendResult(packet_id, transport_sequence_number, send_time,
                         result)) {
     return;
   }
@@ -355,7 +353,7 @@ void P2PSocketUdp::OnSend(uint64_t packet_id,
 
 bool P2PSocketUdp::HandleSendResult(uint64_t packet_id,
                                     int32_t transport_sequence_number,
-                                    int64_t send_time_ms,
+                                    base::TimeTicks send_time,
                                     int result) {
   TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id, "result", result);
   if (result < 0) {
@@ -373,12 +371,11 @@ bool P2PSocketUdp::HandleSendResult(uint64_t packet_id,
 
   // UMA to track the histograms from 1ms to 1 sec for how long a packet spends
   // in the browser process.
-  UMA_HISTOGRAM_TIMES(
-      "WebRTC.SystemSendPacketDuration_UDP" /* name */,
-      base::TimeDelta::FromMilliseconds(rtc::TimeMillis() - send_time_ms));
+  UMA_HISTOGRAM_TIMES("WebRTC.SystemSendPacketDuration_UDP" /* name */,
+                      base::TimeTicks::Now() - send_time /* sample */);
 
   client_->SendComplete(
-      P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time_ms));
+      P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time));
 
   return true;
 }

@@ -4,16 +4,17 @@
 
 #include "ash/wm/widget_finder.h"
 
-#include "services/ws/window_service.h"
+#include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 views::Widget* GetInternalWidgetForWindow(aura::Window* window) {
-  return ws::WindowService::IsProxyWindow(window)
-             ? nullptr
-             : views::Widget::GetWidgetForNativeView(window);
+  return window->GetProperty(kWidgetCreationTypeKey) ==
+                 WidgetCreationType::INTERNAL
+             ? views::Widget::GetWidgetForNativeView(window)
+             : nullptr;
 }
 
 }  // namespace ash

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
@@ -17,12 +18,7 @@ class PrioritizedTile;
 class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
  public:
   RasterTilePriorityQueueRequired();
-  RasterTilePriorityQueueRequired(const RasterTilePriorityQueueRequired&) =
-      delete;
   ~RasterTilePriorityQueueRequired() override;
-
-  RasterTilePriorityQueueRequired& operator=(
-      const RasterTilePriorityQueueRequired&) = delete;
 
   bool IsEmpty() const override;
   const PrioritizedTile& Top() const override;
@@ -41,6 +37,8 @@ class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
       const std::vector<PictureLayerImpl*>& pending_layers);
 
   std::vector<std::unique_ptr<TilingSetRasterQueueRequired>> tiling_set_queues_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterTilePriorityQueueRequired);
 };
 
 }  // namespace cc

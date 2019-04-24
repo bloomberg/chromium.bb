@@ -6,9 +6,8 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 
@@ -22,32 +21,34 @@ std::string StringOrEmptyIfNull(const char* value) {
 
 }  // namespace
 
-SensorDeviceManager::SensorDeviceManager(base::WeakPtr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
-      delegate_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+SensorDeviceManager::SensorDeviceManager()
+    : observer_(this),
+      delegate_(nullptr),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 SensorDeviceManager::~SensorDeviceManager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void SensorDeviceManager::Start() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!udev_watcher_);
+void SensorDeviceManager::Start(Delegate* delegate) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  DCHECK(!delegate_);
 
-  udev_watcher_ = UdevWatcher::StartWatching(this);
-  if (!udev_watcher_)
-    return;
+  delegate_ = delegate;
 
-  // OnDeviceAdded() will be called synchronously for every device found in the
-  // enumeration.
-  udev_watcher_->EnumerateExistingDevices();
+  DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
+  observer_.Add(monitor);
+  monitor->Enumerate(
+      base::Bind(&SensorDeviceManager::OnDeviceAdded, base::Unretained(this)));
 
-  delegate_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SensorDeviceManager::Delegate::OnSensorNodesEnumerated,
-                     delegate_));
+                     base::Unretained(delegate_)));
 }
 
 std::string SensorDeviceManager::GetUdevDeviceGetSubsystem(udev_device* dev) {
@@ -69,18 +70,16 @@ std::string SensorDeviceManager::GetUdevDeviceGetDevnode(udev_device* dev) {
   return StringOrEmptyIfNull(udev_device_get_devnode(dev));
 }
 
-void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const std::string subsystem = GetUdevDeviceGetSubsystem(dev.get());
+void SensorDeviceManager::OnDeviceAdded(udev_device* dev) {
+  const std::string subsystem = GetUdevDeviceGetSubsystem(dev);
   if (subsystem.empty() || subsystem.compare("iio") != 0)
     return;
 
-  const std::string sysfs_path = GetUdevDeviceGetSyspath(dev.get());
+  const std::string sysfs_path = GetUdevDeviceGetSyspath(dev);
   if (sysfs_path.empty())
     return;
 
-  const std::string device_node = GetUdevDeviceGetDevnode(dev.get());
+  const std::string device_node = GetUdevDeviceGetDevnode(dev);
   if (device_node.empty())
     return;
 
@@ -96,7 +95,7 @@ void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
     for (const std::vector<std::string>& names : data.sensor_file_names) {
       for (const auto& name : names) {
         const std::string value =
-            GetUdevDeviceGetSysattrValue(dev.get(), name.c_str());
+            GetUdevDeviceGetSysattrValue(dev, name.c_str());
         if (value.empty())
           continue;
         base::FilePath full_path = base::FilePath(sysfs_path).Append(name);
@@ -111,21 +110,21 @@ void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
     }
 
     const std::string scaling_value =
-        GetUdevDeviceGetSysattrValue(dev.get(), data.sensor_scale_name.c_str());
+        GetUdevDeviceGetSysattrValue(dev, data.sensor_scale_name.c_str());
     // If scaling value is not found, treat it as 1.
     double sensor_scaling_value = 1;
     if (!scaling_value.empty())
       base::StringToDouble(scaling_value, &sensor_scaling_value);
 
-    const std::string offset_vallue = GetUdevDeviceGetSysattrValue(
-        dev.get(), data.sensor_offset_file_name.c_str());
+    const std::string offset_vallue =
+        GetUdevDeviceGetSysattrValue(dev, data.sensor_offset_file_name.c_str());
     // If offset value is not found, treat it as 0.
     double sensor_offset_value = 0;
     if (!offset_vallue.empty())
       base::StringToDouble(offset_vallue, &sensor_offset_value);
 
     const std::string frequency_value = GetUdevDeviceGetSysattrValue(
-        dev.get(), data.sensor_frequency_file_name.c_str());
+        dev, data.sensor_frequency_file_name.c_str());
     // If frequency is not found, use default one from SensorPathsLinux struct.
     double sensor_frequency_value = data.default_configuration.frequency();
     // By default, |reporting_mode| is ON_CHANGE. But if platform provides
@@ -144,9 +143,10 @@ void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
         device_node, sensor_frequency_value, sensor_scaling_value,
         sensor_offset_value, reporting_mode, data.apply_scaling_func,
         std::move(sensor_file_names)));
-    delegate_task_runner_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SensorDeviceManager::Delegate::OnDeviceAdded,
-                                  delegate_, data.type, std::move(device)));
+                                  base::Unretained(delegate_), data.type,
+                                  std::move(device)));
 
     // One |dev| can represent more than one sensor.
     // For example, there is an accelerometer and gyroscope represented by one
@@ -155,14 +155,12 @@ void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
   }
 }
 
-void SensorDeviceManager::OnDeviceRemoved(ScopedUdevDevicePtr dev) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const std::string subsystem = GetUdevDeviceGetSubsystem(dev.get());
+void SensorDeviceManager::OnDeviceRemoved(udev_device* dev) {
+  const std::string subsystem = GetUdevDeviceGetSubsystem(dev);
   if (subsystem.empty() || subsystem.compare("iio") != 0)
     return;
 
-  const std::string device_node = GetUdevDeviceGetDevnode(dev.get());
+  const std::string device_node = GetUdevDeviceGetDevnode(dev);
   if (device_node.empty())
     return;
 
@@ -172,9 +170,10 @@ void SensorDeviceManager::OnDeviceRemoved(ScopedUdevDevicePtr dev) {
   mojom::SensorType type = sensor->second;
   sensors_by_node_.erase(sensor);
 
-  delegate_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SensorDeviceManager::Delegate::OnDeviceRemoved,
-                                delegate_, type, device_node));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SensorDeviceManager::Delegate::OnDeviceRemoved,
+                     base::Unretained(delegate_), type, device_node));
 }
 
 }  // namespace device

@@ -15,7 +15,6 @@
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_context.h"
@@ -50,38 +49,30 @@ DomDistillerServiceFactory::GetForBrowserContext(
 DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "DomDistillerService",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 
 KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
+    content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-  base::FilePath database_dir(
-      context->GetPath().Append(FILE_PATH_LITERAL("Articles")));
-
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          profile->GetProfileKey());
-
-  auto db = db_provider->GetDB<ArticleEntry>(
-      leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, database_dir,
+  auto db = leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<ArticleEntry>(
       background_task_runner);
 
+  base::FilePath database_dir(
+      profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
+
   std::unique_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(std::move(db)));
+      new DomDistillerStore(std::move(db), database_dir));
 
   std::unique_ptr<DistillerPageFactory> distiller_page_factory(
-      new DistillerPageWebContentsFactory(context));
+      new DistillerPageWebContentsFactory(profile));
   std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(
-          content::BrowserContext::GetDefaultStoragePartition(context)
+          content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetURLLoaderFactoryForBrowserProcess()));
 
   dom_distiller::proto::DomDistillerOptions options;
@@ -97,7 +88,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
       std::move(distiller_url_fetcher_factory), options));
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs(
-      new DistilledPagePrefs(profile->GetPrefs()));
+      new DistilledPagePrefs(Profile::FromBrowserContext(profile)->GetPrefs()));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(

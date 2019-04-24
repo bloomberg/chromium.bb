@@ -6,14 +6,13 @@
 
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/svg/svg_integer.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 InterpolationValue SVGIntegerInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
 InterpolationValue SVGIntegerInterpolationType::MaybeConvertSVGValue(
@@ -21,14 +20,14 @@ InterpolationValue SVGIntegerInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedInteger)
     return nullptr;
   return InterpolationValue(
-      std::make_unique<InterpolableNumber>(ToSVGInteger(svg_value).Value()));
+      InterpolableNumber::Create(ToSVGInteger(svg_value).Value()));
 }
 
 SVGPropertyBase* SVGIntegerInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
   double value = ToInterpolableNumber(interpolable_value).Value();
-  return MakeGarbageCollected<SVGInteger>(round(value));
+  return SVGInteger::Create(round(value));
 }
 
 }  // namespace blink

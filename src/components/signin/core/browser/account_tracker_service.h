@@ -34,16 +34,7 @@ class DictionaryValue;
 }
 
 namespace identity {
-class IdentityManager;
-void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&);
+class IdentityTestEnvironment;
 }
 
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
@@ -146,16 +137,7 @@ class AccountTrackerService : public KeyedService {
 
  private:
   friend class AccountFetcherService;
-  friend void identity::SimulateSuccessfulFetchOfAccountInfo(
-      identity::IdentityManager*,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      const std::string&);
+  friend class identity::IdentityTestEnvironment;
 
   void NotifyAccountUpdated(const AccountInfo& account_info);
   void NotifyAccountUpdateFailed(const std::string& account_id);

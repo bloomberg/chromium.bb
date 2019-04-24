@@ -42,7 +42,6 @@
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
-<translation id="1552525382687785070">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
 <translation id="1558704936695638228">برای گزینه‌های بیشتر برگه، فشار دهید و نگه دارید</translation>
 <translation id="1580783302095112590">نامه ارسال شد.</translation>
 <translation id="1582732959743469162">با این کار کل پیشرفت بارگیری کنونی‌تان متوقف خواهد شد.</translation>
@@ -85,7 +84,6 @@
 <translation id="213900355088104901">برای مرور خصوصی، برگه ناشناسی باز کنید</translation>
 <translation id="2139867232736819575">جستجوی نوشتاری که کپی کرده‌اید</translation>
 <translation id="2149973817440762519">ویرایش نشانک</translation>
-<translation id="2179182049312275900">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید.</translation>
 <translation id="2198757192731523470">‏Google ممکن است از سابقه مرور شما برای شخصی کردن جستجو، آگهی‌ها، و سایر سرویس‌های Google استفاده کند.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> مقاله خوانده‌نشده در فهرست مطالعه.</translation>
 <translation id="2230173723195178503">صفحه وب بار شد</translation>
@@ -104,7 +102,6 @@
 <translation id="2386793615875593361">۱ مورد انتخاب شد</translation>
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
 <translation id="2481538920734869610">افزودن حساب</translation>
-<translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
 <translation id="2523363575747517183">این وب‌سایت به‌طور مکرر تلاش می‌کند برنامه دیگری را باز کند.</translation>
 <translation id="2529021024822217800">باز کردن همه</translation>
@@ -203,9 +200,9 @@
 <translation id="4038354071007134711">برنامه‌ای در این دستگاه نمی‌تواند فایل را باز کند.</translation>
 <translation id="4042870976416480368">یافتن در صفحه</translation>
 <translation id="4049507953662678203">مطمئن شوید اتصال شبکه دارید و دوباره امتحان کنید.</translation>
-<translation id="4071530748369333746">همگام‌سازی لغو شود؟</translation>
 <translation id="4082688844002261427">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
 <translation id="408404951701638773">اکنون دسترسی به نوار جستجو آسان‌تر است</translation>
+<translation id="4084682180776658562">نشانک</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
 <translation id="4112644173421521737">جستجو</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
@@ -217,6 +214,7 @@
 <translation id="4272631900155121838">‏برای اسکن کردن کد QR، دوربین را در تنظیمات فعال کنید</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
+<translation id="4342284590510997375">جدید</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4370827530403103842">همگام‌سازی کار نمی‌کند. برای رفع اشکال ضربه بزنید.</translation>
 <translation id="4375040482473363939">‏جستجوی کد QR</translation>
@@ -272,7 +270,6 @@
 <translation id="5197255632782567636">اینترنت</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5244474230056479698">درحال همگام‌سازی در <ph name="EMAIL" /></translation>
-<translation id="5245322853195994030">لغو همگام‌سازی</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
@@ -366,9 +363,9 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
 <translation id="6657585470893396449">گذرواژه</translation>
-<translation id="6668619169535738264">ویرایش نشانک</translation>
 <translation id="667999046851023355">سند</translation>
 <translation id="6691331417640343772">‏مدیریت داده‌های همگام‌سازی‌شده در داشبورد Google</translation>
+<translation id="6709334795756764830">ویرایش نشانک</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">گذرواژه‌ها صادر نشدند</translation>
 <translation id="6780034285637185932">کد پستی</translation>
@@ -409,7 +406,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
-<translation id="7348502496356775519">نشانک</translation>
 <translation id="7383797227493018512">فهرست خواندن</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7425346204213733349">‏تغییرات در نشانک‌ها، سابقه، گذرواژه و سایر تنظیمات دیگر با حساب Google شما همگام‌سازی نخواهند شد. با این حال، داده‌های موجودتان در حساب Google شما باقی خواهند ماند.</translation>
@@ -457,7 +453,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8073670137947914548">بارگیری به پایان رسید</translation>
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">بارگیری فایل دردسترس است. گزینه‌ها نزدیک انتهای صفحه دردسترس است.</translation>
-<translation id="8131740175452115882">تأیید</translation>
 <translation id="8205564605687841303">لغو</translation>
 <translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="8261506727792406068">حذف</translation>

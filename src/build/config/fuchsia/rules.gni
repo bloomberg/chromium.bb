@@ -8,7 +8,6 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/fuchsia/config.gni")
 import("//build/config/fuchsia/package.gni")
 import("//build/config/sysroot.gni")
-import("//build/util/generate_wrapper.gni")
 
 blobstore_qcow_path = "$root_out_dir/fvm.blk.qcow2"
 
@@ -58,7 +57,7 @@ template("fuchsia_package_runner") {
   #   |install_only|: If true, builds a script that only installs a package.
   #   |script_path|: The path of the script to generate.
   template(_generate_template) {
-    generate_wrapper(target_name) {
+    action(target_name) {
       forward_variables_from(invoker,
                              [
                                "install_only",
@@ -66,9 +65,6 @@ template("fuchsia_package_runner") {
                                "target",
                                "testonly",
                              ])
-
-      executable = runner_script
-      wrapper_script = script_path
 
       deps = [
         "//build/config/fuchsia:blobstore_extended_qcow2",
@@ -79,7 +75,14 @@ template("fuchsia_package_runner") {
         deps += invoker.deps
       }
 
+      script = "//build/fuchsia/create_runner_script.py"
+
+      outputs = [
+        script_path,
+      ]
+
       data = [
+        script_path,
         _manifest_path,
         "//build/fuchsia/",
         "//build/util/lib/",
@@ -92,7 +95,15 @@ template("fuchsia_package_runner") {
         invoker.package,
       ]
 
-      executable_args = []
+      # Arguments used at build time by the runner script generator.
+      args = [
+        "--script-output-path",
+        rebase_path(script_path, root_build_dir),
+      ]
+
+      if (defined(invoker.use_test_server) && invoker.use_test_server) {
+        args += [ "--enable-test-server" ]
+      }
 
       if (defined(invoker.package_deps)) {
         foreach(cur_package, invoker.package_deps) {
@@ -100,33 +111,29 @@ template("fuchsia_package_runner") {
           dep_package_path =
               get_label_info(cur_package[0], "target_gen_dir") + "/" +
               cur_package[1] + "/" + cur_package[1] + ".far"
-          _rebased_dep_package_path =
-              rebase_path(dep_package_path, root_build_dir)
-          executable_args += [
+          args += [
             "--package-dep",
-            "@WrappedPath(${_rebased_dep_package_path})",
+            rebase_path(dep_package_path, root_build_dir),
           ]
         }
       }
 
-      _rebased_package_path = rebase_path(_package_path, root_build_dir)
-      executable_args += [
+      # Arguments used at runtime by the test runner.
+      args += [
+        "--runner-script",
+        rebase_path(runner_script, root_build_dir),
         "--output-directory",
-        "@WrappedPath(.)",
+        ".",
         "--target-cpu",
         target_cpu,
         "--package",
-        "@WrappedPath(${_rebased_package_path})",
+        rebase_path(_package_path, root_build_dir),
         "--package-name",
         _pkg_shortname,
       ]
 
-      if (defined(invoker.use_test_server) && invoker.use_test_server) {
-        executable_args += [ "--enable-test-server" ]
-      }
-
       if (defined(install_only) && install_only) {
-        executable_args += [ "--install-only" ]
+        args += [ "--install-only" ]
       }
     }
   }

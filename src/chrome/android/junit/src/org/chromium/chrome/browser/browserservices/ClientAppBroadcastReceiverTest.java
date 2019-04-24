@@ -29,7 +29,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 import java.util.Arrays;
@@ -44,8 +43,8 @@ import java.util.Set;
 public class ClientAppBroadcastReceiverTest {
     @Mock public Context mContext;
     @Mock public ClientAppDataRegister mDataRegister;
+    @Mock public ClearDataNotificationPublisher mNotificationManager;
     @Mock public ClientAppBroadcastReceiver.ClearDataStrategy mMockStrategy;
-    @Mock public NotificationPermissionUpdater mPermissionUpdater;
 
     private ClientAppBroadcastReceiver mReceiver;
 
@@ -54,7 +53,7 @@ public class ClientAppBroadcastReceiverTest {
         MockitoAnnotations.initMocks(this);
 
         mReceiver = new ClientAppBroadcastReceiver(mMockStrategy, mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
+                mock(ChromePreferenceManager.class));
         mContext = RuntimeEnvironment.application;
     }
 
@@ -65,22 +64,12 @@ public class ClientAppBroadcastReceiverTest {
         return intent;
     }
 
-    private void addToRegister(int id, String appName, Set<String> domainAndRegistries,
-            Set<String> origins) {
+    private void addToRegister(int id, String appName, Set<String> domainAndRegistries) {
         doReturn(true).when(mDataRegister).chromeHoldsDataForPackage(eq(id));
         doReturn(appName).when(mDataRegister).getAppNameForRegisteredUid(eq(id));
         doReturn(domainAndRegistries)
                 .when(mDataRegister)
                 .getDomainsForRegisteredUid(eq(id));
-
-        if (origins == null) return;
-        doReturn(origins)
-                .when(mDataRegister)
-                .getOriginsForRegisteredUid(eq(id));
-    }
-
-    private void addToRegister(int id, String appName, Set<String> domainAndRegistries) {
-        addToRegister(id, appName, domainAndRegistries, null);
     }
 
     /** Makes sure we don't show a notification if we don't have any data for the app. */
@@ -89,7 +78,7 @@ public class ClientAppBroadcastReceiverTest {
     public void chromeHoldsNoData() {
         mReceiver.onReceive(mContext, createMockIntent(12, Intent.ACTION_PACKAGE_FULLY_REMOVED));
 
-        verify(mMockStrategy, never()).execute(any(), any(), any(), anyInt(), anyBoolean());
+        verify(mMockStrategy, never()).execute(any(), any(), anyInt(), anyBoolean());
     }
 
     /** Tests the basic flow. */
@@ -105,16 +94,40 @@ public class ClientAppBroadcastReceiverTest {
 
         mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
 
-        verify(mMockStrategy).execute(any(), any(), any(), eq(id), eq(true));
+        verify(mMockStrategy).execute(any(), any(), eq(id), eq(true));
+    }
+
+    /** Tests we deal with multiple domains well. */
+    @Test
+    @Feature("TrustedWebActivities")
+    public void notificationStrategyShowsNotification_ForEachDomain() {
+        mReceiver = new ClientAppBroadcastReceiver(
+                new ClientAppBroadcastReceiver.NotificationClearDataStrategy(mNotificationManager),
+                mDataRegister, mock(ChromePreferenceManager.class));
+
+        int id = 45;
+        String appName = "App Name 2";
+        String domain1 = "example.com";
+        String domain2 = "example2.com";
+        Set<String> domains = new HashSet<>(Arrays.asList(domain1, domain2));
+
+        addToRegister(id, appName, domains);
+
+        mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
+
+        verify(mNotificationManager).showClearDataNotification(
+                any(), eq(appName), eq(domain1), eq(true));
+        verify(mNotificationManager).showClearDataNotification(
+                any(), eq(appName), eq(domain2), eq(true));
     }
 
     /** Tests we plumb the correct information to the {@link ClearDataDialogActivity}. */
     @Test
     @Feature("TrustedWebActivities")
-    public void execute_ValidIntent() {
+    public void dialogStrategy_ValidIntent() {
         mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.ClearDataStrategy(), mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
+                new ClientAppBroadcastReceiver.DialogClearDataStrategy(), mDataRegister,
+                mock(ChromePreferenceManager.class));
 
         int id = 67;
         String appName = "App Name 3";
@@ -136,30 +149,6 @@ public class ClientAppBroadcastReceiverTest {
         assertEquals(domains, new HashSet<>(ClearDataDialogActivity.getDomainsFromIntent(intent)));
     }
 
-    /** Tests we call the NotificationPermissionUpdater. */
-    @Test
-    @Feature("TrustedwebActivities")
-    public void execute_UpdatePermissions() {
-        mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.ClearDataStrategy(), mDataRegister,
-                mock(ChromePreferenceManager.class), mPermissionUpdater);
-
-        int id = 67;
-        String appName = "App Name 3";
-        Set<String> domains = new HashSet<>(Arrays.asList("example.com", "example2.com"));
-
-        Origin origin1 = new Origin("https://www.example.com");
-        Origin origin2 = new Origin("https://www.example2.com");
-        Set<String> origins = new HashSet<>(Arrays.asList(origin1.toString(), origin2.toString()));
-
-        addToRegister(id, appName, domains, origins);
-
-        mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
-
-        verify(mPermissionUpdater).onClientAppUninstalled(origin1);
-        verify(mPermissionUpdater).onClientAppUninstalled(origin2);
-    }
-
     /** Tests we differentiate between app uninstalled and data cleared. */
     @Test
     @Feature("TrustedWebActivities")
@@ -172,6 +161,6 @@ public class ClientAppBroadcastReceiverTest {
         addToRegister(id, appName, domains);
 
         mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_DATA_CLEARED));
-        verify(mMockStrategy).execute(any(), any(), any(), eq(id), eq(false));
+        verify(mMockStrategy).execute(any(), any(), eq(id), eq(false));
     }
 }

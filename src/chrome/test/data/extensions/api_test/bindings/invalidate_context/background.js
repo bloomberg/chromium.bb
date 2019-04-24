@@ -6,6 +6,7 @@ var frame;
 var frameRuntime;
 var frameStorage;
 var frameTabs;
+var nativeBindingsEnabled;
 
 function createFrame() {
   frame = document.createElement('iframe');
@@ -53,6 +54,12 @@ function testPort(port, expectEventsValid) {
   chrome.test.assertTrue(result.postMessageThrow);
   chrome.test.assertTrue(result.disconnectThrow);
 
+  // With native bindings, the event object instantiated on a Port is set as a
+  // lazy data property, and thus is safe to access even after the context has
+  // been removed. JS bindings always throw errors when trying to access them
+  // after context invalidation.
+  expectEventsValid &= nativeBindingsEnabled;
+
   if (expectEventsValid) {
     chrome.test.assertFalse(result.getOnMessageThrow);
     chrome.test.assertFalse(result.getOnDisconnectThrow);
@@ -66,7 +73,7 @@ function testPort(port, expectEventsValid) {
   }
 }
 
-chrome.test.runTests([
+const tests = [
   function useFrameStorageAndRuntime() {
     createFrame().then(() => {
       frameRuntime = frame.contentWindow.chrome.runtime;
@@ -143,4 +150,9 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
-]);
+];
+
+chrome.test.getConfig((config) => {
+  nativeBindingsEnabled = config.nativeCrxBindingsEnabled;
+  chrome.test.runTests(tests);
+});

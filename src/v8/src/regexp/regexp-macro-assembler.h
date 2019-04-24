@@ -244,11 +244,9 @@ class NativeRegExpMacroAssembler: public RegExpMacroAssembler {
   }
 
   // Returns a {Result} sentinel, or the number of successful matches.
-  V8_EXPORT_PRIVATE static int Execute(Code code, String input,
-                                       int start_offset,
-                                       const byte* input_start,
-                                       const byte* input_end, int* output,
-                                       int output_size, Isolate* isolate);
+  static int Execute(Code code, String input, int start_offset,
+                     const byte* input_start, const byte* input_end,
+                     int* output, int output_size, Isolate* isolate);
 };
 
 }  // namespace internal

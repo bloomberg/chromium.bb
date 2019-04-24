@@ -283,8 +283,7 @@ class MediaPipelineBackend {
   virtual bool Resume() = 0;
 
   // Gets the current playback timestamp in microseconds. Only called when in
-  // the "playing" or "paused" states. Returns INT64_MIN if the PTS is not
-  // available.
+  // the "playing" or "paused" states.
   virtual int64_t GetCurrentPts() = 0;
 
   // Sets the playback rate.  |rate| > 0.  If this is not called, a default rate
@@ -300,7 +299,7 @@ class MediaPipelineBackend {
   // object. Platforms which support standard CDM decryption APIs do not need to
   // implement this function.
   CHROMECAST_EXPORT static AudioDecryptor* CreateAudioDecryptor(
-      EncryptionScheme scheme,
+      const EncryptionScheme& scheme,
       TaskRunner* task_runner) __attribute__((weak));
 };
 

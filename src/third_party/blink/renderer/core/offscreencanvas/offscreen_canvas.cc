@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
@@ -219,7 +220,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !RuntimeEnabledFeatures::WebXREnabled(execution_context))) {
+       !origin_trials::WebXREnabled(execution_context))) {
     return nullptr;
   }
 

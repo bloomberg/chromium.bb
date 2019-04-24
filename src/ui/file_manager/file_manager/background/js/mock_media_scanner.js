@@ -84,9 +84,10 @@ TestMediaScanner.prototype.finalizeScans = function() {
 TestMediaScanner.prototype.update = function() {
   assertTrue(this.scans_.length > 0);
   const scan = this.scans_[this.scans_.length - 1];
-  this.observers.forEach(observer => {
-    observer(importer.ScanEvent.UPDATED, scan);
-  });
+  this.observers.forEach(
+      observer => {
+        observer(importer.ScanEvent.UPDATED, scan);
+      });
 };
 
 /**
@@ -163,16 +164,17 @@ function TestScanResult(fileEntries) {
   this.canceled_ = false;
 
   /** @type {!Promise<!importer.ScanResult>} */
-  this.whenFinal_ = new Promise((resolve, reject) => {
-    this.resolveResult_ = result => {
-      this.settled_ = true;
-      resolve(result);
-    };
-    this.rejectResult_ = () => {
-      this.settled_ = true;
-      reject();
-    };
-  });
+  this.whenFinal_ = new Promise(
+      (resolve, reject) => {
+        this.resolveResult_ = result => {
+          this.settled_ = true;
+          resolve(result);
+        };
+        this.rejectResult_ = () => {
+          this.settled_ = true;
+          reject();
+        };
+      });
 }
 
 /** @private {number} */
@@ -264,4 +266,5 @@ function TestDirectoryWatcher(callback) {
 /**
  * @override
  */
-TestDirectoryWatcher.prototype.addDirectory = () => {};
+TestDirectoryWatcher.prototype.addDirectory = () => {
+};

@@ -15,14 +15,12 @@
 #ifndef DAWNNATIVE_D3D12_COMMANDBUFFERD3D12_H_
 #define DAWNNATIVE_D3D12_COMMANDBUFFERD3D12_H_
 
-#include "common/Constants.h"
 #include "dawn_native/CommandAllocator.h"
 #include "dawn_native/CommandBuffer.h"
 
 #include "dawn_native/d3d12/Forward.h"
+#include "dawn_native/d3d12/InputStateD3D12.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
-
-#include <array>
 
 namespace dawn_native {
     struct BeginRenderPassCmd;
@@ -32,7 +30,6 @@ namespace dawn_native { namespace d3d12 {
 
     class Device;
     class RenderPassDescriptorHeapTracker;
-    class RenderPipeline;
 
     struct BindGroupStateTracker;
 
@@ -41,7 +38,7 @@ namespace dawn_native { namespace d3d12 {
         // If there are multiple calls to SetVertexBuffers, the start and end
         // represent the union of the dirty ranges (the union may have non-dirty
         // data in the middle of the range).
-        const RenderPipeline* lastRenderPipeline = nullptr;
+        const InputState* lastInputState = nullptr;
         uint32_t startSlot = kMaxVertexInputs;
         uint32_t endSlot = 0;
         std::array<D3D12_VERTEX_BUFFER_VIEW, kMaxVertexInputs> d3d12BufferViews = {};
@@ -57,7 +54,7 @@ namespace dawn_native { namespace d3d12 {
       private:
         void FlushSetVertexBuffers(ComPtr<ID3D12GraphicsCommandList> commandList,
                                    VertexBuffersInfo* vertexBuffersInfo,
-                                   const RenderPipeline* lastRenderPipeline);
+                                   const InputState* inputState);
         void RecordComputePass(ComPtr<ID3D12GraphicsCommandList> commandList,
                                BindGroupStateTracker* bindingTracker);
         void RecordRenderPass(ComPtr<ID3D12GraphicsCommandList> commandList,

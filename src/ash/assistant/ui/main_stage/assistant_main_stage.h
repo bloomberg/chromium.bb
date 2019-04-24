@@ -50,8 +50,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainStage
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* view) override;
   void OnViewPreferredSizeChanged(views::View* view) override;
-  void OnViewVisibilityChanged(views::View* view,
-                               views::View* starting_view) override;
+  void OnViewVisibilityChanged(views::View* view) override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;

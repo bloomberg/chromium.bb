@@ -21,8 +21,7 @@
 
 namespace webrtc {
 
-class MockAudioEncoderFactory
-    : public ::testing::NiceMock<AudioEncoderFactory> {
+class MockAudioEncoderFactory : public testing::NiceMock<AudioEncoderFactory> {
  public:
   MOCK_METHOD0(GetSupportedEncoders, std::vector<AudioCodecSpec>());
   MOCK_METHOD1(QueryAudioEncoder,
@@ -47,9 +46,9 @@ class MockAudioEncoderFactory
   // example.
   static rtc::scoped_refptr<webrtc::MockAudioEncoderFactory>
   CreateUnusedFactory() {
-    using ::testing::_;
-    using ::testing::AnyNumber;
-    using ::testing::Return;
+    using testing::_;
+    using testing::AnyNumber;
+    using testing::Return;
 
     rtc::scoped_refptr<webrtc::MockAudioEncoderFactory> factory =
         new rtc::RefCountedObject<webrtc::MockAudioEncoderFactory>;
@@ -69,10 +68,10 @@ class MockAudioEncoderFactory
   // call, since it supports no codecs.
   static rtc::scoped_refptr<webrtc::MockAudioEncoderFactory>
   CreateEmptyFactory() {
-    using ::testing::_;
-    using ::testing::AnyNumber;
-    using ::testing::Return;
-    using ::testing::SetArgPointee;
+    using testing::_;
+    using testing::AnyNumber;
+    using testing::Return;
+    using testing::SetArgPointee;
 
     rtc::scoped_refptr<webrtc::MockAudioEncoderFactory> factory =
         new rtc::RefCountedObject<webrtc::MockAudioEncoderFactory>;

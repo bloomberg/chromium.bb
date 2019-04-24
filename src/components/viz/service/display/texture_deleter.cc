@@ -13,19 +13,21 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace viz {
 
 static void DeleteTextureOnImplThread(
     const scoped_refptr<ContextProvider>& context_provider,
-    const gpu::Mailbox& mailbox,
+    unsigned texture_id,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
-  context_provider->SharedImageInterface()->DestroySharedImage(sync_token,
-                                                               mailbox);
+  if (sync_token.HasData()) {
+    context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
+        sync_token.GetConstData());
+  }
+  context_provider->ContextGL()->DeleteTextures(1, &texture_id);
 }
 
 static void PostTaskFromMainToImplThread(
@@ -50,13 +52,13 @@ TextureDeleter::~TextureDeleter() {
 
 std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
     scoped_refptr<ContextProvider> context_provider,
-    const gpu::Mailbox& mailbox) {
+    unsigned texture_id) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
   // thread. Upon destruction of this class, the callback must immediately be
   // destroyed.
   std::unique_ptr<SingleReleaseCallback> impl_callback =
       SingleReleaseCallback::Create(base::BindOnce(
-          &DeleteTextureOnImplThread, std::move(context_provider), mailbox));
+          &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
 
   impl_callbacks_.push_back(std::move(impl_callback));
 

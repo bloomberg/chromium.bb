@@ -13,10 +13,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
 #include <list>
 #include <memory>
 
-#include "absl/algorithm/container.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/async_socket.h"
 #include "rtc_base/async_tcp_socket.h"
@@ -55,7 +55,8 @@ class TestEchoServer : public sigslot::has_slots<> {
     socket->Send(buf, size, options);
   }
   void OnClose(AsyncPacketSocket* socket, int err) {
-    ClientList::iterator it = absl::c_find(client_sockets_, socket);
+    ClientList::iterator it =
+        std::find(client_sockets_.begin(), client_sockets_.end(), socket);
     client_sockets_.erase(it);
     Thread::Current()->Dispose(socket);
   }

@@ -36,9 +36,15 @@ class PiexStreamReader : public piex::StreamInterface {
 class PiexReader {
  public:
   static void ReadImage(const char* data, size_t size, int callback) {
-    assert(data && callback);
+    assert(callback);
 
     auto result = emscripten::val::object();
+    if (!data || !size) {
+      result.set("error", emscripten::val("failed to fetch image source"));
+      CallbackResult(callback, result);
+      return;
+    }
+
     PiexStreamReader reader(data, size);
     piex::PreviewImageData image;
 
@@ -68,7 +74,7 @@ class PiexReader {
     assert(callbacks.as<bool>());
 
     auto context = emscripten::val::undefined();
-    callbacks[index].call<void>("call", context, result);
+    callbacks[index].call<emscripten::val>("call", context, result);
   }
 
   static emscripten::val GetProperties(const piex::PreviewImageData& image) {
@@ -83,7 +89,7 @@ class PiexReader {
   }
 
   static emscripten::val GetPreview(const piex::PreviewImageData& image) {
-    const auto undefined = emscripten::val::undefined();
+    auto undefined = emscripten::val::undefined();
 
     const auto format = static_cast<uint32_t>(image.preview.format);
     if (format != piex::Image::Format::kJpegCompressed)
@@ -104,7 +110,7 @@ class PiexReader {
   }
 
   static emscripten::val GetThumbnail(const piex::PreviewImageData& image) {
-    const auto undefined = emscripten::val::undefined();
+    auto undefined = emscripten::val::undefined();
 
     const auto format = static_cast<uint32_t>(image.thumbnail.format);
     if (!image.thumbnail.offset || !image.thumbnail.length)
@@ -124,9 +130,11 @@ class PiexReader {
 
   static emscripten::val GetColorSpace(const piex::PreviewImageData& image) {
     const auto space = static_cast<uint32_t>(image.color_space);
+    if (space == ::piex::PreviewImageData::kSrgb)
+      return emscripten::val("sRgb");
     if (space == ::piex::PreviewImageData::kAdobeRgb)
       return emscripten::val("adobeRgb");
-    return emscripten::val("sRgb");
+    return emscripten::val::undefined();
   }
 };
 

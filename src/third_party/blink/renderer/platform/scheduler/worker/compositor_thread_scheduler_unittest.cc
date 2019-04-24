@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
-#include <algorithm>
 #include <memory>
 #include "base/bind.h"
 #include "base/macros.h"
@@ -16,8 +15,8 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using testing::ElementsAre;
 using testing::ElementsAreArray;
+using testing::ElementsAre;
 
 namespace blink {
 namespace scheduler {
@@ -40,10 +39,10 @@ class CompositorThreadSchedulerTest : public testing::Test {
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     mock_task_runner_->AdvanceMockTickClock(
         base::TimeDelta::FromMicroseconds(5000));
-    sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(
-        nullptr, mock_task_runner_, mock_task_runner_->GetMockTickClock());
-    scheduler_ =
-        std::make_unique<CompositorThreadScheduler>(sequence_manager_.get());
+
+    scheduler_ = std::make_unique<CompositorThreadScheduler>(
+        base::sequence_manager::SequenceManagerForTest::Create(
+            nullptr, mock_task_runner_, mock_task_runner_->GetMockTickClock()));
     scheduler_->Init();
   }
 
@@ -53,8 +52,6 @@ class CompositorThreadSchedulerTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
-      sequence_manager_;
   std::unique_ptr<CompositorThreadScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorThreadSchedulerTest);

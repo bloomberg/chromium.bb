@@ -87,8 +87,6 @@ class V8RuntimeAgentImpl : public protocol::Runtime::Backend {
           result,
       Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>*
           internalProperties,
-      Maybe<protocol::Array<protocol::Runtime::PrivatePropertyDescriptor>>*
-          privateProperties,
       Maybe<protocol::Runtime::ExceptionDetails>*) override;
   Response releaseObjectGroup(const String16& objectGroup) override;
   Response runIfWaitingForDebugger() override;

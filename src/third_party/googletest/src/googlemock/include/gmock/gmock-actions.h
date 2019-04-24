@@ -139,6 +139,9 @@ class BuiltInDefaultValue<T*> {
   }
 
 GMOCK_DEFINE_DEFAULT_ACTION_FOR_RETURN_TYPE_(void, );  // NOLINT
+#if GTEST_HAS_GLOBAL_STRING
+GMOCK_DEFINE_DEFAULT_ACTION_FOR_RETURN_TYPE_(::string, "");
+#endif  // GTEST_HAS_GLOBAL_STRING
 GMOCK_DEFINE_DEFAULT_ACTION_FOR_RETURN_TYPE_(::std::string, "");
 GMOCK_DEFINE_DEFAULT_ACTION_FOR_RETURN_TYPE_(bool, false);
 GMOCK_DEFINE_DEFAULT_ACTION_FOR_RETURN_TYPE_(unsigned char, '\0');
@@ -770,8 +773,8 @@ class SetErrnoAndReturnAction {
 
 // Implements the SetArgumentPointee<N>(x) action for any function
 // whose N-th argument (0-based) is a pointer to x's type.  The
-// template parameter kIsProto is true iff type A is
-// proto2::Message or a sub-class of it.
+// template parameter kIsProto is true iff type A is ProtocolMessage,
+// proto2::Message, or a sub-class of those.
 template <size_t N, typename A, bool kIsProto>
 class SetArgumentPointeeAction {
  public:
@@ -795,7 +798,9 @@ template <size_t N, typename Proto>
 class SetArgumentPointeeAction<N, Proto, true> {
  public:
   // Constructs an action that sets the variable pointed to by the
-  // N-th function argument to 'proto'.
+  // N-th function argument to 'proto'.  Both ProtocolMessage and
+  // proto2::Message have the CopyFrom() method, so the same
+  // implementation works for both.
   explicit SetArgumentPointeeAction(const Proto& proto) : proto_(new Proto) {
     proto_->CopyFrom(proto);
   }

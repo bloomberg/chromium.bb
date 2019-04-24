@@ -595,21 +595,18 @@ cr.define('wallpapers', function() {
      */
     updateActiveThumb_: function() {
       var selectedGridItem = this.getListItem(this.activeItem_);
+      if (this.checkmark_.parentNode &&
+          this.checkmark_.parentNode == selectedGridItem) {
+        return;
+      }
 
       // Clears previous checkmark.
       var previousSelectedGridItem = this.checkmark_.parentNode;
-      if (previousSelectedGridItem) {
-        previousSelectedGridItem.selected = false;
+      if (previousSelectedGridItem)
         previousSelectedGridItem.removeChild(this.checkmark_);
-      }
 
-      if (selectedGridItem) {
-        selectedGridItem.selected = true;
+      if (selectedGridItem)
         selectedGridItem.appendChild(this.checkmark_);
-      }
-
-      WallpaperUtil.saveToLocalStorage(
-          Constants.AccessLastUsedImageInfoKey, this.activeItem_);
     },
 
     /**

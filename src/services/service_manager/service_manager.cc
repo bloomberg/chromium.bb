@@ -939,8 +939,7 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
       ManifestBuilder()
           .ExposeCapability(kCapability_ServiceManager,
                             Manifest::InterfaceList<mojom::ServiceManager>())
-          .WithInterfacesBindableOnAnyService(
-              service_manager::Manifest::InterfaceList<mojom::ServiceFactory>())
+          .RequireCapability("*", "service_manager:service_factory")
           .Build();
   service_manager_instance_ =
       CreateInstance(GetServiceManagerInstanceIdentity(),

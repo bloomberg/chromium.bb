@@ -11,23 +11,40 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 namespace {
 
-class TestSyncService : public syncer::TestSyncService {
+class TestSyncService : public browser_sync::ProfileSyncServiceMock {
  public:
-  TestSyncService() {}
+  enum class SyncedTypes { ALL, NONE };
+
+  explicit TestSyncService(Profile* profile)
+      : browser_sync::ProfileSyncServiceMock(
+            CreateProfileSyncServiceParamsForTest(profile)),
+        synced_types_(SyncedTypes::NONE) {}
   ~TestSyncService() override {}
 
-  // syncer::SyncService:
+  // FakeSyncService:
+  int GetDisableReasons() const override { return disable_reasons_; }
+  syncer::ModelTypeSet GetActiveDataTypes() const override {
+    switch (synced_types_) {
+      case SyncedTypes::ALL:
+        return syncer::ModelTypeSet::All();
+      case SyncedTypes::NONE:
+        return syncer::ModelTypeSet();
+    }
+    NOTREACHED();
+    return syncer::ModelTypeSet();
+  }
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     ASSERT_FALSE(observer_);
     observer_ = observer;
@@ -36,20 +53,26 @@ class TestSyncService : public syncer::TestSyncService {
     EXPECT_EQ(observer_, observer);
   }
 
-  void FireOnStateChanged() {
+  void SetDisableReasons(int disable_reasons) {
+    disable_reasons_ = disable_reasons;
+  }
+
+  void FireOnStateChanged(browser_sync::ProfileSyncService* service) {
     ASSERT_TRUE(observer_);
-    observer_->OnStateChanged(this);
+    observer_->OnStateChanged(service);
   }
 
  private:
   syncer::SyncServiceObserver* observer_ = nullptr;
+  int disable_reasons_ = DISABLE_REASON_NONE;
 
+  SyncedTypes synced_types_;
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
-  return std::make_unique<TestSyncService>();
+  return std::make_unique<TestSyncService>(static_cast<Profile*>(context));
 }
 
 }  // namespace
@@ -105,7 +128,8 @@ TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
   TestSyncService* test_service = static_cast<TestSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
-  test_service->SetFirstSetupComplete(true);
+  ON_CALL(*test_service->GetUserSettingsMock(), IsFirstSetupComplete())
+      .WillByDefault(testing::Return(true));
 
   base::RunLoop run_loop;
   scoped_refptr<ExternalPrefLoader> loader(
@@ -120,7 +144,7 @@ TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
   test_service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
   ASSERT_FALSE(test_service->CanSyncFeatureStart());
-  test_service->FireOnStateChanged();
+  test_service->FireOnStateChanged(test_service);
   run_loop.Run();
 }
 

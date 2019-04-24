@@ -30,42 +30,41 @@ class Object;
 // Storing heap object through this slot may require triggering write barriers
 // so this operation must be done via static store_tagged() methods.
 class EmbedderDataSlot
-    : public SlotBase<EmbedderDataSlot, Address, kTaggedSize> {
+    : public SlotBase<EmbedderDataSlot, Address, kEmbedderDataSlotSize> {
  public:
   EmbedderDataSlot() : SlotBase(kNullAddress) {}
   V8_INLINE EmbedderDataSlot(EmbedderDataArray array, int entry_index);
   V8_INLINE EmbedderDataSlot(JSObject object, int embedder_field_index);
 
-#if defined(V8_TARGET_BIG_ENDIAN) && defined(V8_COMPRESS_POINTERS)
-  static constexpr int kTaggedPayloadOffset = kTaggedSize;
-#else
+  // TODO(ishell): these offsets are currently little-endian specific.
+  // The less significant part contains tagged value and the other part
+  // contains the raw value.
   static constexpr int kTaggedPayloadOffset = 0;
-#endif
-
 #ifdef V8_COMPRESS_POINTERS
-  // The raw payload is located in the other tagged part of the full pointer.
-  static constexpr int kRawPayloadOffset = kTaggedSize - kTaggedPayloadOffset;
+  static constexpr int kRawPayloadOffset = kTaggedSize;
 #endif
   static constexpr int kRequiredPtrAlignment = kSmiTagSize;
 
   // Opaque type used for storing raw embedder data.
-  using RawData = Address;
+  struct RawData {
+    const Address data_[kEmbedderDataSlotSizeInTaggedSlots];
+  };
 
   V8_INLINE Object load_tagged() const;
   V8_INLINE void store_smi(Smi value);
 
   // Setting an arbitrary tagged value requires triggering a write barrier
   // which requires separate object and offset values, therefore these static
-  // functions also has the target object parameter.
+  // functions a
   static V8_INLINE void store_tagged(EmbedderDataArray array, int entry_index,
                                      Object value);
   static V8_INLINE void store_tagged(JSObject object, int embedder_field_index,
                                      Object value);
 
-  // Tries reinterpret the value as an aligned pointer and sets *out_result to
-  // the pointer-like value. Note, that some Smis could still look like an
-  // aligned pointers.
-  // Returns true on success.
+  // Tries reinterpret the value as an aligned pointer and on success sets
+  // *out_result to the pointer-like value and returns true. Note, that some
+  // Smis could still look like an aligned pointers.
+  // Returns false otherwise.
   V8_INLINE bool ToAlignedPointer(void** out_result) const;
 
   // Returns true if the pointer was successfully stored or false it the pointer
@@ -73,12 +72,8 @@ class EmbedderDataSlot
   V8_INLINE V8_WARN_UNUSED_RESULT bool store_aligned_pointer(void* ptr);
 
   V8_INLINE RawData load_raw(const DisallowHeapAllocation& no_gc) const;
-  V8_INLINE void store_raw(RawData data, const DisallowHeapAllocation& no_gc);
-
- private:
-  // Stores given value to the embedder data slot in a concurrent-marker
-  // friendly manner (tagged part of the slot is written atomically).
-  V8_INLINE void gc_safe_store(Address value);
+  V8_INLINE void store_raw(const RawData& data,
+                           const DisallowHeapAllocation& no_gc);
 };
 
 }  // namespace internal

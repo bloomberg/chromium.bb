@@ -40,8 +40,8 @@ unsigned ConvertDeltaMode(const WebMouseWheelEvent& event) {
 }
 
 // Negate a long value without integer overflow.
-int32_t NegateIfPossible(int32_t value) {
-  if (value == std::numeric_limits<int32_t>::min())
+long NegateIfPossible(long value) {
+  if (value == LONG_MIN)
     return value;
   return -value;
 }

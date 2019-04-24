@@ -30,7 +30,7 @@ scoped_refptr<StylePath> StylePath::Create(
 
 StylePath* StylePath::EmptyPath() {
   DEFINE_STATIC_REF(StylePath, empty_path,
-                    StylePath::Create(std::make_unique<SVGPathByteStream>()));
+                    StylePath::Create(SVGPathByteStream::Create()));
   return empty_path;
 }
 
@@ -60,7 +60,7 @@ CSSValue* StylePath::ComputedCSSValue() const {
 bool StylePath::operator==(const BasicShape& o) const {
   if (!IsSameType(o))
     return false;
-  const StylePath& other = To<StylePath>(o);
+  const StylePath& other = ToStylePath(o);
   return *byte_stream_ == *other.byte_stream_;
 }
 

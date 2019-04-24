@@ -9,7 +9,6 @@
 
 #include "ANGLEPerfTest.h"
 
-#include "ANGLEPerfTestArgs.h"
 #include "common/platform.h"
 #include "third_party/perf/perf_test.h"
 #include "util/shader_utils.h"
@@ -27,8 +26,6 @@
 #    include "util/windows/WGLWindow.h"
 #endif  // defined(ANGLE_USE_UTIL_LOADER) &&defined(ANGLE_PLATFORM_WINDOWS)
 
-using namespace angle;
-
 namespace
 {
 constexpr size_t kInitialTraceEventBufferSize = 50000;
@@ -37,6 +34,11 @@ constexpr double kNanoSecondsPerSecond        = 1e9;
 constexpr double kCalibrationRunTimeSeconds   = 1.0;
 constexpr double kMaximumRunTimeSeconds       = 10.0;
 constexpr unsigned int kNumTrials             = 3;
+
+bool gCalibration = false;
+Optional<unsigned int> gStepsToRunOverride;
+bool gEnableTrace      = false;
+const char *gTraceFile = "ANGLETrace.json";
 
 struct TraceCategory
 {
@@ -154,6 +156,11 @@ void DumpTraceEventsToJSONFile(const std::vector<TraceEvent> &traceEvents,
     outFile << styledWrite.write(root);
 
     outFile.close();
+}
+
+bool OneFrame()
+{
+    return gStepsToRunOverride.valid() && gStepsToRunOverride.value() == 1;
 }
 }  // anonymous namespace
 
@@ -416,8 +423,7 @@ void ANGLERenderTest::SetUp()
         return;
     }
 
-    // Disable vsync.
-    mConfigParams.swapInterval = 0;
+    mGLWindow->setSwapInterval(0);
 
     mPlatformMethods.overrideWorkaroundsD3D      = OverrideWorkaroundsD3D;
     mPlatformMethods.logError                    = EmptyPlatformMethod;
@@ -428,8 +434,7 @@ void ANGLERenderTest::SetUp()
     mPlatformMethods.updateTraceEventDuration    = UpdateTraceEventDuration;
     mPlatformMethods.monotonicallyIncreasingTime = MonotonicallyIncreasingTime;
     mPlatformMethods.context                     = this;
-
-    mConfigParams.platformMethods = &mPlatformMethods;
+    mGLWindow->setPlatformMethods(&mPlatformMethods);
 
     if (!mOSWindow->initialize(mName, mTestParams.windowWidth, mTestParams.windowHeight))
     {
@@ -438,7 +443,7 @@ void ANGLERenderTest::SetUp()
         // FAIL returns.
     }
 
-    if (!mGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), mConfigParams))
+    if (!mGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get()))
     {
         mSkipTest = true;
         FAIL() << "Failed initializing GL Window";
@@ -590,12 +595,12 @@ bool ANGLERenderTest::areExtensionPrerequisitesFulfilled() const
 
 void ANGLERenderTest::setWebGLCompatibilityEnabled(bool webglCompatibility)
 {
-    mConfigParams.webGLCompatibility = webglCompatibility;
+    mGLWindow->setWebGLCompatibilityEnabled(webglCompatibility);
 }
 
 void ANGLERenderTest::setRobustResourceInit(bool enabled)
 {
-    mConfigParams.robustResourceInit = enabled;
+    mGLWindow->setRobustResourceInit(enabled);
 }
 
 std::vector<TraceEvent> &ANGLERenderTest::getTraceEventBuffer()
@@ -608,4 +613,47 @@ EGLWindow *ANGLERenderTest::createEGLWindow(const RenderTestParams &testParams)
 {
     return EGLWindow::New(testParams.majorVersion, testParams.minorVersion,
                           testParams.eglParameters);
+}
+
+void ANGLEProcessPerfTestArgs(int *argc, char **argv)
+{
+    int argcOutCount = 0;
+
+    for (int argIndex = 0; argIndex < *argc; argIndex++)
+    {
+        if (strcmp("--one-frame-only", argv[argIndex]) == 0)
+        {
+            gStepsToRunOverride = 1;
+        }
+        else if (strcmp("--enable-trace", argv[argIndex]) == 0)
+        {
+            gEnableTrace = true;
+        }
+        else if (strcmp("--trace-file", argv[argIndex]) == 0 && argIndex < *argc - 1)
+        {
+            gTraceFile = argv[argIndex];
+            // Skip an additional argument.
+            argIndex++;
+        }
+        else if (strcmp("--calibration", argv[argIndex]) == 0)
+        {
+            gCalibration = true;
+        }
+        else if (strcmp("--steps", argv[argIndex]) == 0 && argIndex < *argc - 1)
+        {
+            unsigned int stepsToRun = 0;
+            std::stringstream strstr;
+            strstr << argv[argIndex + 1];
+            strstr >> stepsToRun;
+            gStepsToRunOverride = stepsToRun;
+            // Skip an additional argument.
+            argIndex++;
+        }
+        else
+        {
+            argv[argcOutCount++] = argv[argIndex];
+        }
+    }
+
+    *argc = argcOutCount;
 }

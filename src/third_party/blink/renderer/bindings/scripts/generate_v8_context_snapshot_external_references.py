@@ -85,11 +85,10 @@ class InterfaceTemplateContextBuilder(object):
         indexed_property_getter = None
         is_global = False
         named_property_getter = None
-        component_info = self._info_provider.component_info
         if interface.name in SNAPSHOTTED_INTERFACES:
-            attributes = [v8_attributes.attribute_context(interface, attribute, interfaces, component_info)
+            attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
                           for attribute in interface.attributes]
-            methods = v8_interface.methods_context(interface, component_info)['methods']
+            methods = v8_interface.methods_context(interface)['methods']
             is_global = 'Global' in interface.extended_attributes
 
             named_property_getter = v8_interface.property_getter(
@@ -162,12 +161,10 @@ class ExternalReferenceTableGenerator(object):
     # in V8 context snapshot, so we can skip them.
     def _process_interface(self, interface, component, interfaces):
         def has_impl(interface):
-            component_info = self._info_provider.component_info
-            runtime_features = component_info['runtime_enabled_features']
             # Non legacy callback interface does not provide V8 callbacks.
             if interface.is_callback:
                 return len(interface.constants) > 0
-            if v8_utilities.runtime_enabled_feature_name(interface, runtime_features):
+            if 'RuntimeEnabled' in interface.extended_attributes:
                 return False
             if 'Exposed' not in interface.extended_attributes:
                 return True

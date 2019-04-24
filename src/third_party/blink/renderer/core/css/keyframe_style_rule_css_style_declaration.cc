@@ -16,8 +16,7 @@ KeyframeStyleRuleCSSStyleDeclaration::KeyframeStyleRuleCSSStyleDeclaration(
 
 void KeyframeStyleRuleCSSStyleDeclaration::DidMutate(MutationType type) {
   StyleRuleCSSStyleDeclaration::DidMutate(type);
-  if (auto* parent = To<CSSKeyframesRule>(parent_rule_->parentRule()))
-    parent->StyleChanged();
+  To<CSSKeyframesRule>(parent_rule_->parentRule())->StyleChanged();
 }
 
 }  // namespace blink

@@ -25,13 +25,13 @@ class AllocationBuilder final {
         control_(control) {}
 
   // Primitive allocation of static size.
-  void Allocate(int size, AllocationType allocation = AllocationType::kYoung,
+  void Allocate(int size, PretenureFlag pretenure = NOT_TENURED,
                 Type type = Type::Any()) {
     DCHECK_LE(size, kMaxRegularHeapObjectSize);
     effect_ = graph()->NewNode(
         common()->BeginRegion(RegionObservability::kNotObservable), effect_);
     allocation_ =
-        graph()->NewNode(simplified()->Allocate(type, allocation),
+        graph()->NewNode(simplified()->Allocate(type, pretenure),
                          jsgraph()->Constant(size), effect_, control_);
     effect_ = allocation_;
   }
@@ -53,7 +53,7 @@ class AllocationBuilder final {
 
   // Compound allocation of a FixedArray.
   inline void AllocateArray(int length, Handle<Map> map,
-                            AllocationType allocation = AllocationType::kYoung);
+                            PretenureFlag pretenure = NOT_TENURED);
 
   // Compound store of a constant into a field.
   void Store(const FieldAccess& access, Handle<Object> value) {

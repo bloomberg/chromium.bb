@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -210,14 +211,14 @@ void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
 
 void FirstMeaningfulPaintDetector::ReportSwapTime(
     PaintEvent event,
-    WebWidgetClient::SwapResult result,
+    WebLayerTreeView::SwapResult result,
     base::TimeTicks timestamp) {
   DCHECK(event == PaintEvent::kProvisionalFirstMeaningfulPaint);
   DCHECK_GT(outstanding_swap_promise_count_, 0U);
   --outstanding_swap_promise_count_;
 
   // If the swap fails for any reason, we use the timestamp when the SwapPromise
-  // was broken. |result| == WebWidgetClient::SwapResult::kDidNotSwapSwapFails
+  // was broken. |result| == WebLayerTreeView::SwapResult::kDidNotSwapSwapFails
   // usually means the compositor decided not swap because there was no actual
   // damage, which can happen when what's being painted isn't visible. In this
   // case, the timestamp will be consistent with the case where the swap

@@ -43,6 +43,11 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static MediaDeviceInfo* Create(const String& device_id,
+                                 const String& label,
+                                 const String& group_id,
+                                 MediaDeviceType);
+
   MediaDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,

@@ -45,10 +45,8 @@ void CreateVideoEncodeMemory(
 
 }  // namespace
 
-CastSession::CastSession(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
-      main_thread_task_runner_(std::move(task_runner)),
       io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()) {}
 
 CastSession::~CastSession() {
@@ -62,11 +60,10 @@ void CastSession::StartAudio(const media::cast::FrameSenderConfig& config,
   DCHECK(content::RenderThread::Get());
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CastSessionDelegate::StartAudio, base::Unretained(delegate_.get()),
-          config, media::BindToLoop(main_thread_task_runner_, callback),
-          media::BindToLoop(main_thread_task_runner_, error_callback)));
+      FROM_HERE, base::BindOnce(&CastSessionDelegate::StartAudio,
+                                base::Unretained(delegate_.get()), config,
+                                media::BindToCurrentLoop(callback),
+                                media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::StartVideo(const media::cast::FrameSenderConfig& config,
@@ -78,12 +75,10 @@ void CastSession::StartVideo(const media::cast::FrameSenderConfig& config,
       FROM_HERE,
       base::BindOnce(
           &CastSessionDelegate::StartVideo, base::Unretained(delegate_.get()),
-          config, media::BindToLoop(main_thread_task_runner_, callback),
-          media::BindToLoop(main_thread_task_runner_, error_callback),
-          media::BindToLoop(main_thread_task_runner_,
-                            base::Bind(&CreateVideoEncodeAccelerator)),
-          media::BindToLoop(main_thread_task_runner_,
-                            base::Bind(&CreateVideoEncodeMemory))));
+          config, media::BindToCurrentLoop(callback),
+          media::BindToCurrentLoop(error_callback),
+          media::BindToCurrentLoop(base::Bind(&CreateVideoEncodeAccelerator)),
+          media::BindToCurrentLoop(base::Bind(&CreateVideoEncodeMemory))));
 }
 
 void CastSession::StartRemotingStream(
@@ -94,10 +89,9 @@ void CastSession::StartRemotingStream(
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CastSessionDelegate::StartRemotingStream,
-          base::Unretained(delegate_.get()), stream_id, config,
-          media::BindToLoop(main_thread_task_runner_, error_callback)));
+      base::BindOnce(&CastSessionDelegate::StartRemotingStream,
+                     base::Unretained(delegate_.get()), stream_id, config,
+                     media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
@@ -105,10 +99,10 @@ void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
                            const ErrorCallback& error_callback) {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CastSessionDelegate::StartUDP, base::Unretained(delegate_.get()),
-          net::IPEndPoint(), remote_endpoint, std::move(options),
-          media::BindToLoop(main_thread_task_runner_, error_callback)));
+      base::BindOnce(&CastSessionDelegate::StartUDP,
+                     base::Unretained(delegate_.get()), net::IPEndPoint(),
+                     remote_endpoint, std::move(options),
+                     media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::ToggleLogging(bool is_audio, bool enable) {
@@ -125,14 +119,13 @@ void CastSession::GetEventLogsAndReset(
       FROM_HERE,
       base::BindOnce(&CastSessionDelegate::GetEventLogsAndReset,
                      base::Unretained(delegate_.get()), is_audio, extra_data,
-                     media::BindToLoop(main_thread_task_runner_, callback)));
+                     media::BindToCurrentLoop(callback)));
 }
 
 void CastSession::GetStatsAndReset(bool is_audio,
                                    const StatsCallback& callback) {
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CastSessionDelegate::GetStatsAndReset,
-                     base::Unretained(delegate_.get()), is_audio,
-                     media::BindToLoop(main_thread_task_runner_, callback)));
+      FROM_HERE, base::BindOnce(&CastSessionDelegate::GetStatsAndReset,
+                                base::Unretained(delegate_.get()), is_audio,
+                                media::BindToCurrentLoop(callback)));
 }

@@ -24,9 +24,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
  public:
   static base::Optional<PublicKeyCredentialUserEntity> CreateFromCBORValue(
       const cbor::Value& cbor);
-  static cbor::Value ConvertToCBOR(const PublicKeyCredentialUserEntity& user);
 
-  explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> id);
+  explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> user_id);
   PublicKeyCredentialUserEntity(const PublicKeyCredentialUserEntity& other);
   PublicKeyCredentialUserEntity(PublicKeyCredentialUserEntity&& other);
   PublicKeyCredentialUserEntity& operator=(
@@ -35,10 +34,23 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
       PublicKeyCredentialUserEntity&& other);
   ~PublicKeyCredentialUserEntity();
 
-  std::vector<uint8_t> id;
-  base::Optional<std::string> name;
-  base::Optional<std::string> display_name;
-  base::Optional<GURL> icon_url;
+  cbor::Value ConvertToCBOR() const;
+  PublicKeyCredentialUserEntity& SetUserName(std::string user_name);
+  PublicKeyCredentialUserEntity& SetDisplayName(std::string display_name);
+  PublicKeyCredentialUserEntity& SetIconUrl(GURL icon_url);
+
+  const std::vector<uint8_t>& user_id() const { return user_id_; }
+  const base::Optional<std::string>& user_name() const { return user_name_; }
+  const base::Optional<std::string>& user_display_name() const {
+    return user_display_name_;
+  }
+  const base::Optional<GURL>& user_icon_url() const { return user_icon_url_; }
+
+ private:
+  std::vector<uint8_t> user_id_;
+  base::Optional<std::string> user_name_;
+  base::Optional<std::string> user_display_name_;
+  base::Optional<GURL> user_icon_url_;
 };
 
 }  // namespace device

@@ -19,26 +19,17 @@ namespace web_app {
 // when running callbacks to simulate async behavior in tests as well.
 class TestDataRetriever : public WebAppDataRetriever {
  public:
-  TestDataRetriever();
+  explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info);
   ~TestDataRetriever() override;
 
   // WebAppDataRetriever:
   void GetWebApplicationInfo(content::WebContents* web_contents,
                              GetWebApplicationInfoCallback callback) override;
-  void CheckInstallabilityAndRetrieveManifest(
-      content::WebContents* web_contents,
-      CheckInstallabilityCallback callback) override;
   void GetIcons(content::WebContents* web_contents,
                 const std::vector<GURL>& icon_urls,
                 bool skip_page_fav_icons,
                 GetIconsCallback callback) override;
 
-  // Set info to respond on |GetWebApplicationInfo|.
-  void SetRendererWebApplicationInfo(
-      std::unique_ptr<WebApplicationInfo> web_app_info);
-  // Set arguments to respond on |CheckInstallabilityAndRetrieveManifest|.
-  void SetManifest(std::unique_ptr<blink::Manifest> manifest,
-                   bool is_installable);
   // Set icons to respond on |GetIcons|.
   void SetIcons(IconsMap icons_map);
 
@@ -46,10 +37,6 @@ class TestDataRetriever : public WebAppDataRetriever {
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;
-
-  std::unique_ptr<blink::Manifest> manifest_;
-  bool is_installable_;
-
   IconsMap icons_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);

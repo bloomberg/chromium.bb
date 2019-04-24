@@ -6,17 +6,15 @@
 
 import collections
 import os
-import sys
 import unittest
+import sys
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-from util import build_utils
+import build_utils  # pylint: disable=relative-import
 
 # Required because the following import needs build/android/gyp in the
 # Python path to import util.build_utils.
 _BUILD_ANDROID_GYP_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir))
+    os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(1, _BUILD_ANDROID_GYP_ROOT)
 
 import resource_utils  # pylint: disable=relative-import

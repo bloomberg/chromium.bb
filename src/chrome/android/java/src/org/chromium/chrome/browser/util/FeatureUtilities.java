@@ -78,15 +78,13 @@ public class FeatureUtilities {
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sIsAdaptiveToolbarEnabled;
+    private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
-    private static Boolean sFeedEnabled;
-    private static Boolean sServiceManagerForBackgroundPrefetch;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
-    private static Boolean sIsImmersiveUiModeEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -117,14 +115,16 @@ public class FeatureUtilities {
 
     /**
      * Determines whether or not the user has a Google account (so we can sync) or can add one.
+     * @param context The {@link Context} that we should check accounts under.
      * @return Whether or not sync is allowed on this device.
      */
-    public static boolean canAllowSync() {
-        return (hasGoogleAccountAuthenticator() && hasSyncPermissions()) || hasGoogleAccounts();
+    public static boolean canAllowSync(Context context) {
+        return (hasGoogleAccountAuthenticator(context) && hasSyncPermissions(context))
+                || hasGoogleAccounts(context);
     }
 
     @VisibleForTesting
-    static boolean hasGoogleAccountAuthenticator() {
+    static boolean hasGoogleAccountAuthenticator(Context context) {
         if (sHasGoogleAccountAuthenticator == null) {
             AccountManagerFacade accountHelper = AccountManagerFacade.get();
             sHasGoogleAccountAuthenticator = accountHelper.hasGoogleAccountAuthenticator();
@@ -133,17 +133,16 @@ public class FeatureUtilities {
     }
 
     @VisibleForTesting
-    static boolean hasGoogleAccounts() {
+    static boolean hasGoogleAccounts(Context context) {
         return AccountManagerFacade.get().hasGoogleAccounts();
     }
 
     @SuppressLint("InlinedApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private static boolean hasSyncPermissions() {
+    private static boolean hasSyncPermissions(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return true;
 
-        UserManager manager = (UserManager) ContextUtils.getApplicationContext().getSystemService(
-                Context.USER_SERVICE);
+        UserManager manager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         Bundle userRestrictions = manager.getUserRestrictions();
         return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
     }
@@ -200,14 +199,12 @@ public class FeatureUtilities {
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
+        cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
-        cacheFeedEnabled();
-        cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
-        cacheImmersiveUiModeEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -263,52 +260,27 @@ public class FeatureUtilities {
         sIsHomePageButtonForceEnabled = null;
     }
 
-    private static void cacheServiceManagerForBackgroundPrefetch() {
-        boolean backgroundPrefetchInReducedMode = ChromeFeatureList.isEnabled(
-                ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH);
+    /**
+     * Cache whether or not the toolbar should be inflated on a background thread so on next
+     * startup, the value can be made available immediately.
+     */
+    public static void cacheInflateToolbarOnBackgroundThread() {
+        boolean onBackgroundThread =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD);
 
         ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY,
-                backgroundPrefetchInReducedMode);
+                ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY,
+                onBackgroundThread);
     }
 
-    /**
-     * @return if PrefetchBackgroundTask should load native in service manager only mode.
-     */
-    public static boolean isServiceManagerForBackgroundPrefetchEnabled() {
-        if (sServiceManagerForBackgroundPrefetch == null) {
+    public static boolean shouldInflateToolbarOnBackgroundThread() {
+        if (sShouldInflateToolbarOnBackgroundThread == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
-                    ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
+            sShouldInflateToolbarOnBackgroundThread = prefManager.readBoolean(
+                    ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY, false);
         }
-        return sServiceManagerForBackgroundPrefetch;
-    }
-
-    /**
-     * Cache the value of the flag whether or not to use Feed so it can be checked in Java before
-     * native is loaded.
-     */
-    public static void cacheFeedEnabled() {
-        boolean feedEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.INTEREST_FEED_CONTENT_SUGGESTIONS_KEY, feedEnabled);
-        sFeedEnabled = feedEnabled;
-    }
-
-    /**
-     * @return Whether or not the Feed is enabled (based on the cached value in SharedPrefs).
-     */
-    public static boolean isFeedEnabled() {
-        if (sFeedEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sFeedEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.INTEREST_FEED_CONTENT_SUGGESTIONS_KEY, false);
-        }
-        return sFeedEnabled;
+        return sShouldInflateToolbarOnBackgroundThread;
     }
 
     /**
@@ -560,11 +532,6 @@ public class FeatureUtilities {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.GRID_TAB_SWITCHER_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
-                        && (ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
-                                || ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID))
-                        && TabManagementModuleProvider.getTabManagementModule() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID));
     }
 
@@ -580,18 +547,14 @@ public class FeatureUtilities {
         }
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
-        return sIsGridTabSwitcherEnabled;
+        return sIsGridTabSwitcherEnabled
+                && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
     private static void cacheTabGroupsAndroidEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
-                        && (ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
-                                || ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.TAB_GROUPS_ANDROID))
-                        && TabManagementModuleProvider.getTabManagementModule() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
     }
 
@@ -608,7 +571,8 @@ public class FeatureUtilities {
                     ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
         }
 
-        return sIsTabGroupsAndroidEnabled;
+        return sIsTabGroupsAndroidEnabled
+                && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
     private static boolean isHighEndPhone() {
@@ -652,7 +616,7 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             sShouldPrioritizeBootstrapTasks = prefManager.readBoolean(
-                    ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY, true);
+                    ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY, false);
         }
         return sShouldPrioritizeBootstrapTasks;
     }
@@ -677,24 +641,6 @@ public class FeatureUtilities {
                     ChromePreferenceManager.NETWORK_SERVICE_WARM_UP_ENABLED_KEY, false);
         }
         return sIsNetworkServiceWarmUpEnabled;
-    }
-
-    private static void cacheImmersiveUiModeEnabled() {
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.IMMERSIVE_UI_MODE_ENABLED,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.IMMERSIVE_UI_MODE));
-    }
-
-    /**
-     * @return Whether immersive ui mode is enabled.
-     */
-    public static boolean isImmersiveUiModeEnabled() {
-        if (sIsImmersiveUiModeEnabled == null) {
-            sIsImmersiveUiModeEnabled = ChromePreferenceManager.getInstance().readBoolean(
-                    ChromePreferenceManager.IMMERSIVE_UI_MODE_ENABLED, false);
-        }
-
-        return sIsImmersiveUiModeEnabled;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

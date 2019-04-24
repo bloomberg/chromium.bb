@@ -26,9 +26,7 @@ const unsigned kParagraphLengthThreshold = 140;
 
 class DocumentStatisticsCollectorTest : public PageTestBase {
  protected:
-  void TearDown() override {
-    ThreadState::Current()->CollectAllGarbageForTesting();
-  }
+  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
   void SetHtmlInnerHTML(const String&);
 };

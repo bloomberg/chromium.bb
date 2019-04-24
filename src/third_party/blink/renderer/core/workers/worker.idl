@@ -42,4 +42,4 @@
     attribute EventHandler onmessage;
 };
 
-Worker includes AbstractWorker;
+Worker implements AbstractWorker;

@@ -13,13 +13,13 @@
 
 #include <atomic>
 #include <deque>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "api/test/video_quality_analyzer_interface.h"
 #include "api/units/timestamp.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_frame.h"
@@ -28,9 +28,10 @@
 #include "rtc_base/numerics/samples_stats_counter.h"
 #include "rtc_base/platform_thread.h"
 #include "system_wrappers/include/clock.h"
+#include "test/pc/e2e/api/video_quality_analyzer_interface.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
+namespace test {
 
 class RateCounter {
  public:
@@ -93,7 +94,7 @@ struct StreamStats {
   SamplesStatsCounter freeze_time_ms;
   // Mean time between one freeze end and next freeze start.
   SamplesStatsCounter time_between_freezes_ms;
-  SamplesStatsCounter resolution_of_rendered_frame;
+  SamplesStatsCounter resolution_of_encoded_image;
 
   int64_t dropped_by_encoder = 0;
   int64_t dropped_before_encoder = 0;
@@ -209,7 +210,9 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
     // If we received frame with id frame_id3, then we will pop frame_id1 and
     // frame_id2 and consider that frames as dropped and then compare received
     // frame with the one from |captured_frames_in_flight_| with id frame_id3.
-    std::deque<uint16_t> frame_ids;
+    // Also we will put it into the |last_rendered_frame|.
+    std::list<uint16_t> frame_ids;
+    absl::optional<VideoFrame> last_rendered_frame = absl::nullopt;
     absl::optional<Timestamp> last_rendered_frame_time = absl::nullopt;
   };
 
@@ -231,7 +234,7 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   void ProcessComparisons();
   void ProcessComparison(const FrameComparison& comparison);
   // Report results for all metrics for all streams.
-  void ReportResults();
+  void ReportResults() const;
   static void ReportResults(std::string test_case_name,
                             StreamStats stats,
                             FrameCounters frame_counters);
@@ -275,7 +278,7 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   rtc::Event comparison_available_event_;
 };
 
-}  // namespace webrtc_pc_e2e
+}  // namespace test
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_VIDEO_DEFAULT_VIDEO_QUALITY_ANALYZER_H_

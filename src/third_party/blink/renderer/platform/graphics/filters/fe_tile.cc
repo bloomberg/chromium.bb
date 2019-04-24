@@ -30,6 +30,10 @@ namespace blink {
 
 FETile::FETile(Filter* filter) : FilterEffect(filter) {}
 
+FETile* FETile::Create(Filter* filter) {
+  return MakeGarbageCollected<FETile>(filter);
+}
+
 FloatRect FETile::MapInputs(const FloatRect& rect) const {
   return AbsoluteBounds();
 }

@@ -320,7 +320,7 @@ void NativeAppWindowViews::Layout() {
 }
 
 void NativeAppWindowViews::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
     web_view_ = new views::WebView(NULL);
     AddChildView(web_view_);

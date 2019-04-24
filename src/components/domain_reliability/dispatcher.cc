@@ -4,6 +4,7 @@
 
 #include "components/domain_reliability/dispatcher.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -123,7 +124,11 @@ void DomainReliabilityDispatcher::RunAndDeleteTask(Task* task) {
   if (task->eligible)
     eligible_tasks_.erase(task);
 
-  auto it = tasks_.find(task);
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [task](const std::unique_ptr<Task>& task_ptr) {
+                           return task_ptr.get() == task;
+                         });
+
   DCHECK(it != tasks_.end());
   tasks_.erase(it);
 }

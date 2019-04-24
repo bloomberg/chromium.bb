@@ -43,7 +43,7 @@ bool RespondToChallenge(HttpAuth::Target target,
                         const std::string& challenge,
                         std::string* token) {
   // Input validation.
-  if (token == nullptr) {
+  if (token == NULL) {
     ADD_FAILURE() << "|token| must be non-NULL";
     return false;
   }
@@ -66,7 +66,7 @@ bool RespondToChallenge(HttpAuth::Target target,
   int rv_create = factory->CreateAuthHandlerFromString(
       challenge, target, null_ssl_info, url_origin.GetOrigin(),
       NetLogWithSource(), host_resolver.get(), &handler);
-  if (rv_create != OK || handler.get() == nullptr) {
+  if (rv_create != OK || handler.get() == NULL) {
     ADD_FAILURE() << "Unable to create auth handler.";
     return false;
   }
@@ -372,10 +372,10 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
       EXPECT_THAT(rv, IsOk());
     } else {
       EXPECT_NE(OK, rv);
-      EXPECT_TRUE(handler.get() == nullptr);
+      EXPECT_TRUE(handler.get() == NULL);
       continue;
     }
-    ASSERT_TRUE(handler.get() != nullptr);
+    ASSERT_TRUE(handler.get() != NULL);
     HttpAuthHandlerDigest* digest =
         static_cast<HttpAuthHandlerDigest*>(handler.get());
     EXPECT_STREQ(tests[i].parsed_realm, digest->realm_.c_str());
@@ -534,7 +534,7 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
         tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
         NetLogWithSource(), host_resolver.get(), &handler);
     EXPECT_THAT(rv, IsOk());
-    ASSERT_TRUE(handler != nullptr);
+    ASSERT_TRUE(handler != NULL);
 
     HttpAuthHandlerDigest* digest =
         static_cast<HttpAuthHandlerDigest*>(handler.get());
@@ -564,7 +564,7 @@ TEST(HttpAuthHandlerDigest, HandleAnotherChallenge) {
       default_challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
       NetLogWithSource(), host_resolver.get(), &handler);
   EXPECT_THAT(rv, IsOk());
-  ASSERT_TRUE(handler.get() != nullptr);
+  ASSERT_TRUE(handler.get() != NULL);
   HttpAuthChallengeTokenizer tok_default(default_challenge.begin(),
                                          default_challenge.end());
   EXPECT_EQ(HttpAuth::AUTHORIZATION_RESULT_REJECT,

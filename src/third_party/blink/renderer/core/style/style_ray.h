@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_RAY_H_
 
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -40,12 +39,7 @@ class StyleRay : public BasicShape {
   bool contain_;
 };
 
-template <>
-struct DowncastTraits<StyleRay> {
-  static bool AllowFrom(const BasicShape& value) {
-    return value.GetType() == BasicShape::kStyleRayType;
-  }
-};
+DEFINE_BASICSHAPE_TYPE_CASTS(StyleRay);
 
 }  // namespace blink
 

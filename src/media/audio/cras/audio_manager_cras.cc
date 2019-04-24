@@ -458,8 +458,9 @@ void AudioManagerCras::GetAudioDevicesOnMainThread(
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // CrasAudioHandler is shut down before AudioManagerCras.
-  if (chromeos::CrasAudioHandler::Get())
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(devices);
+  }
   event->Signal();
 }
 
@@ -504,7 +505,7 @@ void AudioManagerCras::GetPrimaryActiveInputNodeOnMainThread(
     uint64_t* active_input_node_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::Get()) {
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     *active_input_node_id =
         chromeos::CrasAudioHandler::Get()->GetPrimaryActiveInputNode();
   }
@@ -515,7 +516,7 @@ void AudioManagerCras::GetPrimaryActiveOutputNodeOnMainThread(
     uint64_t* active_output_node_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::Get()) {
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     *active_output_node_id =
         chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputNode();
   }
@@ -526,8 +527,9 @@ void AudioManagerCras::GetDefaultOutputBufferSizeOnMainThread(
     int32_t* buffer_size,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::Get())
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     chromeos::CrasAudioHandler::Get()->GetDefaultOutputBufferSize(buffer_size);
+  }
   event->Signal();
 }
 
@@ -535,7 +537,7 @@ void AudioManagerCras::GetSystemAecSupportedOnMainThread(
     bool* system_aec_supported,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::Get()) {
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     *system_aec_supported =
         chromeos::CrasAudioHandler::Get()->system_aec_supported();
   }
@@ -546,8 +548,9 @@ void AudioManagerCras::GetSystemAecGroupIdOnMainThread(
     int32_t* group_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::Get())
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
     *group_id = chromeos::CrasAudioHandler::Get()->system_aec_group_id();
+  }
   event->Signal();
 }
 

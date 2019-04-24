@@ -5,9 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 
+#include "services/ws/public/mojom/ime/ime.mojom-shared.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "ui/base/ime/mojo/ime_types.mojom-shared.h"
 
 namespace blink {
 
@@ -18,7 +17,7 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
   StyleableMarker(unsigned start_offset,
                   unsigned end_offset,
                   Color underline_color,
-                  ui::mojom::ImeTextSpanThickness,
+                  ws::mojom::ImeTextSpanThickness,
                   Color background_color);
 
   // StyleableMarker-specific
@@ -32,19 +31,18 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
  private:
   const Color underline_color_;
   const Color background_color_;
-  const ui::mojom::ImeTextSpanThickness thickness_;
+  const ws::mojom::ImeTextSpanThickness thickness_;
 
   DISALLOW_COPY_AND_ASSIGN(StyleableMarker);
 };
 
 bool CORE_EXPORT IsStyleableMarker(const DocumentMarker&);
 
-template <>
-struct DowncastTraits<StyleableMarker> {
-  static bool AllowFrom(const DocumentMarker& marker) {
-    return IsStyleableMarker(marker);
-  }
-};
+DEFINE_TYPE_CASTS(StyleableMarker,
+                  DocumentMarker,
+                  marker,
+                  IsStyleableMarker(*marker),
+                  IsStyleableMarker(marker));
 
 }  // namespace blink
 

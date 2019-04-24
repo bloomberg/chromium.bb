@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
@@ -31,7 +30,6 @@ enum FIELDID {
   FID_DESCRIPTION,
   FID_CURRENT_PASSWORD_FIELD,
   FID_SUBMIT,
-  FID_FORGOT_PASSWORD_LINK,
   FID_PROVIDER_LOGO,
   FID_PROVIDER_LABEL,
   FIELD_COUNT  // Must be last.
@@ -53,7 +51,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   static HRESULT OnDllUnregisterServer();
 
   // Saves gaia information in the OS account that was just created.
-  static HRESULT SaveAccountInfo(const base::Value& properties);
+  static HRESULT SaveAccountInfo(const base::DictionaryValue& properties);
 
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
@@ -84,8 +82,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const CComBSTR& get_current_windows_password() const {
     return current_windows_password_;
   }
-  const base::Optional<base::Value>& get_authentication_results() const {
-    return authentication_results_;
+  const base::DictionaryValue* get_authentication_results() const {
+    return authentication_results_.get();
   }
   void set_current_windows_password(BSTR password) {
     current_windows_password_ = password;
@@ -151,8 +149,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
   // Forks a stub process to save account information for a user.
-  virtual HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
-                                          BSTR* status_text);
+  virtual HRESULT ForkSaveAccountInfoStub(
+      const std::unique_ptr<base::DictionaryValue>& dict,
+      BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
   virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
@@ -171,11 +170,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   HRESULT HandleAutologon(
       CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* pcpgsr,
       CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs);
-
-  // Instantiates |token_update_locker_| so that user access cannot be denied
-  // during this time. This function is called when we are about to really sign
-  // in the user to Windows.
-  void PreventDenyAccessUpdate();
 
   // Writes value to omaha registry to record that GCP has been used.
   static void TellOmahaDidRun();
@@ -239,8 +233,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // not require direct user input to the credential (user is entering
   // credentials in  GLS) or a submit of the credential is not valid (user needs
   // to enter the old Windows password but currently nothing has been entered in
-  // the password field). Returns true if the submit button is enabled.
-  bool UpdateSubmitButtonInteractiveState();
+  // the password field).
+  void UpdateSubmitButtonInteractiveState();
 
   // Stops the GLS process in case it is still executing. Often called when user
   // switches credentials in the middle of a sign in through the GLS.
@@ -265,7 +259,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // The caller must take ownership of this memory.
   // On failure |error_text| will be allocated and filled with an error message.
   // The caller must take ownership of this memory.
-  HRESULT ValidateOrCreateUser(const base::Value& result,
+  HRESULT ValidateOrCreateUser(const base::DictionaryValue* result,
                                BSTR* domain,
                                BSTR* username,
                                BSTR* sid,
@@ -287,7 +281,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // the user must be enter the former.  For example this is used to properly
   // handle the password change case.
   bool needs_windows_password_ = false;
-  bool request_force_password_change_ = false;
 
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.
@@ -295,17 +288,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Contains the information about the Gaia account that signed in.  See the
   // kKeyXXX constants for the data that is stored here.
-  base::Optional<base::Value> authentication_results_;
+  std::unique_ptr<base::DictionaryValue> authentication_results_;
 
   // Holds information about the success or failure of the sign in.
   NTSTATUS result_status_ = STATUS_SUCCESS;
-
-  // When we finally want to allow user sign in. This object is instantiated
-  // to prevent updates of token handle validity until after sign in has
-  // completed so the the user cannot be locked out while they are trying to
-  // sign in.
-  std::unique_ptr<AssociatedUserValidator::ScopedBlockDenyAccessUpdate>
-      token_update_locker_;
 };
 
 }  // namespace credential_provider

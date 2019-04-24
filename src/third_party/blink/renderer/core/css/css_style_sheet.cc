@@ -54,6 +54,10 @@ using namespace html_names;
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
+  static StyleSheetCSSRuleList* Create(CSSStyleSheet* sheet) {
+    return MakeGarbageCollected<StyleSheetCSSRuleList>(sheet);
+  }
+
   StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
   void Trace(blink::Visitor* visitor) override {
@@ -69,7 +73,7 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
 
   CSSStyleSheet* GetStyleSheet() const override { return style_sheet_; }
 
-  Member<CSSStyleSheet> style_sheet_;
+  TraceWrapperMember<CSSStyleSheet> style_sheet_;
 };
 
 #if DCHECK_IS_ON()
@@ -116,8 +120,8 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
     media_query_set = MediaQuerySet::Create(options->media().GetAsString());
   else
     media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
-  auto* media_list = MakeGarbageCollected<MediaList>(
-      media_query_set, const_cast<CSSStyleSheet*>(sheet));
+  MediaList* media_list =
+      MediaList::Create(media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);
   if (options->alternate())
     sheet->SetAlternateFromConstructor(true);
@@ -308,7 +312,7 @@ CSSRule* CSSStyleSheet::item(unsigned index) {
     child_rule_cssom_wrappers_.Grow(rule_count);
   DCHECK_EQ(child_rule_cssom_wrappers_.size(), rule_count);
 
-  Member<CSSRule>& css_rule = child_rule_cssom_wrappers_[index];
+  TraceWrapperMember<CSSRule>& css_rule = child_rule_cssom_wrappers_[index];
   if (!css_rule)
     css_rule = contents_->RuleAt(index)->CreateCSSOMWrapper(this);
   return css_rule.Get();
@@ -413,16 +417,11 @@ void CSSStyleSheet::deleteRule(unsigned index,
          child_rule_cssom_wrappers_.size() == contents_->RuleCount());
 
   if (index >= length()) {
-    if (length()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kIndexSizeError,
-          "The index provided (" + String::Number(index) +
-              ") is larger than the maximum index (" +
-              String::Number(length() - 1) + ").");
-    } else {
-      exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
-                                        "Style sheet is empty (length 0).");
-    }
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kIndexSizeError,
+        "The index provided (" + String::Number(index) +
+            ") is larger than the maximum index (" +
+            String::Number(length() - 1) + ").");
     return;
   }
   RuleMutationScope mutation_scope(this);
@@ -476,7 +475,7 @@ ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
   SetText(text, true /* allow_import_rules */, exception_state);
   if (!IsLoading())
     return ScriptPromise::Cast(script_state, ToV8(this, script_state));
-  resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  resolver_ = ScriptPromiseResolver::Create(script_state);
   return resolver_->Promise();
 }
 
@@ -508,10 +507,8 @@ CSSRuleList* CSSStyleSheet::cssRules(ExceptionState& exception_state) {
     exception_state.ThrowSecurityError("Cannot access rules");
     return nullptr;
   }
-  if (!rule_list_cssom_wrapper_) {
-    rule_list_cssom_wrapper_ =
-        MakeGarbageCollected<StyleSheetCSSRuleList>(this);
-  }
+  if (!rule_list_cssom_wrapper_)
+    rule_list_cssom_wrapper_ = StyleSheetCSSRuleList::Create(this);
   return rule_list_cssom_wrapper_.Get();
 }
 
@@ -531,10 +528,9 @@ MediaList* CSSStyleSheet::media() {
   if (!media_queries_)
     media_queries_ = MediaQuerySet::Create();
 
-  if (!media_cssom_wrapper_) {
-    media_cssom_wrapper_ = MakeGarbageCollected<MediaList>(
-        media_queries_.get(), const_cast<CSSStyleSheet*>(this));
-  }
+  if (!media_cssom_wrapper_)
+    media_cssom_wrapper_ = MediaList::Create(media_queries_.get(),
+                                             const_cast<CSSStyleSheet*>(this));
   return media_cssom_wrapper_.Get();
 }
 

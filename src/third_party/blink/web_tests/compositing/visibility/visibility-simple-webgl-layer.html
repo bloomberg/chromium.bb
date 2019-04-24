@@ -16,6 +16,10 @@
     </style>
 
     <script>
+      if (window.testRunner) {
+          testRunner.dumpAsTextWithPixelResults();
+      }
+
       function drawCanvas(canvasID, clearColor)
       {
           var theCanvas = document.getElementById(canvasID);

@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -35,7 +36,6 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for a standalone Web App notification governed by {@link WebappActionsNotificationManager}.
@@ -101,7 +101,7 @@ public class WebappActionsNotificationTest {
 
         notification.contentIntent.send();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             ClipboardManager clipboard =
                     (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
                             Context.CLIPBOARD_SERVICE);

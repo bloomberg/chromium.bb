@@ -33,7 +33,7 @@ protected:
         // which will write data we don't care to serialize or decode.
     }
 
-    bool onAppendStages(const SkStageRec&) const override {
+    bool onAppendStages(const StageRec&) const override {
         return false;
     }
 

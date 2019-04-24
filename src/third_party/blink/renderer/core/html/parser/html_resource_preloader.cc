@@ -26,8 +26,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 
 #include <memory>
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -48,23 +46,22 @@ void HTMLResourcePreloader::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 
-static void PreconnectHost(PreloadRequest* request) {
+static void PreconnectHost(
+    PreloadRequest* request,
+    const NetworkHintsInterface& network_hints_interface) {
   DCHECK(request);
   DCHECK(request->IsPreconnect());
   KURL host(request->BaseURL(), request->ResourceURL());
   if (!host.IsValid() || !host.ProtocolIsInHTTPFamily())
     return;
-  WebPrescientNetworking* web_prescient_networking =
-      Platform::Current()->PrescientNetworking();
-  if (web_prescient_networking) {
-    web_prescient_networking->Preconnect(
-        host, request->CrossOrigin() != kCrossOriginAttributeAnonymous);
-  }
+  network_hints_interface.PreconnectHost(host, request->CrossOrigin());
 }
 
-void HTMLResourcePreloader::Preload(std::unique_ptr<PreloadRequest> preload) {
+void HTMLResourcePreloader::Preload(
+    std::unique_ptr<PreloadRequest> preload,
+    const NetworkHintsInterface& network_hints_interface) {
   if (preload->IsPreconnect()) {
-    PreconnectHost(preload.get());
+    PreconnectHost(preload.get(), network_hints_interface);
     return;
   }
   // TODO(yoichio): Should preload if document is imported.

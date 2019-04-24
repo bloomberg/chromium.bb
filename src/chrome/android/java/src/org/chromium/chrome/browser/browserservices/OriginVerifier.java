@@ -23,13 +23,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -227,7 +225,7 @@ public class OriginVerifier {
         if (!TextUtils.isEmpty(disableDalUrl)
                 && mOrigin.equals(new Origin(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
             return;
         }
 
@@ -237,13 +235,13 @@ public class OriginVerifier {
             Log.i(TAG, "Verification failed for %s as not https.", origin);
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.HTTPS_FAILURE);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, null));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(false, null));
             return;
         }
 
         if (shouldOverrideVerification(mPackageName, mOrigin, mRelation)) {
             Log.i(TAG, "Verification succeeded for %s, it was overridden.", origin);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
             return;
         }
 
@@ -273,7 +271,7 @@ public class OriginVerifier {
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, false));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(false, false));
         }
     }
 
@@ -386,6 +384,9 @@ public class OriginVerifier {
             Log.d(TAG, "Adding: %s for %s", mPackageName, mOrigin);
             VerificationResultStore.addRelationship(new Relationship(mPackageName,
                     mSignatureFingerprint, mOrigin, mRelation));
+
+            TrustedWebActivityClient.registerClient(ContextUtils.getApplicationContext(),
+                    mOrigin, mPackageName);
         }
 
         // We save the result even if there is a failure as a way of overwriting a previously

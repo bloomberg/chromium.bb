@@ -8,8 +8,8 @@
 #ifndef DMJsonWriter_DEFINED
 #define DMJsonWriter_DEFINED
 
-#include "CommandLineFlags.h"
 #include "SkString.h"
+#include "Test.h"
 
 namespace DM {
 
@@ -33,7 +33,6 @@ public:
         SkString transferFn;
         SkString colorType;
         SkString alphaType;
-        SkString colorDepth;
     };
 
     /**
@@ -42,11 +41,14 @@ public:
     static void AddBitmapResult(const BitmapResult&);
 
     /**
-     *  Write all collected results to the file dir/dm.json.
+     *  Add a Failure from a Test.
      */
-    static void DumpJson(const char* dir,
-                         CommandLineFlags::StringArray key,
-                         CommandLineFlags::StringArray properties);
+    static void AddTestFailure(const skiatest::Failure&);
+
+    /**
+     *  Write all collected results to the file FLAGS_writePath[0]/dm.json.
+     */
+    static void DumpJson();
 
     /**
      * Read JSON file at path written by DumpJson, calling callback for each

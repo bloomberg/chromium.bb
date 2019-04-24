@@ -81,11 +81,4 @@ void ExtensionDownloaderTestHelper::ClearURLLoaderFactoryResponses() {
   test_url_loader_factory_.ClearResponses();
 }
 
-std::unique_ptr<ExtensionDownloader>
-ExtensionDownloaderTestHelper::CreateDownloader() {
-  return std::make_unique<ExtensionDownloader>(
-      &delegate_, test_shared_url_loader_factory_,
-      test_data_decoder_service_.connector(), GetTestVerifierFormat());
-}
-
 }  // namespace extensions

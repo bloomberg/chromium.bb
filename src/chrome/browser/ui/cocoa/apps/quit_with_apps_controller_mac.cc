@@ -186,8 +186,7 @@ bool QuitWithAppsController::ShouldQuit() {
     CloseNotification(notification_profile_);
   notification_profile_ = profiles[0];
   NotificationDisplayService::GetForProfile(notification_profile_)
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification_,
-                /*metadata=*/nullptr);
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification_);
 
   // Always return false, the notification UI can be used to quit all apps which
   // will cause Chrome to quit.

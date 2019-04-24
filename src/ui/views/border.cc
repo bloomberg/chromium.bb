@@ -217,9 +217,9 @@ gfx::Size BorderPainter::GetMinimumSize() const {
 
 }  // namespace
 
-Border::Border() = default;
+Border::Border() {}
 
-Border::~Border() = default;
+Border::~Border() {}
 
 std::unique_ptr<Border> NullBorder() {
   return nullptr;

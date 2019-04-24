@@ -129,6 +129,7 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
+            browser_context->GetSharedCorsOriginAccessList(),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
@@ -2184,9 +2185,7 @@ class ExternalProtocolBrowserClient : public TestContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const std::string& method,
-      const net::HttpRequestHeaders& headers,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override {
+      const net::HttpRequestHeaders& headers) override {
     return false;
   }
 

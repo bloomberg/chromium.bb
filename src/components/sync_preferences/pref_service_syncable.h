@@ -78,6 +78,8 @@ class PrefServiceSyncable : public PrefService {
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
 
+  void RegisterMergeDataFinishedCallback(const base::Closure& callback);
+
   // TODO(zea): Have PrefServiceSyncable implement
   // syncer::SyncableService directly.
   syncer::SyncableService* GetSyncableService(const syncer::ModelType& type);

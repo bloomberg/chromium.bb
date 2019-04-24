@@ -8,20 +8,15 @@
 from __future__ import print_function
 
 import importlib
-import os
 
 from google.protobuf import json_format
 from google.protobuf import symbol_database
 
 from chromite.api import controller
-from chromite.api.gen.chromite.api import artifacts_pb2
-from chromite.api.gen.chromite.api import binhost_pb2
-from chromite.api.gen.chromite.api import build_api_pb2
-from chromite.api.gen.chromite.api import depgraph_pb2
-from chromite.api.gen.chromite.api import image_pb2
-from chromite.api.gen.chromite.api import sdk_pb2
-from chromite.api.gen.chromite.api import test_archive_pb2
-from chromite.api.gen.chromite.api import test_pb2
+from chromite.api.gen import build_api_pb2
+from chromite.api.gen import depgraph_pb2
+from chromite.api.gen import image_pb2
+from chromite.api.gen import test_archive_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -32,16 +27,8 @@ class Error(Exception):
   """Base error class for the module."""
 
 
-class InvalidInputFileError(Error):
-  """Raised when the input file cannot be read."""
-
-
 class InvalidInputFormatError(Error):
   """Raised when the passed input protobuf can't be parsed."""
-
-
-class InvalidOutputFileError(Error):
-  """Raised when the output file cannot be written."""
 
 
 # API Service Errors.
@@ -106,9 +93,6 @@ def _ParseArgs(argv, router):
   opts.service = parts[0]
   opts.method = parts[1]
 
-  if not os.path.exists(opts.input_json):
-    parser.error('Input file does not exist.')
-
   opts.Freeze()
   return opts
 
@@ -157,29 +141,22 @@ class Router(object):
 
     return sorted(services)
 
-  def Route(self, service_name, method_name, input_path, output_path):
+  def Route(self, service_name, method_name, input_json):
     """Dispatch the request.
 
     Args:
       service_name (str): The fully qualified service name.
       method_name (str): The name of the method being called.
-      input_path (str): The path to the input message file.
-      output_path (str): The path where the output message should be written.
+      input_json (str): The JSON encoded input message data.
 
     Returns:
-      int: The return code.
+      google.protobuf.message.Message: An instance of the method's output
+        message class.
 
     Raises:
-      InvalidInputFileError when the input file cannot be read.
-      InvalidOutputFileError when the output file cannot be written.
       ServiceModuleNotFoundError when the service module cannot be imported.
       MethodNotFoundError when the method cannot be retrieved from the module.
     """
-    try:
-      input_json = osutils.ReadFile(input_path)
-    except IOError as e:
-      raise InvalidInputFileError('Unable to read input file: %s' % e.message)
-
     try:
       svc, module_name = self._services[service_name]
     except KeyError:
@@ -216,16 +193,8 @@ class Router(object):
     method_impl = self._GetMethod(module_name, method_name)
 
     # Successfully located; call and return.
-    return_code = method_impl(input_msg, output_msg)
-    if return_code is None:
-      return_code = 0
-
-    try:
-      osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
-    except IOError as e:
-      raise InvalidOutputFileError('Cannot write output file: %s' % e.message)
-
-    return return_code
+    method_impl(input_msg, output_msg)
+    return output_msg
 
   def _HandleChrootAssert(self, service_options, method_options):
     """Check the chroot assert options and execute assertion as needed.
@@ -278,13 +247,9 @@ def RegisterServices(router):
   Args:
     router (Router): The router.
   """
-  router.Register(artifacts_pb2)
-  router.Register(binhost_pb2)
   router.Register(depgraph_pb2)
   router.Register(image_pb2)
-  router.Register(sdk_pb2)
   router.Register(test_archive_pb2)
-  router.Register(test_pb2)
 
 
 def main(argv):
@@ -294,8 +259,18 @@ def main(argv):
   opts = _ParseArgs(argv, router)
 
   try:
-    return router.Route(opts.service, opts.method, opts.input_json,
-                        opts.output_json)
+    input_proto = osutils.ReadFile(opts.input_json)
+  except IOError as e:
+    cros_build_lib.Die('Unable to read input file: %s' % e.message)
+
+  try:
+    output_msg = router.Route(opts.service, opts.method, input_proto)
   except Error as e:
     # Error derivatives are handled nicely, but let anything else bubble up.
     cros_build_lib.Die(e.message)
+
+  output_content = json_format.MessageToJson(output_msg)
+  try:
+    osutils.WriteFile(opts.output_json, output_content)
+  except IOError as e:
+    cros_build_lib.Die('Unable to write output file: %s' % e.message)

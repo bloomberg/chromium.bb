@@ -99,9 +99,6 @@ class VideoRtpReceiver : public rtc::RefCountedObject<RtpReceiverInternal> {
 
   void SetObserver(RtpReceiverObserverInterface* observer) override;
 
-  void SetJitterBufferMinimumDelay(
-      absl::optional<double> delay_seconds) override;
-
   void SetMediaChannel(cricket::MediaChannel* media_channel) override;
 
   int AttachmentId() const override { return attachment_id_; }

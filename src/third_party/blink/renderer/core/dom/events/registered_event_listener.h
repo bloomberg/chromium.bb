@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_REGISTERED_EVENT_LISTENER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -82,7 +83,7 @@ class RegisteredEventListener final {
   bool ShouldFire(const Event&) const;
 
  private:
-  Member<EventListener> callback_;
+  TraceWrapperMember<EventListener> callback_;
   unsigned use_capture_ : 1;
   unsigned passive_ : 1;
   unsigned once_ : 1;

@@ -99,6 +99,14 @@ void DefaultPlatform::SetThreadPoolSize(int thread_pool_size) {
       std::max(std::min(thread_pool_size, kMaxThreadPoolSize), 1);
 }
 
+void DefaultPlatform::EnsureBackgroundTaskRunnerInitialized() {
+  base::MutexGuard guard(&lock_);
+  if (!worker_threads_task_runner_) {
+    worker_threads_task_runner_ =
+        std::make_shared<DefaultWorkerThreadsTaskRunner>(thread_pool_size_);
+  }
+}
+
 namespace {
 
 double DefaultTimeFunction() {
@@ -107,17 +115,6 @@ double DefaultTimeFunction() {
 }
 
 }  // namespace
-
-void DefaultPlatform::EnsureBackgroundTaskRunnerInitialized() {
-  base::MutexGuard guard(&lock_);
-  if (!worker_threads_task_runner_) {
-    worker_threads_task_runner_ =
-        std::make_shared<DefaultWorkerThreadsTaskRunner>(
-            thread_pool_size_, time_function_for_testing_
-                                   ? time_function_for_testing_
-                                   : DefaultTimeFunction);
-  }
-}
 
 void DefaultPlatform::SetTimeFunctionForTesting(
     DefaultPlatform::TimeFunction time_function) {

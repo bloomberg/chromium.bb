@@ -1074,6 +1074,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
       }
     } else {
       pStreamDict->SetFor("Resources", pFormDict->GetDictFor("DR")->Clone());
+      pStreamResList = pStreamDict->GetDictFor("Resources");
     }
   }
   switch (type) {
@@ -1233,13 +1234,11 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
 
           if (CPDF_Object* pOpt = pOpts->GetDirectObjectAt(i)) {
             WideString swItem;
-            if (pOpt->IsString()) {
+            if (pOpt->IsString())
               swItem = pOpt->GetUnicodeText();
-            } else if (CPDF_Array* pArray = pOpt->AsArray()) {
-              CPDF_Object* pDirectObj = pArray->GetDirectObjectAt(1);
-              if (pDirectObj)
-                swItem = pDirectObj->GetUnicodeText();
-            }
+            else if (CPDF_Array* pArray = pOpt->AsArray())
+              swItem = pArray->GetDirectObjectAt(1)->GetUnicodeText();
+
             bool bSelected = false;
             if (pSels) {
               for (size_t s = 0, ssz = pSels->size(); s < ssz; s++) {
@@ -1317,6 +1316,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
         }
       } else {
         pStreamDict->SetFor("Resources", pFormDict->GetDictFor("DR")->Clone());
+        pStreamResList = pStreamDict->GetDictFor("Resources");
       }
     }
   }

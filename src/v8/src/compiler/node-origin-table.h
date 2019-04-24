@@ -18,7 +18,7 @@ namespace compiler {
 
 class NodeOrigin {
  public:
-  enum OriginKind { kWasmBytecode, kGraphNode };
+  typedef enum { kWasmBytecode, kGraphNode } OriginKind;
   NodeOrigin(const char* phase_name, const char* reducer_name,
              NodeId created_from)
       : phase_name_(phase_name),

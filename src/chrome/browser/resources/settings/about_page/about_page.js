@@ -29,18 +29,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether the browser/ChromeOS is managed by their organization
-     * through enterprise policies.
-     * @private
-     */
-    isManaged_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isManaged');
-      },
-    },
-
     // <if expr="chromeos">
     /** @private */
     hasCheckedForUpdates_: {
@@ -505,11 +493,6 @@ Polymer({
    */
   checkStatus_: function(status) {
     return this.currentUpdateStatusEvent_.status == status;
-  },
-
-  /** @private */
-  onManagementPageTap_: function() {
-    window.location.href = 'chrome://management';
   },
 
   // <if expr="chromeos">

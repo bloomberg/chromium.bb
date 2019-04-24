@@ -616,7 +616,6 @@ int av_packet_ref(AVPacket *dst, const AVPacket *src)
         ret = packet_alloc(&dst->buf, src->size);
         if (ret < 0)
             goto fail;
-        av_assert1(!src->size || src->data);
         if (src->size)
             memcpy(dst->buf->data, src->data, src->size);
 
@@ -669,7 +668,6 @@ int av_packet_make_refcounted(AVPacket *pkt)
     ret = packet_alloc(&pkt->buf, pkt->size);
     if (ret < 0)
         return ret;
-    av_assert1(!pkt->size || pkt->data);
     if (pkt->size)
         memcpy(pkt->buf->data, pkt->data, pkt->size);
 
@@ -689,7 +687,6 @@ int av_packet_make_writable(AVPacket *pkt)
     ret = packet_alloc(&buf, pkt->size);
     if (ret < 0)
         return ret;
-    av_assert1(!pkt->size || pkt->data);
     if (pkt->size)
         memcpy(buf->data, pkt->data, pkt->size);
 

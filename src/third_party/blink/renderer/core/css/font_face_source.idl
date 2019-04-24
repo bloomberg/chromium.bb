@@ -5,7 +5,8 @@
 // spec: https://drafts.csswg.org/css-font-loading/#font-face-source
 
 [
-  LegacyTreatAsPartialInterface
-] interface mixin FontFaceSource {
+  LegacyTreatAsPartialInterface,
+  NoInterfaceObject
+] interface FontFaceSource {
   [MeasureAs=DocumentFonts] readonly attribute FontFaceSet fonts;
 };

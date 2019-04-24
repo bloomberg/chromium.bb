@@ -35,8 +35,7 @@ class FullscreenWindowFinderTest : public AshTestBase {
   }
 
   bool FullscreenWindowExists() const {
-    return nullptr !=
-           wm::GetWindowForFullscreenModeForContext(test_window_.get());
+    return nullptr != wm::GetWindowForFullscreenMode(test_window_.get());
   }
 
  protected:

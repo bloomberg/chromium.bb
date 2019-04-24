@@ -22,7 +22,7 @@
 <translation id="1457721931618994305">Google Chrome ஐப் புதுப்பிக்கிறது...</translation>
 <translation id="1469002951682717133">Chrome பயன்பாட்டுத் துவக்கி</translation>
 <translation id="1553358976309200471">Chromeஐப் புதுப்பி</translation>
-<translation id="1585657529869845941"><ph name="BEGIN_BOLD" />பரவாயில்லை, மாற்று<ph name="END_BOLD" /> எனும் பொத்தான் தெரிந்தால், அதைக் கிளிக் செய்யவும்</translation>
+<translation id="1585657529869845941"><ph name="BEGIN_BOLD" />பரவாயில்லை, மாற்று<ph name="END_BOLD" /> எனும் பட்டன் தெரிந்தால், அதைக் கிளிக் செய்யவும்</translation>
 <translation id="1587223624401073077">Google Chrome உங்கள் கேமராவைப் பயன்படுத்துகிறது.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ஆபத்தானது என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="1619887657840448962">Chromeஐப் பாதுகாப்பானதாக்க, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படாத பின்வரும் நீட்டிப்பை முடக்கியுள்ளோம், மேலும் அது உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
@@ -56,6 +56,7 @@
 <translation id="2290014774651636340">Google API விசைகள் காணப்படவில்லை. Google Chrome இன் சில செயல்பாடுகள் முடக்கப்படும்.</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>
 <translation id="2309047409763057870">இது Google Chrome இன் இரண்டாம் நிலை நிறுவல் என்பதால், அதை இயல்புநிலை உலாவியாக அமைக்க முடியாது.</translation>
+<translation id="2334084861041072223">பதிப்புரிமை <ph name="YEAR" /> Google Inc. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
 <translation id="2346876346033403680">இதற்கு முன்னர் ஒருவர் இந்தக் கணினியிலுள்ள Chrome இல் <ph name="ACCOUNT_EMAIL_LAST" /> ஆக உள்நுழைந்திருந்தார். அது உங்கள் கணக்கு இல்லையெனில், உங்கள் தகவலைத் தனியாக வைத்திருக்க புதிய Chrome பயனரை உருவாக்கவும்.
 
 எப்படியிருந்தாலும் உள்நுழைதல் <ph name="ACCOUNT_EMAIL_NEW" /> க்கான புக்மார்க்குகள், வரலாறு, மற்றும் பிற அமைப்புகள் போன்ற Chrome தகவலைப் பிணைக்கும்.</translation>
@@ -111,6 +112,7 @@
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome இலிருந்து அகற்றுதல்...</translation>
 <translation id="386202838227397562">அனைத்து Google Chrome சாளரங்களையும் மூடி, பின்னர் முயற்சி செய்க.</translation>
+<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
 <translation id="3889417619312448367">Google Chrome ஐ நிறுவல் நீக்குக</translation>
 <translation id="3898493977366060150">Google ஸ்மார்ட்ஸ் மூலம் இணையத்தில் உலாவுதல்</translation>
@@ -137,6 +139,7 @@
 <translation id="4600710005438004015">Chrome சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கப்படவில்லை என்பதால், புதிய அம்சங்களையும் பாதுகாப்புத் திருத்தங்களையும் தவறவிடுகிறீர்கள்.</translation>
 <translation id="4631713731678262610">Chrome மெனுவில் மறை</translation>
 <translation id="4633000520311261472">Chrome ஐப் பாதுகாப்பானதாக்க <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படாத சில நீட்டிப்புகளை நாங்கள் முடக்கிவிட்டோம் மேலும் அவை உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
+<translation id="4700157086864140907">நீங்கள் உலாவியில் தட்டச்சு செய்ததை Google சேவையகங்களுக்கு அனுப்புவதன் மூலம் Google Chrome விரைவான எழுத்துப்பிழை சரிப்பார்த்தலை வழங்குகிறது, Google தேடலில் பயன்படுத்தப்பட்ட ஒரே மாதிரியான எழுத்துப்பிழை சரிபார்த்தல் தொழில்நுட்பத்தைப் பயன்படுத்த அனுமதிக்கிறது.</translation>
 <translation id="4728575227883772061">குறிப்பிடப்படாத பிழையின் காரணமாக, நிறுவல் தோல்வியடைந்தது. தற்போது  Google Chrome இயக்கத்தில் இருந்தால், அதை மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ஐ இயக்க, Chromeஐ மீண்டும் தொடங்குக</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>

@@ -31,6 +31,10 @@ SourceGraphic::SourceGraphic(Filter* filter) : FilterEffect(filter) {
 
 SourceGraphic::~SourceGraphic() = default;
 
+SourceGraphic* SourceGraphic::Create(Filter* filter) {
+  return MakeGarbageCollected<SourceGraphic>(filter);
+}
+
 FloatRect SourceGraphic::MapInputs(const FloatRect& rect) const {
   return !source_rect_.IsEmpty() ? FloatRect(source_rect_) : rect;
 }

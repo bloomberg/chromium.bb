@@ -45,6 +45,11 @@ class SQLStatement;
 class SQLStatementBackend final
     : public GarbageCollectedFinalized<SQLStatementBackend> {
  public:
+  static SQLStatementBackend* Create(SQLStatement*,
+                                     const String& sql_statement,
+                                     const Vector<SQLValue>& arguments,
+                                     int permissions);
+
   SQLStatementBackend(SQLStatement*,
                       const String& statement,
                       const Vector<SQLValue>& arguments,

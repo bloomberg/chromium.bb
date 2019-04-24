@@ -165,9 +165,8 @@ CPWL_EditImpl_Refresh::CPWL_EditImpl_Refresh() {}
 CPWL_EditImpl_Refresh::~CPWL_EditImpl_Refresh() {}
 
 void CPWL_EditImpl_Refresh::BeginRefresh() {
-  m_OldLineRects = std::move(m_NewLineRects);
-  m_NewLineRects.clear();
   m_RefreshRects.clear();
+  m_OldLineRects = std::move(m_NewLineRects);
 }
 
 void CPWL_EditImpl_Refresh::Push(const CPVT_WordRange& linerange,

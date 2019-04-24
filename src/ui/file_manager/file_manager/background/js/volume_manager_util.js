@@ -154,7 +154,8 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
               // it fails, accessing to some path later will just become
               // a fast-fetch and it re-triggers full-feed fetch.
               fileSystem.root.createReader().readEntries(
-                  () => {/* do nothing */}, error => {
+                  () => { /* do nothing */ },
+                  error => {
                     console.warn(
                         'Triggering full feed fetch has failed: ' + error.name);
                   });

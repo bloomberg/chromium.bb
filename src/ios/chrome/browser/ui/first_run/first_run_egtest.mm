@@ -221,9 +221,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
 
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
   // Undo the sign-in and dismiss the Sign In screen.
   [[EarlGrey selectElementWithMatcher:UndoAccountConsistencyButton()]
@@ -232,8 +230,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // |identity| shouldn't be signed in.
-  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
-  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
+  [SigninEarlGreyUtils assertSignedOut];
 }
 
 // Signs in to an account and then taps the Advanced link to go to settings.
@@ -250,14 +247,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Sign In |identity|.
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
-
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-  // due to timing issues.
-  if (signedInError != nil) {
-    GREYAssert(false, signedInError.localizedDescription);
-  }
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
   // Tap Settings link.
   id<GREYMatcher> settings_link_matcher = grey_allOf(
@@ -275,11 +265,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Close Settings, user is still signed in and sync is now starting.
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-
-  NSError* signedInError2 =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError2, signedInError2.localizedDescription);
-
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
                  @"Sync should have finished its original setup");
 }

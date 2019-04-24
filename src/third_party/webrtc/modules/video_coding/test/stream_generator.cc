@@ -29,7 +29,7 @@ void StreamGenerator::Init(uint16_t start_seq_num, int64_t current_time) {
   memset(packet_buffer_, 0, sizeof(packet_buffer_));
 }
 
-void StreamGenerator::GenerateFrame(VideoFrameType type,
+void StreamGenerator::GenerateFrame(FrameType type,
                                     int num_media_packets,
                                     int num_empty_packets,
                                     int64_t time_ms) {
@@ -44,7 +44,7 @@ void StreamGenerator::GenerateFrame(VideoFrameType type,
   }
   for (int i = 0; i < num_empty_packets; ++i) {
     packets_.push_back(GeneratePacket(sequence_number_, timestamp, 0, false,
-                                      false, VideoFrameType::kEmptyFrame));
+                                      false, kEmptyFrame));
     ++sequence_number_;
   }
 }
@@ -54,7 +54,7 @@ VCMPacket StreamGenerator::GeneratePacket(uint16_t sequence_number,
                                           unsigned int size,
                                           bool first_packet,
                                           bool marker_bit,
-                                          VideoFrameType type) {
+                                          FrameType type) {
   EXPECT_LT(size, kMaxPacketSize);
   VCMPacket packet;
   packet.seqNum = sequence_number;

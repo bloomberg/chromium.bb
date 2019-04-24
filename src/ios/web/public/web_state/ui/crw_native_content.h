@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/web/public/block_types.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -53,7 +54,7 @@ struct ContextMenuParams;
 // of the evaluation. If the native view cannot evaluate JS at the moment,
 // |handler| is called with an NSError.
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(void (^)(id, NSError*))handler;
+        completionHandler:(web::JavaScriptResultBlock)handler;
 
 // Dismisses any outstanding modal interaction elements (e.g. modal view
 // controllers, context menus, etc).

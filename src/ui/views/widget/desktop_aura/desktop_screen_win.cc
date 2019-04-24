@@ -17,9 +17,11 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, public:
 
-DesktopScreenWin::DesktopScreenWin() = default;
+DesktopScreenWin::DesktopScreenWin() {
+}
 
-DesktopScreenWin::~DesktopScreenWin() = default;
+DesktopScreenWin::~DesktopScreenWin() {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, display::win::ScreenWin implementation:
@@ -31,13 +33,12 @@ display::Display DesktopScreenWin::GetDisplayMatching(
 
 HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   aura::WindowTreeHost* host = window->GetHost();
-  return host ? host->GetAcceleratedWidget() : nullptr;
+  return host ? host->GetAcceleratedWidget() : NULL;
 }
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
-  return (::IsWindow(hwnd))
-             ? DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd)
-             : nullptr;
+  return (::IsWindow(hwnd)) ?
+      DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

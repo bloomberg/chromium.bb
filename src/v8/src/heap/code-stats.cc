@@ -202,7 +202,7 @@ void CodeStatistics::CollectCodeCommentStatistics(HeapObject obj,
   }
 
   Code code = Code::cast(obj);
-  CodeCommentsIterator cit(code->code_comments(), code->code_comments_size());
+  CodeCommentsIterator cit(code->code_comments());
   int delta = 0;
   int prev_pc_offset = 0;
   while (cit.HasCurrent()) {

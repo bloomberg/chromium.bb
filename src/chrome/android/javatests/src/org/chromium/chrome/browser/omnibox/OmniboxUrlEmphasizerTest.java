@@ -20,6 +20,7 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -49,10 +49,14 @@ public class OmniboxUrlEmphasizerTest {
 
     @Before
     public void setUp() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mProfile = Profile.getLastUsedProfile().getOriginalProfile();
-            mResources =
-                    InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+                mResources = InstrumentationRegistry.getInstrumentation()
+                                     .getTargetContext()
+                                     .getResources();
+            }
         });
     }
 
@@ -153,7 +157,7 @@ public class OmniboxUrlEmphasizerTest {
 
         Assert.assertEquals("Unexpected number of spans:", 4, spans.length);
         spans[0].assertIsColoredSpan(
-                "https", 0, ApiCompatibilityUtils.getColor(mResources, R.color.google_green_600));
+                "https", 0, ApiCompatibilityUtils.getColor(mResources, R.color.google_green_700));
         spans[1].assertIsColoredSpan("://", 5,
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.url_emphasis_non_emphasized_text));
@@ -212,7 +216,7 @@ public class OmniboxUrlEmphasizerTest {
         Assert.assertEquals("Unexpected number of spans:", 5, spans.length);
         spans[0].assertIsStrikethroughSpan("https", 0);
         spans[1].assertIsColoredSpan(
-                "https", 0, ApiCompatibilityUtils.getColor(mResources, R.color.google_red_600));
+                "https", 0, ApiCompatibilityUtils.getColor(mResources, R.color.google_red_700));
         spans[2].assertIsColoredSpan("://", 5,
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.url_emphasis_non_emphasized_text));

@@ -27,7 +27,7 @@
 namespace utils {
     class SwapChainImplMTL {
       public:
-        using WSIContext = DawnWSIContextMetal;
+        using WSIContext = dawnWSIContextMetal;
 
         SwapChainImplMTL(id nsWindow) : mNsWindow(nsWindow) {
         }
@@ -37,13 +37,13 @@ namespace utils {
             [mCurrentDrawable release];
         }
 
-        void Init(DawnWSIContextMetal* ctx) {
+        void Init(dawnWSIContextMetal* ctx) {
             mMtlDevice = ctx->device;
             mCommandQueue = [mMtlDevice newCommandQueue];
         }
 
-        DawnSwapChainError Configure(DawnTextureFormat format,
-                                     DawnTextureUsageBit usage,
+        dawnSwapChainError Configure(dawnTextureFormat format,
+                                     dawnTextureUsageBit usage,
                                      uint32_t width,
                                      uint32_t height) {
             if (format != DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM) {
@@ -76,7 +76,7 @@ namespace utils {
             return DAWN_SWAP_CHAIN_NO_ERROR;
         }
 
-        DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture) {
+        dawnSwapChainError GetNextTexture(dawnSwapChainNextTexture* nextTexture) {
             [mCurrentDrawable release];
             mCurrentDrawable = [mLayer nextDrawable];
             [mCurrentDrawable retain];
@@ -90,7 +90,7 @@ namespace utils {
             return DAWN_SWAP_CHAIN_NO_ERROR;
         }
 
-        DawnSwapChainError Present() {
+        dawnSwapChainError Present() {
             id<MTLCommandBuffer> commandBuffer = [mCommandQueue commandBuffer];
             [commandBuffer presentDrawable:mCurrentDrawable];
             [commandBuffer commit];
@@ -110,7 +110,7 @@ namespace utils {
 
     class MetalBinding : public BackendBinding {
       public:
-        MetalBinding(GLFWwindow* window, DawnDevice device) : BackendBinding(window, device) {
+        MetalBinding(GLFWwindow* window, dawnDevice device) : BackendBinding(window, device) {
         }
 
         uint64_t GetSwapChainImplementation() override {
@@ -121,15 +121,15 @@ namespace utils {
             return reinterpret_cast<uint64_t>(&mSwapchainImpl);
         }
 
-        DawnTextureFormat GetPreferredSwapChainTextureFormat() override {
+        dawnTextureFormat GetPreferredSwapChainTextureFormat() override {
             return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
         }
 
       private:
-        DawnSwapChainImplementation mSwapchainImpl = {};
+        dawnSwapChainImplementation mSwapchainImpl = {};
     };
 
-    BackendBinding* CreateMetalBinding(GLFWwindow* window, DawnDevice device) {
+    BackendBinding* CreateMetalBinding(GLFWwindow* window, dawnDevice device) {
         return new MetalBinding(window, device);
     }
 }

@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) StorageObserverList {
   void RemoveObserver(StorageObserver* observer);
 
   // Returns the number of observers.
-  size_t ObserverCount() const;
+  int ObserverCount() const;
 
   // Forwards a storage change to observers. The event may be dispatched
   // immediately to an observer or after a delay, depending on the desired event

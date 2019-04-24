@@ -12,6 +12,7 @@ namespace switches {
 
 extern const char kAutofillIOSDelayBetweenFields[];
 
+bool IsAutofillIFrameMessagingEnabled();
 }  // namespace switches
 }  // namespace autofill
 

@@ -73,6 +73,10 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
 
   void BindContextProviderToCurrentThread() override {}
 
+  uint32_t CreateMailboxTexture(gpu::Mailbox* mailbox) override {
+    return TEXTURE_ID;
+  }
+
   bool IsConnected() override { return true; }
 
   void CallCallback() { std::move(callback_).Run(); }

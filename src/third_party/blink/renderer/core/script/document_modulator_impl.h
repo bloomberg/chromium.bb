@@ -20,6 +20,8 @@ class ScriptState;
 // ModulatorImplBase.
 class DocumentModulatorImpl final : public ModulatorImplBase {
  public:
+  static ModulatorImplBase* Create(ScriptState*);
+
   explicit DocumentModulatorImpl(ScriptState*);
 
   // Implements Modulator.

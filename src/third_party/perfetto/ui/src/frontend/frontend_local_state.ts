@@ -27,7 +27,7 @@ export class FrontendLocalState {
   visibleWindowTime = new TimeSpan(0, 10);
   timeScale = new TimeScale(this.visibleWindowTime, [0, 0]);
   private _lastUpdate = 0;
-  private pendingGlobalTimeUpdate = false;
+  private pendingGlobalTimeUpdate?: TimeSpan;
   perfDebug = false;
   hoveredUtid = -1;
   hoveredPid = -1;
@@ -46,17 +46,19 @@ export class FrontendLocalState {
     this._lastUpdate = Date.now() / 1000;
 
     // Post a delayed update to the controller.
-    if (this.pendingGlobalTimeUpdate) return;
+    const alreadyPosted = this.pendingGlobalTimeUpdate !== undefined;
+    this.pendingGlobalTimeUpdate = this.visibleWindowTime;
+    if (alreadyPosted) return;
     setTimeout(() => {
       this._lastUpdate = Date.now() / 1000;
       globals.dispatch(Actions.setVisibleTraceTime({
         time: {
-          startSec: this.visibleWindowTime.start,
-          endSec: this.visibleWindowTime.end,
+          startSec: this.pendingGlobalTimeUpdate!.start,
+          endSec: this.pendingGlobalTimeUpdate!.end,
         },
         lastUpdate: this._lastUpdate,
       }));
-      this.pendingGlobalTimeUpdate = false;
+      this.pendingGlobalTimeUpdate = undefined;
     }, 100);
   }
 
@@ -95,4 +97,5 @@ export class FrontendLocalState {
     this.showTimeSelectPreview = show;
     globals.rafScheduler.scheduleRedraw();
   }
+
 }

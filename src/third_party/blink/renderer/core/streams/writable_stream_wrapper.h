@@ -18,7 +18,8 @@ namespace blink {
 class MessagePort;
 
 // This is an implementation of the WritableStream interface that delegates to
-// the V8 Extras implementation.
+// the V8 Extras implementation. Use TraceWrapperMember to hold a reference to
+// an instance of this class.
 class CORE_EXPORT WritableStreamWrapper final : public WritableStream {
  public:
   // Call one of Init functions before using the instance.

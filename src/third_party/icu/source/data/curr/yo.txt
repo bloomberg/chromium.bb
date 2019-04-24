@@ -22,10 +22,6 @@ yo{
             "BIF",
             "Faransi ti Orílẹ́ède Bùùrúndì",
         }
-        BRL{
-            "R$",
-            "Owó ti Orílẹ̀-èdè Brazil",
-        }
         BWP{
             "BWP",
             "Pula ti Orílẹ́ède Bọ̀tìsúwánà",
@@ -72,11 +68,11 @@ yo{
         }
         EUR{
             "€",
-            "owó Yúrò",
+            "Uro",
         }
         GBP{
             "£",
-            "Pọ́n-ùn ti Orilẹ̀-èdè Gẹ̀ẹ́sì",
+            "Pọọn ti Orílẹ́ède Bírítísì",
         }
         GHC{
             "GHC",
@@ -152,11 +148,7 @@ yo{
         }
         NGN{
             "₦",
-            "Náìrà ti Orílẹ̀-èdè Nàìjíríà",
-        }
-        RUB{
-            "₽",
-            "Owó ruble ti ilẹ̀ Rọ́ṣíà",
+            "Naira ti Orílẹ́ède Nàìjíríà",
         }
         RWF{
             "RWF",
@@ -215,8 +207,8 @@ yo{
             "Siile ti Orílẹ́ède Uganda",
         }
         USD{
-            "$",
-            "Dọ́là",
+            "US$",
+            "Dọla ti Orílẹ́ède Amerika",
         }
         XAF{
             "FCFA",
@@ -225,10 +217,6 @@ yo{
         XOF{
             "CFA",
             "Faransi ti Orílẹ́ède BIKEAO",
-        }
-        XXX{
-            "¤",
-            "owóníná àìmọ̀",
         }
         ZAR{
             "ZAR",
@@ -247,35 +235,8 @@ yo{
             "Dọla ti Orílẹ́ède Siibabuwe",
         }
     }
-    Currencies%narrow{
-        BRL{"R$"}
-        CNY{"¥"}
-        EUR{"€"}
-        GBP{"£"}
-        INR{"₹"}
-        JPY{"¥"}
-        RUB{"₽"}
-        USD{"$"}
-    }
-    CurrencyPlurals{
-        BRL{
-            other{"Awon owó ti Orílẹ̀-èdè Brazil"}
-        }
-        EUR{
-            other{"Awon owó Yúrò"}
-        }
-        RUB{
-            other{"Owó ruble ti ilẹ̀ Rọ́ṣíà"}
-        }
-        USD{
-            other{"Dọ́là ti Orílẹ̀-Èdè Amẹ́ríkà"}
-        }
-        XXX{
-            other{"owóníná àìmọ̀"}
-        }
-    }
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.48.17"}
+    Version{"2.1.44.88"}
 }

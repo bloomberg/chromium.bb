@@ -62,8 +62,9 @@ class VideoEncoderProxyFactory final : public VideoEncoderFactory {
 
    private:
     int32_t Encode(const VideoFrame& input_image,
-                   const std::vector<VideoFrameType>* frame_types) override {
-      return encoder_->Encode(input_image, frame_types);
+                   const CodecSpecificInfo* codec_specific_info,
+                   const std::vector<FrameType>* frame_types) override {
+      return encoder_->Encode(input_image, codec_specific_info, frame_types);
     }
     int32_t InitEncode(const VideoCodec* config,
                        int32_t number_of_cores,
@@ -75,8 +76,9 @@ class VideoEncoderProxyFactory final : public VideoEncoderFactory {
       return encoder_->RegisterEncodeCompleteCallback(callback);
     }
     int32_t Release() override { return encoder_->Release(); }
-    void SetRates(const RateControlParameters& parameters) override {
-      encoder_->SetRates(parameters);
+    int32_t SetRateAllocation(const VideoBitrateAllocation& rate_allocation,
+                              uint32_t framerate) override {
+      return encoder_->SetRateAllocation(rate_allocation, framerate);
     }
     VideoEncoder::EncoderInfo GetEncoderInfo() const override {
       return encoder_->GetEncoderInfo();

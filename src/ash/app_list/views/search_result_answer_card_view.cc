@@ -113,7 +113,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
     view_delegate_->GetNavigableContentsFactory(
-        contents_factory_.BindNewPipeAndPassReceiver());
+        mojo::MakeRequest(&contents_factory_));
 
     auto params = content::mojom::NavigableContentsParams::New();
     params->enable_view_auto_resize = true;
@@ -265,7 +265,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
     OnVisibilityChanged(true /* is_visible */);
     views::View* content_view = contents_->GetView()->view();
-    if (children().empty()) {
+    if (!has_children()) {
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
 
@@ -304,7 +304,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
   SearchResultContainerView* const container_;  // Not owned.
   AppListViewDelegate* const view_delegate_;    // Not owned.
-  mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
+  content::mojom::NavigableContentsFactoryPtr contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
 
   bool is_current_navigation_valid_answer_card_ = false;

@@ -51,6 +51,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
@@ -115,6 +116,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private ChromeSwitchPreference mSyncSwitchPreference;
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
+
+    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
 
     private SwitchPreference mSyncEverything;
     private CheckBoxPreference mSyncAutofill;
@@ -501,13 +504,23 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 return true;
             }
         } else if (preference == mManageSyncData) {
-            SyncPreferenceUtils.openSyncDashboard(getActivity());
+            openDashboardTabInNewActivityStack();
             return true;
         } else if (preference == mSyncErrorCard) {
             onSyncErrorCardClicked();
             return true;
         }
         return false;
+    }
+
+    /**
+     * Opens the Google Dashboard where the user can control the data stored for the account.
+     */
+    private void openDashboardTabInNewActivityStack() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DASHBOARD_URL));
+        intent.setPackage(getActivity().getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     /**
@@ -587,7 +600,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
             return SyncError.AUTH_ERROR;
         }
 
-        if (mProfileSyncService.requiresClientUpgrade()) {
+        if (mProfileSyncService.getProtocolErrorClientAction()
+                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
             return SyncError.CLIENT_OUT_OF_DATE;
         }
 

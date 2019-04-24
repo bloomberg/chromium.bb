@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -184,12 +185,12 @@ void HTMLCanvasElement::ParseAttribute(
   HTMLElement::ParseAttribute(params);
 }
 
-LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
-                                                    LegacyLayout legacy) {
+LayoutObject* HTMLCanvasElement::CreateLayoutObject(
+    const ComputedStyle& style) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame && GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
     return new LayoutHTMLCanvas(this);
-  return HTMLElement::CreateLayoutObject(style, legacy);
+  return HTMLElement::CreateLayoutObject(style);
 }
 
 Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
@@ -272,7 +273,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !RuntimeEnabledFeatures::WebXREnabled(&GetDocument()))) {
+       !origin_trials::WebXREnabled(&GetDocument()))) {
     return nullptr;
   }
 
@@ -320,7 +321,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     DidDraw();
   }
 
-  if (context_->CreationAttributes().desynchronized) {
+  if (context_->CreationAttributes().low_latency &&
+      origin_trials::LowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
@@ -1057,8 +1059,16 @@ unsigned HTMLCanvasElement::GetMSAASampleCountFor2dContext() const {
 
 std::unique_ptr<Canvas2DLayerBridge>
 HTMLCanvasElement::CreateAccelerated2dBuffer() {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  const bool needs_vertical_flip =
+      !(context_provider_wrapper && context_provider_wrapper->ContextProvider()
+                                        ->GetCapabilities()
+                                        .mesa_framebuffer_flip_y);
+
   auto surface = std::make_unique<Canvas2DLayerBridge>(
-      Size(), Canvas2DLayerBridge::kEnableAcceleration, ColorParams());
+      Size(), Canvas2DLayerBridge::kEnableAcceleration, ColorParams(),
+      needs_vertical_flip);
   if (!surface->IsValid())
     return nullptr;
 
@@ -1388,7 +1398,7 @@ HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
   if (Is2d())
     return context_->GetControlAndIdIfHitRegionExists(location);
-  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
+  return HitTestCanvasResult::Create(String(), nullptr);
 }
 
 String HTMLCanvasElement::GetIdFromControl(const Element* element) {

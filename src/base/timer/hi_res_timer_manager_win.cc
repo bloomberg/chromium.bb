@@ -37,7 +37,7 @@ HighResolutionTimerManager::HighResolutionTimerManager()
   // Start polling the high resolution timer usage.
   Time::ResetHighResolutionTimerUsage();
   timer_.Start(FROM_HERE, kUsageSampleInterval,
-               BindRepeating(&ReportHighResolutionTimerUsage));
+               Bind(&ReportHighResolutionTimerUsage));
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {

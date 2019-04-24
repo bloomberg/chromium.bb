@@ -329,7 +329,6 @@ ScopeIterator::ScopeType ScopeIterator::Type() const {
         DCHECK(context_->IsCatchContext());
         return ScopeTypeCatch;
       case BLOCK_SCOPE:
-      case CLASS_SCOPE:
         DCHECK_IMPLIES(current_scope_->NeedsContext(),
                        context_->IsBlockContext());
         return ScopeTypeBlock;

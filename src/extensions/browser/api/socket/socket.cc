@@ -39,9 +39,9 @@ Socket::~Socket() {
 
 void Socket::Write(scoped_refptr<net::IOBuffer> io_buffer,
                    int byte_count,
-                   net::CompletionOnceCallback callback) {
+                   const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  write_queue_.emplace(io_buffer, byte_count, std::move(callback));
+  write_queue_.push(WriteRequest(io_buffer, byte_count, callback));
   WriteData();
 }
 
@@ -57,7 +57,7 @@ void Socket::WriteData() {
       request.io_buffer->data() + request.bytes_written);
   int result = WriteImpl(
       io_buffer_write_.get(), request.byte_count - request.bytes_written,
-      base::BindOnce(&Socket::OnWriteComplete, base::Unretained(this)));
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     OnWriteComplete(result);
@@ -78,7 +78,7 @@ void Socket::OnWriteComplete(int result) {
     result = request.bytes_written;
   }
 
-  std::move(request.callback).Run(result);
+  request.callback.Run(result);
   write_queue_.pop();
 
   if (!write_queue_.empty())
@@ -136,13 +136,13 @@ void Socket::IPEndPointToStringAndPort(const net::IPEndPoint& address,
 
 Socket::WriteRequest::WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                                    int byte_count,
-                                   net::CompletionOnceCallback callback)
+                                   const CompletionCallback& callback)
     : io_buffer(io_buffer),
       byte_count(byte_count),
-      callback(std::move(callback)),
+      callback(callback),
       bytes_written(0) {}
 
-Socket::WriteRequest::WriteRequest(WriteRequest&& other) = default;
+Socket::WriteRequest::WriteRequest(const WriteRequest& other) = default;
 
 Socket::WriteRequest::~WriteRequest() {}
 

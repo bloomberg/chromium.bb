@@ -123,7 +123,7 @@ std::string ViewsDelegate::GetApplicationName() {
 
 #if defined(OS_WIN)
 int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
-                                          base::OnceClosure callback) {
+                                          const base::Closure& callback) {
   return EDGE_BOTTOM;
 }
 #endif

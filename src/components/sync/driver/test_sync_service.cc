@@ -23,11 +23,12 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
       /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
       /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
       /*poll_finish_time=*/base::Time::Now(),
-      /*num_entries_by_type=*/std::vector<int>(ModelType::NUM_ENTRIES, 0),
+      /*num_entries_by_type=*/std::vector<int>(MODEL_TYPE_COUNT, 0),
       /*num_to_delete_entries_by_type=*/
-      std::vector<int>(ModelType::NUM_ENTRIES, 0),
+      std::vector<int>(MODEL_TYPE_COUNT, 0),
       /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*poll_interval=*/base::TimeDelta::FromMinutes(30),
+      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
+      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
       /*has_remaining_local_changes=*/false);
 }
 
@@ -149,15 +150,6 @@ GoogleServiceAuthError TestSyncService::GetAuthError() const {
   return auth_error_;
 }
 
-base::Time TestSyncService::GetAuthErrorTime() const {
-  return base::Time();
-}
-
-bool TestSyncService::RequiresClientUpgrade() const {
-  return detailed_sync_status_.sync_protocol_error.action ==
-         syncer::UPGRADE_CLIENT;
-}
-
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
   return nullptr;
@@ -169,6 +161,10 @@ bool TestSyncService::IsSetupInProgress() const {
 
 ModelTypeSet TestSyncService::GetRegisteredDataTypes() const {
   return ModelTypeSet::All();
+}
+
+ModelTypeSet TestSyncService::GetForcedDataTypes() const {
+  return ModelTypeSet();
 }
 
 ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
@@ -185,6 +181,8 @@ void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
+void TestSyncService::ReenableDatatype(ModelType type) {}
+
 void TestSyncService::ReadyForStartChanged(ModelType type) {}
 
 void TestSyncService::AddObserver(SyncServiceObserver* observer) {
@@ -197,6 +195,17 @@ void TestSyncService::RemoveObserver(SyncServiceObserver* observer) {
 
 bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return observers_.HasObserver(observer);
+}
+
+void TestSyncService::AddPreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+void TestSyncService::RemovePreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+bool TestSyncService::HasPreferenceProvider(
+    SyncTypePreferenceProvider* provider) const {
+  return false;
 }
 
 UserShare* TestSyncService::GetUserShare() const {
@@ -215,34 +224,32 @@ SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
   return token;
 }
 
-bool TestSyncService::QueryDetailedSyncStatusForDebugging(
-    SyncStatus* result) const {
+bool TestSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
   *result = detailed_sync_status_;
   return detailed_sync_status_engine_available_;
 }
 
-base::Time TestSyncService::GetLastSyncedTimeForDebugging() const {
+base::Time TestSyncService::GetLastSyncedTime() const {
   return base::Time();
 }
 
-SyncCycleSnapshot TestSyncService::GetLastCycleSnapshotForDebugging() const {
+SyncCycleSnapshot TestSyncService::GetLastCycleSnapshot() const {
   return last_cycle_snapshot_;
 }
 
-std::unique_ptr<base::Value> TestSyncService::GetTypeStatusMapForDebugging() {
+std::unique_ptr<base::Value> TestSyncService::GetTypeStatusMap() {
   return std::make_unique<base::ListValue>();
 }
 
-const GURL& TestSyncService::GetSyncServiceUrlForDebugging() const {
+const GURL& TestSyncService::sync_service_url() const {
   return sync_service_url_;
 }
 
-std::string TestSyncService::GetUnrecoverableErrorMessageForDebugging() const {
+std::string TestSyncService::unrecoverable_error_message() const {
   return std::string();
 }
 
-base::Location TestSyncService::GetUnrecoverableErrorLocationForDebugging()
-    const {
+base::Location TestSyncService::unrecoverable_error_location() const {
   return base::Location();
 }
 
@@ -262,7 +269,7 @@ base::WeakPtr<JsController> TestSyncService::GetJsController() {
   return base::WeakPtr<JsController>();
 }
 
-void TestSyncService::GetAllNodesForDebugging(
+void TestSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}

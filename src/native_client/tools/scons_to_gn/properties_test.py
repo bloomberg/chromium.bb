@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import pprint
 import sys
 
@@ -51,16 +49,16 @@ def TestMap(table, name):
   out = properties.ParsePropertyTable(table['in'])
   pp = pprint.PrettyPrinter(indent=4)
   if out != table['out']:
-    print('*** Conversion mismatch! ***')
-    print('ORIGINAL:')
+    print '*** Conversion mismatch! ***'
+    print 'ORIGINAL:'
     pp.pprint(table['in'])
-    print('CONVERTED:')
+    print 'CONVERTED:'
     pp.pprint(dict(out))
-    print('EXPECTED:')
+    print 'EXPECTED:'
     pp.pprint(table['out'])
-    print('\n\n')
+    print '\n\n'
     return 1
-  print('PASSED ' + name)
+  print 'PASSED ' + name
   return 0
 
 

@@ -27,6 +27,7 @@ ResetRequestHandler::ResetRequestHandler(
 
 ResetRequestHandler::~ResetRequestHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  CancelActiveAuthenticators();
 }
 
 void ResetRequestHandler::DispatchRequest(FidoAuthenticator* authenticator) {
@@ -45,7 +46,7 @@ void ResetRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
   }
 
   processed_touch_ = true;
-  CancelActiveAuthenticators(authenticator->GetId());
+  CancelActiveAuthenticators();
 
   if (authenticator->SupportedProtocol() != ProtocolVersion::kCtap) {
     std::move(finished_callback_)
@@ -63,6 +64,10 @@ void ResetRequestHandler::OnResetComplete(
     base::Optional<pin::EmptyResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK(processed_touch_);
+
+  if (status == CtapDeviceResponseCode::kSuccess && !response) {
+    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+  }
 
   std::move(finished_callback_).Run(status);
 }

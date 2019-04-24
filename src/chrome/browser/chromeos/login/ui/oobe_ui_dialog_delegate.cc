@@ -226,7 +226,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = dialog_view_;
   ash_util::SetupWidgetInitParamsForContainer(
-      &params, ash::kShellWindowId_LockScreenContainer);
+      &params, ash::kShellWindowId_LockSystemModalContainer);
 
   dialog_widget_ = new views::Widget;
   dialog_widget_->Init(params);
@@ -374,7 +374,7 @@ void OobeUIDialogDelegate::OnTabletModeToggled(bool enabled) {
 }
 
 ui::ModalType OobeUIDialogDelegate::GetDialogModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_SYSTEM;
 }
 
 base::string16 OobeUIDialogDelegate::GetDialogTitle() const {

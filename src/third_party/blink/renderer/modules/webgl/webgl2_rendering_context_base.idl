@@ -7,7 +7,9 @@
 typedef long long GLint64;
 typedef unsigned long long GLuint64;
 
-interface mixin WebGL2RenderingContextBase {
+[
+    NoInterfaceObject
+] interface WebGL2RenderingContextBase {
     const GLenum READ_BUFFER                                   = 0x0C02;
     const GLenum UNPACK_ROW_LENGTH                             = 0x0CF2;
     const GLenum UNPACK_SKIP_ROWS                              = 0x0CF3;
@@ -535,4 +537,4 @@ interface mixin WebGL2RenderingContextBase {
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, [AllowShared] ArrayBufferView dstData, GLintptr offset);
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);
 };
-WebGL2RenderingContextBase includes WebGLRenderingContextBase;
+WebGL2RenderingContextBase implements WebGLRenderingContextBase;

@@ -5,7 +5,6 @@
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
@@ -18,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
-#include "net/base/completion_repeating_callback.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace content {
@@ -68,17 +66,12 @@ void StoragePartitionCodeCacheDataRemover::ClearedCodeCache() {
 }
 
 void StoragePartitionCodeCacheDataRemover::ClearCache(
-    net::CompletionOnceCallback callback,
+    net::CompletionCallback callback,
     disk_cache::Backend* backend) {
   if (backend == nullptr) {
     std::move(callback).Run(net::ERR_FAILED);
     return;
   }
-
-  // Create a callback that is copyable, even though it can only be called once,
-  // so that we can use it synchronously in case result != net::ERR_IO_PENDING.
-  net::CompletionRepeatingCallback copyable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
   int result = net::ERR_FAILED;
   if (!url_predicate_.is_null()) {
     result =
@@ -89,25 +82,23 @@ void StoragePartitionCodeCacheDataRemover::ClearCache(
                  base::BindRepeating(
                      &GeneratedCodeCache::GetResourceURLFromKey),
                  begin_time_, end_time_)))
-            ->DeleteAndDestroySelfWhenFinished(copyable_callback);
+            ->DeleteAndDestroySelfWhenFinished(callback);
   } else if (begin_time_.is_null() && end_time_.is_max()) {
-    result = backend->DoomAllEntries(copyable_callback);
+    result = backend->DoomAllEntries(callback);
   } else {
-    result =
-        backend->DoomEntriesBetween(begin_time_, end_time_, copyable_callback);
+    result = backend->DoomEntriesBetween(begin_time_, end_time_, callback);
   }
   // When result is ERR_IO_PENDING the callback would be called after the
   // operation has finished.
   if (result != net::ERR_IO_PENDING) {
-    DCHECK(copyable_callback);
-    copyable_callback.Run(result);
+    std::move(callback).Run(result);
   }
 }
 
 void StoragePartitionCodeCacheDataRemover::ClearJSCodeCache() {
   if (generated_code_cache_context_ &&
       generated_code_cache_context_->generated_js_code_cache()) {
-    net::CompletionOnceCallback callback = base::BindOnce(
+    net::CompletionCallback callback = base::BindRepeating(
         &StoragePartitionCodeCacheDataRemover::ClearWASMCodeCache,
         base::Unretained(this));
     generated_code_cache_context_->generated_js_code_cache()->GetBackend(
@@ -125,7 +116,7 @@ void StoragePartitionCodeCacheDataRemover::ClearJSCodeCache() {
 void StoragePartitionCodeCacheDataRemover::ClearWASMCodeCache(int rv) {
   if (generated_code_cache_context_ &&
       generated_code_cache_context_->generated_wasm_code_cache()) {
-    net::CompletionOnceCallback callback = base::BindOnce(
+    net::CompletionCallback callback = base::BindRepeating(
         &StoragePartitionCodeCacheDataRemover::DoneClearCodeCache,
         base::Unretained(this));
     generated_code_cache_context_->generated_wasm_code_cache()->GetBackend(

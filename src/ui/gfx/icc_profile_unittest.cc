@@ -16,7 +16,7 @@ TEST(ICCProfile, Conversions) {
   ColorSpace color_space_from_icc_profile = icc_profile.GetColorSpace();
 
   ICCProfile icc_profile_from_color_space =
-      ICCProfile::FromColorSpace(color_space_from_icc_profile);
+      ICCProfile::FromParametricColorSpace(color_space_from_icc_profile);
   EXPECT_TRUE(icc_profile_from_color_space.IsValid());
   EXPECT_NE(icc_profile, icc_profile_from_color_space);
 }
@@ -62,11 +62,11 @@ TEST(ICCProfile, ParametricVersusExactInaccurate) {
   // this case, each curve is approximated, so the profile is "accurate").
   // See comments in ICCProfile::Internals::Analyze.
   ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_TRUE(multi_tr_fn.IsColorSpaceAccurate());
+  EXPECT_TRUE(multi_tr_fn.GetColorSpace().IsParametricAccurate());
 
   // We are capable of generating a parametric approximation.
   ICCProfile profile;
-  profile = ICCProfile::FromColorSpace(multi_tr_fn.GetColorSpace());
+  profile = ICCProfile::FromParametricColorSpace(multi_tr_fn.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, multi_tr_fn);
 }
@@ -75,10 +75,10 @@ TEST(ICCProfile, ParametricVersusExactOvershoot) {
   // This ICC profile has a transfer function with T(1) that is greater than 1
   // in the approximation, but is still close enough to be considered accurate.
   ICCProfile overshoot = ICCProfileForTestingOvershoot();
-  EXPECT_TRUE(overshoot.IsColorSpaceAccurate());
+  EXPECT_TRUE(overshoot.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
-  profile = ICCProfile::FromColorSpace(overshoot.GetColorSpace());
+  profile = ICCProfile::FromParametricColorSpace(overshoot.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, overshoot);
 }
@@ -86,10 +86,10 @@ TEST(ICCProfile, ParametricVersusExactOvershoot) {
 TEST(ICCProfile, ParametricVersusExactAdobe) {
   // This ICC profile is precisely represented by the parametric color space.
   ICCProfile accurate = ICCProfileForTestingAdobeRGB();
-  EXPECT_TRUE(accurate.IsColorSpaceAccurate());
+  EXPECT_TRUE(accurate.GetColorSpace().IsParametricAccurate());
 
   ICCProfile profile;
-  profile = ICCProfile::FromColorSpace(accurate.GetColorSpace());
+  profile = ICCProfile::FromParametricColorSpace(accurate.GetColorSpace());
   EXPECT_TRUE(profile.IsValid());
   EXPECT_NE(profile, accurate);
 }

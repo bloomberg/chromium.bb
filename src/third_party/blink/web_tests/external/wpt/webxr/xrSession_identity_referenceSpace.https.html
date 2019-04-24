@@ -14,6 +14,9 @@
 
     let fakeDeviceInitParams = { supportsImmersive: true };
 
+    let immersiveSessionOptions = { mode: 'immersive-vr' };
+    let inlineSessionOptions = { mode: 'inline' };
+
     const identityMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
     // Valid matrices for  when we don't care about specific values
@@ -77,9 +80,9 @@
     };
 
     xr_session_promise_test(inlineTestName, testFunction,
-      fakeDeviceInitParams, 'inline');
+      fakeDeviceInitParams, inlineSessionOptions);
     xr_session_promise_test(immersiveTestName, testFunction,
-      fakeDeviceInitParams, 'immersive-vr');
+      fakeDeviceInitParams, immersiveSessionOptions);
 
   </script>
 </body>

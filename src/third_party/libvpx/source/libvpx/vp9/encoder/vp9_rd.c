@@ -309,15 +309,6 @@ static void set_block_thresholds(const VP9_COMMON *cm, RD_OPT *rd) {
   }
 }
 
-void vp9_build_inter_mode_cost(VP9_COMP *cpi) {
-  const VP9_COMMON *const cm = &cpi->common;
-  int i;
-  for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
-    vp9_cost_tokens((int *)cpi->inter_mode_cost[i], cm->fc->inter_mode_probs[i],
-                    vp9_inter_mode_tree);
-  }
-}
-
 void vp9_initialize_rd_consts(VP9_COMP *cpi) {
   VP9_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -366,7 +357,10 @@ void vp9_initialize_rd_consts(VP9_COMP *cpi) {
             x->nmvjointcost,
             cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost,
             &cm->fc->nmvc, cm->allow_high_precision_mv);
-        vp9_build_inter_mode_cost(cpi);
+
+        for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
+          vp9_cost_tokens((int *)cpi->inter_mode_cost[i],
+                          cm->fc->inter_mode_probs[i], vp9_inter_mode_tree);
       }
     }
   }

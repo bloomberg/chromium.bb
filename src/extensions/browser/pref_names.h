@@ -71,12 +71,12 @@ extern const char kInstallDenyList[];
 // accessed through extensions::ExternalPolicyProvider.
 extern const char kInstallForceList[];
 
-// A list containing apps or extensions that Chrome will silently install on the
-// login screen on Chrome OS at startup time. It is a list of strings, each
-// string contains an app ID and an update URL, delimited by a semicolon. This
-// preference is set by an admin policy, and meant to be only accessed through
-// extensions::ExternalPolicyProvider.
-extern const char kLoginScreenExtensions[];
+// A list containing apps that Chrome will silently install on the login screen
+// on Chrome OS at startup time. It is a list of strings, each string contains
+// an app ID and an update URL, delimited by a semicolon.
+// This preference is set by an admin policy, and meant to be only
+// accessed through extensions::ExternalPolicyProvider.
+extern const char kInstallLoginScreenAppList[];
 
 // String pref for what version chrome was last time the extension prefs were
 // loaded.
@@ -120,9 +120,6 @@ extern const char kPrefContentSettings[];
 
 // Extension-set incognito content settings.
 extern const char kPrefIncognitoContentSettings[];
-
-// A boolean that when set removes blacklisted extensions automatically.
-extern const char kUninstallBlacklistedExtensions[];
 
 }  // namespace pref_names
 }  // namespace extensions

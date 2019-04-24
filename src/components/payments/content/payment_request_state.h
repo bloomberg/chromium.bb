@@ -39,9 +39,6 @@ class ServiceWorkerPaymentInstrument;
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
 // what the merchant has specified, as input into the "is ready to pay"
 // computation.
-//
-// The initialization state is observed by PaymentRequestDialogView for showing
-// a "Loading..." spinner.
 class PaymentRequestState : public PaymentResponseHelper::Delegate,
                             public PaymentRequestSpec::Observer,
                             public InitializationTask {
@@ -226,9 +223,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // InitializationTask:
   bool IsInitialized() const override;
-
-  // Selects the default shipping address.
-  void SelectDefaultShippingAddressAndNotifyObservers();
 
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,

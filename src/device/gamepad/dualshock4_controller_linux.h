@@ -7,19 +7,16 @@
 
 #include "device/gamepad/dualshock4_controller_base.h"
 
-#include "base/files/scoped_file.h"
-
 namespace device {
 
 class Dualshock4ControllerLinux : public Dualshock4ControllerBase {
  public:
-  Dualshock4ControllerLinux(const base::ScopedFD& fd);
+  Dualshock4ControllerLinux(int fd);
   ~Dualshock4ControllerLinux() override;
 
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
-  // Not owned.
   int fd_;
 };
 

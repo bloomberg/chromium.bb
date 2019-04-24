@@ -15,8 +15,8 @@ CXFA_FFArc::~CXFA_FFArc() {}
 
 void CXFA_FFArc::RenderWidget(CXFA_Graphics* pGS,
                               const CFX_Matrix& matrix,
-                              HighlightOption highlight) {
-  if (!HasVisibleStatus())
+                              uint32_t dwStatus) {
+  if (!IsMatchVisibleStatus(dwStatus))
     return;
 
   CXFA_Value* value = m_pNode->GetFormValueIfExists();
@@ -29,5 +29,6 @@ void CXFA_FFArc::RenderWidget(CXFA_Graphics* pGS,
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
+
   DrawBorder(pGS, value->GetArcIfExists(), rtArc, mtRotate);
 }

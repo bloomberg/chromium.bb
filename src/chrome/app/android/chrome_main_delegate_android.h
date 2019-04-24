@@ -33,10 +33,8 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  private:
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
 
-#if defined(SAFE_BROWSING_DB_REMOTE)
   std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
       safe_browsing_api_handler_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateAndroid);
 };

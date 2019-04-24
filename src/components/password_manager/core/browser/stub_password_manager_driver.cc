@@ -42,8 +42,8 @@ void StubPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
 void StubPasswordManagerDriver::ClearPreviewedForm() {
 }
 
-PasswordGenerationFrameHelper*
-StubPasswordManagerDriver::GetPasswordGenerationHelper() {
+PasswordGenerationManager*
+StubPasswordManagerDriver::GetPasswordGenerationManager() {
   return nullptr;
 }
 

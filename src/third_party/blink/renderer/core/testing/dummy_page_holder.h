@@ -66,10 +66,11 @@ class DummyPageHolder {
   USING_FAST_MALLOC(DummyPageHolder);
 
  public:
-  DummyPageHolder(const IntSize& initial_view_size = IntSize(),
-                  Page::PageClients* = nullptr,
-                  LocalFrameClient* = nullptr,
-                  FrameSettingOverrideFunction setting_overrider = nullptr);
+  static std::unique_ptr<DummyPageHolder> Create(
+      const IntSize& initial_view_size = IntSize(),
+      Page::PageClients* = nullptr,
+      LocalFrameClient* = nullptr,
+      FrameSettingOverrideFunction = nullptr);
   ~DummyPageHolder();
 
   Page& GetPage() const;
@@ -78,6 +79,11 @@ class DummyPageHolder {
   Document& GetDocument() const;
 
  private:
+  DummyPageHolder(const IntSize& initial_view_size,
+                  Page::PageClients*,
+                  LocalFrameClient*,
+                  FrameSettingOverrideFunction setting_overrider);
+
   Persistent<Page> page_;
 
   // The LocalFrame is accessed from worker threads by unit tests

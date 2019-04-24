@@ -225,13 +225,18 @@ void TabHelper::DidFinishNavigation(
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (browser && browser->is_app()) {
-    const Extension* extension = registry->GetExtensionById(
-        web_app::GetAppIdFromApplicationName(browser->app_name()),
-        ExtensionRegistry::EVERYTHING);
-    if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid()) {
-      SetExtensionApp(extension);
+  if (util::IsNewBookmarkAppsEnabled()) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (browser && browser->is_app()) {
+      const Extension* extension = registry->GetExtensionById(
+          web_app::GetAppIdFromApplicationName(browser->app_name()),
+          ExtensionRegistry::EVERYTHING);
+      if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid())
+        SetExtensionApp(extension);
+    } else {
+      UpdateExtensionAppIcon(
+          enabled_extensions.GetExtensionOrAppByURL(
+              navigation_handle->GetURL()));
     }
   } else {
     UpdateExtensionAppIcon(

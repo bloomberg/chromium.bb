@@ -195,13 +195,12 @@ RtpFrameReferenceFinder::ManageFramePidOrSeqNum(RtpFrameObject* frame,
   // otherwise we use sequence number.
   if (picture_id != kNoPictureId) {
     frame->id.picture_id = unwrapper_.Unwrap(picture_id);
-    frame->num_references =
-        frame->frame_type() == VideoFrameType::kVideoFrameKey ? 0 : 1;
+    frame->num_references = frame->frame_type() == kVideoFrameKey ? 0 : 1;
     frame->references[0] = frame->id.picture_id - 1;
     return kHandOff;
   }
 
-  if (frame->frame_type() == VideoFrameType::kVideoFrameKey) {
+  if (frame->frame_type() == kVideoFrameKey) {
     last_seq_num_gop_.insert(std::make_pair(
         frame->last_seq_num(),
         std::make_pair(frame->last_seq_num(), frame->last_seq_num())));
@@ -235,7 +234,7 @@ RtpFrameReferenceFinder::ManageFramePidOrSeqNum(RtpFrameObject* frame,
   // this frame.
   uint16_t last_picture_id_gop = seq_num_it->second.first;
   uint16_t last_picture_id_with_padding_gop = seq_num_it->second.second;
-  if (frame->frame_type() == VideoFrameType::kVideoFrameDelta) {
+  if (frame->frame_type() == kVideoFrameDelta) {
     uint16_t prev_seq_num = frame->first_seq_num() - 1;
 
     if (prev_seq_num != last_picture_id_with_padding_gop)
@@ -247,8 +246,7 @@ RtpFrameReferenceFinder::ManageFramePidOrSeqNum(RtpFrameObject* frame,
   // Since keyframes can cause reordering we can't simply assign the
   // picture id according to some incrementing counter.
   frame->id.picture_id = frame->last_seq_num();
-  frame->num_references =
-      frame->frame_type() == VideoFrameType::kVideoFrameDelta;
+  frame->num_references = frame->frame_type() == kVideoFrameDelta;
   frame->references[0] = rtp_seq_num_unwrapper_.Unwrap(last_picture_id_gop);
   if (AheadOf<uint16_t>(frame->id.picture_id, last_picture_id_gop)) {
     seq_num_it->second.first = frame->id.picture_id;
@@ -308,7 +306,7 @@ RtpFrameReferenceFinder::FrameDecision RtpFrameReferenceFinder::ManageFrameVp8(
   not_yet_received_frames_.erase(not_yet_received_frames_.begin(),
                                  clean_frames_to);
 
-  if (frame->frame_type() == VideoFrameType::kVideoFrameKey) {
+  if (frame->frame_type() == kVideoFrameKey) {
     frame->num_references = 0;
     layer_info_[unwrapped_tl0].fill(-1);
     UpdateLayerInfoVp8(frame, unwrapped_tl0, codec_header.temporalIdx);
@@ -485,13 +483,13 @@ RtpFrameReferenceFinder::FrameDecision RtpFrameReferenceFinder::ManageFrameVp9(
 
     info = &gof_info_it->second;
 
-    if (frame->frame_type() == VideoFrameType::kVideoFrameKey) {
+    if (frame->frame_type() == kVideoFrameKey) {
       frame->num_references = 0;
       FrameReceivedVp9(frame->id.picture_id, info);
       UnwrapPictureIds(frame);
       return kHandOff;
     }
-  } else if (frame->frame_type() == VideoFrameType::kVideoFrameKey) {
+  } else if (frame->frame_type() == kVideoFrameKey) {
     if (frame->id.spatial_layer == 0) {
       RTC_LOG(LS_WARNING) << "Received keyframe without scalability structure";
       return kDrop;
@@ -502,7 +500,7 @@ RtpFrameReferenceFinder::FrameDecision RtpFrameReferenceFinder::ManageFrameVp9(
 
     info = &gof_info_it->second;
 
-    if (frame->frame_type() == VideoFrameType::kVideoFrameKey) {
+    if (frame->frame_type() == kVideoFrameKey) {
       frame->num_references = 0;
       FrameReceivedVp9(frame->id.picture_id, info);
       UnwrapPictureIds(frame);

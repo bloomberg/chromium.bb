@@ -41,6 +41,16 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CanvasGradient* Create(const FloatPoint& p0, const FloatPoint& p1) {
+    return MakeGarbageCollected<CanvasGradient>(p0, p1);
+  }
+  static CanvasGradient* Create(const FloatPoint& p0,
+                                float r0,
+                                const FloatPoint& p1,
+                                float r1) {
+    return MakeGarbageCollected<CanvasGradient>(p0, r0, p1, r1);
+  }
+
   CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
   CanvasGradient(const FloatPoint& p0,
                  float r0,
@@ -49,7 +59,7 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
 
   Gradient* GetGradient() const { return gradient_.get(); }
 
-  void addColorStop(double value, const String& color, ExceptionState&);
+  void addColorStop(float value, const String& color, ExceptionState&);
 
  private:
   scoped_refptr<Gradient> gradient_;

@@ -31,13 +31,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_fast_path.h"
 #include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -47,8 +46,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/scoped_cftyperef.h"
-
 typedef const struct __CFString* CFStringRef;
 #endif
 
@@ -59,6 +56,8 @@ typedef const struct __CFString* CFStringRef;
 namespace WTF {
 
 struct AlreadyHashed;
+template <typename>
+class RetainPtr;
 
 enum TextCaseSensitivity {
   kTextCaseSensitive,
@@ -431,7 +430,7 @@ class WTF_EXPORT StringImpl {
                  wtf_size_t length = UINT_MAX) const;
 
 #if defined(OS_MACOSX)
-  base::ScopedCFTypeRef<CFStringRef> CreateCFString();
+  RetainPtr<CFStringRef> CreateCFString();
 #endif
 #ifdef __OBJC__
   operator NSString*();

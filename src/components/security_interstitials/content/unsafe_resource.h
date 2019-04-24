@@ -58,8 +58,6 @@ struct UnsafeResource {
 
   GURL url;
   GURL original_url;
-  GURL navigation_url;
-  GURL referrer_url;
   std::vector<GURL> redirect_urls;
   bool is_subresource;
   bool is_subframe;

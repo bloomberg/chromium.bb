@@ -68,7 +68,7 @@ const char* kRunJsTestsJs =
 
 class DomDistillerJsTest : public content::ContentBrowserTest {
  public:
-  DomDistillerJsTest() {}
+  DomDistillerJsTest() : result_(nullptr) {}
 
   // content::ContentBrowserTest:
   void SetUpOnMainThread() override {
@@ -77,14 +77,14 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
     content::ContentBrowserTest::SetUpOnMainThread();
   }
 
-  void OnJsTestExecutionDone(base::Value value) {
-    result_ = std::move(value);
+  void OnJsTestExecutionDone(const base::Value* value) {
+    result_ = value->DeepCopy();
     js_test_execution_done_callback_.Run();
   }
 
  protected:
   base::Closure js_test_execution_done_callback_;
-  base::Value result_;
+  const base::Value* result_;
 
  private:
   void AddComponentsResources() {
@@ -111,10 +111,10 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
   }
 };
 
-// Disabled on MSan as well as Android and Linux CFI bots.
+// Disabled on MSan and Android CFI bots.
 // https://crbug.com/845180
 #if defined(MEMORY_SANITIZER) || defined(OS_WIN) ||              \
-    ((defined(OS_ANDROID) || defined(OS_LINUX)) &&               \
+    (defined(OS_ANDROID) &&                                      \
      (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
       BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                   \
       BUILDFLAG(CFI_ENFORCEMENT_TRAP)))
@@ -156,33 +156,45 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, MAYBE_RunJsTests) {
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_max_timeout());
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(kRunJsTestsJs),
-      base::BindOnce(&DomDistillerJsTest::OnJsTestExecutionDone,
-                     base::Unretained(this)));
+      base::Bind(&DomDistillerJsTest::OnJsTestExecutionDone,
+                 base::Unretained(this)));
   run_loop.Run();
 
+  // By now either the timeout has triggered, or there should be a result.
+  ASSERT_TRUE(result_ != nullptr) << "No result found. Timeout?";
+
   // Convert to dictionary and parse the results.
-  ASSERT_TRUE(result_.is_dict());
+  const base::DictionaryValue* dict;
+  result_->GetAsDictionary(&dict);
+  ASSERT_TRUE(result_->GetAsDictionary(&dict));
 
-  base::Optional<bool> success = result_.FindBoolKey("success");
-  ASSERT_TRUE(success.has_value());
-  base::Optional<int> num_tests = result_.FindIntKey("numTests");
-  ASSERT_TRUE(num_tests.has_value());
-  base::Optional<int> failed = result_.FindIntKey("failed");
-  ASSERT_TRUE(failed.has_value());
-  base::Optional<int> skipped = result_.FindIntKey("skipped");
-  ASSERT_TRUE(skipped.has_value());
+  ASSERT_TRUE(dict->HasKey("success"));
+  bool success;
+  ASSERT_TRUE(dict->GetBoolean("success", &success));
 
-  VLOG(0) << "Ran " << num_tests.value()
-          << " tests. failed = " << failed.value()
-          << " skipped = " << skipped.value();
+  ASSERT_TRUE(dict->HasKey("numTests"));
+  int num_tests;
+  ASSERT_TRUE(dict->GetInteger("numTests", &num_tests));
+
+  ASSERT_TRUE(dict->HasKey("failed"));
+  int failed;
+  ASSERT_TRUE(dict->GetInteger("failed", &failed));
+
+  ASSERT_TRUE(dict->HasKey("skipped"));
+  int skipped;
+  ASSERT_TRUE(dict->GetInteger("skipped", &skipped));
+
+  VLOG(0) << "Ran " << num_tests << " tests. failed = " << failed
+          << " skipped = " << skipped;
   // Ensure that running the tests succeeded.
-  EXPECT_TRUE(success.value());
+  EXPECT_TRUE(success);
 
   // Only print the log if there was an error.
-  if (!success.value()) {
-    const std::string* console_log = result_.FindStringKey("log");
-    ASSERT_TRUE(console_log);
-    VLOG(0) << "Console log:\n" << *console_log;
+  if (!success) {
+    ASSERT_TRUE(dict->HasKey("log"));
+    std::string console_log;
+    ASSERT_TRUE(dict->GetString("log", &console_log));
+    VLOG(0) << "Console log:\n" << console_log;
     VLOG(0) << "\n\n"
         "More info at third_party/dom_distiller_js/README.chromium.\n"
         "To disable tests, modify the filter parameter in |kTestFilePath|,\n"

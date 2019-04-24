@@ -69,19 +69,15 @@ MaybeHandle<Object> DefineAccessorProperty(
          !FunctionTemplateInfo::cast(*getter)->do_not_cache());
   DCHECK(!setter->IsFunctionTemplateInfo() ||
          !FunctionTemplateInfo::cast(*setter)->do_not_cache());
-  if (getter->IsFunctionTemplateInfo()) {
-    if (force_instantiate ||
-        FunctionTemplateInfo::cast(*getter)->BreakAtEntry()) {
+  if (force_instantiate) {
+    if (getter->IsFunctionTemplateInfo()) {
       ASSIGN_RETURN_ON_EXCEPTION(
           isolate, getter,
           InstantiateFunction(isolate,
                               Handle<FunctionTemplateInfo>::cast(getter)),
           Object);
     }
-  }
-  if (setter->IsFunctionTemplateInfo()) {
-    if (force_instantiate ||
-        FunctionTemplateInfo::cast(*setter)->BreakAtEntry()) {
+    if (setter->IsFunctionTemplateInfo()) {
       ASSIGN_RETURN_ON_EXCEPTION(
           isolate, setter,
           InstantiateFunction(isolate,
@@ -89,10 +85,9 @@ MaybeHandle<Object> DefineAccessorProperty(
           Object);
     }
   }
-  RETURN_ON_EXCEPTION(
-      isolate,
-      JSObject::DefineAccessor(object, name, getter, setter, attributes),
-      Object);
+  RETURN_ON_EXCEPTION(isolate, JSObject::DefineAccessor(object, name, getter,
+                                                        setter, attributes),
+                      Object);
   return object;
 }
 
@@ -497,9 +492,8 @@ MaybeHandle<JSFunction> InstantiateFunction(Isolate* isolate,
       ASSIGN_RETURN_ON_EXCEPTION(isolate, parent_prototype,
                                  GetInstancePrototype(isolate, parent),
                                  JSFunction);
-      CHECK(parent_prototype->IsHeapObject());
       JSObject::ForceSetPrototype(Handle<JSObject>::cast(prototype),
-                                  Handle<HeapObject>::cast(parent_prototype));
+                                  parent_prototype);
     }
   }
   InstanceType function_type =

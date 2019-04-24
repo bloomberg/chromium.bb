@@ -64,7 +64,7 @@ egl::Error PbufferSurfaceGLX::initialize(const egl::Display *display)
     return egl::NoError();
 }
 
-egl::Error PbufferSurfaceGLX::makeCurrent(const gl::Context *context)
+egl::Error PbufferSurfaceGLX::makeCurrent()
 {
     return egl::NoError();
 }

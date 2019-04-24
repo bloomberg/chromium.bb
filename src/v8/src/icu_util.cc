@@ -5,7 +5,7 @@
 #include "src/icu_util.h"
 
 #if defined(_WIN32)
-#include "src/base/win32-headers.h"
+#include <windows.h>
 #endif
 
 #if defined(V8_INTL_SUPPORT)
@@ -19,8 +19,11 @@
 #include "src/base/file-utils.h"
 
 #define ICU_UTIL_DATA_FILE   0
-#define ICU_UTIL_DATA_STATIC 1
+#define ICU_UTIL_DATA_SHARED 1
+#define ICU_UTIL_DATA_STATIC 2
 
+#define ICU_UTIL_DATA_SYMBOL "icudt" U_ICU_VERSION_SHORT "_dat"
+#define ICU_UTIL_DATA_SHARED_MODULE_NAME "icudt.dll"
 #endif
 
 namespace v8 {
@@ -68,8 +71,21 @@ bool InitializeICU(const char* icu_data_file) {
 #if !defined(V8_INTL_SUPPORT)
   return true;
 #else
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC
-  // Use bundled ICU data.
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED
+  // We expect to find the ICU data module alongside the current module.
+  HMODULE module = LoadLibraryA(ICU_UTIL_DATA_SHARED_MODULE_NAME);
+  if (!module) return false;
+
+  FARPROC addr = GetProcAddress(module, ICU_UTIL_DATA_SYMBOL);
+  if (!addr) return false;
+
+  UErrorCode err = U_ZERO_ERROR;
+  udata_setCommonData(reinterpret_cast<void*>(addr), &err);
+  // Never try to load ICU data from files.
+  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
+  return err == U_ZERO_ERROR;
+#elif ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC
+  // Mac/Linux bundle the ICU data in.
   return true;
 #elif ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   if (!icu_data_file) return false;
@@ -102,9 +118,6 @@ bool InitializeICU(const char* icu_data_file) {
 #endif
 #endif
 }
-
-#undef ICU_UTIL_DATA_FILE
-#undef ICU_UTIL_DATA_STATIC
 
 }  // namespace internal
 }  // namespace v8

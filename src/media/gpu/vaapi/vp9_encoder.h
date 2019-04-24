@@ -73,8 +73,7 @@ class VP9Encoder : public AcceleratedVideoEncoder {
   ~VP9Encoder() override;
 
   // AcceleratedVideoEncoder implementation.
-  bool Initialize(const VideoEncodeAccelerator::Config& config,
-                  const AcceleratedVideoEncoder::Config& ave_config) override;
+  bool Initialize(const VideoEncodeAccelerator::Config& config) override;
   bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;

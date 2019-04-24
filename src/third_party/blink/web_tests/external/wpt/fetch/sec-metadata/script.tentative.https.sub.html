@@ -12,7 +12,7 @@
     assert_header_equals(header, {
       "dest": "script",
       "site": "same-origin",
-      "user": "",
+      "user": "?F",
       "mode": "no-cors",
     });
   }, "Same-origin script");
@@ -27,7 +27,7 @@
     assert_header_equals(header, {
       "dest": "script",
       "site": "same-site",
-      "user": "",
+      "user": "?F",
       "mode": "no-cors",
     });
   }, "Same-site script");
@@ -42,7 +42,7 @@
     assert_header_equals(header, {
       "dest": "script",
       "site": "cross-site",
-      "user": "",
+      "user": "?F",
       "mode": "no-cors",
     });
   }, "Cross-site script");
@@ -57,7 +57,7 @@
     assert_header_equals(header, {
       "dest": "script",
       "site": "same-origin",
-      "user": "",
+      "user": "?F",
       "mode": "cors",
     });
   }, "Same-origin CORS script");

@@ -157,18 +157,8 @@
       },
     },
   },
-  'chrome-swarming-pool': {
-    'swarming': {
-      'dimensions': {
-        'pool': 'chrome.tests',
-      },
-    },
-  },
   'code-coverage': {
     'isolate_coverage_data': True,
-  },
-  'experimental': {
-    'experiment_percentage': 100,
   },
   'flounder': {
     # Nexus 9
@@ -259,8 +249,7 @@
   'linux_intel_hd_630': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-hd-630-ubuntu-stable',
+        'gpu': '8086:5912-17.1.4',
         'os': 'Ubuntu',
         'pool': 'Chrome-GPU',
       }
@@ -270,7 +259,7 @@
     # Similar to stable, but with a newer Mesa version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-18.3.3',
+        'gpu': '8086:5912-18.0.5',
         'os': 'Ubuntu',
         'pool': 'Chrome-GPU',
       },
@@ -279,8 +268,7 @@
   'linux_nvidia_quadro_p400': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'nvidia-quadro-p400-ubuntu-stable',
+        'gpu': '10de:1cb3-384.90',
         'os': 'Ubuntu',
         'pool': 'Chrome-GPU',
       }
@@ -324,30 +312,14 @@
   'mac_10.13': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.13.6',
+        'os': 'Mac-10.13',
       },
     },
   },
   'mac_10.14': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.14.4',
-      },
-      'optional_dimensions': {
-        # Wait 10 minutes for 10.14.4, then fall back to 10.14.3.
-        # The format for optional dimensions is: expiration: [{key, value}, ..].
-        600: [
-          {
-            'os': 'Mac-10.14.3',
-          },
-        ],
-      },
-    },
-  },
-  'mac_10.14_beta': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Mac-10.14.5',
+        'os': 'Mac-10.14',
       },
     },
   },
@@ -380,7 +352,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '1002:679e',
-        'os': 'Mac-10.12.6',
+        'os': 'Mac-10.12',
         'pool': 'Chrome-GPU',
       },
     },
@@ -485,6 +457,13 @@
       },
     }
   },
+  'oreo': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'O',
+      },
+    },
+  },
   'pie': {
     'swarming': {
       'dimensions': {
@@ -517,15 +496,6 @@
       },
     },
   },
-  'win10_amd_rx_550': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:699f',
-        'os': 'Windows-10',
-        'pool': 'Chrome-GPU',
-      },
-    },
-  },
   'win10_intel_hd_630_experimental': {
     # Currently same as stable version.
     'swarming': {
@@ -539,8 +509,7 @@
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'intel-hd-630-win10-stable',
+        'gpu': '8086:5912-24.20.100.6286',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },
@@ -558,8 +527,7 @@
   'win10_nvidia_quadro_p400_stable': {
     'swarming': {
       'dimensions': {
-        # Defined in bot_config.py in internal infradata/config workspace
-        'gpu': 'nvidia-quadro-p400-win10-stable',
+        'gpu': '10de:1cb3-24.21.14.1195',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },

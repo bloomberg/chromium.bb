@@ -58,8 +58,6 @@ These exceptions are:
 instead of by another class using that object.
 """
 
-from __future__ import print_function
-
 import argparse
 import sys
 import string

@@ -45,7 +45,10 @@ void ShowAuthenticatorRequestDialog(
   if (!manager)
     return;
 
-  new AuthenticatorRequestDialogView(web_contents, std::move(model));
+  // Keep this logic in sync with AuthenticatorRequestDialogViewTestApi::Show.
+  auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
+      web_contents, std::move(model));
+  constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents);
 }
 
 AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
@@ -54,13 +57,11 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
       sheet_(nullptr) {
-  DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
 
   // Currently, all sheets have a label on top and controls at the bottom.
   // Consider moving this to AuthenticatorRequestSheetView if this changes.
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
   OnStepTransition();
 }
 
@@ -228,37 +229,12 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
 }
 
 void AuthenticatorRequestDialogView::OnStepTransition() {
-  if (model_->should_dialog_be_closed()) {
-    if (!first_shown_) {
-      // No widget has ever been created for this dialog, thus there will be no
-      // DeleteDelegate() call to delete this view.
-      DCHECK(!GetWidget());
-      delete this;
-      return;
-    }
-    if (GetWidget()) {
-      GetWidget()->Close();  // DeleteDelegate() will delete |this|.
-    }
-    return;
-  }
-  if (model_->should_dialog_be_hidden()) {
-    if (GetWidget()) {
-      GetWidget()->Hide();
-    }
-    return;
-  }
-
   ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
-  Show();
-}
 
-void AuthenticatorRequestDialogView::Show() {
-  if (!first_shown_) {
-    constrained_window::ShowWebModalDialogViews(this, web_contents());
-    DCHECK(GetWidget());
-    first_shown_ = true;
-  } else {
-    GetWidget()->Show();
+  if (model_->should_dialog_be_closed()) {
+    if (!GetWidget())
+      return;
+    GetWidget()->Close();
   }
 }
 
@@ -281,8 +257,7 @@ void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
   gfx::Rect anchor_bounds = other_transports_button_->GetBoundsInScreen();
   other_transports_menu_runner_->RunMenuAt(
       other_transports_button_->GetWidget(), nullptr /* menu_button */,
-      anchor_bounds, views::MenuAnchorPosition::kTopLeft,
-      ui::MENU_SOURCE_MOUSE);
+      anchor_bounds, views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_MOUSE);
 }
 
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
@@ -292,7 +267,7 @@ void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
   other_transports_menu_runner_.reset();
 
   delete sheet_;
-  DCHECK(children().empty());
+  DCHECK(!has_children());
 
   sheet_ = new_sheet.get();
   AddChildView(new_sheet.release());

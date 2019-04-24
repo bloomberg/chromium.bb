@@ -108,8 +108,8 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
 }
 
 void AppListTestViewDelegate::GetNavigableContentsFactory(
-    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  fake_navigable_contents_factory_.BindReceiver(std::move(receiver));
+    content::mojom::NavigableContentsFactoryRequest request) {
+  fake_navigable_contents_factory_.BindRequest(std::move(request));
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
@@ -136,9 +136,6 @@ void AppListTestViewDelegate::OnSearchResultVisibilityChanged(
 bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
   return false;
 }
-
-void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
-    ash::mojom::AppListViewState state) {}
 
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
   return true;

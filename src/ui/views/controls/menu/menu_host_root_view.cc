@@ -85,7 +85,7 @@ void MenuHostRootView::OnEventProcessingFinished(ui::Event* event) {
 }
 
 MenuController* MenuHostRootView::GetMenuController() {
-  return submenu_ ? submenu_->GetMenuItem()->GetMenuController() : nullptr;
+  return submenu_ ? submenu_->GetMenuItem()->GetMenuController() : NULL;
 }
 
 MenuController* MenuHostRootView::GetMenuControllerForInputEvents() {

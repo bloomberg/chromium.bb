@@ -70,11 +70,14 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
 }
 
 TEST(MixedContentCheckerTest, ContextTypeForInspector) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1));
   dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
       SecurityOrigin::CreateFromString("http://example.test"));
 
   ResourceRequest not_mixed_content("https://example.test/foo.jpg");
+  not_mixed_content.SetFrameType(
+      network::mojom::RequestContextFrameType::kAuxiliary);
   not_mixed_content.SetRequestContext(mojom::RequestContextType::SCRIPT);
   EXPECT_EQ(WebMixedContentContextType::kNotMixedContent,
             MixedContentChecker::ContextTypeForInspector(
@@ -87,6 +90,8 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
                 &dummy_page_holder->GetFrame(), not_mixed_content));
 
   ResourceRequest blockable_mixed_content("http://example.test/foo.jpg");
+  blockable_mixed_content.SetFrameType(
+      network::mojom::RequestContextFrameType::kAuxiliary);
   blockable_mixed_content.SetRequestContext(mojom::RequestContextType::SCRIPT);
   EXPECT_EQ(WebMixedContentContextType::kBlockable,
             MixedContentChecker::ContextTypeForInspector(
@@ -94,6 +99,8 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
 
   ResourceRequest optionally_blockable_mixed_content(
       "http://example.test/foo.jpg");
+  blockable_mixed_content.SetFrameType(
+      network::mojom::RequestContextFrameType::kAuxiliary);
   blockable_mixed_content.SetRequestContext(mojom::RequestContextType::IMAGE);
   EXPECT_EQ(WebMixedContentContextType::kOptionallyBlockable,
             MixedContentChecker::ContextTypeForInspector(
@@ -115,8 +122,8 @@ class MixedContentCheckerMockLocalFrameClient : public EmptyLocalFrameClient {
 TEST(MixedContentCheckerTest, HandleCertificateError) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  auto dummy_page_holder =
-      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
   KURL main_resource_url(NullURL(), "https://example.test");
   KURL displayed_url(NullURL(), "https://example-displayed.test");
@@ -145,8 +152,8 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
 TEST(MixedContentCheckerTest, DetectMixedForm) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  auto dummy_page_holder =
-      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
   KURL main_resource_url(NullURL(), "https://example.test/");
 
@@ -178,8 +185,8 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
 TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  auto dummy_page_holder =
-      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
   dummy_page_holder->GetFrame().GetSettings()->SetAllowRunningOfInsecureContent(
       false);
 
@@ -193,12 +200,14 @@ TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   // Test that a mixed content favicon is correctly blocked.
   EXPECT_TRUE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
+      network::mojom::RequestContextFrameType::kNone,
       ResourceRequest::RedirectStatus::kNoRedirect, http_favicon_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
 
   // Test that a secure favicon is not blocked.
   EXPECT_FALSE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
+      network::mojom::RequestContextFrameType::kNone,
       ResourceRequest::RedirectStatus::kNoRedirect, https_favicon_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
 }

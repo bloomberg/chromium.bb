@@ -42,6 +42,8 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
   void RequestBufferStatus(
       Agent::RequestBufferStatusCallback callback) override;
+  void WaitForTracingEnabled(
+      Agent::WaitForTracingEnabledCallback callback) override;
 
   mojo::Binding<tracing::mojom::Agent> binding_;
 

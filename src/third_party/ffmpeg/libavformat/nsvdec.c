@@ -697,7 +697,7 @@ static int nsv_read_close(AVFormatContext *s)
     return 0;
 }
 
-static int nsv_probe(const AVProbeData *p)
+static int nsv_probe(AVProbeData *p)
 {
     int i, score = 0;
 

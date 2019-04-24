@@ -44,7 +44,6 @@ namespace blink {
 
 class DirectoryEntry;
 class FileEntry;
-class FileSystemBaseHandle;
 
 class MODULES_EXPORT DOMFileSystem final
     : public DOMFileSystemBase,
@@ -54,6 +53,11 @@ class MODULES_EXPORT DOMFileSystem final
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
  public:
+  static DOMFileSystem* Create(ExecutionContext*,
+                               const String& name,
+                               mojom::blink::FileSystemType,
+                               const KURL& root_url);
+
   // Creates a new isolated file system for the given filesystemId.
   static DOMFileSystem* CreateIsolatedFileSystem(ExecutionContext*,
                                                  const String& filesystem_id);
@@ -65,26 +69,24 @@ class MODULES_EXPORT DOMFileSystem final
 
   DirectoryEntry* root() const;
 
-  FileSystemBaseHandle* asFileSystemHandle() const;
-
   // DOMFileSystemBase overrides.
   void AddPendingCallbacks() override;
   void RemovePendingCallbacks() override;
-  void ReportError(ErrorCallback, base::File::Error error) override;
+  void ReportError(ErrorCallbackBase*, base::File::Error error) override;
 
   static void ReportError(ExecutionContext*,
-                          ErrorCallback,
+                          ErrorCallbackBase*,
                           base::File::Error error);
 
   // ScriptWrappable overrides.
   bool HasPendingActivity() const final;
 
   void CreateWriter(const FileEntry*,
-                    FileWriterCallbacks::SuccessCallback,
-                    FileWriterCallbacks::ErrorCallback);
+                    FileWriterCallbacks::OnDidCreateFileWriterCallback*,
+                    ErrorCallbackBase*);
   void CreateFile(const FileEntry*,
-                  SnapshotFileCallback::SuccessCallback,
-                  SnapshotFileCallback::ErrorCallback);
+                  SnapshotFileCallback::OnDidCreateSnapshotFileCallback*,
+                  ErrorCallbackBase*);
 
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).

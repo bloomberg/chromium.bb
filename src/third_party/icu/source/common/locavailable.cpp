@@ -125,6 +125,8 @@ static UBool U_CALLCONV uloc_cleanup(void) {
 //   via the initOnce mechanism.
 
 static void U_CALLCONV loadInstalledLocales() {
+    UResourceBundle *indexLocale = NULL;
+    UResourceBundle installed;
     UErrorCode status = U_ZERO_ERROR;
     int32_t i = 0;
     int32_t localeCount;
@@ -133,25 +135,25 @@ static void U_CALLCONV loadInstalledLocales() {
     U_ASSERT(_installedLocalesCount == 0);
 
     _installedLocalesCount = 0;
-
-    icu::LocalUResourceBundlePointer indexLocale(ures_openDirect(NULL, _kIndexLocaleName, &status));
-    icu::StackUResourceBundle installed;
-
-    ures_getByKey(indexLocale.getAlias(), _kIndexTag, installed.getAlias(), &status);
-
+    ures_initStackObject(&installed);
+    indexLocale = ures_openDirect(NULL, _kIndexLocaleName, &status);
+    ures_getByKey(indexLocale, _kIndexTag, &installed, &status);
+    
     if(U_SUCCESS(status)) {
-        localeCount = ures_getSize(installed.getAlias());
+        localeCount = ures_getSize(&installed);
         _installedLocales = (char **) uprv_malloc(sizeof(char*) * (localeCount+1));
         if (_installedLocales != NULL) {
-            ures_resetIterator(installed.getAlias());
-            while(ures_hasNext(installed.getAlias())) {
-                ures_getNextString(installed.getAlias(), NULL, (const char **)&_installedLocales[i++], &status);
+            ures_resetIterator(&installed);
+            while(ures_hasNext(&installed)) {
+                ures_getNextString(&installed, NULL, (const char **)&_installedLocales[i++], &status);
             }
             _installedLocales[i] = NULL;
             _installedLocalesCount = localeCount;
             ucln_common_registerCleanup(UCLN_COMMON_ULOC, uloc_cleanup);
         }
     }
+    ures_close(&installed);
+    ures_close(indexLocale);
 }
 
 static void _load_installedLocales()

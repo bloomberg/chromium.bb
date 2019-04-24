@@ -20,7 +20,7 @@
 namespace spvtools {
 namespace reduce {
 
-using opt::IRContext;
+using namespace opt;
 
 std::vector<std::unique_ptr<ReductionOpportunity>>
 OperandToUndefReductionOpportunityFinder::GetAvailableOpportunities(

@@ -100,7 +100,6 @@ UI.TextEditor.prototype = {
 
 /** @enum {symbol} */
 UI.TextEditor.Events = {
-  CursorChanged: Symbol('CursorChanged'),
   TextChanged: Symbol('TextChanged'),
   SuggestionChanged: Symbol('SuggestionChanged')
 };

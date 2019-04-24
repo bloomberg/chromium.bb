@@ -22,6 +22,8 @@ namespace blink {
 
 template <typename T>
 class Persistent;
+template <typename T>
+class TraceWrapperMember;
 
 enum class TracenessMemberConfiguration {
   kTraced,
@@ -211,8 +213,10 @@ class MemberBase {
   static constexpr intptr_t kHashTableDeletedRawValue = -1;
 
   ALWAYS_INLINE void WriteBarrier() const {
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     MarkingVisitor::WriteBarrier(
         const_cast<typename std::remove_const<T>::type*>(this->raw_));
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   void CheckPointer() {
@@ -549,6 +553,12 @@ struct DefaultHash<blink::SameThreadCheckedMember<T>> {
 };
 
 template <typename T>
+struct DefaultHash<blink::TraceWrapperMember<T>> {
+  STATIC_ONLY(DefaultHash);
+  using Hash = MemberHash<T>;
+};
+
+template <typename T>
 struct IsTraceable<blink::Member<T>> {
   STATIC_ONLY(IsTraceable);
   static const bool value = true;
@@ -568,6 +578,12 @@ struct IsTraceable<blink::WeakMember<T>> {
 
 template <typename T>
 struct IsTraceable<blink::SameThreadCheckedMember<T>> {
+  STATIC_ONLY(IsTraceable);
+  static const bool value = true;
+};
+
+template <typename T>
+struct IsTraceable<blink::TraceWrapperMember<T>> {
   STATIC_ONLY(IsTraceable);
   static const bool value = true;
 };

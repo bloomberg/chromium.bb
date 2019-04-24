@@ -352,6 +352,13 @@ class YUVReadbackTest : public testing::Test {
     gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xsize, ysize, 0, GL_RGBA,
                     GL_UNSIGNED_BYTE, input_pixels.getPixels());
 
+    gpu::Mailbox mailbox;
+    gl_->ProduceTextureDirectCHROMIUM(src_texture, mailbox.name);
+    EXPECT_FALSE(mailbox.IsZero());
+
+    gpu::SyncToken sync_token;
+    gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
+
     std::string message = base::StringPrintf(
         "input size: %dx%d "
         "output size: %dx%d "
@@ -385,7 +392,8 @@ class YUVReadbackTest : public testing::Test {
       std::move(quit_closure).Run();
     };
     yuv_reader->ReadbackYUV(
-        src_texture, gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
+        mailbox, sync_token, gfx::Size(xsize, ysize),
+        gfx::Rect(0, 0, xsize, ysize),
         output_frame->stride(media::VideoFrame::kYPlane),
         output_frame->data(media::VideoFrame::kYPlane),
         output_frame->stride(media::VideoFrame::kUPlane),

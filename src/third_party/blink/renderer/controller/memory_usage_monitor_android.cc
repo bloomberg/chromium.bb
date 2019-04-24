@@ -23,19 +23,12 @@ bool ReadFileContents(int fd, base::span<char> contents) {
   return true;
 }
 
-static MemoryUsageMonitor* g_instance_for_testing = nullptr;
-
 }  // namespace
 
 // static
 MemoryUsageMonitor& MemoryUsageMonitor::Instance() {
   DEFINE_STATIC_LOCAL(MemoryUsageMonitorAndroid, monitor, ());
-  return g_instance_for_testing ? *g_instance_for_testing : monitor;
-}
-
-// static
-void MemoryUsageMonitor::SetInstanceForTesting(MemoryUsageMonitor* instance) {
-  g_instance_for_testing = instance;
+  return monitor;
 }
 
 // Since the measurement is done every second in background, optimizations are

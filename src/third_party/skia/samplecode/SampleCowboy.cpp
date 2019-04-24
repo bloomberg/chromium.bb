@@ -105,7 +105,7 @@ protected:
         return this->INHERITED::onQuery(evt);
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(const SkAnimTimer& timer) override {
         if (!fDom) {
             return false;
         }

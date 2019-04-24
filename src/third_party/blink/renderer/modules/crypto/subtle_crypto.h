@@ -50,6 +50,8 @@ class SubtleCrypto final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static SubtleCrypto* Create() { return MakeGarbageCollected<SubtleCrypto>(); }
+
   SubtleCrypto();
 
   ScriptPromise encrypt(ScriptState*,

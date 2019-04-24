@@ -13,10 +13,9 @@ namespace wasm {
 
 // All the tiers of WASM execution.
 enum class ExecutionTier : int8_t {
-  kNone,
-  kInterpreter,
-  kLiftoff,
-  kTurbofan,
+  kInterpreter,  // interpreter (used to provide debugging services).
+  kBaseline,     // Liftoff.
+  kOptimized     // TurboFan.
 };
 
 }  // namespace wasm

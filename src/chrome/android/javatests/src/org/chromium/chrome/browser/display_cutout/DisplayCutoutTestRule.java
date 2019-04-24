@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -24,7 +25,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -174,9 +174,8 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     protected void setUp() throws Exception {
         mTab = getActivity().getActivityTab();
         mTestController = new TestDisplayCutoutController(mTab);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> DisplayCutoutController.initForTesting(
-                                mTab.getUserDataHost(), mTestController));
+        ThreadUtils.runOnUiThreadBlocking(() -> DisplayCutoutController.initForTesting(
+                mTab.getUserDataHost(), mTestController));
 
         FullscreenTabObserver observer = new FullscreenTabObserver();
         mTab.addObserver(observer);
@@ -258,7 +257,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
 
     /** Set the viewport-fit value using internal APIs. */
     public void setViewportFitInternal(@WebContentsObserver.ViewportFitType int value) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mTestController.setViewportFit(value));
+        ThreadUtils.runOnUiThreadBlocking(() -> mTestController.setViewportFit(value));
     }
 
     /** Get the safe area using JS and parse the JSON result to a Rect. */

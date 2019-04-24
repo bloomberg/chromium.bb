@@ -61,7 +61,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager
       wm::NativeCursorManagerDelegate* delegate) override;
 
   // The set of hosts to notify of changes in cursor state.
-  using Hosts = std::set<aura::WindowTreeHost*>;
+  typedef std::set<aura::WindowTreeHost*> Hosts;
   Hosts hosts_;
 
   std::unique_ptr<ui::CursorLoader> cursor_loader_;

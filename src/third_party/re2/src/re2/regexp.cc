@@ -510,16 +510,16 @@ static const char *kErrorStrings[] = {
   "invalid named capture group",
 };
 
-std::string RegexpStatus::CodeText(enum RegexpStatusCode code) {
+string RegexpStatus::CodeText(enum RegexpStatusCode code) {
   if (code < 0 || code >= arraysize(kErrorStrings))
     code = kRegexpInternalError;
   return kErrorStrings[code];
 }
 
-std::string RegexpStatus::Text() const {
+string RegexpStatus::Text() const {
   if (error_arg_.empty())
     return CodeText(code_);
-  std::string s;
+  string s;
   s.append(CodeText(code_));
   s.append(": ");
   s.append(error_arg_.data(), error_arg_.size());
@@ -569,8 +569,8 @@ class NamedCapturesWalker : public Regexp::Walker<Ignored> {
   NamedCapturesWalker() : map_(NULL) {}
   ~NamedCapturesWalker() { delete map_; }
 
-  std::map<std::string, int>* TakeMap() {
-    std::map<std::string, int>* m = map_;
+  std::map<string, int>* TakeMap() {
+    std::map<string, int>* m = map_;
     map_ = NULL;
     return m;
   }
@@ -579,7 +579,7 @@ class NamedCapturesWalker : public Regexp::Walker<Ignored> {
     if (re->op() == kRegexpCapture && re->name() != NULL) {
       // Allocate map once we find a name.
       if (map_ == NULL)
-        map_ = new std::map<std::string, int>;
+        map_ = new std::map<string, int>;
 
       // Record first occurrence of each name.
       // (The rule is that if you have the same name
@@ -597,13 +597,13 @@ class NamedCapturesWalker : public Regexp::Walker<Ignored> {
   }
 
  private:
-  std::map<std::string, int>* map_;
+  std::map<string, int>* map_;
 
   NamedCapturesWalker(const NamedCapturesWalker&) = delete;
   NamedCapturesWalker& operator=(const NamedCapturesWalker&) = delete;
 };
 
-std::map<std::string, int>* Regexp::NamedCaptures() {
+std::map<string, int>* Regexp::NamedCaptures() {
   NamedCapturesWalker w;
   w.Walk(this, 0);
   return w.TakeMap();
@@ -615,8 +615,8 @@ class CaptureNamesWalker : public Regexp::Walker<Ignored> {
   CaptureNamesWalker() : map_(NULL) {}
   ~CaptureNamesWalker() { delete map_; }
 
-  std::map<int, std::string>* TakeMap() {
-    std::map<int, std::string>* m = map_;
+  std::map<int, string>* TakeMap() {
+    std::map<int, string>* m = map_;
     map_ = NULL;
     return m;
   }
@@ -625,7 +625,7 @@ class CaptureNamesWalker : public Regexp::Walker<Ignored> {
     if (re->op() == kRegexpCapture && re->name() != NULL) {
       // Allocate map once we find a name.
       if (map_ == NULL)
-        map_ = new std::map<int, std::string>;
+        map_ = new std::map<int, string>;
 
       (*map_)[re->cap()] = *re->name();
     }
@@ -639,13 +639,13 @@ class CaptureNamesWalker : public Regexp::Walker<Ignored> {
   }
 
  private:
-  std::map<int, std::string>* map_;
+  std::map<int, string>* map_;
 
   CaptureNamesWalker(const CaptureNamesWalker&) = delete;
   CaptureNamesWalker& operator=(const CaptureNamesWalker&) = delete;
 };
 
-std::map<int, std::string>* Regexp::CaptureNames() {
+std::map<int, string>* Regexp::CaptureNames() {
   CaptureNamesWalker w;
   w.Walk(this, 0);
   return w.TakeMap();
@@ -655,8 +655,7 @@ std::map<int, std::string>* Regexp::CaptureNames() {
 // with a fixed string prefix.  If so, returns the prefix and
 // the regexp that remains after the prefix.  The prefix might
 // be ASCII case-insensitive.
-bool Regexp::RequiredPrefix(std::string* prefix, bool* foldcase,
-                            Regexp** suffix) {
+bool Regexp::RequiredPrefix(string* prefix, bool* foldcase, Regexp** suffix) {
   // No need for a walker: the regexp must be of the form
   // 1. some number of ^ anchors
   // 2. a literal char or string

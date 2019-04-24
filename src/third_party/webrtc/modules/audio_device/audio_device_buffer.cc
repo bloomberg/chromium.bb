@@ -39,10 +39,8 @@ static const size_t kMinValidCallTimeTimeInMilliseconds =
 static const double k2Pi = 6.28318530717959;
 #endif
 
-AudioDeviceBuffer::AudioDeviceBuffer(TaskQueueFactory* task_queue_factory)
-    : task_queue_(task_queue_factory->CreateTaskQueue(
-          kTimerQueueName,
-          TaskQueueFactory::Priority::NORMAL)),
+AudioDeviceBuffer::AudioDeviceBuffer()
+    : task_queue_(kTimerQueueName),
       audio_transport_cb_(nullptr),
       rec_sample_rate_(0),
       play_sample_rate_(0),

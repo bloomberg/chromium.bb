@@ -80,7 +80,6 @@ class DateOrderedListView {
         mView.getItemAnimator().setMoveDuration(0);
         mView.setLayoutManager(new GridLayoutManagerImpl(context));
         mView.addItemDecoration(new ItemDecorationImpl());
-        mView.setClipToPadding(false);
 
         PropertyModelChangeProcessor.create(
                 mModel.getProperties(), mView, new ListPropertyViewBinder());

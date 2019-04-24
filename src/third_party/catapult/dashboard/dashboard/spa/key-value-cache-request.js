@@ -40,7 +40,8 @@ export default class KeyValueCacheRequest extends CacheRequestBase {
   }
 
   async writeDatabase({key, value}) {
-    const transaction = await this.transaction([STORE_DATA], READWRITE);
+    const db = await this.databasePromise;
+    const transaction = db.transaction([STORE_DATA], READWRITE);
     const dataStore = transaction.objectStore(STORE_DATA);
     const expiration = new Date(new Date().getTime() + EXPIRATION_MS);
     dataStore.put({value, expiration: expiration.toISOString()}, key);
@@ -48,28 +49,28 @@ export default class KeyValueCacheRequest extends CacheRequestBase {
   }
 
   async readDatabase_(key) {
-    const transaction = await this.transaction([STORE_DATA], READONLY);
+    const db = await this.databasePromise;
+    const transaction = db.transaction([STORE_DATA], READONLY);
     const dataStore = transaction.objectStore(STORE_DATA);
     return await dataStore.get(key);
   }
 
   async getResponse() {
     const key = await this.databaseKeyPromise;
-    const entry = await this.readDatabase_(key);
-    if (entry && (new Date(entry.expiration) > new Date())) {
-      return entry.value;
-    }
-
-    const other = await this.findInProgressRequest(async other =>
+    const otherRequest = await this.findInProgressRequest(async other =>
       ((await other.databaseKeyPromise) === key));
-    if (other) {
+    if (otherRequest) {
       // Be sure to call onComplete() to remove `this` from IN_PROGRESS_REQUESTS
-      // so that `other.getResponse()` doesn't await
+      // so that `otherRequest.getResponse()` doesn't await
       // `this.getResponse()`, which would cause both of these requests to
       // deadlock.
       this.onComplete();
+      return await otherRequest.responsePromise;
+    }
 
-      return await other.responsePromise;
+    const entry = await this.readDatabase_(key);
+    if (entry && (new Date(entry.expiration) > new Date())) {
+      return entry.value;
     }
 
     const response = await fetch(this.fetchEvent.request);

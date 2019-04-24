@@ -32,6 +32,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -298,6 +299,8 @@ public class LocationBarLayout extends FrameLayout
 
         updateVisualsForState();
 
+        mOmniboxVoiceSearchAlwaysVisible =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE);
         updateMicButtonVisibility(mUrlFocusChangePercent);
     }
 
@@ -1004,7 +1007,7 @@ public class LocationBarLayout extends FrameLayout
      * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
      */
     protected void updateMicButtonVisibility(float urlFocusChangePercent) {
-        boolean visible = !shouldShowDeleteButton();
+        boolean visible = mOmniboxVoiceSearchAlwaysVisible || !shouldShowDeleteButton();
         boolean showMicButton = mVoiceSearchEnabled && visible
                 && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || urlFocusChangePercent > 0f);
         mMicButton.setVisibility(showMicButton ? VISIBLE : GONE);
@@ -1036,8 +1039,7 @@ public class LocationBarLayout extends FrameLayout
         }
 
         mStatusViewCoordinator.setUseDarkColors(useDarkColors);
-        mAutocompleteCoordinator.updateVisualsForState(
-                useDarkColors, mToolbarDataProvider.isIncognito());
+        mAutocompleteCoordinator.updateVisualsForState(useDarkColors);
     }
 
     @Override

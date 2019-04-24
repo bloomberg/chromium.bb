@@ -32,7 +32,6 @@
 #include <grpcpp/impl/call.h>
 #include <grpcpp/support/time.h>
 
-#include "src/core/lib/gprpp/ref_counted.h"
 #include "src/core/lib/surface/call.h"
 
 namespace grpc {
@@ -95,22 +94,6 @@ class ServerContext::CompletionOp final : public internal::CallOpSetInterface {
     tag_ = tag;
   }
 
-  void SetCancelCallback(std::function<void()> callback) {
-    std::lock_guard<std::mutex> lock(mu_);
-
-    if (finalized_ && (cancelled_ != 0)) {
-      callback();
-      return;
-    }
-
-    cancel_callback_ = std::move(callback);
-  }
-
-  void ClearCancelCallback() {
-    std::lock_guard<std::mutex> g(mu_);
-    cancel_callback_ = nullptr;
-  }
-
   void set_core_cq_tag(void* core_cq_tag) { core_cq_tag_ = core_cq_tag; }
 
   void* core_cq_tag() override { return core_cq_tag_; }
@@ -133,7 +116,13 @@ class ServerContext::CompletionOp final : public internal::CallOpSetInterface {
     done_intercepting_ = true;
     if (!has_tag_) {
       /* We don't have a tag to return. */
-      Unref();
+      std::unique_lock<std::mutex> lock(mu_);
+      if (--refs_ == 0) {
+        lock.unlock();
+        grpc_call* call = call_.call();
+        delete this;
+        grpc_call_unref(call);
+      }
       return;
     }
     /* Start a dummy op so that we can return the tag */
@@ -153,17 +142,18 @@ class ServerContext::CompletionOp final : public internal::CallOpSetInterface {
   bool has_tag_;
   void* tag_;
   void* core_cq_tag_;
-  grpc_core::RefCount refs_;
   std::mutex mu_;
+  int refs_;
   bool finalized_;
   int cancelled_;  // This is an int (not bool) because it is passed to core
-  std::function<void()> cancel_callback_;
   bool done_intercepting_;
   internal::InterceptorBatchMethodsImpl interceptor_methods_;
 };
 
 void ServerContext::CompletionOp::Unref() {
-  if (refs_.Unref()) {
+  std::unique_lock<std::mutex> lock(mu_);
+  if (--refs_ == 0) {
+    lock.unlock();
     grpc_call* call = call_.call();
     delete this;
     grpc_call_unref(call);
@@ -193,7 +183,12 @@ bool ServerContext::CompletionOp::FinalizeResult(void** tag, bool* status) {
       *tag = tag_;
       ret = true;
     }
-    Unref();
+    if (--refs_ == 0) {
+      lock.unlock();
+      grpc_call* call = call_.call();
+      delete this;
+      grpc_call_unref(call);
+    }
     return ret;
   }
   finalized_ = true;
@@ -208,17 +203,11 @@ bool ServerContext::CompletionOp::FinalizeResult(void** tag, bool* status) {
   // Decide whether to call the cancel callback before releasing the lock
   bool call_cancel = (cancelled_ != 0);
 
-  // If it's a unary cancel callback, call it under the lock so that it doesn't
-  // race with ClearCancelCallback
-  if (cancel_callback_) {
-    cancel_callback_();
-  }
-
   // Release the lock since we are going to be calling a callback and
   // interceptors now
   lock.unlock();
 
-  if (call_cancel && reactor_ != nullptr) {
+  if (call_cancel && (reactor_ != nullptr)) {
     reactor_->OnCancel();
   }
 
@@ -231,7 +220,13 @@ bool ServerContext::CompletionOp::FinalizeResult(void** tag, bool* status) {
       *tag = tag_;
       ret = true;
     }
-    Unref();
+    lock.lock();
+    if (--refs_ == 0) {
+      lock.unlock();
+      grpc_call* call = call_.call();
+      delete this;
+      grpc_call_unref(call);
+    }
     return ret;
   }
   /* There are interceptors to be run. Return false for now */
@@ -336,14 +331,6 @@ void ServerContext::TryCancel() const {
   if (err != GRPC_CALL_OK) {
     gpr_log(GPR_ERROR, "TryCancel failed with: %d", err);
   }
-}
-
-void ServerContext::SetCancelCallback(std::function<void()> callback) {
-  completion_op_->SetCancelCallback(std::move(callback));
-}
-
-void ServerContext::ClearCancelCallback() {
-  completion_op_->ClearCancelCallback();
 }
 
 bool ServerContext::IsCancelled() const {

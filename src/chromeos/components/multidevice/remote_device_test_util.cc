@@ -16,7 +16,6 @@ namespace multidevice {
 // Attributes of the default test remote device.
 const char kTestRemoteDeviceUserId[] = "example@gmail.com";
 const char kTestRemoteDeviceName[] = "remote device";
-const char kTestRemoteDevicePiiFreeName[] = "no-pii device";
 const char kTestRemoteDevicePublicKey[] = "public key";
 const char kTestRemoteDevicePSK[] = "remote device psk";
 const int64_t kTestRemoteDeviceLastUpdateTimeMillis = 0L;
@@ -36,12 +35,6 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetUserId(
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetName(
     const std::string& name) {
   remote_device_->name = name;
-  return *this;
-}
-
-RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetPiiFreeName(
-    const std::string& pii_free_name) {
-  remote_device_->pii_free_name = pii_free_name;
   return *this;
 }
 
@@ -90,8 +83,7 @@ RemoteDevice CreateRemoteDeviceForTest() {
       SoftwareFeatureState::kSupported;
 
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePiiFreeName, kTestRemoteDevicePublicKey,
-                      kTestRemoteDevicePSK,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceLastUpdateTimeMillis, software_features,
                       {} /* beacon_seeds */);
 }

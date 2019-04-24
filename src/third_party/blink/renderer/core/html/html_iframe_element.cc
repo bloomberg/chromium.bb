@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_iframe_element.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -44,10 +43,10 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLIFrameElement::HTMLIFrameElement(Document& document)
+inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(kIFrameTag, document),
       collapsed_by_client_(false),
-      sandbox_(MakeGarbageCollected<HTMLIFrameElementSandbox>(this)),
+      sandbox_(HTMLIFrameElementSandbox::Create(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)
@@ -78,10 +77,7 @@ void HTMLIFrameElement::SetCollapsed(bool collapse) {
   // This is always called in response to an IPC, so should not happen in the
   // middle of a style recalc.
   DCHECK(!GetDocument().InStyleRecalc());
-
-  // Trigger style recalc to trigger layout tree re-attachment.
-  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             style_change_reason::kFrame));
+  LazyReattachIfAttached();
 }
 
 DOMTokenList* HTMLIFrameElement::sandbox() const {
@@ -91,8 +87,7 @@ DOMTokenList* HTMLIFrameElement::sandbox() const {
 DOMFeaturePolicy* HTMLIFrameElement::featurePolicy() {
   if (!policy_) {
     policy_ = MakeGarbageCollected<IFramePolicy>(
-        &GetDocument(), GetFramePolicy().container_policy,
-        GetOriginForFeaturePolicy());
+        &GetDocument(), ContainerPolicy(), GetOriginForFeaturePolicy());
   }
   return policy_.Get();
 }
@@ -110,9 +105,9 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else if (name == kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kFrameborderAttr) {
@@ -122,7 +117,7 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     if (!value.ToInt()) {
       // Add a rule that nulls out our border width.
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderWidth, 0,
+          style, CSSPropertyBorderWidth, 0,
           CSSPrimitiveValue::UnitType::kPixels);
     }
   } else {
@@ -148,34 +143,12 @@ void HTMLIFrameElement::ParseAttribute(
   } else if (name == kSandboxAttr) {
     sandbox_->DidUpdateAttributeValue(params.old_value, value);
     String invalid_tokens;
-    bool feature_policy_for_sandbox =
-        RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
-    WebSandboxFlags current_flags =
-        value.IsNull()
-            ? WebSandboxFlags::kNone
-            : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
-    SetAllowedToDownloadWithoutUserActivation(
-        (current_flags & WebSandboxFlags::kDownloads) ==
-        WebSandboxFlags::kNone);
-    // With FeaturePolicyForSandbox, sandbox flags are represented as part of
-    // the container policies. However, not all sandbox flags are yet converted
-    // and for now the residue will stay around in the stored flags.
-    // (see https://crbug.com/812381).
-    WebSandboxFlags sandbox_to_set = current_flags;
-    sandbox_flags_converted_to_feature_policies_ = WebSandboxFlags::kNone;
-    if (feature_policy_for_sandbox && current_flags != WebSandboxFlags::kNone) {
-      // Residue sandbox which will not be mapped to feature policies.
-      sandbox_to_set =
-          GetSandboxFlagsNotImplementedAsFeaturePolicy(current_flags);
-      // The part of sandbox which will be mapped to feature policies.
-      sandbox_flags_converted_to_feature_policies_ =
-          current_flags & ~sandbox_to_set;
-    }
-    SetSandboxFlags(sandbox_to_set);
+    SetSandboxFlags(value.IsNull() ? kSandboxNone
+                                   : ParseSandboxPolicy(sandbox_->TokenSet(),
+                                                        invalid_tokens));
     if (!invalid_tokens.IsNull()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kError,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
           "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
     }
     if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
@@ -184,8 +157,8 @@ void HTMLIFrameElement::ParseAttribute(
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
           GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-              mojom::ConsoleMessageSource::kOther,
-              mojom::ConsoleMessageLevel::kWarning, message));
+              kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              message));
         }
       }
     }
@@ -225,8 +198,7 @@ void HTMLIFrameElement::ParseAttribute(
             value.GetString(), GetDocument().RequiredCSP().GetString())) {
       required_csp_ = g_null_atom;
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kError,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
           "'csp' attribute is not a valid policy: " + value));
       return;
     }
@@ -242,8 +214,8 @@ void HTMLIFrameElement::ParseAttribute(
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
           GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-              mojom::ConsoleMessageSource::kOther,
-              mojom::ConsoleMessageLevel::kWarning, message));
+              kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              message));
         }
       }
       if (!value.IsEmpty()) {
@@ -263,12 +235,11 @@ void HTMLIFrameElement::ParseAttribute(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);
-      GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 "<iframe gesture=\"media\"> is not supported. "
-                                 "Use <iframe allow=\"autoplay\">, "
-                                 "https://goo.gl/ximf56"));
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          "<iframe gesture=\"media\"> is not supported. "
+          "Use <iframe allow=\"autoplay\">, "
+          "https://goo.gl/ximf56"));
     }
 
     if (name == kSrcAttr)
@@ -290,13 +261,12 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // Next, process sandbox flags. These all only take effect if a corresponding
   // policy does *not* exist in the allow attribute's value.
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    SandboxFlags sandbox_flags = GetSandboxFlags();
+
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
-    // TODO(ekaramad): Add similar messages for all the converted sandbox flags.
-    if (messages && (sandbox_flags_converted_to_feature_policies_ &
-                     WebSandboxFlags::kNavigation) != WebSandboxFlags::kNone) {
-      if ((sandbox_flags_converted_to_feature_policies_ &
-           WebSandboxFlags::kForms) == WebSandboxFlags::kNone &&
+    if (messages && (sandbox_flags & kSandboxNavigation)) {
+      if (!(sandbox_flags & kSandboxForms) &&
           IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
                             container_policy)) {
         messages->push_back(
@@ -304,8 +274,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
             "precedence.");
       }
     }
-    ApplySandboxFlagsToParsedFeaturePolicy(
-        sandbox_flags_converted_to_feature_policies_, container_policy);
+    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags, container_policy);
   }
 
   // Finally, process the allow* attribuets. Like sandbox attributes, they only
@@ -346,8 +315,7 @@ bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&,
-                                                    LegacyLayout) {
+LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutIFrame(this);
 }
 
@@ -363,8 +331,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
             required_csp_, GetDocument().RequiredCSP().GetString())) {
       if (!required_csp_.IsEmpty()) {
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kError,
+            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
             "'csp' attribute is not a valid policy: " + required_csp_));
       }
       if (required_csp_ != GetDocument().RequiredCSP()) {

@@ -100,6 +100,7 @@
     "name": "count-objects",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
+      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },

@@ -42,9 +42,6 @@ struct GrFPArgs {
     const SkMatrix* fPreLocalMatrix  = nullptr;
     const SkMatrix* fPostLocalMatrix = nullptr;
 
-    // Make this SkAlphaType?
-    bool fInputColorIsOpaque = false;
-
     SkFilterQuality fFilterQuality;
     const GrColorSpaceInfo* fDstColorSpaceInfo;
 };

@@ -27,6 +27,8 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
  public:
+  static SourceAlpha* Create(FilterEffect*);
+
   explicit SourceAlpha(FilterEffect*);
 
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,

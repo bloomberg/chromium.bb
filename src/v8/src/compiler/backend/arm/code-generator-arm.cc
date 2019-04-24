@@ -225,9 +225,7 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       __ Push(lr);
       unwinding_info_writer_->MarkLinkRegisterOnTopOfStack(__ pc_offset());
     }
-    if (mode_ == RecordWriteMode::kValueIsEphemeronKey) {
-      __ CallEphemeronKeyBarrier(object_, scratch1_, save_fp_mode);
-    } else if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
+    if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
       __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
                              save_fp_mode, wasm::WasmCode::kWasmRecordWrite);
     } else {
@@ -267,8 +265,8 @@ class OutOfLineFloatMin final : public OutOfLineCode {
   T const left_;
   T const right_;
 };
-using OutOfLineFloat32Min = OutOfLineFloatMin<SwVfpRegister>;
-using OutOfLineFloat64Min = OutOfLineFloatMin<DwVfpRegister>;
+typedef OutOfLineFloatMin<SwVfpRegister> OutOfLineFloat32Min;
+typedef OutOfLineFloatMin<DwVfpRegister> OutOfLineFloat64Min;
 
 template <typename T>
 class OutOfLineFloatMax final : public OutOfLineCode {
@@ -283,8 +281,8 @@ class OutOfLineFloatMax final : public OutOfLineCode {
   T const left_;
   T const right_;
 };
-using OutOfLineFloat32Max = OutOfLineFloatMax<SwVfpRegister>;
-using OutOfLineFloat64Max = OutOfLineFloatMax<DwVfpRegister>;
+typedef OutOfLineFloatMax<SwVfpRegister> OutOfLineFloat32Max;
+typedef OutOfLineFloatMax<DwVfpRegister> OutOfLineFloat64Max;
 
 Condition FlagsConditionToCondition(FlagsCondition condition) {
   switch (condition) {

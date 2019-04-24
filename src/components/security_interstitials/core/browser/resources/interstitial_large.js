@@ -118,7 +118,7 @@ function setupEvents() {
           break;
 
         case 'LOOKALIKE':
-          sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
+          // Primary button is hidden for lookalike URL interstitial.
           break;
 
         default:
@@ -130,6 +130,7 @@ function setupEvents() {
   if (lookalike) {
     var proceed_button = 'proceed-button';
     var dont_proceed_link = 'dont-proceed-link';
+    $('primary-button').classList.add(HIDDEN_CLASS);
     $(proceed_button).classList.remove(HIDDEN_CLASS);
 
     $(proceed_button).textContent =

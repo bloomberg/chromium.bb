@@ -5,7 +5,6 @@
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 
 #include <string>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,17 +35,17 @@ bool DistillerJavaScriptWorldIdIsSet() {
 void RunIsolatedJavaScript(
     content::RenderFrameHost* render_frame_host,
     const std::string& buffer,
-    content::RenderFrameHost::JavaScriptResultCallback callback) {
+    const content::RenderFrameHost::JavaScriptResultCallback& callback) {
   // Make sure world ID was set.
   DCHECK(distiller_javascript_world_id != invalid_world_id);
   render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-      base::UTF8ToUTF16(buffer), std::move(callback),
-      distiller_javascript_world_id);
+      base::UTF8ToUTF16(buffer), callback, distiller_javascript_world_id);
 }
 
 void RunIsolatedJavaScript(content::RenderFrameHost* render_frame_host,
                            const std::string& buffer) {
-  RunIsolatedJavaScript(render_frame_host, buffer, {});
+  RunIsolatedJavaScript(render_frame_host, buffer,
+                        content::RenderFrameHost::JavaScriptResultCallback());
 }
 
 }  // namespace dom_distiller

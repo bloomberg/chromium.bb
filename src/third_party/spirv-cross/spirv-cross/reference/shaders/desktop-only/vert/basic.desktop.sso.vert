@@ -5,7 +5,7 @@ out gl_PerVertex
     vec4 gl_Position;
 };
 
-layout(binding = 0, std140) uniform UBO
+layout(std140) uniform UBO
 {
     mat4 uMVP;
 } _16;

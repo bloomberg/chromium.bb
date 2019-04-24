@@ -32,10 +32,11 @@ SimpleDependencyManager* SimpleDependencyManager::GetInstance() {
 }
 
 void SimpleDependencyManager::RegisterProfilePrefsForServices(
+    SimpleFactoryKey* key,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0("browser",
                "SimpleDependencyManager::RegisterProfilePrefsForServices");
-  RegisterPrefsForServices(pref_registry);
+  RegisterPrefsForServices(key, pref_registry);
 }
 
 void SimpleDependencyManager::CreateServicesForTest(SimpleFactoryKey* key) {
@@ -54,7 +55,7 @@ void SimpleDependencyManager::DumpContextDependencies(void* context) const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDumpSimpleDependencyGraphFlag)) {
     base::FilePath dot_file =
-        static_cast<const SimpleFactoryKey*>(context)->GetPath().AppendASCII(
+        static_cast<const SimpleFactoryKey*>(context)->path().AppendASCII(
             "simple-dependencies.dot");
     DumpDependenciesAsGraphviz("SimpleDependencyManager", dot_file);
   }

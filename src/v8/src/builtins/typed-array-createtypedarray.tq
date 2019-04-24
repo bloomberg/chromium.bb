@@ -73,7 +73,8 @@ namespace typed_array_createtypedarray {
     label AttachOffHeapBuffer(bufferObj: Object) {
       const buffer = Cast<JSArrayBuffer>(bufferObj) otherwise unreachable;
       const byteOffset: uintptr = 0;
-      typedArray.AttachOffHeapBuffer(buffer, elementsInfo.map, byteOffset);
+      typedArray.AttachOffHeapBuffer(
+          buffer, elementsInfo.map, length, byteOffset);
     }
 
     const byteOffset: uintptr = 0;
@@ -171,7 +172,7 @@ namespace typed_array_createtypedarray {
 
   // 22.2.4.5 TypedArray ( buffer, byteOffset, length )
   // ES #sec-typedarray-buffer-byteoffset-length
-  transitioning macro ConstructByArrayBuffer(implicit context: Context)(
+  macro ConstructByArrayBuffer(implicit context: Context)(
       typedArray: JSTypedArray, buffer: JSArrayBuffer, byteOffset: Object,
       length: Object, elementsInfo: typed_array::TypedArrayElementsInfo): void {
     try {
@@ -236,7 +237,8 @@ namespace typed_array_createtypedarray {
       }
 
       SetupTypedArray(typedArray, newLength, offset, newByteLength);
-      typedArray.AttachOffHeapBuffer(buffer, elementsInfo.map, offset);
+      typedArray.AttachOffHeapBuffer(
+          buffer, elementsInfo.map, newLength, offset);
     }
     label IfInvalidAlignment(problemString: String) deferred {
       ThrowInvalidTypedArrayAlignment(typedArray.map, problemString);

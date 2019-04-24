@@ -17,8 +17,10 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -29,7 +31,6 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,6 +41,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AnyNumber;
+using ::testing::Contains;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
@@ -69,11 +73,48 @@ constexpr char kUIDismissalReasonSaveMetric[] =
 constexpr char kUIDismissalReasonUpdateMetric[] =
     "PasswordManager.UpdateUIDismissalReason";
 
-enum class SyncedTypes { ALL, NONE };
+class TestSyncService : public browser_sync::ProfileSyncServiceMock {
+ public:
+  enum class SyncedTypes { ALL, NONE };
+
+  explicit TestSyncService(Profile* profile)
+      : browser_sync::ProfileSyncServiceMock(
+            CreateProfileSyncServiceParamsForTest(profile)),
+        synced_types_(SyncedTypes::NONE) {}
+  ~TestSyncService() override {}
+
+  // FakeSyncService:
+  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+  TransportState GetTransportState() const override {
+    return TransportState::ACTIVE;
+  }
+  syncer::ModelTypeSet GetActiveDataTypes() const override {
+    switch (synced_types_) {
+      case SyncedTypes::ALL:
+        return syncer::ModelTypeSet::All();
+      case SyncedTypes::NONE:
+        return syncer::ModelTypeSet();
+    }
+    NOTREACHED();
+    return syncer::ModelTypeSet();
+  }
+  syncer::ModelTypeSet GetPreferredDataTypes() const override {
+    return GetActiveDataTypes();
+  }
+
+  void set_synced_types(SyncedTypes synced_types) {
+    synced_types_ = synced_types;
+  }
+
+ private:
+  SyncedTypes synced_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSyncService);
+};
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
-  return std::make_unique<syncer::TestSyncService>();
+  return std::make_unique<TestSyncService>(static_cast<Profile*>(context));
 }
 
 MATCHER_P(AccountEq, expected, "") {
@@ -504,18 +545,13 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
 
 class ManagePasswordsBubbleModelManageLinkTest
     : public ManagePasswordsBubbleModelTest,
-      public ::testing::WithParamInterface<SyncedTypes> {};
+      public ::testing::WithParamInterface<TestSyncService::SyncedTypes> {};
 
 TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
-  syncer::TestSyncService* sync_service = static_cast<syncer::TestSyncService*>(
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), base::BindRepeating(&TestingSyncFactoryFunction)));
-  syncer::ModelTypeSet types;
-  if (GetParam() == SyncedTypes::ALL) {
-    types = syncer::ModelTypeSet::All();
-  }
-  sync_service->SetPreferredDataTypes(types);
-  sync_service->SetActiveDataTypes(types);
+  sync_service->set_synced_types(GetParam());
 
   PretendManagingPasswords();
 
@@ -530,8 +566,8 @@ TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
 
 INSTANTIATE_TEST_SUITE_P(Default,
                          ManagePasswordsBubbleModelManageLinkTest,
-                         ::testing::Values(SyncedTypes::ALL,
-                                           SyncedTypes::NONE));
+                         ::testing::Values(TestSyncService::SyncedTypes::ALL,
+                                           TestSyncService::SyncedTypes::NONE));
 
 // Verify that URL keyed metrics are properly recorded.
 TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {

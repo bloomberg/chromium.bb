@@ -82,21 +82,10 @@ RootCompositorFrameSinkImpl::Create(
       std::move(synthetic_begin_frame_source),
       std::move(external_begin_frame_source)));
 
-  UpdateVSyncParametersCallback update_vsync_callback;
-  if (impl->synthetic_begin_frame_source_) {
-    // |impl| owns the display and will outlive it so unretained is safe.
-    update_vsync_callback = base::BindRepeating(
-        &RootCompositorFrameSinkImpl::SetDisplayVSyncParameters,
-        base::Unretained(impl.get()));
-  }
-  // TODO(kylechar): For the cases where we expect browser to providing vsync
-  // parameter updates over mojo we shouldn't create |update_vsync_callback|.
-  // I think this is always the case on mac.
-
   auto display = display_provider->CreateDisplay(
       params->frame_sink_id, params->widget, params->gpu_compositing,
-      impl->display_client_.get(), impl->begin_frame_source(),
-      std::move(update_vsync_callback), params->renderer_settings,
+      impl->display_client_.get(), impl->external_begin_frame_source_.get(),
+      impl->synthetic_begin_frame_source_.get(), params->renderer_settings,
       params->send_swap_size_notifications);
 
   // Creating a display failed. Destroy |impl| which will close the message
@@ -303,6 +292,11 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
   NOTREACHED();
   ALLOW_UNUSED_LOCAL(display_client_);
 #endif
+}
+
+void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  display_client_->DidSwapAfterSnapshotRequestReceived(latency_info);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}

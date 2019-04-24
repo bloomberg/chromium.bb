@@ -329,7 +329,7 @@ cr.define('settings_people_page_change_picture', function() {
             CrPicture.SelectionTypes.OLD,
             changePicture.selectedItem_.dataset.type);
 
-        const discardButton = crPicturePane.$$('#discard cr-icon-button');
+        const discardButton = crPicturePane.$$('#discard button');
         assertTrue(!!discardButton);
         discardButton.click();
 

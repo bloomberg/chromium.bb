@@ -36,8 +36,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireSelectedEvent(BrowserAccessibility* node);
   void FireExpandedEvent(BrowserAccessibility* node, bool is_expanded);
   void FireLoadingEvent(BrowserAccessibility* node, bool is_loading);
-  void FireNameChangedEvent(BrowserAccessibility* node);
-  void FireDescriptionChangedEvent(BrowserAccessibility* node);
 
  protected:
   // AXTreeObserver methods.

@@ -58,10 +58,14 @@ function finishTest() {
     document.getElementById("both").classList.remove("wide"); // third div loses both
     document.getElementById("both").classList.remove("tall"); // vertical and horizontal scrollbars
     document.getElementById("corner").classList.remove("resizeWidget"); // bottom div loses a resize corner but no scrollbars
+  if (window.testRunner)
+      testRunner.notifyDone();
 }
 
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
-runAfterLayoutAndPaint(finishTest, true);
+runAfterLayoutAndPaint(finishTest);
 </script>

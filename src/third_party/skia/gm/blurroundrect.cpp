@@ -57,7 +57,9 @@ public:
             paint->setMaskFilter(SkMaskFilter::MakeBlur(
                     kNormal_SkBlurStyle,
                     SkBlurMask::ConvertRadiusToSigma(SK_ScalarHalf)));
-            paint->setColorFilter(SkColorFilters::Blend(SK_ColorLTGRAY, SkBlendMode::kSrcIn));
+            paint->setColorFilter(SkColorFilter::MakeModeFilter(
+                    SK_ColorLTGRAY,
+                    SkBlendMode::kSrcIn));
             paint->setColor(SK_ColorGRAY);
         }
         {
@@ -91,7 +93,7 @@ static sk_sp<SkShader> MakeRadial() {
         { 0, 0 },
         { SkIntToScalar(100), SkIntToScalar(100) }
     };
-    SkTileMode tm = SkTileMode::kClamp;
+    SkShader::TileMode tm = SkShader::kClamp_TileMode;
     const SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, };
     const SkScalar pos[] = { SK_Scalar1/4, SK_Scalar1*3/4 };
     SkMatrix scale;

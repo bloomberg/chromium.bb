@@ -29,15 +29,13 @@
 
 #include <iosfwd>
 
-#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -47,7 +45,16 @@ typedef struct CGRect CGRect;
 #endif
 #endif
 
+struct SkRect;
+
+namespace gfx {
+class RectF;
+}
+
 namespace blink {
+
+class LayoutRect;
+class LayoutSize;
 
 class PLATFORM_EXPORT FloatRect {
   DISALLOW_NEW();
@@ -60,12 +67,9 @@ class PLATFORM_EXPORT FloatRect {
       : location_(location), size_(size) {}
   constexpr FloatRect(float x, float y, float width, float height)
       : location_(FloatPoint(x, y)), size_(FloatSize(width, height)) {}
-  constexpr explicit FloatRect(const IntRect& r)
-      : FloatRect(r.X(), r.Y(), r.Width(), r.Height()) {}
-  constexpr explicit FloatRect(const gfx::RectF& r)
-      : FloatRect(r.x(), r.y(), r.width(), r.height()) {}
-  FloatRect(const SkRect& r) : FloatRect(r.x(), r.y(), r.width(), r.height()) {}
-  // We also have conversion operator to FloatRect defined in LayoutRect.
+  explicit FloatRect(const IntRect&);
+  explicit FloatRect(const LayoutRect&);
+  FloatRect(const SkRect&);
 
   static FloatRect NarrowPrecision(double x,
                                    double y,
@@ -99,6 +103,8 @@ class PLATFORM_EXPORT FloatRect {
   }
 
   void Move(const FloatSize& delta) { location_ += delta; }
+  void Move(const LayoutSize&);
+  void Move(const IntSize&);
   void MoveBy(const FloatPoint& delta) { location_.Move(delta.X(), delta.Y()); }
   void Move(float dx, float dy) { location_.Move(dx, dy); }
 
@@ -184,12 +190,8 @@ class PLATFORM_EXPORT FloatRect {
   operator CGRect() const;
 #endif
 
-  operator SkRect() const {
-    return SkRect::MakeXYWH(X(), Y(), Width(), Height());
-  }
-  constexpr operator gfx::RectF() const {
-    return gfx::RectF(X(), Y(), Width(), Height());
-  }
+  operator SkRect() const;
+  operator gfx::RectF() const;
 
 #if DCHECK_IS_ON()
   bool MayNotHaveExactIntRectRepresentation() const;
@@ -249,9 +251,8 @@ constexpr bool operator!=(const FloatRect& a, const FloatRect& b) {
 inline IntRect EnclosingIntRect(const FloatRect& rect) {
   IntPoint location = FlooredIntPoint(rect.Location());
   IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
-  return IntRect(location,
-                 IntSize(base::ClampSub(max_point.X(), location.X()),
-                         base::ClampSub(max_point.Y(), location.Y())));
+  return IntRect(location, IntSize(ClampSub(max_point.X(), location.X()),
+                                   ClampSub(max_point.Y(), location.Y())));
 }
 
 // Returns a valid IntRect contained within the given FloatRect.

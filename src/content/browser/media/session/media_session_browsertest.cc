@@ -4,7 +4,6 @@
 
 #include "content/public/browser/media_session.h"
 
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -96,15 +95,13 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
 
   void StartPlaybackAndWait(Shell* shell, const std::string& id) {
     shell->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.querySelector('#" + id + "').play();"),
-        base::NullCallback());
+        base::ASCIIToUTF16("document.querySelector('#" + id + "').play();"));
     WaitForStart(shell);
   }
 
   void StopPlaybackAndWait(Shell* shell, const std::string& id) {
     shell->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.querySelector('#" + id + "').pause();"),
-        base::NullCallback());
+        base::ASCIIToUTF16("document.querySelector('#" + id + "').pause();"));
     WaitForStop(shell);
   }
 

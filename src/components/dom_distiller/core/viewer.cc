@@ -55,36 +55,36 @@ const char kMonospaceCssClass[] = "monospace";
 
 // Maps themes to JS themes.
 const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
-  if (theme == DistilledPagePrefs::THEME_DARK)
+  if (theme == DistilledPagePrefs::DARK)
     return kDarkJsTheme;
-  if (theme == DistilledPagePrefs::THEME_SEPIA)
+  if (theme == DistilledPagePrefs::SEPIA)
     return kSepiaJsTheme;
   return kLightJsTheme;
 }
 
 // Maps themes to CSS classes.
 const std::string GetThemeCssClass(DistilledPagePrefs::Theme theme) {
-  if (theme == DistilledPagePrefs::THEME_DARK)
+  if (theme == DistilledPagePrefs::DARK)
     return kDarkCssClass;
-  if (theme == DistilledPagePrefs::THEME_SEPIA)
+  if (theme == DistilledPagePrefs::SEPIA)
     return kSepiaCssClass;
   return kLightCssClass;
 }
 
 // Maps font families to JS font families.
 const std::string GetJsFontFamily(DistilledPagePrefs::FontFamily font_family) {
-  if (font_family == DistilledPagePrefs::FONT_FAMILY_SERIF)
+  if (font_family == DistilledPagePrefs::SERIF)
     return kSerifJsFontFamily;
-  if (font_family == DistilledPagePrefs::FONT_FAMILY_MONOSPACE)
+  if (font_family == DistilledPagePrefs::MONOSPACE)
     return kMonospaceJsFontFamily;
   return kSansSerifJsFontFamily;
 }
 
 // Maps fontFamilies to CSS fontFamily classes.
 const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
-  if (font_family == DistilledPagePrefs::FONT_FAMILY_SERIF)
+  if (font_family == DistilledPagePrefs::SERIF)
     return kSerifCssClass;
-  if (font_family == DistilledPagePrefs::FONT_FAMILY_MONOSPACE)
+  if (font_family == DistilledPagePrefs::MONOSPACE)
     return kMonospaceCssClass;
   return kSansSerifCssClass;
 }

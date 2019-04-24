@@ -1,4 +1,5 @@
 // META: global=jsshell
+// META: script=/wasm/jsapi/wasm-constants.js
 // META: script=/wasm/jsapi/wasm-module-builder.js
 
 function assert_ArrayBuffer(buffer, expected) {
@@ -96,7 +97,7 @@ test(() => {
   });
 
   const builder = new WasmModuleBuilder();
-  builder.addExplicitSection(binary.trunc_buffer());
+  builder.addExplicitSection(binary);
   const buffer = builder.toBuffer()
   const module = new WebAssembly.Module(buffer);
 
@@ -126,7 +127,7 @@ test(() => {
   });
 
   const builder = new WasmModuleBuilder();
-  builder.addExplicitSection(binary.trunc_buffer());
+  builder.addExplicitSection(binary);
   const buffer = builder.toBuffer();
   const module = new WebAssembly.Module(buffer);
 
@@ -147,7 +148,7 @@ test(() => {
   });
 
   const builder = new WasmModuleBuilder();
-  builder.addExplicitSection(binary.trunc_buffer());
+  builder.addExplicitSection(binary);
   const buffer = builder.toBuffer();
   const module = new WebAssembly.Module(buffer);
 

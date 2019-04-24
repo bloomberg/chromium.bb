@@ -7,7 +7,6 @@
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 
 namespace content {
 namespace background_fetch {
@@ -26,22 +25,15 @@ GetRequestBlobTask::GetRequestBlobTask(
 GetRequestBlobTask::~GetRequestBlobTask() = default;
 
 void GetRequestBlobTask::Start() {
-  int64_t trace_id = blink::cache_storage::CreateTraceId();
-  TRACE_EVENT_WITH_FLOW0("CacheStorage", "GetRequestBlobTask::Start",
-                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      /* cache_name= */ registration_id_.unique_id(), trace_id,
+      /* cache_name= */ registration_id_.unique_id(),
       base::BindOnce(&GetRequestBlobTask::DidOpenCache,
-                     weak_factory_.GetWeakPtr(), trace_id));
+                     weak_factory_.GetWeakPtr()));
 }
 
-void GetRequestBlobTask::DidOpenCache(int64_t trace_id,
-                                      CacheStorageCacheHandle handle,
+void GetRequestBlobTask::DidOpenCache(CacheStorageCacheHandle handle,
                                       blink::mojom::CacheStorageError error) {
-  TRACE_EVENT_WITH_FLOW0("CacheStorage", "GetRequestBlobTask::DidOpenCache",
-                         TRACE_ID_GLOBAL(trace_id),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
     return;
@@ -54,19 +46,15 @@ void GetRequestBlobTask::DidOpenCache(int64_t trace_id,
                                     request_info_->request_index());
 
   handle.value()->GetAllMatchedEntries(
-      std::move(request), /* match_options= */ nullptr, trace_id,
+      std::move(request), /* match_options= */ nullptr,
       base::BindOnce(&GetRequestBlobTask::DidMatchRequest,
-                     weak_factory_.GetWeakPtr(), handle.Clone(), trace_id));
+                     weak_factory_.GetWeakPtr(), handle.Clone()));
 }
 
 void GetRequestBlobTask::DidMatchRequest(
     CacheStorageCacheHandle handle,
-    int64_t trace_id,
     blink::mojom::CacheStorageError error,
     std::vector<CacheStorageCache::CacheEntry> entries) {
-  TRACE_EVENT_WITH_FLOW0("CacheStorage", "GetRequestBlobTask::DidMatchRequest",
-                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN);
-
   if (error != blink::mojom::CacheStorageError::kSuccess || entries.empty()) {
     SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
     return;

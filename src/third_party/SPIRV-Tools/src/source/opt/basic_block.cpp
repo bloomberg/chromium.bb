@@ -184,12 +184,6 @@ uint32_t BasicBlock::MergeBlockIdIfAny() const {
   return mbid;
 }
 
-uint32_t BasicBlock::MergeBlockId() const {
-  uint32_t mbid = MergeBlockIdIfAny();
-  assert(mbid && "Expected block to have a corresponding merge block");
-  return mbid;
-}
-
 uint32_t BasicBlock::ContinueBlockIdIfAny() const {
   auto merge_ii = cend();
   --merge_ii;
@@ -200,12 +194,6 @@ uint32_t BasicBlock::ContinueBlockIdIfAny() const {
       cbid = merge_ii->GetSingleWordInOperand(kLoopMergeContinueBlockIdInIdx);
     }
   }
-  return cbid;
-}
-
-uint32_t BasicBlock::ContinueBlockId() const {
-  uint32_t cbid = ContinueBlockIdIfAny();
-  assert(cbid && "Expected block to have a corresponding continue target");
   return cbid;
 }
 

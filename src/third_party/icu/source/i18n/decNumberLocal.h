@@ -166,9 +166,7 @@
 
   /* Set DECDPUNMAX -- the maximum integer that fits in DECDPUN       */
   /* digits, and D2UTABLE -- the initializer for the D2U table        */
-  #ifndef DECDPUN
-    // no-op
-  #elif   DECDPUN==1
+  #if   DECDPUN==1
     #define DECDPUNMAX 9
     #define D2UTABLE {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,  \
                       18,19,20,21,22,23,24,25,26,27,28,29,30,31,32, \
@@ -214,7 +212,7 @@
     #define D2UTABLE {0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,  \
                       3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,  \
                       5,5,6,6,6,6}
-  #else
+  #elif defined(DECDPUN)
     #error DECDPUN must be in the range 1-9
   #endif
 
@@ -230,9 +228,9 @@
 
   /* D2U -- return the number of Units needed to hold d digits        */
   /* (runtime version, with table lookaside for small d)              */
-  #if defined(DECDPUN) && DECDPUN==8
+  #if DECDPUN==8
     #define D2U(d) ((unsigned)((d)<=DECMAXD2U?d2utable[d]:((d)+7)>>3))
-  #elif defined(DECDPUN) && DECDPUN==4
+  #elif DECDPUN==4
     #define D2U(d) ((unsigned)((d)<=DECMAXD2U?d2utable[d]:((d)+3)>>2))
   #else
     #define D2U(d) ((d)<=DECMAXD2U?d2utable[d]:((d)+DECDPUN-1)/DECDPUN)

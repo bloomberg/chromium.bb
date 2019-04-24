@@ -130,7 +130,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
-  EXPECT_TRUE(To<LayoutBlock>(GetDocument().body()->GetLayoutObject())
+  EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
 
   unsigned start_count = LayoutCount();
@@ -142,7 +142,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
     frame_rect.SetHeight(frame_rect.Height() + 1);
     GetDummyPageHolder().GetFrameView().SetFrameRect(frame_rect);
   }
-  auto paint_controller = std::make_unique<PaintController>();
+  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
   {
     GraphicsContext context(*paint_controller);
     paint_controller->UpdateCurrentPaintChunkProperties(

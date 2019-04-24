@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
@@ -180,17 +179,14 @@ void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
   ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
   auto it = observers_.find(observer);
-  bool fully_erased;
   if (it != observers_.end()) {
-    fully_erased = observers_.erase(it);
+    observers_.erase(it);
   } else {
     it = finished_observers_.find(observer);
     DCHECK(it != finished_observers_.end());
-    fully_erased = finished_observers_.erase(it);
+    finished_observers_.erase(it);
   }
   info_->DidRemoveClientOrObserver();
-  if (fully_erased)
-    observer->NotifyImageFullyRemoved(this);
 }
 
 static void PriorityFromObserver(const ImageResourceObserver* observer,
@@ -249,7 +245,7 @@ blink::Image* ImageResourceContent::GetImage() const {
 }
 
 IntSize ImageResourceContent::IntrinsicSize(
-    RespectImageOrientationEnum should_respect_image_orientation) const {
+    RespectImageOrientationEnum should_respect_image_orientation) {
   if (!image_)
     return IntSize();
   if (should_respect_image_orientation == kRespectImageOrientation &&
@@ -493,63 +489,36 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
   return UpdateImageResult::kNoDecodeError;
 }
 
-// Return true if the image content is well-compressed (and not full of
-// extraneous metadata). "well-compressed" is determined by comparing the
-// image's compression ratio against a specific value that is defined by an
-// unoptimized image feature policy on |context|.
-bool ImageResourceContent::IsAcceptableCompressionRatio(
-    const SecurityContext& context) {
-  if (!image_)
+// Return true if the image type is one of the hard-coded 'modern' image
+// formats.
+// TODO(crbug.com/838263): Support site-defined list of acceptable formats
+// through feature policy declarations.
+bool ImageResourceContent::IsAcceptableContentType() {
+  AtomicString mime_type = GetResponse().HttpContentType();
+  // If this was loaded from disk, there is no mime type. Return true for now.
+  if (mime_type.IsNull())
     return true;
+  return MIMETypeRegistry::IsModernImageMIMEType(mime_type);
+}
 
+// Return true if the image content is well-compressed (and not full of
+// extraneous metadata). This is currently defined as no using more than 0.5
+// byte per pixel of image data with approximate header size(1KB) removed.
+// TODO(crbug.com/838263): Support site-defined bit-per-pixel ratio through
+// feature policy declarations.
+bool ImageResourceContent::IsAcceptableCompressionRatio() {
   uint64_t pixels = IntrinsicSize(kDoNotRespectImageOrientation).Area();
   if (!pixels)
     return true;
-
+  DCHECK(image_);
   double resource_length =
       static_cast<double>(GetResponse().ExpectedContentLength());
-  if (resource_length <= 0 && image_->Data()) {
+  if (resource_length <= 0 && GetImage() && GetImage()->Data()) {
     // WPT and LayoutTests server returns -1 or 0 for the content length.
-    resource_length = static_cast<double>(image_->Data()->size());
+    resource_length = static_cast<double>(GetImage()->Data()->size());
   }
-
-  // Calculate the image's compression ratio (in bytes per pixel) with both 1k
-  // and 10k overhead. The constant overhead allowance is provided to allow room
-  // for headers and to account for small images (which are harder to compress).
-  double compression_ratio_1k = (resource_length - 1024) / pixels;
-  double compression_ratio_10k = (resource_length - 10240) / pixels;
-
-  // Attempt to sniff the image content to determine the true MIME type of the
-  // image, and fall back on the provided MIME type if this is not
-  // possible.
-  //
-  // Note that if the type cannot be sniffed AND the provided type is incorrect
-  // (for example, due to a misconfigured web server), then it is possible that
-  // either the wrong policy (or no policy) will be enforced. However, this case
-  // should be exceedingly rare.
-  String mime_type =
-      image_->Data() &&
-      ImageDecoder::HasSufficientDataToSniffImageType(*image_->Data().get())
-          ? ImageDecoder::SniffImageType(image_->Data())
-          : GetResponse().HttpContentType();
-  if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type)) {
-    // Enforce the lossy image policy.
-    return context.IsFeatureEnabled(
-        mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
-  }
-  if (MIMETypeRegistry::IsLosslessImageMIMEType(mime_type)) {
-    // Enforce the lossless image policy.
-    bool enabled_by_10k_policy = context.IsFeatureEnabled(
-        mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure);
-    bool enabled_by_1k_policy = context.IsFeatureEnabled(
-        mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
-    return enabled_by_10k_policy && enabled_by_1k_policy;
-  }
-
-  return true;
+  // Allow no more than 10 bits per compressed pixel
+  return (resource_length - 1024) / pixels <= 0.5;
 }
 
 void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,

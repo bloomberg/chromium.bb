@@ -5,7 +5,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -17,33 +16,33 @@ namespace base {
 namespace {
 // Generates a simple dictionary value with simple data types, a string and a
 // list.
-DictionaryValue GenerateDict() {
-  DictionaryValue root;
-  root.SetDoubleKey("Double", 3.141);
-  root.SetBoolKey("Bool", true);
-  root.SetIntKey("Int", 42);
-  root.SetStringKey("String", "Foo");
+std::unique_ptr<DictionaryValue> GenerateDict() {
+  auto root = std::make_unique<DictionaryValue>();
+  root->SetDouble("Double", 3.141);
+  root->SetBoolean("Bool", true);
+  root->SetInteger("Int", 42);
+  root->SetString("String", "Foo");
 
-  ListValue list;
-  list.GetList().emplace_back(2.718);
-  list.GetList().emplace_back(false);
-  list.GetList().emplace_back(123);
-  list.GetList().emplace_back("Bar");
-  root.SetKey("List", std::move(list));
+  auto list = std::make_unique<ListValue>();
+  list->Set(0, std::make_unique<Value>(2.718));
+  list->Set(1, std::make_unique<Value>(false));
+  list->Set(2, std::make_unique<Value>(123));
+  list->Set(3, std::make_unique<Value>("Bar"));
+  root->Set("List", std::move(list));
 
   return root;
 }
 
 // Generates a tree-like dictionary value with a size of O(breadth ** depth).
-DictionaryValue GenerateLayeredDict(int breadth, int depth) {
+std::unique_ptr<DictionaryValue> GenerateLayeredDict(int breadth, int depth) {
   if (depth == 1)
     return GenerateDict();
 
-  DictionaryValue root = GenerateDict();
-  DictionaryValue next = GenerateLayeredDict(breadth, depth - 1);
+  auto root = GenerateDict();
+  auto next = GenerateLayeredDict(breadth, depth - 1);
 
   for (int i = 0; i < breadth; ++i) {
-    root.SetKey("Dict" + base::NumberToString(i), next.Clone());
+    root->Set("Dict" + std::to_string(i), next->CreateDeepCopy());
   }
 
   return root;
@@ -54,13 +53,13 @@ DictionaryValue GenerateLayeredDict(int breadth, int depth) {
 class JSONPerfTest : public testing::Test {
  public:
   void TestWriteAndRead(int breadth, int depth) {
-    std::string description = "Breadth: " + base::NumberToString(breadth) +
-                              ", Depth: " + base::NumberToString(depth);
-    DictionaryValue dict = GenerateLayeredDict(breadth, depth);
+    std::string description = "Breadth: " + std::to_string(breadth) +
+                              ", Depth: " + std::to_string(depth);
+    auto dict = GenerateLayeredDict(breadth, depth);
     std::string json;
 
     TimeTicks start_write = TimeTicks::Now();
-    JSONWriter::Write(dict, &json);
+    JSONWriter::Write(*dict, &json);
     TimeTicks end_write = TimeTicks::Now();
     perf_test::PrintResult("Write", "", description,
                            (end_write - start_write).InMillisecondsF(), "ms",

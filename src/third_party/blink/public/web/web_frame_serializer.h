@@ -121,8 +121,7 @@ class WebFrameSerializer {
   // the target frame didn't have a valid url).
   BLINK_EXPORT static bool Serialize(WebLocalFrame*,
                                      WebFrameSerializerClient*,
-                                     LinkRewritingDelegate*,
-                                     bool);
+                                     LinkRewritingDelegate*);
 
   // FIXME: The following are here for unit testing purposes. Consider
   // changing the unit tests instead.
@@ -132,6 +131,9 @@ class WebFrameSerializer {
       const WebString& charset);
   // Generate the MOTW declaration.
   BLINK_EXPORT static WebString GenerateMarkOfTheWebDeclaration(const WebURL&);
+  // Generate the default base tag declaration.
+  BLINK_EXPORT static WebString GenerateBaseTagDeclaration(
+      const WebString& base_target);
 };
 
 }  // namespace blink

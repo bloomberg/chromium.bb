@@ -56,7 +56,6 @@ from dashboard import update_test_suite_descriptors
 from dashboard import update_test_suites
 from dashboard.api import alerts as api_alerts
 from dashboard.api import bugs
-from dashboard.api import config
 from dashboard.api import describe
 from dashboard.api import list_timeseries
 from dashboard.api import new_bug
@@ -79,7 +78,6 @@ _URL_MAPPING = [
     ('/alerts', alerts.AlertsHandler),
     (r'/api/alerts', api_alerts.AlertsHandler),
     (r'/api/bugs/(.*)', bugs.BugsHandler),
-    (r'/api/config', config.ConfigHandler),
     (r'/api/describe', describe.DescribeHandler),
     (r'/api/list_timeseries/(.*)', list_timeseries.ListTimeseriesHandler),
     (r'/api/new_bug', new_bug.NewBugHandler),

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_markup.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -75,7 +76,9 @@ static void SerializeCharacter(UChar32 c, StringBuilder& append_to) {
 }
 
 static void SerializeCharacterAsCodePoint(UChar32 c, StringBuilder& append_to) {
-  append_to.AppendFormat("\\%x ", c);
+  append_to.Append('\\');
+  HexNumber::AppendUnsignedAsHex(c, append_to, HexNumber::kLowercase);
+  append_to.Append(' ');
 }
 
 void SerializeIdentifier(const String& identifier,

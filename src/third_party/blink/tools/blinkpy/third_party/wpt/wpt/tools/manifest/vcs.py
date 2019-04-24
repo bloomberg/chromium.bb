@@ -50,8 +50,8 @@ class Git(object):
                 return subprocess.check_output(full_cmd, cwd=repo_path, stderr=subprocess.STDOUT)
             except Exception as e:
                 if platform.uname()[0] == "Windows" and isinstance(e, WindowsError):
-                    full_cmd[0] = "git.bat"
-                    return subprocess.check_output(full_cmd, cwd=repo_path, stderr=subprocess.STDOUT)
+                        full_cmd[0] = "git.bat"
+                        return subprocess.check_output(full_cmd, cwd=repo_path, stderr=subprocess.STDOUT)
                 else:
                     raise
         return git
@@ -60,32 +60,31 @@ class Git(object):
     def for_path(cls, path, url_base, cache_path, manifest_path=None, rebuild=False):
         git = Git.get_func(path)
         try:
-            # this needs to be a command that fails if we aren't in a git repo
-            git("rev-parse", "--show-toplevel")
+            return cls(git("rev-parse", "--show-toplevel").rstrip(), url_base, cache_path,
+                       manifest_path=manifest_path, rebuild=rebuild)
         except (subprocess.CalledProcessError, OSError):
             return None
-        else:
-            return cls(path, url_base, cache_path,
-                       manifest_path=manifest_path, rebuild=rebuild)
 
     def _local_changes(self):
-        """get a set of files which have changed between HEAD and working copy"""
-        changes = set()
-
+        changes = {}
         cmd = ["status", "-z", "--ignore-submodules=all"]
         data = self.git(*cmd)
 
-        in_rename = False
-        for line in data.split(b"\0")[:-1]:
-            if in_rename:
-                changes.add(line)
-                in_rename = False
-            else:
-                status = line[:2]
-                if b"R" in status or b"C" in status:
-                    in_rename = True
-                changes.add(line[3:])
+        if data == "":
+            return changes
 
+        rename_data = None
+        for entry in data.split("\0")[:-1]:
+            if rename_data is not None:
+                status, rel_path = entry.split(" ")
+                if status[0] == "R":
+                    rename_data = (rel_path, status)
+                else:
+                    changes[rel_path] = (status, None)
+            else:
+                rel_path = entry
+                changes[rel_path] = rename_data
+                rename_data = None
         return changes
 
     def _show_file(self, path):
@@ -96,17 +95,18 @@ class Git(object):
         cmd = ["ls-tree", "-r", "-z", "HEAD"]
         local_changes = self._local_changes()
         for result in self.git(*cmd).split("\0")[:-1]:
-            data, rel_path = result.rsplit("\t", 1)
-            hash = data.split(" ", 3)[2]
-            if rel_path in local_changes:
-                contents = self._show_file(rel_path)
-            else:
-                contents = None
-            yield SourceFile(self.root,
-                             rel_path,
-                             self.url_base,
-                             hash,
-                             contents=contents), True
+            rel_path = result.split("\t")[-1]
+            hash = result.split()[2]
+            if not os.path.isdir(os.path.join(self.root, rel_path)):
+                if rel_path in local_changes:
+                    contents = self._show_file(rel_path)
+                else:
+                    contents = None
+                yield SourceFile(self.root,
+                                 rel_path,
+                                 self.url_base,
+                                 hash,
+                                 contents=contents), True
 
     def dump_caches(self):
         pass

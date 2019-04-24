@@ -14,11 +14,14 @@
 
 namespace chromeos {
 
+class BaseScreenDelegate;
+
 // This is App Downloading screen that tells the user the selected Android apps
 // are being downloaded.
 class AppDownloadingScreen : public BaseScreen {
  public:
-  AppDownloadingScreen(AppDownloadingScreenView* view,
+  AppDownloadingScreen(BaseScreenDelegate* base_screen_delegate,
+                       AppDownloadingScreenView* view,
                        const base::RepeatingClosure& exit_callback);
   ~AppDownloadingScreen() override;
 

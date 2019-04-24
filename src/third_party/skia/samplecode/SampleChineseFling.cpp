@@ -7,7 +7,7 @@
 
 #include "Resources.h"
 #include "Sample.h"
-#include "ToolUtils.h"
+#include "sk_tool_utils.h"
 
 #include "SkCanvas.h"
 #include "SkFontMetrics.h"
@@ -92,13 +92,8 @@ private:
             this->createRandomWord(glyphs);
 
             SkTextBlobBuilder builder;
-            ToolUtils::add_to_text_blob_w_len(&builder,
-                                              (const char*)glyphs,
-                                              kWordLength * 4,
-                                              kUTF32_SkTextEncoding,
-                                              font,
-                                              0,
-                                              0);
+            sk_tool_utils::add_to_text_blob_w_len(&builder, (const char*) glyphs, kWordLength*4,
+                                                  kUTF32_SkTextEncoding, font, 0, 0);
 
             fBlobs.emplace_back(builder.make());
         }
@@ -221,13 +216,9 @@ private:
                 auto currentLineLength = SkTMin(45, paragraphLength - 45);
                 this->createRandomLine(glyphs, currentLineLength);
 
-                ToolUtils::add_to_text_blob_w_len(&builder,
-                                                  (const char*)glyphs,
-                                                  currentLineLength * 4,
-                                                  kUTF32_SkTextEncoding,
-                                                  font,
-                                                  0,
-                                                  y);
+                sk_tool_utils::add_to_text_blob_w_len(&builder, (const char*) glyphs,
+                                                      currentLineLength*4, kUTF32_SkTextEncoding,
+                                                      font, 0, y);
                 y += fMetrics.fDescent - fMetrics.fAscent + fMetrics.fLeading;
                 paragraphLength -= 45;
             }

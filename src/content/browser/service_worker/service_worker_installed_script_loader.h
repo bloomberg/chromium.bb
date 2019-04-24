@@ -18,8 +18,9 @@ namespace content {
 
 class ServiceWorkerVersion;
 
-// A URLLoader that loads an installed service worker script for a service
-// worker that doesn't have a ServiceWorkerInstalledScriptsManager.
+// S13nServiceWorker: A URLLoader that loads an installed service worker script
+// for a service worker that doesn't have a
+// ServiceWorkerInstalledScriptsManager.
 //
 // Some cases where this happens:
 // - a new (non-installed) service worker requests a script that it already

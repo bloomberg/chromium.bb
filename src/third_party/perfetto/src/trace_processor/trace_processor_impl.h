@@ -58,10 +58,11 @@ class TraceProcessorImpl : public TraceProcessor {
 
   void NotifyEndOfFile() override;
 
-  Iterator ExecuteQuery(const std::string& sql) override;
+  void ExecuteQuery(
+      const protos::RawQueryArgs&,
+      std::function<void(const protos::RawQueryResult&)>) override;
 
-  int ComputeMetric(const std::vector<std::string>& metric_names,
-                    std::vector<uint8_t>* metrics) override;
+  Iterator ExecuteQuery(base::StringView sql) override;
 
   void InterruptQuery() override;
 
@@ -78,8 +79,6 @@ class TraceProcessorImpl : public TraceProcessor {
   // This is atomic because it is set by the CTRL-C signal handler and we need
   // to prevent single-flow compiler optimizations in ExecuteQuery().
   std::atomic<bool> query_interrupted_{false};
-
-  const Config cfg_;
 };
 
 // The pointer implementation of TraceProcessor::Iterator.
@@ -99,16 +98,17 @@ class TraceProcessor::IteratorImpl {
   IteratorImpl& operator=(IteratorImpl&&) = default;
 
   // Methods called by TraceProcessor::Iterator.
-  bool Next() {
-    if (PERFETTO_UNLIKELY(error_.has_value()))
-      return false;
+  Iterator::NextResult Next() {
+    using Result = TraceProcessor::Iterator::NextResult;
+    if (error_.has_value())
+      return Result::kError;
 
     int ret = sqlite3_step(*stmt_);
-    if (PERFETTO_UNLIKELY(ret != SQLITE_ROW && ret != SQLITE_DONE)) {
+    if (ret != SQLITE_ROW && ret != SQLITE_DONE) {
       error_ = base::Optional<std::string>(sqlite3_errmsg(db_));
-      return false;
+      return Result::kError;
     }
-    return ret == SQLITE_ROW;
+    return ret == SQLITE_ROW ? Result::kHasNext : Result::kEOF;
   }
 
   SqlValue Get(uint32_t col) {
@@ -136,13 +136,11 @@ class TraceProcessor::IteratorImpl {
     return value;
   }
 
-  std::string GetColumnName(uint32_t col) {
-    return sqlite3_column_name(stmt_.get(), static_cast<int>(col));
-  }
-
   uint32_t ColumnCount() { return column_count_; }
 
   base::Optional<std::string> GetLastError() { return error_; }
+
+  bool IsValid() { return trace_processor_ != nullptr; }
 
   // Methods called by TraceProcessorImpl.
   void Reset();

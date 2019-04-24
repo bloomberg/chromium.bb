@@ -9,7 +9,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -214,9 +213,10 @@ class SelectFileDialogExtensionBrowserTest
   void CheckJavascriptErrors() {
     content::RenderFrameHost* host =
         dialog_->GetRenderViewHost()->GetMainFrame();
-    base::Value value =
+    std::unique_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(host, "window.JSErrorCount");
-    int js_error_count = value.GetInt();
+    int js_error_count = 0;
+    ASSERT_TRUE(value->GetAsInteger(&js_error_count));
     ASSERT_EQ(0, js_error_count);
   }
 
@@ -328,8 +328,7 @@ class SelectFileDialogExtensionBrowserTest
         "document.querySelector(\'" + button_class + "\').click();");
     // The file selection handler code closes the dialog but does not return
     // control to JavaScript, so do not wait for the script return value.
-    host->GetMainFrame()->ExecuteJavaScriptForTests(script,
-                                                    base::NullCallback());
+    host->GetMainFrame()->ExecuteJavaScriptForTests(script);
 
     // Instead, wait for Listener notification that the window has closed.
     LOG(INFO) << "Waiting for window close notification.";

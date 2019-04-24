@@ -23,9 +23,8 @@ class EventTarget;
 
 namespace test {
 
-// See EventGenerator::GestureScrollSequenceWithCallback for details.
-using ScrollStepCallback =
-    base::RepeatingCallback<void(EventType, const gfx::Vector2dF&)>;
+typedef base::Callback<void(EventType, const gfx::Vector2dF&)>
+        ScrollStepCallback;
 
 class TestTickClock;
 class EventGenerator;

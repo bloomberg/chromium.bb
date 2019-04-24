@@ -177,8 +177,7 @@ public class SpeechRecognitionImpl {
      */
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("WrongConstant")
-    public static boolean initialize() {
-        Context context = ContextUtils.getApplicationContext();
+    public static boolean initialize(Context context) {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) return false;
 
         PackageManager pm = context.getPackageManager();

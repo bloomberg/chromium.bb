@@ -132,7 +132,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void SynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
-  void UpdateResourceLoaderFactories();
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
@@ -146,8 +145,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;
-
-  double page_scale_factor_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };

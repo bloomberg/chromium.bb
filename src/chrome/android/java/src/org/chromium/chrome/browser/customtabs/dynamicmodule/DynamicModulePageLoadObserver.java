@@ -87,7 +87,7 @@ public class DynamicModulePageLoadObserver implements PageLoadMetrics.Observer {
 
     private void notifyOnPageMetricEvent(WebContents webContents,
             String metricName, long navigationStartTick, long offset, long navigationId) {
-        if (webContents != mActivityTabProvider.get().getWebContents()) return;
+        if (webContents != mActivityTabProvider.getActivityTab().getWebContents()) return;
         long navigationStartMs = (navigationStartTick - mNativeTickOffsetUs) / 1000;
 
         if (mActivityDelegate == null) {

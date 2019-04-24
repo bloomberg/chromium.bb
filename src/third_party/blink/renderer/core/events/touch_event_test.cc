@@ -23,7 +23,7 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
 
   // ChromeClient methods:
   void AddMessageToConsole(LocalFrame*,
-                           mojom::ConsoleMessageSource message_source,
+                           MessageSource message_source,
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
@@ -35,13 +35,13 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
 
   // Expose console output.
   const std::vector<String>& Messages() { return messages_; }
-  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
+  const std::vector<MessageSource>& MessageSources() {
     return message_sources_;
   }
 
  private:
   std::vector<String> messages_;
-  std::vector<mojom::ConsoleMessageSource> message_sources_;
+  std::vector<MessageSource> message_sources_;
 };
 
 class TouchEventTest : public PageTestBase {
@@ -56,7 +56,7 @@ class TouchEventTest : public PageTestBase {
   }
 
   const std::vector<String>& Messages() { return chrome_client_->Messages(); }
-  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
+  const std::vector<MessageSource>& MessageSources() {
     return chrome_client_->MessageSources();
   }
 
@@ -89,8 +89,7 @@ TEST_F(TouchEventTest,
       ElementsAre("Unable to preventDefault inside passive event listener due "
                   "to target being treated as passive. See "
                   "https://www.chromestatus.com/features/5093566007214080"));
-  EXPECT_THAT(MessageSources(),
-              ElementsAre(mojom::ConsoleMessageSource::kIntervention));
+  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 }
 
 class TouchEventTestNoFrame : public testing::Test {};

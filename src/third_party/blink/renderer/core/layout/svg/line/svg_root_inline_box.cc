@@ -94,7 +94,7 @@ FloatRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
       rect.Unite(LayoutInlineBoxes(*child));
   }
 
-  LayoutRect logical_rect(EnclosingLayoutRect(rect));
+  LayoutRect logical_rect(rect);
   if (!box.IsHorizontal())
     logical_rect.SetSize(logical_rect.Size().TransposedSize());
 

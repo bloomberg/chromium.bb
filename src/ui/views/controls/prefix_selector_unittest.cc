@@ -4,7 +4,6 @@
 
 #include "ui/views/controls/prefix_selector.h"
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -19,14 +18,14 @@ namespace views {
 
 class TestPrefixDelegate : public View, public PrefixDelegate {
  public:
-  TestPrefixDelegate() {
+  TestPrefixDelegate() : selected_row_(0) {
     rows_.push_back(ASCIIToUTF16("aardvark"));
     rows_.push_back(ASCIIToUTF16("antelope"));
     rows_.push_back(ASCIIToUTF16("badger"));
     rows_.push_back(ASCIIToUTF16("gnu"));
   }
 
-  ~TestPrefixDelegate() override = default;
+  ~TestPrefixDelegate() override {}
 
   int GetRowCount() override { return static_cast<int>(rows_.size()); }
 
@@ -38,7 +37,7 @@ class TestPrefixDelegate : public View, public PrefixDelegate {
 
  private:
   std::vector<base::string16> rows_;
-  int selected_row_ = 0;
+  int selected_row_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrefixDelegate);
 };
@@ -46,7 +45,7 @@ class TestPrefixDelegate : public View, public PrefixDelegate {
 class PrefixSelectorTest : public ViewsTestBase {
  public:
   PrefixSelectorTest() {
-    selector_ = std::make_unique<PrefixSelector>(&delegate_, &delegate_);
+    selector_.reset(new PrefixSelector(&delegate_, &delegate_));
   }
   ~PrefixSelectorTest() override {
     // Explicitly release |selector_| here which can happen before releasing

@@ -51,11 +51,11 @@ class CORE_EXPORT CSSPropertyRef {
   // is the static Variable instance.
   CSSPropertyRef(const CSSProperty&);
 
-  bool IsValid() const { return property_id_ != CSSPropertyID::kInvalid; }
+  bool IsValid() const { return property_id_ != CSSPropertyInvalid; }
 
   const CSSProperty& GetProperty() const {
     DCHECK(IsValid());
-    if (property_id_ == CSSPropertyID::kVariable)
+    if (property_id_ == CSSPropertyVariable)
       return custom_property_;
     return CSSProperty::Get(resolveCSSPropertyID(property_id_));
   }

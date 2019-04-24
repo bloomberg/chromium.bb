@@ -109,8 +109,8 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   bool did_parse = false;
   bool did_change = false;
   if (!parser.parsed_properties_.IsEmpty()) {
-    const auto* parsed_declaration =
-        To<CSSCustomPropertyDeclaration>(parser.parsed_properties_[0].Value());
+    const CSSCustomPropertyDeclaration* parsed_declaration =
+        ToCSSCustomPropertyDeclaration(parser.parsed_properties_[0].Value());
     if (parsed_declaration->Value() && registry) {
       const PropertyRegistration* registration =
           registry->Registration(property_name);
@@ -140,14 +140,15 @@ static inline void FilterProperties(
     const CSSPropertyValue& property = input[i];
     if (property.IsImportant() != important)
       continue;
-    if (property.Id() == CSSPropertyID::kVariable) {
+    const unsigned property_id_index = property.Id() - firstCSSProperty;
+
+    if (property.Id() == CSSPropertyVariable) {
       const AtomicString& name =
-          To<CSSCustomPropertyDeclaration>(property.Value())->GetName();
+          ToCSSCustomPropertyDeclaration(property.Value())->GetName();
       if (seen_custom_properties.Contains(name))
         continue;
       seen_custom_properties.insert(name);
     } else {
-      const unsigned property_id_index = GetCSSPropertyIDIndex(property.Id());
       if (seen_properties.test(property_id_index))
         continue;
       seen_properties.set(property_id_index);
@@ -318,10 +319,10 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
 
   std::unique_ptr<CSSParserSelector> selector;
   if (!type_selector.IsNull() && pseudo.IsNull()) {
-    selector = std::make_unique<CSSParserSelector>(
+    selector = CSSParserSelector::Create(
         QualifiedName(g_null_atom, type_selector, g_star_atom));
   } else {
-    selector = std::make_unique<CSSParserSelector>();
+    selector = CSSParserSelector::Create();
     if (!pseudo.IsNull()) {
       selector->SetMatch(CSSSelector::kPagePseudoClass);
       selector->UpdatePseudoPage(pseudo.LowerASCII());
@@ -594,7 +595,7 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     if (prelude_invalid)
       return nullptr;
     ConsumeDeclarationList(stream, StyleRule::kFontFace);
-    return MakeGarbageCollected<StyleRuleFontFace>(
+    return StyleRuleFontFace::Create(
         CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
   }
 
@@ -626,7 +627,7 @@ StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
   const CSSParserToken& string = prelude.ConsumeIncludingWhitespace();
   if (string.GetType() != kStringToken || !prelude.AtEnd())
     return nullptr;  // Parse error, expected a single string
-  return MakeGarbageCollected<StyleRuleCharset>();
+  return StyleRuleCharset::Create();
 }
 
 StyleRuleImport* CSSParserImpl::ConsumeImportRule(
@@ -643,8 +644,8 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
     observer_->EndRuleBody(prelude_offset.end);
   }
 
-  return MakeGarbageCollected<StyleRuleImport>(
-      uri, MediaQueryParser::ParseMediaQuerySet(prelude));
+  return StyleRuleImport::Create(uri,
+                                 MediaQueryParser::ParseMediaQuerySet(prelude));
 }
 
 StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
@@ -658,7 +659,7 @@ StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
   if (uri.IsNull() || !prelude.AtEnd())
     return nullptr;  // Parse error, expected string or URI
 
-  return MakeGarbageCollected<StyleRuleNamespace>(namespace_prefix, uri);
+  return StyleRuleNamespace::Create(namespace_prefix, uri);
 }
 
 StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
@@ -684,7 +685,7 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
   if (observer_)
     observer_->EndRuleBody(block.Offset());
 
-  return MakeGarbageCollected<StyleRuleMedia>(media, rules);
+  return StyleRuleMedia::Create(media, rules);
 }
 
 StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
@@ -712,8 +713,7 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
   if (observer_)
     observer_->EndRuleBody(block.Offset());
 
-  return MakeGarbageCollected<StyleRuleSupports>(prelude_serialized, supported,
-                                                 rules);
+  return StyleRuleSupports::Create(prelude_serialized, supported, rules);
 }
 
 StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
@@ -739,7 +739,7 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
     style_sheet_->SetHasViewportRule();
 
   ConsumeDeclarationList(block, StyleRule::kViewport);
-  return MakeGarbageCollected<StyleRuleViewport>(
+  return StyleRuleViewport::Create(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSViewportRuleMode));
 }
 
@@ -761,7 +761,7 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
     style_sheet_->SetHasFontFaceRule();
 
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
-  return MakeGarbageCollected<StyleRuleFontFace>(
+  return StyleRuleFontFace::Create(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
@@ -789,9 +789,9 @@ StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
       block, kFontFeatureRuleList, [&font_display](StyleRuleBase* rule) {
         const CSSValue* value =
             To<StyleRuleFontFace>(rule)->Properties().GetPropertyCSSValue(
-                CSSPropertyID::kFontDisplay);
+                CSSPropertyFontDisplay);
         if (value)
-          font_display = To<CSSIdentifierValue>(value);
+          font_display = ToCSSIdentifierValue(value);
       });
 
   if (observer_)
@@ -799,8 +799,7 @@ StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
 
   if (!block.AtEnd())
     return nullptr;
-  return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
-                                                          font_display);
+  return StyleRuleFontFeatureValues::Create(font_family, font_display);
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
@@ -829,7 +828,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
     observer_->StartRuleBody(block.Offset());
   }
 
-  auto* keyframe_rule = MakeGarbageCollected<StyleRuleKeyframes>();
+  StyleRuleKeyframes* keyframe_rule = StyleRuleKeyframes::Create();
   ConsumeRuleList(
       block, kKeyframesRuleList, [keyframe_rule](StyleRuleBase* keyframe) {
         keyframe_rule->ParserAppendKeyframe(To<StyleRuleKeyframe>(keyframe));
@@ -857,7 +856,7 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
 
   ConsumeDeclarationList(block, StyleRule::kStyle);
 
-  return MakeGarbageCollected<StyleRulePage>(
+  return StyleRulePage::Create(
       std::move(selector_list),
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
@@ -877,7 +876,7 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
 
   ConsumeDeclarationList(block, StyleRule::kKeyframe);
 
-  return MakeGarbageCollected<StyleRuleKeyframe>(
+  return StyleRuleKeyframe::Create(
       std::move(key_list),
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
@@ -1016,7 +1015,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
 
   size_t properties_count = parsed_properties_.size();
 
-  CSSPropertyID unresolved_property = CSSPropertyID::kInvalid;
+  CSSPropertyID unresolved_property = CSSPropertyInvalid;
   AtRuleDescriptorID atrule_id = AtRuleDescriptorID::Invalid;
   if (rule_type == StyleRule::kFontFace) {
     if (important)  // Invalid
@@ -1032,7 +1031,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
   if (important && rule_type == StyleRule::kKeyframe)
     return;
 
-  if (unresolved_property == CSSPropertyID::kVariable) {
+  if (unresolved_property == CSSPropertyVariable) {
     if (rule_type != StyleRule::kStyle && rule_type != StyleRule::kKeyframe)
       return;
     AtomicString variable_name = lhs.Value().ToAtomicString();
@@ -1040,7 +1039,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
     ConsumeVariableValue(
         range.MakeSubRange(&range.Peek(), declaration_value_end), variable_name,
         important, is_animation_tainted);
-  } else if (unresolved_property != CSSPropertyID::kInvalid) {
+  } else if (unresolved_property != CSSPropertyInvalid) {
     if (style_sheet_ && style_sheet_->SingleOwnerDocument())
       Deprecation::WarnOnDeprecatedProperties(
           style_sheet_->SingleOwnerDocument()->GetFrame(), unresolved_property);
@@ -1065,7 +1064,7 @@ void CSSParserImpl::ConsumeVariableValue(CSSParserTokenRange range,
               variable_name, range, is_animation_tainted, *context_)) {
     parsed_properties_.push_back(
         CSSPropertyValue(GetCSSPropertyVariable(), *value, important));
-    context_->Count(context_->Mode(), CSSPropertyID::kVariable);
+    context_->Count(context_->Mode(), CSSPropertyVariable);
   }
 }
 

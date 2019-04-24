@@ -22,9 +22,9 @@
 #include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/task/sequence_manager/test/test_task_time_observer.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
+#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -161,7 +161,9 @@ class SequenceManagerWithMessageLoopPerfTestDelegate
  public:
   explicit SequenceManagerWithMessageLoopPerfTestDelegate(const char* name)
       : name_(name), message_loop_(new MessageLoopType()) {
-    SetSequenceManager(CreateSequenceManagerOnCurrentThread(
+    SetSequenceManager(SequenceManagerForTest::Create(
+        message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
+        DefaultTickClock::GetInstance(),
         SequenceManager::Settings{.randomised_sampling_enabled = false}));
   }
 
@@ -239,14 +241,14 @@ class MessageLoopPerfTestDelegate : public PerfTestDelegate {
 class SingleThreadInWorkerPoolPerfTestDelegate : public PerfTestDelegate {
  public:
   SingleThreadInWorkerPoolPerfTestDelegate() : done_cond_(&done_lock_) {
-    ThreadPool::SetInstance(
-        std::make_unique<::base::internal::ThreadPoolImpl>("Test"));
-    ThreadPool::GetInstance()->StartWithDefaultParams();
+    TaskScheduler::SetInstance(
+        std::make_unique<::base::internal::TaskSchedulerImpl>("Test"));
+    TaskScheduler::GetInstance()->StartWithDefaultParams();
   }
 
   ~SingleThreadInWorkerPoolPerfTestDelegate() override {
-    ThreadPool::GetInstance()->JoinForTesting();
-    ThreadPool::SetInstance(nullptr);
+    TaskScheduler::GetInstance()->JoinForTesting();
+    TaskScheduler::SetInstance(nullptr);
   }
 
   const char* GetName() const override {

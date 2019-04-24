@@ -78,7 +78,7 @@ static bool CopySequenceOfStringProperty(const char* property,
   Vector<String> value;
   if (!DictionaryHelper::Get(source, property, value))
     return false;
-  auto json_array = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> json_array = JSONArray::Create();
   for (unsigned i = 0; i < value.size(); ++i)
     json_array->PushString(value[i]);
   destination->SetArray(property, std::move(json_array));
@@ -132,7 +132,7 @@ static bool ParseJsonWebKey(const Dictionary& dict,
   //  * Parse "oth" (crbug.com/441396)
   //  * Fail with TypeError (not DataError) if the input does not conform
   //    to a JsonWebKey
-  auto json_object = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> json_object = JSONObject::Create();
 
   if (!CopyStringProperty("kty", dict, json_object.get())) {
     result->CompleteWithError(kWebCryptoErrorTypeData,
@@ -167,7 +167,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-encrypt
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.1.2: Let data be the result of getting a copy of the bytes held by
@@ -209,7 +209,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-decrypt
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.2.2: Let data be the result of getting a copy of the bytes held by
@@ -251,7 +251,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-sign
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.3.2: Let data be the result of getting a copy of the bytes held by
@@ -295,7 +295,7 @@ ScriptPromise SubtleCrypto::verifySignature(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-verify
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.4.2: Let signature be the result of getting a copy of the bytes
@@ -340,7 +340,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-digest
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.5.2: Let data be the result of getting a copy of the bytes held
@@ -373,7 +373,7 @@ ScriptPromise SubtleCrypto::generateKey(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-generateKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyUsageMask key_usages;
@@ -413,7 +413,7 @@ ScriptPromise SubtleCrypto::importKey(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-importKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyFormat format;
@@ -497,7 +497,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-exportKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyFormat format;
@@ -530,7 +530,7 @@ ScriptPromise SubtleCrypto::wrapKey(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-wrapKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyFormat format;
@@ -595,7 +595,7 @@ ScriptPromise SubtleCrypto::unwrapKey(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-unwrapKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyFormat format;
@@ -667,7 +667,7 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* script_state,
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-deriveBits
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   // 14.3.8.2: Let normalizedAlgorithm be the result of normalizing an
@@ -709,7 +709,7 @@ ScriptPromise SubtleCrypto::deriveKey(
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-deriveKey
 
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   ScriptPromise promise = result->Promise();
 
   WebCryptoKeyUsageMask key_usages;

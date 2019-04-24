@@ -49,7 +49,7 @@ OfflinePageAutoFetcherServiceFactory::OfflinePageAutoFetcherServiceFactory()
           std::make_unique<
               OfflinePageAutoFetcherServiceFactory::ServiceDelegate>()) {
   DependsOn(RequestCoordinatorFactory::GetInstance());
-  // Depends on OfflinePageModelFactory in SimpleDependencyManager.
+  DependsOn(OfflinePageModelFactory::GetInstance());
 }
 
 OfflinePageAutoFetcherServiceFactory::~OfflinePageAutoFetcherServiceFactory() {}

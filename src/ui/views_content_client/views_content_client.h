@@ -45,9 +45,9 @@ namespace ui {
 // }
 class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
  public:
-  using OnPreMainMessageLoopRunCallback =
-      base::OnceCallback<void(content::BrowserContext* browser_context,
-                              gfx::NativeWindow window_context)>;
+  typedef base::Callback<
+      void(content::BrowserContext* browser_context,
+           gfx::NativeWindow window_context)> Task;
 
 #if defined(OS_WIN)
   ViewsContentClient(HINSTANCE instance,
@@ -63,16 +63,8 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
 
   // The task to run at the end of BrowserMainParts::PreMainMessageLoopRun().
   // Ignored if this is not the main process.
-  void set_on_pre_main_message_loop_run_callback(
-      OnPreMainMessageLoopRunCallback callback) {
-    on_pre_main_message_loop_run_callback_ = std::move(callback);
-  }
-
-  // Calls the OnPreMainMessageLoopRun callback. |browser_context| is the
-  // current browser context. |window_context| is a candidate root window that
-  // may be null.
-  void OnPreMainMessageLoopRun(content::BrowserContext* browser_context,
-                               gfx::NativeWindow window_context);
+  void set_task(const Task& task) { task_ = task; }
+  const Task& task() const { return task_; }
 
   // Called by ViewsContentClientMainParts to supply the quit-closure to use
   // to exit RunMain().
@@ -89,7 +81,7 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
   int argc_;
   const char** argv_;
 #endif
-  OnPreMainMessageLoopRunCallback on_pre_main_message_loop_run_callback_;
+  Task task_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClient);

@@ -205,9 +205,8 @@ JSEventHandlerForContentAttribute::GetSourceLocation(EventTarget& target) {
   if (source_location)
     return source_location;
   // Fallback to uncompiled source info.
-  return std::make_unique<SourceLocation>(
-      source_url_, position_.line_.ZeroBasedInt(),
-      position_.column_.ZeroBasedInt(), nullptr);
+  return SourceLocation::Create(source_url_, position_.line_.ZeroBasedInt(),
+                                position_.column_.ZeroBasedInt(), nullptr);
 }
 
 }  // namespace blink

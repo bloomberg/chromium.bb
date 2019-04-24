@@ -29,10 +29,9 @@ constexpr Timestamp kDummyTimestamp = Timestamp::Seconds<1000>();
 
 TEST_F(DelayBasedBweTest, NoCrashEmptyFeedback) {
   std::vector<PacketFeedback> packet_feedback_vector;
-  bitrate_estimator_->IncomingPacketFeedbackVector(
-      packet_feedback_vector, /*acked_bitrate*/ absl::nullopt,
-      /*probe_bitrate*/ absl::nullopt, /*network_estimate*/ absl::nullopt,
-      /*in_alr*/ false, kDummyTimestamp);
+  bitrate_estimator_->IncomingPacketFeedbackVector(packet_feedback_vector,
+                                                   absl::nullopt, absl::nullopt,
+                                                   false, kDummyTimestamp);
 }
 
 TEST_F(DelayBasedBweTest, NoCrashOnlyLostFeedback) {
@@ -43,10 +42,9 @@ TEST_F(DelayBasedBweTest, NoCrashOnlyLostFeedback) {
   packet_feedback_vector.push_back(PacketFeedback(PacketFeedback::kNotReceived,
                                                   PacketFeedback::kNoSendTime,
                                                   1, 1500, PacedPacketInfo()));
-  bitrate_estimator_->IncomingPacketFeedbackVector(
-      packet_feedback_vector, /*acked_bitrate*/ absl::nullopt,
-      /*probe_bitrate*/ absl::nullopt, /*network_estimate*/ absl::nullopt,
-      /*in_alr*/ false, kDummyTimestamp);
+  bitrate_estimator_->IncomingPacketFeedbackVector(packet_feedback_vector,
+                                                   absl::nullopt, absl::nullopt,
+                                                   false, kDummyTimestamp);
 }
 
 TEST_F(DelayBasedBweTest, ProbeDetection) {
@@ -243,9 +241,7 @@ TEST_F(DelayBasedBweTest, TestInitialOveruse) {
 class DelayBasedBweTestWithBackoffTimeoutExperiment : public DelayBasedBweTest {
  public:
   DelayBasedBweTestWithBackoffTimeoutExperiment()
-      : DelayBasedBweTest(
-            "WebRTC-BweAimdRateControlConfig/initial_backoff_interval:200ms/") {
-  }
+      : DelayBasedBweTest("WebRTC-BweInitialBackOffInterval/Enabled-200/") {}
 };
 
 // This test subsumes and improves DelayBasedBweTest.TestInitialOveruse above.

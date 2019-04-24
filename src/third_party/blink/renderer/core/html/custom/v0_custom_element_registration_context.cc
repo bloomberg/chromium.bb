@@ -41,12 +41,11 @@
 #include "third_party/blink/renderer/core/svg/svg_unknown_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 V0CustomElementRegistrationContext::V0CustomElementRegistrationContext()
-    : candidates_(MakeGarbageCollected<V0CustomElementUpgradeCandidateMap>()) {}
+    : candidates_(V0CustomElementUpgradeCandidateMap::Create()) {}
 
 void V0CustomElementRegistrationContext::RegisterElement(
     Document* document,
@@ -78,7 +77,7 @@ Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
   Element* element;
 
   if (html_names::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
-    element = MakeGarbageCollected<HTMLElement>(tag_name, document);
+    element = HTMLElement::Create(tag_name, document);
   } else if (svg_names::kNamespaceURI == tag_name.NamespaceURI()) {
     element = SVGUnknownElement::Create(tag_name, document);
   } else {

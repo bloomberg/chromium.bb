@@ -86,8 +86,9 @@ bool IsFeatureEnabled(const std::string& feature_name) {
   return base::FeatureList::IsEnabled(*it->second);
 }
 
-std::vector<web_app::InstallOptions> ScanDir(const base::FilePath& dir,
-                                             const std::string& user_type) {
+std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
+    const base::FilePath& dir,
+    const std::string& user_type) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
@@ -95,7 +96,7 @@ std::vector<web_app::InstallOptions> ScanDir(const base::FilePath& dir,
                                   false,  // Recursive.
                                   base::FileEnumerator::FILES);
 
-  std::vector<web_app::InstallOptions> install_options_list;
+  std::vector<web_app::PendingAppManager::AppInfo> app_infos;
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {
@@ -171,18 +172,16 @@ std::vector<web_app::InstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
 
-    web_app::InstallOptions install_options(
+    web_app::PendingAppManager::AppInfo info(
         std::move(app_url), launch_container,
         web_app::InstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = create_shortcuts;
-    install_options.add_to_desktop = create_shortcuts;
-    install_options.add_to_quick_launch_bar = create_shortcuts;
-    install_options.require_manifest = true;
+    info.create_shortcuts = create_shortcuts;
+    info.require_manifest = true;
 
-    install_options_list.push_back(std::move(install_options));
+    app_infos.push_back(std::move(info));
   }
 
-  return install_options_list;
+  return app_infos;
 }
 
 base::FilePath DetermineScanDir(const Profile* profile) {
@@ -213,9 +212,9 @@ base::FilePath DetermineScanDir(const Profile* profile) {
 
 namespace web_app {
 
-std::vector<web_app::InstallOptions> ScanDirForExternalWebAppsForTesting(
-    const base::FilePath& dir,
-    Profile* profile) {
+std::vector<web_app::PendingAppManager::AppInfo>
+ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
+                                    Profile* profile) {
   return ScanDir(dir, apps::DetermineUserType(profile));
 }
 
@@ -224,7 +223,7 @@ void ScanForExternalWebApps(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::FilePath dir = DetermineScanDir(profile);
   if (dir.empty()) {
-    std::move(callback).Run(std::vector<web_app::InstallOptions>());
+    std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
     return;
   }
   // Do a two-part callback dance, across different TaskRunners.
@@ -234,7 +233,7 @@ void ScanForExternalWebApps(Profile* profile,
   // base::PostTaskWithTraitsAndReplyWithResult will bounce us back to the
   // originating thread (the UI thread).
   //
-  // 2. In |callback|, forward the vector of InstallOptions on to the
+  // 2. In |callback|, forward the vector of AppInfo's on to the
   // pending_app_manager_, which can only be called on the UI thread.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,

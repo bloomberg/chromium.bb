@@ -174,7 +174,7 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   size_t iter = 0;
   std::string key;
   std::string value;
-  // This logic is copied from blink::ResourceResponse::AddHttpHeaderField.
+  // This logic is copied from blink::ResourceResponse::AddHTTPHeaderField.
   while (headers->EnumerateHeaderLines(&iter, &key, &value)) {
     if (header_strings.find(key) == header_strings.end()) {
       header_strings[key] = value;

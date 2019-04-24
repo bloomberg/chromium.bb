@@ -11,13 +11,18 @@
 
 #include <stdlib.h>
 
-#if defined(SK_BUILD_FOR_GOOGLE3)
+// Disable SetupCrashHandler() unless SK_CRASH_HANDLER is defined.
+#ifndef SK_CRASH_HANDLER
+    void SetupCrashHandler() { }
+
+#elif defined(SK_BUILD_FOR_GOOGLE3)
     #include "base/process_state.h"
     void SetupCrashHandler() { InstallSignalHandlers(); }
 
 #else
 
     #if defined(SK_BUILD_FOR_MAC)
+
         // We only use local unwinding, so we can define this to select a faster implementation.
         #define UNW_LOCAL_ONLY
         #include <libunwind.h>
@@ -50,34 +55,18 @@
         }
 
     #elif defined(SK_BUILD_FOR_UNIX)
+
         // We'd use libunwind here too, but it's a pain to get installed for
         // both 32 and 64 bit on bots.  Doesn't matter much: catchsegv is best anyway.
-        #include <cxxabi.h>
-        #include <dlfcn.h>
         #include <execinfo.h>
-        #include <string.h>
 
         static void handler(int sig) {
-            void* stack[64];
-            const int count = backtrace(stack, SK_ARRAY_COUNT(stack));
-            char** symbols = backtrace_symbols(stack, count);
+            static const int kMax = 64;
+            void* stack[kMax];
+            const int count = backtrace(stack, kMax);
 
             SkDebugf("\nSignal %d [%s]:\n", sig, strsignal(sig));
-            for (int i = 0; i < count; i++) {
-                Dl_info info;
-                if (dladdr(stack[i], &info) && info.dli_sname) {
-                    char demangled[256];
-                    size_t len = SK_ARRAY_COUNT(demangled);
-                    int ok;
-
-                    abi::__cxa_demangle(info.dli_sname, demangled, &len, &ok);
-                    if (ok == 0) {
-                        SkDebugf("    %s\n", demangled);
-                        continue;
-                    }
-                }
-                SkDebugf("    %s\n", symbols[i]);
-            }
+            backtrace_symbols_fd(stack, count, 2/*stderr*/);
 
             // Exit NOW.  Don't notify other threads, don't call anything registered with atexit().
             _Exit(sig);
@@ -95,7 +84,6 @@
                 SIGFPE,
                 SIGILL,
                 SIGSEGV,
-                SIGTRAP,
             };
 
             for (size_t i = 0; i < sizeof(kSignals) / sizeof(kSignals[0]); i++) {
@@ -107,10 +95,9 @@
             }
         }
 
-    #elif defined(SK_BUILD_FOR_WIN)
+    #elif defined(SK_CRASH_HANDLER) && defined(SK_BUILD_FOR_WIN)
 
         #include <DbgHelp.h>
-        #include "SkMalloc.h"
 
         static const struct {
             const char* name;
@@ -156,11 +143,6 @@
             frame.AddrStack.Offset = c->Rsp;
             frame.AddrFrame.Offset = c->Rbp;
             const DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
-        #elif defined(_M_ARM64)
-            frame.AddrPC.Offset    = c->Pc;
-            frame.AddrStack.Offset = c->Sp;
-            frame.AddrFrame.Offset = c->Fp;
-            const DWORD machineType = IMAGE_FILE_MACHINE_ARM64;
         #endif
 
             while (StackWalk64(machineType,
@@ -202,9 +184,9 @@
             SetUnhandledExceptionFilter(handler);
         }
 
-    #else
+    #else  // We asked for SK_CRASH_HANDLER, but it's not Mac, Linux, or Windows.  Sorry!
 
         void SetupCrashHandler() { }
 
     #endif
-#endif // SK_BUILD_FOR_GOOGLE3?
+#endif // SK_CRASH_HANDLER

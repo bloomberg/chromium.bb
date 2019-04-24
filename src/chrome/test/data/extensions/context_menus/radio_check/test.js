@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.contextMenus.create({
-  id: 'radio1',
-  type: 'radio',
-  title: 'Radio 1',
-  onclick: function() {
-    chrome.test.sendMessage('onclick radio1');
-  }
-}, function() {
-  chrome.test.sendMessage('created radio1 item', function() {
-    createSecondRadioButton();
+window.onload = function() {
+  chrome.contextMenus.create({
+    id: 'radio1',
+    type: 'radio',
+    title: 'Radio 1',
+    onclick: function() {
+      chrome.test.sendMessage('onclick radio1');
+    }
+  }, function() {
+    chrome.test.sendMessage('created radio1 item', function() {
+      createSecondRadioButton();
+    });
   });
-});
+};
 
 function createSecondRadioButton() {
   chrome.contextMenus.create({

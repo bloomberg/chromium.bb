@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -35,38 +34,33 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
       SVGURIReference(this),
       // Spec: If the x/y attribute is not specified, the effect is as if a
       // value of "-10%" were specified.
-      x_(MakeGarbageCollected<SVGAnimatedLength>(
-          this,
-          svg_names::kXAttr,
-          SVGLengthMode::kWidth,
-          SVGLength::Initial::kPercentMinus10)),
-      y_(MakeGarbageCollected<SVGAnimatedLength>(
-          this,
-          svg_names::kYAttr,
-          SVGLengthMode::kHeight,
-          SVGLength::Initial::kPercentMinus10)),
+      x_(SVGAnimatedLength::Create(this,
+                                   svg_names::kXAttr,
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kPercentMinus10)),
+      y_(SVGAnimatedLength::Create(this,
+                                   svg_names::kYAttr,
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kPercentMinus10)),
       // Spec: If the width/height attribute is not specified, the effect is as
       // if a value of "120%" were specified.
-      width_(MakeGarbageCollected<SVGAnimatedLength>(
-          this,
-          svg_names::kWidthAttr,
-          SVGLengthMode::kWidth,
-          SVGLength::Initial::kPercent120)),
-      height_(MakeGarbageCollected<SVGAnimatedLength>(
-          this,
-          svg_names::kHeightAttr,
-          SVGLengthMode::kHeight,
-          SVGLength::Initial::kPercent120)),
-      filter_units_(MakeGarbageCollected<
-                    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
+      width_(SVGAnimatedLength::Create(this,
+                                       svg_names::kWidthAttr,
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kPercent120)),
+      height_(SVGAnimatedLength::Create(this,
+                                        svg_names::kHeightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kPercent120)),
+      filter_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           svg_names::kFilterUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)),
-      primitive_units_(MakeGarbageCollected<
-                       SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
-          this,
-          svg_names::kPrimitiveUnitsAttr,
-          SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+      primitive_units_(
+          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
+              this,
+              svg_names::kPrimitiveUnitsAttr,
+              SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
@@ -145,8 +139,7 @@ void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
   InvalidateFilterChain();
 }
 
-LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&,
-                                                   LegacyLayout) {
+LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGResourceFilter(this);
 }
 

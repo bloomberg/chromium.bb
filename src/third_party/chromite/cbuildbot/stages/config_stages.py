@@ -10,6 +10,7 @@ from __future__ import print_function
 import errno
 import os
 import re
+import shutil
 import textwrap
 import traceback
 
@@ -422,17 +423,12 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
                  self.PROJECT_URL, self.PROJECT_BRANCH, self.project_dir)
 
   def _UpdateLuciProject(self):
-    chromite_source_file = os.path.join(constants.CHROMITE_DIR, 'config',
-                                        'luci-scheduler.cfg')
-    generated_source_file = os.path.join(self.project_dir, 'generated',
-                                         'luci-scheduler.cfg')
+    source_file = os.path.join(constants.CHROMITE_DIR, 'config',
+                               'luci-scheduler.cfg')
 
     target_file = os.path.join(self.project_dir, 'luci', 'luci-scheduler.cfg')
 
-    concatenated_content = (osutils.ReadFile(chromite_source_file) + "\n\n"
-                            + osutils.ReadFile(generated_source_file))
-
-    if concatenated_content == osutils.ReadFile(target_file):
+    if osutils.ReadFile(source_file) == osutils.ReadFile(target_file):
       logging.PrintBuildbotStepText(
           'luci-scheduler.cfg current: No Update.')
       return
@@ -444,11 +440,10 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
     message = textwrap.dedent('''\
       luci-scheduler.cfg: Chromite %s
 
-      Auto update to match generated file in chromite and luci config.
+      Auto update to match generated file in chromite.
       ''' % chromite_rev)
 
-    with open(target_file, "w") as f:
-      f.write(concatenated_content)
+    shutil.copyfile(source_file, target_file)
 
     git.RunGit(self.project_dir, ['add', '-A'])
     git.RunGit(self.project_dir, ['commit', '-m', message])

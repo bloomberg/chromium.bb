@@ -12,7 +12,6 @@
 #include <memory>
 #include "stdlib.h"
 #include "string.h"
-#include "SkSLLexer.h"
 #include "SkSLDefines.h"
 #include "SkSLString.h"
 #include "SkSLStringStream.h"
@@ -31,10 +30,6 @@ namespace SkSL {
 
 class OutputStream;
 class StringStream;
-
-#ifdef SKSL_STANDALONE
-#define SK_API
-#endif
 
 #if defined(SKSL_STANDALONE) || !SK_SUPPORT_GPU
 
@@ -396,13 +391,6 @@ public:
 #endif
 
 void write_stringstream(const StringStream& d, OutputStream& out);
-
-// Returns true if op is '=' or any compound assignment operator ('+=', '-=', etc.)
-bool is_assignment(Token::Kind op);
-
-// Given a compound assignment operator, returns the non-assignment version of the operator (e.g.
-// '+=' becomes '+')
-Token::Kind remove_assignment(Token::Kind op);
 
 NORETURN void sksl_abort();
 

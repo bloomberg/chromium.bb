@@ -17,6 +17,11 @@ class CSSFontFeatureValuesRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CSSFontFeatureValuesRule* Create(StyleRuleFontFeatureValues* rule,
+                                          CSSStyleSheet* sheet) {
+    return MakeGarbageCollected<CSSFontFeatureValuesRule>(rule, sheet);
+  }
+
   CSSFontFeatureValuesRule(StyleRuleFontFeatureValues*, CSSStyleSheet* parent);
   ~CSSFontFeatureValuesRule() override;
 

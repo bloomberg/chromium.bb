@@ -467,9 +467,6 @@ function g(x) {
   }
 }
 
-%PrepareFunctionForOptimization(f);
-%PrepareFunctionForOptimization(g);
-
 for (var i=0; i<10; i++) {
   f(i);
   g(i);

@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <select id="menulist">
   <option id="item0">Alicia</option>
@@ -9,7 +10,7 @@
 </select>
 
 <script>
-async_test((t) => {
+async_test_after_layout_and_paint((t) => {
     var menulist = document.getElementById("menulist");
     menulist.selectedIndex = 0;
 

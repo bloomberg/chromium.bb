@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ENCRYPTED_MEDIA_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ENCRYPTED_MEDIA_REQUEST_H_
 
-#include <memory>
-
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -29,8 +27,7 @@ class EncryptedMediaRequest
 
   virtual const SecurityOrigin* GetSecurityOrigin() const = 0;
 
-  virtual void RequestSucceeded(
-      std::unique_ptr<WebContentDecryptionModuleAccess>) = 0;
+  virtual void RequestSucceeded(WebContentDecryptionModuleAccess*) = 0;
   virtual void RequestNotSupported(const WebString& error_message) = 0;
 
   virtual void Trace(blink::Visitor* visitor) {}

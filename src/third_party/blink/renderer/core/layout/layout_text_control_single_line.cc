@@ -260,7 +260,7 @@ LayoutUnit LayoutTextControlSingleLine::ComputeControlLogicalHeight(
   return line_height + non_content_height;
 }
 
-void LayoutTextControlSingleLine::Autoscroll(const LayoutPoint& position) {
+void LayoutTextControlSingleLine::Autoscroll(const IntPoint& position) {
   LayoutBox* layout_object = InnerEditorElement()->GetLayoutBox();
   if (!layout_object)
     return;

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import cStringIO
 import ctypes
 import os
@@ -309,10 +307,10 @@ class Validator(object):
 
 
 def main():
-  print('Self check')
-  print(sys.argv)
+  print 'Self check'
+  print sys.argv
   validator_dll, = sys.argv[1:]
-  print(validator_dll)
+  print validator_dll
 
   validator = Validator(validator_dll)
 
@@ -325,7 +323,7 @@ def main():
 
     def Callback(begin_index, end_index, info):
       errors.append(begin_index)
-      print('callback', begin_index, end_index)
+      print 'callback', begin_index, end_index
 
     result = validator.ValidateChunk(
         data,

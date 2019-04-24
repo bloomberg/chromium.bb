@@ -20,8 +20,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class PasswordFormManagerForUI;
-
 // Reverses order of labels in hostname.
 std::string SplitByDotAndReverse(base::StringPiece host);
 
@@ -42,13 +40,6 @@ std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
 // |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
 // |password_form|) and without prefixes "m.", "mobile." or "www.".
 std::string GetShownOrigin(const GURL& origin);
-
-// Updates the |form_manager| pending credentials with |username| and
-// |password|.
-void UpdatePasswordFormUsernameAndPassword(
-    const base::string16& username,
-    const base::string16& password,
-    PasswordFormManagerForUI* form_manager);
 
 }  // namespace password_manager
 

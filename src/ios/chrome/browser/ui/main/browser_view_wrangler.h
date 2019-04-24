@@ -14,8 +14,6 @@
 @class DeviceSharingManager;
 @protocol TabModelObserver;
 
-class AppUrlLoadingService;
-
 namespace ios {
 class ChromeBrowserState;
 }
@@ -43,7 +41,6 @@ class ChromeBrowserState;
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
-                appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
                      storageSwitcher:
                          (id<BrowserStateStorageSwitching>)storageSwitcher
     NS_DESIGNATED_INITIALIZER;

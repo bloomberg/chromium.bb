@@ -220,7 +220,7 @@ Database::Database(DatabaseContext* database_context,
                    const String& name,
                    const String& expected_version,
                    const String& display_name,
-                   uint32_t estimated_size)
+                   unsigned estimated_size)
     : database_context_(database_context),
       name_(name.IsolatedCopy()),
       expected_version_(expected_version.IsolatedCopy()),
@@ -229,12 +229,14 @@ Database::Database(DatabaseContext* database_context,
       guid_(0),
       opened_(false),
       new_(false),
-      database_authorizer_(kInfoTableName),
       transaction_in_progress_(false),
       is_transaction_queue_enabled_(true) {
   DCHECK(IsMainThread());
   context_thread_security_origin_ =
       database_context_->GetSecurityOrigin()->IsolatedCopy();
+
+  database_authorizer_ =
+      DatabaseAuthorizer::Create(database_context, kInfoTableName);
 
   if (name_.IsNull())
     name_ = "";
@@ -271,6 +273,8 @@ Database::~Database() {
 
 void Database::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_context_);
+  visitor->Trace(sqlite_database_);
+  visitor->Trace(database_authorizer_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -284,7 +288,7 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
 
   DatabaseTracker::Tracker().PrepareToOpenDatabase(this);
   bool success = false;
-  auto task = std::make_unique<DatabaseOpenTask>(
+  std::unique_ptr<DatabaseOpenTask> task = DatabaseOpenTask::Create(
       this, set_version_in_new_database, &event, error, error_message, success);
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
   event.Wait();
@@ -346,13 +350,12 @@ SQLTransactionBackend* Database::RunTransaction(SQLTransaction* transaction,
     return nullptr;
 
   SQLTransactionWrapper* wrapper = nullptr;
-  if (data) {
-    wrapper = MakeGarbageCollected<ChangeVersionWrapper>(data->OldVersion(),
-                                                         data->NewVersion());
-  }
+  if (data)
+    wrapper =
+        ChangeVersionWrapper::Create(data->OldVersion(), data->NewVersion());
 
-  auto* transaction_backend = MakeGarbageCollected<SQLTransactionBackend>(
-      this, transaction, wrapper, read_only);
+  SQLTransactionBackend* transaction_backend =
+      SQLTransactionBackend::Create(this, transaction, wrapper, read_only);
   transaction_queue_.push_back(transaction_backend);
   if (!transaction_in_progress_)
     ScheduleTransaction();
@@ -374,7 +377,8 @@ void Database::ScheduleTransaction() {
     transaction = transaction_queue_.TakeFirst();
 
   if (transaction && GetDatabaseContext()->DatabaseThreadAvailable()) {
-    auto task = std::make_unique<DatabaseTransactionTask>(transaction);
+    std::unique_ptr<DatabaseTransactionTask> task =
+        DatabaseTransactionTask::Create(transaction);
     STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get()
                      << " for transaction " << task->Transaction();
     transaction_in_progress_ = true;
@@ -388,7 +392,8 @@ void Database::ScheduleTransactionStep(SQLTransactionBackend* transaction) {
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return;
 
-  auto task = std::make_unique<DatabaseTransactionTask>(transaction);
+  std::unique_ptr<DatabaseTransactionTask> task =
+      DatabaseTransactionTask::Create(transaction);
   STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get()
                    << " for the transaction step";
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
@@ -582,7 +587,8 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
     return false;
   }
 
-  sqlite_database_.SetAuthorizer(&database_authorizer_);
+  DCHECK(database_authorizer_);
+  sqlite_database_.SetAuthorizer(database_authorizer_.Get());
 
   // See comment at the top this file regarding calling addOpenDatabase().
   DatabaseTracker::Tracker().AddOpenDatabase(this);
@@ -613,7 +619,7 @@ String Database::DisplayName() const {
   return display_name_.IsolatedCopy();
 }
 
-uint32_t Database::EstimatedSize() const {
+unsigned Database::EstimatedSize() const {
   return estimated_size_;
 }
 
@@ -627,7 +633,7 @@ bool Database::GetVersionFromDatabase(String& version,
   String query(String("SELECT value FROM ") + kInfoTableName +
                " WHERE key = '" + kVersionKey + "';");
 
-  database_authorizer_.Disable();
+  database_authorizer_->Disable();
 
   bool result =
       RetrieveTextResultFromDatabase(sqlite_database_, query, version);
@@ -639,7 +645,7 @@ bool Database::GetVersionFromDatabase(String& version,
                 << DatabaseDebugName();
   }
 
-  database_authorizer_.Enable();
+  database_authorizer_->Enable();
 
   return result;
 }
@@ -652,7 +658,7 @@ bool Database::SetVersionInDatabase(const String& version,
   String query(String("INSERT INTO ") + kInfoTableName +
                " (key, value) VALUES ('" + kVersionKey + "', ?);");
 
-  database_authorizer_.Disable();
+  database_authorizer_->Disable();
 
   bool result = SetTextValueInDatabase(sqlite_database_, query, version);
   if (result) {
@@ -663,7 +669,7 @@ bool Database::SetVersionInDatabase(const String& version,
                 << query << ")";
   }
 
-  database_authorizer_.Enable();
+  database_authorizer_->Enable();
 
   return result;
 }
@@ -692,35 +698,43 @@ bool Database::GetActualVersionForTransaction(String& actual_version) {
 }
 
 void Database::DisableAuthorizer() {
-  database_authorizer_.Disable();
+  DCHECK(database_authorizer_);
+  database_authorizer_->Disable();
 }
 
 void Database::EnableAuthorizer() {
-  database_authorizer_.Enable();
+  DCHECK(database_authorizer_);
+  database_authorizer_->Enable();
 }
 
 void Database::SetAuthorizerPermissions(int permissions) {
-  database_authorizer_.SetPermissions(permissions);
+  DCHECK(database_authorizer_);
+  database_authorizer_->SetPermissions(permissions);
 }
 
 bool Database::LastActionChangedDatabase() {
-  return database_authorizer_.LastActionChangedDatabase();
+  DCHECK(database_authorizer_);
+  return database_authorizer_->LastActionChangedDatabase();
 }
 
 bool Database::LastActionWasInsert() {
-  return database_authorizer_.LastActionWasInsert();
+  DCHECK(database_authorizer_);
+  return database_authorizer_->LastActionWasInsert();
 }
 
 void Database::ResetDeletes() {
-  database_authorizer_.ResetDeletes();
+  DCHECK(database_authorizer_);
+  database_authorizer_->ResetDeletes();
 }
 
 bool Database::HadDeletes() {
-  return database_authorizer_.HadDeletes();
+  DCHECK(database_authorizer_);
+  return database_authorizer_->HadDeletes();
 }
 
 void Database::ResetAuthorizer() {
-  database_authorizer_.Reset();
+  if (database_authorizer_)
+    database_authorizer_->Reset();
 }
 
 uint64_t Database::MaximumSize() const {
@@ -749,9 +763,8 @@ void Database::ReportSqliteError(int sqlite_error_code) {
 }
 
 void Database::LogErrorMessage(const String& message) {
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kStorage,
-                             mojom::ConsoleMessageLevel::kError, message));
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kStorageMessageSource, mojom::ConsoleMessageLevel::kError, message));
 }
 
 ExecutionContext* Database::GetExecutionContext() const {
@@ -763,7 +776,7 @@ void Database::CloseImmediately() {
   if (GetDatabaseContext()->DatabaseThreadAvailable() && Opened()) {
     LogErrorMessage("forcibly closing database");
     GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(
-        std::make_unique<DatabaseCloseTask>(this, nullptr));
+        DatabaseCloseTask::Create(this, nullptr));
   }
 }
 
@@ -807,7 +820,7 @@ void Database::PerformTransaction(
 static void CallTransactionErrorCallback(
     SQLTransaction::OnErrorCallback* callback,
     std::unique_ptr<SQLErrorData> error_data) {
-  callback->OnError(MakeGarbageCollected<SQLError>(*error_data));
+  callback->OnError(SQLError::Create(*error_data));
 }
 
 void Database::RunTransaction(
@@ -838,8 +851,8 @@ void Database::RunTransaction(
     DCHECK_EQ(transaction_error_callback, original_error_callback);
 #endif
     if (transaction_error_callback) {
-      auto error = std::make_unique<SQLErrorData>(SQLError::kUnknownErr,
-                                                  "database has been closed");
+      std::unique_ptr<SQLErrorData> error = SQLErrorData::Create(
+          SQLError::kUnknownErr, "database has been closed");
       GetDatabaseTaskRunner()->PostTask(
           FROM_HERE, WTF::Bind(&CallTransactionErrorCallback,
                                WrapPersistent(transaction_error_callback),
@@ -895,7 +908,8 @@ Vector<String> Database::TableNames() {
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return result;
 
-  auto task = std::make_unique<DatabaseTableNamesTask>(this, &event, result);
+  std::unique_ptr<DatabaseTableNamesTask> task =
+      DatabaseTableNamesTask::Create(this, &event, result);
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
   event.Wait();
 

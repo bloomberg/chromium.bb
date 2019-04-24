@@ -60,8 +60,8 @@ class ResourceLoaderTest : public testing::Test {
     std::unique_ptr<WebURLLoader> CreateURLLoader(
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-      return std::make_unique<NoopWebURLLoader>(std::move(task_runner));
+        scoped_refptr<base::SingleThreadTaskRunner>) override {
+      return std::make_unique<NoopWebURLLoader>();
     }
     std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
       return Platform::Current()->CreateCodeCacheLoader();
@@ -75,8 +75,6 @@ class ResourceLoaderTest : public testing::Test {
  private:
   class NoopWebURLLoader final : public WebURLLoader {
    public:
-    NoopWebURLLoader(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-        : task_runner_(task_runner) {}
     ~NoopWebURLLoader() override = default;
     void LoadSynchronously(const WebURLRequest&,
                            WebURLLoaderClient*,
@@ -96,12 +94,6 @@ class ResourceLoaderTest : public testing::Test {
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
     }
-    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
-      return task_runner_;
-    }
-
-   private:
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   };
 };
 
@@ -183,7 +175,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
         ResourceFetcherInit(*properties, context, CreateTaskRunner(),
                             MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
-    request.SetUrl(test.url);
+    request.SetURL(test.url);
     request.SetFetchRequestMode(test.request_mode);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
@@ -200,7 +192,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     response.SetType(test.original_response_type);
     response.SetWasFetchedViaServiceWorker(test.from == From::kServiceWorker);
     if (test.allowed_origin) {
-      response.SetHttpHeaderField("access-control-allow-origin",
+      response.SetHTTPHeaderField("access-control-allow-origin",
                                   test.allowed_origin->ToAtomicString());
     }
     response.SetType(test.original_response_type);
@@ -267,11 +259,11 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
 
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  StringBuilder data;
+  String data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.append(String(span.data(), span.size()));
   }
-  EXPECT_EQ(data.ToString(), "hello");
+  EXPECT_EQ(data, "hello");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
@@ -294,11 +286,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
   // The resource has a parsed body.
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  StringBuilder data;
+  String data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.append(String(span.data(), span.size()));
   }
-  EXPECT_EQ(data.ToString(), "Hello World!");
+  EXPECT_EQ(data, "Hello World!");
 }
 
 // Helper class which stores a BytesConsumer passed by RawResource and reads the
@@ -409,11 +401,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_Sync) {
   // The resource has a parsed body.
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  StringBuilder data;
+  String data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.append(String(span.data(), span.size()));
   }
-  EXPECT_EQ(data.ToString(), "Hello World!");
+  EXPECT_EQ(data, "Hello World!");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_SyncEmptyData) {
@@ -476,11 +468,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndNonStream) {
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  StringBuilder data;
+  String data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.append(String(span.data(), span.size()));
   }
-  EXPECT_EQ(data.ToString(), "Hello World!");
+  EXPECT_EQ(data, "Hello World!");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
@@ -563,7 +555,7 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
         ResourceFetcherInit(*properties, context, CreateTaskRunner(),
                             MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
-    request.SetUrl(foo_url_);
+    request.SetURL(foo_url_);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
     FetchParameters fetch_parameters(request);
@@ -594,7 +586,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
   ResourceResponse response(foo_url_);
   response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetUrlListViaServiceWorker(Vector<KURL>(1, foo_url_));
+  response.SetURLListViaServiceWorker(Vector<KURL>(1, foo_url_));
   EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
 }
 
@@ -603,7 +595,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
   ResourceResponse response(foo_url_);
   response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetUrlListViaServiceWorker(Vector<KURL>(1, bar_url_));
+  response.SetURLListViaServiceWorker(Vector<KURL>(1, bar_url_));
   EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
 }
 

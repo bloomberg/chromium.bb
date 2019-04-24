@@ -46,7 +46,8 @@ NSImage* NSImageFromPNG(const std::vector<ImagePNGRep>& image_png_reps,
 gfx::Size NSImageSize(NSImage* image);
 #endif  // defined(OS_MACOSX)
 
-ImageSkia ImageSkiaFromPNG(const std::vector<ImagePNGRep>& image_png_reps);
+std::unique_ptr<ImageSkia> ImageSkiaFromPNG(
+    const std::vector<ImagePNGRep>& image_png_reps);
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
     const ImageSkia* image_skia);
 

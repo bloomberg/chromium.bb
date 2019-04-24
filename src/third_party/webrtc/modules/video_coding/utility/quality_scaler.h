@@ -18,8 +18,7 @@
 #include "api/video_codecs/video_encoder.h"
 #include "rtc_base/experiments/quality_scaling_experiment.h"
 #include "rtc_base/numerics/moving_average.h"
-#include "rtc_base/synchronization/sequence_checker.h"
-#include "rtc_base/task_queue.h"
+#include "rtc_base/sequenced_task_checker.h"
 #include "rtc_base/task_utils/repeating_task.h"
 
 namespace webrtc {
@@ -49,8 +48,7 @@ class QualityScaler {
   // Construct a QualityScaler with given |thresholds| and |observer|.
   // This starts the quality scaler periodically checking what the average QP
   // has been recently.
-  QualityScaler(rtc::TaskQueue* task_queue,
-                AdaptationObserverInterface* observer,
+  QualityScaler(AdaptationObserverInterface* observer,
                 VideoEncoder::QpThresholds thresholds);
   virtual ~QualityScaler();
   // Should be called each time a frame is dropped at encoding.
@@ -61,8 +59,7 @@ class QualityScaler {
 
   // The following members declared protected for testing purposes.
  protected:
-  QualityScaler(rtc::TaskQueue* task_queue,
-                AdaptationObserverInterface* observer,
+  QualityScaler(AdaptationObserverInterface* observer,
                 VideoEncoder::QpThresholds thresholds,
                 int64_t sampling_period_ms);
 
@@ -77,7 +74,7 @@ class QualityScaler {
 
   RepeatingTaskHandle check_qp_task_ RTC_GUARDED_BY(&task_checker_);
   AdaptationObserverInterface* const observer_ RTC_GUARDED_BY(&task_checker_);
-  SequenceChecker task_checker_;
+  rtc::SequencedTaskChecker task_checker_;
 
   const VideoEncoder::QpThresholds thresholds_;
   const int64_t sampling_period_ms_;

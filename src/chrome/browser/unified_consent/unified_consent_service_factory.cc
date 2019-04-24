@@ -4,7 +4,6 @@
 
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 
-#include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -27,20 +26,12 @@ namespace {
 // Returns the synced pref names of the services on the "Sync and Google
 // services" settings page.
 // Note: The synced prefs returned by this method have to match the prefs
-// shown in
-// chrome/browser/resources/settings/privacy_page/personalization_options.html
-// on Desktop and chrome/android/java/res/xml/sync_and_services_preferences.xml
-// on Android.
-
+// shown in personalization_options.html.
 std::vector<std::string> GetSyncedServicePrefNames() {
-  return {
-    prefs::kSearchSuggestEnabled, prefs::kAlternateErrorPagesEnabled,
-        prefs::kSafeBrowsingEnabled, prefs::kSafeBrowsingScoutReportingEnabled,
-        spellcheck::prefs::kSpellCheckUseSpellingService,
-#if defined(OS_ANDROID)
-        prefs::kContextualSearchEnabled
-#endif
-  };
+  return {prefs::kSearchSuggestEnabled, prefs::kAlternateErrorPagesEnabled,
+          prefs::kSafeBrowsingEnabled,
+          prefs::kSafeBrowsingScoutReportingEnabled,
+          spellcheck::prefs::kSpellCheckUseSpellingService};
 }
 
 }  // namespace

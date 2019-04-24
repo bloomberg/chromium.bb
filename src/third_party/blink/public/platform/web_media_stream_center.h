@@ -59,8 +59,7 @@ class WebMediaStreamCenter {
   // Caller must take the ownership of the returned |WebAudioSourceProvider|
   // object.
   virtual WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
-      const WebMediaStreamTrack&,
-      int context_sample_rate) {
+      const WebMediaStreamTrack&) {
     return nullptr;
   }
 };

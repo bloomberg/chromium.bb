@@ -8,6 +8,7 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
+#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

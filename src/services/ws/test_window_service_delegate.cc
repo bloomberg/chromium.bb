@@ -94,10 +94,4 @@ aura::Window* TestWindowServiceDelegate::GetTopmostWindowAtPoint(
   return topmost_;
 }
 
-void TestWindowServiceDelegate::ConnectToImeEngine(
-    ime::mojom::ImeEngineRequest engine_request,
-    ime::mojom::ImeEngineClientPtr client) {
-  ime_engine_connected_ = true;
-}
-
 }  // namespace ws

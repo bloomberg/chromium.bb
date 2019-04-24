@@ -47,12 +47,6 @@
       default: [],
       valid_type: "list",
     },
-
-    // *DO NOT* specify features that depend on origin trial features.
-    // It is NOT supported. As a workaround, you can either specify the same
-    // |origin_trial_feature_name| for the feature or add the OT feature to
-    // the |implied_by| list.
-    // TODO(yashard): Add support for origin trial features in 'depends_on' list
     depends_on: {
       default: [],
       valid_type: "list",
@@ -103,7 +97,6 @@
       status: "test",
     },
     {
-      // Deprecated, see UserActivationPostMessageTransfer.
       name: "AllowActivationDelegationAttr",
     },
     {
@@ -161,8 +154,7 @@
     },
     {
       name: "BlinkGenPropertyTrees",
-      status: "stable",
-      implied_by: ["CompositeAfterPaint"],
+      status: "experimental",
     },
     {
       name: "BlinkRuntimeCallStats",
@@ -295,10 +287,6 @@
       status: "experimental",
     },
     {
-      name: "CSSAltText",
-      status: "experimental",
-    },
-    {
       name: "CSSBackdropFilter",
       status: "experimental",
     },
@@ -325,6 +313,10 @@
       // disable it for WebView on Android versions older than P. See
       // https://crrev.com/f311a84728272e30979432e8474089b3db3c67df
       name: "CSSHexAlphaColor",
+      status: "stable",
+    },
+    {
+      name: "CSSInBodyDoesNotBlockPaint",
       status: "stable",
     },
     {
@@ -364,11 +356,6 @@
     {
       name: "CSSPartPseudoElement",
       status: "stable",
-    },
-    {
-      name: "CSSPictureInPicture",
-      status: "experimental",
-      depends_on: ["PictureInPictureAPI"],
     },
     {
       name: "CSSPseudoIs",
@@ -494,6 +481,11 @@
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
+    {
+      name: "ExperimentalHardwareEchoCancellation",
+      origin_trial_feature_name: "ExperimentalHardwareEchoCancellation2",
+      status: "experimental",
+    },
     // Enables navigator.scheduling.isInputPending, allowing long-running JS to
     // be able to yield itself when user input is queued (crbug.com/910421).
     {
@@ -520,11 +512,7 @@
       name: "FallbackCursorMode",
     },
     {
-      name: "FastBorderRadius",
-    },
-    {
       name: "FastFlatTreeTraversal",
-      status: "stable",
     },
     {
       name: "FastMobileScrolling",
@@ -532,7 +520,6 @@
     },
     {
       name: "FeaturePolicyForSandbox",
-      status: "experimental",
     },
     {
       name: "FeaturePolicyJavaScriptInterface",
@@ -546,14 +533,6 @@
     },
     {
       name: "FeaturePolicyVibrateFeature"
-    },
-    {
-      name: "FetchMetadata",
-      status: "experimental"
-    },
-    {
-      name: "FetchMetadataDestination",
-      status: "experimental"
     },
     {
       name: "FileSystem",
@@ -587,9 +566,6 @@
       name: "ForceOverlayFullscreenVideo",
     },
     {
-      name: "ForceSynchronousHTMLParsing",
-    },
-    {
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS": "stable"},
     },
@@ -608,6 +584,11 @@
       name: "FractionalScrollOffsets",
     },
     {
+      name: "FramebustingNeedsSameOriginOrUserGesture",
+      settable_from_internals: true,
+      status: "stable",
+    },
+    {
       name: "FramesTimingFunction",
       status: "experimental",
     },
@@ -620,11 +601,11 @@
       status: "stable",
     },
     {
-      name: "HeapCompaction",
-      status: "stable",
+      name: "HeapCollectLiveNonNodeWrappers",
     },
     {
-      name: "HeapConcurrentMarking",
+      name: "HeapCompaction",
+      status: "stable",
     },
     {
       name: "HeapIncrementalMarking",
@@ -632,6 +613,10 @@
     },
     {
       name: "HeapIncrementalMarkingStress"
+    },
+    {
+      name: "HeapUnifiedGarbageCollection",
+      status: "stable",
     },
     {
       name: "HrefTranslate",
@@ -783,6 +768,11 @@
       name: "LongTaskV2",
     },
     {
+      name: "LowLatencyCanvas",
+      origin_trial_feature_name: "LowLatencyCanvas",
+      status: "experimental",
+    },
+    {
       name:"ManualSlotting",
       status:"experimental",
     },
@@ -792,12 +782,15 @@
     },
     {
       name: "MediaCapabilitiesEncryptedMedia",
-      origin_trial_feature_name: "MediaCapabilitiesEncryptedMedia",
       status: "experimental",
     },
     {
       name: "MediaCapture",
       status: {"Android": "stable"},
+    },
+    {
+      name: "MediaCaptureDepth",
+      status: "experimental",
     },
     {
       name: "MediaCaptureDepthVideoKind",
@@ -847,11 +840,6 @@
     },
     {
       name: "MergeBlockingNonBlockingPools",
-    },
-    // Support for META tag for setting supported-color-schemes used for opting
-    // into dark UA theming and opting out of forced dark mode.
-    {
-      name: "MetaSupportedColorSchemes",
     },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
@@ -922,6 +910,14 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NoHoverAfterLayoutChange",
+      settable_from_internals: true,
+    },
+    {
+      name: "NoHoverDuringScroll",
+      settable_from_internals: true,
+    },
+    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
     },
@@ -981,11 +977,6 @@
       name: "OriginTrialsSampleAPI",
       origin_trial_feature_name: "Frobulate",
     },
-    // TODO(yashard): Add tests for this feature.
-    {
-      name: "OriginTrialsSampleAPIDependent",
-      depends_on: ["OriginTrialsSampleAPI"],
-    },
     // Define a sample API for testing integration with the Origin Trials
     // Framework. The sample API is used in both unit and web tests for the
     // Origin Trials Framework. Do not change this flag to stable, as it exists
@@ -993,12 +984,7 @@
     {
       name: "OriginTrialsSampleAPIImplied",
       origin_trial_feature_name: "FrobulateImplied",
-      implied_by: ["OriginTrialsSampleAPI", "OriginTrialsSampleAPIInvalidOS"],
-    },
-    {
-      name: "OriginTrialsSampleAPIInvalidOS",
-      origin_trial_feature_name: "FrobulateInvalidOS",
-      origin_trial_os: ["invalid"],
+      implied_by: ["OriginTrialsSampleAPI"],
     },
     {
       name: "OutOfBlinkCors",
@@ -1137,6 +1123,10 @@
       status: "stable",
     },
     {
+      name: "PreloadImageSrcSet",
+      status: "stable",
+    },
+    {
       name: "Presentation",
       status: "stable",
     },
@@ -1204,17 +1194,12 @@
     // Enables the use of the RTCDtlsTransport object.
     {
       name: "RTCDtlsTransport",
-      status: "stable",
+      status: "experimental",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
       origin_trial_feature_name: "RTCQuicTransport",
-      status: "experimental",
-    },
-    {
-      name: "RtcJitterBufferDelayHint",
-      origin_trial_feature_name: "RtcJitterBufferDelayHint",
       status: "experimental",
     },
     // Enables the use of the RTCQuicTransport object.
@@ -1226,11 +1211,6 @@
     {
       name: "RTCRtpSenderParameters",
       status: "stable",
-    },
-    // Enables the use of the RTCSctpTransport object.
-    {
-      name: "RTCSctpTransport",
-      status: "experimental",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
@@ -1274,6 +1254,10 @@
     {
       name: "ScrollTopLeftInterop",
       status: "stable",
+    },
+    {
+      name: "SecMetadata",
+      status: "experimental"
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
@@ -1330,9 +1314,6 @@
       status: "experimental",
     },
     {
-      name: "SignedExchangeSubresourcePrefetch",
-    },
-    {
       name: "SkipAd",
       depends_on: ["MediaSession"],
       origin_trial_feature_name: "SkipAd",
@@ -1341,10 +1322,6 @@
     {
       name: "SmoothScrollJSIntervention",
       status: "stable",
-    },
-    {
-      name: "SpeechSynthesisEventCharLength",
-      status: "experimental",
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.
@@ -1360,7 +1337,7 @@
     {
       name: "StaleWhileRevalidate",
       origin_trial_feature_name: "StaleWhileRevalidate",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "StorageQuotaDetails",
@@ -1418,33 +1395,12 @@
       status: "experimental",
     },
     {
-      name: "UnifiedPointerCaptureInBlink",
-      status: "stable",
-    },
-    {
       name: "UnifiedTouchAdjustment",
       status: "stable",
     },
     {
-      name: "UnoptimizedImagePolicies",
-      status: "experimental",
-      origin_trial_feature_name: "UnoptimizedImagePolicies",
-      implied_by: ["ExperimentalProductivityFeatures"]
-    },
-    {
-      name: "UpdateHoverFromLayoutChangeAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
-      name: "UpdateHoverFromScrollAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
       name: "UserActivationAPI",
       status: "stable",
-    },
-    {
-      name: "UserActivationPostMessageTransfer",
     },
     {
       name: "UserActivationSameOriginVisibility",
@@ -1458,12 +1414,6 @@
     },
     {
       name: "V8IdleTasks",
-    },
-    {
-      // Whether a video element should automatically play fullscreen unless
-      // 'playsinline' is set.
-      name: "VideoAutoFullscreen",
-      settable_from_internals: true,
     },
     {
       name: "VideoFullscreenDetection",
@@ -1536,10 +1486,11 @@
     // WebGPU adds a large attack surface area to the GPU process and allows
     // running arbitrary programs on the GPU (compute shaders), which may
     // perform arbitrary read/writes of GPU memory if not properly sandboxed.
-    // That's why it is not enabled as part of the
+    // That's why it is marked as "test" and not enabled as part of the
     // --enable-experimental-web-platform-features flag.
     {
       name: "WebGPU",
+      status: "test",
     },
     {
       name: "WebHID",
@@ -1573,6 +1524,15 @@
       origin_trial_feature_name: "WebVR1.1M62",
       status: "experimental",
     },
+    // Extensions to the Gamepad API for WebVR. Formerly GamepadExtensions.
+    // Although not separately controllable, it is still a separate feature
+    // for clarity in the IDL.
+    // TODO(https://crbug.com/920025): Consider merging with "WebVR".
+    {
+      name: "WebVRGamepadSupport",
+      implied_by: ["WebVR"],
+      status: "experimental",
+    },
     {
       name: "WebVTTRegions",
       status: "experimental",
@@ -1580,6 +1540,16 @@
     {
       name: "WebXR",
       origin_trial_feature_name: "WebXRDeviceM73",
+      status: "experimental",
+    },
+    // Subset of the Gamepad extensions used for early WebXR implementations
+    // that exposed VR controller functionality as Gamepads.
+    // TODO(https://crbug.com/920025): Remove this.
+    {
+      name: "WebXRGamepadSupport",
+      origin_trial_feature_name: "WebXRGamepadSupport",
+      // This feature is a strict subset of the WebVR Gamepad extensions.
+      implied_by: ["WebVRGamepadSupport"],
       status: "experimental",
     },
     {

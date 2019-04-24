@@ -29,7 +29,7 @@ VkPipelineStageFlags GrVkImage::LayoutToPipelineSrcStageFlags(const VkImageLayou
         return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     } else if (VK_IMAGE_LAYOUT_PREINITIALIZED == layout) {
         return VK_PIPELINE_STAGE_HOST_BIT;
-    } else if (VK_IMAGE_LAYOUT_PRESENT_SRC_KHR == layout) {
+    } else if (VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
         return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
 
@@ -62,10 +62,11 @@ VkAccessFlags GrVkImage::LayoutToSrcAccessMask(const VkImageLayout layout) {
         flags = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     } else if (VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == layout) {
         flags = VK_ACCESS_TRANSFER_WRITE_BIT;
-    } else if (VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL == layout ||
-               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL == layout ||
-               VK_IMAGE_LAYOUT_PRESENT_SRC_KHR == layout) {
-        // There are no writes that need to be made available
+    } else if (VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL == layout) {
+        flags = VK_ACCESS_TRANSFER_READ_BIT;
+    } else if (VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL == layout) {
+        flags = VK_ACCESS_SHADER_READ_BIT;
+    } else if (VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
         flags = 0;
     }
     return flags;
@@ -99,10 +100,9 @@ void GrVkImage::setImageLayout(const GrVkGpu* gpu, VkImageLayout newLayout,
     }
 
     // If the old and new layout are the same and the layout is a read only layout, there is no need
-    // to put in a barrier unless we also need to switch queues.
-    if (newLayout == currentLayout && !releaseFamilyQueue &&
-        (fInfo.fCurrentQueueFamily == VK_QUEUE_FAMILY_IGNORED ||
-         fInfo.fCurrentQueueFamily == gpu->queueIndex()) &&
+    // to put in a barrier.
+    if (newLayout == currentLayout &&
+        !releaseFamilyQueue &&
         (VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL == currentLayout ||
          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL == currentLayout ||
          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL == currentLayout)) {

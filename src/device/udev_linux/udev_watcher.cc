@@ -10,30 +10,13 @@
 
 namespace device {
 
-UdevWatcher::Filter::Filter(base::StringPiece subsystem_in,
-                            base::StringPiece devtype_in) {
-  if (subsystem_in.data())
-    subsystem_ = subsystem_in.as_string();
-  if (devtype_in.data())
-    devtype_ = devtype_in.as_string();
-}
-
-UdevWatcher::Filter::Filter(const Filter&) = default;
-UdevWatcher::Filter::~Filter() = default;
-
-const char* UdevWatcher::Filter::devtype() const {
-  return devtype_ ? devtype_.value().c_str() : nullptr;
-}
-
-const char* UdevWatcher::Filter::subsystem() const {
-  return subsystem_ ? subsystem_.value().c_str() : nullptr;
-}
-
 UdevWatcher::Observer::~Observer() = default;
 
-std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
-    Observer* observer,
-    const std::vector<Filter>& filters) {
+void UdevWatcher::Observer::OnDeviceAdded(ScopedUdevDevicePtr device) {}
+
+void UdevWatcher::Observer::OnDeviceRemoved(ScopedUdevDevicePtr device) {}
+
+std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   ScopedUdevPtr udev(udev_new());
@@ -49,12 +32,6 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
     return nullptr;
   }
 
-  for (const Filter& filter : filters) {
-    const int ret = udev_monitor_filter_add_match_subsystem_devtype(
-        udev_monitor.get(), filter.subsystem(), filter.devtype());
-    CHECK_EQ(0, ret);
-  }
-
   if (udev_monitor_enable_receiving(udev_monitor.get()) != 0) {
     LOG(ERROR) << "Failed to enable receiving udev events.";
     return nullptr;
@@ -67,7 +44,7 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
   }
 
   return base::WrapUnique(new UdevWatcher(
-      std::move(udev), std::move(udev_monitor), monitor_fd, observer, filters));
+      std::move(udev), std::move(udev_monitor), monitor_fd, observer));
 }
 
 UdevWatcher::~UdevWatcher() {
@@ -82,12 +59,6 @@ void UdevWatcher::EnumerateExistingDevices() {
   if (!enumerate) {
     LOG(ERROR) << "Failed to initialize a udev enumerator.";
     return;
-  }
-
-  for (const Filter& filter : udev_filters_) {
-    const int ret =
-        udev_enumerate_add_match_subsystem(enumerate.get(), filter.subsystem());
-    CHECK_EQ(0, ret);
   }
 
   if (udev_enumerate_scan_devices(enumerate.get()) != 0) {
@@ -108,12 +79,10 @@ void UdevWatcher::EnumerateExistingDevices() {
 UdevWatcher::UdevWatcher(ScopedUdevPtr udev,
                          ScopedUdevMonitorPtr udev_monitor,
                          int monitor_fd,
-                         Observer* observer,
-                         const std::vector<Filter>& filters)
+                         Observer* observer)
     : udev_(std::move(udev)),
       udev_monitor_(std::move(udev_monitor)),
-      observer_(observer),
-      udev_filters_(filters) {
+      observer_(observer) {
   file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
       monitor_fd,
       base::Bind(&UdevWatcher::OnMonitorReadable, base::Unretained(this)));

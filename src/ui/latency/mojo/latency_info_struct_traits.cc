@@ -122,12 +122,6 @@ float StructTraits<ui::mojom::LatencyInfoDataView,
 }
 
 // static
-float StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::
-    predicted_scroll_update_delta(const ui::LatencyInfo& info) {
-  return info.predicted_scroll_update_delta();
-}
-
-// static
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
@@ -142,7 +136,6 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   out->terminated_ = data.terminated();
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
   out->scroll_update_delta_ = data.scroll_update_delta();
-  out->predicted_scroll_update_delta_ = data.predicted_scroll_update_delta();
 
   return true;
 }

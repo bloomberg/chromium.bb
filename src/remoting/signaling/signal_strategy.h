@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/observer_list_types.h"
 
 namespace jingle_xmpp {
 class XmlElement;
@@ -43,9 +42,9 @@ class SignalStrategy {
   // Callback interface for signaling event. Event handlers are not
   // allowed to destroy SignalStrategy, but may add or remove other
   // listeners.
-  class Listener : public base::CheckedObserver {
+  class Listener {
    public:
-    ~Listener() override {}
+    virtual ~Listener() {}
 
     // Called after state of the connection has changed. If the state
     // is DISCONNECTED, then GetError() can be used to get the reason

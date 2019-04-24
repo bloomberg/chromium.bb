@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -57,8 +56,7 @@ public class CustomTabTabPersistenceIntegrationTest {
         waitForFileExistState(true, expectedTabFileName, stateDir);
         waitForFileExistState(true, expectedMetadataFileName, stateDir);
 
-        mCustomTabActivityTestRule.getActivity().getComponent()
-                .resolveNavigationController().finish(FinishReason.OTHER);
+        mCustomTabActivityTestRule.getActivity().finishAndClose(false);
 
         waitForFileExistState(false, expectedTabFileName, stateDir);
         waitForFileExistState(false, expectedMetadataFileName, stateDir);

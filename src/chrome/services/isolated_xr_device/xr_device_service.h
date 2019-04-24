@@ -23,7 +23,8 @@ class XrDeviceService : public service_manager::Service {
 
   void OnDeviceProviderRequest(
       device::mojom::IsolatedXRRuntimeProviderRequest request);
-  void OnTestHookRequest(device_test::mojom::XRServiceTestHookRequest request);
+  void OnTestHookRequest(
+      device_test::mojom::XRTestHookRegistrationRequest request);
 
  private:
   // service_manager::Service:

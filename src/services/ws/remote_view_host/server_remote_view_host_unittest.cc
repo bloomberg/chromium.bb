@@ -17,7 +17,7 @@
 namespace ws {
 
 TEST(ServerRemoteViewHostTest, EmbedUsingToken) {
-  // Use |setup| to configure aura and other state.
+  // Use |test_setup| to configure aura and other state.
   WindowServiceTestSetup setup;
   views::TestViewsDelegate views_delegate;
 

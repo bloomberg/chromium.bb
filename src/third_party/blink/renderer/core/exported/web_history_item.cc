@@ -45,7 +45,7 @@
 namespace blink {
 
 void WebHistoryItem::Initialize() {
-  private_ = MakeGarbageCollected<HistoryItem>();
+  private_ = HistoryItem::Create();
 }
 
 void WebHistoryItem::Reset() {
@@ -135,20 +135,20 @@ void WebHistoryItem::SetDocumentState(const WebVector<WebString>& state) {
   private_->SetDocumentState(ds);
 }
 
-int64_t WebHistoryItem::ItemSequenceNumber() const {
+long long WebHistoryItem::ItemSequenceNumber() const {
   return private_->ItemSequenceNumber();
 }
 
-void WebHistoryItem::SetItemSequenceNumber(int64_t item_sequence_number) {
+void WebHistoryItem::SetItemSequenceNumber(long long item_sequence_number) {
   private_->SetItemSequenceNumber(item_sequence_number);
 }
 
-int64_t WebHistoryItem::DocumentSequenceNumber() const {
+long long WebHistoryItem::DocumentSequenceNumber() const {
   return private_->DocumentSequenceNumber();
 }
 
 void WebHistoryItem::SetDocumentSequenceNumber(
-    int64_t document_sequence_number) {
+    long long document_sequence_number) {
   private_->SetDocumentSequenceNumber(document_sequence_number);
 }
 
@@ -183,7 +183,7 @@ WebHTTPBody WebHistoryItem::HttpBody() const {
   return WebHTTPBody(private_->FormData());
 }
 
-void WebHistoryItem::SetHttpBody(const WebHTTPBody& http_body) {
+void WebHistoryItem::SetHTTPBody(const WebHTTPBody& http_body) {
   private_->SetFormData(http_body);
 }
 

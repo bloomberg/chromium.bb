@@ -8,7 +8,7 @@
 
 if (isNeverOptimizeLiteMode()) {
   print("Warning: skipping test that requires optimization in Lite mode.");
-  testRunner.quit(0);
+  quit(0);
 }
 
 %DebugToggleBlockCoverage(true);

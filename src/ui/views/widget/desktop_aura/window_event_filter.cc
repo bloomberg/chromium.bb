@@ -24,9 +24,9 @@
 namespace views {
 
 WindowEventFilter::WindowEventFilter(DesktopWindowTreeHost* window_tree_host)
-    : window_tree_host_(window_tree_host) {}
+    : window_tree_host_(window_tree_host), click_component_(HTNOWHERE) {}
 
-WindowEventFilter::~WindowEventFilter() = default;
+WindowEventFilter::~WindowEventFilter() {}
 
 void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
@@ -66,21 +66,21 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
   aura::Window* target = static_cast<aura::Window*>(event->target());
   LinuxUI* linux_ui = LinuxUI::instance();
 
-  views::LinuxUI::WindowFrameActionSource action_type;
-  views::LinuxUI::WindowFrameAction default_action;
+  views::LinuxUI::NonClientWindowFrameActionSourceType action_type;
+  views::LinuxUI::NonClientWindowFrameAction default_action;
 
   if (event->IsRightMouseButton()) {
-    action_type = LinuxUI::WindowFrameActionSource::kRightClick;
-    default_action = LinuxUI::WindowFrameAction::kMenu;
+    action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK;
+    default_action = LinuxUI::WINDOW_FRAME_ACTION_MENU;
   } else if (event->IsMiddleMouseButton()) {
-    action_type = LinuxUI::WindowFrameActionSource::kMiddleClick;
-    default_action = LinuxUI::WindowFrameAction::kNone;
+    action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK;
+    default_action = LinuxUI::WINDOW_FRAME_ACTION_NONE;
   } else if (event->IsLeftMouseButton() &&
              event->flags() & ui::EF_IS_DOUBLE_CLICK) {
     click_component_ = HTNOWHERE;
     if (previous_click_component == HTCAPTION) {
-      action_type = LinuxUI::WindowFrameActionSource::kDoubleClick;
-      default_action = LinuxUI::WindowFrameAction::kToggleMaximize;
+      action_type = LinuxUI::WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK;
+      default_action = LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
     } else {
       return;
     }
@@ -89,26 +89,27 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
     return;
   }
 
-  LinuxUI::WindowFrameAction action =
-      linux_ui ? linux_ui->GetWindowFrameAction(action_type) : default_action;
+  LinuxUI::NonClientWindowFrameAction action =
+      linux_ui ? linux_ui->GetNonClientWindowFrameAction(action_type)
+               : default_action;
   switch (action) {
-    case LinuxUI::WindowFrameAction::kNone:
+    case LinuxUI::WINDOW_FRAME_ACTION_NONE:
       break;
-    case LinuxUI::WindowFrameAction::kLower:
+    case LinuxUI::WINDOW_FRAME_ACTION_LOWER:
       LowerWindow();
       event->SetHandled();
       break;
-    case LinuxUI::WindowFrameAction::kMinimize:
+    case LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE:
       window_tree_host_->Minimize();
       event->SetHandled();
       break;
-    case LinuxUI::WindowFrameAction::kToggleMaximize:
+    case LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE:
       if (target->GetProperty(aura::client::kResizeBehaviorKey) &
           ws::mojom::kResizeBehaviorCanMaximize)
         ToggleMaximizedState();
       event->SetHandled();
       break;
-    case LinuxUI::WindowFrameAction::kMenu:
+    case LinuxUI::WINDOW_FRAME_ACTION_MENU:
       views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
       if (!widget)
         break;

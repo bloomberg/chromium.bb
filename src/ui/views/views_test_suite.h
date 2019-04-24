@@ -7,15 +7,13 @@
 
 #include "base/test/test_suite.h"
 
-#include "build/build_config.h"
-
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 #include <memory>
+#endif
 
 namespace aura {
 class Env;
 }
-#endif
 
 namespace views {
 
@@ -44,13 +42,12 @@ class ViewsTestSuite : public base::TestSuite {
   // ViewsTestBase.
   std::unique_ptr<aura::Env> env_;
 #endif
-
   int argc_;
   char** argv_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestSuite);
 };
 
-}  // namespace views
+}  // namespace
 
 #endif  // UI_VIEWS_VIEWS_TEST_SUITE_H_

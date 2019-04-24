@@ -270,17 +270,15 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
     {
       if (Arc.EndArcHead.NextVolume)
       {
-#ifdef NOVOLUME
-        return false;
-#else
+#ifndef NOVOLUME
         if (!MergeArchive(Arc,&DataIO,false,Command))
         {
           ErrHandler.SetErrorCode(RARX_WARNING);
           return false;
         }
+#endif
         Arc.Seek(Arc.CurBlockPos,SEEK_SET);
         return true;
-#endif
       }
       else
         return false;

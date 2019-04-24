@@ -61,8 +61,7 @@ void SearchInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeSearch);
 }
 
-LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&,
-                                                  LegacyLayout) const {
+LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&) const {
   return new LayoutSearchField(&GetElement());
 }
 
@@ -156,13 +155,12 @@ void SearchInputType::UpdateCancelButtonVisibility() {
   if (!button)
     return;
   if (GetElement().value().IsEmpty()) {
-    button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
+    button->SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
                                    CSSPrimitiveValue::UnitType::kNumber);
-    button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
-                                   CSSValueID::kNone);
+    button->SetInlineStyleProperty(CSSPropertyPointerEvents, CSSValueNone);
   } else {
-    button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
-    button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
+    button->RemoveInlineStyleProperty(CSSPropertyOpacity);
+    button->RemoveInlineStyleProperty(CSSPropertyPointerEvents);
   }
 }
 

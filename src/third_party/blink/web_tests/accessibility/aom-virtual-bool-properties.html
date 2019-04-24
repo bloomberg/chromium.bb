@@ -2,6 +2,7 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -19,7 +20,7 @@ if (window.internals)
 <div id="atomic"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var parent = document.getElementById("atomic");
     var accessibleNode = new AccessibleNode();
     accessibleNode.role = "region";
@@ -37,7 +38,7 @@ test(function(t) {
 <div id="busy"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var parent = document.getElementById("busy");
     var accessibleNode = new AccessibleNode();
     accessibleNode.role = "status";
@@ -55,7 +56,7 @@ test(function(t) {
 <div id="disabled"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var parent = document.getElementById("disabled");
     var node = new AccessibleNode();
     node.role = "checkbox";

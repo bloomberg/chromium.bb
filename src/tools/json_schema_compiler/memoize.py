@@ -7,7 +7,7 @@ def memoize(fn):
   '''
   memory = {}
   def impl(*args, **optargs):
-    full_args = args + tuple(optargs.items())
+    full_args = args + tuple(optargs.iteritems())
     if full_args not in memory:
       memory[full_args] = fn(*args, **optargs)
     return memory[full_args]

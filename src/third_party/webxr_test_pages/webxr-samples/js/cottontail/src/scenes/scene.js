@@ -28,7 +28,7 @@ export class WebXRView extends RenderView {
   constructor(view, pose, layer) {
     super(
       view ? view.projectionMatrix : null,
-      view ? view.transform.inverse.matrix : null,
+      view ? view.viewMatrix : null,
       (layer && view) ? layer.getViewport(view) : null,
       view ? view.eye : 'left'
     );
@@ -93,30 +93,31 @@ export class Scene extends Node {
     this._hoverFrame++;
 
     for (let inputSource of inputSources) {
-      // Any time that we have a grip matrix, we'll render a controller.
-      if (inputSource.gripSpace) {
-        let pose = frame.getPose(inputSource.gripSpace, refSpace);
-        if (pose) {
-          this.inputRenderer.addController(pose.transform.matrix);
-        }
+      let inputPose = frame.getInputPose(inputSource, refSpace);
+
+      if (!inputPose) {
+        continue;
       }
 
-      let inputPose = frame.getPose(inputSource.targetRaySpace, refSpace);
-      if (inputPose) {
-        let targetRay = new XRRay(inputPose.transform);
+      // Any time that we have a grip matrix, we'll render a controller.
+      if (inputPose.gripTransform && inputPose.gripTransform.matrix) {
+        this.inputRenderer.addController(inputPose.gripTransform.matrix);
+      }
+
+      if (inputPose.targetRay) {
         if (inputSource.targetRayMode == 'tracked-pointer') {
           // If we have a pointer matrix and the pointer origin is the users
           // hand (as opposed to their head or the screen) use it to render
           // a ray coming out of the input device to indicate the pointer
           // direction.
-          this.inputRenderer.addLaserPointer(targetRay);
+          this.inputRenderer.addLaserPointer(inputPose.targetRay);
         }
 
         // If we have a pointer matrix we can also use it to render a cursor
         // for both handheld and gaze-based input sources.
 
         // Check and see if the pointer is pointing at any selectable objects.
-        let hitResult = this.hitTest(targetRay);
+        let hitResult = this.hitTest(inputPose.targetRay);
 
         if (hitResult) {
           // Render a cursor at the intersection point.
@@ -141,11 +142,13 @@ export class Scene extends Node {
   }
 
   handleSelect(inputSource, frame, refSpace) {
-    let inputPose = frame.getPose(inputSource.targetRaySpace, refSpace);
-    if (inputPose) {
-      let targetRay = new XRRay(inputPose.transform);
-      this.handleSelectPointer(targetRay);
+    let inputPose = frame.getInputPose(inputSource, refSpace);
+
+    if (!inputPose) {
+      return;
     }
+
+    this.handleSelectPointer(inputPose.targetRay);
   }
 
   handleSelectPointer(targetRay) {

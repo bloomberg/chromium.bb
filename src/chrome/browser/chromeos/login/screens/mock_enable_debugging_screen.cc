@@ -7,9 +7,10 @@
 namespace chromeos {
 
 MockEnableDebuggingScreen::MockEnableDebuggingScreen(
+    BaseScreenDelegate* base_screen_delegate,
     EnableDebuggingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : EnableDebuggingScreen(view, exit_callback) {}
+    : EnableDebuggingScreen(base_screen_delegate, view, exit_callback) {}
 
 MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {}
 
@@ -20,13 +21,14 @@ void MockEnableDebuggingScreen::ExitScreen() {
 MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() = default;
 
 MockEnableDebuggingScreenView::~MockEnableDebuggingScreenView() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
+  if (delegate_)
+    delegate_->OnViewDestroyed(this);
 }
 
-void MockEnableDebuggingScreenView::SetDelegate(EnableDebuggingScreen* screen) {
-  screen_ = screen;
-  MockSetDelegate(screen_);
+void MockEnableDebuggingScreenView::SetDelegate(
+    EnableDebuggingScreenView::Delegate* delegate) {
+  delegate_ = delegate;
+  MockSetDelegate(delegate);
 }
 
 }  // namespace chromeos

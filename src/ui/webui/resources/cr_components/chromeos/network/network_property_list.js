@@ -14,6 +14,16 @@ Polymer({
 
   properties: {
     /**
+     * If true, all fields are shown as editable. Fields without an edit type
+     * or that are policy enforced will be shown as 'readonly'. Used for lists
+     * with dynamic edit types (e.g. network-ip-config).
+     */
+    editable: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The dictionary containing the properties to display.
      * @type {!Object|undefined}
      */
@@ -172,7 +182,7 @@ Polymer({
    * @private
    */
   showEditable_: function(key, propertyDict, editFieldTypes) {
-    return this.isEditable_(key, propertyDict, editFieldTypes);
+    return this.isEditable_(key, propertyDict, editFieldTypes) || this.editable;
   },
 
   /**

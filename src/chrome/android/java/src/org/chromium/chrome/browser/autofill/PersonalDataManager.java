@@ -12,6 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -630,14 +631,12 @@ public class PersonalDataManager {
      * Gets the profiles to suggest when associating a billing address to a credit card. The
      * profiles will have been processed to be more relevant to the user.
      *
-     * @param includeOrganizationInLabel Whether the organization name should be included in the
-     *                                   label.
-     *
      * @return The list of billing addresses to suggest to the user.
      */
-    public ArrayList<AutofillProfile> getBillingAddressesToSuggest(
-            boolean includeOrganizationInLabel) {
+    public ArrayList<AutofillProfile> getBillingAddressesToSuggest() {
         ThreadUtils.assertOnUiThread();
+        boolean includeOrganizationInLabel =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME);
         return getProfilesWithLabels(
                 nativeGetProfileLabelsToSuggest(mPersonalDataManagerAndroid,
                         true /* includeNameInLabel */, includeOrganizationInLabel,

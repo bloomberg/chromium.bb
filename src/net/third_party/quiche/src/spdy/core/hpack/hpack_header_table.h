@@ -10,6 +10,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/macros.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_entry.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"

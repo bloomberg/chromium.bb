@@ -61,7 +61,7 @@ class WebViewPasswordManagerDriver
   void ShowInitialPasswordAccountSuggestions(
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
-  password_manager::PasswordGenerationFrameHelper* GetPasswordGenerationHelper()
+  password_manager::PasswordGenerationManager* GetPasswordGenerationManager()
       override;
   password_manager::PasswordManager* GetPasswordManager() override;
   password_manager::PasswordAutofillManager* GetPasswordAutofillManager()

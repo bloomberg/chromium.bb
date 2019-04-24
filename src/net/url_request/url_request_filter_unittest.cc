@@ -73,20 +73,18 @@ TEST(URLRequestFilter, BasicMatching) {
       kUrl1, std::unique_ptr<URLRequestInterceptor>(interceptor)));
   {
     std::unique_ptr<URLRequestJob> found(
-        filter->MaybeInterceptRequest(request1.get(), nullptr));
+        filter->MaybeInterceptRequest(request1.get(), NULL));
     EXPECT_TRUE(interceptor->WasLastJobCreated(found.get()));
   }
   EXPECT_EQ(filter->hit_count(), 1);
 
   // Check we don't match other URLs.
-  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), nullptr) ==
-              nullptr);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove URL matching.
   filter->RemoveUrlHandler(kUrl1);
-  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), nullptr) ==
-              nullptr);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check hostname matching.
@@ -98,20 +96,18 @@ TEST(URLRequestFilter, BasicMatching) {
       std::unique_ptr<URLRequestInterceptor>(interceptor));
   {
     std::unique_ptr<URLRequestJob> found(
-        filter->MaybeInterceptRequest(request1.get(), nullptr));
+        filter->MaybeInterceptRequest(request1.get(), NULL));
     EXPECT_TRUE(interceptor->WasLastJobCreated(found.get()));
   }
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we don't match other hostnames.
-  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), nullptr) ==
-              nullptr);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request2.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   // Check we can remove hostname matching.
   filter->RemoveHostnameHandler(kUrl1.scheme(), kUrl1.host());
-  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), nullptr) ==
-              nullptr);
+  EXPECT_TRUE(filter->MaybeInterceptRequest(request1.get(), NULL) == NULL);
   EXPECT_EQ(1, filter->hit_count());
 
   filter->ClearHandlers();

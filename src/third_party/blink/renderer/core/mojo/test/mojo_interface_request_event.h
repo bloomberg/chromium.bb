@@ -23,6 +23,10 @@ class MojoInterfaceRequestEvent final : public Event {
  public:
   ~MojoInterfaceRequestEvent() override;
 
+  static MojoInterfaceRequestEvent* Create(MojoHandle* handle) {
+    return MakeGarbageCollected<MojoInterfaceRequestEvent>(handle);
+  }
+
   static MojoInterfaceRequestEvent* Create(
       const AtomicString& type,
       const MojoInterfaceRequestEventInit* initializer) {

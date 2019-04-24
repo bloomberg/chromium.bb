@@ -128,13 +128,6 @@ void WebFrameTestProxy::Initialize(
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
 }
 
-void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (!IsLocalRoot())
-    return;
-  auto* widget = static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
-  widget->SynchronouslyComposite(/*do_raster=*/true);
-}
-
 // WebLocalFrameClient implementation.
 blink::WebPlugin* WebFrameTestProxy::CreatePlugin(
     const blink::WebPluginParams& params) {
@@ -258,7 +251,7 @@ void WebFrameTestProxy::DidReceiveResponse(
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  if (test_client_->ShouldContinueNavigation(info.get()))
+  if (test_client_->ShouldContinueNavigation(*info))
     RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
@@ -286,9 +279,9 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
 
 void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    blink::WebSetSinkIdCompleteCallback completion_callback) {
-  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(
-      sink_id, std::move(completion_callback));
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) {
+  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(sink_id,
+                                                      std::move(web_callbacks));
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {

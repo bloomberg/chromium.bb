@@ -338,18 +338,6 @@ class TestShelfController : public ash::mojom::ShelfController {
                             ash::mojom::ShelfItemDelegatePtr) override {
     set_delegate_count_++;
   }
-  void GetAutoHideBehaviorForTesting(
-      int64_t display_id,
-      GetAutoHideBehaviorForTestingCallback callback) override {
-    std::move(callback).Run(auto_hide_behavior_);
-  }
-  void SetAutoHideBehaviorForTesting(
-      int64_t display_id,
-      ash::ShelfAutoHideBehavior behavior,
-      SetAutoHideBehaviorForTestingCallback callback) override {
-    auto_hide_behavior_ = behavior;
-    std::move(callback).Run();
-  }
 
   // Helper that waits for idle and extracts the non-default bitmap from the
   // last updated item in shelf controller.
@@ -388,8 +376,6 @@ class TestShelfController : public ash::mojom::ShelfController {
   base::OnceClosure updated_callback_;
   size_t set_delegate_count_ = 0;
   ash::ShelfItem last_item_;
-  ash::ShelfAutoHideBehavior auto_hide_behavior_ =
-      ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
 
   ash::mojom::ShelfObserverAssociatedPtr observer_;
   mojo::Binding<ash::mojom::ShelfController> binding_;
@@ -979,6 +965,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void SendListOfArcApps() {
+    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
   }
 
@@ -987,6 +974,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void UninstallArcApps() {
+    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(
         std::vector<arc::mojom::AppInfo>());
   }
@@ -2047,6 +2035,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   // Register app first.
+  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
   arc_test_.StopArcInstance();
 
@@ -2061,6 +2050,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
 
   // Send app with suspended state.
   app.suspended = true;
+  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
 
   // Controler automatically closed.

@@ -49,29 +49,26 @@ ScrollPredictor::~ScrollPredictor() = default;
 void ScrollPredictor::ResetOnGestureScrollBegin(const WebGestureEvent& event) {
   DCHECK(event.GetType() == WebInputEvent::kGestureScrollBegin);
   // Only do resampling for scroll on touchscreen.
-  if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
+  if (event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
     should_resample_scroll_events_ = true;
     Reset();
   }
 }
 
-std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
-    std::unique_ptr<EventWithCallback> event_with_callback,
-    base::TimeTicks frame_time) {
+void ScrollPredictor::ResampleScrollEvents(
+    const EventWithCallback::OriginalEventList& original_events,
+    base::TimeTicks frame_time,
+    WebInputEvent* event) {
   if (!should_resample_scroll_events_)
-    return event_with_callback;
+    return;
 
-  const EventWithCallback::OriginalEventList& original_events =
-      event_with_callback->original_events();
-
-  if (event_with_callback->event().GetType() ==
-      WebInputEvent::kGestureScrollUpdate) {
+  if (event->GetType() == WebInputEvent::kGestureScrollUpdate) {
     // TODO(eirage): When scroll events are coalesced with pinch, we can have
     // empty original event list. In that case, we can't use the original events
     // to update the prediction. We don't want to use the aggregated event to
     // update because of the event time stamp, so skip the prediction for now.
     if (original_events.empty())
-      return event_with_callback;
+      return;
 
     TRACE_EVENT_BEGIN0("input", "ScrollPredictor::ResampleScrollEvents");
 
@@ -83,18 +80,14 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
       UpdatePrediction(coalesced_event.event_, frame_time);
 
     if (enable_resampling_ && should_resample_scroll_events_)
-      ResampleEvent(frame_time, event_with_callback->event_pointer(),
-                    event_with_callback->mutable_latency_info());
+      ResampleEvent(frame_time, event);
 
     TRACE_EVENT_END2("input", "ScrollPredictor::ResampleScrollEvents",
                      "OriginalPosition", current_accumulated_delta_.ToString(),
                      "PredictedPosition", last_accumulated_delta_.ToString());
-  } else if (event_with_callback->event().GetType() ==
-             WebInputEvent::kGestureScrollEnd) {
+  } else if (event->GetType() == WebInputEvent::kGestureScrollEnd) {
     should_resample_scroll_events_ = false;
   }
-
-  return event_with_callback;
 }
 
 void ScrollPredictor::Reset() {
@@ -125,8 +118,7 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
 }
 
 void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
-                                    WebInputEvent* event,
-                                    LatencyInfo* latency_info) {
+                                    WebInputEvent* event) {
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
   WebGestureEvent* gesture_event = static_cast<WebGestureEvent*>(event);
 
@@ -153,8 +145,6 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
       (new_delta.y() * gesture_event->data.scroll_update.delta_y < 0)
           ? 0
           : new_delta.y();
-  // Sync the predicted delta_y to latency_info for AverageLag metric.
-  latency_info->set_predicted_scroll_update_delta(new_delta.y());
 
   last_accumulated_delta_.Offset(gesture_event->data.scroll_update.delta_x,
                                  gesture_event->data.scroll_update.delta_y);

@@ -65,4 +65,10 @@ void RendererResourceCoordinator::SetMainThreadTaskLoadIsLow(
   service_->SetMainThreadTaskLoadIsLow(main_thread_task_load_is_low);
 }
 
+void RendererResourceCoordinator::OnRendererIsBloated() {
+  if (!service_)
+    return;
+  service_->OnRendererIsBloated();
+}
+
 }  // namespace blink

@@ -64,7 +64,7 @@ int32_t AffixUtils::estimateLength(const UnicodeString &patternString, UErrorCod
                 }
                 break;
             default:
-                UPRV_UNREACHABLE;
+                U_ASSERT(false);
         }
 
         offset += U16_LENGTH(cp);
@@ -131,33 +131,34 @@ UnicodeString AffixUtils::escape(const UnicodeString &input) {
 Field AffixUtils::getFieldForType(AffixPatternType type) {
     switch (type) {
         case TYPE_MINUS_SIGN:
-            return UNUM_SIGN_FIELD;
+            return Field::UNUM_SIGN_FIELD;
         case TYPE_PLUS_SIGN:
-            return UNUM_SIGN_FIELD;
+            return Field::UNUM_SIGN_FIELD;
         case TYPE_PERCENT:
-            return UNUM_PERCENT_FIELD;
+            return Field::UNUM_PERCENT_FIELD;
         case TYPE_PERMILLE:
-            return UNUM_PERMILL_FIELD;
+            return Field::UNUM_PERMILL_FIELD;
         case TYPE_CURRENCY_SINGLE:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         case TYPE_CURRENCY_DOUBLE:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         case TYPE_CURRENCY_TRIPLE:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         case TYPE_CURRENCY_QUAD:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         case TYPE_CURRENCY_QUINT:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         case TYPE_CURRENCY_OVERFLOW:
-            return UNUM_CURRENCY_FIELD;
+            return Field::UNUM_CURRENCY_FIELD;
         default:
-            UPRV_UNREACHABLE;
+            U_ASSERT(false);
+            return Field::UNUM_FIELD_COUNT; // suppress "control reaches end of non-void function"
     }
 }
 
 int32_t
 AffixUtils::unescape(const UnicodeString &affixPattern, NumberStringBuilder &output, int32_t position,
-                     const SymbolProvider &provider, Field field, UErrorCode &status) {
+                     const SymbolProvider &provider, UErrorCode &status) {
     int32_t length = 0;
     AffixTag tag;
     while (hasNext(tag, affixPattern)) {
@@ -170,7 +171,7 @@ AffixUtils::unescape(const UnicodeString &affixPattern, NumberStringBuilder &out
             length += output.insert(
                     position + length, provider.getSymbol(tag.type), getFieldForType(tag.type), status);
         } else {
-            length += output.insertCodePoint(position + length, tag.codePoint, field, status);
+            length += output.insertCodePoint(position + length, tag.codePoint, UNUM_FIELD_COUNT, status);
         }
     }
     return length;
@@ -381,7 +382,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_OVERFLOW, STATE_BASE, 0);
                 }
             default:
-                UPRV_UNREACHABLE;
+                U_ASSERT(false);
         }
     }
     // End of string
@@ -410,7 +411,8 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
         case STATE_OVERFLOW_CURR:
             return makeTag(offset, TYPE_CURRENCY_OVERFLOW, STATE_BASE, 0);
         default:
-            UPRV_UNREACHABLE;
+            U_ASSERT(false);
+            return {-1}; // suppress "control reaches end of non-void function"
     }
 }
 

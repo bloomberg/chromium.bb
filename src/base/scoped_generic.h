@@ -119,7 +119,7 @@ class ScopedGeneric {
     TrackAcquire(data_.generic);
   }
 
-  virtual ~ScopedGeneric() {
+  ~ScopedGeneric() {
     CHECK(!receiving_) << "ScopedGeneric destroyed with active receiver";
     FreeIfNecessary();
   }

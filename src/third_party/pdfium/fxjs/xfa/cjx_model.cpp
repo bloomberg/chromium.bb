@@ -67,7 +67,9 @@ CJS_Result CJX_Model::createNode(
   }
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNewNode);
+      GetDocument()->GetScriptContext()->GetJSValueFromMap(pNewNode);
+  if (!value)
+    return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));

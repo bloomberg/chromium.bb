@@ -30,15 +30,6 @@ namespace tracing {
 
 class MojoSharedMemory;
 
-class ScopedPerfettoPostTaskBlocker {
- public:
-  explicit ScopedPerfettoPostTaskBlocker(bool enable);
-  ~ScopedPerfettoPostTaskBlocker();
-
- private:
-  const bool enabled_;
-};
-
 // This class is the per-process client side of the Perfetto
 // producer, and is responsible for creating specific kinds
 // of DataSources (like ChromeTracing) on demand, and provide
@@ -89,7 +80,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
 
   // Returns the taskrunner used by Perfetto.
-  static PerfettoTaskRunner* GetTaskRunner();
+  static base::SequencedTaskRunner* GetTaskRunner();
 
   void Connect(mojom::PerfettoServicePtr perfetto_service);
 
@@ -118,9 +109,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // Called through Mojo by the ProducerHost on the service-side to control
   // tracing and toggle specific DataSources.
   void OnTracingStart(mojo::ScopedSharedBufferHandle shared_memory) override;
-  void StartDataSource(uint64_t id,
-                       const perfetto::DataSourceConfig& data_source_config,
-                       StartDataSourceCallback callback) override;
+  void StartDataSource(
+      uint64_t id,
+      const perfetto::DataSourceConfig& data_source_config) override;
 
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
   void Flush(uint64_t flush_request_id,
@@ -146,8 +137,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
   void UnregisterDataSource(const std::string& name) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
-  void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
-  void ActivateTriggers(const std::vector<std::string>&) override;
   size_t shared_buffer_page_size_kb() const override;
 
   static void ResetTaskRunnerForTesting();

@@ -177,17 +177,15 @@ class CORE_EXPORT NGPhysicalFragment
   // The PaintLayer associated with the fragment.
   PaintLayer* Layer() const;
 
-  // Whether this object has a self-painting |Layer()|.
-  bool HasSelfPaintingLayer() const;
-
-  // True if overflow != 'visible', except for certain boxes that do not allow
-  // overflow clip; i.e., AllowOverflowClip() returns false.
-  bool HasOverflowClip() const;
-  bool ShouldClipOverflow() const;
-
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   LayoutObject* GetLayoutObject() const { return layout_object_; }
+
+  // InkOverflow of itself, not including contents, in the local coordinate.
+  NGPhysicalOffsetRect SelfInkOverflow() const;
+
+  // InkOverflow of itself including contents, in the local coordinate.
+  NGPhysicalOffsetRect InkOverflow(bool apply_clip = true) const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   NGPhysicalOffsetRect ScrollableOverflow() const;
@@ -196,9 +194,13 @@ class CORE_EXPORT NGPhysicalFragment
   NGPhysicalOffsetRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
-  // The allowed touch action is the union of the effective touch action
+  // Unite visual rect to propagate to parent's ContentsVisualRect.
+  void PropagateContentsInkOverflow(NGPhysicalOffsetRect*,
+                                    NGPhysicalOffset) const;
+
+  // The whitelisted touch action is the union of the effective touch action
   // (from style) and blocking touch event handlers.
-  TouchAction EffectiveAllowedTouchAction() const;
+  TouchAction EffectiveWhitelistedTouchAction() const;
 
   // Returns the bidi level of a text or atomic inline fragment.
   UBiDiLevel BidiLevel() const;
@@ -209,8 +211,6 @@ class CORE_EXPORT NGPhysicalFragment
 
   String ToString() const;
 
-  void CheckCanUpdateInkOverflow() const;
-
   enum DumpFlag {
     DumpHeaderText = 0x1,
     DumpSubtree = 0x2,
@@ -220,7 +220,8 @@ class CORE_EXPORT NGPhysicalFragment
     DumpSize = 0x20,
     DumpTextOffsets = 0x40,
     DumpSelfPainting = 0x80,
-    DumpNodeName = 0x100,
+    DumpOverflow = 0x100,
+    DumpNodeName = 0x200,
     DumpAll = -1
   };
   typedef int DumpFlags;
@@ -289,10 +290,6 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
 
   NGPhysicalOffsetRect RectInContainerBox() const;
 };
-
-#if !DCHECK_IS_ON()
-inline void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {}
-#endif
 
 }  // namespace blink
 

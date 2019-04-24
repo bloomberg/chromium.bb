@@ -10,7 +10,7 @@ Protocol.Runtime.onConsoleAPICalled(
 
 contextGroup.addScript(`
 function bar() {
-  console.trace("Nested call.");
+  console.log("Nested call.");
 }
 
 function foo() {

@@ -336,9 +336,8 @@ TEST_F(SecurityKeyAuthHandlerPosixTest, HandleTwoIndependentRequests) {
   // Disconnect and establish a new connection.
   client_socket.Disconnect();
 
-  net::TestCompletionCallback connect_callback2;
-  rv = client_socket.Connect(connect_callback2.callback());
-  ASSERT_EQ(net::OK, connect_callback2.GetResult(rv));
+  rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
   // Repeat the request/response cycle.
   WriteRequestData(&client_socket);

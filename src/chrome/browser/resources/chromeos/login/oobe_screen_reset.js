@@ -9,123 +9,108 @@
 login.createScreen('ResetScreen', 'reset', function() {
   var USER_ACTION_CANCEL_RESET = 'cancel-reset';
   var USER_ACTION_RESET_CONFIRM_DISMISSED = 'reset-confirm-dismissed';
-
-  /* Possible UI states of the reset screen. */
-  const RESET_SCREEN_UI_STATE = {
-    REVERT_PROMISE: 'ui-state-revert-promise',
-    RESTART_REQUIRED: 'ui-state-restart-required',
-    POWERWASH_PROPOSAL: 'ui-state-powerwash-proposal',
-    ROLLBACK_PROPOSAL: 'ui-state-rollback-proposal',
-    ERROR: 'ui-state-error',
-  };
-
-  const RESET_SCREEN_STATE = {
-    RESTART_REQUIRED: 0,
-    REVERT_PROMISE: 1,
-    POWERWASH_PROPOSAL: 2,  // supports 2 ui-states
-    ERROR: 3,
-  };
+  var CONTEXT_KEY_ROLLBACK_AVAILABLE = 'rollback-available';
+  var CONTEXT_KEY_ROLLBACK_CHECKED = 'rollback-checked';
+  var CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE =
+      'tpm-firmware-update-available';
+  var CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED = 'tpm-firmware-update-checked';
+  var CONTEXT_KEY_TPM_FIRMWARE_UPDATE_EDITABLE = 'tpm-firmware-update-editable';
+  var CONTEXT_KEY_IS_OFFICIAL_BUILD = 'is-official-build';
+  var CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW = 'is-confirmational-view';
+  var CONTEXT_KEY_SCREEN_STATE = 'screen-state';
 
   return {
-    EXTERNAL_API: [
-      'setIsRollbackAvailable',
-      'setIsRollbackChecked',
-      'setIsTpmFirmwareUpdateAvailable',
-      'setIsTpmFirmwareUpdateChecked',
-      'setIsTpmFirmwareUpdateEditable',
-      'setTpmFirmwareUpdateMode',
-      'setIsConfirmational',
-      'setIsOfficialBuild',
-      'setScreenState',
-    ],
 
-    /** @type {boolean} */
-    isRollbackAvailable_: false,
-    /** @type {boolean} */
-    isRollbackChecked_: false,
-    /** @type {boolean} */
-    isTpmFirmwareUpdateAvailable_: false,
-    /** @type {boolean} */
-    isTpmFirmwareUpdateChecked_: false,
-    /** @type {boolean} */
-    isTpmFirmwareUpdateEditable_: false,
-    /** @type {RESET_SCREEN_UI_STATE} */
-    tpmFirmwareUpdateMode_: RESET_SCREEN_UI_STATE.REVERT_PROMISE,
-    /** @type {boolean} */
-    isConfirmational_: false,
-    /** @type {boolean} */
-    isOfficialBuild_: false,
-    /** @type {RESET_SCREEN_STATE} */
-    screenState_: RESET_SCREEN_STATE.RESTART_REQUIRED,
-
-    setIsRollbackAvailable: function(rollbackAvailable) {
-      this.isRollbackAvailable_ = rollbackAvailable;
-      this.setRollbackOptionView();
+    /* Possible UI states of the reset screen. */
+    RESET_SCREEN_UI_STATE: {
+      REVERT_PROMISE: 'ui-state-revert-promise',
+      RESTART_REQUIRED: 'ui-state-restart-required',
+      POWERWASH_PROPOSAL: 'ui-state-powerwash-proposal',
+      ROLLBACK_PROPOSAL: 'ui-state-rollback-proposal',
+      ERROR: 'ui-state-error',
     },
 
-    setIsRollbackChecked: function(rollbackChecked) {
-      this.isRollbackChecked_ = rollbackChecked;
-      this.setRollbackOptionView();
+    RESET_SCREEN_STATE: {
+      RESTART_REQUIRED: 0,
+      REVERT_PROMISE: 1,
+      POWERWASH_PROPOSAL: 2,  // supports 2 ui-states
+      ERROR: 3,
     },
 
-    setIsTpmFirmwareUpdateAvailable: function(value) {
-      this.isTpmFirmwareUpdateAvailable_ = value;
-      this.setTPMFirmwareUpdateView_();
-    },
-
-    setIsTpmFirmwareUpdateChecked: function(value) {
-      this.isTpmFirmwareUpdateChecked_ = value;
-      this.setTPMFirmwareUpdateView_();
-    },
-
-    setIsTpmFirmwareUpdateEditable: function(value) {
-      this.isTpmFirmwareUpdateEditable_ = value;
-      this.setTPMFirmwareUpdateView_();
-    },
-
-    setTpmFirmwareUpdateMode: function(value) {
-      this.tpmFirmwareUpdateMode_ = value;
-    },
-
-    setIsConfirmational: function(isConfirmational) {
-      this.isConfirmational_ = isConfirmational;
-      if (isConfirmational) {
-        if (this.screenState_ != RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
-          return;
-        $('overlay-reset').removeAttribute('hidden');
-        $('reset-confirm-overlay-md').open();
-      } else {
-        $('overlay-reset').setAttribute('hidden', true);
-        $('reset-confirm-overlay-md').close();
-      }
-    },
-
-    setIsOfficialBuild: function(isOfficial) {
-      this.isOfficialBuild_ = isOfficial;
-
-      $('oobe-reset-md').isOfficial_ = isOfficial;
-    },
-
-    setScreenState: function(state) {
-      this.screenState_ = state;
-
-      if (state == RESET_SCREEN_STATE.RESTART_REQUIRED)
-        this.ui_state = RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
-      if (state == RESET_SCREEN_STATE.REVERT_PROMISE)
-        this.ui_state = RESET_SCREEN_UI_STATE.REVERT_PROMISE;
-      else if (state == RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
-        this.ui_state = RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
-      this.setDialogView_();
-      if (state == RESET_SCREEN_STATE.REVERT_PROMISE) {
-        announceAccessibleMessage(
-            loadTimeData.getString('resetRevertSpinnerMessage'));
-      }
-      this.setTPMFirmwareUpdateView_();
-    },
 
     /** @override */
     decorate: function() {
+      var self = this;
+
+      this.context.addObserver(CONTEXT_KEY_SCREEN_STATE, function(state) {
+        if (Oobe.getInstance().currentScreen != this) {
+          setTimeout(function() {
+            Oobe.resetSigninUI(false);
+            Oobe.showScreen({id: SCREEN_OOBE_RESET});
+          }, 0);
+        }
+        if (state == self.RESET_SCREEN_STATE.RESTART_REQUIRED)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.RESTART_REQUIRED;
+        if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.REVERT_PROMISE;
+        else if (state == self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
+          self.ui_state = self.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
+        self.setDialogView_();
+        if (state == self.RESET_SCREEN_STATE.REVERT_PROMISE) {
+          announceAccessibleMessage(
+              loadTimeData.getString('resetRevertSpinnerMessage'));
+        }
+        self.setTPMFirmwareUpdateView_();
+      });
+
+      this.context.addObserver(
+          CONTEXT_KEY_IS_OFFICIAL_BUILD, function(isOfficial) {
+            $('oobe-reset-md').isOfficial_ = isOfficial;
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_ROLLBACK_CHECKED, function(rollbackChecked) {
+            self.setRollbackOptionView();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_ROLLBACK_AVAILABLE, function(rollbackAvailable) {
+            self.setRollbackOptionView();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED, function() {
+            self.setTPMFirmwareUpdateView_();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_TPM_FIRMWARE_UPDATE_EDITABLE, function() {
+            self.setTPMFirmwareUpdateView_();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE, function() {
+            self.setTPMFirmwareUpdateView_();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, function(is_confirmational) {
+            if (is_confirmational) {
+              if (self.context.get(CONTEXT_KEY_SCREEN_STATE, 0) !=
+                  self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL) {
+                return;
+              }
+              $('overlay-reset').removeAttribute('hidden');
+              $('reset-confirm-overlay-md').open();
+            } else {
+              $('overlay-reset').setAttribute('hidden', true);
+              $('reset-confirm-overlay-md').close();
+            }
+          });
+
       $('oobe-reset-md').screen = this;
+    },
+
+    /**
+     * Header text of the screen.
+     * @type {string}
+     */
+    get header() {
+      return loadTimeData.getString('resetScreenTitle');
     },
 
     /**
@@ -139,7 +124,7 @@ login.createScreen('ResetScreen', 'reset', function() {
      * Cancels the reset and drops the user back to the login screen.
      */
     cancel: function() {
-      if (this.isConfirmational_) {
+      if (this.context.get(CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, false)) {
         $('reset').send(
             login.Screen.CALLBACK_USER_ACTED,
             USER_ACTION_RESET_CONFIRM_DISMISSED);
@@ -154,11 +139,6 @@ login.createScreen('ResetScreen', 'reset', function() {
      */
     onBeforeShow: function(data) {},
 
-    /** Event handler that is invoked after the screen is shown. */
-    onAfterShow: function() {
-      Oobe.resetSigninUI(false);
-    },
-
     /**
      * Sets css style for corresponding state of the screen.
      * @private
@@ -166,44 +146,47 @@ login.createScreen('ResetScreen', 'reset', function() {
     setDialogView_: function(state) {
       state = this.ui_state;
       this.classList.toggle(
-          'revert-promise-view', state == RESET_SCREEN_UI_STATE.REVERT_PROMISE);
+          'revert-promise-view',
+          state == this.RESET_SCREEN_UI_STATE.REVERT_PROMISE);
       this.classList.toggle(
           'restart-required-view',
-          state == RESET_SCREEN_UI_STATE.RESTART_REQUIRED);
+          state == this.RESET_SCREEN_UI_STATE.RESTART_REQUIRED);
       this.classList.toggle(
           'powerwash-proposal-view',
-          state == RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL);
+          state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL);
       this.classList.toggle(
           'rollback-proposal-view',
-          state == RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL);
+          state == this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL);
       var resetMd = $('oobe-reset-md');
       var resetOverlayMd = $('reset-confirm-overlay-md');
-      if (state == RESET_SCREEN_UI_STATE.RESTART_REQUIRED) {
+      if (state == this.RESET_SCREEN_UI_STATE.RESTART_REQUIRED) {
         resetMd.uiState_ = 'restart-required-view';
       }
-      if (state == RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL) {
+      if (state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL) {
         resetMd.uiState_ = 'powerwash-proposal-view';
         resetOverlayMd.isPowerwashView_ = true;
       }
-      if (state == RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL) {
+      if (state == this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL) {
         resetMd.uiState_ = 'rollback-proposal-view';
         resetOverlayMd.isPowerwashView_ = false;
       }
-      if (state == RESET_SCREEN_UI_STATE.REVERT_PROMISE) {
+      if (state == this.RESET_SCREEN_UI_STATE.REVERT_PROMISE) {
         resetMd.uiState_ = 'revert-promise-view';
       }
     },
 
     setRollbackOptionView: function() {
-      if (this.isConfirmational_)
+      if (this.context.get(CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, false))
         return;
-      if (this.screenState_ != RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
+      if (this.context.get(CONTEXT_KEY_SCREEN_STATE) !=
+          this.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
         return;
 
-      if (this.isRollbackAvailable_ && this.isRollbackChecked_) {
-        this.ui_state = RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL;
+      if (this.context.get(CONTEXT_KEY_ROLLBACK_AVAILABLE, false) &&
+          this.context.get(CONTEXT_KEY_ROLLBACK_CHECKED, false)) {
+        this.ui_state = this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL;
       } else {
-        this.ui_state = RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
+        this.ui_state = this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
       }
       this.setDialogView_();
       this.setTPMFirmwareUpdateView_();
@@ -211,16 +194,17 @@ login.createScreen('ResetScreen', 'reset', function() {
 
     setTPMFirmwareUpdateView_: function() {
       $('oobe-reset-md').tpmFirmwareUpdateAvailable_ =
-          this.ui_state == RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL &&
-          this.isTpmFirmwareUpdateAvailable_;
+          this.ui_state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL &&
+          this.context.get(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE);
       $('oobe-reset-md').tpmFirmwareUpdateChecked_ =
-          this.isTpmFirmwareUpdateChecked_;
+          this.context.get(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED);
       $('oobe-reset-md').tpmFirmwareUpdateEditable_ =
-          this.isTpmFirmwareUpdateEditable_;
+          this.context.get(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_EDITABLE);
     },
 
     onTPMFirmwareUpdateChanged_: function(value) {
-      chrome.send('ResetScreen.setTpmFirmwareUpdateChecked', [value]);
+      this.context.set(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED, value);
+      this.commitContextChanges();
     }
   };
 });

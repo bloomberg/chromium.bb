@@ -20,6 +20,7 @@ class FileRemoverAPI {
   enum class DeletionValidationStatus {
     ALLOWED,
     FORBIDDEN,
+    INACTIVE,
   };
   // Callback used for the asynchronous versions of RemoveNow
   // and RegisterPostRebootRemoval.

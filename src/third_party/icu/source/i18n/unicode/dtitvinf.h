@@ -149,6 +149,7 @@ U_NAMESPACE_BEGIN
  * calendar; non-Gregorian calendars are supported from ICU 4.4.1.
  * @stable ICU 4.0
 **/
+
 class U_I18N_API DateIntervalInfo U_FINAL : public UObject {
 public:
     /**

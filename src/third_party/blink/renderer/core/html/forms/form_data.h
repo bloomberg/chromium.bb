@@ -42,7 +42,6 @@
 namespace blink {
 
 class Blob;
-class FormControlState;
 class HTMLFormElement;
 class ScriptState;
 
@@ -107,10 +106,6 @@ class CORE_EXPORT FormData final
       EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded);
   scoped_refptr<EncodedFormData> EncodeMultiPartFormData();
 
-  void AppendToControlState(FormControlState& state) const;
-  static FormData* CreateFromControlState(const FormControlState& state,
-                                          wtf_size_t& index);
-
  private:
   void SetEntry(const Entry*);
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
@@ -135,7 +130,7 @@ class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
   const String& name() const { return name_; }
   const String& Value() const { return value_; }
   Blob* GetBlob() const { return blob_.Get(); }
-  CORE_EXPORT File* GetFile() const;
+  File* GetFile() const;
   const String& Filename() const { return filename_; }
 
  private:

@@ -48,16 +48,13 @@ class COMPONENT_EXPORT(SYSTEM_CLOCK) SystemClockClient {
     virtual void NotifyObserversSystemClockUpdated() = 0;
   };
 
-  // Creates and initializes the global instance. |bus| must not be null.
+  // Creates the global instance. If |bus| is null, a fake client is created.
   static void Initialize(dbus::Bus* bus);
 
-  // Creates and initializes a fake global instance if not already created.
-  static void InitializeFake();
-
-  // Destroys the global instance which must have been initialized.
+  // Destroys the global instance.
   static void Shutdown();
 
-  // Returns the global instance if initialized. May return null.
+  // Returns the global instance which may be null if not initialized.
   static SystemClockClient* Get();
 
   // Adds the given observer.

@@ -59,16 +59,13 @@ gfx::RectF ConvertCGToGfxCoordinates(CGRect bounds, int height) {
 // called when the asynchronous action completes.
 std::unique_ptr<VisionAPIAsyncRequestMac> VisionAPIAsyncRequestMac::Create(
     Class request_class,
-    Callback callback,
-    NSSet<NSString*>* symbology_hints) {
-  return base::WrapUnique(new VisionAPIAsyncRequestMac(
-      std::move(callback), request_class, symbology_hints));
+    Callback callback) {
+  return base::WrapUnique(
+      new VisionAPIAsyncRequestMac(std::move(callback), request_class));
 }
 
-VisionAPIAsyncRequestMac::VisionAPIAsyncRequestMac(
-    Callback callback,
-    Class request_class,
-    NSSet<NSString*>* symbology_hints)
+VisionAPIAsyncRequestMac::VisionAPIAsyncRequestMac(Callback callback,
+                                                   Class request_class)
     : callback_(std::move(callback)) {
   DCHECK(callback_);
 
@@ -80,11 +77,6 @@ VisionAPIAsyncRequestMac::VisionAPIAsyncRequestMac(
   };
 
   request_.reset([[request_class alloc] initWithCompletionHandler:handler]);
-
-  // Pass symbology hints to request.
-  SEL sel = NSSelectorFromString(@"setSymbologies:");
-  if ([symbology_hints count] > 0)
-    [request_ performSelector:sel withObject:symbology_hints];
 }
 
 VisionAPIAsyncRequestMac::~VisionAPIAsyncRequestMac() = default;

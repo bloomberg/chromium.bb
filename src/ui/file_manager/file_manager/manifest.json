@@ -68,9 +68,6 @@
     "view-pdf": {
       "extensions": [
         "pdf"
-      ],
-      "types": [
-        "application/pdf"
       ]
     },
     "view-swf": {
@@ -89,9 +86,6 @@
         "xhtml",
         "svg",
         "txt"
-      ],
-      "types": [
-        "text/plain"
       ]
     },
     "open-hosted-generic": {

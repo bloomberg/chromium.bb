@@ -23,9 +23,6 @@ import org.chromium.content_public.common.BrowserControlsState;
  */
 public class EmptyTabObserver implements TabObserver {
     @Override
-    public void onInitialized(Tab tab, TabState tabState) {}
-
-    @Override
     public void onShown(Tab tab, @TabSelectionType int type) {}
 
     @Override

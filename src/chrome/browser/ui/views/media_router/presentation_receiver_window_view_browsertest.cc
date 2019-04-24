@@ -139,8 +139,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
     }
 
    private:
-    void OnViewVisibilityChanged(views::View* observed_view,
-                                 views::View* starting_view) override {
+    void OnViewVisibilityChanged(views::View* observed_view) override {
       bool fullscreen = !observed_view->visible();
       EXPECT_EQ(fullscreen, receiver_view_->IsFullscreen());
       if (fullscreen == (await_type_ == AwaitType::kIntoFullscreen))

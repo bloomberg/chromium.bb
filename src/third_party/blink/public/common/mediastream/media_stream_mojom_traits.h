@@ -69,6 +69,12 @@ struct StructTraits<blink::mojom::MediaStreamDeviceDataView,
     return device.session_id;
   }
 
+  static const base::Optional<
+      media::VideoCaptureDeviceDescriptor::CameraCalibration>&
+  camera_calibration(const blink::MediaStreamDevice& device) {
+    return device.camera_calibration;
+  }
+
   static const base::Optional<media::mojom::DisplayMediaInformationPtr>&
   display_media_info(const blink::MediaStreamDevice& device) {
     return device.display_media_info;

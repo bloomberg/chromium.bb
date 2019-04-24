@@ -557,7 +557,16 @@ angle::Result Buffer11::unmap(const gl::Context *context, GLboolean *result)
 
 angle::Result Buffer11::markTransformFeedbackUsage(const gl::Context *context)
 {
-    ANGLE_TRY(markBufferUsage(context, BUFFER_USAGE_VERTEX_OR_TRANSFORM_FEEDBACK));
+    BufferStorage *transformFeedbackStorage = nullptr;
+    ANGLE_TRY(getBufferStorage(context, BUFFER_USAGE_VERTEX_OR_TRANSFORM_FEEDBACK,
+                               &transformFeedbackStorage));
+
+    if (transformFeedbackStorage)
+    {
+        onStorageUpdate(transformFeedbackStorage);
+    }
+
+    invalidateStaticData(context);
     return angle::Result::Continue;
 }
 
@@ -617,20 +626,6 @@ bool Buffer11::canDeallocateSystemMemory() const
 void Buffer11::markBufferUsage(BufferUsage usage)
 {
     mIdleness[usage] = 0;
-}
-
-angle::Result Buffer11::markBufferUsage(const gl::Context *context, BufferUsage usage)
-{
-    BufferStorage *bufferStorage = nullptr;
-    ANGLE_TRY(getBufferStorage(context, usage, &bufferStorage));
-
-    if (bufferStorage)
-    {
-        onStorageUpdate(bufferStorage);
-    }
-
-    invalidateStaticData(context);
-    return angle::Result::Continue;
 }
 
 angle::Result Buffer11::garbageCollection(const gl::Context *context, BufferUsage currentUsage)
@@ -701,12 +696,6 @@ angle::Result Buffer11::getConstantBufferRange(const gl::Context *context,
     return angle::Result::Continue;
 }
 
-angle::Result Buffer11::markRawBufferUsage(const gl::Context *context)
-{
-    ANGLE_TRY(markBufferUsage(context, BUFFER_USAGE_RAW_UAV));
-    return angle::Result::Continue;
-}
-
 angle::Result Buffer11::getRawUAVRange(const gl::Context *context,
                                        GLintptr offset,
                                        GLsizeiptr size,
@@ -714,6 +703,14 @@ angle::Result Buffer11::getRawUAVRange(const gl::Context *context,
 {
     NativeStorage *nativeStorage = nullptr;
     ANGLE_TRY(getBufferStorage(context, BUFFER_USAGE_RAW_UAV, &nativeStorage));
+
+    BufferStorage *latestBuffer = nullptr;
+    ANGLE_TRY(getLatestBufferStorage(context, &latestBuffer));
+    // As UAVs could have been updated by the shader, they hold the latest version of the data.
+    if (latestBuffer != nativeStorage)
+    {
+        onStorageUpdate(nativeStorage);
+    }
 
     return nativeStorage->getRawUAV(context, static_cast<unsigned int>(offset),
                                     static_cast<unsigned int>(size), uavOut);

@@ -29,13 +29,12 @@ namespace util {
 //
 // Returns false if failed to open. This happens if the file type is unknown.
 bool OpenFileWithBrowser(Profile* profile,
-                         const storage::FileSystemURL& file_system_url,
-                         const std::string& action_id);
+                         const storage::FileSystemURL& file_system_url);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
-bool ShouldBeOpenedWithPlugin(Profile* profile,
-                              const base::FilePath::StringType& file_extension,
-                              const std::string& action_id);
+bool ShouldBeOpenedWithPlugin(
+    Profile* profile,
+    const base::FilePath::StringType& file_extension);
 
 }  // namespace util
 }  // namespace file_manager

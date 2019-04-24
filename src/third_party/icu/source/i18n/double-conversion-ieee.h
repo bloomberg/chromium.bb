@@ -271,7 +271,7 @@ class Double {
         (biased_exponent << kPhysicalSignificandSize);
   }
 
-  DC_DISALLOW_COPY_AND_ASSIGN(Double);
+  DISALLOW_COPY_AND_ASSIGN(Double);
 };
 
 class Single {
@@ -408,7 +408,7 @@ class Single {
 
   const uint32_t d32_;
 
-  DC_DISALLOW_COPY_AND_ASSIGN(Single);
+  DISALLOW_COPY_AND_ASSIGN(Single);
 };
 
 }  // namespace double_conversion

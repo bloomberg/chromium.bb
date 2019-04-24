@@ -59,7 +59,7 @@ TaskQueue::QueueEnabledVoter::~QueueEnabledVoter() {
   task_queue_->RemoveQueueEnabledVoter(enabled_);
 }
 
-void TaskQueue::QueueEnabledVoter::SetVoteToEnable(bool enabled) {
+void TaskQueue::QueueEnabledVoter::SetQueueEnabled(bool enabled) {
   if (enabled == enabled_)
     return;
   enabled_ = enabled;
@@ -120,14 +120,9 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                              ? impl_->sequence_manager()->associated_thread()
                              : MakeRefCounted<internal::AssociatedThreadId>()),
       default_task_runner_(impl_ ? impl_->CreateTaskRunner(kTaskTypeNone)
-                                 : CreateNullTaskRunner()),
-      name_(impl_ ? impl_->GetName() : "") {}
+                                 : CreateNullTaskRunner()) {}
 
 TaskQueue::~TaskQueue() {
-  ShutdownTaskQueueGracefully();
-}
-
-void TaskQueue::ShutdownTaskQueueGracefully() {
   // scoped_refptr guarantees us that this object isn't used.
   if (!impl_)
     return;
@@ -159,10 +154,11 @@ void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
 
 void TaskQueue::ShutdownTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  AutoLock lock(impl_lock_);
   if (!impl_)
     return;
   if (!sequence_manager_) {
-    TakeTaskQueueImpl().reset();
+    impl_.reset();
     return;
   }
   impl_->SetBlameContext(nullptr);
@@ -174,10 +170,8 @@ void TaskQueue::ShutdownTaskQueue() {
 }
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
-    TaskType task_type) {
-  // We only need to lock if we're not on the main thread.
-  base::internal::AutoSchedulerLockMaybe lock(IsOnMainThread() ? &impl_lock_
-                                                               : nullptr);
+    int task_type) {
+  Optional<MoveableAutoLock> lock(AcquireImplReadLockIfNeeded());
   if (!impl_)
     return CreateNullTaskRunner();
   return impl_->CreateTaskRunner(task_type);
@@ -308,7 +302,10 @@ bool TaskQueue::BlockedByFence() const {
 }
 
 const char* TaskQueue::GetName() const {
-  return name_;
+  auto lock = AcquireImplReadLockIfNeeded();
+  if (!impl_)
+    return "";
+  return impl_->GetName();
 }
 
 void TaskQueue::SetObserver(Observer* observer) {
@@ -330,8 +327,13 @@ bool TaskQueue::IsOnMainThread() const {
   return associated_thread_->IsBoundToCurrentThread();
 }
 
+Optional<MoveableAutoLock> TaskQueue::AcquireImplReadLockIfNeeded() const {
+  if (IsOnMainThread())
+    return nullopt;
+  return MoveableAutoLock(impl_lock_);
+}
+
 std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
-  base::internal::AutoSchedulerLock lock(impl_lock_);
   DCHECK(impl_);
   return std::move(impl_);
 }

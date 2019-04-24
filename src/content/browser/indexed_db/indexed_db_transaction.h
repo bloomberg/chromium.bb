@@ -99,8 +99,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
   void AddObservation(int32_t connection_id,
                       blink::mojom::IDBObservationPtr observation);
 
-  void EnsureBackingStoreTransactionBegun();
-
   blink::mojom::IDBObserverChangesPtr* GetPendingChangesForConnection(
       int32_t connection_id);
 

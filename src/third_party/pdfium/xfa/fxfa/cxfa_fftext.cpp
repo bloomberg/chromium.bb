@@ -25,14 +25,14 @@ CXFA_FFText::~CXFA_FFText() {}
 
 void CXFA_FFText::RenderWidget(CXFA_Graphics* pGS,
                                const CFX_Matrix& matrix,
-                               HighlightOption highlight) {
-  if (!HasVisibleStatus())
+                               uint32_t dwStatus) {
+  if (!IsMatchVisibleStatus(dwStatus))
     return;
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
 
-  CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
+  CXFA_FFWidget::RenderWidget(pGS, mtRotate, dwStatus);
 
   CXFA_TextLayout* pTextLayout = m_pNode->GetTextLayout();
   if (!pTextLayout)
@@ -42,7 +42,7 @@ void CXFA_FFText::RenderWidget(CXFA_Graphics* pGS,
   CFX_RectF rtText = GetRectWithoutRotate();
   CXFA_Margin* margin = m_pNode->GetMarginIfExists();
   if (margin) {
-    CXFA_ContentLayoutItem* pItem = GetLayoutItem();
+    CXFA_ContentLayoutItem* pItem = this;
     if (!pItem->GetPrev() && !pItem->GetNext()) {
       XFA_RectWithoutMargin(&rtText, margin);
     } else {
@@ -61,8 +61,7 @@ void CXFA_FFText::RenderWidget(CXFA_Graphics* pGS,
   CFX_Matrix mt(1, 0, 0, 1, rtText.left, rtText.top);
   CFX_RectF rtClip = mtRotate.TransformRect(rtText);
   mt.Concat(mtRotate);
-  pTextLayout->DrawString(pRenderDevice, mt, rtClip,
-                          GetLayoutItem()->GetIndex());
+  pTextLayout->DrawString(pRenderDevice, mt, rtClip, GetIndex());
 }
 
 bool CXFA_FFText::IsLoaded() {
@@ -79,7 +78,7 @@ bool CXFA_FFText::PerformLayout() {
     return true;
 
   pTextLayout->ClearBlocks();
-  CXFA_ContentLayoutItem* pItem = GetLayoutItem();
+  CXFA_ContentLayoutItem* pItem = this;
   if (!pItem->GetPrev() && !pItem->GetNext())
     return true;
 

@@ -9,34 +9,34 @@ const VIDEO_URL = "http://localhost:8080/external/wpt/media/white.webm";
 
 // Returns a Promise that is resolve()d if detect() is rejected. Needs an input
 // |element| (e.g. an HTMLImageElement or HTMLVideoElement) and a |url| to load.
-function detectTextOnElementAndExpectError(element, url) {
+function detectFaceOnElementAndExpectError(element, url) {
   return new Promise(function(resolve, reject) {
-    var tryTextDetection = function() {
-      var textDetector = new TextDetector();
-      textDetector.detect(element)
-          .then(textDetectionResult => {
+    var tryFaceDetection = function() {
+      var faceDetector = new FaceDetector();
+      faceDetector.detect(element)
+          .then(faceDetectionResult => {
             reject("Promise should have been rejected.");
           })
           .catch(error => {
             resolve(error);
           });
     };
-    element.onload = tryTextDetection;
-    element.onerror = tryTextDetection;
+    element.onload = tryFaceDetection;
+    element.onerror = tryFaceDetection;
     element.src = url;
   });
 }
 
-function detectTextOnImageBitmapAndExpectError(imageUrl) {
+function detectFaceOnImageBitmapAndExpectError(imageUrl) {
   return new Promise(function(resolve, reject) {
     var image = new Image();
     image.onload = function() {
       createImageBitmap(image)
           .then(imageBitmap => {
-            var textDetector = new TextDetector();
-            return textDetector.detect(imageBitmap);
+            var faceDetector = new FaceDetector();
+            return faceDetector.detect(imageBitmap);
           })
-          .then(textDetectionResult => {
+          .then(faceDetectionResult => {
             reject("Promise should have been rejected.");
           })
           .catch(error => {
@@ -48,33 +48,33 @@ function detectTextOnImageBitmapAndExpectError(imageUrl) {
   });
 }
 
-// Verifies that TextDetector rejects a cross-origin HTMLImageElement.
+// Verifies that FaceDetector rejects a cross-origin HTMLImageElement.
 promise_test(function(t) {
   var image = new Image();
-  return detectTextOnElementAndExpectError(image, IMAGE_URL)
+  return detectFaceOnElementAndExpectError(image, IMAGE_URL)
       .then(error => {
         assert_equals(error.name, "SecurityError");
       });
 },
-"TextDetector should reject cross-origin HTMLImageElements with a SecurityError.");
+"FaceDetector should reject cross-origin HTMLImageElements with a SecurityError.");
 
-// Verifies that TextDetector rejects a cross-origin ImageBitmap.
+// Verifies that FaceDetector rejects a cross-origin ImageBitmap.
 promise_test(function(t) {
-  return detectTextOnImageBitmapAndExpectError(IMAGE_URL)
+  return detectFaceOnImageBitmapAndExpectError(IMAGE_URL)
       .then(error => {
         assert_equals(error.name, "SecurityError");
       });
 },
-"TextDetector should reject cross-origin ImageBitmaps with a SecurityError.");
+"FaceDetector should reject cross-origin ImageBitmaps with a SecurityError.");
 
-// Verifies that TextDetector rejects a cross-origin HTMLVideoElement.
+// Verifies that FaceDetector rejects a cross-origin HTMLVideoElement.
 promise_test(function(t) {
   var video = document.createElement('video');
-  return detectTextOnElementAndExpectError(video, VIDEO_URL)
+  return detectFaceOnElementAndExpectError(video, VIDEO_URL)
       .then(error => {
         assert_equals(error.name, "SecurityError");
       });
 },
-"TextDetector should reject cross-origin HTMLVideoElements with a SecurityError.");
+"FaceDetector should reject cross-origin HTMLVideoElements with a SecurityError.");
 
 </script>

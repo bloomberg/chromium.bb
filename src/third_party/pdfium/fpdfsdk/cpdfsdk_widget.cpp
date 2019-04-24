@@ -363,7 +363,12 @@ int CPDFSDK_Widget::GetLayoutOrder() const {
 }
 
 int CPDFSDK_Widget::GetFieldFlags() const {
-  return GetFormField()->GetFieldFlags();
+  CPDF_InteractiveForm* pPDFInteractiveForm =
+      m_pInteractiveForm->GetInteractiveForm();
+  CPDF_FormControl* pFormControl =
+      pPDFInteractiveForm->GetControlByDict(GetAnnotDict());
+  CPDF_FormField* pFormField = pFormControl->GetField();
+  return pFormField->GetFieldFlags();
 }
 
 bool CPDFSDK_Widget::IsSignatureWidget() const {

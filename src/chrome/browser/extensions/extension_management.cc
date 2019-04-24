@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/syslog_logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -62,14 +61,12 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallForceList,
                              pref_change_callback);
-  pref_change_registrar_.Add(pref_names::kLoginScreenExtensions,
+  pref_change_registrar_.Add(pref_names::kInstallLoginScreenAppList,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
   pref_change_registrar_.Add(pref_names::kExtensionManagement,
-                             pref_change_callback);
-  pref_change_registrar_.Add(pref_names::kUninstallBlacklistedExtensions,
                              pref_change_callback);
 #if !defined(OS_CHROMEOS)
   pref_change_registrar_.Add(prefs::kCloudReportingEnabled,
@@ -136,17 +133,6 @@ ExtensionManagement::GetForceInstallList() const {
 std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetRecommendedInstallList() const {
   return GetInstallListByMode(INSTALLATION_RECOMMENDED);
-}
-
-bool ExtensionManagement::HasWhitelistedExtension() const {
-  if (default_settings_->installation_mode != INSTALLATION_BLOCKED)
-    return true;
-
-  for (const auto& it : settings_by_id_) {
-    if (it.second->installation_mode == INSTALLATION_ALLOWED)
-      return true;
-  }
-  return false;
 }
 
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
@@ -311,10 +297,6 @@ bool ExtensionManagement::CheckMinimumVersion(
   return meets_requirement;
 }
 
-bool ExtensionManagement::ShouldUninstallPolicyBlacklistedExtensions() const {
-  return pref_service_->GetBoolean(pref_names::kUninstallBlacklistedExtensions);
-}
-
 void ExtensionManagement::Refresh() {
   TRACE_EVENT0("browser,startup", "ExtensionManagement::Refresh");
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ExtensionManagement_RefreshTime");
@@ -330,10 +312,10 @@ void ExtensionManagement::Refresh() {
   const base::DictionaryValue* forced_list_pref =
       static_cast<const base::DictionaryValue*>(LoadPreference(
           pref_names::kInstallForceList, true, base::Value::Type::DICTIONARY));
-  const base::DictionaryValue* login_screen_extensions_pref = nullptr;
+  const base::DictionaryValue* login_screen_app_list_pref = nullptr;
   if (is_signin_profile_) {
-    login_screen_extensions_pref = static_cast<const base::DictionaryValue*>(
-        LoadPreference(pref_names::kLoginScreenExtensions, true,
+    login_screen_app_list_pref = static_cast<const base::DictionaryValue*>(
+        LoadPreference(pref_names::kInstallLoginScreenAppList, true,
                        base::Value::Type::DICTIONARY));
   }
   const base::ListValue* install_sources_pref =
@@ -397,7 +379,7 @@ void ExtensionManagement::Refresh() {
   }
 
   UpdateForcedExtensions(forced_list_pref);
-  UpdateForcedExtensions(login_screen_extensions_pref);
+  UpdateForcedExtensions(login_screen_app_list_pref);
 
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;
@@ -461,24 +443,21 @@ void ExtensionManagement::Refresh() {
                           "extensions with update url: " << update_url << ".";
         }
       } else {
-        std::vector<std::string> extension_ids = base::SplitString(
-            iter.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-        for (const auto& extension_id : extension_ids) {
-          if (!crx_file::id_util::IdIsValid(extension_id)) {
-            SYSLOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
-            continue;
-          }
-          internal::IndividualSettings* by_id = AccessById(extension_id);
-          if (!by_id->Parse(subdict,
-                            internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
-            settings_by_id_.erase(extension_id);
-            InstallationReporter::ReportFailure(
-                profile_, extension_id,
-                InstallationReporter::FailureReason::
-                    MALFORMED_EXTENSION_SETTINGS);
-            SYSLOG(WARNING) << "Malformed Extension Management settings for "
-                            << extension_id << ".";
-          }
+        const std::string& extension_id = iter.key();
+        if (!crx_file::id_util::IdIsValid(extension_id)) {
+          LOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
+          continue;
+        }
+        internal::IndividualSettings* by_id = AccessById(extension_id);
+        if (!by_id->Parse(subdict,
+                          internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
+          settings_by_id_.erase(extension_id);
+          InstallationReporter::ReportFailure(
+              profile_, extension_id,
+              InstallationReporter::FailureReason::
+                  MALFORMED_EXTENSION_SETTINGS);
+          LOG(WARNING) << "Malformed Extension Management settings for "
+                       << extension_id << ".";
         }
       }
     }

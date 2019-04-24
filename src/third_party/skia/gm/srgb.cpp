@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "Resources.h"
-#include "SkCanvas.h"
-#include "SkColorFilter.h"
-#include "SkImage.h"
-#include "ToolUtils.h"
 #include "gm.h"
+#include "sk_tool_utils.h"
+#include "SkCanvas.h"
+#include "SkImage.h"
+#include "Resources.h"
+#include "SkColorFilter.h"
 
 DEF_SIMPLE_GM(srgb_colorfilter, canvas, 512, 256*3) {
     auto img = GetResourceAsImage("images/mandrill_256.png");
@@ -21,9 +21,9 @@ DEF_SIMPLE_GM(srgb_colorfilter, canvas, 512, 256*3) {
         0, 0, 1, 0, 0,
         -1, 0, 0, 1, 0,
     };
-    auto cf0 = SkColorFilters::MatrixRowMajor255(array);
-    auto cf1 = SkColorFilters::LinearToSRGBGamma();
-    auto cf2 = SkColorFilters::SRGBToLinearGamma();
+    auto cf0 = SkColorFilter::MakeMatrixFilterRowMajor255(array);
+    auto cf1 = SkColorFilter::MakeLinearToSRGBGamma();
+    auto cf2 = SkColorFilter::MakeSRGBToLinearGamma();
 
     SkPaint p;
     p.setColorFilter(cf0);

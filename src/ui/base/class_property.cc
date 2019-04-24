@@ -20,14 +20,8 @@ int64_t PropertyHandler::SetPropertyInternal(const void* key,
                                              PropertyDeallocator deallocator,
                                              int64_t value,
                                              int64_t default_value) {
-  // TODO(https://crbug.com/952087): ideally this code would early out if the
-  // value isn't changing. Unfortunately that breaks some assumptions.
-  // |is_value_changing| is a best guess at whether the value is changing, and
-  // doesn't handle non-POD types.
-  const bool is_value_changing =
-      value != GetPropertyInternal(key, default_value);
-  std::unique_ptr<PropertyData> data =
-      BeforePropertyChange(key, is_value_changing);
+  // This code may be called before |port_| has been created.
+  std::unique_ptr<PropertyData> data = BeforePropertyChange(key);
   int64_t old = GetPropertyInternal(key, default_value);
   if (value == default_value) {
     prop_map_.erase(key);
@@ -43,8 +37,7 @@ int64_t PropertyHandler::SetPropertyInternal(const void* key,
 }
 
 std::unique_ptr<PropertyData> PropertyHandler::BeforePropertyChange(
-    const void* key,
-    bool is_value_changing) {
+    const void* key) {
   return nullptr;
 }
 

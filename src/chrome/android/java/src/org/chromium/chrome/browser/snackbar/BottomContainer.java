@@ -8,7 +8,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardExtensionSizeManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -19,12 +19,12 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
  * bottom controls' offset changes.
  */
 public class BottomContainer
-        extends FrameLayout implements FullscreenListener, CompositorViewResizer.Observer {
+        extends FrameLayout implements FullscreenListener, KeyboardExtensionSizeManager.Observer {
     /** The {@link ChromeFullscreenManager} to listen for controls offset changes. */
     private ChromeFullscreenManager mFullscreenManager;
 
-    /** A {@link CompositorViewResizer} to listen to for keyboard extension size changes. */
-    private CompositorViewResizer mKeyboardExtensionSizeManager;
+    /** A {@link KeyboardExtensionSizeManager} to listen to for keyboard extension size changes. */
+    private KeyboardExtensionSizeManager mKeyboardExtensionSizeManager;
 
     /** The desired Y offset if unaffected by other UI. */
     private float mBaseYOffset;
@@ -43,7 +43,7 @@ public class BottomContainer
      * Initializes this container.
      */
     public void initialize(ChromeFullscreenManager fullscreenManager,
-            CompositorViewResizer keyboardExtensionSizeManager) {
+            KeyboardExtensionSizeManager keyboardExtensionSizeManager) {
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
         mKeyboardExtensionSizeManager = keyboardExtensionSizeManager;
@@ -70,9 +70,9 @@ public class BottomContainer
         });
     }
 
-    // CompositorViewResizer methods
+    // KeyboardExtensionSizeManager methods
     @Override
-    public void onHeightChanged(int keyboardHeight) {
+    public void onKeyboardExtensionHeightChanged(int keyboardHeight) {
         setTranslationY(mBaseYOffset);
     }
 
@@ -88,7 +88,7 @@ public class BottomContainer
 
         float offsetFromControls = mFullscreenManager.getBottomControlOffset()
                 - mFullscreenManager.getBottomControlsHeight();
-        offsetFromControls -= mKeyboardExtensionSizeManager.getHeight();
+        offsetFromControls -= mKeyboardExtensionSizeManager.getKeyboardExtensionHeight();
 
         // Sit on top of either the bottom sheet or the bottom toolbar depending on which is larger
         // (offsets are negative).

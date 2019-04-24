@@ -13,11 +13,11 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_Y
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -29,8 +29,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -43,10 +41,6 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=PaymentRequestHasEnrolledInstrument"})
 public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStartCallback {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_can_make_payment_metrics_test.html", this);
@@ -76,7 +70,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
 
         // Press the back button.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
@@ -205,7 +199,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
 
@@ -244,7 +238,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
 
         // Press the back button.
         int callCount = mPaymentRequestTestRule.getDismissed().getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);

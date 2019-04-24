@@ -1,12 +1,13 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <select id="select" value="Select"></select>
 
 <div id="slider" tabindex="0" role="slider" aria-valuenow="5">Slider</div>
 
 <script>
-async_test((t) => {
+async_test_after_layout_and_paint((t) => {
     window.selectNotificationCount = 0;
     window.sliderNotificationCount = 0;
     window.globalNotificationCount = 0;
@@ -14,16 +15,7 @@ async_test((t) => {
     window.select = accessibilityController.accessibleElementById("select");
     window.slider = accessibilityController.accessibleElementById("slider");
     let expected_notifications = [
-        [select, "Focus"],
-        ["global", "Focus", "AXRole: AXPopUpButton"],
         [select, "Blur"],
-        ["global", "Blur", "AXRole: AXPopUpButton"],
-        [slider, "Focus"],
-        ["global", "Focus", "AXRole: AXSlider"],
-        [select, "TextChanged"],
-        ["global", "TextChanged", "AXRole: AXPopUpButton"],
-        [select, "TextChanged"],
-        ["global", "TextChanged", "AXRole: AXPopUpButton"],
         [select, "InvalidStatusChanged"],
         ["global", "InvalidStatusChanged", "AXRole: AXPopUpButton"],
         [slider, "ValueChanged"],
@@ -59,9 +51,9 @@ async_test((t) => {
             assert_equals(element.role, expected_notification[2]);
         }
         if (expected_notifications.length === 0) {
-            assert_equals(selectNotificationCount, 5);
-            assert_equals(sliderNotificationCount, 2);
-            assert_equals(globalNotificationCount, 7);
+            assert_equals(selectNotificationCount, 2);
+            assert_equals(sliderNotificationCount, 1);
+            assert_equals(globalNotificationCount, 2);
             accessibilityController.removeNotificationListener();
             select.removeNotificationListener();
             slider.removeNotificationListener();

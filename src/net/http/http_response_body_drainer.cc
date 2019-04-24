@@ -22,7 +22,7 @@ HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStream* stream)
     : stream_(stream),
       next_state_(STATE_NONE),
       total_read_(0),
-      session_(nullptr) {}
+      session_(NULL) {}
 
 HttpResponseBodyDrainer::~HttpResponseBodyDrainer() = default;
 

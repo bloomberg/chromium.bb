@@ -69,21 +69,7 @@ target_os = ['fuchsia']
 ```
 
 Note that this should be added as a top-level statement in the `.gclient` file,
-not an entry inside the `solutions` dict. An example `.gclient` file would look
-as follows:
-
-```
-solutions = [
-  {
-    "url": "https://chromium.googlesource.com/chromium/src.git",
-    "managed": False,
-    "name": "src",
-    "custom_deps": {},
-    "custom_vars": {}
-  }
-]
-target_os = ['fuchsia']
-```
+not an entry inside the `solutions` dict.
 
 You will then need to run:
 

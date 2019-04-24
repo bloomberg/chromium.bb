@@ -77,13 +77,8 @@ void GetAliasedFeature(v8::Local<v8::Name> property_name,
   if (!has_property.IsJust() || !has_property.FromJust())
     return;
 
-  v8::Local<v8::Value> property_value;
-  // Try and grab the chrome.runtime version. It's possible this has been
-  // tampered with, so early-out if an exception is thrown.
-  if (!runtime_obj->Get(context, property_name).ToLocal(&property_value))
-    return;
-
-  info.GetReturnValue().Set(property_value);
+  info.GetReturnValue().Set(
+      runtime_obj->Get(context, property_name).ToLocalChecked());
 }
 
 // A helper method to throw a deprecation error on access.

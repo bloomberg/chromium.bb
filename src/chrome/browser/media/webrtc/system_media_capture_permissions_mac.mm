@@ -27,8 +27,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace system_media_permissions {
-
 namespace {
 
 NSInteger MediaAuthorizationStatus(NSString* media_type) {
@@ -56,9 +54,8 @@ SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
       case 0:
         return SystemPermission::kNotDetermined;
       case 1:
-        return SystemPermission::kRestricted;
       case 2:
-        return SystemPermission::kDenied;
+        return SystemPermission::kNotAllowed;
       case 3:
         return SystemPermission::kAllowed;
       default:
@@ -121,5 +118,3 @@ void RequestSystemVideoCapturePermisson(base::OnceClosure callback,
       AVMediaTypeVideo, base::AdaptCallbackForRepeating(std::move(callback)),
       traits);
 }
-
-}  // namespace system_media_permissions

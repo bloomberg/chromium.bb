@@ -23,7 +23,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     test_service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
 
-    id_ = MediaPlayerId(contents()->GetMainFrame(), 0);
+    id_ = WebContentsObserver::MediaPlayerId(contents()->GetMainFrame(), 0);
     controller_ = CreateController();
   }
 
@@ -72,7 +72,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   }
 
   template <typename T>
-  bool ReceivedMessagePlay() {
+  bool ReceivedMessagePlayPause() {
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
     if (!msg)
       return false;
@@ -84,26 +84,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(id_.delegate_id, std::get<0>(result));
     test_sink().ClearMessages();
     return id_.delegate_id == std::get<0>(result);
-  }
-
-  template <typename T>
-  bool ReceivedMessagePause(bool triggered_by_user) {
-    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
-    if (!msg)
-      return false;
-
-    std::tuple<int, bool> result;
-    if (!T::Read(msg, &result))
-      return false;
-
-    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
-    test_sink().ClearMessages();
-    if (id_.delegate_id != std::get<0>(result))
-      return false;
-
-    EXPECT_EQ(triggered_by_user, std::get<1>(result));
-    test_sink().ClearMessages();
-    return triggered_by_user == std::get<1>(result);
   }
 
   template <typename T>
@@ -144,7 +124,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     return expected_multiplier == std::get<1>(result);
   }
 
-  MediaPlayerId id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
+  WebContentsObserver::MediaPlayerId id_ =
+      WebContentsObserver::MediaPlayerId::createMediaPlayerIdForTests();
   std::unique_ptr<MediaSessionController> controller_;
 
  private:
@@ -181,12 +162,11 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
-      true /* triggered_by_user */));
+  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Pause>());
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Play>());
 
   // ...as well as the seek behavior.
   const base::TimeDelta kTestSeekForwardTime = base::TimeDelta::FromSeconds(1);
@@ -262,12 +242,11 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
-      true /* triggered_by_user */));
+  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Pause>());
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Play>());
 
   // Attempt to switch to no audio player, which should do nothing.
   // TODO(dalecurtis): Delete this test once we're no longer using WMPA and

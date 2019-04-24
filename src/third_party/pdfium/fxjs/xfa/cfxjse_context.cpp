@@ -144,13 +144,6 @@ void FXJSE_UpdateObjectBinding(v8::Local<v8::Object> hObject,
   hObject->SetAlignedPointerInInternalField(1, lpNewBinding);
 }
 
-void FXJSE_ClearObjectBinding(v8::Local<v8::Object> hObject) {
-  ASSERT(!hObject.IsEmpty());
-  ASSERT(hObject->InternalFieldCount() == 2);
-  hObject->SetAlignedPointerInInternalField(0, nullptr);
-  hObject->SetAlignedPointerInInternalField(1, nullptr);
-}
-
 CFXJSE_HostObject* FXJSE_RetrieveObjectBinding(
     v8::Local<v8::Object> hJSObject) {
   ASSERT(!hJSObject.IsEmpty());
@@ -272,17 +265,19 @@ bool CFXJSE_Context::ExecuteScript(const char* szScript,
       if (hScript->Run(hContext).ToLocal(&hValue)) {
         ASSERT(!trycatch.HasCaught());
         if (lpRetValue)
-          lpRetValue->ForceSetValue(hValue);
+          lpRetValue->m_hValue.Reset(GetIsolate(), hValue);
         return true;
       }
     }
-    if (lpRetValue)
-      lpRetValue->ForceSetValue(CreateReturnValue(GetIsolate(), &trycatch));
+    if (lpRetValue) {
+      lpRetValue->m_hValue.Reset(GetIsolate(),
+                                 CreateReturnValue(GetIsolate(), &trycatch));
+    }
     return false;
   }
 
-  v8::Local<v8::Value> hNewThis = v8::Local<v8::Value>::New(
-      GetIsolate(), lpNewThisObject->DirectGetValue());
+  v8::Local<v8::Value> hNewThis =
+      v8::Local<v8::Value>::New(GetIsolate(), lpNewThisObject->m_hValue);
   ASSERT(!hNewThis.IsEmpty());
   v8::Local<v8::String> hEval =
       v8::String::NewFromUtf8(GetIsolate(),
@@ -301,7 +296,8 @@ bool CFXJSE_Context::ExecuteScript(const char* szScript,
             .ToLocal(&hValue)) {
       ASSERT(!trycatch.HasCaught());
       if (lpRetValue)
-        lpRetValue->ForceSetValue(hValue);
+        lpRetValue->m_hValue.Reset(GetIsolate(), hValue);
+
       return true;
     }
   }
@@ -320,7 +316,9 @@ bool CFXJSE_Context::ExecuteScript(const char* szScript,
   }
 #endif  // NDEBUG
 
-  if (lpRetValue)
-    lpRetValue->ForceSetValue(CreateReturnValue(GetIsolate(), &trycatch));
+  if (lpRetValue) {
+    lpRetValue->m_hValue.Reset(GetIsolate(),
+                               CreateReturnValue(GetIsolate(), &trycatch));
+  }
   return false;
 }

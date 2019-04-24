@@ -92,9 +92,8 @@ class AffiliationBackend;
 //       };
 class AffiliationService : public KeyedService {
  public:
-  using ResultCallback =
-      base::OnceCallback<void(const AffiliatedFacets& /* results */,
-                              bool /* success */)>;
+  typedef base::Callback<void(const AffiliatedFacets& /* results */,
+                              bool /* success */)> ResultCallback;
 
   // Controls whether to send a network request or fail on a cache miss.
   enum class StrategyOnCacheMiss { FETCH_OVER_NETWORK, FAIL };
@@ -124,7 +123,7 @@ class AffiliationService : public KeyedService {
   virtual void GetAffiliationsAndBranding(
       const FacetURI& facet_uri,
       StrategyOnCacheMiss cache_miss_strategy,
-      ResultCallback result_callback);
+      const ResultCallback& result_callback);
 
   // Prefetches affiliation information for the facet identified by |facet_uri|,
   // and keeps the information fresh by periodic re-fetches (as needed) until

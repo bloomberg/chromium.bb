@@ -97,6 +97,11 @@ void WorkerScheduler::SetUpThrottling() {
   }
 }
 
+std::unique_ptr<FrameOrWorkerScheduler::ActiveConnectionHandle>
+WorkerScheduler::OnActiveConnectionCreated() {
+  return nullptr;
+}
+
 SchedulingLifecycleState WorkerScheduler::CalculateLifecycleState(
     ObserverType) const {
   return thread_scheduler_->lifecycle_state();
@@ -166,7 +171,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalInspector:
     case TaskType::kInternalWorker:
     case TaskType::kInternalTest:
-    case TaskType::kInternalNavigation:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
@@ -180,7 +184,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kMainThreadTaskQueueIPC:
     case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kMainThreadTaskQueueCleanup:
-    case TaskType::kMainThreadTaskQueueMemoryPurge:
     case TaskType::kCompositorThreadTaskQueueDefault:
     case TaskType::kCompositorThreadTaskQueueInput:
     case TaskType::kWorkerThreadTaskQueueDefault:
@@ -228,12 +231,6 @@ scoped_refptr<NonMainThreadTaskQueue> WorkerScheduler::PausableTaskQueue() {
 scoped_refptr<NonMainThreadTaskQueue> WorkerScheduler::ThrottleableTaskQueue() {
   return throttleable_task_queue_.get();
 }
-
-void WorkerScheduler::OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                                            const SchedulingPolicy& policy) {}
-
-void WorkerScheduler::OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                                            const SchedulingPolicy& policy) {}
 
 }  // namespace scheduler
 }  // namespace blink

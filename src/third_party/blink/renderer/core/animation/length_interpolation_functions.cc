@@ -48,17 +48,19 @@ bool CSSLengthNonInterpolableValue::HasPercentage(
 
 std::unique_ptr<InterpolableValue>
 LengthInterpolationFunctions::CreateInterpolablePixels(double pixels) {
-  auto interpolable_list = CreateNeutralInterpolableValue();
+  std::unique_ptr<InterpolableList> interpolable_list =
+      CreateNeutralInterpolableValue();
   interpolable_list->Set(CSSPrimitiveValue::kUnitTypePixels,
-                         std::make_unique<InterpolableNumber>(pixels));
+                         InterpolableNumber::Create(pixels));
   return std::move(interpolable_list);
 }
 
 InterpolationValue LengthInterpolationFunctions::CreateInterpolablePercent(
     double percent) {
-  auto interpolable_list = CreateNeutralInterpolableValue();
+  std::unique_ptr<InterpolableList> interpolable_list =
+      CreateNeutralInterpolableValue();
   interpolable_list->Set(CSSPrimitiveValue::kUnitTypePercentage,
-                         std::make_unique<InterpolableNumber>(percent));
+                         InterpolableNumber::Create(percent));
   return InterpolationValue(std::move(interpolable_list),
                             CSSLengthNonInterpolableValue::Create(true));
 }
@@ -66,31 +68,29 @@ InterpolationValue LengthInterpolationFunctions::CreateInterpolablePercent(
 std::unique_ptr<InterpolableList>
 LengthInterpolationFunctions::CreateNeutralInterpolableValue() {
   const size_t kLength = CSSPrimitiveValue::kLengthUnitTypeCount;
-  auto values = std::make_unique<InterpolableList>(kLength);
+  std::unique_ptr<InterpolableList> values = InterpolableList::Create(kLength);
   for (wtf_size_t i = 0; i < kLength; i++)
-    values->Set(i, std::make_unique<InterpolableNumber>(0));
+    values->Set(i, InterpolableNumber::Create(0));
   return values;
 }
 
 InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  if (!primitive_value)
+  if (!value.IsPrimitiveValue())
     return nullptr;
 
-  if (!primitive_value->IsLength() && !primitive_value->IsPercentage() &&
-      !primitive_value->IsCalculatedPercentageWithLength())
+  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
+  if (!primitive_value.IsLength() && !primitive_value.IsPercentage() &&
+      !primitive_value.IsCalculatedPercentageWithLength())
     return nullptr;
 
   CSSLengthArray length_array;
-  primitive_value->AccumulateLengthArray(length_array);
+  primitive_value.AccumulateLengthArray(length_array);
 
-  auto values = std::make_unique<InterpolableList>(
-      CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++) {
-    values->Set(i,
-                std::make_unique<InterpolableNumber>(length_array.values[i]));
-  }
+  std::unique_ptr<InterpolableList> values =
+      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; i++)
+    values->Set(i, InterpolableNumber::Create(length_array.values[i]));
 
   bool has_percentage =
       length_array.type_flags.Get(CSSPrimitiveValue::kUnitTypePercentage);
@@ -105,12 +105,11 @@ InterpolationValue LengthInterpolationFunctions::MaybeConvertLength(
     return nullptr;
 
   PixelsAndPercent pixels_and_percent = length.GetPixelsAndPercent();
-  auto values = CreateNeutralInterpolableValue();
-  values->Set(
-      CSSPrimitiveValue::kUnitTypePixels,
-      std::make_unique<InterpolableNumber>(pixels_and_percent.pixels / zoom));
+  std::unique_ptr<InterpolableList> values = CreateNeutralInterpolableValue();
+  values->Set(CSSPrimitiveValue::kUnitTypePixels,
+              InterpolableNumber::Create(pixels_and_percent.pixels / zoom));
   values->Set(CSSPrimitiveValue::kUnitTypePercentage,
-              std::make_unique<InterpolableNumber>(pixels_and_percent.percent));
+              InterpolableNumber::Create(pixels_and_percent.percent));
 
   return InterpolationValue(
       std::move(values),

@@ -27,8 +27,6 @@
       'HAVE_DLOPEN=0',
       # Only build encoding coverters and detectors necessary for HTML5.
       'UCONFIG_ONLY_HTML_CONVERSION=1',
-      # TODO(jshin): Do we still need/want this?
-      'UCONFIG_USE_WINDOWS_LCID_MAPPING_API=0',
       # No dependency on the default platform encoding.
       # Will cut down the code size.
       'U_CHARSET_IS_UTF8=1',
@@ -525,7 +523,6 @@
               'unicode/fieldpos.h',
               'unicode/fmtable.h',
               'unicode/format.h',
-              'unicode/formattedvalue.h',
               'unicode/fpositer.h',
               'unicode/gender.h',
               'unicode/gregocal.h',
@@ -572,7 +569,6 @@
               'unicode/udatpg.h',
               'unicode/ufieldpositer.h',
               'unicode/uformattable.h',
-              'unicode/uformattedvalue.h',
               'unicode/ugender.h',
               'unicode/ulistformatter.h',
               'unicode/ulocdata.h',
@@ -629,7 +625,6 @@
               'unicode/icudataver.h',
               'unicode/icuplug.h',
               'unicode/idna.h',
-              'unicode/localebuilder.h',
               'unicode/localpointer.h',
               'unicode/locdspnm.h',
               'unicode/locid.h',

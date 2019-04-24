@@ -118,10 +118,8 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
-  void EnumerateDirectoryImpl(
-      content::WebContents* tab,
-      std::unique_ptr<content::FileSelectListener> listener,
-      const base::FilePath& path);
+  void EnumerateDirectory(std::unique_ptr<content::FileSelectListener> listener,
+                          const base::FilePath& path);
 
   // Kicks off a new directory enumeration.
   void StartNewEnumeration(const base::FilePath& path);

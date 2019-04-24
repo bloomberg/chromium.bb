@@ -37,7 +37,7 @@
     recordTypes.ResourceSendRequest, recordTypes.ResourceReceiveResponse, recordTypes.ResourceReceivedData,
     recordTypes.ResourceFinish, recordTypes.EventDispatch, recordTypes.FunctionCall
   ]);
-  const hasAlreadyDumpedReceivedDataFor = new Set();
+  let hasAlreadyDumptReceivedDataFor = new Map();
   function dumpEvent(traceEvent, level) {
     // Ignore stray paint & rendering events for better stability.
     var categoryName = Timeline.TimelineUIUtils.eventStyle(traceEvent).category.name;
@@ -46,15 +46,15 @@
     if (traceEvent.name === 'ResourceReceivedData') {
       const requestId = traceEvent.args['data']['requestId'];
       // Dump only the first ResourceReceivedData for a request for stability.
-      if (hasAlreadyDumpedReceivedDataFor.has(requestId))
+      if (hasAlreadyDumptReceivedDataFor[requestId])
         return;
-      hasAlreadyDumpedReceivedDataFor.add(requestId);
+      hasAlreadyDumptReceivedDataFor[requestId] = true;
     }
 
     // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
     // Filter out InjectedScript function call because they happen out of sync.
     if (typesToDump.has(traceEvent.name) && (traceEvent.name !== 'FunctionCall' || traceEvent.args['data']['url']))
-      TestRunner.addResult('  '.repeat(level - 1) + traceEvent.name);
+      TestRunner.addResult('    '.repeat(level - 1) + traceEvent.name);
   }
   PerformanceTestRunner.walkTimelineEventTree(dumpEvent);
   TestRunner.completeTest();

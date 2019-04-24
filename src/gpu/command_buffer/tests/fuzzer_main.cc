@@ -116,7 +116,6 @@ constexpr const char* kExtensions[] = {
     "GL_CHROMIUM_texture_filtering_hint",
     "GL_EXT_blend_func_extended",
     "GL_EXT_blend_minmax",
-    "GL_EXT_float_blend",
     "GL_EXT_color_buffer_float",
     "GL_EXT_color_buffer_half_float",
     "GL_EXT_debug_marker",
@@ -362,30 +361,18 @@ class CommandBufferSetup {
         config_.workarounds, gpu_feature_info);
     command_buffer_.reset(new CommandBufferDirect());
 
-    if (gpu_preferences_.use_passthrough_cmd_decoder) {
-      // Virtualized contexts don't work with passthrough command decoder.
-      // See https://crbug.com/914976
-      config_.workarounds.use_virtualized_gl_contexts = false;
-    }
-    scoped_refptr<gl::GLContext> shared_context;
-    if (config_.workarounds.use_virtualized_gl_contexts) {
-      shared_context = context_;
-    } else {
-      shared_context = CreateContext();
-    }
-    shared_context->MakeCurrent(surface_.get());
-    context_state_ = base::MakeRefCounted<SharedContextState>(
-        share_group_, surface_, std::move(shared_context),
-        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
-    context_state_->InitializeGrContext(config_.workarounds, nullptr);
-    context_state_->InitializeGL(gpu_preferences_, feature_info);
+    scoped_refptr<SharedContextState> context_state =
+        base::MakeRefCounted<SharedContextState>(
+            share_group_, surface_, context_,
+            config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
+    context_state->InitializeGrContext(config_.workarounds, nullptr);
+    context_state->InitializeGL(gpu_preferences_, feature_info);
 
     shared_image_manager_ = std::make_unique<SharedImageManager>();
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, config_.workarounds, gpu_feature_info,
-        context_state_.get(), &mailbox_manager_, shared_image_manager_.get(),
-        nullptr /* image_factory */, nullptr /* memory_tracker */,
-        false /* is_using_skia_renderer */);
+        context_state.get(), &mailbox_manager_, shared_image_manager_.get(),
+        nullptr /* image_factory */, nullptr /* memory_tracker */);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
          usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
       Mailbox::Name name;
@@ -406,14 +393,12 @@ class CommandBufferSetup {
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
-    context_state_->MakeCurrent(nullptr);
-    auto* context = context_state_->context();
+    auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
-        shared_image_manager_.get(), context_state_));
+        shared_image_manager_.get(), std::move(context_state)));
 #else
-    context_->MakeCurrent(surface_.get());
     // GLES2Decoder may Initialize feature_info differently than
     // SharedContextState and should have its own.
     auto decoder_feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
@@ -438,7 +423,6 @@ class CommandBufferSetup {
                                        config_.attrib_helper);
     if (result != gpu::ContextResult::kSuccess)
       return false;
-    decoder_initialized_ = true;
 
     command_buffer_->set_handler(decoder_.get());
     InitializeInitialCommandBuffer();
@@ -447,6 +431,7 @@ class CommandBufferSetup {
 #if !defined(GPU_FUZZER_USE_RASTER_DECODER)
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
 #endif
+    decoder_initialized_ = true;
     return decoder_->MakeCurrent();
   }
 
@@ -465,24 +450,14 @@ class CommandBufferSetup {
       if (translator)
         translator->AddRef();
 #endif
-      context_lost = decoder_->WasContextLost();
-      // Only safe to call CheckResetStatus if !WasContextLost.
-      if (!context_lost)
-        context_lost = decoder_initialized_ && decoder_->CheckResetStatus();
-
-      // If |decoder_->Initialize(...)| was unsuccessful, |decoder_| would have
-      // already called Destroy.
-      if (decoder_initialized_)
-        decoder_->Destroy(!context_lost);
-      decoder_.reset();
-
-      if (!context_lost)
-        context_lost = !context_state_->MakeCurrent(nullptr);
+      bool reset_status = decoder_initialized_ && decoder_->CheckResetStatus();
+      context_lost = decoder_->WasContextLost() || !reset_status;
       shared_image_factory_->DestroyAllSharedImages(!context_lost);
+      decoder_->Destroy(!context_lost);
+      decoder_.reset();
 
       shared_image_factory_.reset();
       shared_image_manager_.reset();
-      context_state_.reset();
     }
 
     if (context_) {
@@ -548,22 +523,18 @@ class CommandBufferSetup {
     CreateTransferBuffer(kTinyTransferBufferSize, 5);
   }
 
-  scoped_refptr<gl::GLContext> CreateContext() {
-#if defined(GPU_FUZZER_USE_STUB)
-    auto stub = base::MakeRefCounted<gl::GLContextStub>(share_group_.get());
-    stub->SetGLVersionString(config_.version);
-    stub->SetExtensionsString(config_.extensions.c_str());
-    stub->SetUseStubApi(true);
-    return stub;
-#else
-    auto context = base::MakeRefCounted<gl::GLContextEGL>(share_group_.get());
-    context->Initialize(surface_.get(), config_.gl_context_attribs);
-    return context;
-#endif
-  }
-
   void InitContext() {
-    context_ = CreateContext();
+#if !defined(GPU_FUZZER_USE_STUB)
+    context_ = new gl::GLContextEGL(share_group_.get());
+    context_->Initialize(surface_.get(), config_.gl_context_attribs);
+#else
+    scoped_refptr<gl::GLContextStub> context_stub =
+        new gl::GLContextStub(share_group_.get());
+    context_stub->SetGLVersionString(config_.version);
+    context_stub->SetExtensionsString(config_.extensions.c_str());
+    context_stub->SetUseStubApi(true);
+    context_ = context_stub;
+#endif
 
 // When not using the passthrough decoder, ANGLE should not be generating
 // errors (the decoder should prevent those from happening). We register a
@@ -612,7 +583,6 @@ class CommandBufferSetup {
   bool recreate_context_ = false;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<SharedContextState> context_state_;
 
   gles2::ShaderTranslatorCache translator_cache_;
   gles2::FramebufferCompletenessCache completeness_cache_;

@@ -47,7 +47,7 @@ gl::ImageIndex GetImageIndex(EGLenum eglTarget, const egl::AttributeMap &attribs
 
 const Display *DisplayFromContext(const gl::Context *context)
 {
-    return (context ? context->getDisplay() : nullptr);
+    return (context ? context->getCurrentDisplay() : nullptr);
 }
 
 }  // anonymous namespace

@@ -11,7 +11,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm/work_area_insets.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -134,9 +133,7 @@ display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
 }
 
 void AshPopupAlignmentDelegate::UpdateWorkArea() {
-  gfx::Rect new_work_area =
-      WorkAreaInsets::ForWindow(shelf_->GetWindow()->GetRootWindow())
-          ->user_work_area_bounds();
+  gfx::Rect new_work_area = shelf_->GetUserWorkAreaBounds();
   if (work_area_ == new_work_area)
     return;
 

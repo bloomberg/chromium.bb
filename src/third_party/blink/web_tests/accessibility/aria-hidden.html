@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 <h1 aria-hidden="true">h1 <b>test</b></h1>
@@ -11,7 +12,7 @@
 <div id="console"></div>
 
 <script>
-test((t) => {
+test_after_layout_and_paint((t) => {
     var body = document.getElementById("body");
     body.focus();
     var h2 = accessibilityController.focusedElement.childAtIndex(0);

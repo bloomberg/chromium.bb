@@ -40,7 +40,11 @@ class SelectionPaintRange;
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
-  explicit LayoutSelection(FrameSelection&);
+  static LayoutSelection* Create(FrameSelection& frame_selection) {
+    return MakeGarbageCollected<LayoutSelection>(frame_selection);
+  }
+
+  LayoutSelection(FrameSelection&);
 
   void SetHasPendingSelection();
   void Commit();

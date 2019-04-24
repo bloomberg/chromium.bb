@@ -374,7 +374,7 @@ FPDFLink_GetQuadPoints(FPDF_LINK link_annot,
   if (!quad_points || quad_index < 0)
     return false;
 
-  const CPDF_Dictionary* pLinkDict = CPDFDictionaryFromFPDFLink(link_annot);
+  CPDF_Dictionary* pLinkDict = CPDFDictionaryFromFPDFLink(link_annot);
   if (!pLinkDict)
     return false;
 

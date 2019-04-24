@@ -55,7 +55,7 @@ class ANGLEInstancedArrays final : public WebGLExtension {
   void drawElementsInstancedANGLE(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
-                                  int64_t offset,
+                                  long long offset,
                                   GLsizei primcount);
   void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 };

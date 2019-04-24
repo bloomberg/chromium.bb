@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -26,7 +27,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -77,7 +77,7 @@ public class InfoBarAppearanceTest {
         List<InfoBar> infobars;
         FramebustBlockInfoBar infoBar;
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url1);
         });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
@@ -85,7 +85,7 @@ public class InfoBarAppearanceTest {
         infoBar = (FramebustBlockInfoBar) infobars.get(0);
         assertEquals(url1, infoBar.getBlockedUrl());
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url2);
         });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
@@ -109,7 +109,7 @@ public class InfoBarAppearanceTest {
         };
         mTab.addObserver(navigationWaiter);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url);
         });
         FramebustBlockInfoBar infoBar =
@@ -117,10 +117,10 @@ public class InfoBarAppearanceTest {
                         .getInfoBarsForTesting()
                         .get(0);
 
-        TestThreadUtils.runOnUiThreadBlocking(infoBar::onLinkClicked); // Once to expand the infobar
+        ThreadUtils.runOnUiThreadBlocking(infoBar::onLinkClicked); // Once to expand the infobar
         assertEquals(0, callbackHelper.getCallCount());
 
-        TestThreadUtils.runOnUiThreadBlocking(infoBar::onLinkClicked); // Now to navigate
+        ThreadUtils.runOnUiThreadBlocking(infoBar::onLinkClicked); // Now to navigate
         callbackHelper.waitForCallback(0);
 
         CriteriaHelper.pollUiThread(
@@ -134,7 +134,7 @@ public class InfoBarAppearanceTest {
             throws TimeoutException, InterruptedException {
         String url = "http://very.evil.biz";
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url);
         });
         FramebustBlockInfoBar infoBar =
@@ -142,7 +142,7 @@ public class InfoBarAppearanceTest {
                         .getInfoBarsForTesting()
                         .get(0);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> infoBar.onButtonClicked(true));
+        ThreadUtils.runOnUiThreadBlocking(() -> infoBar.onButtonClicked(true));
         CriteriaHelper.pollUiThread(
                 () -> InfoBarContainer.get(mTab).getInfoBarsForTesting().isEmpty());
     }
@@ -160,7 +160,7 @@ public class InfoBarAppearanceTest {
     @MediumTest
     @Feature({"InfoBars", "UiCatalogue"})
     public void testOomInfoBar() throws TimeoutException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> InfoBarContainer.get(mTab).addInfoBarForTesting(new NearOomInfoBar()));
         mListener.addInfoBarAnimationFinished("InfoBar was not added.");
         mScreenShooter.shoot("oom_infobar");
@@ -168,12 +168,12 @@ public class InfoBarAppearanceTest {
 
     private void captureMiniAndRegularInfobar(InfoBar infobar)
             throws TimeoutException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> InfoBarContainer.get(mTab).addInfoBarForTesting(infobar));
         mListener.addInfoBarAnimationFinished("InfoBar was not added.");
         mScreenShooter.shoot("compact");
 
-        TestThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
+        ThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
         mListener.swapInfoBarAnimationFinished("InfoBar did not expand.");
         mScreenShooter.shoot("expanded");
     }

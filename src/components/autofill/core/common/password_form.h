@@ -337,9 +337,6 @@ struct PasswordForm {
   // Returns true if current password element is set.
   bool HasPasswordElement() const;
 
-  // True iff |federation_origin| isn't empty.
-  bool IsFederatedCredential() const;
-
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;
@@ -367,9 +364,6 @@ struct LessThanUniqueKey {
 // Converts a vector of ValueElementPair to string.
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
-
-// Returns true if |scheme| corresponds to http auth scheme.
-bool IsHttpAuthScheme(PasswordForm::Scheme scheme);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);

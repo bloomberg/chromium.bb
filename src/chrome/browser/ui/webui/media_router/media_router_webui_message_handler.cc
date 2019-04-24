@@ -1119,12 +1119,8 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
 AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  if (!identity_manager)
-    return AccountInfo();
-  base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
-          identity_manager->GetPrimaryAccountInfo());
-  return primary_account_info.value_or(AccountInfo{});
+  return identity_manager ? identity_manager->GetPrimaryAccountInfo()
+                          : AccountInfo();
 }
 
 int MediaRouterWebUIMessageHandler::CurrentCastModeForRouteId(

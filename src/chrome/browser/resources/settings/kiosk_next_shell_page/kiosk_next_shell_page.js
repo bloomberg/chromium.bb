@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-kiosk-next-shell-page',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
     /** Preferences state. */
@@ -19,7 +19,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private */
     showConfirmationDialog_: Boolean,
   },
 
@@ -27,7 +26,7 @@ Polymer({
    * @private
    * @param {!Event} event
    */
-  onToggleButtonClick_: function(event) {
+  onToggleButtonPressed_: function(event) {
     this.showConfirmationDialog_ = true;
     event.stopPropagation();
   },
@@ -47,9 +46,9 @@ Polymer({
    * @return {string}
    */
   getSubtextLabel_: function(kioskNextShellEnabled) {
-    return loadTimeData.getString(
-      kioskNextShellEnabled ? 'kioskNextShellPageSubtextDisable' :
-                              'kioskNextShellPageSubtextEnable');
+    return kioskNextShellEnabled
+        ? this.i18n('kioskNextShellPageSubtextDisable')
+        : this.i18n('kioskNextShellPageSubtextEnable');
   },
 
   /**
@@ -58,8 +57,8 @@ Polymer({
    * @return {string}
    */
   getButtonLabel_: function(kioskNextShellEnabled) {
-    return loadTimeData.getString(
-      kioskNextShellEnabled ? 'kioskNextShellTurnOff' :
-                              'kioskNextShellTurnOn');
+    return kioskNextShellEnabled
+        ? this.i18n('kioskNextShellTurnOff')
+        : this.i18n('kioskNextShellTurnOn');
   }
 });

@@ -6,8 +6,7 @@
 
 namespace blink {
 
-EffectProxy::EffectProxy(base::Optional<TimeDelta> local_time)
-    : local_time_(local_time) {}
+EffectProxy::EffectProxy() : local_time_(base::nullopt) {}
 
 void EffectProxy::setLocalTime(double time_ms, bool is_null) {
   if (is_null) {

@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_eventhandler.h"
@@ -25,7 +24,7 @@
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
 
-#if defined(OS_ANDROID)
+#if _FX_OS_ == _FX_OS_ANDROID_
 #include <ctype.h>
 #endif
 

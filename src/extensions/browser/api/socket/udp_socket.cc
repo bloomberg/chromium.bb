@@ -64,20 +64,20 @@ void UDPSocket::Connect(const net::AddressList& address,
 
 void UDPSocket::Bind(const std::string& address,
                      uint16_t port,
-                     net::CompletionOnceCallback callback) {
+                     const net::CompletionCallback& callback) {
   if (IsConnectedOrBound()) {
-    std::move(callback).Run(net::ERR_CONNECTION_FAILED);
+    callback.Run(net::ERR_CONNECTION_FAILED);
     return;
   }
 
   net::IPEndPoint ip_end_point;
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point)) {
-    std::move(callback).Run(net::ERR_INVALID_ARGUMENT);
+    callback.Run(net::ERR_INVALID_ARGUMENT);
     return;
   }
   socket_->Bind(ip_end_point, std::move(socket_options_),
                 base::BindOnce(&UDPSocket::OnBindCompleted,
-                               base::Unretained(this), std::move(callback)));
+                               base::Unretained(this), callback));
 }
 
 void UDPSocket::Disconnect(bool socket_destroying) {
@@ -124,54 +124,54 @@ void UDPSocket::Read(int count, ReadCompletionCallback callback) {
 
 int UDPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
-                         net::CompletionOnceCallback callback) {
+                         const net::CompletionCallback& callback) {
   if (!IsConnected())
     return net::ERR_SOCKET_NOT_CONNECTED;
   base::span<const uint8_t> data(
       reinterpret_cast<const uint8_t*>(io_buffer->data()),
       static_cast<size_t>(io_buffer_size));
-  socket_->Send(
-      data,
-      net::MutableNetworkTrafficAnnotationTag(
-          Socket::GetNetworkTrafficAnnotationTag()),
-      base::BindOnce(&UDPSocket::OnWriteCompleted, base::Unretained(this),
-                     std::move(callback), data.size()));
+  socket_->Send(data,
+                net::MutableNetworkTrafficAnnotationTag(
+                    Socket::GetNetworkTrafficAnnotationTag()),
+                base::BindOnce(&UDPSocket::OnWriteOrSendToCompleted,
+                               base::Unretained(this), callback, data.size()));
   return net::ERR_IO_PENDING;
 }
 
-void UDPSocket::RecvFrom(int count, RecvFromCompletionCallback callback) {
+void UDPSocket::RecvFrom(int count,
+                         const RecvFromCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (!recv_from_callback_.is_null()) {
-    std::move(callback).Run(net::ERR_IO_PENDING, nullptr,
-                            false /* socket_destroying */, std::string(), 0);
+    callback.Run(net::ERR_IO_PENDING, nullptr, false /* socket_destroying */,
+                 std::string(), 0);
     return;
   }
 
   if (count < 0) {
-    std::move(callback).Run(net::ERR_INVALID_ARGUMENT, nullptr,
-                            false /* socket_destroying */, std::string(), 0);
+    callback.Run(net::ERR_INVALID_ARGUMENT, nullptr,
+                 false /* socket_destroying */, std::string(), 0);
     return;
   }
 
   if (!is_bound_) {
-    std::move(callback).Run(net::ERR_SOCKET_NOT_CONNECTED, nullptr,
-                            false /* socket_destroying */, std::string(), 0);
+    callback.Run(net::ERR_SOCKET_NOT_CONNECTED, nullptr,
+                 false /* socket_destroying */, std::string(), 0);
     return;
   }
 
-  recv_from_callback_ = std::move(callback);
+  recv_from_callback_ = callback;
   socket_->ReceiveMoreWithBufferSize(1, count);
 }
 
 void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
                        const net::IPEndPoint& address,
-                       net::CompletionOnceCallback callback) {
+                       const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (!is_bound_) {
-    std::move(callback).Run(net::ERR_SOCKET_NOT_CONNECTED);
+    callback.Run(net::ERR_SOCKET_NOT_CONNECTED);
     return;
   }
 
@@ -182,8 +182,8 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
       address, data,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      base::BindOnce(&UDPSocket::OnSendToCompleted, base::Unretained(this),
-                     std::move(callback), data.size()));
+      base::BindOnce(&UDPSocket::OnWriteOrSendToCompleted,
+                     base::Unretained(this), callback, data.size()));
 }
 
 bool UDPSocket::IsConnected() {
@@ -263,83 +263,74 @@ void UDPSocket::OnConnectCompleted(
 }
 
 void UDPSocket::OnBindCompleted(
-    net::CompletionOnceCallback callback,
+    const net::CompletionCallback& callback,
     int result,
     const base::Optional<net::IPEndPoint>& local_addr) {
   if (result != net::OK) {
-    std::move(callback).Run(result);
+    callback.Run(result);
     return;
   }
   local_addr_ = local_addr;
   is_bound_ = true;
-  std::move(callback).Run(result);
+  callback.Run(result);
 }
 
-void UDPSocket::OnSendToCompleted(net::CompletionOnceCallback callback,
-                                  size_t byte_count,
-                                  int result) {
+void UDPSocket::OnWriteOrSendToCompleted(
+    const net::CompletionCallback& callback,
+    size_t byte_count,
+    int result) {
   if (result == net::OK) {
-    std::move(callback).Run(byte_count);
+    callback.Run(byte_count);
     return;
   }
-  std::move(callback).Run(result);
+  callback.Run(result);
 }
 
-void UDPSocket::OnWriteCompleted(net::CompletionOnceCallback callback,
-                                 size_t byte_count,
-                                 int result) {
-  if (result == net::OK) {
-    std::move(callback).Run(byte_count);
-    return;
-  }
-  std::move(callback).Run(result);
-}
-
-void UDPSocket::OnJoinGroupCompleted(net::CompletionOnceCallback callback,
+void UDPSocket::OnJoinGroupCompleted(const net::CompletionCallback& callback,
                                      const std::string& normalized_address,
                                      int result) {
   if (result == net::OK)
     multicast_groups_.push_back(normalized_address);
-  std::move(callback).Run(result);
+  callback.Run(result);
 }
 
-void UDPSocket::OnLeaveGroupCompleted(net::CompletionOnceCallback callback,
-                                      const std::string& normalized_address,
-                                      int result) {
+void UDPSocket::OnLeaveGroupCompleted(
+    const net::CompletionCallback& user_callback,
+    const std::string& normalized_address,
+    int result) {
   if (result == net::OK) {
     auto find_result = std::find(multicast_groups_.begin(),
                                  multicast_groups_.end(), normalized_address);
     multicast_groups_.erase(find_result);
   }
 
-  std::move(callback).Run(result);
+  user_callback.Run(result);
 }
 
 void UDPSocket::JoinGroup(const std::string& address,
-                          net::CompletionOnceCallback callback) {
+                          const net::CompletionCallback& callback) {
   net::IPAddress ip;
   if (!ip.AssignFromIPLiteral(address)) {
-    std::move(callback).Run(net::ERR_ADDRESS_INVALID);
+    callback.Run(net::ERR_ADDRESS_INVALID);
     return;
   }
 
   std::string normalized_address = ip.ToString();
   if (base::ContainsValue(multicast_groups_, normalized_address)) {
-    std::move(callback).Run(net::ERR_ADDRESS_INVALID);
+    callback.Run(net::ERR_ADDRESS_INVALID);
     return;
   }
 
   socket_->JoinGroup(
-      ip,
-      base::BindOnce(&UDPSocket::OnJoinGroupCompleted, base::Unretained(this),
-                     std::move(callback), normalized_address));
+      ip, base::BindOnce(&UDPSocket::OnJoinGroupCompleted,
+                         base::Unretained(this), callback, normalized_address));
 }
 
 void UDPSocket::LeaveGroup(const std::string& address,
-                           net::CompletionOnceCallback callback) {
+                           const net::CompletionCallback& callback) {
   net::IPAddress ip;
   if (!ip.AssignFromIPLiteral(address)) {
-    std::move(callback).Run(net::ERR_ADDRESS_INVALID);
+    callback.Run(net::ERR_ADDRESS_INVALID);
     return;
   }
 
@@ -347,14 +338,13 @@ void UDPSocket::LeaveGroup(const std::string& address,
   auto find_result = std::find(multicast_groups_.begin(),
                                multicast_groups_.end(), normalized_address);
   if (find_result == multicast_groups_.end()) {
-    std::move(callback).Run(net::ERR_ADDRESS_INVALID);
+    callback.Run(net::ERR_ADDRESS_INVALID);
     return;
   }
 
   socket_->LeaveGroup(
-      ip,
-      base::BindOnce(&UDPSocket::OnLeaveGroupCompleted, base::Unretained(this),
-                     std::move(callback), normalized_address));
+      ip, base::BindOnce(&UDPSocket::OnLeaveGroupCompleted,
+                         base::Unretained(this), callback, normalized_address));
 }
 
 int UDPSocket::SetMulticastTimeToLive(int ttl) {
@@ -374,12 +364,12 @@ int UDPSocket::SetMulticastLoopbackMode(bool loopback) {
 }
 
 void UDPSocket::SetBroadcast(bool enabled,
-                             net::CompletionOnceCallback callback) {
+                             const net::CompletionCallback& callback) {
   if (!is_bound_) {
-    std::move(callback).Run(net::ERR_SOCKET_NOT_CONNECTED);
+    callback.Run(net::ERR_SOCKET_NOT_CONNECTED);
     return;
   }
-  socket_->SetBroadcast(enabled, std::move(callback));
+  socket_->SetBroadcast(enabled, callback);
 }
 
 const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {

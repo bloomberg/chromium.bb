@@ -12,7 +12,7 @@
 namespace v8 {
 namespace internal {
 
-class V8_EXPORT_PRIVATE DateCache {
+class DateCache {
  public:
   static const int kMsPerMin = 60 * 1000;
   static const int kSecPerDay = 24 * 60 * 60;

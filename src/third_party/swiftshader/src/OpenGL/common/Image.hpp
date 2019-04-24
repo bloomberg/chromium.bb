@@ -21,12 +21,12 @@
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
 
-#if defined(__ANDROID__) && !defined(ANDROID_NDK_BUILD)
+#if defined(__ANDROID__)
 #include <system/window.h>
 #include "../../Common/GrallocAndroid.hpp"
 #endif
 
-#if defined(__ANDROID__) && !defined(ANDROID_HOST_BUILD) && !defined(ANDROID_NDK_BUILD)
+#if defined(__ANDROID__) && !defined(ANDROID_HOST_BUILD)
 #include "../../Common/DebugAndroid.hpp"
 #define LOGLOCK(fmt, ...) // TRACE(fmt " tid=%d", ##__VA_ARGS__, gettid())
 #else
@@ -235,7 +235,7 @@ protected:
 	void loadStencilData(GLsizei width, GLsizei height, GLsizei depth, int inputPitch, int inputHeight, GLenum format, GLenum type, const void *input, void *buffer);
 };
 
-#if defined(__ANDROID__) && !defined(ANDROID_NDK_BUILD)
+#ifdef __ANDROID__
 
 inline GLenum GLPixelFormatFromAndroid(int halFormat)
 {
@@ -362,7 +362,7 @@ private:
 	}
 };
 
-#endif  // __ANDROID__ && !defined(ANDROID_NDK_BUILD)
+#endif  // __ANDROID__
 
 }
 

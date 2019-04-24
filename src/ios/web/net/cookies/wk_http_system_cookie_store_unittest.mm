@@ -22,12 +22,21 @@ namespace net {
 
 // Test class that conforms to net::SystemCookieStoreTestDelegate to exercise
 // WKHTTPSystemCookieStore.
-class WKHTTPSystemCookieStoreTestDelegate {
+class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
  public:
-  WKHTTPSystemCookieStoreTestDelegate()
-      : shared_store_(
-            [WKWebsiteDataStore nonPersistentDataStore].httpCookieStore),
-        store_(std::make_unique<web::WKHTTPSystemCookieStore>(shared_store_)) {}
+  WKHTTPSystemCookieStoreTestDelegate() {
+    if (@available(iOS 11, *)) {
+      shared_store_ =
+          [WKWebsiteDataStore nonPersistentDataStore].httpCookieStore;
+      store_ = std::make_unique<web::WKHTTPSystemCookieStore>(shared_store_);
+    }
+  }
+
+  bool IsTestEnabled() {
+    if (@available(iOS 11, *))
+      return true;
+    return false;
+  }
 
   bool IsCookieSet(NSHTTPCookie* system_cookie, NSURL* url) {
     // Verify that cookie is set in system storage.

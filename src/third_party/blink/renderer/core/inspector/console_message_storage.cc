@@ -13,35 +13,35 @@ static const unsigned kMaxConsoleMessageCount = 1000;
 
 namespace {
 
-const char* MessageSourceToString(mojom::ConsoleMessageSource source) {
+const char* MessageSourceToString(MessageSource source) {
   switch (source) {
-    case mojom::ConsoleMessageSource::kXml:
+    case kXMLMessageSource:
       return "XML";
-    case mojom::ConsoleMessageSource::kJavaScript:
+    case kJSMessageSource:
       return "JS";
-    case mojom::ConsoleMessageSource::kNetwork:
+    case kNetworkMessageSource:
       return "Network";
-    case mojom::ConsoleMessageSource::kConsoleApi:
+    case kConsoleAPIMessageSource:
       return "ConsoleAPI";
-    case mojom::ConsoleMessageSource::kStorage:
+    case kStorageMessageSource:
       return "Storage";
-    case mojom::ConsoleMessageSource::kAppCache:
+    case kAppCacheMessageSource:
       return "AppCache";
-    case mojom::ConsoleMessageSource::kRendering:
+    case kRenderingMessageSource:
       return "Rendering";
-    case mojom::ConsoleMessageSource::kSecurity:
+    case kSecurityMessageSource:
       return "Security";
-    case mojom::ConsoleMessageSource::kOther:
+    case kOtherMessageSource:
       return "Other";
-    case mojom::ConsoleMessageSource::kDeprecation:
+    case kDeprecationMessageSource:
       return "Deprecation";
-    case mojom::ConsoleMessageSource::kWorker:
+    case kWorkerMessageSource:
       return "Worker";
-    case mojom::ConsoleMessageSource::kViolation:
+    case kViolationMessageSource:
       return "Violation";
-    case mojom::ConsoleMessageSource::kIntervention:
+    case kInterventionMessageSource:
       return "Intervention";
-    case mojom::ConsoleMessageSource::kRecommendation:
+    case kRecommendationMessageSource:
       return "Recommendation";
   }
   LOG(FATAL) << "Unreachable code.";

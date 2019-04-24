@@ -21,7 +21,8 @@ static sk_sp<SkShader> make_bitmap_shader() {
     auto surface = SkSurface::MakeRasterN32Premul(100, 100);
     surface->getCanvas()->drawCircle(50, 50, 50, p);
 
-    return surface->makeImageSnapshot()->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat);
+    return surface->makeImageSnapshot()->makeShader(SkShader::kRepeat_TileMode,
+                                                    SkShader::kRepeat_TileMode);
 }
 
 static sk_sp<SkShader> make_picture_shader() {
@@ -32,7 +33,10 @@ static sk_sp<SkShader> make_picture_shader() {
     SkPictureRecorder recorder;
     recorder.beginRecording(100, 100)->drawCircle(50, 50, 50, p);
 
-    return recorder.finishRecordingAsPicture()->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat);
+    return SkPictureShader::Make(recorder.finishRecordingAsPicture(),
+                                 SkShader::kRepeat_TileMode,
+                                 SkShader::kRepeat_TileMode,
+                                 nullptr, nullptr);
 }
 
 class ShaderMFBench final : public Benchmark {

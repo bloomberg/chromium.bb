@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.OmahaBase;
@@ -28,7 +29,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,20 +175,19 @@ public class ApplicationTestUtils {
                     }
                 };
         try {
-            boolean alreadyDestroyed =
-                    TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() {
-                            if (ApplicationStatus.getStateForActivity(activity)
-                                    == ActivityState.DESTROYED) {
-                                return true;
-                            }
-                            ApplicationStatus.registerStateListenerForActivity(
-                                    activityStateListener, activity);
-                            activity.finish();
-                            return false;
-                        }
-                    });
+            boolean alreadyDestroyed = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    if (ApplicationStatus.getStateForActivity(activity)
+                            == ActivityState.DESTROYED) {
+                        return true;
+                    }
+                    ApplicationStatus.registerStateListenerForActivity(
+                            activityStateListener, activity);
+                    activity.finish();
+                    return false;
+                }
+            });
             if (!alreadyDestroyed) {
                 callbackHelper.waitForCallback(0);
             }
@@ -200,17 +199,20 @@ public class ApplicationTestUtils {
     /** Finishes all tasks Chrome has listed in Android's Overview. */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void finishAllChromeTasks(final Context context) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                // Close all of the tasks one by one.
-                ActivityManager activityManager =
-                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                    task.finishAndRemoveTask();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Close all of the tasks one by one.
+                    ActivityManager activityManager =
+                            (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+                    for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+                        task.finishAndRemoveTask();
+                    }
+                } catch (Exception e) {
+                    // Ignore any exceptions the Android framework throws so that otherwise passing
+                    // tests don't fail during tear down. See crbug.com/653731.
                 }
-            } catch (Exception e) {
-                // Ignore any exceptions the Android framework throws so that otherwise passing
-                // tests don't fail during tear down. See crbug.com/653731.
             }
         });
 
@@ -281,7 +283,7 @@ public class ApplicationTestUtils {
         ApplicationStatus.registerStateListenerForAllActivities(stateListener);
 
         try {
-            TestThreadUtils.runOnUiThreadBlocking(() -> activity.recreate());
+            ThreadUtils.runOnUiThreadBlocking(() -> activity.recreate());
             activityCallback.waitForCallback("Activity did not start as expected", 0);
             T createdActivity = activityRef.get();
             Assert.assertNotNull("Activity reference is null.", createdActivity);

@@ -17,7 +17,6 @@
 #import "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #if BUILDFLAG(FIREBASE_ENABLED)
 #import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRApp.h"
-#import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRConfiguration.h"
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -56,7 +55,6 @@ void InitializeFirebase(bool is_first_run) {
              kConversionAttributionWindowInDays) {
     enabled_state = FirebaseConfiguredState::kDisabledConversionWindow;
   } else {
-    [[FIRConfiguration sharedInstance] setLoggerLevel:FIRLoggerLevelMin];
     [FIRApp configure];
     enabled_state = is_first_run ? FirebaseConfiguredState::kEnabledFirstRun
                                  : FirebaseConfiguredState::kEnabledNotFirstRun;

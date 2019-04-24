@@ -24,12 +24,13 @@
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/browser_view_controller+private.h"
+#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -40,7 +41,6 @@
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
@@ -381,7 +381,9 @@
   self.recentTabsCoordinator = [[RecentTabsCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
-  self.recentTabsCoordinator.loadStrategy = UrlLoadStrategy::NORMAL;
+  self.recentTabsCoordinator.loader =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+          ->GetUrlLoader();
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   self.recentTabsCoordinator.webStateList = self.tabModel.webStateList;
   [self.recentTabsCoordinator start];
@@ -426,10 +428,14 @@
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)animateOpenBackgroundTabFromParams:(const UrlLoadParams&)params
-                                completion:(void (^)())completion {
+- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
+  [self.viewController.dispatcher openURLInNewTab:command];
+}
+
+- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
+                                 completion:(void (^)())completion {
   [self.viewController
-      animateOpenBackgroundTabFromOriginPoint:params.origin_point
+      animateOpenBackgroundTabFromOriginPoint:command.originPoint
                                    completion:completion];
 }
 
@@ -491,7 +497,6 @@
   UrlLoadingService* urlLoadingService =
       UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
   if (urlLoadingService) {
-    urlLoadingService->SetAppService(self.appURLLoadingService);
     urlLoadingService->SetDelegate(self);
     urlLoadingService->SetBrowser(self.browser);
   }
@@ -502,7 +507,6 @@
   UrlLoadingService* urlLoadingService =
       UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
   if (urlLoadingService) {
-    urlLoadingService->SetAppService(nullptr);
     urlLoadingService->SetDelegate(nil);
     urlLoadingService->SetBrowser(nil);
   }

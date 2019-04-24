@@ -7,14 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "base/time/time.h"
 #import "ios/web/public/browsing_data_removing_util.h"
 
 @protocol BrowsingDataRemoverObserver;
-@class WKWebView;
 
 namespace web {
 
@@ -31,11 +27,8 @@ class BrowsingDataRemover : public base::SupportsUserData::Data {
   // the |browser_state|. |browser_state| cannot be a nullptr.
   static BrowsingDataRemover* FromBrowserState(BrowserState* browser_state);
 
-  // Clears the browsing data. |modified_since| is the data since which all data
-  // is removed. |closure| is called when the browsing data have been cleared.
-  void ClearBrowsingData(ClearBrowsingDataMask types,
-                         base::Time modified_since,
-                         base::OnceClosure closure);
+  // Clears the browsing data.
+  void ClearBrowsingData(ClearBrowsingDataMask types);
 
   void AddObserver(id<BrowsingDataRemoverObserver> observer);
   void RemoveObserver(id<BrowsingDataRemoverObserver> observer);
@@ -44,14 +37,6 @@ class BrowsingDataRemover : public base::SupportsUserData::Data {
   web::BrowserState* browser_state_;  // weak, owns this object.
   // The list of observers. Holds weak references.
   NSHashTable<id<BrowsingDataRemoverObserver>>* observers_list_;
-
-  // Dummy WKWebView. A WKWebView object is created before deleting cookies. and
-  // is deleted after deleting cookies is completed. this is a workaround that
-  // makes sure that there is a WKWebView object alive while accessing
-  // WKHTTPCookieStore.
-  WKWebView* dummy_web_view_ = nil;
-
-  base::WeakPtrFactory<BrowsingDataRemover> weak_ptr_factory_;
 };
 
 }  // namespace web

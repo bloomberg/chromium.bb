@@ -131,12 +131,6 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
     return std::make_unique<TestUI>(web_ui, ui_handler_);
   }
 
-  NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override {
-    if (url.SchemeIs(kTestWebUIScheme))
-      return 0;
-    return NSURLErrorUnsupportedURL;
-  }
-
  private:
   // UI handler class which communicates with test WebUI page.
   TestUIHandler* ui_handler_;
@@ -152,9 +146,8 @@ class WebUIMojoTest : public WebIntTest {
       ui_handler_ = std::make_unique<TestUIHandler>();
       WebState::CreateParams params(GetBrowserState());
       web_state_ = WebState::Create(params);
-      factory_ =
-          std::make_unique<TestWebUIControllerFactory>(ui_handler_.get());
-      WebUIIOSControllerFactory::RegisterFactory(factory_.get());
+      WebUIIOSControllerFactory::RegisterFactory(
+          new TestWebUIControllerFactory(ui_handler_.get()));
     }
   }
 
@@ -170,7 +163,6 @@ class WebUIMojoTest : public WebIntTest {
       // WebThread::UI once WebThreadBundle is destroyed.
       web_state_.reset();
       ui_handler_.reset();
-      WebUIIOSControllerFactory::DeregisterFactory(factory_.get());
     }
 
     WebIntTest::TearDown();
@@ -184,7 +176,6 @@ class WebUIMojoTest : public WebIntTest {
  private:
   std::unique_ptr<WebState> web_state_;
   std::unique_ptr<TestUIHandler> ui_handler_;
-  std::unique_ptr<TestWebUIControllerFactory> factory_;
 };
 
 // Tests that JS can send messages to the native code and vice versa.

@@ -17,11 +17,10 @@ WebGLContextAttributes* ToWebGLContextAttributes(
   result->setAntialias(attrs.antialias);
   result->setPremultipliedAlpha(attrs.premultiplied_alpha);
   result->setPreserveDrawingBuffer(attrs.preserve_drawing_buffer);
-  result->setPowerPreference(attrs.power_preference);
   result->setFailIfMajorPerformanceCaveat(
       attrs.fail_if_major_performance_caveat);
   result->setXrCompatible(attrs.xr_compatible);
-  result->setDesynchronized(attrs.desynchronized);
+  result->setLowLatency(attrs.low_latency);
   return result;
 }
 
@@ -30,7 +29,6 @@ Platform::ContextAttributes ToPlatformContextAttributes(
     Platform::ContextType context_type,
     bool support_own_offscreen_surface) {
   Platform::ContextAttributes result;
-  result.prefer_integrated_gpu = attrs.power_preference == "low-power";
   result.fail_if_major_performance_caveat =
       attrs.fail_if_major_performance_caveat;
   result.context_type = context_type;

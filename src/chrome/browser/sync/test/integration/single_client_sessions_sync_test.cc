@@ -91,7 +91,7 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
  public:
   IsHistoryURLSyncedChecker(const std::string& url,
                             fake_server::FakeServer* fake_server,
-                            syncer::ProfileSyncService* service)
+                            browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service),
         url_(url),
         fake_server_(fake_server) {}
@@ -178,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
       SessionSyncServiceFactory::GetForProfile(GetProfile(0));
 
   EXPECT_NE(nullptr, service->GetOpenTabsUIDelegate());
-  ASSERT_TRUE(
-      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kTabs));
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
   EXPECT_EQ(nullptr, service->GetOpenTabsUIDelegate());
 }
 
@@ -270,8 +269,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   // If the user disables history sync on settings, but still enables tab sync,
   // then sessions should be synced but the server should be able to tell the
   // difference based on active datatypes.
-  ASSERT_TRUE(
-      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kHistory));
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
   ASSERT_TRUE(CheckInitialState(0));
 
   ASSERT_TRUE(OpenTab(0, GURL(kURL1)));

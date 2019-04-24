@@ -12,8 +12,6 @@
 @class BrowserViewController;
 @class TabModel;
 
-class AppUrlLoadingService;
-
 // Coordinator for BrowserViewController.
 @interface BrowserCoordinator : ChromeCoordinator
 
@@ -30,10 +28,6 @@ class AppUrlLoadingService;
 
 // Command handler for ApplicationCommands.
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandHandler;
-
-// The application level component for url loading. Should be used only by
-// browser state level UrlLoadingService instances.
-@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
 
 // The tab model.
 @property(nonatomic, weak, readonly) TabModel* tabModel;

@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.download.DownloadBroadcastManager.getS
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,8 +29,6 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
-import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -95,7 +94,7 @@ public class DownloadNotificationService {
     @VisibleForTesting
     final List<ContentId> mDownloadsInProgress = new ArrayList<ContentId>();
 
-    private NotificationManagerProxy mNotificationManager;
+    private NotificationManager mNotificationManager;
     private Bitmap mDownloadSuccessLargeIcon;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
@@ -115,7 +114,8 @@ public class DownloadNotificationService {
     @VisibleForTesting
     DownloadNotificationService() {
         mNotificationManager =
-                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.NOTIFICATION_SERVICE);
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mDownloadForegroundServiceManager = new DownloadForegroundServiceManager();
     }
@@ -254,7 +254,7 @@ public class DownloadNotificationService {
         startTrackingInProgressDownload(id);
     }
 
-    private void cancelNotification(int notificationId) {
+    public void cancelNotification(int notificationId) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
         mNotificationManager.cancel(notificationId);
     }

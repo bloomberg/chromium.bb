@@ -187,7 +187,7 @@ jumbo_component("aura") {
     "//skia",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime/init",
+    "//ui/base/ime",
     "//ui/display",
     "//ui/events",
     "//ui/events:dom_keyboard_layout",
@@ -202,7 +202,6 @@ jumbo_component("aura") {
   ]
 
   public_deps = [
-    "//ui/base/ime",
     "//ui/compositor",
   ]
 
@@ -318,7 +317,7 @@ jumbo_static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
-    "//ui/base/ime/init",
+    "//ui/base/ime",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display/manager",
@@ -369,7 +368,7 @@ executable("demo") {
     "//skia",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime/init",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display",
@@ -463,7 +462,7 @@ source_set("aura_interactive_ui_tests") {
       "//base/test:test_support",
       "//net",
       "//testing/gtest",
-      "//ui/base/ime/init",
+      "//ui/base/ime:ime",
       "//ui/display:display",
       "//ui/gfx",
       "//ui/gfx/geometry",

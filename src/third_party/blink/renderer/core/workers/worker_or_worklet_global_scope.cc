@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/loader/resource_load_observer_for_worker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_fetcher_properties.h"
@@ -25,7 +24,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -165,18 +163,16 @@ class OutsideSettingsCSPDelegate final
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     const String& name,
-    const base::UnguessableToken& parent_devtools_token,
     V8CacheOptions v8_cache_options,
     WorkerClients* worker_clients,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate),
       name_(name),
-      parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
-          MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
+          WorkerOrWorkletScriptController::Create(this, isolate)),
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy),
       used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
@@ -238,10 +234,9 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
 
   // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());
-  AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
-                             mojom::ConsoleMessageLevel::kWarning,
-                             Deprecation::DeprecationMessage(feature)));
+  AddConsoleMessage(ConsoleMessage::Create(
+      kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      Deprecation::DeprecationMessage(feature)));
   ReportingProxy().CountDeprecation(feature);
 }
 
@@ -284,35 +279,30 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     ContentSecurityPolicy& content_security_policy) {
   DCHECK(IsContextThread());
   InitializeWebFetchContextIfNeeded();
-  ResourceFetcher* fetcher = nullptr;
+  ResourceFetcherProperties* properties = nullptr;
+  FetchContext* context = nullptr;
+  ResourceFetcher::LoaderFactory* loader_factory = nullptr;
   if (web_worker_fetch_context_) {
-    ResourceFetcherInit init(
-        *MakeGarbageCollected<WorkerResourceFetcherProperties>(
-            *this, fetch_client_settings_object, web_worker_fetch_context_),
-
-        MakeGarbageCollected<WorkerFetchContext>(
-            *this, web_worker_fetch_context_, subresource_filter_,
-            content_security_policy),
-        GetTaskRunner(TaskType::kNetworking),
-        MakeGarbageCollected<LoaderFactoryForWorker>(
-            *this, web_worker_fetch_context_));
-    init.console_logger = this;
-    fetcher = MakeGarbageCollected<ResourceFetcher>(init);
-    fetcher->SetResourceLoadObserver(
-        MakeGarbageCollected<ResourceLoadObserverForWorker>(
-            *probe::ToCoreProbeSink(static_cast<ExecutionContext*>(this)),
-            fetcher->GetProperties(), web_worker_fetch_context_));
+    properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
+        *this, fetch_client_settings_object, web_worker_fetch_context_);
+    context = MakeGarbageCollected<WorkerFetchContext>(
+        *this, web_worker_fetch_context_, subresource_filter_,
+        content_security_policy);
+    loader_factory = MakeGarbageCollected<LoaderFactoryForWorker>(
+        *this, web_worker_fetch_context_);
   } else {
     // This code path is for unittests.
-    fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *MakeGarbageCollected<NullResourceFetcherProperties>(),
-        &FetchContext::NullInstance(), GetTaskRunner(TaskType::kNetworking),
-        nullptr /* loader_factory */));
+    properties = MakeGarbageCollected<NullResourceFetcherProperties>();
+    context = &FetchContext::NullInstance();
   }
+  ResourceFetcherInit init(*properties, context,
+                           GetTaskRunner(TaskType::kNetworking), loader_factory,
+                           *this);
+  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   if (IsContextPaused())
-    fetcher->SetDefersLoading(true);
-  resource_fetchers_.insert(fetcher);
-  return fetcher;
+    resource_fetcher->SetDefersLoading(true);
+  resource_fetchers_.insert(resource_fetcher);
+  return resource_fetcher;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
@@ -325,8 +315,10 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
     const FetchClientSettingsObject& outside_settings_object) {
   DCHECK(IsContextThread());
 
-  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
-  for (const auto& policy_and_type : outside_content_security_policy_headers_) {
+  ContentSecurityPolicy* content_security_policy =
+      ContentSecurityPolicy::Create();
+  for (const auto& policy_and_type :
+       outside_content_security_policy_parsed_headers_) {
     content_security_policy->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
         kContentSecurityPolicyHeaderSourceHTTP);
@@ -383,15 +375,11 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetThread()->GetTaskRunner(type);
 }
 
-void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(
-    const Vector<CSPHeaderAndType>& headers) {
-  outside_content_security_policy_headers_ = headers;
-}
-
 void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
+  outside_content_security_policy_parsed_headers_ = headers;
   if (!GetContentSecurityPolicy()) {
-    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
     SetContentSecurityPolicy(csp);
   }
   for (const auto& policy_and_type : headers) {

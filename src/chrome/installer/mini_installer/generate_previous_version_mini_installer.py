@@ -11,24 +11,15 @@ import sys
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--alternate_version_generator',
-      help='Path to alternate_version_generator.')
-  parser.add_argument('--mini_installer', help='Path to input mini_installer')
   parser.add_argument('--out', help='Path to the generated mini_installer.')
-  parser.add_argument('--path_7za', help='Path to 7za.exe')
   args = parser.parse_args()
-  assert args.alternate_version_generator
-  assert args.mini_installer
   assert args.out
-  assert args.path_7za
 
   return subprocess.call([
-      args.alternate_version_generator,
+      'alternate_version_generator.exe',
       '--force',
       '--previous',
-      '--mini_installer=' + args.mini_installer,
       '--out=' + args.out,
-      '--7za_path=' + args.path_7za,
       ])
 
 

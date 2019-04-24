@@ -11,7 +11,6 @@
 #include "GrRenderTarget.h"
 #include "GrShaderCaps.h"
 #include "GrVkInterface.h"
-#include "GrVkTexture.h"
 #include "GrVkUtil.h"
 #include "SkGr.h"
 #include "vk/GrVkBackendContext.h"
@@ -40,7 +39,8 @@ GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* 
     fCrossContextTextureSupport = true;
     fHalfFloatVertexAttributeSupport = true;
 
-    fTransferBufferSupport = true;
+    fMapBufferFlags = kNone_MapFlags; //TODO: figure this out
+    fBufferMapThreshold = SK_MaxS32;  //TODO: figure this out
 
     fMaxRenderTargetSize = 4096; // minimum required by spec
     fMaxTextureSize = 4096; // minimum required by spec
@@ -75,13 +75,9 @@ bool GrVkCaps::initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc*
 }
 
 bool GrVkCaps::canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, GrSurfaceOrigin dstOrigin,
-                            bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSampleCnt,
-                            GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const {
+                            GrPixelConfig srcConfig, int srcSampleCnt,
+                            GrSurfaceOrigin srcOrigin) const {
     if ((dstSampleCnt > 1 || srcSampleCnt > 1) && dstSampleCnt != srcSampleCnt) {
-        return false;
-    }
-
-    if (dstHasYcbcr || srcHasYcbcr) {
         return false;
     }
 
@@ -100,8 +96,7 @@ bool GrVkCaps::canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, GrSurface
 }
 
 bool GrVkCaps::canCopyAsBlit(GrPixelConfig dstConfig, int dstSampleCnt, bool dstIsLinear,
-                             bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSampleCnt,
-                             bool srcIsLinear, bool srcHasYcbcr) const {
+                             GrPixelConfig srcConfig, int srcSampleCnt, bool srcIsLinear) const {
     // We require that all vulkan GrSurfaces have been created with transfer_dst and transfer_src
     // as image usage flags.
     if (!this->configCanBeDstofBlit(dstConfig, dstIsLinear) ||
@@ -120,17 +115,12 @@ bool GrVkCaps::canCopyAsBlit(GrPixelConfig dstConfig, int dstSampleCnt, bool dst
         return false;
     }
 
-    if (dstHasYcbcr || srcHasYcbcr) {
-        return false;
-    }
-
     return true;
 }
 
 bool GrVkCaps::canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt,
-                                GrSurfaceOrigin dstOrigin, bool dstHasYcbcr,
-                                GrPixelConfig srcConfig, int srcSampleCnt,
-                                GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const {
+                                GrSurfaceOrigin dstOrigin, GrPixelConfig srcConfig,
+                                int srcSampleCnt, GrSurfaceOrigin srcOrigin) const {
     // The src surface must be multisampled.
     if (srcSampleCnt <= 1) {
         return false;
@@ -151,16 +141,11 @@ bool GrVkCaps::canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt,
         return false;
     }
 
-    if (dstHasYcbcr || srcHasYcbcr) {
-        return false;
-    }
-
     return true;
 }
 
-bool GrVkCaps::canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable, bool dstHasYcbcr,
-                             GrPixelConfig srcConfig, bool srcIsTextureable,
-                             bool srcHasYcbcr) const {
+bool GrVkCaps::canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable,
+                             GrPixelConfig srcConfig, bool srcIsTextureable) const {
     // TODO: Make copySurfaceAsDraw handle the swizzle
     if (this->shaderCaps()->configOutputSwizzle(srcConfig) !=
         this->shaderCaps()->configOutputSwizzle(dstConfig)) {
@@ -169,10 +154,6 @@ bool GrVkCaps::canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable, bool
 
     // Make sure the dst is a render target and the src is a texture.
     if (!dstIsRenderable || !srcIsTextureable) {
-        return false;
-    }
-
-    if (dstHasYcbcr) {
         return false;
     }
 
@@ -217,28 +198,14 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
     SkASSERT((dstSampleCnt > 0) == SkToBool(dst->asRenderTargetProxy()));
     SkASSERT((srcSampleCnt > 0) == SkToBool(src->asRenderTargetProxy()));
 
-    bool dstHasYcbcr = false;
-    if (auto ycbcr = dst->backendFormat().getVkYcbcrConversionInfo()) {
-        if (ycbcr->isValid()) {
-            dstHasYcbcr = true;
-        }
-    }
-
-    bool srcHasYcbcr = false;
-    if (auto ycbcr = src->backendFormat().getVkYcbcrConversionInfo()) {
-        if (ycbcr->isValid()) {
-            srcHasYcbcr = true;
-        }
-    }
-
-    return this->canCopyImage(dstConfig, dstSampleCnt, dstOrigin, dstHasYcbcr,
-                              srcConfig, srcSampleCnt, srcOrigin, srcHasYcbcr) ||
-           this->canCopyAsBlit(dstConfig, dstSampleCnt, dstIsLinear, dstHasYcbcr,
-                               srcConfig, srcSampleCnt, srcIsLinear, srcHasYcbcr) ||
-           this->canCopyAsResolve(dstConfig, dstSampleCnt, dstOrigin, dstHasYcbcr,
-                                  srcConfig, srcSampleCnt, srcOrigin, srcHasYcbcr) ||
-           this->canCopyAsDraw(dstConfig, dstSampleCnt > 0, dstHasYcbcr,
-                               srcConfig, SkToBool(src->asTextureProxy()), srcHasYcbcr);
+    return this->canCopyImage(dstConfig, dstSampleCnt, dstOrigin,
+                              srcConfig, srcSampleCnt, srcOrigin) ||
+           this->canCopyAsBlit(dstConfig, dstSampleCnt, dstIsLinear,
+                               srcConfig, srcSampleCnt, srcIsLinear) ||
+           this->canCopyAsResolve(dstConfig, dstSampleCnt, dstOrigin,
+                                  srcConfig, srcSampleCnt, srcOrigin) ||
+           this->canCopyAsDraw(dstConfig, dstSampleCnt > 0,
+                               srcConfig, SkToBool(src->asTextureProxy()));
 }
 
 template<typename T> T* get_extension_feature_struct(const VkPhysicalDeviceFeatures2& features,
@@ -265,6 +232,7 @@ template<typename T> T* get_extension_feature_struct(const VkPhysicalDeviceFeatu
 void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface* vkInterface,
                     VkPhysicalDevice physDev, const VkPhysicalDeviceFeatures2& features,
                     uint32_t physicalDeviceVersion, const GrVkExtensions& extensions) {
+
     VkPhysicalDeviceProperties properties;
     GR_VK_CALL(vkInterface, GetPhysicalDeviceProperties(physDev, &properties));
 
@@ -372,25 +340,6 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
         fPreferFullscreenClears = true;
     }
 
-    if (kQualcomm_VkVendor == properties.vendorID || kARM_VkVendor == properties.vendorID) {
-        // On Qualcomm and ARM mapping a gpu buffer and doing both reads and writes to it is slow.
-        // Thus for index and vertex buffers we will force to use a cpu side buffer and then copy
-        // the whole buffer up to the gpu.
-        fBufferMapThreshold = SK_MaxS32;
-    }
-
-    if (kQualcomm_VkVendor == properties.vendorID) {
-        // On Qualcomm it looks like using vkCmdUpdateBuffer is slower than using a transfer buffer
-        // even for small sizes.
-        fAvoidUpdateBuffers = true;
-    }
-
-    if (kARM_VkVendor == properties.vendorID) {
-        // ARM seems to do better with more fine triangles as opposed to using the sample mask.
-        // (At least in our current round rect op.)
-        fPreferTrianglesOverSampleMask = true;
-    }
-
     this->initConfigTable(vkInterface, physDev, properties);
     this->initStencilFormat(vkInterface, physDev);
 
@@ -411,8 +360,6 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
 void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDeviceProperties& properties) {
     if (kQualcomm_VkVendor == properties.vendorID) {
         fMustDoCopiesFromOrigin = true;
-        // Transfer doesn't support this workaround.
-        fTransferBufferSupport = false;
     }
 
 #if defined(SK_BUILD_FOR_WIN)
@@ -513,7 +460,7 @@ void GrVkCaps::initGrCaps(const GrVkInterface* vkInterface,
     // from the get go. There is no hard data to suggest this is faster or slower.
     fBufferMapThreshold = 0;
 
-    fMapBufferFlags = kCanMap_MapFlag | kSubset_MapFlag | kAsyncRead_MapFlag;
+    fMapBufferFlags = kCanMap_MapFlag | kSubset_MapFlag;
 
     fOversizedStencilSupport = true;
 
@@ -775,26 +722,9 @@ int GrVkCaps::maxRenderTargetSampleCount(GrPixelConfig config) const {
     return table[table.count() - 1];
 }
 
-bool GrVkCaps::surfaceSupportsReadPixels(const GrSurface* surface) const {
-    if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
-        // We can't directly read from a VkImage that has a ycbcr sampler.
-        if (tex->ycbcrConversionInfo().isValid()) {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool GrVkCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
     if (auto rt = surface->asRenderTarget()) {
         return rt->numColorSamples() <= 1 && SkToBool(surface->asTexture());
-    }
-    // We can't write to a texture that has a ycbcr sampler.
-    if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
-        // We can't directly read from a VkImage that has a ycbcr sampler.
-        if (tex->ycbcrConversionInfo().isValid()) {
-            return false;
-        }
     }
     return true;
 }
@@ -805,8 +735,8 @@ static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool h
         // we have a valid VkYcbcrConversion.
         if (hasYcbcrConversion) {
             // We don't actually care what the color type or config are since we won't use those
-            // values for external textures. However, for read pixels we will draw to a non ycbcr
-            // texture of this config so we set RGBA here for that.
+            // values for external textures, but since our code requires setting a config here
+            // just default it to RGBA.
             return kRGBA_8888_GrPixelConfig;
         } else {
             return kUnknown_GrPixelConfig;
@@ -870,9 +800,9 @@ static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool h
                 return kGray_8_as_Red_GrPixelConfig;
             }
             break;
-        case kRGBA_F16Norm_SkColorType:
+        case kRGBA_F16Norm_SkColorType:  // TODO(brianosman): ?
             if (VK_FORMAT_R16G16B16A16_SFLOAT == format) {
-                return kRGBA_half_Clamped_GrPixelConfig;
+                return kRGBA_half_GrPixelConfig;
             }
             break;
         case kRGBA_F16_SkColorType:
@@ -921,8 +851,6 @@ static GrPixelConfig get_yuva_config(VkFormat vkFormat) {
             return kRG_88_GrPixelConfig;
         case VK_FORMAT_B8G8R8A8_UNORM:
             return kBGRA_8888_GrPixelConfig;
-        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-            return kRGBA_1010102_GrPixelConfig;
         default:
             return kUnknown_GrPixelConfig;
     }
@@ -949,21 +877,3 @@ GrBackendFormat GrVkCaps::getBackendFormatFromGrColorType(GrColorType ct,
     return GrBackendFormat::MakeVk(format);
 }
 
-size_t GrVkCaps::onTransferFromOffsetAlignment(GrColorType bufferColorType) const {
-    // This GrColorType has 32 bpp but the Vulkan pixel format we use for with may have 24bpp
-    // (VK_FORMAT_R8G8B8_...) or may be 32 bpp. We don't support post transforming the pixel data
-    // for transfer-from currently and don't want to have to pass info about the src surface here.
-    if (bufferColorType == GrColorType::kRGB_888x) {
-        return false;
-    }
-    size_t bpp = GrColorTypeBytesPerPixel(bufferColorType);
-    // The VkBufferImageCopy bufferOffset field must be both a multiple of 4 and of a single texel.
-    switch (bpp & 0b11) {
-        // bpp is already a multiple of 4.
-        case 0:     return bpp;
-        // bpp is a multiple of 2 but not 4.
-        case 2:     return 2 * bpp;
-        // bpp is not a multiple of 2.
-        default:    return 4 * bpp;
-    }
-}

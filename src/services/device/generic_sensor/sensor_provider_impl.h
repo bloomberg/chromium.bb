@@ -20,6 +20,7 @@ class PlatformSensor;
 class SensorProviderImpl final : public mojom::SensorProvider {
  public:
   static void Create(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       mojom::SensorProviderRequest request);
 
   ~SensorProviderImpl() override;

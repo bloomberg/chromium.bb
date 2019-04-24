@@ -30,7 +30,6 @@
 #include "ios/web/public/global_state/ios_global_state.h"
 #include "ios/web/public/global_state/ios_global_state_configuration.h"
 #include "ios/web/public/user_agent.h"
-#include "net/base/http_user_agent_settings.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
@@ -48,7 +47,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quic/core/quic_versions.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -279,7 +279,7 @@ void CronetEnvironment::CleanUpOnNetworkThread() {
 
   // TODO(lilyhoughton) this can only be run once, so right now leaking it.
   // Should be be called when the _last_ CronetEnvironment is destroyed.
-  // base::ThreadPool* ts = base::ThreadPool::GetInstance();
+  // base::TaskScheduler* ts = base::TaskScheduler::GetInstance();
   // if (ts)
   //  ts->Shutdown();
 
@@ -359,11 +359,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
 
-  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
-  // global HostResolver.
   std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
       new net::MappedHostResolver(
-          net::HostResolver::CreateStandaloneResolver(nullptr)));
+          net::HostResolver::CreateDefaultResolver(nullptr)));
 
   if (!config->storage_path.empty()) {
     cronet_prefs_manager_ = std::make_unique<CronetPrefsManager>(

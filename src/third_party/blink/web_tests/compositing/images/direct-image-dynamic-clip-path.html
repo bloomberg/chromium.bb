@@ -25,7 +25,9 @@ function done() {
     testRunner.notifyDone();
 }
 
-if (window.testRunner)
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
+}
 </script>
 </html>

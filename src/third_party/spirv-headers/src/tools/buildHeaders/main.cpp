@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    spv::jsonToSpirv(jsonPath, (Options & EOptionPrintHeader) != 0);
+    spv::jsonToSpirv(jsonPath);
     if (Options & EOptionPrintHeader)
         spv::PrintHeader(Language, std::cout);
 

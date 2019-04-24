@@ -61,8 +61,6 @@ cr.define('downloads', function() {
       assert(this.canClearAll());
       this.mojoHandler_.clearAll();
       this.$.moreActionsMenu.close();
-      cr.toastManager.getInstance().show(
-          loadTimeData.getString('toastClearedAll'), true);
     },
 
     /** @private */

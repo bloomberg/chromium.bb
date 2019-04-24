@@ -49,8 +49,10 @@
 <script src="../../../resources/run-after-layout-and-paint.js"></script>
 
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
+    }
 
     function changeDivPosition() {
         document.getElementById("scrolldiv").style.left="50px";

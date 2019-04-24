@@ -18,17 +18,6 @@
 #include "SkImage.h"
 #include "SkTo.h"
 
-static sk_sp<SkColorFilter> yuv_to_rgb_colorfilter() {
-    static const float kJPEGConversionMatrix[20] = {
-        1.0f,  0.0f,       1.402f,    0.0f, -180.0f,
-        1.0f, -0.344136f, -0.714136f, 0.0f,  136.0f,
-        1.0f,  1.772f,     0.0f,      0.0f, -227.6f,
-        0.0f,  0.0f,       0.0f,      1.0f,    0.0f
-    };
-
-    return SkColorFilters::MatrixRowMajor255(kJPEGConversionMatrix);
-}
-
 namespace skiagm {
 class ImageFromYUVTextures : public GpuGM {
 public:
@@ -42,7 +31,7 @@ protected:
     }
 
     SkISize onISize() override {
-        return SkISize::Make(kBmpSize + 2 * kPad, 390);
+        return SkISize::Make(50, 300);
     }
 
     void onOnceBeforeDraw() override {
@@ -53,7 +42,7 @@ protected:
             { SK_ColorBLUE, SK_ColorYELLOW, SK_ColorGREEN, SK_ColorWHITE };
         paint.setShader(SkGradientShader::MakeRadial(SkPoint::Make(0,0), kBmpSize / 2.f, kColors,
                                                      nullptr, SK_ARRAY_COUNT(kColors),
-                                                     SkTileMode::kMirror));
+                                                     SkShader::kMirror_TileMode));
         SkBitmap rgbBmp;
         rgbBmp.allocN32Pixels(kBmpSize, kBmpSize, true);
         SkCanvas canvas(rgbBmp);
@@ -72,8 +61,8 @@ protected:
         uvPixels[0] = static_cast<signed char*>(fYUVBmps[1].getPixels());
         uvPixels[1] = static_cast<signed char*>(fYUVBmps[2].getPixels());
 
-        // Here we encode using the kJPEG_SkYUVColorSpace (i.e., full-swing Rec 601) even though
-        // we will draw it with all the supported yuv color spaces when converted back to RGB
+        // Here we encode using the NTC encoding (even though we will draw it with all the supported
+        // yuv color spaces when converted back to RGB)
         for (int i = 0; i < kBmpSize * kBmpSize; ++i) {
             yPixels[i] = static_cast<unsigned char>(0.299f * SkGetPackedR32(rgbColors[i]) +
                                                     0.587f * SkGetPackedG32(rgbColors[i]) +
@@ -156,51 +145,45 @@ protected:
     }
 
     void onDraw(GrContext* context, GrRenderTargetContext*, SkCanvas* canvas) override {
-        // draw the original
-        SkScalar yOffset = kPad;
-        canvas->drawImage(fRGBImage.get(), kPad, yOffset);
-        yOffset += kBmpSize + kPad;
+        constexpr SkScalar kPad = 10.f;
 
+        SkTArray<sk_sp<SkImage>> images;
+        images.push_back(fRGBImage);
         for (int space = kJPEG_SkYUVColorSpace; space <= kLastEnum_SkYUVColorSpace; ++space) {
             GrBackendTexture yuvTextures[3];
             this->createYUVTextures(context, yuvTextures);
-            auto image = SkImage::MakeFromYUVTexturesCopy(context,
-                                                          static_cast<SkYUVColorSpace>(space),
-                                                          yuvTextures,
-                                                          kTopLeft_GrSurfaceOrigin);
+            images.push_back(SkImage::MakeFromYUVTexturesCopy(context,
+                                                              static_cast<SkYUVColorSpace>(space),
+                                                              yuvTextures,
+                                                              kTopLeft_GrSurfaceOrigin));
             this->deleteBackendTextures(context, yuvTextures, 3);
+        }
+        for (int i = 0; i < images.count(); ++ i) {
+            SkScalar y = (i + 1) * kPad + i * fYUVBmps[0].height();
+            SkScalar x = kPad;
 
-            SkPaint paint;
-            if (kIdentity_SkYUVColorSpace == space) {
-                // The identity color space needs post-processing to appear correct
-                paint.setColorFilter(yuv_to_rgb_colorfilter());
-            }
-
-            canvas->drawImage(image.get(), kPad, yOffset, &paint);
-            yOffset += kBmpSize + kPad;
+            canvas->drawImage(images[i].get(), x, y);
         }
 
-        for (int space = kJPEG_SkYUVColorSpace; space <= kLastEnum_SkYUVColorSpace; ++space) {
+        sk_sp<SkImage> image;
+        for (int space = kJPEG_SkYUVColorSpace, i = images.count();
+             space <= kLastEnum_SkYUVColorSpace; ++space, ++i) {
             GrBackendTexture yuvTextures[3];
             GrBackendTexture resultTexture;
             this->createYUVTextures(context, yuvTextures);
             this->createResultTexture(
                     context, yuvTextures[0].width(), yuvTextures[0].height(), &resultTexture);
-            auto image = SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
-                                                          context,
-                                                          static_cast<SkYUVColorSpace>(space),
-                                                          yuvTextures,
-                                                          kTopLeft_GrSurfaceOrigin,
-                                                          resultTexture);
+            image = SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
+                    context,
+                    static_cast<SkYUVColorSpace>(space),
+                    yuvTextures,
+                    kTopLeft_GrSurfaceOrigin,
+                    resultTexture);
 
-            SkPaint paint;
-            if (kIdentity_SkYUVColorSpace == space) {
-                // The identity color space needs post-processing to appear correct
-                paint.setColorFilter(yuv_to_rgb_colorfilter());
-            }
-            canvas->drawImage(image.get(), kPad, yOffset, &paint);
-            yOffset += kBmpSize + kPad;
+            SkScalar y = (i + 1) * kPad + i * fYUVBmps[0].height();
+            SkScalar x = kPad;
 
+            canvas->drawImage(image.get(), x, y);
             GrBackendTexture texturesToDelete[4]{
                     yuvTextures[0],
                     yuvTextures[1],
@@ -215,8 +198,7 @@ private:
     sk_sp<SkImage>  fRGBImage;
     SkBitmap        fYUVBmps[3];
 
-    static constexpr SkScalar kPad = 10.0f;
-    static constexpr int kBmpSize  = 32;
+    static constexpr int kBmpSize = 32;
 
     typedef GM INHERITED;
 };

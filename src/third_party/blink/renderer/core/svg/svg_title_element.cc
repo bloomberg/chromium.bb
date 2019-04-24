@@ -28,7 +28,7 @@
 
 namespace blink {
 
-SVGTitleElement::SVGTitleElement(Document& document)
+inline SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(svg_names::kTitleTag, document),
       ignore_title_updates_when_children_change_(false) {}
 

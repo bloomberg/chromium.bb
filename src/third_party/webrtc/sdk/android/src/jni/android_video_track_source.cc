@@ -102,30 +102,33 @@ ScopedJavaLocalRef<jobject> AndroidVideoTrackSource::AdaptFrame(
                                   camera_time_us, rtc::TimeMicros())
                         : j_timestamp_ns;
 
-  int adapted_width = 0;
-  int adapted_height = 0;
-  int crop_width = 0;
-  int crop_height = 0;
-  int crop_x = 0;
-  int crop_y = 0;
-  bool drop;
+  int adapted_width;
+  int adapted_height;
+  int crop_width;
+  int crop_height;
+  int crop_x;
+  int crop_y;
 
   // TODO(magjed): Move this logic to users of NativeAndroidVideoTrackSource
   // instead, in order to keep this native wrapping layer as thin as possible.
   if (rotation % 180 == 0) {
-    drop = !rtc::AdaptedVideoTrackSource::AdaptFrame(
-        j_width, j_height, camera_time_us, &adapted_width, &adapted_height,
-        &crop_width, &crop_height, &crop_x, &crop_y);
+    if (!rtc::AdaptedVideoTrackSource::AdaptFrame(
+            j_width, j_height, camera_time_us, &adapted_width, &adapted_height,
+            &crop_width, &crop_height, &crop_x, &crop_y)) {
+      return nullptr;
+    }
   } else {
     // Swap all width/height and x/y.
-    drop = !rtc::AdaptedVideoTrackSource::AdaptFrame(
-        j_height, j_width, camera_time_us, &adapted_height, &adapted_width,
-        &crop_height, &crop_width, &crop_y, &crop_x);
+    if (!rtc::AdaptedVideoTrackSource::AdaptFrame(
+            j_height, j_width, camera_time_us, &adapted_height, &adapted_width,
+            &crop_height, &crop_width, &crop_y, &crop_x)) {
+      return nullptr;
+    }
   }
 
-  return Java_NativeAndroidVideoTrackSource_createFrameAdaptationParameters(
+  return Java_FrameAdaptationParameters_Constructor(
       env, crop_x, crop_y, crop_width, crop_height, adapted_width,
-      adapted_height, aligned_timestamp_ns, drop);
+      adapted_height, aligned_timestamp_ns);
 }
 
 void AndroidVideoTrackSource::OnFrameCaptured(

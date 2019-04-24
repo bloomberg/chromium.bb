@@ -18,7 +18,6 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -39,7 +38,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
-#include "ui/base/ime/init/input_method_factory.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -93,18 +92,6 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
 }
 
 const char* GetUICompositorMemoryLimitMB() {
-  bool uses_shader_rounded_corner = features::ShouldUseShaderRoundedCorner();
-  // TODO(oshima): Cleanup once new rounded corners and SPM are launched.
-
-  // The upper limit of the gpu memory each compositor in mus can use on
-  // chromeos.  Please see crbug.com/930163 for more info.
-  if (::features::IsUsingWindowService() && uses_shader_rounded_corner)
-    return "144";
-
-  // Uses 512mb which is default.
-  if (uses_shader_rounded_corner)
-    return "512";
-
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
   int width;

@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
-#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -115,12 +114,11 @@ class AutofillActionTest : public testing::Test {
         .WillByDefault(Return(&client_memory_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(personal_data_manager_.get()));
-    ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker,
-                                     base::OnceCallback<void()> all_done) {
-          checker->Run(&mock_web_controller_, std::move(all_done));
+    ON_CALL(mock_action_delegate_, CreateBatchElementChecker)
+        .WillByDefault(Invoke([this]() {
+          return std::make_unique<BatchElementChecker>(&mock_web_controller_);
         }));
-    ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
+    ON_CALL(mock_action_delegate_, OnShortWaitForElementExist(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
   }
 
@@ -211,7 +209,7 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
@@ -235,7 +233,7 @@ TEST_F(AutofillActionTest, FallbackFails) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
   EXPECT_CALL(mock_web_controller_,
@@ -251,7 +249,7 @@ TEST_F(AutofillActionTest, FallbackFails) {
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-      .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
+      .WillOnce(RunOnceCallback<2>(false));
 
   EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
             ProcessAction(action_proto));
@@ -271,7 +269,7 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<2>(true));
 
   {
     InSequence seq;
@@ -290,7 +288,7 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
                 OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-        .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+        .WillOnce(RunOnceCallback<2>(true));
 
     // Second validation succeeds.
     EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))

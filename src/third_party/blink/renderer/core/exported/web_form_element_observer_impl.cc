@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/exported/web_form_element_observer_impl.h"
 
+#include "third_party/blink/public/web/modules/autofill/web_form_element_observer_callback.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
@@ -19,7 +20,8 @@ namespace blink {
 class WebFormElementObserverImpl::ObserverCallback
     : public MutationObserver::Delegate {
  public:
-  ObserverCallback(HTMLElement&, base::OnceClosure callback);
+  ObserverCallback(HTMLElement&,
+                   std::unique_ptr<WebFormElementObserverCallback>);
 
   ExecutionContext* GetExecutionContext() const override;
 
@@ -33,12 +35,12 @@ class WebFormElementObserverImpl::ObserverCallback
   Member<HTMLElement> element_;
   HeapHashSet<Member<Node>> parents_;
   Member<MutationObserver> mutation_observer_;
-  base::OnceClosure callback_;
+  std::unique_ptr<WebFormElementObserverCallback> callback_;
 };
 
 WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
     HTMLElement& element,
-    base::OnceClosure callback)
+    std::unique_ptr<WebFormElementObserverCallback> callback)
     : element_(element),
       mutation_observer_(MutationObserver::Create(this)),
       callback_(std::move(callback)) {
@@ -75,16 +77,16 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
         if (removed_node != element_ && !parents_.Contains(removed_node)) {
           continue;
         }
-        std::move(callback_).Run();
+        callback_->ElementWasHiddenOrRemoved();
         Disconnect();
         return;
       }
     } else {
       // Either "style" or "class" was modified. Check the computed style.
-      auto* style =
-          MakeGarbageCollected<CSSComputedStyleDeclaration>(record->target());
-      if (style->GetPropertyValue(CSSPropertyID::kDisplay) == "none") {
-        std::move(callback_).Run();
+      CSSComputedStyleDeclaration* style =
+          CSSComputedStyleDeclaration::Create(record->target());
+      if (style->GetPropertyValue(CSSPropertyDisplay) == "none") {
+        callback_->ElementWasHiddenOrRemoved();
         Disconnect();
         return;
       }
@@ -94,7 +96,7 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
 
 void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
   mutation_observer_->disconnect();
-  callback_ = base::OnceClosure();
+  callback_.reset();
 }
 
 void WebFormElementObserverImpl::ObserverCallback::Trace(
@@ -107,21 +109,21 @@ void WebFormElementObserverImpl::ObserverCallback::Trace(
 
 WebFormElementObserver* WebFormElementObserver::Create(
     WebFormElement& element,
-    base::OnceClosure callback) {
+    std::unique_ptr<WebFormElementObserverCallback> callback) {
   return MakeGarbageCollected<WebFormElementObserverImpl>(
       *element.Unwrap<HTMLFormElement>(), std::move(callback));
 }
 
 WebFormElementObserver* WebFormElementObserver::Create(
     WebFormControlElement& element,
-    base::OnceClosure callback) {
+    std::unique_ptr<WebFormElementObserverCallback> callback) {
   return MakeGarbageCollected<WebFormElementObserverImpl>(
       *element.Unwrap<HTMLElement>(), std::move(callback));
 }
 
 WebFormElementObserverImpl::WebFormElementObserverImpl(
     HTMLElement& element,
-    base::OnceClosure callback)
+    std::unique_ptr<WebFormElementObserverCallback> callback)
     : self_keep_alive_(this) {
   mutation_callback_ =
       MakeGarbageCollected<ObserverCallback>(element, std::move(callback));

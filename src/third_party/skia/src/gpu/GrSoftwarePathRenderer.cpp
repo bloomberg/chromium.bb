@@ -32,7 +32,7 @@ GrSoftwarePathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
     // Pass on any style that applies. The caller will apply the style if a suitable renderer is
     // not found and try again with the new GrShape.
     if (!args.fShape->style().applies() && SkToBool(fProxyProvider) &&
-        ((args.fAATypeFlags & AATypeFlags::kCoverage) || args.fAATypeFlags == AATypeFlags::kNone)) {
+        (args.fAAType == GrAAType::kCoverage || args.fAAType == GrAAType::kNone)) {
         // This is the fallback renderer for when a path is too complicated for the GPU ones.
         return CanDrawPath::kAsBackup;
     }
@@ -257,7 +257,7 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
     // To prevent overloading the cache with entries during animations we limit the cache of masks
     // to cases where the matrix preserves axis alignment.
     bool useCache = fAllowCaching && !inverseFilled && args.fViewMatrix->preservesAxisAlignment() &&
-                    args.fShape->hasUnstyledKey() && (AATypeFlags::kCoverage & args.fAATypeFlags);
+                    args.fShape->hasUnstyledKey() && GrAAType::kCoverage == args.fAAType;
 
     if (!GetShapeAndClipBounds(args.fRenderTargetContext,
                                *args.fClip, *args.fShape,
@@ -332,7 +332,7 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
     }
     if (!proxy) {
         SkBackingFit fit = useCache ? SkBackingFit::kExact : SkBackingFit::kApprox;
-        GrAA aa = GrAA(SkToBool(AATypeFlags::kCoverage & args.fAATypeFlags));
+        GrAA aa = GrAAType::kCoverage == args.fAAType ? GrAA::kYes : GrAA::kNo;
 
         SkTaskGroup* taskGroup = nullptr;
         if (auto direct = args.fContext->priv().asDirectContext()) {

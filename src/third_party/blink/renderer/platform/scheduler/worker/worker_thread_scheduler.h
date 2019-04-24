@@ -46,11 +46,9 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       public IdleHelper::Delegate,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  // |sequence_manager|and |proxy| must remain valid for the entire lifetime of
-  // this object.
   WorkerThreadScheduler(
       WebThreadType thread_type,
-      base::sequence_manager::SequenceManager* sequence_manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
       WorkerSchedulerProxy* proxy);
   ~WorkerThreadScheduler() override;
 
@@ -63,8 +61,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
+  void AddRAILModeObserver(WebRAILModeObserver*) override {}
   void Shutdown() override;
 
   // ThreadSchedulerImpl implementation:
@@ -130,7 +127,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
 
-  void SetUkmTaskSamplingRateForTest(double rate);
   void SetUkmRecorderForTest(std::unique_ptr<ukm::UkmRecorder> ukm_recorder);
 
  private:

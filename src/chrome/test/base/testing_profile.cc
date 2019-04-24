@@ -40,12 +40,11 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
-#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -54,7 +53,6 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -81,7 +79,6 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
-#include "components/keyed_service/core/simple_key_map.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
@@ -117,7 +114,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -135,17 +131,12 @@
 #include "extensions/browser/extension_system.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/services/app_service/app_service.h"
-#include "chrome/services/app_service/public/mojom/constants.mojom.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -224,7 +215,8 @@ std::unique_ptr<KeyedService> BuildWebDataService(
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
+std::unique_ptr<KeyedService> BuildOfflinePageModel(
+    content::BrowserContext* context) {
   return std::make_unique<offline_pages::StubOfflinePageModel>();
 }
 #endif
@@ -388,6 +380,12 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
+  if (IsOffTheRecord())
+    key_ = std::make_unique<SimpleFactoryKey>(
+        original_profile_->GetPath(), original_profile_->GetSimpleFactoryKey());
+  else
+    key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
+
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
@@ -425,15 +423,6 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
-  if (IsOffTheRecord()) {
-    key_ =
-        std::make_unique<ProfileKey>(original_profile_->GetPath(), prefs_.get(),
-                                     original_profile_->GetProfileKey());
-  } else {
-    key_ = std::make_unique<ProfileKey>(profile_path_, prefs_.get());
-  }
-  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
-
   if (!base::PathExists(profile_path_))
     base::CreateDirectory(profile_path_);
 
@@ -447,8 +436,7 @@ void TestingProfile::Init() {
       profile_path_, GetURLLoaderFactory(),
       base::BindRepeating(&chromeos::DelayNetworkCall,
                           base::TimeDelta::FromMilliseconds(
-                              chromeos::kDefaultNetworkRetryDelayMS)),
-      GetPrefs());
+                              chromeos::kDefaultNetworkRetryDelayMS)));
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
         new chromeos::ScopedCrosSettingsTestHelper);
@@ -494,18 +482,17 @@ void TestingProfile::Init() {
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
   // simulating ProfileImpl::GetOffTheRecordPrefs().
-  SimpleFactoryKey* key = GetProfileKey();
+  SimpleFactoryKey* key = GetSimpleFactoryKey();
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
     user_prefs::PrefRegistrySyncable* pref_registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
-    simple_dependency_manager_->RegisterProfilePrefsForServices(pref_registry);
-    browser_context_dependency_manager_->RegisterProfilePrefsForServices(
-        pref_registry);
+    simple_dependency_manager_->RegisterProfilePrefsForServices(key,
+                                                                pref_registry);
+    browser_context_dependency_manager_->
+        RegisterProfilePrefsForServices(this, pref_registry);
   }
-
-  FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
   simple_dependency_manager_->CreateServicesForTest(key);
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
@@ -543,17 +530,8 @@ TestingProfile::~TestingProfile() {
 
   MaybeSendDestroyedNotification();
 
-  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
-
-  // The SimpleDependencyManager should always be passed after the
-  // BrowserContextDependencyManager. This is because the KeyedService instances
-  // in the BrowserContextDependencyManager's dependency graph can depend on the
-  // ones in the SimpleDependencyManager's graph.
-  DependencyManager::PerformInterlockedTwoPhaseShutdown(
-      browser_context_dependency_manager_, this, simple_dependency_manager_,
-      key_.get());
-
-  SimpleKeyMap::GetInstance()->Dissociate(this);
+  browser_context_dependency_manager_->DestroyBrowserContextServices(this);
+  simple_dependency_manager_->DestroyKeyedServices(GetSimpleFactoryKey());
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -619,7 +597,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
+      this, base::BindRepeating(&BuildOfflinePageModel));
 #endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
@@ -820,7 +798,10 @@ void TestingProfile::CreateIncognitoPrefService() {
 
 void TestingProfile::CreateProfilePolicyConnector() {
   schema_registry_service_ =
-      BuildSchemaRegistryServiceForProfile(this, policy::Schema(), nullptr);
+      policy::SchemaRegistryServiceFactory::CreateForContext(
+          this, policy::Schema(), nullptr);
+  CHECK_EQ(schema_registry_service_.get(),
+           policy::SchemaRegistryServiceFactory::GetForContext(this));
 
   if (!policy_service_) {
     std::vector<policy::ConfigurationPolicyProvider*> providers;
@@ -914,14 +895,9 @@ base::Time TestingProfile::GetStartTime() const {
   return start_time_;
 }
 
-ProfileKey* TestingProfile::GetProfileKey() const {
+SimpleFactoryKey* TestingProfile::GetSimpleFactoryKey() const {
   DCHECK(key_);
   return key_.get();
-}
-
-policy::SchemaRegistryService*
-TestingProfile::GetPolicySchemaRegistryService() {
-  return schema_registry_service_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {
@@ -1034,18 +1010,6 @@ void TestingProfile::SetCorsOriginAccessListForOrigin(
   // Extensions need to set the list, but just can be ignored unless they need
   // to make actual network requests beyond the CORS policy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
-}
-
-std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-#if !defined(OS_ANDROID)
-  if (service_name == apps::mojom::kServiceName) {
-    return std::make_unique<apps::AppService>(std::move(request));
-  }
-#endif  // !defined(OS_ANDROID)
-
-  return nullptr;
 }
 
 net::URLRequestContextGetter*

@@ -36,7 +36,6 @@ namespace dawn_native {
         CopyBufferToBuffer,
         CopyBufferToTexture,
         CopyTextureToBuffer,
-        CopyTextureToTexture,
         Dispatch,
         Draw,
         DrawIndexed,
@@ -82,15 +81,14 @@ namespace dawn_native {
         bool hasDepthStencilAttachment;
         RenderPassDepthStencilAttachmentInfo depthStencilAttachment;
 
-        // Cache the width, height and sample count of all attachments for convenience
+        // Cache the width and height of all attachments for convenience
         uint32_t width;
         uint32_t height;
-        uint32_t sampleCount;
     };
 
     struct BufferCopy {
         Ref<BufferBase> buffer;
-        uint64_t offset;       // Bytes
+        uint32_t offset;       // Bytes
         uint32_t rowPitch;     // Bytes
         uint32_t imageHeight;  // Texels
     };
@@ -105,7 +103,7 @@ namespace dawn_native {
     struct CopyBufferToBufferCmd {
         BufferCopy source;
         BufferCopy destination;
-        uint64_t size;
+        uint32_t size;
     };
 
     struct CopyBufferToTextureCmd {
@@ -117,12 +115,6 @@ namespace dawn_native {
     struct CopyTextureToBufferCmd {
         TextureCopy source;
         BufferCopy destination;
-        Extent3D copySize;  // Texels
-    };
-
-    struct CopyTextureToTextureCmd {
-        TextureCopy source;
-        TextureCopy destination;
         Extent3D copySize;  // Texels
     };
 
@@ -143,7 +135,7 @@ namespace dawn_native {
         uint32_t indexCount;
         uint32_t instanceCount;
         uint32_t firstIndex;
-        int32_t baseVertex;
+        uint32_t baseVertex;
         uint32_t firstInstance;
     };
 
@@ -194,7 +186,7 @@ namespace dawn_native {
 
     struct SetIndexBufferCmd {
         Ref<BufferBase> buffer;
-        uint64_t offset;
+        uint32_t offset;
     };
 
     struct SetVertexBuffersCmd {

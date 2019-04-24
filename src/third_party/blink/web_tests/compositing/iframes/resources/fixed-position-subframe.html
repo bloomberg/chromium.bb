@@ -24,10 +24,16 @@
 </head>
 <script>
     function doTest() {
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
         window.scrollTo(0, 2000);
         runAfterLayoutAndPaint(function() {
             window.scrollTo(0, 1800);
-        }, true);
+            if (window.testRunner)
+                testRunner.notifyDone();
+        });
     }
     window.addEventListener("load", doTest, false);
 </script>

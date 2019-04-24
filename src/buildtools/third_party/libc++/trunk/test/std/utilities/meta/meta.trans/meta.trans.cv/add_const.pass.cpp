@@ -17,9 +17,9 @@
 template <class T, class U>
 void test_add_const_imp()
 {
-    ASSERT_SAME_TYPE(const U, typename std::add_const<T>::type);
+    static_assert((std::is_same<typename std::add_const<T>::type, const U>::value), "");
 #if TEST_STD_VER > 11
-    ASSERT_SAME_TYPE(const U,        std::add_const_t<T>);
+    static_assert((std::is_same<std::add_const_t<T>, U>::value), "");
 #endif
 }
 

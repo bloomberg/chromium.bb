@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/operand_to_undef_reduction_opportunity_finder.h"
-
 #include "source/opt/build_module.h"
-#include "source/reduce/reduction_opportunity.h"
+#include "source/reduce/operand_to_undef_reduction_opportunity_finder.h"
 #include "test/reduce/reduce_test_util.h"
 
 namespace spvtools {

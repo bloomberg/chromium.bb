@@ -28,7 +28,8 @@ const char* kControlInputElementOverflowHistogramName =
 class MediaControlInputElementImpl final : public MediaControlInputElement {
  public:
   MediaControlInputElementImpl(MediaControlsImpl& media_controls)
-      : MediaControlInputElement(media_controls) {
+      // Using arbitrary MediaControlElementType. It should have no impact.
+      : MediaControlInputElement(media_controls, kMediaIgnore) {
     setType(input_type_names::kButton);
     SetIsWanted(false);
   }

@@ -27,7 +27,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context,
       attribute_instance_map_(
           MakeGarbageCollected<BluetoothAttributeInstanceMap>(this)),
       device_(std::move(device)),
-      gatt_(MakeGarbageCollected<BluetoothRemoteGATTServer>(context, this)),
+      gatt_(BluetoothRemoteGATTServer::Create(context, this)),
       bluetooth_(bluetooth) {}
 
 BluetoothRemoteGATTService* BluetoothDevice::GetOrCreateRemoteGATTService(

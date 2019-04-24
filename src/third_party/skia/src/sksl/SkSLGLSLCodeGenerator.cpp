@@ -1140,24 +1140,16 @@ void GLSLCodeGenerator::writeModifiers(const Modifiers& modifiers,
     if (modifiers.fFlags & Modifiers::kPLSOut_Flag) {
         this->write("__pixel_local_outEXT ");
     }
-    switch (modifiers.fLayout.fFormat) {
-        case Layout::Format::kUnspecified:
-            break;
-        case Layout::Format::kRGBA32F: // fall through
-        case Layout::Format::kR32F:
-            this->write("highp ");
-            break;
-        case Layout::Format::kRGBA16F: // fall through
-        case Layout::Format::kR16F:    // fall through
-        case Layout::Format::kRG16F:
-            this->write("mediump ");
-            break;
-        case Layout::Format::kRGBA8:  // fall through
-        case Layout::Format::kR8:     // fall through
-        case Layout::Format::kRGBA8I: // fall through
-        case Layout::Format::kR8I:
+    if (usesPrecisionModifiers()) {
+        if (modifiers.fFlags & Modifiers::kLowp_Flag) {
             this->write("lowp ");
-            break;
+        }
+        if (modifiers.fFlags & Modifiers::kMediump_Flag) {
+            this->write("mediump ");
+        }
+        if (modifiers.fFlags & Modifiers::kHighp_Flag) {
+            this->write("highp ");
+        }
     }
 }
 
@@ -1576,20 +1568,14 @@ bool GLSLCodeGenerator::generateCode() {
         Layout layout;
         switch (fProgram.fKind) {
             case Program::kVertex_Kind: {
-                Modifiers modifiers(layout, Modifiers::kOut_Flag);
+                Modifiers modifiers(layout, Modifiers::kOut_Flag | Modifiers::kHighp_Flag);
                 this->writeModifiers(modifiers, true);
-                if (this->usesPrecisionModifiers()) {
-                    this->write("highp ");
-                }
                 this->write("vec4 sk_FragCoord_Workaround;\n");
                 break;
             }
             case Program::kFragment_Kind: {
-                Modifiers modifiers(layout, Modifiers::kIn_Flag);
+                Modifiers modifiers(layout, Modifiers::kIn_Flag | Modifiers::kHighp_Flag);
                 this->writeModifiers(modifiers, true);
-                if (this->usesPrecisionModifiers()) {
-                    this->write("highp ");
-                }
                 this->write("vec4 sk_FragCoord_Workaround;\n");
                 break;
             }

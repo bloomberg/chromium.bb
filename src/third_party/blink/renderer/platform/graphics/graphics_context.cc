@@ -105,7 +105,7 @@ GraphicsContext::GraphicsContext(PaintController& paint_controller,
       in_drawing_recorder_(false) {
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
-  paint_state_stack_.push_back(std::make_unique<GraphicsContextState>());
+  paint_state_stack_.push_back(GraphicsContextState::Create());
   paint_state_ = paint_state_stack_.back().get();
 
   if (ContextDisabled()) {
@@ -762,16 +762,33 @@ void GraphicsContext::DrawRect(const IntRect& rect) {
   }
 }
 
-void GraphicsContext::DrawText(const Font& font,
-                               const TextRunPaintInfo& text_info,
-                               const FloatPoint& point,
-                               const PaintFlags& flags,
-                               const cc::NodeHolder& node_holder) {
+template <typename TextPaintInfo>
+void GraphicsContext::DrawTextInternal(const Font& font,
+                                       const TextPaintInfo& text_info,
+                                       const FloatPoint& point,
+                                       const PaintFlags& flags,
+                                       const cc::NodeHolder& node_holder) {
   if (ContextDisabled())
     return;
 
   font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
                 DarkModeFlags(this, flags));
+}
+
+void GraphicsContext::DrawText(const Font& font,
+                               const TextRunPaintInfo& text_info,
+                               const FloatPoint& point,
+                               const PaintFlags& flags,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, flags, node_holder);
+}
+
+void GraphicsContext::DrawText(const Font& font,
+                               const NGTextFragmentPaintInfo& text_info,
+                               const FloatPoint& point,
+                               const PaintFlags& flags,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, flags, node_holder);
 }
 
 template <typename DrawTextFunc>
@@ -899,7 +916,7 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  if (ShouldApplyDarkModeFilterToImage(*image, src))
+  if (ShouldApplyDarkModeFilterToImage(*image))
     image_flags.setColorFilter(dark_mode_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
@@ -934,8 +951,6 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
-  if (ShouldApplyDarkModeFilterToImage(*image, src_rect))
-    image_flags.setColorFilter(dark_mode_filter_);
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);
@@ -1399,15 +1414,14 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   return nullptr;
 }
 
-bool GraphicsContext::ShouldApplyDarkModeFilterToImage(
-    Image& image,
-    const FloatRect& src_rect) {
+bool GraphicsContext::ShouldApplyDarkModeFilterToImage(Image& image) {
   if (!dark_mode_filter_)
     return false;
 
   switch (dark_mode_settings_.image_policy) {
     case DarkModeImagePolicy::kFilterSmart:
-      return image.ShouldApplyDarkModeFilter(src_rect);
+      return dark_mode_image_classifier_.ShouldApplyDarkModeFilterToImage(
+          image);
     case DarkModeImagePolicy::kFilterAll:
       return true;
     default:

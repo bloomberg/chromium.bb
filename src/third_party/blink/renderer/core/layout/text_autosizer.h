@@ -63,6 +63,10 @@ class CORE_EXPORT TextAutosizer final
   explicit TextAutosizer(const Document*);
   ~TextAutosizer();
 
+  static TextAutosizer* Create(const Document* document) {
+    return MakeGarbageCollected<TextAutosizer>(document);
+  }
+
   // computed_size should include zoom.
   static float ComputeAutosizedFontSize(float computed_size,
                                         float multiplier,

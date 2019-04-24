@@ -10,8 +10,7 @@ FFMPEG=ffmpeg$(PROGSSUF)$(EXESUF)
 $(AREF): CMP=
 
 APITESTSDIR := tests/api
-FATE_OUTDIRS = tests/data tests/data/fate tests/data/filtergraphs tests/data/lavf tests/data/lavf-fate tests/data/pixfmt tests/vsynth1 $(APITESTSDIR)
-OUTDIRS += $(FATE_OUTDIRS)
+OBJDIRS += tests/data tests/vsynth1 tests/data/filtergraphs $(APITESTSDIR)/
 
 $(VREF): tests/videogen$(HOSTEXESUF) | tests/vsynth1
 	$(M)./$< 'tests/vsynth1/'
@@ -89,11 +88,7 @@ include $(SRC_PATH)/$(APITESTSDIR)/Makefile
 include $(SRC_PATH)/tests/fate/acodec.mak
 include $(SRC_PATH)/tests/fate/vcodec.mak
 
-include $(SRC_PATH)/tests/fate/lavf-audio.mak
-include $(SRC_PATH)/tests/fate/lavf-container.mak
-include $(SRC_PATH)/tests/fate/lavf-image.mak
-include $(SRC_PATH)/tests/fate/lavf-image2pipe.mak
-include $(SRC_PATH)/tests/fate/lavf-video.mak
+include $(SRC_PATH)/tests/fate/avformat.mak
 include $(SRC_PATH)/tests/fate/seek.mak
 
 include $(SRC_PATH)/tests/fate/aac.mak
@@ -162,7 +157,6 @@ include $(SRC_PATH)/tests/fate/mpegts.mak
 include $(SRC_PATH)/tests/fate/mxf.mak
 include $(SRC_PATH)/tests/fate/opus.mak
 include $(SRC_PATH)/tests/fate/pcm.mak
-include $(SRC_PATH)/tests/fate/pixfmt.mak
 include $(SRC_PATH)/tests/fate/pixlet.mak
 include $(SRC_PATH)/tests/fate/probe.mak
 include $(SRC_PATH)/tests/fate/prores.mak
@@ -170,7 +164,6 @@ include $(SRC_PATH)/tests/fate/qt.mak
 include $(SRC_PATH)/tests/fate/qtrle.mak
 include $(SRC_PATH)/tests/fate/real.mak
 include $(SRC_PATH)/tests/fate/screen.mak
-include $(SRC_PATH)/tests/fate/segment.mak
 include $(SRC_PATH)/tests/fate/source.mak
 include $(SRC_PATH)/tests/fate/speedhq.mak
 include $(SRC_PATH)/tests/fate/subtitles.mak
@@ -231,7 +224,7 @@ fate-hw: $(FATE_HW-yes)
 FATE += $(FATE_HW-yes)
 
 $(FATE) $(FATE_TESTS-no): export PROGSUF = $(PROGSSUF)
-$(FATE) $(FATE_TESTS-no): $(FATE_UTILS:%=tests/%$(HOSTEXESUF)) | $(FATE_OUTDIRS)
+$(FATE) $(FATE_TESTS-no): $(FATE_UTILS:%=tests/%$(HOSTEXESUF))
 	@echo "TEST    $(@:fate-%=%)"
 	$(Q)$(SRC_PATH)/tests/fate-run.sh $@ "$(TARGET_SAMPLES)" "$(TARGET_EXEC)" "$(TARGET_PATH)" '$(CMD)' '$(CMP)' '$(REF)' '$(FUZZ)' '$(THREADS)' '$(THREAD_TYPE)' '$(CPUFLAGS)' '$(CMP_SHIFT)' '$(CMP_TARGET)' '$(SIZE_TOLERANCE)' '$(CMP_UNIT)' '$(GEN)' '$(HWACCEL)' '$(REPORT)' '$(KEEP)'
 

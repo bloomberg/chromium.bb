@@ -107,8 +107,10 @@ inline void TreeScopeEventContext::CheckReachableNode(EventTarget& target) {
   // FIXME: Checks also for SVG elements.
   if (target.ToNode()->IsSVGElement())
     return;
-  DCHECK(target.ToNode()->GetTreeScope().IsInclusiveAncestorTreeScopeOf(
-      GetTreeScope()));
+  DCHECK(target.ToNode()
+             ->GetTreeScope()
+             .IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
+                 GetTreeScope()));
 }
 #else
 inline void TreeScopeEventContext::CheckReachableNode(EventTarget&) {}

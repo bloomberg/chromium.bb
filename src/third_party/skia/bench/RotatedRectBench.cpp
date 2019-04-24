@@ -101,7 +101,7 @@ protected:
             SkPoint pts[2] = { {0.0f, 0.0f}, {kRectW, kRectH} };
             SkColor colors[] = { color, SK_ColorBLUE };
             paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2,
-                                                         SkTileMode::kClamp));
+                                                         SkShader::kClamp_TileMode));
         }
 
         SkMatrix rotate;

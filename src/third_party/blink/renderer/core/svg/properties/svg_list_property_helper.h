@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -107,7 +106,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   bool IsEmpty() const { return !length(); }
 
   virtual Derived* Clone() {
-    auto* svg_list = MakeGarbageCollected<Derived>();
+    Derived* svg_list = Derived::Create();
     svg_list->DeepCopy(static_cast<Derived*>(this));
     return svg_list;
   }
@@ -141,7 +140,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   String SerializeList() const;
 
   virtual ItemPropertyType* CreatePaddingItem() const {
-    return MakeGarbageCollected<ItemPropertyType>();
+    return ItemPropertyType::Create();
   }
 
  private:

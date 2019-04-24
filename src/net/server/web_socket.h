@@ -33,7 +33,7 @@ class WebSocket final {
   void Accept(const HttpServerRequestInfo& request,
               const NetworkTrafficAnnotationTag traffic_annotation);
   ParseResult Read(std::string* message);
-  void Send(base::StringPiece message,
+  void Send(const std::string& message,
             const NetworkTrafficAnnotationTag traffic_annotation);
   ~WebSocket();
 

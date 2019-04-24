@@ -15,7 +15,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
@@ -50,7 +49,6 @@ namespace chromecast {
 class CastService;
 class CastWindowManager;
 class CastFeatureListCreator;
-class GeneralAudienceBrowsingService;
 class MemoryPressureControllerImpl;
 
 namespace media {
@@ -69,9 +67,7 @@ class CastNetworkContexts;
 class CastResourceDispatcherHostDelegate;
 class URLRequestContextFactory;
 
-class CastContentBrowserClient
-    : public content::ContentBrowserClient,
-      public chromecast::metrics::CastMetricsServiceDelegate {
+class CastContentBrowserClient : public content::ContentBrowserClient {
  public:
   // Creates an implementation of CastContentBrowserClient. Platform should
   // link in an implementation as needed.
@@ -122,10 +118,12 @@ class CastContentBrowserClient
   virtual base::WeakPtr<device::BluetoothAdapterCast> CreateBluetoothAdapter();
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
-  // chromecast::metrics::CastMetricsServiceDelegate implementation:
-  void SetMetricsClientId(const std::string& client_id) override;
-  void RegisterMetricsProviders(
-      ::metrics::MetricsService* metrics_service) override;
+  // Invoked when the metrics client ID changes.
+  virtual void SetMetricsClientId(const std::string& client_id);
+
+  // Allows registration of extra metrics providers.
+  virtual void RegisterMetricsProviders(
+      ::metrics::MetricsService* metrics_service);
 
   // Returns whether or not the remote debugging service should be started
   // on browser startup.
@@ -218,16 +216,9 @@ class CastContentBrowserClient
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
   std::string GetUserAgent() const override;
-  void RegisterIOThreadServiceHandlers(
-      content::ServiceManagerConnection* connection) override;
-  bool DoesSiteRequireDedicatedProcess(
-      content::BrowserOrResourceContext browser_or_resource_context,
-      const GURL& effective_site_url) override;
   CastFeatureListCreator* GetCastFeatureListCreator() {
     return cast_feature_list_creator_;
   }
-
-  void CreateGeneralAudienceBrowsingService();
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
@@ -297,8 +288,6 @@ class CastContentBrowserClient
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
-  std::unique_ptr<GeneralAudienceBrowsingService>
-      general_audience_browsing_service_;
 
   CastFeatureListCreator* cast_feature_list_creator_;
 

@@ -105,8 +105,6 @@ class SmbService : public KeyedService,
                        StartReadDirIfSuccessfulCallback reply);
 
  private:
-  friend class SmbServiceTest;
-
   // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
   // before this is called.
   void CallMount(const file_system_provider::MountOptions& options,

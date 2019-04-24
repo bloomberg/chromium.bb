@@ -84,16 +84,11 @@ PaymentRequestSpec::PaymentRequestSpec(
       details_(std::move(details)),
       method_data_(std::move(method_data)),
       app_locale_(app_locale),
-      selected_shipping_option_(nullptr),
-      current_update_reason_(UpdateReason::NONE) {
+      selected_shipping_option_(nullptr) {
   if (observer)
     AddObserver(observer);
-  if (!details_->display_items)
-    details_->display_items = std::vector<mojom::PaymentItemPtr>();
   if (!details_->shipping_options)
     details_->shipping_options = std::vector<mojom::PaymentShippingOptionPtr>();
-  if (!details_->modifiers)
-    details_->modifiers = std::vector<mojom::PaymentDetailsModifierPtr>();
   UpdateSelectedShippingOption(/*after_update=*/false);
   PopulateValidatedMethodData(
       method_data_, &supported_card_networks_, &basic_card_specified_networks_,
@@ -105,14 +100,13 @@ PaymentRequestSpec::~PaymentRequestSpec() {}
 
 void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   DCHECK(details_);
-  DCHECK(details_->total || details->total);
   if (details->total)
     details_->total = std::move(details->total);
-  if (details->display_items)
+  if (!details->display_items.empty())
     details_->display_items = std::move(details->display_items);
   if (details->shipping_options)
     details_->shipping_options = std::move(details->shipping_options);
-  if (details->modifiers)
+  if (!details->modifiers.empty())
     details_->modifiers = std::move(details->modifiers);
   details_->error = std::move(details->error);
   if (details->shipping_address_errors)
@@ -120,25 +114,15 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
         std::move(details->shipping_address_errors);
   if (details->id)
     details_->id = std::move(details->id);
-  DCHECK(details_->total);
-  DCHECK(details_->display_items);
-  DCHECK(details_->shipping_options);
-  DCHECK(details_->modifiers);
   RecomputeSpecForDetails();
 }
 
-void PaymentRequestSpec::Retry(
-    mojom::PaymentValidationErrorsPtr validation_errors) {
-  if (!validation_errors)
+void PaymentRequestSpec::Retry(mojom::PaymentValidationErrorsPtr errors) {
+  if (!errors)
     return;
 
-  retry_error_message_ =
-      validation_errors->error.empty()
-          ? l10n_util::GetStringUTF16(IDS_PAYMENTS_ERROR_MESSAGE)
-          : base::UTF8ToUTF16(std::move(validation_errors->error));
-  details_->shipping_address_errors =
-      std::move(validation_errors->shipping_address);
-  payer_errors_ = std::move(validation_errors->payer);
+  details_->shipping_address_errors = std::move(errors->shipping_address);
+  payer_errors_ = std::move(errors->payer);
   current_update_reason_ = UpdateReason::RETRY;
   NotifyOnSpecUpdated();
   current_update_reason_ = UpdateReason::NONE;
@@ -224,15 +208,9 @@ bool PaymentRequestSpec::has_payer_error() const {
 
 void PaymentRequestSpec::RecomputeSpecForDetails() {
   // Reparse the |details_| and update the observers.
-  bool is_initialization =
-      current_update_reason_ == UpdateReason::INITIAL_PAYMENT_DETAILS;
-  UpdateSelectedShippingOption(/*after_update=*/!is_initialization);
+  UpdateSelectedShippingOption(/*after_update=*/true);
 
   NotifyOnSpecUpdated();
-
-  if (is_initialization)
-    NotifyInitialized();
-
   current_update_reason_ = UpdateReason::NONE;
 }
 
@@ -243,10 +221,6 @@ void PaymentRequestSpec::AddObserver(Observer* observer) {
 
 void PaymentRequestSpec::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool PaymentRequestSpec::IsInitialized() const {
-  return current_update_reason_ != UpdateReason::INITIAL_PAYMENT_DETAILS;
 }
 
 bool PaymentRequestSpec::request_shipping() const {
@@ -307,10 +281,9 @@ void PaymentRequestSpec::StartWaitingForUpdateWith(
 }
 
 bool PaymentRequestSpec::IsMixedCurrency() const {
-  DCHECK(details_->display_items);
   const std::string& total_currency = details_->total->amount->currency;
-  return std::any_of(details_->display_items->begin(),
-                     details_->display_items->end(),
+  return std::any_of(details_->display_items.begin(),
+                     details_->display_items.end(),
                      [&total_currency](const mojom::PaymentItemPtr& item) {
                        return item->amount->currency != total_currency;
                      });
@@ -328,8 +301,7 @@ std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
   std::vector<const mojom::PaymentItemPtr*> display_items;
   const mojom::PaymentDetailsModifierPtr* modifier =
       GetApplicableModifier(selected_instrument);
-  DCHECK(details_->display_items);
-  for (const auto& item : *details_->display_items) {
+  for (const auto& item : details_->display_items) {
     display_items.push_back(&item);
   }
 
@@ -354,8 +326,7 @@ PaymentRequestSpec::GetApplicableModifier(
       !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers))
     return nullptr;
 
-  DCHECK(details_->modifiers);
-  for (const auto& modifier : *details_->modifiers) {
+  for (const auto& modifier : details_->modifiers) {
     std::set<std::string> supported_card_networks_set;
     std::set<autofill::CreditCard::CardType> supported_types;
     // The following 4 are unused but required by PopulateValidatedMethodData.
@@ -388,7 +359,7 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   selected_shipping_option_ = nullptr;
   selected_shipping_option_error_.clear();
   if (details_->shipping_options->empty() || !details_->error.empty()) {
-    // The merchant provided either no shipping options or an error message.
+    // No options are provided by the merchant.
     if (after_update) {
       // This is after an update, which means that the selected address is not
       // supported. The merchant may have customized the error string, or a

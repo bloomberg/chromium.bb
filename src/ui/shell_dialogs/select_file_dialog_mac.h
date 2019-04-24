@@ -7,77 +7,23 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <list>
-#include <memory>
-#include <vector>
+#include <map>
+#include <set>
 
-#include "base/callback.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
 @class ExtensionDropdownHandler;
-@class SelectFileDialogDelegate;
+@class SelectFileDialogBridge;
 
 namespace ui {
 
 namespace test {
 class SelectFileDialogMacTest;
 }  // namespace test
-
-// TODO(https://crbug.com/913303): Move this structure to ui/views_bridge_mac.
-// This structure provides a C++ (or mojo) interface for creating a NSSavePanel.
-class SavePanelBridge {
- public:
-  // Callback made from the NSSavePanel's completion block.
-  using PanelEndedCallback =
-      base::OnceCallback<void(bool was_cancelled,
-                              const std::vector<base::FilePath>& files,
-                              int index)>;
-
-  SavePanelBridge(PanelEndedCallback callback);
-  ~SavePanelBridge();
-
-  void Initialize(SelectFileDialog::Type type,
-                  NSWindow* owning_window,
-                  const base::string16& title,
-                  const base::FilePath& default_path,
-                  const SelectFileDialog::FileTypeInfo* file_types,
-                  int file_type_index,
-                  const base::FilePath::StringType& default_extension);
-  NSSavePanel* GetNativePanelForTesting() { return panel_.get(); }
-
- private:
-  // Sets the accessory view for |dialog_| and sets
-  // |extension_dropdown_handler_|.
-  void SetAccessoryView(const SelectFileDialog::FileTypeInfo* file_types,
-                        int file_type_index,
-                        const base::FilePath::StringType& default_extension);
-
-  // Called when the panel completes.
-  void OnPanelEnded(bool did_cancel);
-
-  // The callback to make when this dialog ends.
-  PanelEndedCallback callback_;
-
-  // Type type of this dialog.
-  SelectFileDialog::Type type_;
-
-  // The NSSavePanel that |this| tracks.
-  base::scoped_nsobject<NSSavePanel> panel_;
-
-  // The delegate for |panel|.
-  base::scoped_nsobject<SelectFileDialogDelegate> delegate_;
-
-  // Extension dropdown handler corresponding to this file dialog.
-  base::scoped_nsobject<ExtensionDropdownHandler> extension_dropdown_handler_;
-
-  base::WeakPtrFactory<SavePanelBridge> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(SavePanelBridge);
-};
 
 // Implementation of SelectFileDialog that shows Cocoa dialogs for choosing a
 // file or folder.
@@ -90,6 +36,14 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
   // BaseShellDialog implementation.
   bool IsRunning(gfx::NativeWindow parent_window) const override;
   void ListenerDestroyed() override;
+
+  // Callback from ObjC bridge.
+  void FileWasSelected(NSSavePanel* dialog,
+                       NSWindow* parent_window,
+                       bool was_cancelled,
+                       bool is_multi,
+                       const std::vector<base::FilePath>& files,
+                       int index);
 
  protected:
   // SelectFileDialog implementation.
@@ -108,39 +62,42 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
 
   // Struct to store data associated with a file dialog while it is showing.
   struct DialogData {
-    DialogData(gfx::NativeWindow parent_window_, void* params_);
-    ~DialogData();
-
-    // The parent window for the panel. Weak, used only for comparisons.
-    gfx::NativeWindow parent_window;
+    DialogData(void* params_,
+               base::scoped_nsobject<ExtensionDropdownHandler> handler);
+    DialogData(const DialogData& other);
 
     // |params| user data associated with this file dialog.
     void* params;
 
-    // Bridge to the Cocoa NSSavePanel.
-    std::unique_ptr<SavePanelBridge> save_panel_bridge;
+    // Extension dropdown handler corresponding to this file dialog.
+    base::scoped_nsobject<ExtensionDropdownHandler> extension_dropdown_handler;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DialogData);
+    ~DialogData();
   };
 
   ~SelectFileDialogImpl() override;
 
-  // Callback made when a panel is closed.
-  void FileWasSelected(DialogData* dialog_data,
-                       bool is_multi,
-                       bool was_cancelled,
-                       const std::vector<base::FilePath>& files,
-                       int index);
+  // Sets the accessory view for the |dialog| and returns the associated
+  // ExtensionDropdownHandler.
+  static base::scoped_nsobject<ExtensionDropdownHandler> SetAccessoryView(
+      NSSavePanel* dialog,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension);
 
   bool HasMultipleFileTypeChoicesImpl() override;
 
-  // A list containing a DialogData for all active dialogs.
-  std::list<DialogData> dialog_data_list_;
+  // The bridge for results from Cocoa to return to us.
+  base::scoped_nsobject<SelectFileDialogBridge> bridge_;
+
+  // The set of all parent windows for which we are currently running dialogs.
+  std::set<NSWindow*> parents_;
+
+  // A map from file dialogs to the DialogData associated with them.
+  std::map<NSSavePanel*, DialogData> dialog_data_map_;
 
   bool hasMultipleFileTypeChoices_;
 
-  base::WeakPtrFactory<SelectFileDialogImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 

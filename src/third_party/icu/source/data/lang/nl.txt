@@ -108,7 +108,6 @@ nl{
         car{"Caribisch"}
         cay{"Cayuga"}
         cch{"Atsam"}
-        ccp{"Chakma"}
         ce{"Tsjetsjeens"}
         ceb{"Cebuano"}
         cgg{"Chiga"}
@@ -633,6 +632,7 @@ nl{
         Adlm{"Adlam"}
         Afak{"Defaka"}
         Aghb{"Kaukasisch Albanees"}
+        Ahom{"Ahom"}
         Arab{"Arabisch"}
         Armi{"Keizerlijk Aramees"}
         Armn{"Armeens"}
@@ -652,6 +652,7 @@ nl{
         Cakm{"Chakma"}
         Cans{"Verenigde Canadese Aboriginal-symbolen"}
         Cari{"Carisch"}
+        Cham{"Cham"}
         Cher{"Cherokee"}
         Cirt{"Cirth"}
         Copt{"Koptisch"}
@@ -666,7 +667,6 @@ nl{
         Egyh{"Egyptisch hiëratisch"}
         Egyp{"Egyptische hiërogliefen"}
         Elba{"Elbasan"}
-        Elym{"Elymaisch"}
         Ethi{"Ethiopisch"}
         Geok{"Georgisch Khutsuri"}
         Geor{"Georgisch"}
@@ -689,7 +689,6 @@ nl{
         Hira{"Hiragana"}
         Hluw{"Anatolische hiërogliefen"}
         Hmng{"Pahawh Hmong"}
-        Hmnp{"Nyiakeng Puachue Hmong"}
         Hrkt{"Katakana of Hiragana"}
         Hung{"Oudhongaars"}
         Inds{"Indus"}
@@ -731,13 +730,13 @@ nl{
         Merc{"Meroitisch cursief"}
         Mero{"Meroïtisch"}
         Mlym{"Malayalam"}
+        Modi{"Modi"}
         Mong{"Mongools"}
         Moon{"Moon"}
         Mroo{"Mro"}
         Mtei{"Meitei"}
         Mult{"Multani"}
         Mymr{"Birmaans"}
-        Nand{"Nandinagari"}
         Narb{"Oud Noord-Arabisch"}
         Nbat{"Nabateaans"}
         Newa{"Newari"}
@@ -803,7 +802,6 @@ nl{
         Vaii{"Vai"}
         Visp{"Zichtbare spraak"}
         Wara{"Varang Kshiti"}
-        Wcho{"Wancho"}
         Wole{"Woleai"}
         Xpeo{"Oudperzisch"}
         Xsux{"Sumero-Akkadian Cuneiform"}
@@ -956,7 +954,6 @@ nl{
             hantfin{"traditioneel Chinese financiële cijfers"}
             hebr{"Hebreeuwse cijfers"}
             hmng{"Pahawh Hmong cijfers"}
-            hmnp{"Nyiakeng Puachue Hmong cijfers"}
             java{"Javaanse cijfers"}
             jpan{"Japanse cijfers"}
             jpanfin{"Japanse financiële cijfers"}
@@ -1007,7 +1004,6 @@ nl{
             traditional{"Traditionele cijfers"}
             vaii{"Vai-cijfers"}
             wara{"Warang Citi cijfers"}
-            wcho{"Wancho cijfers"}
         }
     }
     Variants{
@@ -1022,11 +1018,9 @@ nl{
         ALALC97{"Romanisering ALA-LC, editie 1997"}
         ALUKU{"Aloekoe-dialect"}
         AO1990{"Portugese spellingsovereenkomst van 1990"}
-        ARANES{"Aranees"}
         AREVELA{"Oost-Armeens"}
         AREVMDA{"West-Armeens"}
         ASANTE{"Asante"}
-        AUVERN{"Auvern"}
         BAKU1926{"Eenvormig Turkse Latijnse alfabet"}
         BALANKA{"Balanka-dialect van Anii"}
         BARLA{"Barlavento-dialectgroep van Kabuverdianu"}
@@ -1036,22 +1030,15 @@ nl{
         BISKE{"San Giorgio/Bila-dialect"}
         BOHORIC{"Bohorič-alfabet"}
         BOONT{"Boontling"}
-        CISAUP{"Cisaup"}
         COLB1945{"Portugese-Braziliaanse spellingsverdrag van 1945"}
         CORNU{"Cornu"}
-        CREISS{"Creiss"}
         DAJNKO{"Dajnko-alfabet"}
         EKAVSK{"Servisch met Ekaviaanse uitspraak"}
         EMODENG{"Vroegmodern Engels"}
         FONIPA{"Internationaal Fonetisch Alfabet"}
-        FONKIRSH{"Fonkirsh"}
         FONNAPA{"Fonnapa"}
         FONUPA{"Oeralisch Fonetisch Alfabet"}
         FONXSAMP{"Transcriptie volgens X-SAMPA"}
-        GASCON{"Gascon"}
-        GRCLASS{"Grclass"}
-        GRITAL{"Grital"}
-        GRMISTR{"Grmistr"}
         HEPBURN{"Hepburn-romanisering"}
         HOGNORSK{"Hoognoors"}
         HSISTEMO{"H-sistemo"}
@@ -1064,8 +1051,6 @@ nl{
         KOCIEWIE{"Kociewie"}
         KSCOR{"Standaardspelling"}
         LAUKIKA{"Laukika"}
-        LEMOSIN{"Lemosin"}
-        LENGADOC{"Lengadoc"}
         LIPAW{"Het Lipovaz-dialect van het Resiaans"}
         LUNA1918{"Russische spelling van 1917"}
         METELKO{"Metelko-alfabet"}
@@ -1073,7 +1058,6 @@ nl{
         NDYUKA{"Ndyuka-dialect"}
         NEDIS{"Natisone-dialect"}
         NEWFOUND{"Newfound"}
-        NICARD{"Nicard"}
         NJIVA{"Gniva/Njiva-dialect"}
         NULIK{"Modern Volapük"}
         OSOJS{"Oseacco/Osojane-dialect"}
@@ -1086,7 +1070,6 @@ nl{
         PINYIN{"Pinyin"}
         POLYTON{"Polytonaal"}
         POSIX{"Computer"}
-        PROVENC{"Provenc"}
         PUTER{"Puter"}
         REVISED{"Gewijzigde spelling"}
         RIGIK{"Klassiek Volapük"}
@@ -1110,11 +1093,10 @@ nl{
         VAIDIKA{"Vaidika"}
         VALENCIA{"Valenciaans"}
         VALLADER{"Vallader"}
-        VIVARAUP{"Vivaraup"}
         WADEGILE{"Wade-Giles-romanisering"}
         XSISTEMO{"X-sistemo"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.45.14"}
     characterLabelPattern{
         all{"{0} — alle"}
         category-list{"{0}: {1}"}

@@ -160,9 +160,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     this._codeMirror.on('changes', this._changes.bind(this));
     this._codeMirror.on('beforeSelectionChange', this._beforeSelectionChange.bind(this));
-    this._codeMirror.on('cursorActivity', () => {
-      this.dispatchEventToListeners(UI.TextEditor.Events.CursorChanged);
-    });
 
     this.element.style.overflow = 'hidden';
     this._codeMirrorElement.classList.add('source-code');
@@ -564,10 +561,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
    * @param {!Event} e
    */
   _handleKeyDown(e) {
-    if (e.key === 'Tab' && Common.moduleSetting('textEditorTabMovesFocus').get()) {
-      e.consume(false);
-      return;
-    }
     if (this._autocompleteController && this._autocompleteController.keyDown(e))
       e.consume(true);
   }

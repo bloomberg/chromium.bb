@@ -26,6 +26,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -440,11 +441,21 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
   const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
-  // TODO(devlin): The specific event name (here, 'browserAction.onClicked')
-  // may or may not be worth preserving. In most cases, it's unnecessary with
-  // the line number, but it could be useful in some cases.
-  std::string message =
-      "Error in event handler: ReferenceError: baz is not defined";
+  std::string message;
+  bool use_native_bindings =
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings);
+  if (use_native_bindings) {
+    // TODO(devlin): The specific event name (here, 'browserAction.onClicked')
+    // may or may not be worth preserving. In most cases, it's unnecessary with
+    // the line number, but it could be useful in some cases.
+    message =
+        "Error in event handler: ReferenceError: "
+        "baz is not defined";
+  } else {
+    message =
+        "Error in event handler for browserAction.onClicked: "
+        "ReferenceError: baz is not defined";
+  }
 
   CheckRuntimeError(errors[0].get(), extension->id(), script_url,
                     false,  // not incognito
@@ -472,10 +483,24 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
   const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
-  std::string source = extension->GetResourceURL("background.js").spec();
-  std::string message =
-      "Uncaught TypeError: Error in invocation of tabs.get"
-      "(integer tabId, function callback): No matching signature.";
+  std::string source;
+  std::string message;
+  bool use_native_bindings =
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings);
+  if (use_native_bindings) {
+    source = extension->GetResourceURL("background.js").spec();
+    message =
+        "Uncaught TypeError: Error in invocation of "
+        "tabs.get(integer tabId, function callback): "
+        "No matching signature.";
+  } else {
+    // API calls are checked in schemaUtils.js with JS bindings.
+    source = "extensions::" + std::string(kSchemaUtils);
+    message =
+        "Uncaught Error: Invocation of form "
+        "tabs.get(string, function) doesn't match definition "
+        "tabs.get(integer tabId, function callback)";
+  }
 
   CheckRuntimeError(errors[0].get(), extension->id(), source,
                     false,  // not incognito
@@ -546,19 +571,32 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, CatchesLastError) {
       error_console()->GetErrorsForExtension(extension->id());
   ASSERT_EQ(1u, errors.size());
 
-  // TODO(devlin): This is unfortunate. We lose a lot of context by using
-  // RenderFrame::AddMessageToConsole() instead of console.error(). This could
-  // be expanded; blink::SourceLocation knows how to capture an inspector
-  // stack trace.
-  std::string source =
-      extension->GetResourceURL(kGeneratedBackgroundPageFilename).spec();
-  // Line number '0' comes from errors that are logged to the render frame
-  // directly (e.g. background_age.html (0)).
+  std::string source;
+  std::string message;
   size_t line_number = 0;
-  // Column number remains at the default specified in StackFrame (1).
-  size_t column_number = 1;
-  std::string message =
-      "Unchecked runtime.lastError: 'foobar' is not a recognized permission.";
+  size_t column_number = 0;
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
+    // TODO(devlin): This is unfortunate. We lose a lot of context by using
+    // RenderFrame::AddMessageToConsole() instead of console.error(). This could
+    // be expanded; blink::SourceLocation knows how to capture an inspector
+    // stack trace.
+    source = extension->GetResourceURL(kGeneratedBackgroundPageFilename).spec();
+    // Line number '0' comes from errors that are logged to the render frame
+    // directly (e.g. background_age.html (0)).
+    line_number = 0;
+    // Column number remains at the default specified in StackFrame (1).
+    column_number = 1;
+    message =
+        "Unchecked runtime.lastError: "
+        "'foobar' is not a recognized permission.";
+  } else {
+    source = extension->GetResourceURL("background.js").spec();
+    line_number = 12;
+    column_number = 20;
+    message =
+        "Unchecked runtime.lastError while running permissions.remove: "
+        "'foobar' is not a recognized permission.";
+  }
 
   CheckRuntimeError(errors[0].get(), extension->id(), source,
                     false,  // not incognito

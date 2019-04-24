@@ -55,7 +55,7 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       LONG window_x = 0,
       LONG window_y = 0);
 
-  static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
+  void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
 
@@ -108,22 +108,21 @@ AccessibilityTreeFormatter::Create() {
 }
 
 // static
-std::vector<AccessibilityTreeFormatter::TestPass>
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
 AccessibilityTreeFormatter::GetTestPasses() {
   // In addition to the 'Blink' pass, Windows includes two accessibility APIs
   // that need to be tested independently (MSAA & UIA).
   return {
-      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink, nullptr},
-      {"win", &AccessibilityTreeFormatter::Create,
-       &AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass},
-      {"uia", &AccessibilityTreeFormatterUia::CreateUia,
-       &AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass},
+      &AccessibilityTreeFormatterBlink::CreateBlink,
+      &AccessibilityTreeFormatter::Create,
+      &AccessibilityTreeFormatterUia::CreateUia,
   };
 }
 
 void AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass(
     base::CommandLine* command_line) {
-  command_line->RemoveSwitch(::switches::kEnableExperimentalUIAutomation);
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
 }
 
 void AccessibilityTreeFormatterWin::AddDefaultFilters(

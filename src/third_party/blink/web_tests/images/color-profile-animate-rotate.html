@@ -28,7 +28,9 @@ function end(event) {
     setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
-if (window.testRunner)
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
+}
 </script>
 </html>

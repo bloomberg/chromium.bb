@@ -15,12 +15,8 @@ const char kKerberosServiceName[] = "org.chromium.Kerberos";
 // Methods
 const char kAddAccountMethod[] = "AddAccount";
 const char kRemoveAccountMethod[] = "RemoveAccount";
-const char kSetConfigMethod[] = "SetConfig";
 const char kAcquireKerberosTgtMethod[] = "AcquireKerberosTgt";
 const char kGetKerberosFilesMethod[] = "GetKerberosFiles";
-
-// Signals
-const char kKerberosFilesChangedSignal[] = "KerberosFilesChanged";
 
 }  // namespace kerberos
 

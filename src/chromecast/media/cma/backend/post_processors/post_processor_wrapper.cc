@@ -13,41 +13,36 @@ namespace media {
 AudioPostProcessorWrapper::AudioPostProcessorWrapper(
     std::unique_ptr<AudioPostProcessor> pp,
     int channels)
-    : owned_pp_(std::move(pp)), pp_(owned_pp_.get()) {
+    : owned_pp_(std::move(pp)), pp_(owned_pp_.get()), channels_(channels) {
   DCHECK(owned_pp_);
-  status_.output_channels = channels;
 }
 
 AudioPostProcessorWrapper::AudioPostProcessorWrapper(AudioPostProcessor* pp,
                                                      int channels)
-    : pp_(pp) {
+    : pp_(pp), channels_(channels) {
   DCHECK(pp_);
-  status_.output_channels = channels;
 }
 
 AudioPostProcessorWrapper::~AudioPostProcessorWrapper() = default;
 
-bool AudioPostProcessorWrapper::SetConfig(
-    const AudioPostProcessor2::Config& config) {
-  if (!pp_->SetSampleRate(config.output_sample_rate)) {
-    return false;
-  }
-  status_.input_sample_rate = config.output_sample_rate;
-  status_.ringing_time_frames = pp_->GetRingingTimeInFrames();
-  return true;
+bool AudioPostProcessorWrapper::SetSampleRate(int sample_rate) {
+  return pp_->SetSampleRate(sample_rate);
 }
 
-const AudioPostProcessor2::Status& AudioPostProcessorWrapper::GetStatus() {
-  return status_;
+int AudioPostProcessorWrapper::ProcessFrames(float* data,
+                                             int frames,
+                                             float system_volume,
+                                             float volume_dbfs) {
+  output_buffer_ = data;
+  return pp_->ProcessFrames(data, frames, system_volume, volume_dbfs);
 }
 
-void AudioPostProcessorWrapper::ProcessFrames(float* data,
-                                              int frames,
-                                              float system_volume,
-                                              float volume_dbfs) {
-  status_.output_buffer = data;
-  status_.rendering_delay_frames =
-      pp_->ProcessFrames(data, frames, system_volume, volume_dbfs);
+float* AudioPostProcessorWrapper::GetOutputBuffer() {
+  return output_buffer_;
+}
+
+int AudioPostProcessorWrapper::GetRingingTimeInFrames() {
+  return pp_->GetRingingTimeInFrames();
 }
 
 bool AudioPostProcessorWrapper::UpdateParameters(const std::string& message) {
@@ -61,6 +56,10 @@ void AudioPostProcessorWrapper::SetContentType(AudioContentType content_type) {
 
 void AudioPostProcessorWrapper::SetPlayoutChannel(int channel) {
   pp_->SetPlayoutChannel(channel);
+}
+
+int AudioPostProcessorWrapper::NumOutputChannels() {
+  return channels_;
 }
 
 }  // namespace media

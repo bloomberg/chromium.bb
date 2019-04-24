@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "modules/video_coding/codecs/interface/common_constants.h"
 #include "rtc_base/bit_buffer.h"
@@ -607,8 +608,7 @@ bool RtpDepacketizerVp9::Parse(ParsedPayload* parsed_payload,
   parsed_payload->video_header().simulcastIdx = 0;
   parsed_payload->video_header().codec = kVideoCodecVP9;
 
-  parsed_payload->frame_type =
-      p_bit ? VideoFrameType::kVideoFrameDelta : VideoFrameType::kVideoFrameKey;
+  parsed_payload->frame_type = p_bit ? kVideoFrameDelta : kVideoFrameKey;
 
   auto& vp9_header = parsed_payload->video_header()
                          .video_type_header.emplace<RTPVideoHeaderVP9>();

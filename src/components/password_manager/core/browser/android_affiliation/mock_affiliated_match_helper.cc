@@ -42,23 +42,23 @@ void MockAffiliatedMatchHelper::
 
 void MockAffiliatedMatchHelper::GetAffiliatedAndroidRealms(
     const PasswordStore::FormDigest& observed_form,
-    AffiliatedRealmsCallback result_callback) {
+    const AffiliatedRealmsCallback& result_callback) {
   std::vector<std::string> affiliated_android_realms =
       OnGetAffiliatedAndroidRealmsCalled(observed_form);
-  std::move(result_callback).Run(affiliated_android_realms);
+  result_callback.Run(affiliated_android_realms);
 }
 
 void MockAffiliatedMatchHelper::GetAffiliatedWebRealms(
     const PasswordStore::FormDigest& android_form,
-    AffiliatedRealmsCallback result_callback) {
+    const AffiliatedRealmsCallback& result_callback) {
   std::vector<std::string> affiliated_web_realms =
       OnGetAffiliatedWebRealmsCalled(android_form);
-  std::move(result_callback).Run(affiliated_web_realms);
+  result_callback.Run(affiliated_web_realms);
 }
 
 void MockAffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
     std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
-    PasswordFormsCallback result_callback) {
+    const PasswordFormsCallback& result_callback) {
   const std::vector<AffiliationAndBrandingInformation>& information =
       OnInjectAffiliationAndBrandingInformationCalled();
   ASSERT_EQ(information.size(), forms.size());
@@ -67,7 +67,7 @@ void MockAffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
     forms[i]->app_display_name = information[i].app_display_name;
     forms[i]->app_icon_url = information[i].app_icon_url;
   }
-  std::move(result_callback).Run(std::move(forms));
+  result_callback.Run(std::move(forms));
 }
 
 }  // namespace password_manager

@@ -18,7 +18,7 @@ GLuint CreateSimplePassthroughProgram(int numViews)
 {
     const std::string vsSource =
         "#version 300 es\n"
-        "#extension GL_OVR_multiview2 : require\n"
+        "#extension GL_OVR_multiview : require\n"
         "layout(num_views = " +
         ToString(numViews) +
         ") in;\n"
@@ -31,7 +31,7 @@ GLuint CreateSimplePassthroughProgram(int numViews)
 
     constexpr char kFS[] =
         "#version 300 es\n"
-        "#extension GL_OVR_multiview2 : require\n"
+        "#extension GL_OVR_multiview : require\n"
         "precision mediump float;\n"
         "out vec4 col;\n"
         "void main()\n"
@@ -41,7 +41,8 @@ GLuint CreateSimplePassthroughProgram(int numViews)
     return CompileProgram(vsSource.c_str(), kFS);
 }
 
-void CreateMultiviewBackingTextures(int samples,
+void CreateMultiviewBackingTextures(GLenum multiviewLayout,
+                                    int samples,
                                     int viewWidth,
                                     int height,
                                     int numLayers,
@@ -53,6 +54,9 @@ void CreateMultiviewBackingTextures(int samples,
     std::vector<GLubyte> textureData;
     textureData.resize(viewWidth * height * numLayers * 4, 0u);
 
+    // Multisampling is only supported for layered framebuffers.
+    ASSERT_TRUE((samples == 0) || multiviewLayout == GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE);
+
     // We can't upload data to multisample textures, so we clear them using a temporary framebuffer
     // instead. The current framebuffer binding is stored so we can restore it once we're done with
     // using the temporary framebuffers.
@@ -60,90 +64,128 @@ void CreateMultiviewBackingTextures(int samples,
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &restoreDrawFramebuffer);
 
     // Create color and depth textures.
-    GLenum texTarget = (samples > 0) ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES : GL_TEXTURE_2D_ARRAY;
-    for (auto colorTexture : colorTextures)
+    switch (multiviewLayout)
     {
-        glBindTexture(texTarget, colorTexture);
-        if (samples > 0)
+        case GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE:
         {
-            glTexStorage3DMultisampleOES(texTarget, samples, GL_RGBA8, viewWidth, height, numLayers,
-                                         false);
-
-            GLFramebuffer tempFbo;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+            int textureWidth = viewWidth * numLayers;
+            for (auto colorTexture : colorTextures)
             {
-                glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorTexture,
-                                          0, layerIndex);
-                glClear(GL_COLOR_BUFFER_BIT);
+                glBindTexture(GL_TEXTURE_2D, colorTexture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, textureWidth, height, 0, GL_RGBA,
+                             GL_UNSIGNED_BYTE, textureData.data());
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             }
-        }
-        else
-        {
-            glTexImage3D(texTarget, 0, GL_RGBA8, viewWidth, height, numLayers, 0, GL_RGBA,
-                         GL_UNSIGNED_BYTE, textureData.data());
-            glTexParameteri(texTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(texTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        }
-    }
 
-    if (depthTexture != 0)
-    {
-        glBindTexture(texTarget, depthTexture);
-        if (samples > 0)
-        {
-            glTexStorage3DMultisampleOES(texTarget, samples, GL_DEPTH_COMPONENT32F, viewWidth,
-                                         height, numLayers, false);
-
-            GLFramebuffer tempFbo;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
-            glClearDepthf(0.0f);
-            for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+            if (depthTexture != 0)
             {
-                glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0,
-                                          layerIndex);
-                glClear(GL_DEPTH_BUFFER_BIT);
+                glBindTexture(GL_TEXTURE_2D, depthTexture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, textureWidth, height, 0,
+                             GL_DEPTH_COMPONENT, GL_FLOAT, textureData.data());
             }
-        }
-        else
-        {
-            glTexImage3D(texTarget, 0, GL_DEPTH_COMPONENT32F, viewWidth, height, numLayers, 0,
-                         GL_DEPTH_COMPONENT, GL_FLOAT, textureData.data());
-        }
-    }
-    if (depthStencilTexture != 0)
-    {
-        glBindTexture(texTarget, depthStencilTexture);
-        if (samples > 0)
-        {
-            glTexStorage3DMultisampleOES(texTarget, samples, GL_DEPTH24_STENCIL8, viewWidth, height,
-                                         numLayers, false);
-
-            GLFramebuffer tempFbo;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
-            glClearDepthf(0.0f);
-            glClearStencil(0);
-            for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+            if (depthStencilTexture != 0)
             {
-                glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                                          depthTexture, 0, layerIndex);
-                glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                glBindTexture(GL_TEXTURE_2D, depthStencilTexture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, textureWidth, height, 0,
+                             GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, textureData.data());
             }
+            glBindTexture(GL_TEXTURE_2D, 0);
+            break;
         }
-        else
+        case GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE:
         {
-            glTexImage3D(texTarget, 0, GL_DEPTH24_STENCIL8, viewWidth, height, numLayers, 0,
-                         GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, textureData.data());
+            GLenum texTarget =
+                (samples > 0) ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES : GL_TEXTURE_2D_ARRAY;
+            for (auto colorTexture : colorTextures)
+            {
+                glBindTexture(texTarget, colorTexture);
+                if (samples > 0)
+                {
+                    glTexStorage3DMultisampleOES(texTarget, samples, GL_RGBA8, viewWidth, height,
+                                                 numLayers, false);
+
+                    GLFramebuffer tempFbo;
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
+                    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                    for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+                    {
+                        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                                  colorTexture, 0, layerIndex);
+                        glClear(GL_COLOR_BUFFER_BIT);
+                    }
+                }
+                else
+                {
+                    glTexImage3D(texTarget, 0, GL_RGBA8, viewWidth, height, numLayers, 0, GL_RGBA,
+                                 GL_UNSIGNED_BYTE, textureData.data());
+                    glTexParameteri(texTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexParameteri(texTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                }
+            }
+
+            if (depthTexture != 0)
+            {
+                glBindTexture(texTarget, depthTexture);
+                if (samples > 0)
+                {
+                    glTexStorage3DMultisampleOES(texTarget, samples, GL_DEPTH_COMPONENT32F,
+                                                 viewWidth, height, numLayers, false);
+
+                    GLFramebuffer tempFbo;
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
+                    glClearDepthf(0.0f);
+                    for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+                    {
+                        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                                  depthTexture, 0, layerIndex);
+                        glClear(GL_DEPTH_BUFFER_BIT);
+                    }
+                }
+                else
+                {
+                    glTexImage3D(texTarget, 0, GL_DEPTH_COMPONENT32F, viewWidth, height, numLayers,
+                                 0, GL_DEPTH_COMPONENT, GL_FLOAT, textureData.data());
+                }
+            }
+            if (depthStencilTexture != 0)
+            {
+                glBindTexture(texTarget, depthStencilTexture);
+                if (samples > 0)
+                {
+                    glTexStorage3DMultisampleOES(texTarget, samples, GL_DEPTH24_STENCIL8, viewWidth,
+                                                 height, numLayers, false);
+
+                    GLFramebuffer tempFbo;
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo);
+                    glClearDepthf(0.0f);
+                    glClearStencil(0);
+                    for (int layerIndex = 0; layerIndex < numLayers; ++layerIndex)
+                    {
+                        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                                  depthTexture, 0, layerIndex);
+                        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                    }
+                }
+                else
+                {
+                    glTexImage3D(texTarget, 0, GL_DEPTH24_STENCIL8, viewWidth, height, numLayers, 0,
+                                 GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, textureData.data());
+                }
+            }
+            glBindTexture(texTarget, 0);
+            break;
         }
+        default:
+            ASSERT_TRUE(false);
     }
-    glBindTexture(texTarget, 0);
     ASSERT_GL_NO_ERROR();
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, restoreDrawFramebuffer);
 }
 
-void CreateMultiviewBackingTextures(int samples,
+void CreateMultiviewBackingTextures(GLenum multiviewLayout,
+                                    int samples,
                                     int viewWidth,
                                     int height,
                                     int numLayers,
@@ -153,11 +195,12 @@ void CreateMultiviewBackingTextures(int samples,
 {
     ASSERT_TRUE(colorTexture != 0u);
     std::vector<GLuint> colorTextures(1, colorTexture);
-    CreateMultiviewBackingTextures(samples, viewWidth, height, numLayers, colorTextures,
-                                   depthTexture, depthStencilTexture);
+    CreateMultiviewBackingTextures(multiviewLayout, samples, viewWidth, height, numLayers,
+                                   colorTextures, depthTexture, depthStencilTexture);
 }
 
 void AttachMultiviewTextures(GLenum target,
+                             GLenum multiviewLayout,
                              int viewWidth,
                              int numViews,
                              int baseViewIndex,
@@ -165,26 +208,63 @@ void AttachMultiviewTextures(GLenum target,
                              GLuint depthTexture,
                              GLuint depthStencilTexture)
 {
+    ASSERT_TRUE(multiviewLayout == GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE || (baseViewIndex == 0));
     ASSERT_TRUE(depthTexture == 0u || depthStencilTexture == 0u);
-    for (size_t i = 0; i < colorTextures.size(); ++i)
+    switch (multiviewLayout)
     {
-        GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i);
-        glFramebufferTextureMultiviewOVR(target, attachment, colorTextures[i], 0, baseViewIndex,
-                                         numViews);
-    }
-    if (depthTexture)
-    {
-        glFramebufferTextureMultiviewOVR(target, GL_DEPTH_ATTACHMENT, depthTexture, 0,
-                                         baseViewIndex, numViews);
-    }
-    if (depthStencilTexture)
-    {
-        glFramebufferTextureMultiviewOVR(target, GL_DEPTH_STENCIL_ATTACHMENT, depthStencilTexture,
-                                         0, baseViewIndex, numViews);
+        case GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE:
+        {
+            std::vector<GLint> viewportOffsets(numViews * 2);
+            for (int i = 0u; i < numViews; ++i)
+            {
+                viewportOffsets[i * 2]     = i * viewWidth;
+                viewportOffsets[i * 2 + 1] = 0;
+            }
+            for (size_t i = 0; i < colorTextures.size(); ++i)
+            {
+                GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i);
+                glFramebufferTextureMultiviewSideBySideANGLE(target, attachment, colorTextures[i],
+                                                             0, numViews, viewportOffsets.data());
+            }
+            if (depthTexture)
+            {
+                glFramebufferTextureMultiviewSideBySideANGLE(
+                    target, GL_DEPTH_ATTACHMENT, depthTexture, 0, numViews, viewportOffsets.data());
+            }
+            if (depthStencilTexture)
+            {
+                glFramebufferTextureMultiviewSideBySideANGLE(target, GL_DEPTH_STENCIL_ATTACHMENT,
+                                                             depthStencilTexture, 0, numViews,
+                                                             viewportOffsets.data());
+            }
+            break;
+        }
+        case GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE:
+            for (size_t i = 0; i < colorTextures.size(); ++i)
+            {
+                GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i);
+                glFramebufferTextureMultiviewLayeredANGLE(target, attachment, colorTextures[i], 0,
+                                                          baseViewIndex, numViews);
+            }
+            if (depthTexture)
+            {
+                glFramebufferTextureMultiviewLayeredANGLE(target, GL_DEPTH_ATTACHMENT, depthTexture,
+                                                          0, baseViewIndex, numViews);
+            }
+            if (depthStencilTexture)
+            {
+                glFramebufferTextureMultiviewLayeredANGLE(target, GL_DEPTH_STENCIL_ATTACHMENT,
+                                                          depthStencilTexture, 0, baseViewIndex,
+                                                          numViews);
+            }
+            break;
+        default:
+            ASSERT_TRUE(false);
     }
 }
 
 void AttachMultiviewTextures(GLenum target,
+                             GLenum multiviewLayout,
                              int viewWidth,
                              int numViews,
                              int baseViewIndex,
@@ -194,8 +274,8 @@ void AttachMultiviewTextures(GLenum target,
 {
     ASSERT_TRUE(colorTexture != 0u);
     std::vector<GLuint> colorTextures(1, colorTexture);
-    AttachMultiviewTextures(target, viewWidth, numViews, baseViewIndex, colorTextures, depthTexture,
-                            depthStencilTexture);
+    AttachMultiviewTextures(target, multiviewLayout, viewWidth, numViews, baseViewIndex,
+                            colorTextures, depthTexture, depthStencilTexture);
 }
 
 std::ostream &operator<<(std::ostream &os, const MultiviewImplementationParams &params)

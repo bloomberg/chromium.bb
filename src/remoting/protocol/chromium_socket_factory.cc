@@ -329,7 +329,9 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   // socket.
   send_queue_size_ -= send_queue_.front().data->size();
   SignalSentPacket(this, rtc::SentPacket(send_queue_.front().options.packet_id,
-                                         rtc::TimeMillis()));
+                                         (base::TimeTicks::Now() -
+                                          base::TimeTicks::UnixEpoch())
+                                             .InMilliseconds()));
   send_queue_.pop_front();
   DoSend();
 }

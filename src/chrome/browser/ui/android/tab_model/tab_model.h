@@ -16,8 +16,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-struct NavigateParams;
-
 namespace browser_sync {
 class SyncedWindowDelegateAndroid;
 }
@@ -121,10 +119,8 @@ class TabModel : public content::NotificationObserver {
 
   // Used for restoring tabs from synced foreign sessions.
   virtual void CreateTab(TabAndroid* parent,
-                         content::WebContents* web_contents) = 0;
-
-  virtual void HandlePopupNavigation(TabAndroid* parent,
-                                     NavigateParams* params) = 0;
+                         content::WebContents* web_contents,
+                         int parent_tab_id) = 0;
 
   // Used by Developer Tools to create a new tab with a given URL.
   // Replaces CreateTabForTesting.

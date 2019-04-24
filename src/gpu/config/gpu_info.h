@@ -122,8 +122,7 @@ enum class ImageDecodeAcceleratorType {
 enum class ImageDecodeAcceleratorSubsampling {
   k420 = 0,
   k422 = 1,
-  k444 = 2,
-  kMaxValue = k444,
+  kMaxValue = k422,
 };
 
 // Specification of an image decoding profile supported by a hardware decoder.
@@ -296,12 +295,9 @@ struct GPU_EXPORT GPUInfo {
 
   bool software_rendering;
 
-  // Empty means unknown. Defined on X11 as
-  // - "1" means indirect (versions can't be all zero)
-  // - "2" means some type of direct rendering, but version cannot not be
-  //    reliably determined
-  // - "2.1", "2.2", "2.3" for DRI, DRI2, DRI3 respectively
-  std::string direct_rendering_version;
+  // Whether the driver uses direct rendering. True on most platforms, false on
+  // X11 when using remote X.
+  bool direct_rendering;
 
   // Whether the gpu process is running in a sandbox.
   bool sandboxed;

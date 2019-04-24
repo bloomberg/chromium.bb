@@ -80,9 +80,6 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // Called when the locale has changed.
   void OnLocaleUpdate();
 
-  // Called on shutdown of the PrefService.
-  void OnPrefServiceShutdown();
-
  private:
   class SystemNetworkContextOwner;
   class URLLoaderFactoryForSystem;

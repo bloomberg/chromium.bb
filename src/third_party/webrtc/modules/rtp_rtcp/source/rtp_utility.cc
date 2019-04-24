@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <string>
 
 #include "api/array_view.h"
 #include "api/video/video_content_type.h"
@@ -157,9 +156,9 @@ bool RtpHeaderParser::ParseRtcp(RTPHeader* header) const {
   return true;
 }
 
-bool RtpHeaderParser::Parse(RTPHeader* header,
-                            const RtpHeaderExtensionMap* ptrExtensionMap,
-                            bool header_only) const {
+bool RtpHeaderParser::Parse(
+    RTPHeader* header,
+    const RtpHeaderExtensionMap* ptrExtensionMap) const {
   const ptrdiff_t length = _ptrRTPDataEnd - _ptrRTPDataBegin;
   if (length < kRtpMinParseLength) {
     return false;
@@ -203,7 +202,7 @@ bool RtpHeaderParser::Parse(RTPHeader* header,
   header->timestamp = RTPTimestamp;
   header->ssrc = SSRC;
   header->numCSRCs = CC;
-  if (!P || header_only) {
+  if (!P) {
     header->paddingLength = 0;
   }
 
@@ -287,7 +286,7 @@ bool RtpHeaderParser::Parse(RTPHeader* header,
   if (header->headerLength > static_cast<size_t>(length))
     return false;
 
-  if (P && !header_only) {
+  if (P) {
     // Packet has padding.
     if (header->headerLength != static_cast<size_t>(length)) {
       // Packet is not header only. We can parse padding length now.
@@ -495,30 +494,16 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
           break;
         }
         case kRtpExtensionRtpStreamId: {
-          std::string name(reinterpret_cast<const char*>(ptr), len + 1);
-          if (IsLegalRsidName(name)) {
-            header->extension.stream_id = name;
-          } else {
-            RTC_LOG(LS_WARNING) << "Incorrect RtpStreamId";
-          }
+          header->extension.stream_id.Set(rtc::MakeArrayView(ptr, len + 1));
           break;
         }
         case kRtpExtensionRepairedRtpStreamId: {
-          std::string name(reinterpret_cast<const char*>(ptr), len + 1);
-          if (IsLegalRsidName(name)) {
-            header->extension.repaired_stream_id = name;
-          } else {
-            RTC_LOG(LS_WARNING) << "Incorrect RepairedRtpStreamId";
-          }
+          header->extension.repaired_stream_id.Set(
+              rtc::MakeArrayView(ptr, len + 1));
           break;
         }
         case kRtpExtensionMid: {
-          std::string name(reinterpret_cast<const char*>(ptr), len + 1);
-          if (IsLegalMidName(name)) {
-            header->extension.mid = name;
-          } else {
-            RTC_LOG(LS_WARNING) << "Incorrect Mid";
-          }
+          header->extension.mid.Set(rtc::MakeArrayView(ptr, len + 1));
           break;
         }
         case kRtpExtensionGenericFrameDescriptor00:

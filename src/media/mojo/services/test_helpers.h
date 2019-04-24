@@ -5,23 +5,17 @@
 #ifndef MEDIA_MOJO_SERVICES_TEST_HELPERS_H_
 #define MEDIA_MOJO_SERVICES_TEST_HELPERS_H_
 
-#include <string>
-
 #include "media/mojo/interfaces/media_types.mojom.h"
 
 namespace media {
 
 mojom::PredictionFeatures MakeFeatures(VideoCodecProfile profile,
                                        gfx::Size video_size,
-                                       int frames_per_sec,
-                                       std::string key_system = "",
-                                       bool use_hw_secure_codecs = false);
+                                       int frames_per_sec);
 
 mojom::PredictionFeaturesPtr MakeFeaturesPtr(VideoCodecProfile profile,
                                              gfx::Size video_size,
-                                             int frames_per_sec,
-                                             std::string key_system = "",
-                                             bool use_hw_secure_codecs = false);
+                                             int frames_per_sec);
 
 mojom::PredictionTargets MakeTargets(uint32_t frames_decoded,
                                      uint32_t frames_dropped,

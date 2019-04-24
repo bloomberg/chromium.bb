@@ -44,8 +44,7 @@ protected:
 
         canvas.translate(kImageSize/2.0f, kImageSize/2.0f);
         for (int i = 0; i < kNumLines; ++i, angle += kAngleStep) {
-            sin = SkScalarSin(angle);
-            cos = SkScalarCos(angle);
+            sin = SkScalarSinCos(angle, &cos);
             canvas.drawLine(cos * kInnerOffset, sin * kInnerOffset,
                             cos * kImageSize/2, sin * kImageSize/2, p);
         }

@@ -564,7 +564,7 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      ui::EventTimeForNow(), blink::WebGestureDevice::kTouchscreen);
+      ui::EventTimeForNow(), blink::kWebGestureDeviceTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect.CenterPoint()));
   gesture_event.data.tap.tap_count = 1;
   gesture_event.data.tap.width = rect.width();
@@ -583,10 +583,11 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
 void RenderViewTest::Reload(const GURL& url) {
   CommonNavigationParams common_params(
       url, base::nullopt, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::RELOAD, NavigationDownloadPolicy(), false, GURL(),
-      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
-      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
+      FrameMsg_Navigate_Type::RELOAD, NavigationDownloadPolicy::kAllow, false,
+      GURL(), GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
+      nullptr, base::Optional<SourceLocation>(),
+      false /* started_from_context_menu */, false /* has_user_gesture */,
+      InitiatorCSPInfo(), std::string());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -728,10 +729,10 @@ void RenderViewTest::GoToOffset(int offset,
   CommonNavigationParams common_params(
       url, base::nullopt, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(), std::string());
+      NavigationDownloadPolicy::kAllow, false, GURL(), GURL(),
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   CommitNavigationParams commit_params;
   commit_params.page_state = state;
   commit_params.nav_entry_id = pending_offset + 1;

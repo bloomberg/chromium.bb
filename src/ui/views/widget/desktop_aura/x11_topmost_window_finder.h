@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/x/x11.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -45,7 +44,7 @@ class VIEWS_EXPORT X11TopmostWindowFinder
 
   gfx::Point screen_loc_in_pixels_;
   std::set<aura::Window*> ignore_;
-  XID toplevel_ = x11::None;
+  XID toplevel_;
 
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinder);
 };

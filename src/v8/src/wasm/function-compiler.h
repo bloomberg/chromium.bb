@@ -20,7 +20,6 @@ class AssemblerBuffer;
 class Counters;
 
 namespace compiler {
-class InterpreterCompilationUnit;
 class Pipeline;
 class TurbofanWasmCompilationUnit;
 }  // namespace compiler
@@ -51,8 +50,12 @@ struct WasmCompilationResult {
  public:
   MOVE_ONLY_WITH_DEFAULT_CONSTRUCTORS(WasmCompilationResult);
 
-  bool succeeded() const { return code_desc.buffer != nullptr; }
-  bool failed() const { return !succeeded(); }
+  explicit WasmCompilationResult(WasmError error) : error(std::move(error)) {}
+
+  bool succeeded() const {
+    DCHECK_EQ(code_desc.buffer != nullptr, error.empty());
+    return error.empty();
+  }
   operator bool() const { return succeeded(); }
 
   CodeDesc code_desc;
@@ -61,24 +64,31 @@ struct WasmCompilationResult {
   uint32_t tagged_parameter_slots = 0;
   OwnedVector<byte> source_positions;
   OwnedVector<trap_handler::ProtectedInstructionData> protected_instructions;
-  int func_index;
-  ExecutionTier requested_tier;
-  ExecutionTier result_tier;
+
+  WasmError error;
 };
 
-class V8_EXPORT_PRIVATE WasmCompilationUnit final {
+class WasmCompilationUnit final {
  public:
   static ExecutionTier GetDefaultExecutionTier(const WasmModule*);
 
-  WasmCompilationUnit(int index, ExecutionTier);
+  // If constructing from a background thread, pass in a Counters*, and ensure
+  // that the Counters live at least as long as this compilation unit (which
+  // typically means to hold a std::shared_ptr<Counters>).
+  // If used exclusively from a foreground thread, Isolate::counters() may be
+  // used by callers to pass Counters.
+  WasmCompilationUnit(WasmEngine*, int index, ExecutionTier);
 
   ~WasmCompilationUnit();
 
   WasmCompilationResult ExecuteCompilation(
-      WasmEngine*, CompilationEnv*, const std::shared_ptr<WireBytesStorage>&,
-      Counters*, WasmFeatures* detected);
+      CompilationEnv*, const std::shared_ptr<WireBytesStorage>&, Counters*,
+      WasmFeatures* detected);
 
-  ExecutionTier tier() const { return tier_; }
+  WasmCode* Publish(WasmCompilationResult, NativeModule*);
+
+  ExecutionTier requested_tier() const { return requested_tier_; }
+  ExecutionTier executed_tier() const { return executed_tier_; }
 
   static void CompileWasmFunction(Isolate*, NativeModule*,
                                   WasmFeatures* detected, const WasmFunction*,
@@ -87,17 +97,16 @@ class V8_EXPORT_PRIVATE WasmCompilationUnit final {
  private:
   friend class LiftoffCompilationUnit;
   friend class compiler::TurbofanWasmCompilationUnit;
-  friend class compiler::InterpreterCompilationUnit;
 
+  WasmEngine* const wasm_engine_;
   const int func_index_;
-  ExecutionTier tier_;
+  ExecutionTier requested_tier_;
+  ExecutionTier executed_tier_;
 
   // LiftoffCompilationUnit, set if {tier_ == kLiftoff}.
   std::unique_ptr<LiftoffCompilationUnit> liftoff_unit_;
   // TurbofanWasmCompilationUnit, set if {tier_ == kTurbofan}.
   std::unique_ptr<compiler::TurbofanWasmCompilationUnit> turbofan_unit_;
-  // InterpreterCompilationUnit, set if {tier_ == kInterpreter}.
-  std::unique_ptr<compiler::InterpreterCompilationUnit> interpreter_unit_;
 
   void SwitchTier(ExecutionTier new_tier);
 

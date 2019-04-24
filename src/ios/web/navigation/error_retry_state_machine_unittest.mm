@@ -5,7 +5,6 @@
 #include "ios/web/navigation/error_retry_state_machine.h"
 
 #include "ios/web/navigation/wk_navigation_util.h"
-#import "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -68,16 +67,10 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
   // Reload fails again in provisional navigation (e.g. still in airplane mode).
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-                clone.state());
-    }
+    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+              clone.DidFailProvisionalNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+              clone.state());
   }
 
   // Reload fails after navigation is committed.
@@ -137,16 +130,10 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
   // Reload fails again in provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-                clone.state());
-    }
+    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+              clone.DidFailProvisionalNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+              clone.state());
   }
 
   // Reload fails after navigation is committed.
@@ -206,16 +193,10 @@ TEST_F(ErrorRetryStateMachineTest, SuccessThenReloadOffline) {
   // Reloads fails provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
-    } else {
-      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-                clone.DidFailProvisionalNavigation(test_url, test_url));
-      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-                clone.state());
-    }
+    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+              clone.DidFailProvisionalNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+              clone.state());
   }
 
   // Reload fails after commit.

@@ -4,18 +4,28 @@
 
 #include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-
 namespace content {
+
+WebRTCStatsReportObtainer::CallbackWrapper::CallbackWrapper(
+    scoped_refptr<WebRTCStatsReportObtainer> obtainer)
+    : obtainer_(std::move(obtainer)) {}
+
+WebRTCStatsReportObtainer::CallbackWrapper::~CallbackWrapper() {}
+
+void WebRTCStatsReportObtainer::CallbackWrapper::OnStatsDelivered(
+    std::unique_ptr<blink::WebRTCStatsReport> report) {
+  obtainer_->report_ = std::move(report);
+  obtainer_->run_loop_.Quit();
+}
 
 WebRTCStatsReportObtainer::WebRTCStatsReportObtainer() {}
 
 WebRTCStatsReportObtainer::~WebRTCStatsReportObtainer() {}
 
-blink::WebRTCStatsReportCallback
+std::unique_ptr<blink::WebRTCStatsReportCallback>
 WebRTCStatsReportObtainer::GetStatsCallbackWrapper() {
-  return base::BindOnce(&WebRTCStatsReportObtainer::OnStatsDelivered, this);
+  return std::unique_ptr<blink::WebRTCStatsReportCallback>(
+      new CallbackWrapper(this));
 }
 
 blink::WebRTCStatsReport* WebRTCStatsReportObtainer::report() const {
@@ -25,12 +35,6 @@ blink::WebRTCStatsReport* WebRTCStatsReportObtainer::report() const {
 blink::WebRTCStatsReport* WebRTCStatsReportObtainer::WaitForReport() {
   run_loop_.Run();
   return report_.get();
-}
-
-void WebRTCStatsReportObtainer::OnStatsDelivered(
-    std::unique_ptr<blink::WebRTCStatsReport> report) {
-  report_ = std::move(report);
-  run_loop_.Quit();
 }
 
 }  // namespace content

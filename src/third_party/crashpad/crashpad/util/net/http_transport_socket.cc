@@ -394,13 +394,11 @@ bool WriteRequest(Stream* stream,
       // placed immediately following the used portion of buf.data, even if
       // buf.data is not full.
 
-      char tmp[9];
-      int rv = snprintf(tmp,
-                        sizeof(tmp),
-                        "%08x",
-                        base::checked_cast<unsigned int>(data_bytes));
+      // Not snprintf because non-null terminated is desired.
+      int rv = sprintf(
+          buf.size, "%08x", base::checked_cast<unsigned int>(data_bytes));
+      DCHECK_GE(rv, 0);
       DCHECK_EQ(static_cast<size_t>(rv), sizeof(buf.size));
-      strncpy(buf.size, tmp, sizeof(buf.size));
       DCHECK_NE(buf.size[sizeof(buf.size) - 1], '\0');
 
       memcpy(&buf.crlf[0], kCRLFTerminator, kCRLFSize);

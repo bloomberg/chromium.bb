@@ -63,6 +63,7 @@ KeyframeEffect* KeyframeEffect::Create(
     const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -91,6 +92,7 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                                        Element* element,
                                        const ScriptValue& keyframes,
                                        ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -365,8 +367,8 @@ void KeyframeEffect::ApplyEffects() {
     model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
                    IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {
-      auto* sampled_effect =
-          MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
+      SampledEffect* sampled_effect =
+          SampledEffect::Create(this, owner_->SequenceNumber());
       sampled_effect->MutableInterpolations().swap(interpolations);
       sampled_effect_ = sampled_effect;
       target_->EnsureElementAnimations().GetEffectStack().Add(sampled_effect);

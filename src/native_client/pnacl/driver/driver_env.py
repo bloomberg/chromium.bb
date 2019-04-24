@@ -10,8 +10,6 @@
 # Shell escaping and ${} substitution are provided.
 # See "class Environment" defined later for the implementation.
 
-from __future__ import print_function
-
 from driver_log import Log, DriverExit
 from shelltools import shell
 import types
@@ -246,7 +244,7 @@ class Environment(object):
 
   def dump(self):
     for (k,v) in self.data.iteritems():
-      print('%s == %s' % (k, v))
+      print '%s == %s' % (k,v)
 
   def push(self):
     self.stack.append(self.data)

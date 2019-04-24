@@ -13,6 +13,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
@@ -23,7 +24,6 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -145,12 +145,18 @@ class ASH_EXPORT AppListControllerImpl
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
-  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
+  void EndDragFromShelf(app_list::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   ash::ShelfAction ToggleAppList(int64_t display_id,
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
-  ash::mojom::AppListViewState GetAppListViewState();
+  app_list::AppListViewState GetAppListViewState();
+
+  // Called when a window starts/ends dragging. If we're in tablet mode and home
+  // launcher is enabled, we should hide the home launcher during dragging a
+  // window and reshow it when the drag ends.
+  void OnWindowDragStarted();
+  void OnWindowDragEnded();
 
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -165,7 +171,6 @@ class ASH_EXPORT AppListControllerImpl
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) override;
-  void LogSearchAbandonHistogram() override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;
@@ -194,14 +199,11 @@ class ASH_EXPORT AppListControllerImpl
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
+      content::mojom::NavigableContentsFactoryRequest request) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
-  void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -217,6 +219,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -227,6 +231,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
+  void OnWallpaperPreviewStarted() override;
+  void OnWallpaperPreviewEnded() override;
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
@@ -252,16 +258,12 @@ class ASH_EXPORT AppListControllerImpl
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
 
   // HomeScreenDelegate:
-  void ShowHomeScreenView() override;
-  aura::Window* GetHomeScreenWindow() override;
   void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
       float opacity,
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
-  bool ShouldShowShelfOnHomeScreen() const override;
-  bool ShouldShowStatusAreaOnHomeScreen() const override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
@@ -282,23 +284,21 @@ class ASH_EXPORT AppListControllerImpl
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
-  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
+  app_list::AppListViewState CalculateStateAfterShelfDrag(
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
-
-  using StateTransitionAnimationCallback =
-      base::RepeatingCallback<void(ash::mojom::AppListViewState)>;
-
-  void SetStateTransitionAnimationCallback(
-      StateTransitionAnimationCallback callback);
 
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
       AppListItemMetadataPtr metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
+
+  // Update the visibility of the home launcher based on e.g. if the device is
+  // in overview mode.
+  void UpdateHomeLauncherVisibility();
 
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
@@ -308,16 +308,13 @@ class ASH_EXPORT AppListControllerImpl
 
   int64_t GetDisplayIdToShowAppListOn();
 
+  // Shows the home launcher in tablet mode.
+  void ShowHomeLauncher();
+
   void ResetHomeLauncherIfShown();
 
   // Updates which container the launcher window should be in.
   void UpdateLauncherContainer();
-
-  // Returns the length of the most recent query.
-  int GetLastQueryLength();
-
-  // Shuts down the AppListControllerImpl, removing itself as an observer.
-  void Shutdown();
 
   base::string16 last_raw_query_;
 
@@ -336,15 +333,22 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
-  // True if Shutdown() has been called.
-  bool is_shutdown_ = false;
+  // Each time overview mode is exited, set this variable based on whether
+  // overview mode is sliding out, so the home launcher knows what to do when
+  // overview mode exit animations are finished.
+  bool use_slide_to_exit_overview_ = false;
+
+  // Whether the wallpaper is being previewed. The home launcher (if enabled)
+  // should be hidden during wallpaper preview.
+  bool in_wallpaper_preview_ = false;
+
+  // Whether we're currently in a window dragging process.
+  bool in_window_dragging_ = false;
 
   // Used in mojo callings to specify the profile whose app list data is
   // read/written by Ash side through IPC. Notice that in multi-profile mode,
   // each profile has its own AppListModelUpdater to manipulate app list items.
   int profile_id_ = kAppListInvalidProfileID;
-
-  StateTransitionAnimationCallback state_transition_animation_callback_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

@@ -15,7 +15,7 @@
 namespace gpu {
 
 bool AreNativeGpuMemoryBuffersEnabled() {
-#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#if defined(OS_MACOSX)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNativeGpuMemoryBuffers);
 #else
@@ -51,7 +51,8 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
         gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
         gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
         gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto format : kNativeFormats) {
       for (auto usage : kNativeUsages) {
         if (support->IsNativeGpuMemoryBufferConfigurationSupported(format,

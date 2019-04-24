@@ -15,9 +15,9 @@
 #include "Sampler.hpp"
 
 #include "Context.hpp"
+#include "Surface.hpp"
 #include "Pipeline/PixelRoutine.hpp"
 #include "Vulkan/VkDebug.hpp"
-#include "Vulkan/VkImage.hpp"
 
 #include <cstring>
 
@@ -48,7 +48,8 @@ namespace sw
 			}
 		}
 
-		textureFormat = VK_FORMAT_UNDEFINED;
+		externalTextureFormat = VK_FORMAT_UNDEFINED;
+		internalTextureFormat = VK_FORMAT_UNDEFINED;
 		textureType = TEXTURE_NULL;
 
 		textureFilter = FILTER_LINEAR;
@@ -88,13 +89,13 @@ namespace sw
 		if(textureType != TEXTURE_NULL)
 		{
 			state.textureType = textureType;
-			state.textureFormat = textureFormat;
+			state.textureFormat = internalTextureFormat;
 			state.textureFilter = getTextureFilter();
 			state.addressingModeU = getAddressingModeU();
 			state.addressingModeV = getAddressingModeV();
 			state.addressingModeW = getAddressingModeW();
 			state.mipmapFilter = mipmapFilter();
-			state.sRGB = (sRGB && textureFormat.isSRGBreadable()) || textureFormat.isSRGBformat();
+			state.sRGB = (sRGB && Surface::isSRGBreadable(externalTextureFormat)) || Surface::isSRGBformat(internalTextureFormat);
 			state.swizzleR = swizzleR;
 			state.swizzleG = swizzleG;
 			state.swizzleB = swizzleB;
@@ -110,33 +111,25 @@ namespace sw
 		return state;
 	}
 
-	void Sampler::setTextureLevel(int face, int level, vk::Image *image, TextureType type)
+	void Sampler::setTextureLevel(int face, int level, Surface *surface, TextureType type)
 	{
-		if(image)
+		if(surface)
 		{
 			Mipmap &mipmap = texture.mipmap[level];
 
-			border = image->isCube() ? 1 : 0;
-			VkImageSubresourceLayers subresourceLayers =
-			{
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				static_cast<uint32_t>(level),
-				static_cast<uint32_t>(face),
-				1
-			};
-			mipmap.buffer[face] = image->getTexelPointer({ -border, -border, 0 }, subresourceLayers);
+			border = surface->getBorder();
+			mipmap.buffer[face] = surface->lockInternal(-border, -border, 0, LOCK_UNLOCKED, PRIVATE);
 
 			if(face == 0)
 			{
-				VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT; // FIXME: get proper aspect
-				textureFormat = image->getFormat(aspect);
+				externalTextureFormat = surface->getExternalFormat();
+				internalTextureFormat = surface->getInternalFormat();
 
-				VkExtent3D mipLevelExtent = image->getMipLevelExtent(level);
-				int width = mipLevelExtent.width;
-				int height = mipLevelExtent.height;
-				int depth = mipLevelExtent.depth;
-				int pitchP = image->rowPitchBytes(aspect, level);
-				int sliceP = image->slicePitchBytes(aspect, level);
+				int width = surface->getWidth();
+				int height = surface->getHeight();
+				int depth = surface->getDepth();
+				int pitchP = surface->getInternalPitchP();
+				int sliceP = surface->getInternalSliceP();
 
 				if(level == 0)
 				{
@@ -161,7 +154,7 @@ namespace sw
 					texture.depthLOD[3] = depth * exp2LOD;
 				}
 
-				if(textureFormat.isFloatFormat())
+				if(Surface::isFloatFormat(internalTextureFormat))
 				{
 					mipmap.fWidth[0] = (float)width / 65536.0f;
 					mipmap.fWidth[1] = (float)width / 65536.0f;
@@ -228,7 +221,7 @@ namespace sw
 				mipmap.sliceP[2] = sliceP;
 				mipmap.sliceP[3] = sliceP;
 
-				if(textureFormat.hasYuvFormat())
+				if(internalTextureFormat == VK_FORMAT_G8_B8R8_2PLANE_420_UNORM)
 				{
 					unsigned int YStride = pitchP;
 					unsigned int YSize = YStride * height;
@@ -389,10 +382,10 @@ namespace sw
 
 	bool Sampler::hasUnsignedTexture() const
 	{
-		return textureFormat.isUnsignedComponent(0) &&
-		       textureFormat.isUnsignedComponent(1) &&
-		       textureFormat.isUnsignedComponent(2) &&
-		       textureFormat.isUnsignedComponent(3);
+		return Surface::isUnsignedComponent(internalTextureFormat, 0) &&
+		       Surface::isUnsignedComponent(internalTextureFormat, 1) &&
+		       Surface::isUnsignedComponent(internalTextureFormat, 2) &&
+		       Surface::isUnsignedComponent(internalTextureFormat, 3);
 	}
 
 	bool Sampler::hasCubeTexture() const
@@ -445,7 +438,7 @@ namespace sw
 
 		FilterType filter = textureFilter;
 
-		if(gather && textureFormat.componentCount() == 1)
+		if(gather && Surface::componentCount(internalTextureFormat) == 1)
 		{
 			filter = FILTER_GATHER;
 		}

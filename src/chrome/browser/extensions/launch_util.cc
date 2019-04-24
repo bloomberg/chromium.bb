@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -50,11 +51,26 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   if (extension->is_hosted_app() &&
       !BookmarkAppIsLocallyInstalled(prefs, extension)) {
     result = LAUNCH_TYPE_REGULAR;
-  } else if (result == LAUNCH_TYPE_PINNED) {
-    result = LAUNCH_TYPE_REGULAR;
-  } else if (result == LAUNCH_TYPE_FULLSCREEN) {
-    result = LAUNCH_TYPE_WINDOW;
   }
+
+#if defined(OS_MACOSX)
+  // Disable opening as window on Mac if:
+  //  1. the extension isn't a platform app, AND
+  //  2. the intended result is open as window, AND
+  //  3. CanHostedAppsOpenInWindows() is false
+  if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW &&
+      !extensions::util::CanHostedAppsOpenInWindows()) {
+    result = LAUNCH_TYPE_REGULAR;
+  }
+#else
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
+    if (result == LAUNCH_TYPE_PINNED)
+      result = LAUNCH_TYPE_REGULAR;
+    if (result == LAUNCH_TYPE_FULLSCREEN)
+      result = LAUNCH_TYPE_WINDOW;
+  }
+#endif
+
   return result;
 }
 

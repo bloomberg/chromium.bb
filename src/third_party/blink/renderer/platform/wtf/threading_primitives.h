@@ -36,6 +36,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/locker.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if defined(OS_WIN)
@@ -124,6 +125,8 @@ class SCOPED_LOCKABLE MutexLocker final {
   DISALLOW_COPY_AND_ASSIGN(MutexLocker);
 };
 
+using RecursiveMutexLocker = Locker<RecursiveMutex>;
+
 class MutexTryLocker final {
   STACK_ALLOCATED();
 
@@ -168,6 +171,7 @@ using WTF::Mutex;
 using WTF::RecursiveMutex;
 using WTF::MutexLocker;
 using WTF::MutexTryLocker;
+using WTF::RecursiveMutexLocker;
 using WTF::ThreadCondition;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_

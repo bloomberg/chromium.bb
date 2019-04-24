@@ -1594,13 +1594,6 @@ public class DownloadManagerService
             appContext.startService(intent);
     }
 
-    @Override
-    public void renameDownload(ContentId id, String name,
-            Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {
-        nativeRenameDownload(
-                getNativeDownloadManagerService(), id.id, name, callback, isOffTheRecord);
-    }
-
     /**
      * Add an Intent extra for StateAtCancel UMA to know the state of a request prior to a
      * user-initated cancel.
@@ -2035,8 +2028,6 @@ public class DownloadManagerService
             boolean isOffTheRecord);
     private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
-    private native void nativeRenameDownload(long nativeDownloadManagerService, String downloadGuid,
-            String targetName, Callback</*RenameResult*/ Integer> callback, boolean isOffTheRecord);
     private native void nativeGetAllDownloads(
             long nativeDownloadManagerService, boolean isOffTheRecord);
     private native void nativeCheckForExternallyRemovedDownloads(

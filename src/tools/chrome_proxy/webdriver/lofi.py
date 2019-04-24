@@ -38,7 +38,9 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
-      self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
+      # Verify Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
 
   # Checks that LoFi images are served when LoFi slow connections are used and
   # the network quality estimator returns Slow2G.
@@ -73,12 +75,13 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
-      self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
+      # Verify Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
 
   # Checks that LoFi images are served when LoFi slow connections are used and
   # the network quality estimator returns Slow2G.
   @ChromeVersionEqualOrAfterM(65)
-  @ChromeVersionBeforeM(75)
   def testLoFiOnSlowConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -107,7 +110,9 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
-      self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
+      # Verify Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
 
   # Checks that LoFi images are NOT served when the network quality estimator
   # returns fast connection type.
@@ -146,12 +151,13 @@ class LoFi(IntegrationTest):
           self.assertNotIn('chrome-proxy-accept-transform',
             response.request_headers)
 
-      self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
+      # Verify no Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(histogram, {})
 
   # Checks that LoFi images are NOT served when the network quality estimator
   # returns fast connection.
   @ChromeVersionEqualOrAfterM(65)
-  @ChromeVersionBeforeM(75)
   def testLoFiFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -184,7 +190,9 @@ class LoFi(IntegrationTest):
           self.assertNotIn('chrome-proxy-accept-transform',
             response.request_headers)
 
-      self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
+      # Verify no Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(histogram, {})
 
   # Checks that LoFi images are not served, but the if-heavy CPAT header is
   # added when LoFi slow connections are used and the network quality estimator
@@ -300,7 +308,7 @@ class LoFi(IntegrationTest):
         if not response.request_headers:
           continue
         responses = responses + 1
-        self.assertHasProxyHeaders(response)
+        self.assertHasChromeProxyViaHeader(response)
         self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
@@ -317,7 +325,6 @@ class LoFi(IntegrationTest):
   # load should not pick the Lo-Fi placeholder from cache and original image
   # should be loaded.
   @ChromeVersionEqualOrAfterM(65)
-  @ChromeVersionBeforeM(75)
   def testLoFiCacheBypass(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
@@ -388,7 +395,7 @@ class LoFi(IntegrationTest):
         if not response.request_headers:
           continue
         responses = responses + 1
-        self.assertHasProxyHeaders(response)
+        self.assertHasChromeProxyViaHeader(response)
         self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
@@ -437,7 +444,6 @@ class LoFi(IntegrationTest):
 
   # Checks that Client LoFi resource requests have the Intervention header.
   @ChromeVersionEqualOrAfterM(61)
-  @ChromeVersionBeforeM(75)
   def testClientLoFiInterventionHeader(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -465,7 +471,6 @@ class LoFi(IntegrationTest):
   # Checks that Client LoFi range requests that go through the Data Reduction
   # Proxy are returned correctly.
   @ChromeVersionEqualOrAfterM(62)
-  @ChromeVersionBeforeM(75)
   def testClientLoFiRangeRequestThroughDataReductionProxy(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -493,7 +498,7 @@ class LoFi(IntegrationTest):
       image_response_count = 0
       for response in test_driver.GetHTTPResponses():
         if response.url.endswith('.png'):
-          self.assertHasProxyHeaders(response)
+          self.assertHasChromeProxyViaHeader(response)
           self.assertIn('range', response.request_headers)
           self.assertIn('content-range', response.response_headers)
           self.assertTrue(response.response_headers['content-range'].startswith(
@@ -502,7 +507,9 @@ class LoFi(IntegrationTest):
 
       self.assertNotEqual(0, image_response_count)
 
-      self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
+      # Verify Lo-Fi previews info bar recorded.
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

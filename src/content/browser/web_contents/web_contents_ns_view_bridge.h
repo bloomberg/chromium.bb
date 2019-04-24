@@ -40,7 +40,8 @@ class CONTENT_EXPORT WebContentsNSViewBridge
   WebContentsViewCocoa* cocoa_view() const { return cocoa_view_.get(); }
 
   // mojom::WebContentsNSViewBridge:
-  void SetParentNSView(uint64_t parent_ns_view_id) override;
+  void SetParentNSView(uint64_t parent_ns_view_id,
+                       const std::vector<uint8_t>& parent_token) override;
   void ResetParentNSView() override;
   void SetBounds(const gfx::Rect& bounds_in_window) override;
   void SetVisible(bool visible) override;

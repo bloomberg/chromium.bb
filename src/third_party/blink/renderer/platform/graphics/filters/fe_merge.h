@@ -29,6 +29,8 @@ namespace blink {
 
 class PLATFORM_EXPORT FEMerge final : public FilterEffect {
  public:
+  static FEMerge* Create(Filter*);
+
   explicit FEMerge(Filter*);
 
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,

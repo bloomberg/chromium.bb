@@ -53,7 +53,7 @@ void StyleResolverStats::Reset() {
 }
 
 std::unique_ptr<TracedValue> StyleResolverStats::ToTracedValue() const {
-  auto traced_value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
   traced_value->SetInteger("matchedPropertyApply", matched_property_apply);
   traced_value->SetInteger("matchedPropertyCacheHit",
                            matched_property_cache_hit);

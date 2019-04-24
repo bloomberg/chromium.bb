@@ -187,7 +187,7 @@ namespace cricket {
 // and that the result is what we expect.
 // Note that this class is a base class for use by other tests, who will provide
 // specialized test behavior.
-class P2PTransportChannelTestBase : public ::testing::Test,
+class P2PTransportChannelTestBase : public testing::Test,
                                     public rtc::MessageHandler,
                                     public sigslot::has_slots<> {
  public:
@@ -611,7 +611,7 @@ class P2PTransportChannelTestBase : public ::testing::Test,
     DestroyChannels();
   }
 
-  void TestSendRecv(rtc::ThreadProcessingFakeClock* clock) {
+  void TestSendRecv(rtc::FakeClock* clock) {
     for (int i = 0; i < 10; ++i) {
       const char* data = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
       int len = static_cast<int>(strlen(data));
@@ -3074,7 +3074,7 @@ TEST_F(P2PTransportChannelMultihomedTest, TestRestoreBackupConnection) {
 
 // A collection of tests which tests a single P2PTransportChannel by sending
 // pings.
-class P2PTransportChannelPingTest : public ::testing::Test,
+class P2PTransportChannelPingTest : public testing::Test,
                                     public sigslot::has_slots<> {
  public:
   P2PTransportChannelPingTest()
@@ -3093,11 +3093,10 @@ class P2PTransportChannelPingTest : public ::testing::Test,
         this, &P2PTransportChannelPingTest::OnChannelStateChanged);
   }
 
-  Connection* WaitForConnectionTo(
-      P2PTransportChannel* ch,
-      const std::string& ip,
-      int port_num,
-      rtc::ThreadProcessingFakeClock* clock = nullptr) {
+  Connection* WaitForConnectionTo(P2PTransportChannel* ch,
+                                  const std::string& ip,
+                                  int port_num,
+                                  rtc::FakeClock* clock = nullptr) {
     if (clock == nullptr) {
       EXPECT_TRUE_WAIT(GetConnectionTo(ch, ip, port_num) != nullptr,
                        kMediumTimeout);

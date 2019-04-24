@@ -29,10 +29,6 @@ namespace SkSL {
     class Compiler;
 }
 
-// Helper macros for autorelease pools
-#define SK_BEGIN_AUTORELEASE_BLOCK @autoreleasepool {
-#define SK_END_AUTORELEASE_BLOCK }
-
 class GrMtlGpu : public GrGpu {
 public:
     static sk_sp<GrGpu> Make(GrContext* context, const GrContextOptions& options,
@@ -44,9 +40,9 @@ public:
 
     id<MTLDevice> device() const { return fDevice; }
 
-    GrMtlResourceProvider& resourceProvider() { return fResourceProvider; }
+    id<MTLCommandBuffer> commandBuffer() const { return fCmdBuffer; }
 
-    id<MTLCommandBuffer> commandBuffer();
+    GrMtlResourceProvider& resourceProvider() { return fResourceProvider; }
 
     enum SyncQueue {
         kForce_SyncQueue,
@@ -58,7 +54,7 @@ public:
     // command buffer to finish before creating a new buffer and returning.
     void submitCommandBuffer(SyncQueue sync);
 
-#if GR_TEST_UTILS
+#ifdef GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
                                                      GrColorType colorType, bool isRT,
                                                      GrMipMapped, size_t rowBytes = 0) override;
@@ -131,11 +127,6 @@ private:
 
     void onResetContext(uint32_t resetBits) override {}
 
-    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {
-        SkASSERT(!this->caps()->sampleLocationsSupport());
-        SK_ABORT("Sample locations not yet implemented for Metal.");
-    }
-
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
     sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc& desc, SkBudgeted budgeted,
@@ -161,45 +152,29 @@ private:
     bool onWritePixels(GrSurface*, int left, int top, int width, int height, GrColorType,
                        const GrMipLevel[], int mipLevelCount) override;
 
-    bool onTransferPixelsTo(GrTexture*,
-                            int left, int top, int width, int height,
-                            GrColorType, GrGpuBuffer*,
-                            size_t offset, size_t rowBytes) override {
-        // TODO: not sure this is worth the work since nobody uses it
-        return false;
-    }
-    bool onTransferPixelsFrom(GrSurface*, int left, int top, int width, int height, GrColorType,
-                              GrGpuBuffer*, size_t offset) override {
-        // TODO: Will need to implement this to support async read backs.
+    bool onTransferPixels(GrTexture*,
+                          int left, int top, int width, int height,
+                          GrColorType, GrGpuBuffer*,
+                          size_t offset, size_t rowBytes) override {
         return false;
     }
 
-    bool onRegenerateMipMapLevels(GrTexture*) override;
+    bool onRegenerateMipMapLevels(GrTexture*) override { return false; }
 
     void onResolveRenderTarget(GrRenderTarget* target) override { return; }
 
     void onFinishFlush(GrSurfaceProxy*, SkSurface::BackendSurfaceAccess access,
-                       const GrFlushInfo& info) override {
-        if (info.fFlags & kSyncCpu_GrFlushFlag) {
+                       SkSurface::FlushFlags flags, bool insertedSemaphores) override {
+        if (flags & SkSurface::kSyncCpu_FlushFlag) {
             this->submitCommandBuffer(kForce_SyncQueue);
-            if (info.fFinishedProc) {
-                info.fFinishedProc(info.fFinishedContext);
-            }
         } else {
             this->submitCommandBuffer(kSkip_SyncQueue);
-            // TODO: support finishedProc to actually be called when the GPU is done with the work
-            // and not immediately.
-            if (info.fFinishedProc) {
-                info.fFinishedProc(info.fFinishedContext);
-            }
         }
     }
 
     // Function that uploads data onto textures with private storage mode (GPU access only).
     bool uploadToTexture(GrMtlTexture* tex, int left, int top, int width, int height,
                          GrColorType dataColorType, const GrMipLevel texels[], int mipLevels);
-    // Function that fills texture with transparent black
-    bool clearTexture(GrMtlTexture*, GrColorType);
 
     GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                 int width,

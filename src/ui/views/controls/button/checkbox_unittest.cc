@@ -15,8 +15,8 @@ namespace views {
 
 class CheckboxTest : public ViewsTestBase {
  public:
-  CheckboxTest() = default;
-  ~CheckboxTest() override = default;
+  CheckboxTest() {}
+  ~CheckboxTest() override {}
 
   void SetUp() override {
     ViewsTestBase::SetUp();

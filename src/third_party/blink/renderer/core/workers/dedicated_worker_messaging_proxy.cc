@@ -31,7 +31,7 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     DedicatedWorker* worker_object)
     : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
-  worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
+  worker_object_proxy_ = DedicatedWorkerObjectProxy::Create(
       this, GetParentExecutionContextTaskRunners());
 }
 
@@ -65,7 +65,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // destination, and inside settings."
     switch (off_main_thread_fetch_option) {
       case OffMainThreadWorkerScriptFetchOption::kEnabled:
-        GetWorkerThread()->FetchAndRunClassicScript(
+        GetWorkerThread()->ImportClassicScript(
             script_url, outside_settings_object, stack_id);
         break;
       case OffMainThreadWorkerScriptFetchOption::kDisabled:
@@ -84,8 +84,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);
     DCHECK(result);
-    GetWorkerThread()->FetchAndRunModuleScript(
-        script_url, outside_settings_object, credentials_mode);
+    GetWorkerThread()->ImportModuleScript(script_url, outside_settings_object,
+                                          credentials_mode);
   } else {
     NOTREACHED();
   }
@@ -225,8 +225,8 @@ DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
 
 std::unique_ptr<WorkerThread>
 DedicatedWorkerMessagingProxy::CreateWorkerThread() {
-  return std::make_unique<DedicatedWorkerThread>(GetExecutionContext(),
-                                                 WorkerObjectProxy());
+  return DedicatedWorkerThread::Create(GetExecutionContext(),
+                                       WorkerObjectProxy());
 }
 
 }  // namespace blink

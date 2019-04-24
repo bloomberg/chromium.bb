@@ -53,7 +53,6 @@ class FenceNV;
 class Framebuffer;
 class GLES1Renderer;
 class MemoryProgramCache;
-class MemoryObject;
 class Program;
 class ProgramPipeline;
 class Query;
@@ -313,7 +312,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     GLuint genPaths(GLsizei range);
     GLuint createProgramPipeline();
     GLuint createShaderProgramv(ShaderType type, GLsizei count, const GLchar *const *strings);
-    GLuint createMemoryObject();
 
     void deleteBuffer(GLuint buffer);
     void deleteShader(GLuint shader);
@@ -322,7 +320,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void deleteRenderbuffer(GLuint renderbuffer);
     void deletePaths(GLuint first, GLsizei range);
     void deleteProgramPipeline(GLuint pipeline);
-    void deleteMemoryObject(GLuint memoryObject);
 
     // CHROMIUM_path_rendering
     bool isPath(GLuint path) const;
@@ -339,9 +336,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void getPathParameteriv(GLuint path, GLenum pname, GLint *value);
     void pathStencilFunc(GLenum func, GLint ref, GLuint mask);
 
-    // GL_CHROMIUM_lose_context
-    void loseContext(GraphicsResetStatus current, GraphicsResetStatus other);
-
     // Framebuffers are owned by the Context, so these methods do not pass through
     GLuint createFramebuffer();
     void deleteFramebuffer(GLuint framebuffer);
@@ -354,71 +348,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     GLboolean isFenceNV(GLuint fence);
     void setFenceNV(GLuint fence, GLenum condition);
     GLboolean testFenceNV(GLuint fence);
-
-    // GL_EXT_memory_object
-    void deleteMemoryObjects(GLsizei n, const GLuint *memoryObjects);
-    GLboolean isMemoryObject(GLuint memoryObject);
-    void createMemoryObjects(GLsizei n, GLuint *memoryObjects);
-    void memoryObjectParameteriv(GLuint memoryObject, GLenum pname, const GLint *params);
-    void getMemoryObjectParameteriv(GLuint memoryObject, GLenum pname, GLint *params);
-    void texStorageMem2D(TextureType target,
-                         GLsizei levels,
-                         GLenum internalFormat,
-                         GLsizei width,
-                         GLsizei height,
-                         GLuint memory,
-                         GLuint64 offset);
-    void texStorageMem2DMultisample(TextureType target,
-                                    GLsizei samples,
-                                    GLenum internalFormat,
-                                    GLsizei width,
-                                    GLsizei height,
-                                    GLboolean fixedSampleLocations,
-                                    GLuint memory,
-                                    GLuint64 offset);
-    void texStorageMem3D(TextureType target,
-                         GLsizei levels,
-                         GLenum internalFormat,
-                         GLsizei width,
-                         GLsizei height,
-                         GLsizei depth,
-                         GLuint memory,
-                         GLuint64 offset);
-    void texStorageMem3DMultisample(TextureType target,
-                                    GLsizei samples,
-                                    GLenum internalFormat,
-                                    GLsizei width,
-                                    GLsizei height,
-                                    GLsizei depth,
-                                    GLboolean fixedSampleLocations,
-                                    GLuint memory,
-                                    GLuint64 offset);
-    void bufferStorageMem(TextureType target, GLsizeiptr size, GLuint memory, GLuint64 offset);
-
-    // GL_EXT_memory_object_fd
-    void importMemoryFd(GLuint memory, GLuint64 size, HandleType handleType, GLint fd);
-
-    // GL_EXT_semaphore
-    void genSemaphores(GLsizei n, GLuint *semaphores);
-    void deleteSemaphores(GLsizei n, const GLuint *semaphores);
-    GLboolean isSemaphore(GLuint semaphore);
-    void semaphoreParameterui64v(GLuint semaphore, GLenum pname, const GLuint64 *params);
-    void getSemaphoreParameterui64v(GLuint semaphore, GLenum pname, GLuint64 *params);
-    void waitSemaphore(GLuint semaphore,
-                       GLuint numBufferBarriers,
-                       const GLuint *buffers,
-                       GLuint numTextureBarriers,
-                       const GLuint *textures,
-                       const GLenum *srcLayouts);
-    void signalSemaphore(GLuint semaphore,
-                         GLuint numBufferBarriers,
-                         const GLuint *buffers,
-                         GLuint numTextureBarriers,
-                         const GLuint *textures,
-                         const GLenum *dstLayouts);
-
-    // GL_EXT_semaphore_fd
-    void importSemaphoreFd(GLuint semaphore, HandleType handleType, GLint fd);
 
     // GLES1 emulation: Interface to entry points
     ANGLE_GLES1_CONTEXT_API
@@ -661,7 +590,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     Query *getQuery(GLuint handle) const;
     TransformFeedback *getTransformFeedback(GLuint handle) const;
     ProgramPipeline *getProgramPipeline(GLuint handle) const;
-    MemoryObject *getMemoryObject(GLuint handle) const;
 
     void objectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
     void objectPtrLabel(const void *ptr, GLsizei length, const GLchar *label);
@@ -672,8 +600,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                         GLchar *label) const;
     void getObjectPtrLabel(const void *ptr, GLsizei bufSize, GLsizei *length, GLchar *label) const;
 
-    Texture *getTextureByType(TextureType type) const;
-    Texture *getTextureByTarget(TextureTarget target) const;
+    Texture *getTargetTexture(TextureType type) const;
     Texture *getSamplerTexture(unsigned int sampler, TextureType type) const;
 
     Compiler *getCompiler() const;
@@ -716,8 +643,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                GLsizei bufSize,
                                GLsizei *length,
                                GLint64 *data);
-    void getUnsignedBytev(GLenum pname, GLubyte *data);
-    void getUnsignedBytei_v(GLenum target, GLuint index, GLubyte *data);
 
     void activeShaderProgram(GLuint pipeline, GLuint program);
     void activeTexture(GLenum texture);
@@ -925,7 +850,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                            GLsizei width,
                            GLsizei height);
 
-    void copyTexSubImage3D(TextureTarget target,
+    void copyTexSubImage3D(TextureType target,
                            GLint level,
                            GLint xoffset,
                            GLint yoffset,
@@ -951,13 +876,18 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                  GLuint texture,
                                  GLint level,
                                  GLint layer);
-
-    void framebufferTextureMultiview(GLenum target,
-                                     GLenum attachment,
-                                     GLuint texture,
-                                     GLint level,
-                                     GLint baseViewIndex,
-                                     GLsizei numViews);
+    void framebufferTextureMultiviewLayered(GLenum target,
+                                            GLenum attachment,
+                                            GLuint texture,
+                                            GLint level,
+                                            GLint baseViewIndex,
+                                            GLsizei numViews);
+    void framebufferTextureMultiviewSideBySide(GLenum target,
+                                               GLenum attachment,
+                                               GLuint texture,
+                                               GLint level,
+                                               GLsizei numViews,
+                                               const GLint *viewportOffsets);
 
     void drawBuffers(GLsizei n, const GLenum *bufs);
     void readBuffer(GLenum mode);
@@ -991,7 +921,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                           GLenum type,
                           GLsizei bufSize,
                           const void *pixels);
-    void texImage3D(TextureTarget target,
+    void texImage3D(TextureType target,
                     GLint level,
                     GLint internalformat,
                     GLsizei width,
@@ -1001,7 +931,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                     GLenum format,
                     GLenum type,
                     const void *pixels);
-    void texImage3DRobust(TextureTarget target,
+    void texImage3DRobust(TextureType target,
                           GLint level,
                           GLint internalformat,
                           GLsizei width,
@@ -1031,7 +961,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                              GLenum type,
                              GLsizei bufSize,
                              const void *pixels);
-    void texSubImage3D(TextureTarget target,
+    void texSubImage3D(TextureType target,
                        GLint level,
                        GLint xoffset,
                        GLint yoffset,
@@ -1042,7 +972,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                        GLenum format,
                        GLenum type,
                        const void *pixels);
-    void texSubImage3DRobust(TextureTarget target,
+    void texSubImage3DRobust(TextureType target,
                              GLint level,
                              GLint xoffset,
                              GLint yoffset,
@@ -1071,7 +1001,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                     GLsizei imageSize,
                                     GLsizei dataSize,
                                     const GLvoid *data);
-    void compressedTexImage3D(TextureTarget target,
+    void compressedTexImage3D(TextureType target,
                               GLint level,
                               GLenum internalformat,
                               GLsizei width,
@@ -1080,7 +1010,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                               GLint border,
                               GLsizei imageSize,
                               const void *data);
-    void compressedTexImage3DRobust(TextureTarget target,
+    void compressedTexImage3DRobust(TextureType target,
                                     GLint level,
                                     GLenum internalformat,
                                     GLsizei width,
@@ -1109,7 +1039,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                        GLsizei imageSize,
                                        GLsizei dataSize,
                                        const GLvoid *data);
-    void compressedTexSubImage3D(TextureTarget target,
+    void compressedTexSubImage3D(TextureType target,
                                  GLint level,
                                  GLint xoffset,
                                  GLint yoffset,
@@ -1120,7 +1050,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                  GLenum format,
                                  GLsizei imageSize,
                                  const void *data);
-    void compressedTexSubImage3DRobust(TextureTarget target,
+    void compressedTexSubImage3DRobust(TextureType target,
                                        GLint level,
                                        GLint xoffset,
                                        GLint yoffset,
@@ -1761,7 +1691,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void validationError(GLenum errorCode, const char *message);
 
     GLenum getError();
-    void markContextLost(GraphicsResetStatus status);
+    void markContextLost();
 
     bool isContextLost() const { return mContextLost; }
 
@@ -1795,7 +1725,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     MemoryProgramCache *getMemoryProgramCache() const { return mMemoryProgramCache; }
 
     bool hasBeenCurrent() const { return mHasBeenCurrent; }
-    egl::Display *getDisplay() const { return mDisplay; }
+    egl::Display *getCurrentDisplay() const { return mCurrentDisplay; }
     egl::Surface *getCurrentDrawSurface() const { return mCurrentSurface; }
     egl::Surface *getCurrentReadSurface() const { return mCurrentSurface; }
 
@@ -1980,14 +1910,14 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     // Current/lost context flags
     bool mHasBeenCurrent;
     bool mContextLost;
-    GraphicsResetStatus mResetStatus;
+    GLenum mResetStatus;
     bool mContextLostForced;
     GLenum mResetStrategy;
     const bool mRobustAccess;
     const bool mSurfacelessSupported;
     const bool mExplicitContextAvailable;
     egl::Surface *mCurrentSurface;
-    egl::Display *mDisplay;
+    egl::Display *mCurrentDisplay;
     const bool mWebGLContext;
     bool mBufferAccessValidationEnabled;
     const bool mExtensionsEnabled;

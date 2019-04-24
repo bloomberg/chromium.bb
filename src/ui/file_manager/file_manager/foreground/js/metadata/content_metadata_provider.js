@@ -10,7 +10,9 @@
  * @struct
  */
 function ContentMetadataProvider(opt_messagePort) {
-  MetadataProvider.call(this, ContentMetadataProvider.PROPERTY_NAMES);
+  MetadataProvider.call(
+      this,
+      ContentMetadataProvider.PROPERTY_NAMES);
 
   /**
    * Pass all URLs to the metadata reader until we have a correct filter.
@@ -105,9 +107,8 @@ ContentMetadataProvider.prototype.get = function(requests) {
   const promises = [];
   for (let i = 0; i < requests.length; i++) {
     promises.push(new Promise(((request, fulfill) => {
-                                this.getImpl_(
-                                    request.entry, request.names, fulfill);
-                              }).bind(null, requests[i])));
+      this.getImpl_(request.entry, request.names, fulfill);
+    }).bind(null, requests[i])));
   }
   return Promise.all(promises);
 };
@@ -122,13 +123,9 @@ ContentMetadataProvider.prototype.get = function(requests) {
  */
 ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
   if (entry.isDirectory) {
-    setTimeout(
-        callback.bind(
-            null,
-            this.createError_(
-                entry.toURL(), 'get',
-                'we don\'t generate thumbnails for directory')),
-        0);
+    setTimeout(callback.bind(null, this.createError_(entry.toURL(),
+        'get',
+        'we don\'t generate thumbnails for directory')), 0);
     return;
   }
   // TODO(ryoh): mediaGalleries API does not handle
@@ -158,39 +155,37 @@ ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
  *    the entry.
  * @private
  */
-ContentMetadataProvider.prototype.getFromMediaGalleries_ = function(
-    entry, names) {
+ContentMetadataProvider.prototype.getFromMediaGalleries_ =
+    function(entry, names) {
   const self = this;
   return new Promise((resolve, reject) => {
-    entry.file(
-        blob => {
-          let metadataType = 'mimeTypeOnly';
-          if (names.indexOf('mediaArtist') !== -1 ||
-              names.indexOf('mediaTitle') !== -1 ||
-              names.indexOf('mediaTrack') !== -1 ||
-              names.indexOf('mediaYearRecorded') !== -1) {
-            metadataType = 'mimeTypeAndTags';
-          }
-          if (names.indexOf('contentThumbnailUrl') !== -1) {
-            metadataType = 'all';
-          }
-          chrome.mediaGalleries.getMetadata(
-              blob, {metadataType: metadataType}, metadata => {
-                if (chrome.runtime.lastError) {
-                  resolve(self.createError_(
-                      entry.toURL(), 'resolving metadata',
-                      chrome.runtime.lastError.toString()));
-                } else {
-                  self.convertMediaMetadataToMetadataItem_(entry, metadata)
-                      .then(resolve, reject);
-                }
-              });
-        },
-        err => {
-          resolve(self.createError_(
-              entry.toURL(), 'loading file entry',
-              'failed to open file entry'));
-        });
+    entry.file(blob => {
+      let metadataType = 'mimeTypeOnly';
+      if (names.indexOf('mediaArtist') !== -1 ||
+          names.indexOf('mediaTitle') !== -1 ||
+          names.indexOf('mediaTrack') !== -1 ||
+          names.indexOf('mediaYearRecorded') !== -1) {
+        metadataType = 'mimeTypeAndTags';
+      }
+      if (names.indexOf('contentThumbnailUrl') !== -1) {
+        metadataType = 'all';
+      }
+      chrome.mediaGalleries.getMetadata(blob, {metadataType: metadataType},
+          metadata => {
+            if (chrome.runtime.lastError) {
+              resolve(self.createError_(entry.toURL(),
+                  'resolving metadata',
+                  chrome.runtime.lastError.toString()));
+            } else {
+              self.convertMediaMetadataToMetadataItem_(entry, metadata)
+                  .then(resolve, reject);
+            }
+          });
+    }, err => {
+      resolve(self.createError_(entry.toURL(),
+          'loading file entry',
+          'failed to open file entry'));
+    });
   });
 };
 
@@ -208,14 +203,18 @@ ContentMetadataProvider.prototype.onMessage_ = function(event) {
     case 'result':
       this.onResult_(
           data.arguments[0],
-          data.arguments[1] ? ContentMetadataProvider.convertContentMetadata(
-                                  data.arguments[1]) :
-                              new MetadataItem());
+          data.arguments[1] ?
+          ContentMetadataProvider.convertContentMetadata(data.arguments[1]) :
+          new MetadataItem());
       break;
     case 'error':
       const error = this.createError_(
-          data.arguments[0], data.arguments[1], data.arguments[2]);
-      this.onResult_(data.arguments[0], error);
+          data.arguments[0],
+          data.arguments[1],
+          data.arguments[2]);
+      this.onResult_(
+          data.arguments[0],
+          error);
       break;
     case 'log':
       this.onLog_(data.arguments[0]);
@@ -279,9 +278,8 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     function(entry, metadata) {
   return new Promise((resolve, reject) => {
     if (!metadata) {
-      resolve(this.createError_(
-          entry.toURL(), 'Reading a thumbnail image',
-          'Failed to parse metadata'));
+      resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
+          "Failed to parse metadata"));
       return;
     }
     const item = new MetadataItem();
@@ -343,8 +341,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
         resolve(item);
       };
       reader.onerror = e => {
-        resolve(this.createError_(
-            entry.toURL(), 'Reading a thumbnail image',
+        resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
             reader.error.toString()));
       };
       reader.readAsDataURL(metadata.attachedImages[0]);
@@ -362,17 +359,15 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
  * @return {!MetadataItem} Error metadata
  * @private
  */
-ContentMetadataProvider.prototype.createError_ =
-    (url, step, errorDescription) => {
-      // For error case, fill all fields with error object.
-      const error =
-          new ContentMetadataProvider.Error(url, step, errorDescription);
-      const item = new MetadataItem();
-      item.contentImageTransformError = error;
-      item.contentThumbnailTransformError = error;
-      item.contentThumbnailUrlError = error;
-      return item;
-    };
+ContentMetadataProvider.prototype.createError_ = (url, step, errorDescription) => {
+  // For error case, fill all fields with error object.
+  const error = new ContentMetadataProvider.Error(url, step, errorDescription);
+  const item = new MetadataItem();
+  item.contentImageTransformError = error;
+  item.contentThumbnailTransformError = error;
+  item.contentThumbnailUrlError = error;
+  return item;
+};
 
 /**
  * Content metadata provider error.

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quic/core/crypto/proof_source.h"
+#include "net/third_party/quic/core/crypto/proof_verifier.h"
 
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
+#include "net/third_party/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory_impl.h"
 
 namespace blink {
@@ -34,26 +34,26 @@ class InsecureProofVerifier : public quic::ProofVerifier {
 
   // ProofVerifier override.
   quic::QuicAsyncStatus VerifyProof(
-      const std::string& hostname,
+      const quic::QuicString& hostname,
       const uint16_t port,
-      const std::string& server_config,
+      const quic::QuicString& server_config,
       quic::QuicTransportVersion transport_version,
       quic::QuicStringPiece chlo_hash,
-      const std::vector<std::string>& certs,
-      const std::string& cert_sct,
-      const std::string& signature,
+      const std::vector<quic::QuicString>& certs,
+      const quic::QuicString& cert_sct,
+      const quic::QuicString& signature,
       const quic::ProofVerifyContext* context,
-      std::string* error_details,
+      quic::QuicString* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_SUCCESS;
   }
 
   quic::QuicAsyncStatus VerifyCertChain(
-      const std::string& hostname,
-      const std::vector<std::string>& certs,
+      const quic::QuicString& hostname,
+      const std::vector<quic::QuicString>& certs,
       const quic::ProofVerifyContext* context,
-      std::string* error_details,
+      quic::QuicString* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_SUCCESS;
@@ -75,8 +75,8 @@ class DummyProofSource : public quic::ProofSource {
 
   // ProofSource override.
   void GetProof(const quic::QuicSocketAddress& server_addr,
-                const std::string& hostname,
-                const std::string& server_config,
+                const quic::QuicString& hostname,
+                const quic::QuicString& server_config,
                 quic::QuicTransportVersion transport_version,
                 quic::QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
@@ -89,15 +89,15 @@ class DummyProofSource : public quic::ProofSource {
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
-      const std::string& hostname) override {
-    std::vector<std::string> certs;
+      const quic::QuicString& hostname) override {
+    std::vector<quic::QuicString> certs;
     certs.push_back("Dummy cert");
     return quic::QuicReferenceCountedPointer<Chain>(
         new quic::ProofSource::Chain(certs));
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
-      const std::string& hostname,
+      const quic::QuicString& hostname,
       uint16_t signature_algorithm,
       quic::QuicStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
@@ -126,7 +126,7 @@ P2PQuicCryptoConfigFactoryImpl::CreateServerCryptoConfig() {
                                kInputKeyingMaterialLength);
   std::unique_ptr<quic::ProofSource> proof_source(new DummyProofSource);
   return std::make_unique<quic::QuicCryptoServerConfig>(
-      std::string(source_address_token_secret, kInputKeyingMaterialLength),
+      quic::QuicString(source_address_token_secret, kInputKeyingMaterialLength),
       random_generator_, std::move(proof_source),
       quic::KeyExchangeSource::Default(),
       quic::TlsServerHandshaker::CreateSslCtx());

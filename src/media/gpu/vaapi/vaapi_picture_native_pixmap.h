@@ -24,6 +24,7 @@ class NativePixmap;
 
 namespace media {
 
+class VideoFrame;
 class VaapiWrapper;
 
 // Implementation of VaapiPicture based on NativePixmaps.
@@ -39,6 +40,9 @@ class VaapiPictureNativePixmap : public VaapiPicture {
       uint32_t client_texture_id,
       uint32_t texture_target);
   ~VaapiPictureNativePixmap() override;
+
+  static gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandleFromVideoFrame(
+      const VideoFrame* const video_frame);
 
   // VaapiPicture implementation.
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;

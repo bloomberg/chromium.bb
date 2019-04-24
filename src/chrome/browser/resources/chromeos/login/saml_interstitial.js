@@ -8,7 +8,6 @@ Polymer({
   is: 'saml-interstitial',
 
   properties: {
-    /** @type {Element} */
     changeAccountLink: {
       type: HTMLElement,
     },

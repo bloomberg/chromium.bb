@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/pending_task.h"
 #include "base/task/post_task.h"
-#include "build/build_config.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
 #include "content/browser/scheduler/responsiveness/message_loop_observer.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
@@ -192,16 +191,15 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   if (UNLIKELY(currently_running_metadata->empty() ||
                (task != currently_running_metadata->back().identifier))) {
     *mismatched_task_identifiers += 1;
-    // Mismatches can happen (e.g: on ChromeOS, with window service when
-    // tab-dragging is involved; on ozone/wayland when Paste button is pressed
-    // in context menus, among others). Simply ignore the mismatches for now.
-    // See https://crbug.com/929813 for the details of why the mismatch
-    // happens.  TODO(mukai): fix the event order issue.
 #if defined(OS_CHROMEOS)
-    if (features::IsUsingWindowService())
-      return currently_running_metadata_ui_.clear();
-#elif defined(OS_LINUX) && defined(USE_OZONE)
-    return currently_running_metadata_ui_.clear();
+    // Mismatches can happen often on ChromeOS with window service when
+    // tab-dragging is involved. Simply ignore the mismatches for now. See
+    // https://crbug.com/929813 for the details of why the mismatch happens.
+    // TODO(mukai): fix the event order issue.
+    if (features::IsUsingWindowService()) {
+      currently_running_metadata_ui_.clear();
+      return;
+    }
 #endif
     DCHECK_LE(*mismatched_task_identifiers, 1);
     return;
@@ -258,16 +256,15 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
                (opaque_identifier !=
                 currently_running_metadata_ui_.back().identifier))) {
     mismatched_event_identifiers_ui_ += 1;
-    // Mismatches can happen (e.g: on ChromeOS, with window service when
-    // tab-dragging is involved; on ozone/wayland when Paste button is pressed
-    // in context menus, among others). Simply ignore the mismatches for now.
-    // See https://crbug.com/929813 for the details of why the mismatch
-    // happens.  TODO(mukai): fix the event order issue.
 #if defined(OS_CHROMEOS)
-    if (features::IsUsingWindowService())
-      return currently_running_metadata_ui_.clear();
-#elif defined(OS_LINUX) && defined(USE_OZONE)
-    return currently_running_metadata_ui_.clear();
+    // Mismatches can happen often on ChromeOS with window service when
+    // tab-dragging is involved. Simply ignore the mismatches for now. See
+    // https://crbug.com/929813 for the details of why the mismatch happens.
+    // TODO(mukai): fix the event order issue.
+    if (features::IsUsingWindowService()) {
+      currently_running_metadata_ui_.clear();
+      return;
+    }
 #endif
     DCHECK_LE(mismatched_event_identifiers_ui_, 1);
     return;

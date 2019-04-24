@@ -39,7 +39,7 @@ class JSTypeHintLowering {
  public:
   // Flags that control the mode of operation.
   enum Flag { kNoFlags = 0u, kBailoutOnUninitialized = 1u << 1 };
-  using Flags = base::Flags<Flag>;
+  typedef base::Flags<Flag> Flags;
 
   JSTypeHintLowering(JSGraph* jsgraph, Handle<FeedbackVector> feedback_vector,
                      Flags flags);

@@ -118,8 +118,7 @@ class ChannelManager final {
       bool srtp_required,
       const webrtc::CryptoOptions& crypto_options,
       rtc::UniqueRandomIdGenerator* ssrc_generator,
-      const VideoOptions& options,
-      webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory);
+      const VideoOptions& options);
   // Destroys a video channel created by CreateVideoChannel.
   void DestroyVideoChannel(VideoChannel* video_channel);
 

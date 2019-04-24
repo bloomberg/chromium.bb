@@ -27,6 +27,18 @@ static const unsigned kMaxReportedHandlersPendingResolution = 1000;
 
 class RejectedPromises::Message final {
  public:
+  static std::unique_ptr<Message> Create(
+      ScriptState* script_state,
+      v8::Local<v8::Promise> promise,
+      v8::Local<v8::Value> exception,
+      const String& error_message,
+      std::unique_ptr<SourceLocation> location,
+      SanitizeScriptErrors sanitize_script_errors) {
+    return base::WrapUnique(new Message(script_state, promise, exception,
+                                        error_message, std::move(location),
+                                        sanitize_script_errors));
+  }
+
   Message(ScriptState* script_state,
           v8::Local<v8::Promise> promise,
           v8::Local<v8::Value> exception,
@@ -186,7 +198,7 @@ void RejectedPromises::RejectedWithNoHandler(
     const String& error_message,
     std::unique_ptr<SourceLocation> location,
     SanitizeScriptErrors sanitize_script_errors) {
-  queue_.push_back(std::make_unique<Message>(
+  queue_.push_back(Message::Create(
       script_state, data.GetPromise(), data.GetValue(), error_message,
       std::move(location), sanitize_script_errors));
 }

@@ -132,7 +132,6 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   // Used by unittests to allow subclassing of IndexedDBBackingStore.
   virtual scoped_refptr<IndexedDBBackingStore> CreateBackingStore(
-      IndexedDBBackingStore::Mode backing_store_mode,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,

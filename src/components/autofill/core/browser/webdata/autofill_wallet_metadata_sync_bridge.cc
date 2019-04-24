@@ -4,14 +4,11 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 
-#include <map>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
@@ -21,7 +18,6 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -84,17 +80,16 @@ struct TypeAndMetadataId {
 
 TypeAndMetadataId ParseWalletMetadataStorageKey(
     const std::string& storage_key) {
+  TypeAndMetadataId parsed;
+
   base::Pickle pickle(storage_key.data(), storage_key.size());
   base::PickleIterator iterator(pickle);
   int type_int;
-  std::string specifics_id;
-  if (!iterator.ReadInt(&type_int) || !iterator.ReadString(&specifics_id)) {
+  if (!iterator.ReadInt(&type_int) ||
+      !iterator.ReadString(&parsed.metadata_id)) {
     NOTREACHED() << "Unsupported storage_key provided " << storage_key;
   }
-
-  TypeAndMetadataId parsed;
   parsed.type = static_cast<WalletMetadataSpecifics::Type>(type_int);
-  parsed.metadata_id = GetMetadataIdForSpecificsId(specifics_id);
   return parsed;
 }
 
@@ -162,22 +157,22 @@ bool HasLocalBillingAddress(const AutofillMetadata& metadata) {
   return metadata.billing_address_id.size() == kLocalGuidSize;
 }
 
-bool IsNewerBillingAddressEqualOrBetter(const AutofillMetadata& older,
-                                        const AutofillMetadata& newer) {
-  // If older is empty, newer is better (or equal). Otherwise, if newer is
-  // empty, older is better.
-  if (older.billing_address_id.empty()) {
+bool IsRemoteBillingAddressEqualOrBetter(const AutofillMetadata& local,
+                                         const AutofillMetadata& remote) {
+  // If local is empty, remote is better (or equal). Otherwise, if remote is
+  // empty, local is better.
+  if (local.billing_address_id.empty()) {
     return true;
-  } else if (newer.billing_address_id.empty()) {
+  } else if (remote.billing_address_id.empty()) {
     return false;
   }
   // Now we need to decide between non-empty profiles. Prefer id's pointing to
   // local profiles over ids of non-local profiles.
-  if (HasLocalBillingAddress(older) != HasLocalBillingAddress(newer)) {
-    return HasLocalBillingAddress(newer);
+  if (HasLocalBillingAddress(local) != HasLocalBillingAddress(remote)) {
+    return HasLocalBillingAddress(remote);
   }
-  // For both older / both newer, we prefer the more recently used.
-  return newer.use_date >= older.use_date;
+  // For both local / both remote, we prefer the more recently used.
+  return remote.use_date >= local.use_date;
 }
 
 AutofillMetadata MergeMetadata(WalletMetadataSpecifics::Type type,
@@ -192,8 +187,7 @@ AutofillMetadata MergeMetadata(WalletMetadataSpecifics::Type type,
       merged.has_converted = local.has_converted || remote.has_converted;
       break;
     case WalletMetadataSpecifics::CARD:
-      if (IsNewerBillingAddressEqualOrBetter(/*older=*/local,
-                                             /*newer=*/remote)) {
+      if (IsRemoteBillingAddressEqualOrBetter(local, remote)) {
         merged.billing_address_id = remote.billing_address_id;
       } else {
         merged.billing_address_id = local.billing_address_id;
@@ -238,21 +232,8 @@ bool IsMetadataWorthUpdating(AutofillMetadata existing_entry,
   if (!existing_entry.has_converted && new_entry.has_converted) {
     return true;
   }
-  if (existing_entry.billing_address_id != new_entry.billing_address_id &&
-      IsNewerBillingAddressEqualOrBetter(/*older=*/existing_entry,
-                                         /*newer=*/new_entry)) {
+  if (existing_entry.billing_address_id != new_entry.billing_address_id) {
     return true;
-  }
-  return false;
-}
-
-bool IsAnyMetadataDeletable(
-    const std::map<std::string, AutofillMetadata>& metadata_map) {
-  for (const auto& pair : metadata_map) {
-    const AutofillMetadata& metadata = pair.second;
-    if (metadata.IsDeletable()) {
-      return true;
-    }
   }
   return false;
 }
@@ -288,6 +269,7 @@ bool RemoveServerMetadata(AutofillTable* table,
 bool UpdateServerMetadata(AutofillTable* table,
                           WalletMetadataSpecifics::Type type,
                           const AutofillMetadata& metadata) {
+  // TODO: Create UpdateServerAddressMetadata() that takes metadata as arg.
   switch (type) {
     case WalletMetadataSpecifics::ADDRESS:
       return table->UpdateServerAddressMetadata(metadata);
@@ -336,8 +318,6 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
   scoped_observer_.Add(web_data_backend_);
 
   LoadDataCacheAndMetadata();
-
-  DeleteOldOrphanMetadata();
 }
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {
@@ -408,38 +388,12 @@ std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
       entity_data.specifics.wallet_metadata().id());
 }
 
-void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
-    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // If a metadata change list gets passed in, that means sync is actually
-  // disabled, so we want to delete the data as well (i.e. the wallet metadata
-  // entities).
-  if (delete_metadata_change_list) {
-    bool is_any_local_modified = false;
-    for (const std::pair<std::string, AutofillMetadata>& pair : cache_) {
-      TypeAndMetadataId parsed_storage_key =
-          ParseWalletMetadataStorageKey(pair.first);
-      is_any_local_modified |=
-          RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
-                               parsed_storage_key.metadata_id);
-    }
-    cache_.clear();
-    if (is_any_local_modified) {
-      web_data_backend_->NotifyOfMultipleAutofillChanges();
-    }
-
-    // Commit the transaction to make sure the sync data (deleted here) and the
-    // sync metadata and the progress marker (deleted by the processor via
-    // |delete_metadata_change_list|) get wiped from the DB. This is especially
-    // important on Android where we cannot rely on committing transactions on
-    // shutdown).
-    web_data_backend_->CommitChanges();
-  }
-}
-
 void AutofillWalletMetadataSyncBridge::AutofillProfileChanged(
     const AutofillProfileChange& change) {
-  // Skip local profiles.
-  if (change.data_model()->record_type() != AutofillProfile::SERVER_PROFILE) {
+  // Skip local profiles (if possible, i.e. if it is not a deletion where
+  // data_model() is not set).
+  if (change.data_model() &&
+      change.data_model()->record_type() != AutofillProfile::SERVER_PROFILE) {
     return;
   }
   LocalMetadataChanged(WalletMetadataSpecifics::ADDRESS, change);
@@ -475,26 +429,10 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   for (const auto& it : addresses_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::ADDRESS, it.first)] = it.second;
-    // TODO(crbug.com/949034): Consider adding standard functions for recording
-    // large times in seconds/minutes.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Autofill.WalletUseDateInMinutes.Address",
-        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
-        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
-        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
-        /*bucket_count=*/50);
   }
   for (const auto& it : cards_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::CARD, it.first)] = it.second;
-    // TODO(crbug.com/949034): Consider adding standard functions for recording
-    // large times in seconds/minutes.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Autofill.WalletUseDateInMinutes.Card",
-        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
-        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
-        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
-        /*bucket_count=*/50);
   }
 
   // Load the metadata and send to the processor.
@@ -507,62 +445,6 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   }
 
   change_processor()->ModelReadyToSync(std::move(batch));
-}
-
-void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
-  if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
-      !GetAutofillTable()) {
-    // We have a problem with the database, not an issue, we clean up next time.
-    return;
-  }
-  if (!IsAnyMetadataDeletable(cache_)) {
-    return;
-  }
-
-  // Load up (metadata) ids for which data exists; we do not delete those.
-  std::unordered_set<std::string> non_orphan_ids;
-  std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  std::vector<std::unique_ptr<CreditCard>> cards;
-  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
-      !GetAutofillTable()->GetServerCreditCards(&cards)) {
-    return;
-  }
-  for (const std::unique_ptr<AutofillProfile>& profile : profiles) {
-    non_orphan_ids.insert(profile->server_id());
-  }
-  for (const std::unique_ptr<CreditCard>& card : cards) {
-    non_orphan_ids.insert(card->server_id());
-  }
-
-  // Identify storage keys of old orphans (we delete them below to avoid
-  // modifying |cache_| while iterating).
-  std::unordered_set<std::string> old_orphan_keys;
-  for (const auto& pair : cache_) {
-    const AutofillMetadata& metadata = pair.second;
-    if (metadata.IsDeletable() && !non_orphan_ids.count(metadata.id)) {
-      old_orphan_keys.insert(pair.first);
-    }
-  }
-
-  if (old_orphan_keys.empty()) {
-    return;
-  }
-
-  std::unique_ptr<MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-  for (const std::string storage_key : old_orphan_keys) {
-    TypeAndMetadataId parsed_storage_key =
-        ParseWalletMetadataStorageKey(storage_key);
-    if (RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
-                             parsed_storage_key.metadata_id)) {
-      cache_.erase(storage_key);
-      change_processor()->Delete(storage_key, metadata_change_list.get());
-    }
-  }
-  // Commit the transaction to make sure the data and the metadata is written
-  // down (especially on Android where we cannot rely on committing transactions
-  // on shutdown).
-  web_data_backend_->CommitChanges();
 }
 
 void AutofillWalletMetadataSyncBridge::GetDataImpl(
@@ -596,10 +478,10 @@ void AutofillWalletMetadataSyncBridge::UploadInitialLocalData(
     local_keys_to_upload.insert(it.first);
   }
   // Strip |local_keys_to_upload| of the keys of data provided by the server.
-  for (const std::unique_ptr<EntityChange>& change : entity_data) {
-    DCHECK_EQ(change->type(), EntityChange::ACTION_ADD)
+  for (const EntityChange& change : entity_data) {
+    DCHECK_EQ(change.type(), EntityChange::ACTION_ADD)
         << "Illegal change; can only be called during initial MergeSyncData()";
-    local_keys_to_upload.erase(change->storage_key());
+    local_keys_to_upload.erase(change.storage_key());
   }
   // Upload the remaining storage keys
   for (const std::string& storage_key : local_keys_to_upload) {
@@ -620,24 +502,24 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
 
   AutofillTable* table = GetAutofillTable();
 
-  for (const std::unique_ptr<EntityChange>& change : entity_data) {
+  for (const EntityChange& change : entity_data) {
     TypeAndMetadataId parsed_storage_key =
-        ParseWalletMetadataStorageKey(change->storage_key());
-    switch (change->type()) {
+        ParseWalletMetadataStorageKey(change.storage_key());
+    switch (change.type()) {
       case EntityChange::ACTION_ADD:
       case EntityChange::ACTION_UPDATE: {
         const WalletMetadataSpecifics& specifics =
-            change->data().specifics.wallet_metadata();
+            change.data().specifics.wallet_metadata();
         AutofillMetadata remote =
             CreateAutofillMetadataFromWalletMetadataSpecifics(specifics);
-        auto it = cache_.find(change->storage_key());
+        auto it = cache_.find(change.storage_key());
         base::Optional<AutofillMetadata> local = base::nullopt;
         if (it != cache_.end()) {
           local = it->second;
         }
 
         if (!local) {
-          cache_[change->storage_key()] = remote;
+          cache_[change.storage_key()] = remote;
           is_any_local_modified |= AddServerMetadata(
               GetAutofillTable(), parsed_storage_key.type, remote);
           continue;
@@ -647,12 +529,12 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
         AutofillMetadata merged =
             MergeMetadata(parsed_storage_key.type, *local, remote);
         if (merged != *local) {
-          cache_[change->storage_key()] = merged;
+          cache_[change.storage_key()] = merged;
           is_any_local_modified |=
               UpdateServerMetadata(table, parsed_storage_key.type, merged);
         }
         if (merged != remote) {
-          change_processor()->Put(change->storage_key(),
+          change_processor()->Put(change.storage_key(),
                                   CreateEntityDataFromAutofillMetadata(
                                       parsed_storage_key.type, merged),
                                   metadata_change_list.get());
@@ -660,20 +542,13 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
         break;
       }
       case EntityChange::ACTION_DELETE: {
-        cache_.erase(change->storage_key());
+        cache_.erase(change.storage_key());
         is_any_local_modified |= RemoveServerMetadata(
             table, parsed_storage_key.type, parsed_storage_key.metadata_id);
         break;
       }
     }
   }
-
-  // Commit the transaction to make sure the data and the metadata with the
-  // new progress marker is written down (especially on Android where we
-  // cannot rely on committing transactions on shutdown). We need to commit
-  // even if !|is_any_local_modified| because the model type state or local
-  // metadata may have changed.
-  web_data_backend_->CommitChanges();
 
   if (is_any_local_modified) {
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -701,7 +576,9 @@ void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
       if (RemoveServerMetadata(GetAutofillTable(), type, metadata_id)) {
         cache_.erase(storage_key);
         // Send up deletion only if we had this entry in the DB. It is not there
-        // if it was previously deleted by a remote deletion.
+        // if (i) it was previously deleted by a remote deletion or (ii) this is
+        // notification for a LOCAL_PROFILE (which have non-overlapping
+        // storage_keys).
         change_processor()->Delete(storage_key, metadata_change_list.get());
       }
       return;
@@ -735,11 +612,6 @@ void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
           metadata_change_list.get());
       return;
   }
-
-  // We do not need to commit any local changes (written by the processor via
-  // the metadata change list) because the open WebDatabase transaction is
-  // committed by the AutofillWebDataService when the original local write
-  // operation (that triggered this notification to the bridge) finishes.
 }
 
 }  // namespace autofill

@@ -74,8 +74,6 @@ SkBitmap CaptureScreen() {
 
 }  // namespace
 
-const char kSnapshotOutputDir[] = "snapshot-output-dir";
-
 base::FilePath SaveDesktopSnapshot(const base::FilePath& output_dir) {
   // Create the output file.
   base::Time::Exploded exploded;

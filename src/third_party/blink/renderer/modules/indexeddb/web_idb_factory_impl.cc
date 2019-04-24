@@ -35,9 +35,8 @@ void WebIDBFactoryImpl::GetDatabaseNames(
 
 void WebIDBFactoryImpl::Open(
     const String& name,
-    int64_t version,
-    mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-    int64_t transaction_id,
+    long long version,
+    long long transaction_id,
     std::unique_ptr<WebIDBCallbacks> callbacks,
     std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
@@ -47,7 +46,7 @@ void WebIDBFactoryImpl::Open(
   DCHECK(!name.IsNull());
   factory_->Open(GetCallbacksProxy(std::move(callbacks)),
                  GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
-                 name, version, std::move(transaction_request), transaction_id);
+                 name, version, transaction_id);
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(

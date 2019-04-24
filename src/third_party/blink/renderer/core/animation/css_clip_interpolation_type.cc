@@ -116,9 +116,12 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSClipNonInterpolableValue);
 class UnderlyingAutosChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  explicit UnderlyingAutosChecker(const ClipAutos& underlying_autos)
-      : underlying_autos_(underlying_autos) {}
   ~UnderlyingAutosChecker() final = default;
+
+  static std::unique_ptr<UnderlyingAutosChecker> Create(
+      const ClipAutos& underlying_autos) {
+    return base::WrapUnique(new UnderlyingAutosChecker(underlying_autos));
+  }
 
   static ClipAutos GetUnderlyingAutos(const InterpolationValue& underlying) {
     if (!underlying)
@@ -128,6 +131,9 @@ class UnderlyingAutosChecker
   }
 
  private:
+  UnderlyingAutosChecker(const ClipAutos& underlying_autos)
+      : underlying_autos_(underlying_autos) {}
+
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return underlying_autos_ == GetUnderlyingAutos(underlying);
@@ -148,13 +154,14 @@ static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     const Length& length,
     double zoom) {
   if (length.IsAuto())
-    return std::make_unique<InterpolableList>(0);
+    return InterpolableList::Create(0);
   return LengthInterpolationFunctions::MaybeConvertLength(length, zoom)
       .interpolable_value;
 }
 
 static InterpolationValue CreateClipValue(const LengthBox& clip, double zoom) {
-  auto list = std::make_unique<InterpolableList>(kClipComponentIndexCount);
+  std::unique_ptr<InterpolableList> list =
+      InterpolableList::Create(kClipComponentIndexCount);
   list->Set(kClipTop, ConvertClipComponent(clip.Top(), zoom));
   list->Set(kClipRight, ConvertClipComponent(clip.Right(), zoom));
   list->Set(kClipBottom, ConvertClipComponent(clip.Bottom(), zoom));
@@ -169,7 +176,7 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertNeutral(
   ClipAutos underlying_autos =
       UnderlyingAutosChecker::GetUnderlyingAutos(underlying);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingAutosChecker>(underlying_autos));
+      UnderlyingAutosChecker::Create(underlying_autos));
   if (underlying_autos.is_auto)
     return nullptr;
   LengthBox neutral_box(
@@ -198,15 +205,14 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertInherit(
 }
 
 static bool IsCSSAuto(const CSSValue& value) {
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  return identifier_value &&
-         identifier_value->GetValueID() == CSSValueID::kAuto;
+  return value.IsIdentifierValue() &&
+         ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto;
 }
 
 static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     const CSSValue& length) {
   if (IsCSSAuto(length))
-    return std::make_unique<InterpolableList>(0);
+    return InterpolableList::Create(0);
   return LengthInterpolationFunctions::MaybeConvertCSSValue(length)
       .interpolable_value;
 }
@@ -215,16 +221,17 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  const auto* quad = DynamicTo<CSSQuadValue>(value);
-  if (!quad)
+  if (!value.IsQuadValue())
     return nullptr;
-  auto list = std::make_unique<InterpolableList>(kClipComponentIndexCount);
-  list->Set(kClipTop, ConvertClipComponent(*quad->Top()));
-  list->Set(kClipRight, ConvertClipComponent(*quad->Right()));
-  list->Set(kClipBottom, ConvertClipComponent(*quad->Bottom()));
-  list->Set(kClipLeft, ConvertClipComponent(*quad->Left()));
-  ClipAutos autos(IsCSSAuto(*quad->Top()), IsCSSAuto(*quad->Right()),
-                  IsCSSAuto(*quad->Bottom()), IsCSSAuto(*quad->Left()));
+  const CSSQuadValue& quad = ToCSSQuadValue(value);
+  std::unique_ptr<InterpolableList> list =
+      InterpolableList::Create(kClipComponentIndexCount);
+  list->Set(kClipTop, ConvertClipComponent(*quad.Top()));
+  list->Set(kClipRight, ConvertClipComponent(*quad.Right()));
+  list->Set(kClipBottom, ConvertClipComponent(*quad.Bottom()));
+  list->Set(kClipLeft, ConvertClipComponent(*quad.Left()));
+  ClipAutos autos(IsCSSAuto(*quad.Top()), IsCSSAuto(*quad.Right()),
+                  IsCSSAuto(*quad.Bottom()), IsCSSAuto(*quad.Left()));
   return InterpolationValue(std::move(list),
                             CSSClipNonInterpolableValue::Create(autos));
 }

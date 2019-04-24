@@ -24,29 +24,18 @@ void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
   const SelectOptionProto& select_option = proto_.select_option();
 
   // A non prefilled |select_option| is not supported.
-  if (!select_option.has_selected_option()) {
-    DVLOG(1) << __func__ << ": empty option";
-    UpdateProcessedAction(INVALID_ACTION);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-  Selector selector = Selector(select_option.element());
-  if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
-    UpdateProcessedAction(INVALID_SELECTOR);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-  delegate->ShortWaitForElement(
-      selector,
+  DCHECK(select_option.has_selected_option());
+  DCHECK_GT(select_option.element().selectors_size(), 0);
+
+  delegate->ShortWaitForElementExist(
+      Selector(select_option.element()),
       base::BindOnce(&SelectOptionAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+                     std::move(callback)));
 }
 
 void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
-                                          const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -55,14 +44,15 @@ void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->SelectOption(
-      selector, proto_.select_option().selected_option(),
+      Selector(proto_.select_option().element()),
+      proto_.select_option().selected_option(),
       base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SelectOptionAction::OnSelectOption(ProcessActionCallback callback,
-                                        const ClientStatus& status) {
-  UpdateProcessedAction(status);
+                                        bool status) {
+  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

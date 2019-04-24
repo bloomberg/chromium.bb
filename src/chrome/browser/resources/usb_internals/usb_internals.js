@@ -7,36 +7,33 @@
  */
 cr.define('usb_internals', function() {
   class UsbInternals {
-    constructor() {}
-
-    async initializeViews() {
-      // window.setupFn() provides a hook for the test suite to perform setup
-      // actions after the page is loaded but before any script is run.
-      await window.setupFn();
-
+    constructor() {
       const pageHandler = mojom.UsbInternalsPageHandler.getProxy();
 
       // Connection to the UsbInternalsPageHandler instance running in the
       // browser process.
-      /** @type {device.mojom.UsbDeviceManagerProxy} */
-      const usbManager = new device.mojom.UsbDeviceManagerProxy;
-      await pageHandler.bindUsbDeviceManagerInterface(
-          usbManager.$.createRequest());
-
-      /** @private {devices_page.DevicesPage} */
-      this.devicesPage_ = new devices_page.DevicesPage(usbManager);
+      /** @private {device.mojom.UsbDeviceManagerProxy} */
+      this.usbManager_ = new device.mojom.UsbDeviceManagerProxy;
+      pageHandler.bindUsbDeviceManagerInterface(
+          this.usbManager_.$.createRequest());
 
       /** @private {device.mojom.UsbDeviceManagerTestProxy} */
       this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestProxy;
-      await pageHandler.bindTestInterface(
-          this.usbManagerTest_.$.createRequest());
+      pageHandler.bindTestInterface(this.usbManagerTest_.$.createRequest());
+
+      cr.ui.decorate('tabbox', cr.ui.TabBox);
+
+      this.refreshDeviceList();
 
       $('add-test-device-form').addEventListener('submit', (event) => {
         this.addTestDevice(event);
       });
       this.refreshTestDeviceList();
+    }
 
-      cr.ui.decorate('tabbox', cr.ui.TabBox);
+    async refreshDeviceList() {
+      const response = await this.usbManager_.getDevices();
+      devices_page.setDevices(response.results);
     }
 
     async refreshTestDeviceList() {
@@ -86,11 +83,6 @@ cr.define('usb_internals', function() {
   };
 });
 
-window.setupFn = window.setupFn || function() {
-  return Promise.resolve();
-};
-
 document.addEventListener('DOMContentLoaded', () => {
-  const usbInternalsPage = new usb_internals.UsbInternals();
-  usbInternalsPage.initializeViews();
+  new usb_internals.UsbInternals();
 });

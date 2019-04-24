@@ -37,7 +37,6 @@ enum Event {
   kClicked,
   kDocumentSelectionChanged,
   kDocumentTitleChanged,
-  kEndOfTest,                 // Sentinel value indicating the end of a test
   kExpandedChanged,           // Web
   kFocus,
   kFocusContext,              // Contextual focus event that must delay the next focus event
@@ -348,8 +347,6 @@ enum Action {
   // Gets the bounding rect for a range of text.
   kGetTextLocation,
 
-  kHideTooltip,
-
    // Given a point, find the object it corresponds to and fire a
    // |AXActionData.hit_test_event_to_fire| event on it in response.
   kHitTest,
@@ -401,10 +398,6 @@ enum Action {
    // reset the selection, if applicable.
   kSetValue,
   kShowContextMenu,
-
-   // Send an event signaling the end of a test.
-  kSignalEndOfTest,
-  kShowTooltip,
 };
 
 enum ActionFlags {
@@ -473,12 +466,9 @@ enum StringAttribute {
   kName,
   kLiveRelevant,
   kLiveStatus,
-  // Only if not already exposed in kName (NameFrom::kPlaceholder)
   kPlaceholder,
   kRole,
   kRoleDescription,
-  // Only if not already exposed in kName (NameFrom::kTitle)
-  kTooltip,
   kUrl,
   kValue,
 };
@@ -578,9 +568,6 @@ enum IntAttribute {
    // Of type AXCheckedState
   kCheckedState,
 
-  // The list style type. Only available on list items.
-  kListStyle,
-
    // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
 
@@ -589,15 +576,6 @@ enum IntAttribute {
 
    // Bold, italic, underline, etc.
   kTextStyle,
-
-  // The overline text decoration style.
-  kTextOverlineStyle,
-
-  // The strikethrough text decoration style.
-  kTextStrikethroughStyle,
-
-  // The underline text decoration style.
-  kTextUnderlineStyle,
 
    // Focus traversal in views and Android.
   kPreviousFocusId,
@@ -615,11 +593,6 @@ enum FloatAttribute {
    // Text attributes.
    // Font size is in pixels.
   kFontSize,
-
-   // Font weight can take on any arbitrary numeric value. Increments of 100 in
-   // range [0, 900] represent keywords such as light, normal, bold, etc. 0 is
-   // the default.
-  kFontWeight,
 };
 
 // These attributes can take three states:
@@ -766,16 +739,6 @@ enum MarkerType {
   kSpellingGrammarTextMatchActiveSuggestionSuggestion = 55,
 };
 
-enum ListStyle {
-  kNone,
-  kCircle,
-  kDisc,
-  kImage,
-  kNumeric,
-  kSquare,
-  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
-};
-
 enum TextDirection {
   kNone,
   kLtr,
@@ -797,17 +760,7 @@ enum TextStyle {
   kItalic,
   kUnderline,
   kLineThrough,
-  kOverline,
   kNone,
-};
-
-enum TextDecorationStyle {
-  kNone,
-  kDotted,
-  kDashed,
-  kSolid,
-  kDouble,
-  kWavy,
 };
 
 enum AriaCurrentState {
@@ -885,6 +838,7 @@ enum DescriptionFrom {
   kUninitialized,
   kAttribute,
   kContents,
+  kPlaceholder,
   kRelatedElement,
 };
 

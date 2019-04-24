@@ -37,13 +37,6 @@ class AutofillHandler {
     DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
   };
 
-  // An observer class used by browsertests that gets notified whenever
-  // particular actions occur.
-  class ObserverForTest {
-   public:
-    virtual void OnFormParsed() = 0;
-  };
-
   using FormStructureMap =
       std::map<FormSignature, std::unique_ptr<FormStructure>>;
 
@@ -133,10 +126,6 @@ class AutofillHandler {
   // Returns the number of forms this Autofill handler is aware of.
   size_t NumFormsDetected() const { return form_structures_.size(); }
 
-  void SetEventObserverForTesting(ObserverForTest* observer) {
-    observer_for_testing_ = observer;
-  }
-
   // Returns the present form structures seen by Autofill handler.
   const FormStructureMap& form_structures() const { return form_structures_; }
 
@@ -201,8 +190,6 @@ class AutofillHandler {
                  const FormStructure* cached_form,
                  FormStructure** parsed_form_structure);
 
-  bool value_from_dynamic_change_form_ = false;
-
   AutofillDriver* driver() { return driver_; }
 
   FormStructureMap* mutable_form_structures() { return &form_structures_; }
@@ -214,9 +201,6 @@ class AutofillHandler {
 
   // Our copy of the form data.
   FormStructureMap form_structures_;
-
-  // Will be not null only for |SaveCardBubbleViewsFullFormBrowserTest|.
-  ObserverForTest* observer_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillHandler);
 };

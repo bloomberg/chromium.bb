@@ -46,14 +46,10 @@ cr.define('onboarding_set_as_default_test', function() {
             testSetAsDefaultProxy.whenCalled('setAsDefault'),
           ]);
 
-          const notifyPromise =
-              test_util.eventToPromise('default-browser-change', testElement);
-
           cr.webUIListenerCallback(
               'browser-default-state-changed', {isDefault: true});
 
           return Promise.all([
-            notifyPromise,
             testSetAsDefaultProxy.whenCalled('recordSuccessfullySetDefault'),
             navigatedPromise
           ]);

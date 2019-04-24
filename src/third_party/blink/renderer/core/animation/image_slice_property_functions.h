@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -21,8 +20,6 @@ struct ImageSlice {
 };
 
 class ImageSlicePropertyFunctions {
-  STATIC_ONLY(ImageSlicePropertyFunctions);
-
  public:
   static ImageSlice GetInitialImageSlice(const CSSProperty& property) {
     return GetImageSlice(property, ComputedStyle::InitialStyle());
@@ -34,10 +31,10 @@ class ImageSlicePropertyFunctions {
       default:
         NOTREACHED();
         FALLTHROUGH;
-      case CSSPropertyID::kBorderImageSlice:
+      case CSSPropertyBorderImageSlice:
         return ImageSlice(style.BorderImageSlices(),
                           style.BorderImageSlicesFill());
-      case CSSPropertyID::kWebkitMaskBoxImageSlice:
+      case CSSPropertyWebkitMaskBoxImageSlice:
         return ImageSlice(style.MaskBoxImageSlices(),
                           style.MaskBoxImageSlicesFill());
     }
@@ -47,11 +44,11 @@ class ImageSlicePropertyFunctions {
                             ComputedStyle& style,
                             const ImageSlice& slice) {
     switch (property.PropertyID()) {
-      case CSSPropertyID::kBorderImageSlice:
+      case CSSPropertyBorderImageSlice:
         style.SetBorderImageSlices(slice.slices);
         style.SetBorderImageSlicesFill(slice.fill);
         break;
-      case CSSPropertyID::kWebkitMaskBoxImageSlice:
+      case CSSPropertyWebkitMaskBoxImageSlice:
         style.SetMaskBoxImageSlices(slice.slices);
         style.SetMaskBoxImageSlicesFill(slice.fill);
         break;

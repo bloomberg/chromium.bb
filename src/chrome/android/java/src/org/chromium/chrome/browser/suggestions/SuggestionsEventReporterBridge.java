@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
@@ -55,6 +57,17 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
         @CategoryInt
         int category = actionItem.getCategory();
         nativeOnMoreButtonClicked(category, actionItem.getPerSectionRank());
+        switch (category) {
+            case KnownCategories.BOOKMARKS:
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
+                break;
+            case KnownCategories.DOWNLOADS:
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
+                break;
+            default:
+                // No action associated
+                break;
+        }
     }
 
     public static void onSuggestionTargetVisited(int category, long visitTimeMs) {

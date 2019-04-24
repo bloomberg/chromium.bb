@@ -1,5 +1,0 @@
-[document web]
-++[dialog]
-++++[text] name='Nonmodal'
-++[dialog] modal
-++++[text] name='Modal'

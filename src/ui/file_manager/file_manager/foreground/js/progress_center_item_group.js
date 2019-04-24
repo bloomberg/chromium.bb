@@ -126,7 +126,8 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
 
   const item = new ProgressCenterItem();
   item.state = ProgressItemState.ERROR;
-  item.message = strf('ERROR_PROGRESS_SUMMARY_PLURAL', errorItems.length);
+  item.message = strf('ERROR_PROGRESS_SUMMARY_PLURAL',
+                      errorItems.length);
   item.single = false;
   return item;
 };
@@ -141,25 +142,26 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
  * @return {boolean} Whether the item should be animated or not.
  * @private
  */
-ProgressCenterItemGroup.shouldAnimate_ =
-    (previousAnimated, previousItem, item, summarized) => {
-      // Check visibility of previous and current progress bar.
-      const previousShow = previousItem && (!summarized || !previousItem.quiet);
-      const currentShow = item && (!summarized || !item.quiet);
-      // If previous or current item does not show progress bar, we should not
-      // animate.
-      if (!previousShow || !currentShow) {
-        return false;
-      }
-      if (previousItem.progressRateInPercent < item.progressRateInPercent) {
-        return true;
-      }
-      if (previousAnimated &&
-          previousItem.progressRateInPercent === item.progressRateInPercent) {
-        return true;
-      }
-      return false;
-    };
+ProgressCenterItemGroup.shouldAnimate_ = (previousAnimated, previousItem, item, summarized) => {
+  // Check visibility of previous and current progress bar.
+  const previousShow =
+      previousItem && (!summarized || !previousItem.quiet);
+  const currentShow =
+      item && (!summarized || !item.quiet);
+  // If previous or current item does not show progress bar, we should not
+  // animate.
+  if (!previousShow || !currentShow) {
+    return false;
+  }
+  if (previousItem.progressRateInPercent < item.progressRateInPercent) {
+    return true;
+  }
+  if (previousAnimated &&
+      previousItem.progressRateInPercent === item.progressRateInPercent) {
+    return true;
+  }
+  return false;
+};
 
 ProgressCenterItemGroup.prototype = /** @struct */ {
   /**
@@ -262,7 +264,9 @@ ProgressCenterItemGroup.prototype.update = function(item) {
       }
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = ProgressCenterItemGroup.shouldAnimate_(
-          !!this.animated_[item.id], previousItem, item,
+          !!this.animated_[item.id],
+          previousItem,
+          item,
           /* summarized */ false);
       if (!this.animated_[item.id]) {
         this.completeItemAnimation(item.id);
@@ -283,7 +287,8 @@ ProgressCenterItemGroup.prototype.update = function(item) {
   const previousSummarizedItem = this.summarizedItem_;
   this.summarizedItem_ = this.getSummarizedItem(0);
   this.summarizedItemAnimated_ = ProgressCenterItemGroup.shouldAnimate_(
-      !!this.summarizedItemAnimated_, previousSummarizedItem,
+      !!this.summarizedItemAnimated_,
+      previousSummarizedItem,
       this.summarizedItem_,
       /* summarized */ true);
   if (!this.summarizedItemAnimated_) {

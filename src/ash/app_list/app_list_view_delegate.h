@@ -12,11 +12,9 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -73,9 +71,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) = 0;
-
-  // Logs the UMA histogram metrics for user's abandonment of launcher search.
-  virtual void LogSearchAbandonHistogram() = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in
@@ -155,8 +150,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // initialize new NavigableContents objects for embedding web contents into
   // the app list UI.
   virtual void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
-          receiver) = 0;
+      content::mojom::NavigableContentsFactoryRequest request) = 0;
 
   // Returns the AssistantViewDelegate.
   virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
@@ -168,10 +162,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Returns if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
-
-  // Called when the app list view animation is completed.
-  virtual void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) = 0;
 };
 
 }  // namespace app_list

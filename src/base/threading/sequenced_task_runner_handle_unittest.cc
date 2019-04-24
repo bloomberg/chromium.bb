@@ -57,7 +57,7 @@ TEST_F(SequencedTaskRunnerHandleTest, FromTaskEnvironment) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(SequencedTaskRunnerHandleTest, FromThreadPoolSequencedTask) {
+TEST_F(SequencedTaskRunnerHandleTest, FromTaskSchedulerSequencedTask) {
   base::CreateSequencedTaskRunnerWithTraits({})->PostTask(
       FROM_HERE,
       base::BindOnce(

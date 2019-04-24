@@ -33,8 +33,7 @@ inline SVGSwitchElement::SVGSwitchElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGSwitchElement)
 
-LayoutObject* SVGSwitchElement::CreateLayoutObject(const ComputedStyle&,
-                                                   LegacyLayout) {
+LayoutObject* SVGSwitchElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTransformableContainer(this);
 }
 

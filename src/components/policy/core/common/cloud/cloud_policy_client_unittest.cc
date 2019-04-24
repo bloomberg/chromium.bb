@@ -206,7 +206,6 @@ class CloudPolicyClientTest : public testing::Test {
 
     upload_status_request_.mutable_device_status_report_request();
     upload_status_request_.mutable_session_status_report_request();
-    upload_status_request_.mutable_child_status_report_request();
 
     chrome_desktop_report_request_.mutable_chrome_desktop_report_request();
 
@@ -1161,9 +1160,7 @@ TEST_F(CloudPolicyClientTest, UploadStatus) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
@@ -1180,9 +1177,7 @@ TEST_F(CloudPolicyClientTest, UploadStatusWithOAuthToken) {
                           base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 
   // Tests that previous OAuth token is no longer sent in status upload after
@@ -1191,8 +1186,7 @@ TEST_F(CloudPolicyClientTest, UploadStatusWithOAuthToken) {
 
   ExpectUploadStatus();
   EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
@@ -1210,9 +1204,7 @@ TEST_F(CloudPolicyClientTest, UploadStatusWhilePolicyFetchActive) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
 
   // Now initiate a policy fetch - this should not cancel the upload job.
   ExpectPolicyFetch(kDMToken);
@@ -1267,9 +1259,7 @@ TEST_F(CloudPolicyClientTest, MultipleActiveRequests) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
 
   // Set up pending upload certificate job.
   MockDeviceManagementJob* upload_certificate_job = nullptr;
@@ -1314,9 +1304,7 @@ TEST_F(CloudPolicyClientTest, UploadStatusFailure) {
 
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
 }
 
@@ -1335,9 +1323,7 @@ TEST_F(CloudPolicyClientTest, RequestCancelOnUnregister) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  em::ChildStatusReportRequest child_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
-                              callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
   ExpectUnregistration(kDMToken);

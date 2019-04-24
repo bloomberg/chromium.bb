@@ -14,21 +14,20 @@
 
 namespace previews {
 
-bool IsDisabledPerOptimizationHintExperiment(
+bool IsDisabledExperimentalOptimization(
     const optimization_guide::proto::Optimization& optimization) {
-  // First check if optimization depends on an experiment being enabled.
+  // If this optimization has been marked with an experiment name, consider it
+  // disabled unless an experiment with that name is running. Experiment names
+  // are configured with the experiment_name parameter to the
+  // kOptimizationHintsExperiments feature.
+  //
+  // If kOptimizationHintsExperiments is disabled, getting the param value
+  // returns an empty string. Since experiment names are not allowed to be
+  // empty strings, all experiments will be disabled if the feature is
+  // disabled.
   if (optimization.has_experiment_name() &&
       !optimization.experiment_name().empty() &&
       optimization.experiment_name() !=
-          base::GetFieldTrialParamValueByFeature(
-              features::kOptimizationHintsExperiments,
-              features::kOptimizationHintsExperimentNameParam)) {
-    return true;
-  }
-  // Now check if optimization depends on an experiment not being enabled.
-  if (optimization.has_excluded_experiment_name() &&
-      !optimization.excluded_experiment_name().empty() &&
-      optimization.excluded_experiment_name() ==
           base::GetFieldTrialParamValueByFeature(
               features::kOptimizationHintsExperiments,
               features::kOptimizationHintsExperimentNameParam)) {

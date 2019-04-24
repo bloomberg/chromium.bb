@@ -52,8 +52,7 @@ TextControlInnerContainer* TextControlInnerContainer::Create(
 }
 
 LayoutObject* TextControlInnerContainer::CreateLayoutObject(
-    const ComputedStyle&,
-    LegacyLayout) {
+    const ComputedStyle&) {
   return new LayoutTextControlInnerContainer(this);
 }
 
@@ -92,7 +91,8 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
 
 // ---------------------------
 
-TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
+inline TextControlInnerEditorElement::TextControlInnerEditorElement(
+    Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
 }
@@ -132,8 +132,7 @@ void TextControlInnerEditorElement::SetVisibility(bool is_visible) {
 }
 
 LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
-    const ComputedStyle&,
-    LegacyLayout) {
+    const ComputedStyle&) {
   return new LayoutTextControlInnerEditor(this);
 }
 

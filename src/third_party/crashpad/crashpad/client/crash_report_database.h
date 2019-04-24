@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_CLIENT_CRASH_REPORT_DATABASE_H_
 #define CRASHPAD_CLIENT_CRASH_REPORT_DATABASE_H_
 
-#include <stdint.h>
 #include <time.h>
 
 #include <map>
@@ -99,10 +98,6 @@ class CrashReportDatabase {
     //! Whether this crash report was explicitly requested by user to be
     //! uploaded. This can be true only if report is in the 'pending' state.
     bool upload_explicitly_requested;
-
-    //! The total size in bytes taken by the report, including any potential
-    //! attachments.
-    uint64_t total_size;
   };
 
   //! \brief A crash report that is in the process of being written.

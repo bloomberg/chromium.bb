@@ -10,10 +10,6 @@ de_CH{
             "BYR",
             "Weissrussischer Rubel (2000–2016)",
         }
-        CHF{
-            "CHF",
-            "Schweizer Franken",
-        }
         EUR{
             "EUR",
             "Euro",
@@ -56,5 +52,5 @@ de_CH{
             other{"VES"}
         }
     }
-    Version{"2.1.47.86"}
+    Version{"2.1.44.50"}
 }

@@ -15,6 +15,7 @@
 
 namespace chromeos {
 
+class BaseScreenDelegate;
 class DemoSetupScreenView;
 
 // Controlls demo mode setup. The screen can be shown during OOBE. It allows
@@ -24,7 +25,8 @@ class DemoSetupScreen : public BaseScreen {
   enum class Result { COMPLETED, CANCELED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  DemoSetupScreen(DemoSetupScreenView* view,
+  DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
+                  DemoSetupScreenView* view,
                   const ScreenExitCallback& exit_callback);
   ~DemoSetupScreen() override;
 

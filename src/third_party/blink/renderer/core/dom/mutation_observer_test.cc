@@ -51,8 +51,9 @@ TEST(MutationObserverTest, DisconnectCrash) {
       observer->registrations_.begin()->Get();
   // The following GC will collect |head|, but won't collect a
   // MutationObserverRegistration for |head|.
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      BlinkGC::kNoHeapPointersOnStack);
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   observer->disconnect();
   // The test passes if disconnect() didn't crash.  crbug.com/657613.
 }

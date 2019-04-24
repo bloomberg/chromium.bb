@@ -93,7 +93,7 @@ public:
                                                       colors,
                                                       positions,
                                                       count,
-                                                      SkTileMode::kClamp,
+                                                      SkShader::kClamp_TileMode,
                                                       0,
                                                       nullptr));
     }

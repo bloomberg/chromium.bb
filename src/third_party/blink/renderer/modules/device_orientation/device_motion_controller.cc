@@ -48,7 +48,7 @@ void DeviceMotionController::DidAddEventListener(
     if (GetDocument().IsSecureContext()) {
       UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
     } else {
-      Deprecation::CountDeprecation(GetDocument(),
+      Deprecation::CountDeprecation(frame,
                                     WebFeature::kDeviceMotionInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),

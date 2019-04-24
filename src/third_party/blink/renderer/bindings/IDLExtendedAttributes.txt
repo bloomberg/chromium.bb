@@ -62,6 +62,7 @@ HighEntropy
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
+LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LegacyUnenumerableNamedProperties
 LenientSetter

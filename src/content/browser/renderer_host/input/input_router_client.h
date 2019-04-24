@@ -77,12 +77,6 @@ class CONTENT_EXPORT InputRouterClient {
   // Called to toggle whether the RenderWidgetHost should capture all mouse
   // input.
   virtual void SetMouseCapture(bool capture) = 0;
-
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down) = 0;
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible) = 0;
 };
 
 } // namespace content

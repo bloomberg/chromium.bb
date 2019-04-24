@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_visuals.h"
+#include "components/offline_pages/core/offline_page_thumbnail.h"
 
 class GURL;
 
@@ -83,14 +83,6 @@ enum class ShareResult {
   kFileAccessPermissionDenied,
 };
 
-struct VisualsAvailability {
-  bool has_thumbnail;
-  bool has_favicon;
-  bool operator==(const VisualsAvailability& rhs) const {
-    return has_thumbnail == rhs.has_thumbnail && has_favicon == rhs.has_favicon;
-  }
-};
-
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
@@ -105,9 +97,9 @@ typedef base::OnceCallback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
 typedef base::RepeatingCallback<bool(const GURL&)> UrlPredicate;
 typedef base::OnceCallback<void(int64_t)> SizeInBytesCallback;
-typedef base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)>
-    GetVisualsCallback;
-typedef base::OnceCallback<void(bool)> CleanupVisualsCallback;
+typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
+    GetThumbnailCallback;
+typedef base::OnceCallback<void(bool)> CleanupThumbnailsCallback;
 
 // Callbacks used for publishing an offline page.
 using PublishPageCallback =

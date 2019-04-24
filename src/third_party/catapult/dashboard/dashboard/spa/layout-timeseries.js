@@ -10,13 +10,6 @@ tr.exportTo('cp', () => {
   const ICON_WIDTH_PX = 24;
   const TEXT_HEIGHT_PX = 15;
 
-  const MODE = {
-    CENTER: 'CENTER',
-    DELTA: 'DELTA',
-    NORMALIZE_LINE: 'NORMALIZE_LINE',
-    NORMALIZE_UNIT: 'NORMALIZE_UNIT',
-  };
-
   function layoutTimeseries(state) {
     let rawXs;
     if (state.fixedXAxis) {
@@ -321,7 +314,7 @@ tr.exportTo('cp', () => {
 
   function normalizeLinesInPlace(lines, opt_options) {
     const options = opt_options || {};
-    const mode = options.mode || MODE.NORMALIZE_UNIT;
+    const mode = options.mode || 'normalizeUnit';
     const zeroYAxis = options.zeroYAxis || false;
     const yExtension = options.yExtension || 0;
     const xExtension = options.xExtension || 0;
@@ -359,7 +352,7 @@ tr.exportTo('cp', () => {
       }
     }
 
-    if (mode === MODE.CENTER) {
+    if (mode === 'center') {
       for (const line of lines) {
         const halfMaxLineRange = maxLineRangeForUnitName.get(
             line.unit.baseUnit.unitName) / 2;
@@ -377,7 +370,7 @@ tr.exportTo('cp', () => {
     const round = x => tr.b.math.truncate(x * 100, 1);
 
     const isNormalizeLine = (
-      mode === MODE.NORMALIZE_LINE || mode === MODE.CENTER);
+      mode === 'normalizeLine' || mode === 'center');
     for (const line of lines) {
       line.path = '';
       line.shadePoints = '';
@@ -410,7 +403,7 @@ tr.exportTo('cp', () => {
   function generateYTicksReducer(state, yRangeForUnitName, yExtension) {
     let yAxis = state.yAxis;
     let ticks = [];
-    if (state.mode === MODE.NORMALIZE_LINE || state.mode === MODE.CENTER) {
+    if (state.mode === 'normalizeLine' || state.mode === 'center') {
       for (const line of state.lines) {
         line.ticks = generateYTicks(line.yRange, line.unit, yExtension);
       }
@@ -475,7 +468,6 @@ tr.exportTo('cp', () => {
   }
 
   return {
-    MODE,
     computeTicks,
     layoutTimeseries,
   };

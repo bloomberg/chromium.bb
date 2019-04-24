@@ -15,6 +15,7 @@ ENUM enum
 FALSE false
 FLOAT float
 GETTER getter
+IMPLEMENTS implements
 INFINITY Infinity
 INHERIT inherit
 INTERFACE interface

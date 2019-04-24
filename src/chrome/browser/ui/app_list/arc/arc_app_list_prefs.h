@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "components/arc/common/app.mojom.h"
-#include "components/arc/session/connection_observer.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/layout.h"
 
@@ -169,10 +169,7 @@ class ArcAppListPrefs : public KeyedService,
 
     virtual void OnNotificationsEnabledChanged(
         const std::string& package_name, bool enabled) {}
-    // Notifies that package has been installed. This may be called in two
-    // cases:
-    // a) the package is being newly installed
-    // b) the package is already installed, and is being updated
+    // Notifies that package has been installed.
     virtual void OnPackageInstalled(
         const arc::mojom::ArcPackageInfo& package_info) {}
     // Notifies that package has been modified.

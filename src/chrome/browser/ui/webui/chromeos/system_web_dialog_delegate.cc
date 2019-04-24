@@ -94,10 +94,6 @@ void SystemWebDialogDelegate::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidth, kDialogHeight);
 }
 
-bool SystemWebDialogDelegate::CanResizeDialog() const {
-  return false;
-}
-
 std::string SystemWebDialogDelegate::GetDialogArgs() const {
   return std::string();
 }

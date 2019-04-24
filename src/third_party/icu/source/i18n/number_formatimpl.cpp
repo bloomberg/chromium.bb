@@ -172,12 +172,13 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
     // Pre-compute a few values for efficiency.
     bool isCurrency = utils::unitIsCurrency(macros.unit);
     bool isNoUnit = utils::unitIsNoUnit(macros.unit);
-    bool isPercent = utils::unitIsPercent(macros.unit);
-    bool isPermille = utils::unitIsPermille(macros.unit);
+    bool isPercent = isNoUnit && utils::unitIsPercent(macros.unit);
+    bool isPermille = isNoUnit && utils::unitIsPermille(macros.unit);
+    bool isCldrUnit = !isCurrency && !isNoUnit;
     bool isAccounting =
             macros.sign == UNUM_SIGN_ACCOUNTING || macros.sign == UNUM_SIGN_ACCOUNTING_ALWAYS ||
             macros.sign == UNUM_SIGN_ACCOUNTING_EXCEPT_ZERO;
-    CurrencyUnit currency(u"", status);
+    CurrencyUnit currency(nullptr, status);
     if (isCurrency) {
         currency = CurrencyUnit(macros.unit, status); // Restore CurrencyUnit from MeasureUnit
     }
@@ -193,8 +194,6 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
     if (macros.unitWidth != UNUM_UNIT_WIDTH_COUNT) {
         unitWidth = macros.unitWidth;
     }
-    bool isCldrUnit = !isCurrency && !isNoUnit &&
-        (unitWidth == UNUM_UNIT_WIDTH_FULL_NAME || !(isPercent || isPermille));
 
     // Select the numbering system.
     LocalPointer<const NumberingSystem> nsLocal;
@@ -208,8 +207,6 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
         nsLocal.adoptInstead(ns);
     }
     const char* nsName = U_SUCCESS(status) ? ns->getName() : "latn";
-    uprv_strncpy(fMicros.nsName, nsName, 8);
-    fMicros.nsName[8] = 0; // guarantee NUL-terminated
 
     // Resolve the symbols. Do this here because currency may need to customize them.
     if (macros.symbols.isDecimalFormatSymbols()) {
@@ -244,9 +241,7 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
     }
     if (pattern == nullptr) {
         CldrPatternStyle patternStyle;
-        if (isCldrUnit) {
-            patternStyle = CLDR_PATTERN_STYLE_DECIMAL;
-        } else if (isPercent || isPermille) {
+        if (isPercent || isPermille) {
             patternStyle = CLDR_PATTERN_STYLE_PERCENT;
         } else if (!isCurrency || unitWidth == UNUM_UNIT_WIDTH_FULL_NAME) {
             patternStyle = CLDR_PATTERN_STYLE_DECIMAL;
@@ -349,8 +344,7 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
     fPatternModifier.adoptInstead(patternModifier);
     patternModifier->setPatternInfo(
             macros.affixProvider != nullptr ? macros.affixProvider
-                                            : static_cast<const AffixPatternProvider*>(fPatternInfo.getAlias()),
-            UNUM_FIELD_COUNT);
+                                            : static_cast<const AffixPatternProvider*>(fPatternInfo.getAlias()));
     patternModifier->setPatternAttributes(fMicros.sign, isPermille);
     if (patternModifier->needsPlurals()) {
         patternModifier->setSymbols(

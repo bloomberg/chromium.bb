@@ -35,6 +35,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/event_bindings.h"
 #endif
 
 using autofill::AutofillAgent;

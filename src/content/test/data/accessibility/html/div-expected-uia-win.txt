@@ -1,6 +1,0 @@
-region
-++document
-++++group
-++++++description Name='Unfocusable div'
-++++group Name='Focusable div'
-++++++description Name='Focusable div'

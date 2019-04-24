@@ -201,7 +201,7 @@ PaintLayer::~PaintLayer() {
     if (style.HasFilter())
       style.Filter().RemoveClient(*rare_data_->resource_info);
     if (auto* reference_clip =
-            DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
+            ToReferenceClipPathOperationOrNull(style.ClipPath()))
       reference_clip->RemoveClient(*rare_data_->resource_info);
     rare_data_->resource_info->ClearLayer();
   }
@@ -235,7 +235,7 @@ DOMNodeId PaintLayer::OwnerNodeId() const {
   return static_cast<const DisplayItemClient&>(GetLayoutObject()).OwnerNodeId();
 }
 
-IntRect PaintLayer::VisualRect() const {
+LayoutRect PaintLayer::VisualRect() const {
   return layout_object_.FragmentsVisualRectBoundingBox();
 }
 
@@ -282,6 +282,7 @@ bool PaintLayer::PaintsWithFilters() const {
   return !GetCompositedLayerMapping() ||
          GetCompositingState() != kPaintsIntoOwnBacking;
 }
+
 
 LayoutSize PaintLayer::SubpixelAccumulation() const {
   return rare_data_ ? rare_data_->subpixel_accumulation : LayoutSize();
@@ -434,7 +435,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
   bool had_transform = Transform();
   if (has_transform != had_transform) {
     if (has_transform)
-      EnsureRareData().transform = std::make_unique<TransformationMatrix>();
+      EnsureRareData().transform = TransformationMatrix::Create();
     else
       rare_data_->transform.reset();
 
@@ -602,8 +603,7 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
 
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.
-  point.MoveBy(
-      FloatPoint(paint_invalidation_container.FirstFragment().PaintOffset()));
+  point.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
   point = GeometryMapper::SourceToDestinationProjection(
               source_state.Transform(), dest_state.Transform())
               .MapPoint(point);
@@ -1085,47 +1085,20 @@ void PaintLayer::SetNeedsVisualOverflowRecalc() {
   MarkAncestorChainForFlagsUpdate();
 }
 
-void PaintLayer::SetChildNeedsCompositingInputsUpdateUpToAncestor(
-    PaintLayer* ancestor) {
-  DCHECK(ancestor);
-
-  for (auto* layer = this; layer && layer != ancestor; layer = layer->Parent())
-    layer->child_needs_compositing_inputs_update_ = true;
-
-  ancestor->child_needs_compositing_inputs_update_ = true;
-}
-
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   needs_ancestor_dependent_compositing_inputs_update_ = true;
 
-  PaintLayer* last_ancestor = nullptr;
   for (PaintLayer* current = this;
        current && !current->child_needs_compositing_inputs_update_;
-       current = current->Parent()) {
-    last_ancestor = current;
+       current = current->Parent())
     current->child_needs_compositing_inputs_update_ = true;
-    if (Compositor() &&
-        current->GetLayoutObject().ShouldApplyStrictContainment() &&
-        // TODO(rego): Disable CompositingInputsRoot optimization if the
-        // "contain: strict" element has "position: sticky". This was causing
-        // crashes because PaintLayerScrollableArea::sticky_constraints_map_ was
-        // not updated correctly in some cases (see crbug.com/949887).
-        !current->GetLayoutObject().IsStickyPositioned() &&
-        // TODO(rego): Disable CompositingInputsRoot optimization for iframes
-        // (see crbug.com/953159).
-        !current->GetLayoutObject().IsLayoutIFrame())
-      break;
-  }
 
   if (Compositor()) {
     Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateAfterCompositingInputChange);
-
-    if (last_ancestor)
-      Compositor()->UpdateCompositingInputsRoot(last_ancestor);
   }
 }
 
@@ -2501,18 +2474,13 @@ FloatRect PaintLayer::BackdropFilterReferenceBox() const {
 gfx::RRectF PaintLayer::BackdropFilterBounds(
     const FloatRect& reference_box) const {
   auto& style = GetLayoutObject().StyleRef();
-  gfx::RRectF backdrop_filter_bounds;
-  if (!style.HasBorderRadius()) {
-    backdrop_filter_bounds = gfx::RRectF(reference_box, 0);
-  } else {
-    FloatRoundedRect rrect =
-        style.GetRoundedBorderFor(LayoutRect(reference_box));
-    backdrop_filter_bounds = gfx::RRectF(rrect);
-  }
-  float zoom = style.EffectiveZoom();
-  backdrop_filter_bounds.Scale(zoom);
-  return backdrop_filter_bounds;
+  if (!style.HasBorderRadius())
+    return gfx::RRectF(reference_box, 0);
+  FloatRoundedRect rrect = style.GetRoundedBorderFor(LayoutRect(reference_box));
+  // FloatRoundedRect has a typecast to SkRRect().
+  return gfx::RRectF(rrect);
 }
+
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {
@@ -2535,12 +2503,12 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(clip_path_operation);
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation* clip_path =
-        To<ShapeClipPathOperation>(clip_path_operation);
+        ToShapeClipPathOperation(clip_path_operation);
     return !clip_path->GetPath(reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResource* resource =
-      To<ReferenceClipPathOperation>(*clip_path_operation).Resource();
+      ToReferenceClipPathOperation(*clip_path_operation).Resource();
   LayoutSVGResourceContainer* container =
       resource ? resource->ResourceContainer() : nullptr;
   if (!container || container->ResourceType() != kClipperResourceType)
@@ -3076,11 +3044,10 @@ void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
   if (!new_clip && !old_clip)
     return;
   const bool had_resource_info = ResourceInfo();
-  if (auto* reference_clip = DynamicTo<ReferenceClipPathOperation>(new_clip))
+  if (auto* reference_clip = ToReferenceClipPathOperationOrNull(new_clip))
     reference_clip->AddClient(EnsureResourceInfo());
   if (had_resource_info) {
-    if (auto* old_reference_clip =
-            DynamicTo<ReferenceClipPathOperation>(old_clip))
+    if (auto* old_reference_clip = ToReferenceClipPathOperationOrNull(old_clip))
       old_reference_clip->RemoveClient(*ResourceInfo());
   }
 }
@@ -3266,7 +3233,7 @@ FilterOperations PaintLayer::FilterOperationsIncludingReflection() const {
   if (GetLayoutObject().HasReflection() && GetLayoutObject().IsBox()) {
     BoxReflection reflection = BoxReflectionForPaintLayer(*this, style);
     filter_operations.Operations().push_back(
-        MakeGarbageCollected<BoxReflectFilterOperation>(reflection));
+        BoxReflectFilterOperation::Create(reflection));
   }
   return filter_operations;
 }
@@ -3444,43 +3411,6 @@ void PaintLayer::ClearNeedsRepaintRecursively() {
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->ClearNeedsRepaintRecursively();
   needs_repaint_ = false;
-}
-
-const PaintLayer* PaintLayer::CommonAncestor(const PaintLayer* other) const {
-  DCHECK(other);
-  if (this == other)
-    return this;
-
-  int this_depth = 0;
-  for (auto* layer = this; layer; layer = layer->Parent()) {
-    if (layer == other)
-      return layer;
-    this_depth++;
-  }
-  int other_depth = 0;
-  for (auto* layer = other; layer; layer = layer->Parent()) {
-    if (layer == this)
-      return layer;
-    other_depth++;
-  }
-
-  const PaintLayer* this_iterator = this;
-  const PaintLayer* other_iterator = other;
-  for (; this_depth > other_depth; this_depth--)
-    this_iterator = this_iterator->Parent();
-  for (; other_depth > this_depth; other_depth--)
-    other_iterator = other_iterator->Parent();
-
-  while (this_iterator) {
-    if (this_iterator == other_iterator)
-      return this_iterator;
-    this_iterator = this_iterator->Parent();
-    other_iterator = other_iterator->Parent();
-  }
-
-  DCHECK(!this_iterator);
-  DCHECK(!other_iterator);
-  return nullptr;
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()

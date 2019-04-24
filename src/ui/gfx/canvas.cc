@@ -435,8 +435,9 @@ void Canvas::DrawImageInPath(const ImageSkia& image,
   SkMatrix matrix;
   matrix.setTranslate(SkIntToScalar(x), SkIntToScalar(y));
   cc::PaintFlags flags(original_flags);
-  flags.setShader(CreateImageRepShader(image_rep, SkTileMode::kRepeat,
-                                       SkTileMode::kRepeat, matrix));
+  flags.setShader(
+      CreateImageRepShader(image_rep, SkShader::kRepeat_TileMode,
+                           SkShader::kRepeat_TileMode, matrix));
   canvas_->drawPath(path, flags);
 }
 
@@ -470,8 +471,8 @@ void Canvas::TileImageInt(const ImageSkia& image,
                           int w,
                           int h,
                           float tile_scale,
-                          SkTileMode tile_mode_x,
-                          SkTileMode tile_mode_y,
+                          SkShader::TileMode tile_mode_x,
+                          SkShader::TileMode tile_mode_y,
                           cc::PaintFlags* flags) {
   SkRect dest_rect = { SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),
@@ -496,8 +497,8 @@ bool Canvas::InitPaintFlagsForTiling(const ImageSkia& image,
                                      float tile_scale_y,
                                      int dest_x,
                                      int dest_y,
-                                     SkTileMode tile_mode_x,
-                                     SkTileMode tile_mode_y,
+                                     SkShader::TileMode tile_mode_x,
+                                     SkShader::TileMode tile_mode_y,
                                      cc::PaintFlags* flags) {
   const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
@@ -570,8 +571,8 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
   cc::PaintFlags flags(original_flags);
   flags.setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
   flags.setShader(CreateImageRepShaderForScale(
-      image_rep, SkTileMode::kRepeat, SkTileMode::kRepeat, shader_scale,
-      remove_image_scale ? image_rep.scale() : 1.f));
+      image_rep, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+      shader_scale, remove_image_scale ? image_rep.scale() : 1.f));
 
   // The rect will be filled by the bitmap.
   canvas_->drawRect(dest_rect, flags);

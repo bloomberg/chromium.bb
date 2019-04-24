@@ -72,7 +72,9 @@
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+
+#include <math.h>
+#include <memory>
 
 namespace blink {
 
@@ -565,8 +567,8 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     ts << "\n";
     // Creating a placeholder filter which is passed to the builder.
     FloatRect dummy_rect;
-    auto* dummy_filter = MakeGarbageCollected<Filter>(dummy_rect, dummy_rect, 1,
-                                                      Filter::kBoundingBox);
+    Filter* dummy_filter =
+        Filter::Create(dummy_rect, dummy_rect, 1, Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
     builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
                        dummy_rect);
@@ -732,7 +734,7 @@ void WriteResources(WTF::TextStream& ts,
     DCHECK(style.ClipPath());
     DCHECK_EQ(style.ClipPath()->GetType(), ClipPathOperation::REFERENCE);
     const ReferenceClipPathOperation& clip_path_reference =
-        To<ReferenceClipPathOperation>(*style.ClipPath());
+        ToReferenceClipPathOperation(*style.ClipPath());
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         clip_path_reference.Url(), tree_scope);
     WriteIndent(ts, indent);
@@ -748,7 +750,7 @@ void WriteResources(WTF::TextStream& ts,
     const FilterOperation& filter_operation = *style.Filter().at(0);
     DCHECK_EQ(filter_operation.GetType(), FilterOperation::REFERENCE);
     const auto& reference_filter_operation =
-        To<ReferenceFilterOperation>(filter_operation);
+        ToReferenceFilterOperation(filter_operation);
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         reference_filter_operation.Url(), tree_scope);
     WriteIndent(ts, indent);

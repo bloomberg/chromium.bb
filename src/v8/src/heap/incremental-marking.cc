@@ -609,6 +609,22 @@ void IncrementalMarking::UpdateMarkingWorklistAfterScavenge() {
   UpdateWeakReferencesAfterScavenge();
 }
 
+namespace {
+template <typename T>
+T ForwardingAddress(T heap_obj) {
+  MapWord map_word = heap_obj->map_word();
+
+  if (map_word.IsForwardingAddress()) {
+    return T::cast(map_word.ToForwardingAddress());
+  } else if (Heap::InFromPage(heap_obj)) {
+    return T();
+  } else {
+    // TODO(ulan): Support minor mark-compactor here.
+    return heap_obj;
+  }
+}
+}  // namespace
+
 void IncrementalMarking::UpdateWeakReferencesAfterScavenge() {
   weak_objects_->weak_references.Update(
       [](std::pair<HeapObject, HeapObjectSlot> slot_in,
@@ -764,19 +780,10 @@ intptr_t IncrementalMarking::ProcessMarkingWorklist(
   while (bytes_processed < bytes_to_process || completion == FORCE_COMPLETION) {
     HeapObject obj = marking_worklist()->Pop();
     if (obj.is_null()) break;
-    // Left trimming may result in grey or black filler objects on the marking
-    // worklist. Ignore these objects.
+    // Left trimming may result in white, grey, or black filler objects on the
+    // marking deque. Ignore these objects.
     if (obj->IsFiller()) {
-      // Due to copying mark bits and the fact that grey and black have their
-      // first bit set, one word fillers are always black.
-      DCHECK_IMPLIES(
-          obj->map() == ReadOnlyRoots(heap()).one_pointer_filler_map(),
-          marking_state()->IsBlack(obj));
-      // Other fillers may be black or grey depending on the color of the object
-      // that was trimmed.
-      DCHECK_IMPLIES(
-          obj->map() != ReadOnlyRoots(heap()).one_pointer_filler_map(),
-          marking_state()->IsBlackOrGrey(obj));
+      DCHECK(!marking_state()->IsImpossible(obj));
       continue;
     }
     bytes_processed += VisitObject(obj->map(), obj);

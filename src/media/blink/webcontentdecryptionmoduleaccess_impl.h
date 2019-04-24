@@ -5,8 +5,6 @@
 #ifndef MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULEACCESS_IMPL_H_
 #define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULEACCESS_IMPL_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_config.h"
@@ -23,13 +21,7 @@ class WebEncryptedMediaClientImpl;
 class WebContentDecryptionModuleAccessImpl
     : public blink::WebContentDecryptionModuleAccess {
  public:
-  static std::unique_ptr<WebContentDecryptionModuleAccessImpl> Create(
-      const blink::WebString& key_system,
-      const blink::WebSecurityOrigin& security_origin,
-      const blink::WebMediaKeySystemConfiguration& configuration,
-      const CdmConfig& cdm_config,
-      const base::WeakPtr<WebEncryptedMediaClientImpl>& client);
-  WebContentDecryptionModuleAccessImpl(
+  static WebContentDecryptionModuleAccessImpl* Create(
       const blink::WebString& key_system,
       const blink::WebSecurityOrigin& security_origin,
       const blink::WebMediaKeySystemConfiguration& configuration,
@@ -45,6 +37,13 @@ class WebContentDecryptionModuleAccessImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
+  WebContentDecryptionModuleAccessImpl(
+      const blink::WebString& key_system,
+      const blink::WebSecurityOrigin& security_origin,
+      const blink::WebMediaKeySystemConfiguration& configuration,
+      const CdmConfig& cdm_config,
+      const base::WeakPtr<WebEncryptedMediaClientImpl>& client);
+
   const blink::WebString key_system_;
   const blink::WebSecurityOrigin security_origin_;
   const blink::WebMediaKeySystemConfiguration configuration_;

@@ -21,12 +21,13 @@ namespace views {
 
 // The default diameter of a Throbber. If you change this, also change
 // kCheckmarkDipSize.
-static constexpr int kDefaultDiameter = 16;
+static const int kDefaultDiameter = 16;
 // The size of the checkmark, in DIP. This magic number matches the default
 // diamater plus padding inherent in the checkmark SVG.
-static constexpr int kCheckmarkDipSize = 18;
+static const int kCheckmarkDipSize = 18;
 
-Throbber::Throbber() = default;
+Throbber::Throbber() : checked_(false) {
+}
 
 Throbber::~Throbber() {
   Stop();
@@ -37,10 +38,9 @@ void Throbber::Start() {
     return;
 
   start_time_ = base::TimeTicks::Now();
-  constexpr int kFrameTimeMs = 30;
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
-      base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
+  const int kFrameTimeMs = 30;
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
+               base::Bind(&Throbber::SchedulePaint, base::Unretained(this)));
   SchedulePaint();  // paint right away
 }
 
@@ -89,16 +89,16 @@ bool Throbber::IsRunning() const {
 // Smoothed throbber ---------------------------------------------------------
 
 // Delay after work starts before starting throbber, in milliseconds.
-static constexpr int kStartDelay = 200;
+static const int kStartDelay = 200;
 
 // Delay after work stops before stopping, in milliseconds.
-static constexpr int kStopDelay = 50;
+static const int kStopDelay = 50;
 
 SmoothedThrobber::SmoothedThrobber()
     : start_delay_ms_(kStartDelay), stop_delay_ms_(kStopDelay) {
 }
 
-SmoothedThrobber::~SmoothedThrobber() = default;
+SmoothedThrobber::~SmoothedThrobber() {}
 
 void SmoothedThrobber::Start() {
   stop_timer_.Stop();

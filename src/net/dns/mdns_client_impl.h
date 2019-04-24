@@ -66,8 +66,8 @@ class NET_EXPORT_PRIVATE MDnsConnection {
   explicit MDnsConnection(MDnsConnection::Delegate* delegate);
   virtual ~MDnsConnection();
 
-  // Succeeds if at least one of the socket handlers succeeded.
-  int Init(MDnsSocketFactory* socket_factory);
+  // Both methods return true if at least one of the socket handlers succeeded.
+  bool Init(MDnsSocketFactory* socket_factory);
   void Send(const scoped_refptr<IOBuffer>& buffer, unsigned size);
 
  private:
@@ -129,8 +129,8 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     Core(base::Clock* clock, base::OneShotTimer* timer);
     ~Core() override;
 
-    // Initialize the core.
-    int Init(MDnsSocketFactory* socket_factory);
+    // Initialize the core. Returns true on success.
+    bool Init(MDnsSocketFactory* socket_factory);
 
     // Send a query with a specific rrtype and name. Returns true on success.
     bool SendQuery(uint16_t rrtype, const std::string& name);
@@ -148,8 +148,6 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     void HandlePacket(DnsResponse* response, int bytes_read) override;
 
     void OnConnectionError(int error) override;
-
-    MDnsCache* cache_for_testing() { return &cache_; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
@@ -211,7 +209,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
       int flags,
       const MDnsTransaction::ResultCallback& callback) override;
 
-  int StartListening(MDnsSocketFactory* socket_factory) override;
+  bool StartListening(MDnsSocketFactory* socket_factory) override;
   void StopListening() override;
   bool IsListening() const override;
 

@@ -42,7 +42,6 @@
 <translation id="152234381334907219">Tallentamaton</translation>
 <translation id="1540800554400757039">Osoite 1</translation>
 <translation id="1545749641540134597">Skannaa QR-koodi</translation>
-<translation id="1552525382687785070">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä</translation>
 <translation id="1558704936695638228">Näytä lisää välilehtiasetuksia painamalla pitkään</translation>
 <translation id="1580783302095112590">Viesti lähetetty.</translation>
 <translation id="1582732959743469162">Tämä keskeyttää nykyisen latauksen edistymisen.</translation>
@@ -85,7 +84,6 @@
 <translation id="213900355088104901">Voit selata verkkoa yksityisesti avaamalla incognito-välilehden.</translation>
 <translation id="2139867232736819575">Hae kopioitua tekstiä</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
-<translation id="2179182049312275900">Voit ottaa synkronoinnin käyttöön milloin tahansa asetuksista.</translation>
 <translation id="2198757192731523470">Google voi muokata Hakua, mainoksia ja muita Googlen palveluita historiasi perusteella.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> lukematonta artikkelia lukulistalla</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
@@ -104,7 +102,6 @@
 <translation id="2386793615875593361">1 valittu</translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
 <translation id="2481538920734869610">LISÄÄ TILI</translation>
-<translation id="2497852260688568942">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="2523184218357549926">Lähettää avaamiesi sivujen URL-osoitteet Googlelle</translation>
 <translation id="2523363575747517183">Tämä sivusto yrittää toistuvasti avata toisen sovelluksen.</translation>
 <translation id="2529021024822217800">Avaa kaikki</translation>
@@ -203,9 +200,9 @@
 <translation id="4038354071007134711">Mikään laitteen sovellus ei voi avata tiedostoa.</translation>
 <translation id="4042870976416480368">Hae sivulta</translation>
 <translation id="4049507953662678203">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
-<translation id="4071530748369333746">Peruutetaanko synkronointi?</translation>
 <translation id="4082688844002261427">Määritä, miten selaushistoria personoi hakua, mainoksia ja muita</translation>
 <translation id="408404951701638773">Hakukenttä on nyt helpommin käytettävissä</translation>
+<translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
 <translation id="4112644173421521737">Haku</translation>
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
@@ -217,6 +214,7 @@
 <translation id="4272631900155121838">Jos haluat skannata QR-koodin, ota kamera käyttöön asetuksissa.</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="430793432425771671">Synkronoi kaikki</translation>
+<translation id="4342284590510997375">Uusi</translation>
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
 <translation id="4370827530403103842">Synkronointi ei toimi. Korjaa napauttamalla.</translation>
 <translation id="4375040482473363939">QR-koodihaku</translation>
@@ -272,7 +270,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
 <translation id="5244474230056479698">Synkronoidaan osoitteeseen <ph name="EMAIL" /></translation>
-<translation id="5245322853195994030">Peruuta synkronointi</translation>
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
@@ -366,9 +363,9 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6656103420185847513">Muokkaa kansiota</translation>
 <translation id="6657585470893396449">Salasana</translation>
-<translation id="6668619169535738264">Muokkaa kirjanmerkkiä</translation>
 <translation id="667999046851023355">Dokumentti</translation>
 <translation id="6691331417640343772">Synkronoidun datan valinnat Google Hallintapaneelissa</translation>
+<translation id="6709334795756764830">Muokkaa kirjanmerkkiä</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Salasanojen vienti epäonnistui</translation>
 <translation id="6780034285637185932">Postinumero</translation>
@@ -409,7 +406,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7291368939935408496">Valmistellaan salasanoja…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosenttia ladattu</translation>
 <translation id="7346909386216857016">Selvä</translation>
-<translation id="7348502496356775519">Lisää kirjanmerkkeihin</translation>
 <translation id="7383797227493018512">Lukulista</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="7425346204213733349">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtäviä muutoksia ei enää synkronoida Google-tilillesi. Olemassa olevia tietojasi säilytetään kuitenkin Google-tililläsi.</translation>
@@ -457,7 +453,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8073670137947914548">Lataus valmis</translation>
 <translation id="8076014560081431679">Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat sisältää tietoa selaustavoistasi. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Ladattava tiedosto on saatavilla. Ruudun alaosassa on käytettävissä valintoja.</translation>
-<translation id="8131740175452115882">Vahvista</translation>
 <translation id="8205564605687841303">Peruuta</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
 <translation id="8261506727792406068">Poista</translation>

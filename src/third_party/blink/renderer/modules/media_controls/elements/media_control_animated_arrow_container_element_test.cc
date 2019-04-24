@@ -46,7 +46,7 @@ class MediaControlAnimatedArrowContainerElementTest : public PageTestBase {
  private:
   bool SVGElementHasDisplayValue() {
     return GetElementById("jump")->InlineStyle()->HasProperty(
-        CSSPropertyID::kDisplay);
+        CSSPropertyDisplay);
   }
 
   bool SVGElementIsPresent() { return GetElementById("jump"); }

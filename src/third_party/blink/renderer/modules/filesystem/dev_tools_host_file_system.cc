@@ -18,18 +18,18 @@ DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(
     const String& file_system_name,
     const String& root_url) {
   ExecutionContext* context = host.FrontendFrame()->GetDocument();
-  return MakeGarbageCollected<DOMFileSystem>(
-      context, file_system_name, mojom::blink::FileSystemType::kIsolated,
-      KURL(root_url));
+  return DOMFileSystem::Create(context, file_system_name,
+                               mojom::blink::FileSystemType::kIsolated,
+                               KURL(root_url));
 }
 
 void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(
     DevToolsHost& host,
     DOMFileSystem* dom_file_system) {
-  auto message = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> message = JSONObject::Create();
   message->SetInteger("id", 0);
   message->SetString("method", "upgradeDraggedFileSystemPermissions");
-  auto params = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> params = JSONArray::Create();
   params->PushString(dom_file_system->RootURL().GetString());
   message->SetArray("params", std::move(params));
   host.sendMessageToEmbedder(message->ToJSONString());

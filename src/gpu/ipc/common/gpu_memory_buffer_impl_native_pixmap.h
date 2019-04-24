@@ -30,7 +30,7 @@ class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
 
   static std::unique_ptr<GpuMemoryBufferImplNativePixmap> CreateFromHandle(
       gfx::ClientNativePixmapFactory* client_native_pixmap_factory,
-      gfx::GpuMemoryBufferHandle handle,
+      const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
@@ -57,10 +57,12 @@ class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
       gfx::BufferFormat format,
       DestructionCallback callback,
       std::unique_ptr<gfx::ClientNativePixmap> native_pixmap,
-      gfx::NativePixmapHandle handle);
+      const std::vector<gfx::NativePixmapPlane>& planes,
+      std::vector<base::ScopedFD> fds);
 
   const std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
-  gfx::NativePixmapHandle handle_;
+  std::vector<gfx::NativePixmapPlane> planes_;
+  std::vector<base::ScopedFD> fds_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplNativePixmap);
 };

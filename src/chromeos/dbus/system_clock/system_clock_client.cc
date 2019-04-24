@@ -191,31 +191,24 @@ class SystemClockClientImpl : public SystemClockClient {
   DISALLOW_COPY_AND_ASSIGN(SystemClockClientImpl);
 };
 
-SystemClockClient::SystemClockClient() {
-  CHECK(!g_instance);
-  g_instance = this;
-}
+SystemClockClient::SystemClockClient() = default;
 
-SystemClockClient::~SystemClockClient() {
-  CHECK_EQ(this, g_instance);
-  g_instance = nullptr;
-}
+SystemClockClient::~SystemClockClient() = default;
 
 // static
 void SystemClockClient::Initialize(dbus::Bus* bus) {
-  CHECK(bus);
-  new SystemClockClientImpl(bus);
-}
-
-// static
-void SystemClockClient::InitializeFake() {
-  new FakeSystemClockClient();
+  CHECK(!g_instance);
+  if (bus)
+    g_instance = new SystemClockClientImpl(bus);
+  else
+    g_instance = new FakeSystemClockClient();
 }
 
 // static
 void SystemClockClient::Shutdown() {
   CHECK(g_instance);
   delete g_instance;
+  g_instance = nullptr;
 }
 
 // static

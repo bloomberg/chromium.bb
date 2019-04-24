@@ -15,7 +15,6 @@ PRETTY_XML = """
 
 <event name="Event1">
   <owner>owner@chromium.org</owner>
-  <owner>anotherowner@chromium.org</owner>
   <summary>
     Event1 summary.
   </summary>
@@ -24,54 +23,13 @@ PRETTY_XML = """
     <summary>
       Metric1 summary.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <index fields="profile.form_factor"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
-  <metric name="Metric2">
-    <aggregation>
-      <history>
-        <statistics export="False">
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="Metric3"/>
+  <metric name="Metric2"/>
 </event>
 
 </ukm-configuration>
 """.strip()
 
-CONFIG_EVENT_NAMES_SORTED = """
-<ukm-configuration>
-
-<event name="Event1"/>
-
-<event name="Event2"/>
-
-<event name="Event3"/>
-
-</ukm-configuration>
-""".strip()
-
-CONFIG_EVENT_NAMES_UNSORTED = """
-<ukm-configuration>
-
-<event name="Event2"/>
-
-<event name="Event3"/>
-
-<event name="Event1"/>
-
-</ukm-configuration>
-""".strip()
 
 class UkmXmlTest(unittest.TestCase):
 
@@ -79,23 +37,6 @@ class UkmXmlTest(unittest.TestCase):
     result = ukm_model.UpdateXML(PRETTY_XML)
     self.assertMultiLineEqual(PRETTY_XML, result.strip())
 
-  def testHasBadEventName(self):
-    bad_xml = PRETTY_XML.replace('Event1', 'Event:1')
-    with self.assertRaises(ValueError) as context:
-      ukm_model.UpdateXML(bad_xml)
-    self.assertIn('Event:1', str(context.exception))
-    self.assertIn('does not match regex', str(context.exception))
-
-  def testHasBadMetricName(self):
-    bad_xml = PRETTY_XML.replace('Metric1', 'Metric:1')
-    with self.assertRaises(ValueError) as context:
-      ukm_model.UpdateXML(bad_xml)
-    self.assertIn('Metric:1', str(context.exception))
-    self.assertIn('does not match regex', str(context.exception))
-
-  def testSortByEventName(self):
-    result = ukm_model.UpdateXML(CONFIG_EVENT_NAMES_UNSORTED)
-    self.assertMultiLineEqual(CONFIG_EVENT_NAMES_SORTED, result.strip())
 
 if __name__ == '__main__':
   unittest.main()

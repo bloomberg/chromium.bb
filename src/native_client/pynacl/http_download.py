@@ -12,11 +12,7 @@ import base64
 import os
 import os.path
 import sys
-
-try:
-  import urllib2 as urllib
-except ImportError:  # For Py3 compatibility
-  import urllib.request as urllib
+import urllib2
 
 import download_utils
 
@@ -54,23 +50,25 @@ def HttpDownload(url, target, username=None, password=None, verbose=True,
     headers.append(('Authorization', 'Basic ' + auth_code))
   if os.environ.get('http_proxy'):
     proxy = os.environ.get('http_proxy')
-    proxy_handler = urllib.ProxyHandler({'http': proxy, 'https': proxy})
-    opener = urllib.build_opener(proxy_handler)
+    proxy_handler = urllib2.ProxyHandler({
+        'http': proxy,
+        'https': proxy})
+    opener = urllib2.build_opener(proxy_handler)
   else:
-    opener = urllib.build_opener()
+    opener = urllib2.build_opener()
   opener.addheaders = headers
-  urllib.install_opener(opener)
+  urllib2.install_opener(opener)
   _CreateDirectory(os.path.split(target)[0])
   # Retry up to 10 times (appengine logger is flaky).
-  for i in range(10):
+  for i in xrange(10):
     if i:
       logger('Download failed on %s, retrying... (%d)\n' % (url, i))
     try:
       # 30 second timeout to ensure we fail and retry on stalled connections.
-      src = urllib.urlopen(url, timeout=30)
+      src = urllib2.urlopen(url, timeout=30)
       try:
-        download_utils.WriteDataFromStream(
-            target, src, chunk_size=2**20, verbose=verbose)
+        download_utils.WriteDataFromStream(target, src, chunk_size=2**20,
+                                           verbose=verbose)
         content_len = src.headers.get('Content-Length')
         if content_len:
           content_len = int(content_len)
@@ -82,12 +80,12 @@ def HttpDownload(url, target, username=None, password=None, verbose=True,
       finally:
         src.close()
       break
-    except urllib.HTTPError as e:
+    except urllib2.HTTPError, e:
       if e.code == 404:
         logger('Resource does not exist.\n')
         raise
       logger('Failed to open.\n')
-    except urllib.URLError:
+    except urllib2.URLError:
       logger('Failed mid stream.\n')
   else:
     logger('Download failed on %s, giving up.\n' % url)

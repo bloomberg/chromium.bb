@@ -16,6 +16,10 @@ class PaintSize : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static PaintSize* Create(FloatSize size) {
+    return MakeGarbageCollected<PaintSize>(size);
+  }
+
   explicit PaintSize(FloatSize size) : size_(size) {}
   ~PaintSize() override = default;
 

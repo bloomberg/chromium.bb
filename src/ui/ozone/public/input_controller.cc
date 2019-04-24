@@ -4,8 +4,6 @@
 
 #include "ui/ozone/public/input_controller.h"
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"

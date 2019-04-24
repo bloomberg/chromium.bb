@@ -138,7 +138,7 @@ class RendererGL : angle::NonCopyable
                                              GLenum transformType,
                                              const GLfloat *transformValues);
 
-    gl::GraphicsResetStatus getResetStatus();
+    GLenum getResetStatus();
 
     // EXT_debug_marker
     void insertEventMarker(GLsizei length, const char *marker);
@@ -180,10 +180,6 @@ class RendererGL : angle::NonCopyable
 
     bool bindWorkerContext(std::string *infoLog);
     void unbindWorkerContext();
-    // Checks if the driver has the KHR_parallel_shader_compile or ARB_parallel_shader_compile
-    // extension.
-    bool hasNativeParallelCompile();
-    void setMaxShaderCompilerThreads(GLuint count);
 
     static unsigned int getMaxWorkerContexts();
 
@@ -222,8 +218,6 @@ class RendererGL : angle::NonCopyable
     std::list<std::unique_ptr<WorkerContext>> mWorkerContextPool;
     // Protect the concurrent accesses to worker contexts.
     std::mutex mWorkerMutex;
-
-    bool mNativeParallelCompileEnabled;
 };
 
 }  // namespace rx

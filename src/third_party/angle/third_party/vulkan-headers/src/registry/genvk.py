@@ -30,13 +30,12 @@ startTime = None
 
 def startTimer(timeit):
     global startTime
-    if timeit:
-        startTime = time.process_time()
+    startTime = time.process_time()
 
 def endTimer(timeit, msg):
     global startTime
-    if timeit:
-        endTime = time.process_time()
+    endTime = time.process_time()
+    if (timeit):
         write(msg, endTime - startTime, file=sys.stderr)
         startTime = None
 
@@ -264,7 +263,6 @@ def makeGenOpts(args):
         [ 'vulkan_xcb.h',         [ 'VK_KHR_xcb_surface'          ], commonSuppressExtensions ],
         [ 'vulkan_xlib.h',        [ 'VK_KHR_xlib_surface'         ], commonSuppressExtensions ],
         [ 'vulkan_xlib_xrandr.h', [ 'VK_EXT_acquire_xlib_display' ], commonSuppressExtensions ],
-        [ 'vulkan_metal.h',       [ 'VK_EXT_metal_surface'        ], commonSuppressExtensions ],
     ]
 
     for platform in platforms:

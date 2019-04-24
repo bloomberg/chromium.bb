@@ -249,7 +249,7 @@ class StackFrame {
   virtual Code unchecked_code() const = 0;
 
   // Search for the code associated with this frame.
-  V8_EXPORT_PRIVATE Code LookupCode() const;
+  Code LookupCode() const;
 
   virtual void Iterate(RootVisitor* v) const = 0;
   static void IteratePc(RootVisitor* v, Address* pc_address,
@@ -384,6 +384,8 @@ class ExitFrame: public StackFrame {
 
   Code unchecked_code() const override;
 
+  Address& code_slot() const;
+
   // Garbage collection support.
   void Iterate(RootVisitor* v) const override;
 
@@ -449,7 +451,7 @@ class BuiltinExitFrame : public ExitFrame {
 
 class StandardFrame;
 
-class V8_EXPORT_PRIVATE FrameSummary {
+class FrameSummary {
  public:
 // Subclasses for the different summary kinds:
 #define FRAME_SUMMARY_VARIANTS(F)                                             \
@@ -481,8 +483,6 @@ class V8_EXPORT_PRIVATE FrameSummary {
                            JSFunction function, AbstractCode abstract_code,
                            int code_offset, bool is_constructor,
                            FixedArray parameters);
-
-    void EnsureSourcePositionsAvailable();
 
     Handle<Object> receiver() const { return receiver_; }
     Handle<JSFunction> function() const { return function_; }
@@ -570,8 +570,6 @@ class V8_EXPORT_PRIVATE FrameSummary {
   static FrameSummary GetBottom(const StandardFrame* frame);
   static FrameSummary GetSingle(const StandardFrame* frame);
   static FrameSummary Get(const StandardFrame* frame, int index);
-
-  void EnsureSourcePositionsAvailable();
 
   // Dispatched accessors.
   Handle<Object> receiver() const;
@@ -1216,15 +1214,15 @@ class StackFrameIteratorBase {
 class StackFrameIterator: public StackFrameIteratorBase {
  public:
   // An iterator that iterates over the isolate's current thread's stack,
-  V8_EXPORT_PRIVATE explicit StackFrameIterator(Isolate* isolate);
+  explicit StackFrameIterator(Isolate* isolate);
   // An iterator that iterates over a given thread's stack.
-  V8_EXPORT_PRIVATE StackFrameIterator(Isolate* isolate, ThreadLocalTop* t);
+  StackFrameIterator(Isolate* isolate, ThreadLocalTop* t);
 
   StackFrame* frame() const {
     DCHECK(!done());
     return frame_;
   }
-  V8_EXPORT_PRIVATE void Advance();
+  void Advance();
 
  private:
   // Go back to the first frame.
@@ -1242,7 +1240,7 @@ class JavaScriptFrameIterator {
   inline JavaScriptFrame* frame() const;
 
   bool done() const { return iterator_.done(); }
-  V8_EXPORT_PRIVATE void Advance();
+  void Advance();
   void AdvanceOneFrame() { iterator_.Advance(); }
 
  private:
@@ -1252,7 +1250,7 @@ class JavaScriptFrameIterator {
 // NOTE: The stack trace frame iterator is an iterator that only traverse proper
 // JavaScript frames that have proper JavaScript functions and WebAssembly
 // frames.
-class V8_EXPORT_PRIVATE StackTraceFrameIterator {
+class StackTraceFrameIterator {
  public:
   explicit StackTraceFrameIterator(Isolate* isolate);
   // Skip frames until the frame with the given id is reached.
@@ -1271,6 +1269,7 @@ class V8_EXPORT_PRIVATE StackTraceFrameIterator {
   StackFrameIterator iterator_;
   bool IsValidFrame(StackFrame* frame) const;
 };
+
 
 class SafeStackFrameIterator: public StackFrameIteratorBase {
  public:

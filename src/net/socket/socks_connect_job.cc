@@ -18,16 +18,16 @@
 
 namespace net {
 
-// SOCKSConnectJobs will time out if the SOCKS handshake takes longer than this.
-static constexpr base::TimeDelta kSOCKSConnectJobTimeout =
-    base::TimeDelta::FromSeconds(30);
+// SOCKSConnectJobs will time out after this many seconds.  Note this is in
+// addition to the timeout for the transport socket.
+static const int kSOCKSConnectJobTimeoutInSeconds = 30;
 
 SOCKSSocketParams::SOCKSSocketParams(
-    scoped_refptr<TransportSocketParams> proxy_server_params,
+    const scoped_refptr<TransportSocketParams>& proxy_server,
     bool socks_v5,
     const HostPortPair& host_port_pair,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : transport_params_(std::move(proxy_server_params)),
+    : transport_params_(proxy_server),
       destination_(host_port_pair),
       socks_v5_(socks_v5),
       traffic_annotation_(traffic_annotation) {}
@@ -36,20 +36,18 @@ SOCKSSocketParams::~SOCKSSocketParams() = default;
 
 SOCKSConnectJob::SOCKSConnectJob(
     RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    scoped_refptr<SOCKSSocketParams> socks_params,
+    const CommonConnectJobParams& common_connect_job_params,
+    const scoped_refptr<SOCKSSocketParams>& socks_params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
-                 socket_tag,
-                 base::TimeDelta(),
+                 ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
                  net_log,
                  NetLogSourceType::SOCKS_CONNECT_JOB,
                  NetLogEventType::SOCKS_CONNECT_JOB_CONNECT),
-      socks_params_(std::move(socks_params)) {}
+      socks_params_(socks_params) {}
 
 SOCKSConnectJob::~SOCKSConnectJob() {
   // In the case the job was canceled, need to delete nested job first to
@@ -77,8 +75,9 @@ bool SOCKSConnectJob::HasEstablishedConnection() const {
          next_state_ == STATE_SOCKS_CONNECT_COMPLETE;
 }
 
-base::TimeDelta SOCKSConnectJob::HandshakeTimeoutForTesting() {
-  return kSOCKSConnectJobTimeout;
+base::TimeDelta SOCKSConnectJob::ConnectionTimeout() {
+  return TransportConnectJob::ConnectionTimeout() +
+         base::TimeDelta::FromSeconds(kSOCKSConnectJobTimeoutInSeconds);
 }
 
 void SOCKSConnectJob::OnIOComplete(int result) {
@@ -139,7 +138,7 @@ int SOCKSConnectJob::DoTransportConnect() {
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
-      socks_params_->transport_params(), priority(), socket_tag(),
+      socks_params_->transport_params(), priority(),
       common_connect_job_params(), this, &net_log());
   return transport_connect_job_->Connect();
 }
@@ -148,8 +147,10 @@ int SOCKSConnectJob::DoTransportConnectComplete(int result) {
   if (result != OK)
     return ERR_PROXY_CONNECTION_FAILED;
 
-  // Start the timer to time allowed for SOCKS handshake.
-  ResetTimer(kSOCKSConnectJobTimeout);
+  // Reset the timer to just the length of time allowed for SOCKS handshake
+  // so that a fast TCP connection plus a slow SOCKS failure doesn't take
+  // longer to timeout than it should.
+  ResetTimer(base::TimeDelta::FromSeconds(kSOCKSConnectJobTimeoutInSeconds));
   next_state_ = STATE_SOCKS_CONNECT;
   return result;
 }

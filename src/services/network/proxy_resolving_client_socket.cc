@@ -12,15 +12,18 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -28,12 +31,11 @@ namespace network {
 
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     net::HttpNetworkSession* network_session,
-    const net::CommonConnectJobParams* common_connect_job_params,
     const net::SSLConfig& ssl_config,
     const GURL& url,
     bool use_tls)
     : network_session_(network_session),
-      common_connect_job_params_(common_connect_job_params),
+      socket_handle_(std::make_unique<net::ClientSocketHandle>()),
       ssl_config_(ssl_config),
       url_(url),
       use_tls_(use_tls),
@@ -46,13 +48,15 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   DCHECK(url_.is_valid());
 }
 
-ProxyResolvingClientSocket::~ProxyResolvingClientSocket() {}
+ProxyResolvingClientSocket::~ProxyResolvingClientSocket() {
+  Disconnect();
+}
 
 int ProxyResolvingClientSocket::Read(net::IOBuffer* buf,
                                      int buf_len,
                                      net::CompletionOnceCallback callback) {
-  if (socket_)
-    return socket_->Read(buf, buf_len, std::move(callback));
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->Read(buf, buf_len, std::move(callback));
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
@@ -60,14 +64,16 @@ int ProxyResolvingClientSocket::ReadIfReady(
     net::IOBuffer* buf,
     int buf_len,
     net::CompletionOnceCallback callback) {
-  if (socket_)
-    return socket_->ReadIfReady(buf, buf_len, std::move(callback));
+  if (socket_handle_->socket()) {
+    return socket_handle_->socket()->ReadIfReady(buf, buf_len,
+                                                 std::move(callback));
+  }
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
 int ProxyResolvingClientSocket::CancelReadIfReady() {
-  if (socket_)
-    return socket_->CancelReadIfReady();
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->CancelReadIfReady();
   // Return net::OK as ReadIfReady() is canceled when socket is disconnected.
   return net::OK;
 }
@@ -77,28 +83,28 @@ int ProxyResolvingClientSocket::Write(
     int buf_len,
     net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  if (socket_) {
-    return socket_->Write(buf, buf_len, std::move(callback),
-                          traffic_annotation);
+  if (socket_handle_->socket()) {
+    return socket_handle_->socket()->Write(buf, buf_len, std::move(callback),
+                                           traffic_annotation);
   }
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
 int ProxyResolvingClientSocket::SetReceiveBufferSize(int32_t size) {
-  if (socket_)
-    return socket_->SetReceiveBufferSize(size);
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->SetReceiveBufferSize(size);
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
 int ProxyResolvingClientSocket::SetSendBufferSize(int32_t size) {
-  if (socket_)
-    return socket_->SetSendBufferSize(size);
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->SetSendBufferSize(size);
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
 int ProxyResolvingClientSocket::Connect(net::CompletionOnceCallback callback) {
   DCHECK(user_connect_callback_.is_null());
-  DCHECK(!socket_);
+  DCHECK(!socket_handle_->socket());
 
   next_state_ = STATE_PROXY_RESOLVE;
   int result = DoLoop(net::OK);
@@ -109,31 +115,32 @@ int ProxyResolvingClientSocket::Connect(net::CompletionOnceCallback callback) {
 }
 
 void ProxyResolvingClientSocket::Disconnect() {
-  connect_job_.reset();
-  socket_.reset();
-  if (proxy_resolve_request_)
+  CloseSocket(true /*close_connection*/);
+  if (proxy_resolve_request_) {
     proxy_resolve_request_.reset();
+  }
   user_connect_callback_.Reset();
 }
 
 bool ProxyResolvingClientSocket::IsConnected() const {
-  if (!socket_)
+  if (!socket_handle_->socket())
     return false;
-  return socket_->IsConnected();
+  return socket_handle_->socket()->IsConnected();
 }
 
 bool ProxyResolvingClientSocket::IsConnectedAndIdle() const {
-  if (!socket_)
+  if (!socket_handle_->socket())
     return false;
-  return socket_->IsConnectedAndIdle();
+  return socket_handle_->socket()->IsConnectedAndIdle();
 }
 
 int ProxyResolvingClientSocket::GetPeerAddress(net::IPEndPoint* address) const {
-  if (!socket_)
+  if (!socket_handle_->socket()) {
     return net::ERR_SOCKET_NOT_CONNECTED;
+  }
 
   if (proxy_info_.is_direct())
-    return socket_->GetPeerAddress(address);
+    return socket_handle_->socket()->GetPeerAddress(address);
 
   net::IPAddress ip_address;
   if (!ip_address.AssignFromIPLiteral(url_.HostNoBrackets())) {
@@ -147,38 +154,38 @@ int ProxyResolvingClientSocket::GetPeerAddress(net::IPEndPoint* address) const {
 
 int ProxyResolvingClientSocket::GetLocalAddress(
     net::IPEndPoint* address) const {
-  if (socket_)
-    return socket_->GetLocalAddress(address);
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->GetLocalAddress(address);
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
 const net::NetLogWithSource& ProxyResolvingClientSocket::NetLog() const {
-  if (socket_)
-    return socket_->NetLog();
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->NetLog();
   return net_log_;
 }
 
 bool ProxyResolvingClientSocket::WasEverUsed() const {
-  if (socket_)
-    return socket_->WasEverUsed();
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->WasEverUsed();
   return false;
 }
 
 bool ProxyResolvingClientSocket::WasAlpnNegotiated() const {
-  if (socket_)
-    return socket_->WasAlpnNegotiated();
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->WasAlpnNegotiated();
   return false;
 }
 
 net::NextProto ProxyResolvingClientSocket::GetNegotiatedProtocol() const {
-  if (socket_)
-    return socket_->GetNegotiatedProtocol();
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->GetNegotiatedProtocol();
   return net::kProtoUnknown;
 }
 
 bool ProxyResolvingClientSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
-  if (socket_)
-    return socket_->GetSSLInfo(ssl_info);
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->GetSSLInfo(ssl_info);
   return false;
 }
 
@@ -268,65 +275,74 @@ int ProxyResolvingClientSocket::DoProxyResolveComplete(int result) {
 }
 
 int ProxyResolvingClientSocket::DoInitConnection() {
-  DCHECK(!socket_);
+  DCHECK(!socket_handle_->socket());
 
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  // Now that the proxy is resolved, create and start a ConnectJob.
-  connect_job_ = net::CreateConnectJobForRawConnect(
-      net::HostPortPair::FromURL(url_), use_tls_, common_connect_job_params_,
-      net::MAXIMUM_PRIORITY, proxy_info_, ssl_config_, ssl_config_, net_log_,
-      this);
-  return connect_job_->Connect();
+  // Now that the proxy is resolved, issue a socket connect.
+  net::HostPortPair host_port_pair = net::HostPortPair::FromURL(url_);
+  // Ignore socket limit set by socket pool for this type of socket.
+  int request_load_flags = net::LOAD_IGNORE_LIMITS;
+  net::RequestPriority request_priority = net::MAXIMUM_PRIORITY;
+
+  // base::Unretained(this) is safe because request is canceled when
+  // |socket_handle_| is destroyed.
+  if (use_tls_) {
+    return net::InitSocketHandleForTlsConnect(
+        host_port_pair, network_session_, request_load_flags, request_priority,
+        proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
+        net_log_, socket_handle_.get(),
+        base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
+                       base::Unretained(this)),
+        base::BindRepeating(&ProxyResolvingClientSocket::OnProxyAuth,
+                            base::Unretained(this)));
+  }
+  return net::InitSocketHandleForRawConnect(
+      host_port_pair, network_session_, request_load_flags, request_priority,
+      proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
+      net_log_, socket_handle_.get(),
+      base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
+                     base::Unretained(this)),
+      base::BindRepeating(&ProxyResolvingClientSocket::OnProxyAuth,
+                          base::Unretained(this)));
 }
 
 int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {
   if (result != net::OK) {
-    connect_job_.reset();
-
     // ReconsiderProxyAfterError either returns an error (in which case it is
     // not reconsidering a proxy) or returns ERR_IO_PENDING if it is considering
     // another proxy.
     return ReconsiderProxyAfterError(result);
   }
 
-  socket_ = connect_job_->PassSocket();
-  connect_job_.reset();
-
   network_session_->proxy_resolution_service()->ReportSuccess(proxy_info_);
   return net::OK;
 }
 
-void ProxyResolvingClientSocket::OnConnectJobComplete(int result,
-                                                      net::ConnectJob* job) {
-  DCHECK_EQ(next_state_, STATE_INIT_CONNECTION_COMPLETE);
-  DCHECK_EQ(connect_job_.get(), job);
-
-  OnIOComplete(result);
-}
-
-void ProxyResolvingClientSocket::OnNeedsProxyAuth(
+void ProxyResolvingClientSocket::OnProxyAuth(
     const net::HttpResponseInfo& response,
     net::HttpAuthController* auth_controller,
-    base::OnceClosure restart_with_auth_callback,
-    net::ConnectJob* job) {
+    base::OnceClosure restart_with_auth_callback) {
   DCHECK_EQ(next_state_, STATE_INIT_CONNECTION_COMPLETE);
-  DCHECK_EQ(connect_job_.get(), job);
-
   // If there are credentials available to try and use, use them.
   if (auth_controller->HaveAuth()) {
     std::move(restart_with_auth_callback).Run();
     return;
   }
 
-  // Otherwise, cancel the ConnectJob and continue.
-  connect_job_.reset();
-
+  // Otherwise, cancel the socket request and continue.
+  CloseSocket(false /* close_connection */);
   OnIOComplete(net::ERR_PROXY_AUTH_REQUESTED);
 }
 
+void ProxyResolvingClientSocket::CloseSocket(bool close_connection) {
+  if (close_connection && socket_handle_->socket())
+    socket_handle_->socket()->Disconnect();
+  socket_handle_->Reset();
+}
+
 int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
-  DCHECK(!socket_);
+  DCHECK(!socket_handle_->socket());
   DCHECK(!proxy_resolve_request_);
   DCHECK_NE(error, net::OK);
   DCHECK_NE(error, net::ERR_IO_PENDING);

@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/remove_function_reduction_opportunity_finder.h"
-
+#include "reduce_test_util.h"
 #include "source/opt/build_module.h"
 #include "source/reduce/reduction_opportunity.h"
-#include "test/reduce/reduce_test_util.h"
+#include "source/reduce/remove_function_reduction_opportunity_finder.h"
 
 namespace spvtools {
 namespace reduce {

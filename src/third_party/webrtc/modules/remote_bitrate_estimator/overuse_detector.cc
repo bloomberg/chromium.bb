@@ -19,6 +19,7 @@
 #include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_minmax.h"
+#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 
@@ -32,10 +33,9 @@ const double kMaxAdaptOffsetMs = 15.0;
 const double kOverUsingTimeThreshold = 10;
 const int kMaxNumDeltas = 60;
 
-bool AdaptiveThresholdExperimentIsDisabled(
-    const WebRtcKeyValueConfig& key_value_config) {
+bool AdaptiveThresholdExperimentIsDisabled() {
   std::string experiment_string =
-      key_value_config.Lookup(kAdaptiveThresholdExperiment);
+      webrtc::field_trial::FindFullName(kAdaptiveThresholdExperiment);
   const size_t kMinExperimentLength = kDisabledPrefixLength;
   if (experiment_string.length() < kMinExperimentLength)
     return false;
@@ -44,11 +44,9 @@ bool AdaptiveThresholdExperimentIsDisabled(
 
 // Gets thresholds from the experiment name following the format
 // "WebRTC-AdaptiveBweThreshold/Enabled-0.5,0.002/".
-bool ReadExperimentConstants(const WebRtcKeyValueConfig& key_value_config,
-                             double* k_up,
-                             double* k_down) {
+bool ReadExperimentConstants(double* k_up, double* k_down) {
   std::string experiment_string =
-      key_value_config.Lookup(kAdaptiveThresholdExperiment);
+      webrtc::field_trial::FindFullName(kAdaptiveThresholdExperiment);
   const size_t kMinExperimentLength = kEnabledPrefixLength + 3;
   if (experiment_string.length() < kMinExperimentLength ||
       experiment_string.substr(0, kEnabledPrefixLength) != kEnabledPrefix)
@@ -57,10 +55,10 @@ bool ReadExperimentConstants(const WebRtcKeyValueConfig& key_value_config,
                 "%lf,%lf", k_up, k_down) == 2;
 }
 
-OveruseDetector::OveruseDetector(const WebRtcKeyValueConfig* key_value_config)
+OveruseDetector::OveruseDetector()
     // Experiment is on by default, but can be disabled with finch by setting
     // the field trial string to "WebRTC-AdaptiveBweThreshold/Disabled/".
-    : in_experiment_(!AdaptiveThresholdExperimentIsDisabled(*key_value_config)),
+    : in_experiment_(!AdaptiveThresholdExperimentIsDisabled()),
       k_up_(0.0087),
       k_down_(0.039),
       overusing_time_threshold_(100),
@@ -70,8 +68,8 @@ OveruseDetector::OveruseDetector(const WebRtcKeyValueConfig* key_value_config)
       time_over_using_(-1),
       overuse_counter_(0),
       hypothesis_(BandwidthUsage::kBwNormal) {
-  if (!AdaptiveThresholdExperimentIsDisabled(*key_value_config))
-    InitializeExperiment(*key_value_config);
+  if (!AdaptiveThresholdExperimentIsDisabled())
+    InitializeExperiment();
 }
 
 OveruseDetector::~OveruseDetector() {}
@@ -146,13 +144,12 @@ void OveruseDetector::UpdateThreshold(double modified_offset, int64_t now_ms) {
   last_update_ms_ = now_ms;
 }
 
-void OveruseDetector::InitializeExperiment(
-    const WebRtcKeyValueConfig& key_value_config) {
+void OveruseDetector::InitializeExperiment() {
   RTC_DCHECK(in_experiment_);
   double k_up = 0.0;
   double k_down = 0.0;
   overusing_time_threshold_ = kOverUsingTimeThreshold;
-  if (ReadExperimentConstants(key_value_config, &k_up, &k_down)) {
+  if (ReadExperimentConstants(&k_up, &k_down)) {
     k_up_ = k_up;
     k_down_ = k_down;
   }

@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/component_export.h"
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/proxy_delegate.h"
@@ -69,14 +70,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // or a previous config.
   bool MayHaveProxiedURL(const GURL& url) const;
 
-  // Whether the HTTP |method| with current |proxy_info| is eligible to be
-  // proxied.
+  // Whether the |url| with current |proxy_info| is eligible to be proxied.
   bool EligibleForProxy(const net::ProxyInfo& proxy_info,
+                        const GURL& url,
                         const std::string& method) const;
 
-  // Fills the alternative proxy config in |result| if applicable.
-  void GetAlternativeProxy(const net::ProxyRetryInfoMap& proxy_retry_info,
-                           net::ProxyInfo* result);
+  // Get the proxy rules that apply to |url|.
+  net::ProxyConfig::ProxyRules GetProxyRulesForURL(const GURL& url) const;
 
   // mojom::CustomProxyConfigClient implementation:
   void OnCustomProxyConfigUpdated(
@@ -89,11 +89,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   mojom::CustomProxyConfigPtr proxy_config_;
   mojo::Binding<mojom::CustomProxyConfigClient> binding_;
 
-  // Cache of URLs for which the usage of custom proxy results
-  // in redirect loops. A container is used here since it's possible that
-  // at any given time, there are multiple URLs that result in redirect loops
-  // when fetched via the custom proxy.
-  std::deque<GURL> redirect_loop_cache_;
+  base::MRUCache<std::string, bool> should_use_alternate_proxy_list_cache_;
 
   // We keep track of a limited number of previous configs so we can determine
   // if a request used a custom proxy if the config happened to change during

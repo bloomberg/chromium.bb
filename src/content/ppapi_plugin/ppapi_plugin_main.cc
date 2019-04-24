@@ -136,7 +136,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   if (!base::win::IsUser32AndGdi32Available())
-    gfx::win::InitializeDirectWrite();
+    gfx::win::MaybeInitializeDirectWrite();
   InitializeDWriteFontProxy(ChildThread::Get()->GetConnector());
 
   int antialiasing_enabled = 1;

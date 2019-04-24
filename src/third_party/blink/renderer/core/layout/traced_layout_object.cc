@@ -111,7 +111,7 @@ void DumpToTracedValue(const LayoutObject& object,
 
 std::unique_ptr<TracedValue> TracedLayoutObject::Create(const LayoutView& view,
                                                         bool trace_geometry) {
-  auto traced_value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
   DumpToTracedValue(view, trace_geometry, traced_value.get());
   return traced_value;
 }

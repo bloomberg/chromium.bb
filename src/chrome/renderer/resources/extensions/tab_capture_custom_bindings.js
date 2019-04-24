@@ -4,7 +4,20 @@
 
 // Custom binding for the Tab Capture API.
 
-apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
+var binding = apiBridge || require('binding').Binding.create('tabCapture');
+
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function runCallbackWithLastError(name, message, stack, callback, args) {
+  if (bindingUtil) {
+    bindingUtil.runCallbackWithLastError(message, function() {
+      $Function.apply(callback, null, args);
+    });
+  } else {
+    jsLastError.run(name, message, stack, callback, args);
+  }
+}
+
+binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   function proxyToGetUserMedia(name, request, callback, response) {
@@ -39,17 +52,22 @@ apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
             callback(media_stream);
           },
           function onError(error) {
-            bindingUtil.runCallbackWithLastError(
+            runCallbackWithLastError(
+                name,
                 getErrorMessage(error, "Failed to start MediaStream."),
-                $Function.bind(callback, null, null));
+                request.stack,
+                function() { callback(null); });
           });
     } catch (error) {
-      bindingUtil.runCallbackWithLastError(
-          getErrorMessage(error, "Invalid argument(s)."),
-          $Function.bind(callback, null, null));
+      runCallbackWithLastError(
+          name, getErrorMessage(error, "Invalid argument(s)."), request.stack,
+          function() { callback(null); });
     }
   }
 
   apiFunctions.setCustomCallback('capture', proxyToGetUserMedia);
   apiFunctions.setCustomCallback('captureOffscreenTab', proxyToGetUserMedia);
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

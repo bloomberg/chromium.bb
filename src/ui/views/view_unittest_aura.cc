@@ -45,8 +45,8 @@ View* CreateViewWithLayer(const gfx::Rect& bounds, const char* layer_name) {
 
 class ViewAuraTest : public ViewsTestBase {
  public:
-  ViewAuraTest() = default;
-  ~ViewAuraTest() override = default;
+  ViewAuraTest() {}
+  ~ViewAuraTest() override {}
 
   const View::Views& GetViewsWithLayers(Widget* widget) {
     return widget->GetViewsWithLayers();

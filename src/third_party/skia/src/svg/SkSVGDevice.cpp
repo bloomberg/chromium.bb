@@ -24,7 +24,6 @@
 #include "SkParsePath.h"
 #include "SkPngCodec.h"
 #include "SkShader.h"
-#include "SkShaderBase.h"
 #include "SkStream.h"
 #include "SkTHash.h"
 #include "SkTo.h"
@@ -117,14 +116,14 @@ bool RequiresViewportReset(const SkPaint& paint) {
   if (!shader)
     return false;
 
-  SkTileMode xy[2];
+  SkShader::TileMode xy[2];
   SkImage* image = shader->isAImage(nullptr, xy);
 
   if (!image)
     return false;
 
   for (int i = 0; i < 2; i++) {
-    if (xy[i] == SkTileMode::kRepeat)
+    if (xy[i] == SkShader::kRepeat_TileMode)
       return true;
   }
   return false;
@@ -443,7 +442,7 @@ void SkSVGDevice::AutoElement::addImageShaderResources(const SkShader* shader, c
                                                        Resources* resources) {
     SkMatrix outMatrix;
 
-    SkTileMode xy[2];
+    SkShader::TileMode xy[2];
     SkImage* image = shader->isAImage(&outMatrix, xy);
     SkASSERT(image);
 
@@ -457,7 +456,7 @@ void SkSVGDevice::AutoElement::addImageShaderResources(const SkShader* shader, c
     for (int i = 0; i < 2; i++) {
         int imageDimension = i == 0 ? imageSize.width() : imageSize.height();
         switch (xy[i]) {
-            case SkTileMode::kRepeat:
+            case SkShader::kRepeat_TileMode:
                 patternDims[i].appendScalar(imageDimension);
             break;
             default:
@@ -548,8 +547,8 @@ SkString SkSVGDevice::AutoElement::addLinearGradientDef(const SkShader::Gradient
         gradient.addAttribute("x2", info.fPoint[1].x());
         gradient.addAttribute("y2", info.fPoint[1].y());
 
-        if (!as_SB(shader)->getLocalMatrix().isIdentity()) {
-            this->addAttribute("gradientTransform", svg_transform(as_SB(shader)->getLocalMatrix()));
+        if (!shader->getLocalMatrix().isIdentity()) {
+            this->addAttribute("gradientTransform", svg_transform(shader->getLocalMatrix()));
         }
 
         SkASSERT(info.fColorCount >= 2);

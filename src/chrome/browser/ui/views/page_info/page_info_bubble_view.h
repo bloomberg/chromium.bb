@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
-#include "components/security_state/core/security_state.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -40,6 +39,10 @@ class Rect;
 namespace net {
 class X509Certificate;
 }  // namespace net
+
+namespace security_state {
+struct SecurityInfo;
+}  // namespace security_state
 
 namespace test {
 class PageInfoBubbleViewTestApi;
@@ -92,22 +95,19 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state);
+      const security_state::SecurityInfo& security_info);
 
  private:
   friend class PageInfoBubbleViewBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
 
-  PageInfoBubbleView(
-      views::View* anchor_view,
-      const gfx::Rect& anchor_rect,
-      gfx::NativeView parent_window,
-      Profile* profile,
-      content::WebContents* web_contents,
-      const GURL& url,
-      security_state::SecurityLevel security_level,
-      const security_state::VisibleSecurityState& visible_security_state);
+  PageInfoBubbleView(views::View* anchor_view,
+                     const gfx::Rect& anchor_rect,
+                     gfx::NativeView parent_window,
+                     Profile* profile,
+                     content::WebContents* web_contents,
+                     const GURL& url,
+                     const security_state::SecurityInfo& security_info);
 
   // PageInfoBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
@@ -143,7 +143,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
                                   bool is_list_empty,
                                   int column_id);
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool is_enterprise_password) const override;

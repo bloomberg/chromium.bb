@@ -11,41 +11,13 @@
 Polymer({
   is: 'settings-crostini-shared-usb-devices',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [PrefsBehavior],
 
   properties: {
-    /**
-     * The USB Devices available for connection to a VM.
-     * @private {Array<!CrostiniSharedUsbDevice>}
-     */
-    sharedUsbDevices_: Array,
-  },
-
-  /** @override */
-  attached: function() {
-    this.addWebUIListener(
-        'crostini-shared-usb-devices-changed',
-        this.onCrostiniSharedUsbDevicesChanged_.bind(this));
-    settings.CrostiniBrowserProxyImpl.getInstance()
-        .getCrostiniSharedUsbDevices()
-        .then(this.onCrostiniSharedUsbDevicesChanged_.bind(this));
-  },
-
-  /**
-   * @param {!Array<CrostiniSharedUsbDevice>} devices
-   * @private
-   */
-  onCrostiniSharedUsbDevicesChanged_: function(devices) {
-    this.sharedUsbDevices_ = devices;
-  },
-
-  /**
-   * @param {!CustomEvent<!CrostiniSharedUsbDevice>} event
-   * @private
-   */
-  onDeviceSharedChange_: function(event) {
-    const deviceInfo = event.model.item;
-    settings.CrostiniBrowserProxyImpl.getInstance().setCrostiniUsbDeviceShared(
-        deviceInfo.guid, event.target.checked);
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
   },
 });

@@ -21,7 +21,9 @@ class ScopedTabbedBrowserDisplayer {
   explicit ScopedTabbedBrowserDisplayer(Profile* profile);
   ~ScopedTabbedBrowserDisplayer();
 
-  Browser* browser() { return browser_; }
+  Browser* browser() {
+    return browser_;
+  }
 
  private:
   Browser* browser_;

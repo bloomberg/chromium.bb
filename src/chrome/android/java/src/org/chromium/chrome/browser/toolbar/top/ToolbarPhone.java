@@ -65,12 +65,10 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
-import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -135,7 +133,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private ViewGroup mToolbarButtonsContainer;
     protected @Nullable ToggleTabStackButton mToggleTabStackButton;
-    protected @Nullable HomeButton mHomeButton;
+    protected @Nullable ImageButton mHomeButton;
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
@@ -153,6 +151,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @ViewDebug.ExportedProperty(category = "chrome")
     protected boolean mTextureCaptureMode;
     private boolean mForceTextureCapture;
+    private boolean mUseLightDrawablesForTextureCapture;
     private boolean mLightDrawablesUsedForLastTextureCapture;
     private int mTabCountForLastTextureCapture;
 
@@ -276,6 +275,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     protected @VisualState int mVisualState = VisualState.NORMAL;
+    protected boolean mUseLightToolbarDrawables;
 
     private NewTabPage mVisibleNewTabPage;
     private float mPreTextureCaptureAlpha = 1f;
@@ -386,12 +386,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
             setWillNotDraw(false);
         }
-    }
-
-    @Override
-    void destroy() {
-        super.destroy();
-        if (mHomeButton != null) mHomeButton.destroy();
     }
 
     /**
@@ -724,15 +718,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         Resources res = getResources();
         switch (visualState) {
             case VisualState.NEW_TAB_NORMAL:
-                // When the NTP fake search box is visible, the background color should be
-                // transparent. When the location bar reaches the top of the screen (i.e. location
-                // bar is fully expanded), the background needs to change back to the default
-                // toolbar color so that the NTP content is not visible beneath the toolbar. In
-                // between the transition, we set a translucent default toolbar color based on
-                // the expansion percentage of the toolbar.
-                return android.support.v4.graphics.ColorUtils.setAlphaComponent(
-                        ColorUtils.getDefaultThemeColor(getResources(), false),
-                        Math.round(mUrlExpansionPercent * 255));
+                if (mUrlExpansionPercent == 1.f) {
+                    // When the location bar reaches the top of the screen, the background needs
+                    // to change back to the default, solid color so that the NTP content is
+                    // not visible beneath the toolbar.
+                    return ColorUtils.getDefaultThemeColor(getResources(), false);
+                }
+                return Color.TRANSPARENT;
             case VisualState.NORMAL:
                 return ColorUtils.getDefaultThemeColor(getResources(), false);
             case VisualState.INCOGNITO:
@@ -922,9 +914,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private void updateUrlExpansionPercent() {
         mUrlExpansionPercent = Math.max(mNtpSearchBoxScrollPercent, mUrlFocusChangePercent);
-        for (UrlExpansionObserver observer : mUrlExpansionObservers) {
-            observer.onUrlExpansionPercentageChanged(mUrlExpansionPercent);
-        }
         assert mUrlExpansionPercent >= 0;
         assert mUrlExpansionPercent <= 1;
     }
@@ -1296,14 +1285,16 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     menuButton.getHeight() - menuButton.getPaddingBottom());
             translateCanvasToView(mToolbarButtonsContainer, menuButton, canvas);
             mTabSwitcherAnimationMenuDrawable.setAlpha(rgbAlpha);
-            int color = useLight() ? mLightModeDefaultColor : mDarkModeDefaultColor;
+            int color = mUseLightDrawablesForTextureCapture ? mLightModeDefaultColor
+                                                            : mDarkModeDefaultColor;
             mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             mTabSwitcherAnimationMenuDrawable.draw(canvas);
         }
 
         // Draw the menu badge if necessary.
-        Drawable badgeDrawable = useLight() ? mTabSwitcherAnimationMenuBadgeLightDrawable
-                                            : mTabSwitcherAnimationMenuBadgeDarkDrawable;
+        Drawable badgeDrawable = mUseLightDrawablesForTextureCapture
+                ? mTabSwitcherAnimationMenuBadgeLightDrawable
+                : mTabSwitcherAnimationMenuBadgeDarkDrawable;
 
         final View menuBadge = getMenuBadge();
         if (menuBadge != null && !mIsBottomToolbarVisible && isShowingAppMenuUpdateBadge()
@@ -1316,7 +1307,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             badgeDrawable.draw(canvas);
         }
 
-        mLightDrawablesUsedForLastTextureCapture = useLight();
+        mLightDrawablesUsedForLastTextureCapture = mUseLightDrawablesForTextureCapture;
         mWasBottomToolbarVisibleForLastTextureCapture = mIsBottomToolbarVisible;
 
         if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null
@@ -1550,9 +1541,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @Override
     public boolean setForceTextureCapture(boolean forceTextureCapture) {
         if (forceTextureCapture) {
+            setUseLightDrawablesForTextureCapture();
             // Only force a texture capture if the tint for the toolbar drawables is changing or
             // if the tab count has changed since the last texture capture.
-            mForceTextureCapture = mLightDrawablesUsedForLastTextureCapture != useLight()
+            mForceTextureCapture =
+                    mLightDrawablesUsedForLastTextureCapture != mUseLightDrawablesForTextureCapture
                     || mWasBottomToolbarVisibleForLastTextureCapture != mIsBottomToolbarVisible;
 
             if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null) {
@@ -1624,29 +1617,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
     }
 
-    @Override
-    public void onTintChanged(ColorStateList tint, boolean useLight) {
-        if (mHomeButton != null) {
-            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
-        }
-
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setUseLightDrawables(useLight);
-            if (mTabSwitcherAnimationTabStackDrawable != null) {
-                mTabSwitcherAnimationTabStackDrawable.setTint(tint);
-            }
-        }
-
-        if (mExperimentalButton != null) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
-        }
-
-        // TODO(amaralp): Have the LocationBar listen to tint changes.
-        if (mLocationBar != null) mLocationBar.updateVisualsForState();
-
-        if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
-    }
-
     private void removeHomeButton() {
         mHomeButton.setVisibility(GONE);
     }
@@ -1654,6 +1624,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private void addHomeButton() {
         mHomeButton.setVisibility(
                 urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
+        ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+        ApiCompatibilityUtils.setImageTintList(mHomeButton, tintList);
     }
 
     private ObjectAnimator createEnterTabSwitcherModeAnimation() {
@@ -2366,9 +2338,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
+            boolean useLightToolbarDrawables =
+                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
             boolean unfocusedLocationBarUsesTransparentBg =
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
-            if (unfocusedLocationBarUsesTransparentBg != mUnfocusedLocationBarUsesTransparentBg) {
+            if (useLightToolbarDrawables != mUseLightToolbarDrawables
+                    || unfocusedLocationBarUsesTransparentBg
+                            != mUnfocusedLocationBarUsesTransparentBg) {
                 visualStateChanged = true;
             } else {
                 updateToolbarBackgroundFromState(VisualState.BRAND_COLOR);
@@ -2381,6 +2357,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // Refresh the toolbar texture.
         if ((mVisualState == VisualState.BRAND_COLOR || visualStateChanged)
                 && mLayoutUpdateHost != null) {
+            setUseLightDrawablesForTextureCapture();
             mLayoutUpdateHost.requestUpdate();
         }
         updateShadowVisibility();
@@ -2401,6 +2378,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             return;
         }
 
+        // Only use primary color to decide icon tint, regardless of night mode, incognito mode,
+        // and whether the toolbar is on the NTP.
+        mUseLightToolbarDrawables =
+                ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
         mUnfocusedLocationBarUsesTransparentBg = false;
         mLocationBarBackgroundAlpha = 255;
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
@@ -2415,7 +2396,24 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     : 255;
         }
 
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setUseLightDrawables(mUseLightToolbarDrawables);
+            if (mTabSwitcherAnimationTabStackDrawable != null) {
+                mTabSwitcherAnimationTabStackDrawable.setTint(
+                        mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+            }
+        }
+
         updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
+        if (mExperimentalButton != null) {
+            ColorStateList tintList = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tintList);
+        }
+
+        ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+        if (mIsHomeButtonEnabled && mHomeButton != null) {
+            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
+        }
 
         mLocationBar.updateVisualsForState();
 
@@ -2473,7 +2471,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mExperimentalButton.setImageResource(drawableResId);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
-        ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
+        ApiCompatibilityUtils.setImageTintList(
+                mExperimentalButton, mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
         mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
         if (mTabSwitcherState == STATIC_TAB) {
@@ -2672,6 +2671,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mTabSwitcherAnimationMenuBadgeLightDrawable = lightDrawable;
         mTabSwitcherAnimationMenuBadgeLightDrawable.mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeLightDrawable).setGravity(Gravity.CENTER);
+    }
+
+    private void setUseLightDrawablesForTextureCapture() {
+        int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
+        mUseLightDrawablesForTextureCapture = isIncognito()
+                || (currentPrimaryColor != 0
+                           && ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor));
     }
 
     /**

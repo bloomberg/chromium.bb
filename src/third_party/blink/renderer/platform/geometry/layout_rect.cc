@@ -40,6 +40,9 @@
 
 namespace blink {
 
+LayoutRect::LayoutRect(const FloatRect& r)
+    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.Size())) {}
+
 LayoutRect::LayoutRect(const DoubleRect& r)
     : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.Size())) {}
 

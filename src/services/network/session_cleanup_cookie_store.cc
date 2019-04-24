@@ -78,20 +78,21 @@ void SessionCleanupCookieStore::DeleteSessionCookies(
   persistent_store_->DeleteAllInList(session_only_cookies);
 }
 
-void SessionCleanupCookieStore::Load(LoadedCallback loaded_callback,
+void SessionCleanupCookieStore::Load(const LoadedCallback& loaded_callback,
                                      const net::NetLogWithSource& net_log) {
   net_log_ = net_log;
-  persistent_store_->Load(base::BindOnce(&SessionCleanupCookieStore::OnLoad,
-                                         this, std::move(loaded_callback)),
-                          net_log);
+  persistent_store_->Load(
+      base::BindRepeating(&SessionCleanupCookieStore::OnLoad, this,
+                          loaded_callback),
+      net_log);
 }
 
 void SessionCleanupCookieStore::LoadCookiesForKey(
     const std::string& key,
-    LoadedCallback loaded_callback) {
+    const LoadedCallback& loaded_callback) {
   persistent_store_->LoadCookiesForKey(
-      key, base::BindOnce(&SessionCleanupCookieStore::OnLoad, this,
-                          std::move(loaded_callback)));
+      key, base::BindRepeating(&SessionCleanupCookieStore::OnLoad, this,
+                               loaded_callback));
 }
 
 void SessionCleanupCookieStore::AddCookie(const net::CanonicalCookie& cc) {
@@ -118,9 +119,9 @@ void SessionCleanupCookieStore::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
 }
 
-void SessionCleanupCookieStore::SetBeforeCommitCallback(
+void SessionCleanupCookieStore::SetBeforeFlushCallback(
     base::RepeatingClosure callback) {
-  persistent_store_->SetBeforeCommitCallback(std::move(callback));
+  persistent_store_->SetBeforeFlushCallback(std::move(callback));
 }
 
 void SessionCleanupCookieStore::Flush(base::OnceClosure callback) {
@@ -128,7 +129,7 @@ void SessionCleanupCookieStore::Flush(base::OnceClosure callback) {
 }
 
 void SessionCleanupCookieStore::OnLoad(
-    LoadedCallback loaded_callback,
+    const LoadedCallback& loaded_callback,
     std::vector<std::unique_ptr<net::CanonicalCookie>> cookies) {
   for (const auto& cookie : cookies) {
     net::SQLitePersistentCookieStore::CookieOrigin origin(cookie->Domain(),
@@ -136,7 +137,7 @@ void SessionCleanupCookieStore::OnLoad(
     ++cookies_per_origin_[origin];
   }
 
-  std::move(loaded_callback).Run(std::move(cookies));
+  loaded_callback.Run(std::move(cookies));
 }
 
 }  // namespace network

@@ -23,6 +23,7 @@
 #include "url/origin.h"
 
 namespace content {
+
 namespace background_fetch {
 
 namespace {
@@ -337,10 +338,9 @@ class FillFromMetadataTask : public InitializationSubTask {
             metadata.registration().developer_id(),
             metadata.registration().unique_id());
 
-    // Fill BackgroundFetchRegistrationData.
-    auto& registration_data =
-        sub_task_init().initialization_data->registration_data;
-    ToBackgroundFetchRegistration(metadata, registration_data.get());
+    // Fill BackgroundFetchRegistration.
+    auto& registration = sub_task_init().initialization_data->registration;
+    ToBackgroundFetchRegistration(metadata, registration.get());
 
     // Total number of requests.
     sub_task_init().initialization_data->num_requests = metadata.num_fetches();
@@ -524,4 +524,5 @@ std::string GetInitializationDataTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
+
 }  // namespace content

@@ -17,9 +17,7 @@ namespace content {
 
 namespace {
 
-constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
-
-constexpr base::TimeDelta kMinimumThreshold = base::TimeDelta::FromSeconds(60);
+const int kPollInterval = 1;
 
 // Default provider implementation. Everything is delegated to
 // ui::CalculateIdleState, ui::CalculateIdleTime, and
@@ -86,8 +84,8 @@ void IdleManager::AddMonitor(base::TimeDelta threshold,
                              blink::mojom::IdleMonitorPtr monitor_ptr,
                              AddMonitorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (threshold < kMinimumThreshold) {
-    bindings_.ReportBadMessage("Minimum threshold is 60 seconds.");
+  if (threshold.is_zero()) {
+    mojo::ReportBadMessage("Invalid threshold");
     return;
   }
 
@@ -131,7 +129,7 @@ bool IdleManager::IsPollingForTest() {
 void IdleManager::StartPolling() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!poll_timer_.IsRunning()) {
-    poll_timer_.Start(FROM_HERE, kPollInterval,
+    poll_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kPollInterval),
                       base::BindRepeating(&IdleManager::UpdateIdleState,
                                           base::Unretained(this)));
   }

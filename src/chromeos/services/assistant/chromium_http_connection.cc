@@ -70,7 +70,14 @@ ChromiumHttpConnection::~ChromiumHttpConnection() {
 }
 
 void ChromiumHttpConnection::SetRequest(const std::string& url, Method method) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetRequest, url, method);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::SetRequestOnTaskRunner,
+                                this, url, method));
+}
+
+void ChromiumHttpConnection::SetRequestOnTaskRunner(const std::string& url,
+                                                    Method method) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   url_ = GURL(url);
   method_ = method;
@@ -78,7 +85,14 @@ void ChromiumHttpConnection::SetRequest(const std::string& url, Method method) {
 
 void ChromiumHttpConnection::AddHeader(const std::string& name,
                                        const std::string& value) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::AddHeader, name, value);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::AddHeaderOnTaskRunner,
+                                this, name, value));
+}
+
+void ChromiumHttpConnection::AddHeaderOnTaskRunner(const std::string& name,
+                                                   const std::string& value) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   // From https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2:
   // "Multiple message-header fields with the same field-name MAY be present in
@@ -97,8 +111,16 @@ void ChromiumHttpConnection::AddHeader(const std::string& name,
 
 void ChromiumHttpConnection::SetUploadContent(const std::string& content,
                                               const std::string& content_type) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetUploadContent, content,
-                     content_type);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::SetUploadContentOnTaskRunner,
+                     this, content, content_type));
+}
+
+void ChromiumHttpConnection::SetUploadContentOnTaskRunner(
+    const std::string& content,
+    const std::string& content_type) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   upload_content_ = content;
   upload_content_type_ = content_type;
@@ -107,8 +129,16 @@ void ChromiumHttpConnection::SetUploadContent(const std::string& content,
 
 void ChromiumHttpConnection::SetChunkedUploadContentType(
     const std::string& content_type) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetChunkedUploadContentType,
-                     content_type);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ChromiumHttpConnection::SetChunkedUploadContentTypeOnTaskRunner,
+          this, content_type));
+}
+
+void ChromiumHttpConnection::SetChunkedUploadContentTypeOnTaskRunner(
+    const std::string& content_type) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   upload_content_ = "";
   upload_content_type_ = "";
@@ -121,15 +151,27 @@ void ChromiumHttpConnection::EnableHeaderResponse() {
 }
 
 void ChromiumHttpConnection::EnablePartialResults() {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::EnablePartialResults);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::EnablePartialResultsOnTaskRunner,
+                     this));
+}
+
+void ChromiumHttpConnection::EnablePartialResultsOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   handle_partial_response_ = true;
 }
 
 void ChromiumHttpConnection::Start() {
   VLOG(2) << "Requested to start connection";
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::StartOnTaskRunner, this));
+}
 
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Start);
+void ChromiumHttpConnection::StartOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::NEW);
   state_ = State::STARTED;
 
@@ -196,8 +238,13 @@ void ChromiumHttpConnection::Resume() {
 
 void ChromiumHttpConnection::Close() {
   VLOG(2) << "Requesting to close connection object";
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ChromiumHttpConnection::CloseOnTaskRunner, this));
+}
 
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Close);
+void ChromiumHttpConnection::CloseOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (state_ == State::DESTROYED)
     return;
 
@@ -208,28 +255,6 @@ void ChromiumHttpConnection::Close() {
   delegate_->OnConnectionDestroyed();
 
   Release();
-}
-
-void ChromiumHttpConnection::UploadData(const std::string& data,
-                                        bool is_last_chunk) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::UploadData, data, is_last_chunk);
-  if (state_ != State::STARTED)
-    return;
-
-  upload_body_ += data;
-
-  upload_body_size_ += data.size();
-  if (is_last_chunk) {
-    // Send size before the rest of the body. While it doesn't matter much, if
-    // the other side receives the size before the last chunk, which Mojo does
-    // not guarantee, some protocols can merge the data and the last chunk
-    // itself into a single frame.
-    has_last_chunk_ = is_last_chunk;
-    if (get_size_callback_)
-      std::move(get_size_callback_).Run(net::OK, upload_body_size_);
-  }
-
-  SendData();
 }
 
 void ChromiumHttpConnection::GetSize(GetSizeCallback get_size_callback) {
@@ -343,6 +368,35 @@ void ChromiumHttpConnection::SendData() {
 }
 
 void ChromiumHttpConnection::OnUploadPipeWriteable(MojoResult unused) {
+  SendData();
+}
+
+void ChromiumHttpConnection::UploadData(const std::string& data,
+                                        bool is_last_chunk) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ChromiumHttpConnection::UploadDataOnTaskRunner,
+                                this, data, is_last_chunk));
+}
+
+void ChromiumHttpConnection::UploadDataOnTaskRunner(const std::string& data,
+                                                    bool is_last_chunk) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (state_ != State::STARTED)
+    return;
+
+  upload_body_ += data;
+
+  upload_body_size_ += data.size();
+  if (is_last_chunk) {
+    // Send size before the rest of the body. While it doesn't matter much, if
+    // the other side receives the size before the last chunk, which Mojo does
+    // not guarantee, some protocols can merge the data and the last chunk
+    // itself into a single frame.
+    has_last_chunk_ = is_last_chunk;
+    if (get_size_callback_)
+      std::move(get_size_callback_).Run(net::OK, upload_body_size_);
+  }
+
   SendData();
 }
 

@@ -20,8 +20,7 @@ namespace chrome_cleaner {
 
 namespace {
 
-const size_t kShortSize = sizeof(SHORT);
-const size_t kUInt16Size = sizeof(uint16_t);
+const SHORT kShortSize = sizeof(SHORT);
 
 struct UTF16Offsets {
   DWORD prefix_offset;
@@ -29,22 +28,18 @@ struct UTF16Offsets {
 };
 const int kUTF16OffsetsSize = sizeof(UTF16Offsets);
 
-// File size of 1 MB. It's very unlikely that a LNK file will be larger than
-// that.
-const int64_t kMaximumFileSize = 1 * 1024 * 1024;
-
-// Retrieves a 2 byte unsigned short from the provided |buffer| and also
-// modifies the value of |current_byte| to point to the next byte after the
-// short.
-bool ReadUnsignedShort(const std::vector<BYTE>& buffer,
-                       DWORD* current_byte,
-                       uint16_t* result) {
-  if (*current_byte + kUInt16Size >= buffer.size()) {
+// Retrieves a 2 byte short from the provided |buffer| and also modifies the
+// value of |current_byte| to point to the next byte after the short.
+bool ReadShort(const std::vector<BYTE>& buffer,
+               DWORD* current_byte,
+               SHORT* parsed_short) {
+  if (*current_byte + kShortSize >= buffer.size()) {
     return false;
   }
-  memcpy_s(result, kUInt16Size, buffer.data() + *current_byte, kUInt16Size);
+  DCHECK(kShortSize == 2);
+  memcpy_s(parsed_short, kShortSize, buffer.data() + *current_byte, kShortSize);
 
-  *current_byte += kUInt16Size;
+  *current_byte += kShortSize;
   return true;
 }
 
@@ -113,12 +108,12 @@ bool NullTerminatedStringToString16(const std::vector<BYTE>& buffer,
 }
 
 // Reads the size of a string structure and then moves the value of
-// current_byte to the end of it.
+// current byte to the end of it.
 bool SkipUtf16StringStructure(const std::vector<BYTE>& buffer,
                               DWORD* current_byte) {
-  uint16_t structure_size;
-  if (!ReadUnsignedShort(buffer, current_byte, &structure_size)) {
-    LOG(ERROR) << "Error reading string structure size";
+  SHORT structure_size;
+  if (!ReadShort(buffer, current_byte, &structure_size)) {
+    LOG(ERROR) << "Error reading name size";
     return false;
   }
 
@@ -130,35 +125,6 @@ bool SkipUtf16StringStructure(const std::vector<BYTE>& buffer,
   if (*current_byte >= buffer.size()) {
     return false;
   }
-  return true;
-}
-
-// Reads the size of a string structure, stores its contents in |parsed_string|
-// and then moves the value of current_byte to the end of it.
-bool ReadUtf16StringStructure(const std::vector<BYTE>& buffer,
-                              DWORD* current_byte,
-                              base::string16* parsed_string) {
-  uint16_t string_size;
-  if (!ReadUnsignedShort(buffer, current_byte, &string_size)) {
-    LOG(ERROR) << "Error reading string structure";
-    return false;
-  }
-
-  if (string_size == 0) {
-    LOG(ERROR) << "Error reading string structure: zero length.";
-    return false;
-  }
-
-  if (*current_byte + string_size * sizeof(wchar_t) > buffer.size()) {
-    LOG(ERROR) << "Error: string structure size: " << string_size
-               << " is longer than rest of file";
-    return false;
-  }
-
-  const wchar_t* string_ptr =
-      reinterpret_cast<const wchar_t*>(buffer.data() + *current_byte);
-  base::WideToUTF16(string_ptr, string_size, parsed_string);
-  *current_byte += string_size * sizeof(wchar_t);
   return true;
 }
 
@@ -182,10 +148,10 @@ LnkInfoPartialHeader* LocateAndParseLnkInfoPartialHeader(
   DWORD structure_offset = kHeaderSize;
 
   // If there is a target id list skip it.
-  constexpr BYTE kLinkTargetIdListPresentFlag = 0x01;
-  if (lnk_header->lnk_flags & kLinkTargetIdListPresentFlag) {
-    uint16_t id_list_size;
-    if (!ReadUnsignedShort(*file_buffer, &structure_offset, &id_list_size)) {
+  constexpr BYTE kLinkIdInfoFlag = 0x01;
+  if (lnk_header->lnk_flags & kLinkIdInfoFlag) {
+    SHORT id_list_size;
+    if (!ReadShort(*file_buffer, &structure_offset, &id_list_size)) {
       LOG(ERROR) << "Error reading id list size";
       return nullptr;
     }
@@ -224,11 +190,8 @@ mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
 
   base::File lnk_file(file_handle.Take());
   int64_t lnk_file_size = lnk_file.GetLength();
-  if (lnk_file_size <= 0) {
+  if (lnk_file_size == INVALID_FILE_SIZE) {
     LOG(ERROR) << "Error getting file size";
-    return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
-  } else if (lnk_file_size >= kMaximumFileSize) {
-    LOG(ERROR) << "Unexpectedly large file size: " << lnk_file_size;
     return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
   }
 
@@ -361,19 +324,30 @@ mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
   }
 
   // Retrieve the arguments.
-  if (has_arguments &&
-      !ReadUtf16StringStructure(file_buffer, &current_byte,
-                                &parsed_shortcut->command_line_arguments)) {
-    LOG(ERROR) << "Error reading argument list";
-    return mojom::LnkParsingResult::BAD_FORMAT;
+  if (has_arguments) {
+    SHORT arguments_size;
+    if (!ReadShort(file_buffer, &current_byte, &arguments_size)) {
+      LOG(ERROR) << "Error reading arguments size";
+      return mojom::LnkParsingResult::BAD_FORMAT;
+    }
+    const wchar_t* string_ptr =
+        reinterpret_cast<const wchar_t*>(file_buffer.data() + current_byte);
+    base::WideToUTF16(string_ptr, arguments_size,
+                      &parsed_shortcut->command_line_arguments);
+    current_byte += arguments_size * sizeof(wchar_t);
   }
 
   // Retrieve the icon location.
-  if (has_icon_location &&
-      !ReadUtf16StringStructure(file_buffer, &current_byte,
-                                &parsed_shortcut->icon_location)) {
-    LOG(ERROR) << "Error reading icon location";
-    return mojom::LnkParsingResult::BAD_FORMAT;
+  if (has_icon_location) {
+    SHORT icon_location_size;
+    if (!ReadShort(file_buffer, &current_byte, &icon_location_size)) {
+      LOG(ERROR) << "Error reading icon location size";
+      return mojom::LnkParsingResult::BAD_FORMAT;
+    }
+    const wchar_t* string_ptr =
+        reinterpret_cast<const wchar_t*>(file_buffer.data() + current_byte);
+    base::WideToUTF16(string_ptr, icon_location_size,
+                      &parsed_shortcut->icon_location);
   }
 
   return mojom::LnkParsingResult::SUCCESS;

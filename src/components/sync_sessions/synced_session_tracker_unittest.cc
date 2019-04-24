@@ -494,13 +494,7 @@ TEST_F(SyncedSessionTrackerTest, DeleteForeignTab) {
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
 
-TEST_F(SyncedSessionTrackerTest, CleanupLocalTabsWithoutDeferredRecycling) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{kDeferRecyclingOfSyncTabNodesIfUnsynced,
-                             kTabNodePoolImmediateDeletion});
-
+TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   tracker_.InitLocalSession(kTag, kSessionName, kDeviceType);
 
   // Start with two restored tab nodes.
@@ -543,7 +537,7 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabsWithoutDeferredRecycling) {
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
 
-TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
+TEST_F(SyncedSessionTrackerTest, CleanupLocalTabsWithDeferredRecycling) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kDeferRecyclingOfSyncTabNodesIfUnsynced);
 
@@ -576,8 +570,8 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   // During cleanup, only two tabs should be freed:
   // - |kTabNode3| because of its age, although it's unsynced.
   // - |kTabNode4| because it's synced.
-  EXPECT_THAT(tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get()),
-              ElementsAre(kTabNode3, kTabNode4));
+  EXPECT_TRUE(
+      tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get()).empty());
   ASSERT_EQ(kTabNode1, tracker_.LookupTabNodeFromTabId(kTag, kTab1));
   EXPECT_EQ(kTabNode2, tracker_.LookupTabNodeFromTabId(kTag, kTab2));
   EXPECT_EQ(TabNodePool::kInvalidTabNodeID,
@@ -588,8 +582,8 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   // |kTabNode2| now becomes synced (commit succeeded), which means it should be
   // freed during cleanup.
   EXPECT_CALL(is_tab_node_unsynced_cb_, Run(kTabNode2)).WillOnce(Return(false));
-  EXPECT_THAT(tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get()),
-              ElementsAre(kTabNode2));
+  EXPECT_TRUE(
+      tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get()).empty());
   EXPECT_EQ(TabNodePool::kInvalidTabNodeID,
             tracker_.LookupTabNodeFromTabId(kTag, kTab2));
   EXPECT_EQ(kTabNode2, tracker_.AssociateLocalTabWithFreeTabNode(kTab5));
@@ -751,7 +745,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldUnmappedNewMapped) {
   EXPECT_TRUE(IsLocalTabNodeAssociated(kTabNode1));
   tracker_.PutWindowInSession(kTag, kWindow1);
   tracker_.PutTabInWindow(kTag, kWindow1, kTab2);
-  tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get());
+  EXPECT_TRUE(
+      tracker_.CleanupLocalTabs(is_tab_node_unsynced_cb_.Get()).empty());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   EXPECT_FALSE(tracker_.IsTabUnmappedForTesting(kTab1));
   EXPECT_FALSE(tracker_.IsTabUnmappedForTesting(kTab2));

@@ -4,11 +4,7 @@
 
 #include "storage/browser/quota/padding_key.h"
 
-#include <cstdint>
-#include <vector>
-
 #include "base/no_destructor.h"
-#include "crypto/hmac.h"
 
 using crypto::SymmetricKey;
 
@@ -18,11 +14,7 @@ namespace {
 
 const SymmetricKey::Algorithm kPaddingKeyAlgorithm = SymmetricKey::AES;
 
-// The range of the padding added to response sizes for opaque resources.
-// Increment the CacheStorage padding version if changed.
-constexpr uint64_t kPaddingRange = 14431 * 1024;
-
-std::unique_ptr<SymmetricKey>* GetPaddingKeyInternal() {
+std::unique_ptr<SymmetricKey>* GetPaddingKey() {
   static base::NoDestructor<std::unique_ptr<SymmetricKey>> s_padding_key([] {
     return SymmetricKey::GenerateRandomKey(kPaddingKeyAlgorithm, 128);
   }());
@@ -31,13 +23,8 @@ std::unique_ptr<SymmetricKey>* GetPaddingKeyInternal() {
 
 }  // namespace
 
-const SymmetricKey* GetDefaultPaddingKey() {
-  return GetPaddingKeyInternal()->get();
-}
-
 std::unique_ptr<SymmetricKey> CopyDefaultPaddingKey() {
-  return SymmetricKey::Import(kPaddingKeyAlgorithm,
-                              (*GetPaddingKeyInternal())->key());
+  return SymmetricKey::Import(kPaddingKeyAlgorithm, (*GetPaddingKey())->key());
 }
 
 std::unique_ptr<SymmetricKey> DeserializePaddingKey(
@@ -46,27 +33,11 @@ std::unique_ptr<SymmetricKey> DeserializePaddingKey(
 }
 
 std::string SerializeDefaultPaddingKey() {
-  return (*GetPaddingKeyInternal())->key();
+  return (*GetPaddingKey())->key();
 }
 
 void ResetPaddingKeyForTesting() {
-  *GetPaddingKeyInternal() =
-      SymmetricKey::GenerateRandomKey(kPaddingKeyAlgorithm, 128);
-}
-
-int64_t ComputeResponsePadding(const std::string& response_url,
-                               const crypto::SymmetricKey* padding_key,
-                               bool has_metadata) {
-  DCHECK(!response_url.empty());
-
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  CHECK(hmac.Init(padding_key));
-
-  std::string key = has_metadata ? response_url + "METADATA" : response_url;
-  uint64_t digest_start;
-  CHECK(hmac.Sign(key, reinterpret_cast<uint8_t*>(&digest_start),
-                  sizeof(digest_start)));
-  return digest_start % kPaddingRange;
+  *GetPaddingKey() = SymmetricKey::GenerateRandomKey(kPaddingKeyAlgorithm, 128);
 }
 
 }  // namespace storage

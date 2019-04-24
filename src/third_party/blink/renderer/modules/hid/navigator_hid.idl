@@ -4,7 +4,7 @@
 
 // Partial Navigator interface for functionality related to HID subsystem
 // devices.
-// https://wicg.github.io/webhid/index.html#enumeration
+// https://github.com/nondebug/webhid
 
 [
     ImplementedAs=NavigatorHID,

@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_SWAPCHAIN_H_
 #define DAWNNATIVE_SWAPCHAIN_H_
 
+#include "dawn_native/Builder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
@@ -45,7 +46,7 @@ namespace dawn_native {
       protected:
         SwapChainBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
-        const DawnSwapChainImplementation& GetImplementation();
+        const dawnSwapChainImplementation& GetImplementation();
         virtual TextureBase* GetNextTextureImpl(const TextureDescriptor*) = 0;
         virtual void OnBeforePresent(TextureBase* texture) = 0;
 
@@ -57,7 +58,7 @@ namespace dawn_native {
         MaybeError ValidateGetNextTexture() const;
         MaybeError ValidatePresent(TextureBase* texture) const;
 
-        DawnSwapChainImplementation mImplementation = {};
+        dawnSwapChainImplementation mImplementation = {};
         dawn::TextureFormat mFormat = {};
         dawn::TextureUsageBit mAllowedUsage;
         uint32_t mWidth = 0;

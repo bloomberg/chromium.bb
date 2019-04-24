@@ -18,28 +18,6 @@ ifeq ($(TZCODE),)
 TZCODE = $(firstword $(wildcard ./tzcode*.tar.gz) $(wildcard $(srcdir)/tzcode*.tar.gz))
 endif
 
-
-PRIMARY_YDATA=	africa antarctica asia australasia \
-		europe northamerica southamerica
-YDATA=		$(PRIMARY_YDATA) pacificnew etcetera factory backward
-NDATA=		systemv
-SDATA=		solar87 solar88 solar89
-#TDATA=		$(YDATA) $(NDATA) $(SDATA)
-TDATA=		$(YDATA) $(NDATA)
-YEARISTYPE=     ./yearistype
-
-TZDIR=zoneinfo
-
-CFLAGS+=-D_POSIX_C_SOURCE
-CPPFLAGS+= -DTZDIR=\"$(TZDIR)\" 
-
-# more data
-XDATA=zone.tab yearistype.sh leapseconds iso3166.tab
-ICUDATA=ZoneMetaData.java icu_zone.txt tz2icu zoneinfo64.txt zoneinfo.txt
-
-VANGUARD_DIR= ./vanguard
-
-# For TZ DB/ICU comparison
 TZORIG=./tzorig
 TZORIG_TZDIR=./tzorig/tzdir
 TZORIG_ABS := $(shell pwd)/tzorig
@@ -92,10 +70,6 @@ tzorig:	$(TZCODE) $(TZDATA)
 	mkdir $(TZORIG_TZDIR)
 	gunzip -d < $(TZDATA) | ( cd $@ ; tar xf - )
 	gunzip -d < $(TZCODE) | ( cd $@ ; tar xf - )
-	for tzfile in $(TDATA) ; do \
-		mv $(TZORIG)/$$tzfile $(TZORIG)/$$tzfile.bak && \
-		awk -v DATAFORM=rearguard -f $(TZORIG)/ziguard.awk $(TZORIG)/$$tzfile.bak > $(TZORIG)/$$tzfile; \
-	done
 	-mv $(TZORIG)/zdump.c $(TZORIG)/zdump.c.orig
 	cp $(srcdir)/zdump.c $(TZORIG)/zdump.c
 	-mv $(TZORIG)/factory $(TZORIG)/factory.orig
@@ -129,6 +103,24 @@ $(ICUZDUMPOUT): $(ICUZDUMPEXEC)
 #
 
 
+PRIMARY_YDATA=	africa antarctica asia australasia \
+		europe northamerica southamerica
+YDATA=		$(PRIMARY_YDATA) pacificnew etcetera factory backward
+NDATA=		systemv
+SDATA=		solar87 solar88 solar89
+#TDATA=		$(YDATA) $(NDATA) $(SDATA)
+TDATA=		$(YDATA) $(NDATA)
+YEARISTYPE=     ./yearistype
+
+TZDIR=zoneinfo
+
+CFLAGS+=-D_POSIX_C_SOURCE
+CPPFLAGS+= -DTZDIR=\"$(TZDIR)\" 
+
+# more data
+XDATA=zone.tab yearistype.sh leapseconds iso3166.tab
+ICUDATA=ZoneMetaData.java icu_zone.txt tz2icu zoneinfo64.txt zoneinfo.txt
+
 $(ZICTARG):		$(OBJECTS) $(TDATA) yearistype $(srcdir)/tz2icu.h
 		$(CC) $(CFLAGS) $(TZORIG_EXTRA_CFLAGS) $(LFLAGS) -I$(srcdir) $(OBJECTS) $(LDLIBS) -o $@
 
@@ -142,12 +134,7 @@ $(ICUZDUMPTARG):	$(srcdir)/icuzdump.cpp
 $(TDATA): tdatamarker
 
 tdatamarker: $(TZDATA)
-	mkdir $(VANGUARD_DIR)
 	gunzip -d < $(TZDATA) | tar xf - --exclude=Makefile
-	for tzfile in $(TDATA) ; do \
-		mv $$tzfile $(VANGUARD_DIR)/$$tzfile && \
-		awk -v DATAFORM=rearguard -f ziguard.awk $(VANGUARD_DIR)/$$tzfile > $$tzfile; \
-	done
 	touch $@
 
 yearistype:	yearistype.sh
@@ -167,11 +154,10 @@ clean:
 		@echo ICU specific cleanup:
 		-rm -f $(ICUDATA)
 		-rm -rf $(TZDIR)
-		-rm -rf $(VANGUARD_DIR)
 		-$(RMV) $(ICUZDUMPTARG) tzorig ./zdumpout/ ./icuzdumpout/
 ifneq ($(TZDATA),)
 		-rm -rf `gunzip -d < $(TZDATA) | tar tf - --exclude=Makefile | grep -o '[^ ]*$$' | tr '\n' ' '`
-		-rm -f tdatamarker
+		-rm tdatamarker
 endif
 
 checkclean:

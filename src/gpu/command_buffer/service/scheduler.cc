@@ -335,6 +335,7 @@ Scheduler::Sequence* Scheduler::GetSequence(SequenceId sequence_id) {
 }
 
 void Scheduler::EnableSequence(SequenceId sequence_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   Sequence* sequence = GetSequence(sequence_id);
   DCHECK(sequence);
@@ -342,6 +343,7 @@ void Scheduler::EnableSequence(SequenceId sequence_id) {
 }
 
 void Scheduler::DisableSequence(SequenceId sequence_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   Sequence* sequence = GetSequence(sequence_id);
   DCHECK(sequence);

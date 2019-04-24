@@ -8,11 +8,15 @@
       animation-name: test;
     }
   </style>
+  <script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+  </script>
 </head>
-<div id="test"></div>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<body>
+<div id="test">This tests setting animation-name to none, it passes if it does not crash.</div>
 <script>
-  document.querySelector('#test').style.animationName = 'none';
-  done();
+  document.querySelector('#test').style.animationName = 'none'
 </script>
+</body>
+</html>

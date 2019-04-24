@@ -11,6 +11,7 @@
 #include "modules/video_coding/packet.h"
 
 #include "api/rtp_headers.h"
+#include "modules/include/module_common_types.h"
 
 namespace webrtc {
 
@@ -23,7 +24,7 @@ VCMPacket::VCMPacket()
       sizeBytes(0),
       markerBit(false),
       timesNacked(-1),
-      frameType(VideoFrameType::kEmptyFrame),
+      frameType(kEmptyFrame),
       completeNALU(kNaluUnset),
       insertStartCode(false),
       video_header(),
@@ -32,24 +33,21 @@ VCMPacket::VCMPacket()
 }
 
 VCMPacket::VCMPacket(const uint8_t* ptr,
-                     size_t size,
-                     const RTPHeader& rtp_header,
-                     const RTPVideoHeader& videoHeader,
-                     VideoFrameType frame_type,
-                     int64_t ntp_time_ms)
-    : payloadType(rtp_header.payloadType),
-      timestamp(rtp_header.timestamp),
-      ntp_time_ms_(ntp_time_ms),
-      seqNum(rtp_header.sequenceNumber),
+                     const size_t size,
+                     const WebRtcRTPHeader& rtpHeader)
+    : payloadType(rtpHeader.header.payloadType),
+      timestamp(rtpHeader.header.timestamp),
+      ntp_time_ms_(rtpHeader.ntp_time_ms),
+      seqNum(rtpHeader.header.sequenceNumber),
       dataPtr(ptr),
       sizeBytes(size),
-      markerBit(rtp_header.markerBit),
+      markerBit(rtpHeader.header.markerBit),
       timesNacked(-1),
-      frameType(frame_type),
+      frameType(rtpHeader.frameType),
       completeNALU(kNaluIncomplete),
-      insertStartCode(videoHeader.codec == kVideoCodecH264 &&
-                      videoHeader.is_first_packet_in_frame),
-      video_header(videoHeader) {
+      insertStartCode(rtpHeader.video_header().codec == kVideoCodecH264 &&
+                      rtpHeader.video_header().is_first_packet_in_frame),
+      video_header(rtpHeader.video_header()) {
   if (is_first_packet_in_frame() && markerBit) {
     completeNALU = kNaluComplete;
   } else if (is_first_packet_in_frame()) {

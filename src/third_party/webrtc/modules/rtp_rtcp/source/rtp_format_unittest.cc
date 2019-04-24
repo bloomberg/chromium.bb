@@ -13,7 +13,6 @@
 #include <memory>
 #include <numeric>
 
-#include "absl/algorithm/container.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 
@@ -37,13 +36,13 @@ int EffectivePacketsSizeDifference(
   // Account for larger last packet header.
   sizes.back() += limits.last_packet_reduction_len;
 
-  auto minmax = absl::c_minmax_element(sizes);
+  auto minmax = std::minmax_element(sizes.begin(), sizes.end());
   // MAX-MIN
   return *minmax.second - *minmax.first;
 }
 
 int Sum(const std::vector<int>& sizes) {
-  return absl::c_accumulate(sizes, 0);
+  return std::accumulate(sizes.begin(), sizes.end(), 0);
 }
 
 TEST(RtpPacketizerSplitAboutEqually, AllPacketsAreEqualSumToPayloadLen) {

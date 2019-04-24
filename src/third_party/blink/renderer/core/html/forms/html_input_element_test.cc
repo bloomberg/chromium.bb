@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -97,16 +96,15 @@ TEST_F(HTMLInputElementTest, create) {
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
   Document* document_without_frame = Document::CreateForTest();
   EXPECT_EQ(nullptr, document_without_frame->GetPage());
-  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_without_frame);
-  html->AppendChild(
-      MakeGarbageCollected<HTMLBodyElement>(*document_without_frame));
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_without_frame);
+  html->AppendChild(HTMLBodyElement::Create(*document_without_frame));
 
   // Create an input element with type "range" inside a document without frame.
   ToHTMLBodyElement(html->firstChild())
       ->SetInnerHTMLFromString("<input type='range' />");
   document_without_frame->AppendChild(html);
 
-  auto page_holder = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
   auto& document = page_holder->GetDocument();
   EXPECT_NE(nullptr, document.GetPage());
 

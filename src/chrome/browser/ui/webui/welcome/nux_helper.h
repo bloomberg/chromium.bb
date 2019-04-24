@@ -24,6 +24,8 @@ extern const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledNewUserModules;
 extern const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules;
+extern const base::FeatureParam<bool>
+    kNuxOnboardingForceEnabledShowEmailInterstitial;
 
 // Get the group for users who onboard in this experiment.
 // Groups are:

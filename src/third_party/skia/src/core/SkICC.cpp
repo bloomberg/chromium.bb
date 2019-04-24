@@ -280,7 +280,8 @@ static void get_color_profile_tag(char dst[kICCDescriptionTagSize],
         md5.write(&toXYZD50, sizeof(toXYZD50));
         static_assert(sizeof(fn) == sizeof(float) * 7, "packed");
         md5.write(&fn, sizeof(fn));
-        SkMD5::Digest digest = md5.finish();
+        SkMD5::Digest digest;
+        md5.finish(digest);
         char* ptr = dst + sizeof(kDescriptionTagBodyPrefix);
         for (unsigned i = 0; i < sizeof(SkMD5::Digest); ++i) {
             uint8_t byte = digest.data[i];

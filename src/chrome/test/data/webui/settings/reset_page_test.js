@@ -80,6 +80,12 @@ cr.define('settings_reset_page', function() {
                })
             .then(function() {
               return testOpenCloseResetProfileDialog(function(dialog) {
+                // Test case where the 'close' button is clicked.
+                dialog.$.dialog.getCloseButton().click();
+              });
+            })
+            .then(function() {
+              return testOpenCloseResetProfileDialog(function(dialog) {
                 // Test case where the browser's 'back' button is clicked.
                 resetPage.currentRouteChanged(settings.routes.BASIC);
               });
@@ -184,8 +190,14 @@ cr.define('settings_reset_page', function() {
         test(TestNames.PowerwashDialogOpenClose, function() {
           // Test case where the 'cancel' button is clicked.
           return testOpenClosePowerwashDialog(function(dialog) {
-            return dialog.$.cancel;
-          });
+                   return dialog.$.cancel;
+                 })
+              .then(function() {
+                // Test case where the 'close' button is clicked.
+                return testOpenClosePowerwashDialog(function(dialog) {
+                  return dialog.$.dialog.getCloseButton();
+                });
+              });
         });
 
         // Tests that when powerwash is requested chrome.send calls are

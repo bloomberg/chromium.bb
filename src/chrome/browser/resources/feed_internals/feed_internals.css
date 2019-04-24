@@ -19,15 +19,13 @@ table > tbody > tr:nth-child(odd) {
 }
 
 table td {
-  vertical-align: top;
   width: 50%;
   word-wrap: break-word;
 }
 
 button {
   display: block;
-  margin: 10px 0;
-  padding: 5px;
+  min-height: 30px;
 }
 
 #current-content table td:first-child {

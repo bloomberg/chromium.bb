@@ -115,17 +115,20 @@ bool CFX_FileBufferArchive::WriteString(ByteStringView str) {
   return WriteBlock(str.raw_str(), str.GetLength());
 }
 
-ByteString GenerateFileID(uint32_t dwSeed1, uint32_t dwSeed2) {
-  uint32_t buffer[4];
-  void* pContext1 = FX_Random_MT_Start(dwSeed1);
-  void* pContext2 = FX_Random_MT_Start(dwSeed2);
-  buffer[0] = FX_Random_MT_Generate(pContext1);
-  buffer[1] = FX_Random_MT_Generate(pContext1);
-  buffer[2] = FX_Random_MT_Generate(pContext2);
-  buffer[3] = FX_Random_MT_Generate(pContext2);
-  FX_Random_MT_Close(pContext1);
-  FX_Random_MT_Close(pContext2);
-  return ByteString(pdfium::as_bytes<uint32_t>(buffer));
+std::vector<uint8_t> GenerateFileID(uint32_t dwSeed1, uint32_t dwSeed2) {
+  std::vector<uint8_t> buffer(sizeof(uint32_t) * 4);
+  uint32_t* pBuffer = reinterpret_cast<uint32_t*>(buffer.data());
+  void* pContext = FX_Random_MT_Start(dwSeed1);
+  for (int i = 0; i < 2; ++i)
+    *pBuffer++ = FX_Random_MT_Generate(pContext);
+
+  FX_Random_MT_Close(pContext);
+  pContext = FX_Random_MT_Start(dwSeed2);
+  for (int i = 0; i < 2; ++i)
+    *pBuffer++ = FX_Random_MT_Generate(pContext);
+
+  FX_Random_MT_Close(pContext);
+  return buffer;
 }
 
 bool OutputIndex(IFX_ArchiveStream* archive, FX_FILESIZE offset) {
@@ -597,8 +600,9 @@ void CPDF_Creator::InitID() {
   if (pID1) {
     m_pIDArray->Add(pID1->Clone());
   } else {
-    ByteString bsBuffer =
+    std::vector<uint8_t> buffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
+    ByteString bsBuffer(buffer.data(), buffer.size());
     m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
   }
 
@@ -608,8 +612,9 @@ void CPDF_Creator::InitID() {
       m_pIDArray->Add(pID2->Clone());
       return;
     }
-    ByteString bsBuffer =
+    std::vector<uint8_t> buffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
+    ByteString bsBuffer(buffer.data(), buffer.size());
     m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
     return;
   }

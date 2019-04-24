@@ -79,7 +79,6 @@ std::unique_ptr<base::DictionaryValue> LogMessageToDictionary(
 const char kExternalDevicePublicKey[] = "publicKey";
 const char kExternalDevicePublicKeyTruncated[] = "publicKeyTruncated";
 const char kExternalDeviceFriendlyName[] = "friendlyDeviceName";
-const char kExternalDeviceNoPiiName[] = "noPiiName";
 const char kExternalDeviceUnlockKey[] = "unlockKey";
 const char kExternalDeviceMobileHotspot[] = "hasMobileHotspot";
 const char kExternalDeviceConnectionStatus[] = "connectionStatus";
@@ -377,8 +376,6 @@ ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
   dictionary->SetString(kExternalDevicePublicKeyTruncated,
                         remote_device.GetTruncatedDeviceIdForLogs());
   dictionary->SetString(kExternalDeviceFriendlyName, remote_device.name());
-  dictionary->SetString(kExternalDeviceNoPiiName,
-                        remote_device.pii_free_name());
   dictionary->SetBoolean(kExternalDeviceUnlockKey,
                          remote_device.GetSoftwareFeatureState(
                              multidevice::SoftwareFeature::kSmartLockHost) ==

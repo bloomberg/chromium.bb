@@ -54,7 +54,6 @@
 <translation id="1319608975892113573">Немає попереднього блоку цитати.</translation>
 <translation id="1321576897702511272">Сховати довідку ChromeVox</translation>
 <translation id="1325946044405407859">Жовто-брунатний</translation>
-<translation id="1331634987653814322">Налаштування шрифту Брайля</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> з <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">озвучення символів і слів</translation>
 <translation id="1334570596456017464">Підрядковий текст</translation>
@@ -99,7 +98,6 @@
 <translation id="1616111909442424068">Пшеничний</translation>
 <translation id="1618597272655350600">Повідомляє повний опис поточної позиції</translation>
 <translation id="1627222324347828322">Прозоро-білий</translation>
-<translation id="1630688379087270943">Позначення курсиву:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак "більше"}one{# знак "більше"}few{# знаки "більше"}many{# знаків "більше"}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Попередній заголовок рівня 3</translation>
 <translation id="1657616855184033958">Показати фільтри потоку подій</translation>
@@ -320,7 +318,6 @@
 <translation id="3286390186030710347">Повзунок</translation>
 <translation id="3299925995433437805">Немає наступного натиснутого посилання.</translation>
 <translation id="3300348286427369683">Підтримка форматованого тексту. Тепер ChromeVox підтримує поля форматованого тексту, зокрема команди переходу, переміщення курсора за допомогою брайлівської клавіатури, виділення тексту тощо.</translation>
-<translation id="3304756947457041303">Налаштувати індикацію форматованого тексту</translation>
 <translation id="3307886118343381874">Перейти в кінець таблиці</translation>
 <translation id="3311969765485641742">Натисніть Alt+Shift+A, щоб переглянути попередження</translation>
 <translation id="3312997241656799641">Наступне натиснуте посилання</translation>
@@ -407,7 +404,6 @@
 <translation id="3930498801443296724">Цитата</translation>
 <translation id="3936394396199829062">Рожево-лавандовий</translation>
 <translation id="3941269780691800708">Озвучити текст під мишею.</translation>
-<translation id="394953087167197343">Позначення орфографічної помилки:</translation>
 <translation id="3962990492275676168">Почати читати з поточного місця</translation>
 <translation id="3970951409746498040">Пісочний</translation>
 <translation id="3989324057180830702">перемикач</translation>
@@ -454,7 +450,6 @@
 <translation id="42164919740161077">Сіро-синій</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}one{# тире}few{# тире}many{# тире}other{# dashes}}</translation>
 <translation id="421884353938374759">вибір кольору</translation>
-<translation id="4221071177874897997">Позначення жирного шрифту:</translation>
 <translation id="4229646983878045487">дата й час</translation>
 <translation id="4230834257931120629">Світлий грифельно-сірий</translation>
 <translation id="4231102694147661229">Увімкнути параметри розробника</translation>
@@ -552,7 +547,6 @@
 <translation id="489907760999452556">Внутрішнє посилання</translation>
 <translation id="4915087353619183190">Увімкнення режиму довідки. Натисніть клавішу на клавіатурі QWERTY, клавішу оновлення на брайлівській клавіатурі або торкніться жесту, щоб дізнатися про функції. Щоб вийти з цього режиму, натисніть клавіші Ctrl + w або Esc.</translation>
 <translation id="492295894462528572">Передмова</translation>
-<translation id="4943781537993885772">Стиль відображення</translation>
 <translation id="495170559598752135">Дії</translation>
 <translation id="4953585991029886728">Редагування тексту</translation>
 <translation id="4954534434583049121">Цитування попереднього блока</translation>
@@ -604,7 +598,7 @@
 <translation id="520883772648104506">Немає наступного перемикача.</translation>
 <translation id="5263034204789987535">Незріла кукурудза</translation>
 <translation id="5263344797180442561">заголовок 2</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Завершити</translation>
 <translation id="5291783959063340370">Об’єкт</translation>
 <translation id="5302089807023311274">Посилання на бібліографію</translation>
 <translation id="5304943142864553931">вкладка <ph name="TITLE" /></translation>
@@ -651,7 +645,6 @@
 <translation id="5574412348552378458">Докладніше про ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Редагування введеного тексту, електронної адреси</translation>
-<translation id="5586942249556966598">Нічого не робити</translation>
 <translation id="5597170376237141345">Наступний прапорець</translation>
 <translation id="5597933780944041114">Немає наступного заголовка.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, перемикач не вибрано</translation>
@@ -719,7 +712,6 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{зворотна коса риска}one{# зворотна коса риска}few{# зворотні косі риски}many{# зворотних косих рисок}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
-<translation id="6021969570711251331">Чергування</translation>
 <translation id="6034000775414344507">Світло-сірий</translation>
 <translation id="6037602951055904232">На задній план</translation>
 <translation id="6042826534790431634">Натисніть клавішу пошуку та пробіл, щоб активувати.</translation>
@@ -757,7 +749,6 @@
 <translation id="6348869651006731065">Тьмяно-сірий</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списку}one{# маркер списку}few{# маркери списку}many{# маркерів списку}other{# маркера списку}}</translation>
 <translation id="6355910664415701303">Немає попереднього пункту списку.</translation>
-<translation id="6360318852623800555">Атрибути форматованого тексту</translation>
 <translation id="6364795331201459219">заголовок 6</translation>
 <translation id="6368143427468974988">Попередній заголовок</translation>
 <translation id="6376999910001533545">Темно-бордовий</translation>
@@ -771,7 +762,6 @@
 <translation id="6438968337250688271"><ph name="NAME" />, меню</translation>
 <translation id="6444046323172968959">Діалогове вікно сповіщень</translation>
 <translation id="6452403590345320472">Зміст</translation>
-<translation id="6454456397828627257">Поруч</translation>
 <translation id="6459511626086141404">Звичайна розкладка</translation>
 <translation id="6468049171101508116">Наступна кнопка</translation>
 <translation id="646954774886932461">Покажчик</translation>
@@ -933,7 +923,6 @@
 <translation id="762020119231868829">Призупиняє всі активні на цей момент медіа-віджети</translation>
 <translation id="7625690649919402823">Наступна таблиця</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" /> рівень</translation>
-<translation id="763535765081585392">Позначення підкреслення:</translation>
 <translation id="7639968568612851608">Темно-сірий</translation>
 <translation id="7641134354185483015">Немає попереднього заголовка рівня 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, текстове поле</translation>
@@ -1169,7 +1158,6 @@
 <translation id="8943175951035496220">Немає клітинки праворуч.</translation>
 <translation id="8943282376843390568">Лаймовий</translation>
 <translation id="8946628535652548639">р<ph name="TABLECELLROWINDEX" />с<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="8957142051395645063">Сповіщення</translation>
 <translation id="8978496506222343566">підказка</translation>
 <translation id="8986362086234534611">Видалити</translation>
 <translation id="900114243503212879">файл</translation>

@@ -45,6 +45,12 @@ class ImmersiveModeController {
     ANIMATE_REVEAL_NO
   };
 
+  // TODO(sky): remove this, temporary while supporting both ash and mash.
+  enum class Type {
+    ASH,
+    STUB,
+  };
+
   class Observer {
    public:
     // Called when a reveal of the top-of-window views has been initiated.
@@ -63,7 +69,7 @@ class ImmersiveModeController {
     virtual ~Observer() {}
   };
 
-  ImmersiveModeController();
+  explicit ImmersiveModeController(Type type);
   virtual ~ImmersiveModeController();
 
   // Must initialize after browser view has a Widget and native window.
@@ -113,6 +119,8 @@ class ImmersiveModeController {
   // in which case we should stay in immersive mode.
   virtual bool ShouldStayImmersiveAfterExitingFullscreen() = 0;
 
+  Type type() const { return type_; }
+
   // Called by browser view to indicate the widget activation has changed.
   // Immersive mode should be enabled/disabled if the widget is
   // active/nonactive when the auto hide title bars in tablet mode feature is
@@ -127,6 +135,8 @@ class ImmersiveModeController {
   base::ObserverList<Observer>::Unchecked observers_;
 
  private:
+  const Type type_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };
 

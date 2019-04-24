@@ -38,6 +38,7 @@ namespace blink {
 class CSSImageGeneratorValue;
 class CSSImageSetValue;
 class CSSImageValue;
+class CSSURIValue;
 class CSSValue;
 class ComputedStyle;
 class Element;
@@ -45,12 +46,6 @@ class SVGResource;
 class StyleImage;
 class StylePendingImage;
 class TreeScope;
-
-namespace cssvalue {
-
-class CSSURIValue;
-
-}
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.
@@ -67,7 +62,7 @@ class ElementStyleResources {
   enum AllowExternal { kDontAllowExternalResource, kAllowExternalResource };
   SVGResource* GetSVGResourceFromValue(
       TreeScope&,
-      const cssvalue::CSSURIValue&,
+      const CSSURIValue&,
       AllowExternal = kDontAllowExternalResource) const;
 
   void LoadPendingResources(ComputedStyle*);

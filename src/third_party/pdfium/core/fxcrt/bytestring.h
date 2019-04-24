@@ -16,7 +16,6 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
-#include "third_party/base/logging.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
@@ -141,8 +140,8 @@ class ByteString {
   const ByteString& operator+=(ByteStringView bstrc);
 
   CharType operator[](const size_t index) const {
-    CHECK(IsValidIndex(index));
-    return m_pData->m_String[index];
+    ASSERT(IsValidIndex(index));
+    return m_pData ? m_pData->m_String[index] : 0;
   }
 
   CharType First() const { return GetLength() ? (*this)[0] : 0; }

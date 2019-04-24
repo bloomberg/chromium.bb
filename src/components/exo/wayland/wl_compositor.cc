@@ -13,10 +13,6 @@
 #include "components/exo/wayland/server_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
-#if defined(OS_CHROMEOS)
-#include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
-#endif
-
 namespace exo {
 namespace wayland {
 namespace {
@@ -129,14 +125,7 @@ void surface_set_input_region(wl_client* client,
 }
 
 void surface_commit(wl_client* client, wl_resource* resource) {
-  Surface* surface = GetUserDataAs<Surface>(resource);
-
-#if defined(OS_CHROMEOS)
-  if (!linux_surface_synchronization_validate_commit(surface))
-    return;
-#endif
-
-  surface->Commit();
+  GetUserDataAs<Surface>(resource)->Commit();
 }
 
 void surface_set_buffer_transform(wl_client* client,

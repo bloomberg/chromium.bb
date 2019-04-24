@@ -94,12 +94,12 @@ void UserBoardScreenHandler::SetAuthType(
 
 void UserBoardScreenHandler::Bind(UserSelectionScreen* screen) {
   screen_ = screen;
-  SetBaseScreen(screen_);
+  BaseWebUIHandler::SetBaseScreen(screen_);
 }
 
 void UserBoardScreenHandler::Unbind() {
   screen_ = nullptr;
-  SetBaseScreen(nullptr);
+  BaseWebUIHandler::SetBaseScreen(nullptr);
 }
 
 base::WeakPtr<UserBoardView> UserBoardScreenHandler::GetWeakPtr() {

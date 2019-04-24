@@ -4,39 +4,31 @@
 
 #include "components/sync/model/entity_change.h"
 
-#include <utility>
-
-#include "base/memory/ptr_util.h"
-
 namespace syncer {
 
 // static
-std::unique_ptr<EntityChange> EntityChange::CreateAdd(
-    const std::string& storage_key,
-    std::unique_ptr<EntityData> data) {
-  return base::WrapUnique(
-      new EntityChange(storage_key, ACTION_ADD, std::move(data)));
+EntityChange EntityChange::CreateAdd(const std::string& storage_key,
+                                     EntityDataPtr data) {
+  return EntityChange(storage_key, ACTION_ADD, data);
 }
 
 // static
-std::unique_ptr<EntityChange> EntityChange::CreateUpdate(
-    const std::string& storage_key,
-    std::unique_ptr<EntityData> data) {
-  return base::WrapUnique(
-      new EntityChange(storage_key, ACTION_UPDATE, std::move(data)));
+EntityChange EntityChange::CreateUpdate(const std::string& storage_key,
+                                        EntityDataPtr data) {
+  return EntityChange(storage_key, ACTION_UPDATE, data);
 }
 
 // static
-std::unique_ptr<EntityChange> EntityChange::CreateDelete(
-    const std::string& storage_key) {
-  return base::WrapUnique(
-      new EntityChange(storage_key, ACTION_DELETE, nullptr));
+EntityChange EntityChange::CreateDelete(const std::string& storage_key) {
+  return EntityChange(storage_key, ACTION_DELETE, EntityDataPtr());
 }
 
 EntityChange::EntityChange(const std::string& storage_key,
                            ChangeType type,
-                           std::unique_ptr<EntityData> data)
-    : storage_key_(storage_key), type_(type), data_(std::move(data)) {}
+                           EntityDataPtr data)
+    : storage_key_(storage_key), type_(type), data_(data) {}
+
+EntityChange::EntityChange(const EntityChange& other) = default;
 
 EntityChange::~EntityChange() {}
 

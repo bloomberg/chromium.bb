@@ -1555,7 +1555,7 @@ struct UText {
 U_STABLE UText * U_EXPORT2
 utext_setup(UText *ut, int32_t extraSpace, UErrorCode *status);
 
-// do not use #ifndef U_HIDE_INTERNAL_API around the following!
+#ifndef U_HIDE_INTERNAL_API
 /**
   * @internal
   *  Value used to help identify correctly initialized UText structs.
@@ -1564,6 +1564,7 @@ utext_setup(UText *ut, int32_t extraSpace, UErrorCode *status);
 enum {
     UTEXT_MAGIC = 0x345ad82c
 };
+#endif  /* U_HIDE_INTERNAL_API */
 
 /**
  * initializer to be used with local (stack) instances of a UText

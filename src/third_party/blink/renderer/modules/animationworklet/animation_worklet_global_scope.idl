@@ -7,15 +7,13 @@
 [
     Exposed=AnimationWorklet,
     Global=(Worklet,AnimationWorklet),
-    RuntimeEnabled=AnimationWorklet
+    OriginTrialEnabled=AnimationWorklet
 ] interface AnimationWorkletGlobalScope : WorkletGlobalScope {
     [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, AnimatorConstructor animatorCtor);
 };
 
 // Blink-specific types
 // https://wicg.github.io/animation-worklet/#create-a-new-animator-instance
-callback AnimatorConstructor = any (any options, any state);
+callback AnimatorConstructor = any (any options);
 // https://wicg.github.io/animation-worklet/#run-animators
 callback AnimateCallback = void (double currentTime, (EffectProxy or WorkletGroupEffectProxy) effect);
-// https://drafts.css-houdini.org/css-animationworklet/#stateful-animator-desc
-callback StateCallback = any ();

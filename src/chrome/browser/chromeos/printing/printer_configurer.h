@@ -25,7 +25,6 @@ enum PrinterSetupResult {
   kNativePrintersNotAllowed = 4,  // Tried adding/editing printers policy set
   kInvalidPrinterUpdate = 5,      // Tried updating printer with invalid values
   kComponentUnavailable = 6,      // Could not install component
-  kEditSuccess = 7,               // Printer editted successfully
   // Space left for additional errors
 
   // PPD errors

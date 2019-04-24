@@ -9,7 +9,10 @@
 
   function replayOptionsXhr() {
     sentReplayXhr = true;
-    dp.Network.replayXHR({requestId: Object.keys(requestsById)[0]});
+    const optionsRequestId =
+        Object.keys(requestsById)
+            .find(id => requestsById[id].method === 'OPTIONS');
+    dp.Network.replayXHR({requestId: optionsRequestId});
   }
 
   function printResultsAndFinish() {
@@ -19,14 +22,8 @@
                            delete request.wallTime;
                            return request;
                          });
-
-    // Ignore OPTIONS preflight requests.
-    // TODO(crbug.com/941297): Add the OPTIONS request back to the test results once this bug is fixed.
-    let postIndex = 0;
-    for (const request of requests) {
-      if (request.method !== 'POST')
-        continue;
-      testRunner.log(`POST request ${postIndex++}: ${JSON.stringify(request, null, 2)}`);
+    for (let i = 0; i < requests.length; i++) {
+      testRunner.log(`request ${i}: ${JSON.stringify(requests[i], null, 2)}`);
     }
     testRunner.completeTest();
   }

@@ -98,8 +98,8 @@ dawn::Device CreateCppDawnDevice() {
         backendAdapter = *adapterIt;
     }
 
-    DawnDevice backendDevice = backendAdapter.CreateDevice();
-    DawnProcTable backendProcs = dawn_native::GetProcs();
+    dawnDevice backendDevice = backendAdapter.CreateDevice();
+    dawnProcTable backendProcs = dawn_native::GetProcs();
 
     binding = utils::CreateBinding(backendType, window, backendDevice);
     if (binding == nullptr) {
@@ -107,8 +107,8 @@ dawn::Device CreateCppDawnDevice() {
     }
 
     // Choose whether to use the backend procs and devices directly, or set up the wire.
-    DawnDevice cDevice = nullptr;
-    DawnProcTable procs;
+    dawnDevice cDevice = nullptr;
+    dawnProcTable procs;
 
     switch (cmdBufType) {
         case CmdBufType::None:
@@ -125,8 +125,8 @@ dawn::Device CreateCppDawnDevice() {
                 c2sBuf->SetHandler(wireServer);
 
                 wireClient = new dawn_wire::WireClient(c2sBuf);
-                DawnDevice clientDevice = wireClient->GetDevice();
-                DawnProcTable clientProcs = wireClient->GetProcs();
+                dawnDevice clientDevice = wireClient->GetDevice();
+                dawnProcTable clientProcs = wireClient->GetProcs();
                 s2cBuf->SetHandler(wireClient);
 
                 procs = clientProcs;
@@ -167,7 +167,7 @@ dawn::TextureView CreateDefaultDepthStencilView(const dawn::Device& device) {
     descriptor.mipLevelCount = 1;
     descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
     auto depthStencilTexture = device.CreateTexture(&descriptor);
-    return depthStencilTexture.CreateDefaultView();
+    return depthStencilTexture.CreateDefaultTextureView();
 }
 
 bool InitSample(int argc, const char** argv) {

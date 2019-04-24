@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -34,6 +33,11 @@
 class PluginMetricsProvider;
 class Profile;
 class PrefRegistrySimple;
+
+#if defined(OS_ANDROID)
+class TabModelListObserver;
+#endif  // defined(OS_ANDROID)
+
 
 namespace metrics {
 class MetricsService;
@@ -172,8 +176,12 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   content::NotificationRegistrar registrar_;
 
+#if defined(OS_ANDROID)
   // Listener for changes in incognito activity.
-  std::unique_ptr<IncognitoObserver> incognito_observer_;
+  // Desktop platform use BrowserList, and can listen for
+  // chrome::NOTIFICATION_BROWSER_OPENED instead.
+  std::unique_ptr<TabModelListObserver> incognito_observer_;
+#endif  // defined(OS_ANDROID)
 
   // Whether we registered all notification listeners successfully.
   bool notification_listeners_active_;

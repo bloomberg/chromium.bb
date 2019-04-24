@@ -5,9 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "AnimTimer.h"
 #include "Sample.h"
-#include "Sk1DPathEffect.h"
+#include "SkAnimTimer.h"
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
 #include "SkColorPriv.h"
@@ -23,6 +22,7 @@
 #include "SkString.h"
 #include "SkTextUtils.h"
 #include "SkUTF.h"
+#include "Sk1DPathEffect.h"
 
 #include "SkParsePath.h"
 static void testparse() {
@@ -187,11 +187,9 @@ protected:
         canvas->drawDrawable(fRootDrawable.get());
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(const SkAnimTimer& timer) override {
         SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
-        if (fAnimatingDrawable) {
-            fAnimatingDrawable->setSweep(angle);
-        }
+        fAnimatingDrawable->setSweep(angle);
         return true;
     }
 

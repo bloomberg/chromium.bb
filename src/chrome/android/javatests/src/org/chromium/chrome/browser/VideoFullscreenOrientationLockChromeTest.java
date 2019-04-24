@@ -37,7 +37,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
+        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
+        "enable-features=VideoFullscreenOrientationLock"})
 public class VideoFullscreenOrientationLockChromeTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -103,6 +104,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     @Test
     // Test is disabled due to flakiness - crbug.com/888161
     // @MediumTest
+    // @Feature({"VideoFullscreenOrientationLock"})
     // @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky -
     // crbug.com/711005.
     @DisabledTest

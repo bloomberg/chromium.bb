@@ -50,11 +50,11 @@ class V8_BASE_EXPORT Semaphore final {
   bool WaitFor(const TimeDelta& rel_time) V8_WARN_UNUSED_RESULT;
 
 #if V8_OS_MACOSX
-  using NativeHandle = semaphore_t;
+  typedef semaphore_t NativeHandle;
 #elif V8_OS_POSIX
-  using NativeHandle = sem_t;
+  typedef sem_t NativeHandle;
 #elif V8_OS_WIN
-  using NativeHandle = HANDLE;
+  typedef HANDLE NativeHandle;
 #endif
 
   NativeHandle& native_handle() {
@@ -90,8 +90,8 @@ struct CreateSemaphoreTrait {
 
 template <int N>
 struct LazySemaphore {
-  using typename LazyDynamicInstance<Semaphore, CreateSemaphoreTrait<N>,
-                                     ThreadSafeInitOnceTrait>::type;
+  typedef typename LazyDynamicInstance<Semaphore, CreateSemaphoreTrait<N>,
+                                       ThreadSafeInitOnceTrait>::type type;
 };
 
 #define LAZY_SEMAPHORE_INITIALIZER LAZY_DYNAMIC_INSTANCE_INITIALIZER

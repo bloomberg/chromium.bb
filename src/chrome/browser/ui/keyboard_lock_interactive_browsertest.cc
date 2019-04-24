@@ -129,7 +129,8 @@ void KeyboardLockInteractiveBrowserTest::SetUpCommandLine(
 }
 
 void KeyboardLockInteractiveBrowserTest::SetUpOnMainThread() {
-  GetEmbeddedTestServer()->AddDefaultHandlers(GetChromeTestDataDir());
+  GetEmbeddedTestServer()->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(GetEmbeddedTestServer()->Start());
   FullscreenKeyboardBrowserTestBase::SetUpOnMainThread();
 }

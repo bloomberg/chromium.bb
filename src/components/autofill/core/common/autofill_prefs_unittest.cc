@@ -189,13 +189,14 @@ TEST_F(AutofillPrefsTest, WalletSyncTransportPref_CanBeSetAndReadFromJSON) {
                    ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
                    ->DictEmpty());
 
-  const base::Value* dictionary =
+  const base::DictionaryValue* dictionary =
       pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
-  ASSERT_TRUE(dictionary);
 
   std::string output_js;
-  ASSERT_TRUE(base::JSONWriter::Write(*dictionary, &output_js));
-  EXPECT_EQ(*dictionary, *base::JSONReader::Read(output_js));
+  EXPECT_TRUE(base::JSONWriter::Write(*dictionary, &output_js));
+  EXPECT_TRUE(dictionary->Equals(
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(output_js))
+          .get()));
 }
 
 }  // namespace prefs

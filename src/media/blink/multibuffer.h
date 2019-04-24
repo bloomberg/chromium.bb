@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <functional>
 #include <limits>
 #include <map>
 #include <memory>
@@ -17,7 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"

@@ -21,7 +21,8 @@ namespace content {
 class ServiceWorkerNetworkProviderForServiceWorker final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
-  explicit ServiceWorkerNetworkProviderForServiceWorker(
+  ServiceWorkerNetworkProviderForServiceWorker(
+      int provider_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info);
   ~ServiceWorkerNetworkProviderForServiceWorker() override;
@@ -42,6 +43,7 @@ class ServiceWorkerNetworkProviderForServiceWorker final
   }
 
  private:
+  const int provider_id_;
   // The URL loader factory for loading the service worker's scripts.
   network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 };

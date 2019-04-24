@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -584,7 +583,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
 void PnaclHost::ClearTranslationCacheEntriesBetween(
     base::Time initial_time,
     base::Time end_time,
-    base::OnceClosure callback) {
+    const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (cache_state_ == CacheUninitialized) {
     Init();
@@ -595,26 +594,22 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PnaclHost::ClearTranslationCacheEntriesBetween,
                        base::Unretained(this), initial_time, end_time,
-                       std::move(callback)),
+                       callback),
         base::TimeDelta::FromMilliseconds(
             kTranslationCacheInitializationDelayMs));
     return;
   }
   pending_backend_operations_++;
-
-  base::RepeatingClosure copyable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
   int rv = disk_cache_->DoomEntriesBetween(
-      initial_time, end_time,
-      base::BindOnce(&PnaclHost::OnEntriesDoomed, base::Unretained(this),
-                     copyable_callback));
+      initial_time, end_time, base::Bind(&PnaclHost::OnEntriesDoomed,
+                                         base::Unretained(this), callback));
   if (rv != net::ERR_IO_PENDING)
-    OnEntriesDoomed(copyable_callback, rv);
+    OnEntriesDoomed(callback, rv);
 }
 
-void PnaclHost::OnEntriesDoomed(base::OnceClosure callback, int net_error) {
+void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, std::move(callback));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, callback);
   pending_backend_operations_--;
   // When clearing the cache, the UI is blocked on all the cache-clearing
   // operations, and freeing the backend actually blocks the IO thread. So

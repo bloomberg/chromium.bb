@@ -10,7 +10,6 @@
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_op_buffer.h"
 
 #include <vector>
 
@@ -28,12 +27,10 @@ class CC_PAINT_EXPORT ImageProvider {
     ScopedResult();
     explicit ScopedResult(DecodedDrawImage image);
     ScopedResult(DecodedDrawImage image, DestructionCallback callback);
-    ScopedResult(sk_sp<PaintRecord> record, DestructionCallback callback);
-    ScopedResult(const ScopedResult&) = delete;
-    ScopedResult(ScopedResult&& other);
+    ScopedResult(const PaintRecord* record, DestructionCallback callback);
     ~ScopedResult();
 
-    ScopedResult& operator=(const ScopedResult&) = delete;
+    ScopedResult(ScopedResult&& other);
     ScopedResult& operator=(ScopedResult&& other);
 
     operator bool() const { return image_ || record_; }
@@ -41,15 +38,17 @@ class CC_PAINT_EXPORT ImageProvider {
     bool needs_unlock() const { return !destruction_callback_.is_null(); }
     const PaintRecord* paint_record() {
       DCHECK(record_);
-      return record_.get();
+      return record_;
     }
 
    private:
     void DestroyDecode();
 
     DecodedDrawImage image_;
-    sk_sp<PaintRecord> record_;
+    const PaintRecord* record_ = nullptr;
     DestructionCallback destruction_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedResult);
   };
 
   virtual ~ImageProvider() {}

@@ -21,22 +21,16 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
  public:
   static PerformanceElementTiming* Create(const AtomicString& name,
-                                          const FloatRect& intersection_rect,
+                                          const IntRect& intersection_rect,
                                           DOMHighResTimeStamp start_time,
                                           DOMHighResTimeStamp response_end,
-                                          const AtomicString& identifier,
-                                          int naturalWidth,
-                                          int naturalHeight,
-                                          const AtomicString& id);
+                                          const AtomicString& identifier);
 
   PerformanceElementTiming(const AtomicString& name,
-                           const FloatRect& intersection_rect,
+                           const IntRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
                            DOMHighResTimeStamp response_end,
-                           const AtomicString& identifier,
-                           int naturalWidth,
-                           int naturalHeight,
-                           const AtomicString& id);
+                           const AtomicString& identifier);
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -48,12 +42,6 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   AtomicString identifier() const { return identifier_; }
 
-  unsigned naturalWidth() const { return naturalWidth_; }
-
-  unsigned naturalHeight() const { return naturalHeight_; }
-
-  AtomicString id() const { return id_; }
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -62,9 +50,6 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   Member<DOMRectReadOnly> intersection_rect_;
   DOMHighResTimeStamp response_end_;
   AtomicString identifier_;
-  unsigned naturalWidth_;
-  unsigned naturalHeight_;
-  AtomicString id_;
 };
 
 }  // namespace blink

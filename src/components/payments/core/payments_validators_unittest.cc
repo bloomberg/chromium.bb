@@ -154,7 +154,6 @@ struct ValidationErrorsTestCase {
   explicit ValidationErrorsTestCase(bool expected_valid)
       : expected_valid(expected_valid) {}
 
-  const char* m_error = "";
   const char* m_payer_email = "";
   const char* m_payer_name = "";
   const char* m_payer_phone = "";
@@ -201,7 +200,6 @@ mojom::PaymentValidationErrorsPtr toPaymentValidationErrors(
   shipping_address->region = test_case.m_shipping_address_region;
   shipping_address->sorting_code = test_case.m_shipping_address_sorting_code;
 
-  errors->error = test_case.m_error;
   errors->payer = std::move(payer);
   errors->shipping_address = std::move(shipping_address);
 
@@ -227,7 +225,6 @@ INSTANTIATE_TEST_SUITE_P(
     PaymentValidationErrorss,
     PaymentsErrorMessageValidatorTest,
     testing::Values(
-        VALIDATION_ERRORS_TEST_CASE(error, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_email, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_name, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, "test", true),
@@ -250,7 +247,6 @@ INSTANTIATE_TEST_SUITE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
                                     "test",
                                     true),
-        VALIDATION_ERRORS_TEST_CASE(error, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_email, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_name, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, LongString2049(), false),

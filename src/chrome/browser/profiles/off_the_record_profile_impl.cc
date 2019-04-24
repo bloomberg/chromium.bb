@@ -40,7 +40,6 @@
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -54,7 +53,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
-#include "components/keyed_service/core/simple_key_map.h"
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -139,7 +137,11 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 }  // namespace
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
-    : profile_(real_profile), start_time_(base::Time::Now()) {
+    : profile_(real_profile),
+      start_time_(base::Time::Now()),
+      key_(
+          std::make_unique<SimpleFactoryKey>(profile_->GetPath(),
+                                             profile_->GetSimpleFactoryKey())) {
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
@@ -148,11 +150,6 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
       CreateExtensionPrefStore(profile_, true),
       InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
           ->CreateDelegate());
-
-  key_ = std::make_unique<ProfileKey>(profile_->GetPath(), prefs_.get(),
-                                      profile_->GetProfileKey());
-  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
-
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
@@ -227,15 +224,14 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
       nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
 
-  // The SimpleDependencyManager should always be passed after the
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
+  // The SimpleDependencyManager should always be called after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
   // ones in the SimpleDependencyManager's graph.
-  DependencyManager::PerformInterlockedTwoPhaseShutdown(
-      BrowserContextDependencyManager::GetInstance(), this,
-      SimpleDependencyManager::GetInstance(), key_.get());
-
-  SimpleKeyMap::GetInstance()->Dissociate(this);
+  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
+      GetSimpleFactoryKey());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(
@@ -556,7 +552,7 @@ base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-ProfileKey* OffTheRecordProfileImpl::GetProfileKey() const {
+SimpleFactoryKey* OffTheRecordProfileImpl::GetSimpleFactoryKey() const {
   DCHECK(key_);
   return key_.get();
 }

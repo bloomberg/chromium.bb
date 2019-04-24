@@ -40,7 +40,6 @@ class BrowserContext;
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class RenderFrameHostImpl;
-class RenderProcessHost;
 class InterceptionHandle;
 class NavigationHandle;
 class NavigationRequest;
@@ -59,8 +58,7 @@ class NetworkHandler : public DevToolsDomainHandler,
  public:
   NetworkHandler(const std::string& host_id,
                  const base::UnguessableToken& devtools_token,
-                 DevToolsIOContext* io_context,
-                 base::RepeatingClosure update_loader_factories_callback);
+                 DevToolsIOContext* io_context);
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -147,13 +145,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback)
       override;
 
-  // Note that |frame_token| below is for the frame that is associated with the
-  // factory being created, and is therefore not necessarily the same as one
-  // associated with the NetworkHandler itself (which is the token of the local
-  // root frame).
   bool MaybeCreateProxyForInterception(
-      RenderProcessHost* rph,
-      const base::UnguessableToken& frame_token,
+      RenderFrameHostImpl* rfh,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request);
@@ -233,7 +226,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool bypass_service_worker_;
   bool cache_disabled_;
   std::unique_ptr<BackgroundSyncRestorer> background_sync_restorer_;
-  base::RepeatingClosure update_loader_factories_callback_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

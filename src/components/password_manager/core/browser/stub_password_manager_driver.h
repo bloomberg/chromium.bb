@@ -33,7 +33,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   void ShowInitialPasswordAccountSuggestions(
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
-  PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override;
+  PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   autofill::AutofillDriver* GetAutofillDriver() override;

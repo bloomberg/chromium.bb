@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
@@ -45,19 +44,11 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
     ActivationAction activation_action,
     int string_specifier,
     base::Optional<int> screenreader_string_specifier,
-    base::Optional<ui::Accelerator> feature_accelerator,
-    std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout)
+    base::Optional<ui::Accelerator> feature_accelerator)
     : BubbleDialogDelegateView(anchor_view, arrow),
-      activation_action_(activation_action),
-      feature_promo_bubble_timeout_(std::move(feature_promo_bubble_timeout)) {
+      activation_action_(activation_action) {
   DCHECK(anchor_view);
   UseCompactMargins();
-
-  // If the timeout was not explicitly specified, use the default values.
-  if (!feature_promo_bubble_timeout_) {
-    feature_promo_bubble_timeout_ =
-        std::make_unique<FeaturePromoBubbleTimeout>(kDelayDefault, kDelayShort);
-  }
 
   const base::string16 body_text = l10n_util::GetStringUTF16(string_specifier);
 
@@ -115,7 +106,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
 
   widget->Show();
-  feature_promo_bubble_timeout_->OnBubbleShown(this);
+  StartAutoCloseTimer(kDelayDefault);
 }
 
 FeaturePromoBubbleView::~FeaturePromoBubbleView() = default;
@@ -127,12 +118,10 @@ FeaturePromoBubbleView* FeaturePromoBubbleView::CreateOwned(
     ActivationAction activation_action,
     int string_specifier,
     base::Optional<int> screenreader_string_specifier,
-    base::Optional<ui::Accelerator> feature_accelerator,
-    std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout) {
+    base::Optional<ui::Accelerator> feature_accelerator) {
   return new FeaturePromoBubbleView(
       anchor_view, arrow, activation_action, string_specifier,
-      screenreader_string_specifier, feature_accelerator,
-      std::move(feature_promo_bubble_timeout));
+      screenreader_string_specifier, feature_accelerator);
 }
 
 void FeaturePromoBubbleView::CloseBubble() {
@@ -150,11 +139,11 @@ bool FeaturePromoBubbleView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void FeaturePromoBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  feature_promo_bubble_timeout_->OnMouseEntered();
+  timer_.Stop();
 }
 
 void FeaturePromoBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  feature_promo_bubble_timeout_->OnMouseExited();
+  StartAutoCloseTimer(kDelayShort);
 }
 
 gfx::Rect FeaturePromoBubbleView::GetBubbleBounds() {
@@ -168,7 +157,7 @@ gfx::Rect FeaturePromoBubbleView::GetBubbleBounds() {
   return bounds;
 }
 
-ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() {
+ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() const {
   // Since we don't have any controls for the user to interact with (we're just
   // an information bubble), override our role to kAlert.
   return ax::mojom::Role::kAlert;
@@ -176,4 +165,10 @@ ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() {
 
 base::string16 FeaturePromoBubbleView::GetAccessibleWindowTitle() const {
   return accessible_name_;
+}
+
+void FeaturePromoBubbleView::StartAutoCloseTimer(
+    base::TimeDelta auto_close_duration) {
+  timer_.Start(FROM_HERE, auto_close_duration, this,
+               &FeaturePromoBubbleView::CloseBubble);
 }

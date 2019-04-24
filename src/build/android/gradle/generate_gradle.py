@@ -29,8 +29,9 @@ sys.path.append(os.path.join(_BUILD_ANDROID, 'gyp'))
 import jinja_template
 from util import build_utils
 
-_DEPOT_TOOLS_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party',
-                                 'depot_tools')
+sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
+import find_depot_tools  # pylint: disable=import-error
+
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gradle',
     'AndroidManifest.xml')
@@ -113,9 +114,9 @@ def _ReadPropertiesFile(path):
 
 def _RunGnGen(output_dir, args=None):
   cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'gn'),
-      'gen',
-      output_dir,
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gn'),
+    'gen',
+    output_dir,
   ]
   if args:
     cmd.extend(args)
@@ -125,10 +126,10 @@ def _RunGnGen(output_dir, args=None):
 
 def _RunNinja(output_dir, args, j):
   cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'ninja'),
-      '-C',
-      output_dir,
-      '-j{}'.format(j),
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'ninja'),
+    '-C',
+    output_dir,
+    '-j{}'.format(j),
   ]
   cmd.extend(args)
   logging.info('Running: %r', cmd)
@@ -138,11 +139,11 @@ def _RunNinja(output_dir, args, j):
 def _QueryForAllGnTargets(output_dir):
   # Query ninja rather than GN since it's faster.
   cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'ninja'),
-      '-C',
-      output_dir,
-      '-t',
-      'targets',
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'ninja'),
+    '-C',
+    output_dir,
+    '-t',
+    'targets',
   ]
   logging.info('Running: %r', cmd)
   ninja_output = build_utils.CheckOutput(cmd)

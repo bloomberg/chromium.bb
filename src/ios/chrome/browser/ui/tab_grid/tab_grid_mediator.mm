@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -400,10 +401,16 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (IsURLNtp(webState->GetVisibleURL())) {
     return;
   }
-  UIImage* defaultFavicon =
-      webState->GetBrowserState()->IsOffTheRecord()
-          ? [UIImage imageNamed:@"default_world_favicon_incognito"]
-          : [UIImage imageNamed:@"default_world_favicon_regular"];
+  UIImage* defaultFavicon;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (webState->GetBrowserState()->IsOffTheRecord()) {
+      defaultFavicon = [UIImage imageNamed:@"default_world_favicon_incognito"];
+    } else {
+      defaultFavicon = [UIImage imageNamed:@"default_world_favicon_regular"];
+    }
+  } else {
+    defaultFavicon = [UIImage imageNamed:@"default_favicon"];
+  }
   completion(defaultFavicon);
 
   favicon::FaviconDriver* faviconDriver =

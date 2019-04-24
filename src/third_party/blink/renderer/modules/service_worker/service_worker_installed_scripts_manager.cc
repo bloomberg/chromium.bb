@@ -34,6 +34,8 @@ class Receiver {
   DISALLOW_NEW();
 
  public:
+  using BytesChunk = Vector<char>;
+
   Receiver(mojo::ScopedDataPipeConsumerHandle handle,
            uint64_t total_bytes,
            scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -41,9 +43,7 @@ class Receiver {
         watcher_(FROM_HERE,
                  mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                  std::move(task_runner)),
-        remaining_bytes_(total_bytes) {
-    data_.ReserveInitialCapacity(SafeCast<wtf_size_t>(total_bytes));
-  }
+        remaining_bytes_(total_bytes) {}
 
   void Start(base::OnceClosure callback) {
     if (!handle_.is_valid()) {
@@ -88,9 +88,11 @@ class Receiver {
         return;
     }
 
-    if (bytes_read > 0)
-      data_.Append(static_cast<const uint8_t*>(buffer), bytes_read);
-
+    if (bytes_read > 0) {
+      BytesChunk chunk;
+      chunk.Append(static_cast<const char*>(buffer), bytes_read);
+      chunks_.emplace_back(std::move(chunk));
+    }
     rv = handle_->EndReadData(bytes_read);
     DCHECK_EQ(rv, MOJO_RESULT_OK);
     CHECK_GE(remaining_bytes_, bytes_read);
@@ -101,9 +103,9 @@ class Receiver {
   bool IsRunning() const { return handle_.is_valid(); }
   bool HasReceivedAllData() const { return remaining_bytes_ == 0; }
 
-  Vector<uint8_t> TakeData() {
+  Vector<BytesChunk> TakeChunks() {
     DCHECK(!IsRunning());
-    return std::move(data_);
+    return std::move(chunks_);
   }
 
  private:
@@ -111,7 +113,7 @@ class Receiver {
     handle_.reset();
     watcher_.Cancel();
     if (!HasReceivedAllData())
-      data_.clear();
+      chunks_.clear();
     DCHECK(callback_);
     std::move(callback_).Run();
   }
@@ -120,7 +122,7 @@ class Receiver {
   mojo::ScopedDataPipeConsumerHandle handle_;
   mojo::SimpleWatcher watcher_;
 
-  Vector<uint8_t> data_;
+  Vector<BytesChunk> chunks_;
   uint64_t remaining_bytes_;
 };
 
@@ -216,9 +218,9 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
       return;
     }
 
-    auto script_data = std::make_unique<RawScriptData>(
-        script_info->encoding, receivers->body()->TakeData(),
-        receivers->meta_data()->TakeData());
+    auto script_data = RawScriptData::Create(
+        script_info->encoding, receivers->body()->TakeChunks(),
+        receivers->meta_data()->TakeChunks());
     for (const auto& entry : script_info->headers)
       script_data->AddHeader(entry.key, entry.value);
     script_container_->AddOnIOThread(script_info->script_url,
@@ -265,9 +267,6 @@ bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(
 std::unique_ptr<InstalledScriptsManager::ScriptData>
 ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   DCHECK(!IsMainThread());
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerInstalledScriptsManager::GetScriptData", "url",
-               script_url.GetString().Utf8().data());
   if (!IsScriptInstalled(script_url))
     return nullptr;
 
@@ -278,25 +277,30 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
 
   // This is from WorkerClassicScriptLoader::DidReceiveData.
   std::unique_ptr<TextResourceDecoder> decoder =
-      std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+      TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent,
           raw_script_data->Encoding().IsEmpty()
               ? UTF8Encoding()
               : WTF::TextEncoding(raw_script_data->Encoding())));
 
-  Vector<uint8_t> source_text = raw_script_data->TakeScriptText();
-  String decoded_source_text = decoder->Decode(
-      reinterpret_cast<const char*>(source_text.data()), source_text.size());
+  StringBuilder source_text_builder;
+  for (const auto& chunk : raw_script_data->ScriptTextChunks())
+    source_text_builder.Append(decoder->Decode(chunk.data(), chunk.size()));
 
-  // TODO(crbug.com/946676): Remove the unique_ptr<> wrapper around the Vector
-  // as we can just use Vector::IsEmpty() to distinguish missing code cache.
   std::unique_ptr<Vector<uint8_t>> meta_data;
-  Vector<uint8_t> meta_data_in = raw_script_data->TakeMetaData();
-  if (meta_data_in.size() > 0)
-    meta_data = std::make_unique<Vector<uint8_t>>(std::move(meta_data_in));
+  if (raw_script_data->MetaDataChunks().size() > 0) {
+    size_t total_metadata_size = 0;
+    for (const auto& chunk : raw_script_data->MetaDataChunks())
+      total_metadata_size += chunk.size();
+    meta_data = std::make_unique<Vector<uint8_t>>();
+    meta_data->ReserveInitialCapacity(
+        SafeCast<wtf_size_t>(total_metadata_size));
+    for (const auto& chunk : raw_script_data->MetaDataChunks())
+      meta_data->Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
+  }
 
   return std::make_unique<InstalledScriptsManager::ScriptData>(
-      script_url, decoded_source_text, std::move(meta_data),
+      script_url, source_text_builder.ToString(), std::move(meta_data),
       raw_script_data->TakeHeaders());
 }
 

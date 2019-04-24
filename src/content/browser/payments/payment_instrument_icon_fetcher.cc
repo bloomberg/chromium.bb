@@ -77,7 +77,6 @@ void DownloadBestMatchingIcon(
 
   GURL icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (web_contents == nullptr || !icon_url.is_valid()) {
     // If the icon url is invalid, it's better to give the information to
@@ -100,9 +99,8 @@ void DownloadBestMatchingIcon(
   bool can_download_icon = ManifestIconDownloader::Download(
       web_contents, icon_url, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::BindOnce(&OnIconFetched, web_contents, copy_icons,
-                     std::move(callback)),
-      false /* square_only */);
+      base::Bind(&OnIconFetched, web_contents, copy_icons,
+                 base::Passed(std::move(callback))));
   DCHECK(can_download_icon);
 }
 

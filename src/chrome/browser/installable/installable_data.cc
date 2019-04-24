@@ -4,19 +4,17 @@
 
 #include "chrome/browser/installable/installable_data.h"
 
-#include <utility>
-
-InstallableData::InstallableData(std::vector<InstallableStatusCode> errors,
-                                 const GURL& manifest_url,
+InstallableData::InstallableData(InstallableStatusCode error_code,
+                                 GURL manifest_url,
                                  const blink::Manifest* manifest,
-                                 const GURL& primary_icon_url,
+                                 GURL primary_icon_url,
                                  const SkBitmap* primary_icon,
                                  bool has_maskable_primary_icon,
-                                 const GURL& badge_icon_url,
+                                 GURL badge_icon_url,
                                  const SkBitmap* badge_icon,
                                  bool valid_manifest,
                                  bool has_worker)
-    : errors(std::move(errors)),
+    : error_code(error_code),
       manifest_url(manifest_url),
       manifest(manifest),
       primary_icon_url(primary_icon_url),
@@ -26,5 +24,7 @@ InstallableData::InstallableData(std::vector<InstallableStatusCode> errors,
       badge_icon(badge_icon),
       valid_manifest(valid_manifest),
       has_worker(has_worker) {}
+
+InstallableData::InstallableData(const InstallableData&) = default;
 
 InstallableData::~InstallableData() = default;

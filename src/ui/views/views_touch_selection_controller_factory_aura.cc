@@ -9,8 +9,8 @@
 
 namespace views {
 
-ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() =
-    default;
+ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() {
+}
 
 ui::TouchEditingControllerDeprecated*
 ViewsTouchEditingControllerFactory::Create(

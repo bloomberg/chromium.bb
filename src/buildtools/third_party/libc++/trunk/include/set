@@ -450,6 +450,7 @@ public:
     typedef value_type&                              reference;
     typedef const value_type&                        const_reference;
 
+    static_assert(sizeof(__diagnose_non_const_comparator<_Key, _Compare>()), "");
     static_assert((is_same<typename allocator_type::value_type, value_type>::value),
                   "Allocator::value_type must be same type as value_type");
 
@@ -594,11 +595,6 @@ public:
             return *this;
         }
 #endif  // _LIBCPP_CXX03_LANG
-
-    _LIBCPP_INLINE_VISIBILITY
-    ~set() {
-        static_assert(sizeof(__diagnose_non_const_comparator<_Key, _Compare>()), "");
-    }
 
     _LIBCPP_INLINE_VISIBILITY
           iterator begin() _NOEXCEPT       {return __tree_.begin();}
@@ -942,6 +938,7 @@ public:
     typedef value_type&                              reference;
     typedef const value_type&                        const_reference;
 
+    static_assert(sizeof(__diagnose_non_const_comparator<_Key, _Compare>()), "");
     static_assert((is_same<typename allocator_type::value_type, value_type>::value),
                   "Allocator::value_type must be same type as value_type");
 
@@ -1085,11 +1082,6 @@ public:
             return *this;
         }
 #endif  // _LIBCPP_CXX03_LANG
-
-    _LIBCPP_INLINE_VISIBILITY
-    ~multiset() {
-        static_assert(sizeof(__diagnose_non_const_comparator<_Key, _Compare>()), "");
-    }
 
     _LIBCPP_INLINE_VISIBILITY
           iterator begin() _NOEXCEPT       {return __tree_.begin();}

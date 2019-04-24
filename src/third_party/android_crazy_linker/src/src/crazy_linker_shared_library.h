@@ -95,7 +95,7 @@ class SharedLibrary {
 
   // Return the ELF symbol entry for a given symbol, if defined by
   // this library, or NULL otherwise.
-  const ELF::Sym* LookupSymbolEntry(const char* symbol_name) const;
+  const ELF::Sym* LookupSymbolEntry(const char* symbol_name);
 
   // Find the nearest symbol near a given |address|. On success, return
   // true and set |*sym_name| to the symbol name, |*sym_addr| to its address
@@ -103,14 +103,14 @@ class SharedLibrary {
   bool FindNearestSymbolForAddress(void* address,
                                    const char** sym_name,
                                    void** sym_addr,
-                                   size_t* sym_size) const {
+                                   size_t* sym_size) {
     return symbols_.LookupNearestByAddress(
         address, load_bias(), sym_name, sym_addr, sym_size);
   }
 
   // Return the address of a given |symbol_name| if it is exported
   // by the library, NULL otherwise.
-  void* FindAddressForSymbol(const char* symbol_name) const;
+  void* FindAddressForSymbol(const char* symbol_name);
 
   // Create a new Ashmem region holding a copy of the library's RELRO section,
   // potentially relocated for a new |load_address|. On success, return true
@@ -157,7 +157,7 @@ class SharedLibrary {
   //    }
   class DependencyIterator {
    public:
-    explicit DependencyIterator(const SharedLibrary* lib)
+    explicit DependencyIterator(SharedLibrary* lib)
         : iter_(&lib->view_), symbols_(&lib->symbols_), dep_name_(NULL) {}
 
     bool GetNext();
@@ -165,9 +165,9 @@ class SharedLibrary {
     const char* GetName() const { return dep_name_; }
 
    private:
-    DependencyIterator() = delete;
-    DependencyIterator(const DependencyIterator&) = delete;
-    DependencyIterator& operator=(const DependencyIterator&) = delete;
+    DependencyIterator();
+    DependencyIterator(const DependencyIterator&);
+    DependencyIterator& operator=(const DependencyIterator&);
 
     ElfView::DynamicIterator iter_;
     const ElfSymbols* symbols_;

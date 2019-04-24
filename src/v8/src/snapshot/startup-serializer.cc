@@ -10,7 +10,6 @@
 #include "src/deoptimizer.h"
 #include "src/global-handles.h"
 #include "src/heap/heap-inl.h"
-#include "src/heap/read-only-heap.h"
 #include "src/objects-inl.h"
 #include "src/objects/foreign-inl.h"
 #include "src/objects/slots.h"
@@ -112,7 +111,7 @@ void StartupSerializer::SerializeObject(HeapObject obj) {
   CheckRehashability(obj);
 
   // Object has not yet been serialized.  Serialize it here.
-  DCHECK(!ReadOnlyHeap::Contains(obj));
+  DCHECK(!isolate()->heap()->InReadOnlySpace(obj));
   ObjectSerializer object_serializer(this, obj, &sink_);
   object_serializer.Serialize();
 }

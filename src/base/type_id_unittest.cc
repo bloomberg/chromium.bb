@@ -61,11 +61,6 @@ TEST(TypeId, TypesInAnonymousNameSpacesDontCollide) {
             TypeIdTestSupportB::GetTypeIdForTypeInAnonymousNameSpace());
 }
 
-TEST(TypeId, TemplateTypesfromDifferentSo) {
-  EXPECT_EQ(TypeIdTestSupportA::GetTypeIdForUniquePtrTestType(),
-            TypeId::From<std::unique_ptr<TestType>>());
-}
-
 // See http://crbug.com/914734
 #if defined(ADDRESS_SANITIZER)
 TEST(TypeId, DISABLED_IdenticalTypesFromDifferentCompilationUnitsMatch) {
@@ -76,8 +71,8 @@ TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
 
-// TODO(crbug.com/928806): Failing consistently on Android and GCC
-#if defined(OS_ANDROID) || (defined(COMPILER_GCC) && !defined(__clang__))
+// TODO(crbug.com/928806): Failing consistently on Android.
+#if defined(OS_ANDROID)
 TEST(TypeId, DISABLED_IdenticalTypesFromComponentAndStaticLibrary) {
 #else
 TEST(TypeId, IdenticalTypesFromComponentAndStaticLibrary) {

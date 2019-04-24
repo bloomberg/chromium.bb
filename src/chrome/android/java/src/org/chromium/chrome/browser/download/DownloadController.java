@@ -37,6 +37,8 @@ import org.chromium.ui.base.WindowAndroid;
  * Its a singleton class instantiated by the C++ DownloadController.
  */
 public class DownloadController {
+    private static final String LOGTAG = "DownloadController";
+
     /**
      * Class for notifying the application that download has completed.
      */
@@ -81,12 +83,10 @@ public class DownloadController {
      */
     @CalledByNative
     private static void onDownloadCompleted(DownloadInfo downloadInfo) {
-        DownloadMetrics.recordDownloadDirectoryType(downloadInfo.getFilePath());
-        MediaStoreHelper.addImageToGalleryOnSDCard(
-                downloadInfo.getFilePath(), downloadInfo.getMimeType());
-
         if (sDownloadNotificationService == null) return;
         sDownloadNotificationService.onDownloadCompleted(downloadInfo);
+
+        DownloadMetrics.recordDownloadDirectoryType(downloadInfo.getFilePath());
     }
 
     /**
@@ -280,7 +280,7 @@ public class DownloadController {
                 || contents.getNavigationController().isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
-            TabModelSelector selector = TabModelSelector.from(tab);
+            TabModelSelector selector = tab.getTabModelSelector();
             if (selector == null) return true;
             if (selector.getModel(tab.isIncognito()).getCount() == 1) return false;
             boolean closed = selector.closeTab(tab);

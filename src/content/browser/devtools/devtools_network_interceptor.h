@@ -32,11 +32,10 @@ struct InterceptedRequestInfo {
   bool is_navigation;
   int response_error_code;
   std::unique_ptr<protocol::Network::Request> network_request;
-  std::unique_ptr<net::AuthChallengeInfo> auth_challenge;
+  scoped_refptr<net::AuthChallengeInfo> auth_challenge;
   scoped_refptr<net::HttpResponseHeaders> response_headers;
   protocol::Maybe<bool> is_download;
   protocol::Maybe<protocol::String> redirect_url;
-  protocol::Maybe<protocol::String> renderer_request_id;
 };
 
 class DevToolsNetworkInterceptor {

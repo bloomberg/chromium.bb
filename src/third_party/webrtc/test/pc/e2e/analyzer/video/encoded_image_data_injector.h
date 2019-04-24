@@ -17,7 +17,7 @@
 #include "api/video/encoded_image.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
+namespace test {
 
 // Injects frame id into EncodedImage on encoder side
 class EncodedImageDataInjector {
@@ -54,7 +54,7 @@ class EncodedImageDataExtractor {
                                                    int coding_entity_id) = 0;
 };
 
-}  // namespace webrtc_pc_e2e
+}  // namespace test
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_VIDEO_ENCODED_IMAGE_DATA_INJECTOR_H_

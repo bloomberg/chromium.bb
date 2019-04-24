@@ -41,6 +41,7 @@ public:
         const char* atlasSizeInvName;
         fAtlasSizeInvUniform = uniformHandler->addUniform(kVertex_GrShaderFlag,
                                                           kFloat2_GrSLType,
+                                                          kHigh_GrSLPrecision,
                                                           "AtlasSizeInv",
                                                           &atlasSizeInvName);
 #ifdef SK_GAMMA_APPLY_TO_A8
@@ -340,6 +341,7 @@ public:
         const char* atlasSizeInvName;
         fAtlasSizeInvUniform = uniformHandler->addUniform(kVertex_GrShaderFlag,
                                                           kFloat2_GrSLType,
+                                                          kHigh_GrSLPrecision,
                                                           "AtlasSizeInv",
                                                           &atlasSizeInvName);
 
@@ -628,6 +630,7 @@ public:
         const char* atlasSizeInvName;
         fAtlasSizeInvUniform = uniformHandler->addUniform(kVertex_GrShaderFlag,
                                                           kFloat2_GrSLType,
+                                                          kHigh_GrSLPrecision,
                                                           "AtlasSizeInv",
                                                           &atlasSizeInvName);
 

@@ -1,8 +1,7 @@
-cbuffer UBO : register(b0)
+cbuffer _16
 {
     row_major float4x4 _16_uMVP : packoffset(c0);
 };
-
 
 static float4 gl_Position;
 static float4 aVertex;

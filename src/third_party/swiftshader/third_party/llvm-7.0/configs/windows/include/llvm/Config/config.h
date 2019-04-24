@@ -8,15 +8,15 @@
 #define BUG_REPORT_URL "https://bugs.llvm.org/"
 
 /* Define to 1 to enable backtraces, and to 0 otherwise. */
-/* #undef ENABLE_BACKTRACES */
+#define ENABLE_BACKTRACES 1
 
 /* Define to 1 to enable crash overrides, and to 0 otherwise. */
-/* #undef ENABLE_CRASH_OVERRIDES */
+#define ENABLE_CRASH_OVERRIDES 1
 
 /* Define to 1 if you have the `backtrace' function. */
 /* #undef HAVE_BACKTRACE */
 
-/* #undef BACKTRACE_HEADER */
+#define BACKTRACE_HEADER <execinfo.h>
 
 /* Define to 1 if you have the <CrashReporterClient.h> header file. */
 /* #undef HAVE_CRASHREPORTERCLIENT_H */
@@ -245,7 +245,7 @@
 /* #undef HAVE___ASHRDI3 */
 
 /* Have host's __chkstk */
-/* #undef HAVE___CHKSTK */
+#define HAVE___CHKSTK 1
 
 /* Have host's __chkstk_ms */
 /* #undef HAVE___CHKSTK_MS */
@@ -291,21 +291,7 @@
 
 /* Target triple LLVM will generate code for by default */
 /* Doesn't use `cmakedefine` because it is allowed to be empty. */
-#if defined(__x86_64__)
 #define LLVM_DEFAULT_TARGET_TRIPLE "x86_64-pc-win32"
-#elif defined(__i386__)
-#define LLVM_DEFAULT_TARGET_TRIPLE "i686-pc-win32"
-#elif defined(__arm__)
-#define LLVM_DEFAULT_TARGET_TRIPLE "armv7-pc-win32"
-#elif defined(__aarch64__)
-#define LLVM_DEFAULT_TARGET_TRIPLE "aarch64-pc-win32"
-#elif defined(__mips__)
-#define LLVM_DEFAULT_TARGET_TRIPLE "mipsel-pc-win32"
-#elif defined(__mips64)
-#define LLVM_DEFAULT_TARGET_TRIPLE "mips64el-pc-win32"
-#else
-#error "unknown architecture"
-#endif
 
 /* Define if zlib compression is available */
 #define LLVM_ENABLE_ZLIB 0
@@ -332,10 +318,10 @@
 #define PACKAGE_NAME "LLVM"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "LLVM 7.0.1"
+#define PACKAGE_STRING "LLVM 7.0.0"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "7.0.1"
+#define PACKAGE_VERSION "7.0.0"
 
 /* Define to the vendor of this package. */
 /* #undef PACKAGE_VENDOR */

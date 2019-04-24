@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animated_integer_optional_integer.h"
 
-#include "third_party/blink/renderer/platform/heap/heap.h"
-
 namespace blink {
 
 SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
@@ -41,19 +39,17 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
     : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(
           context_element,
           attribute_name,
-          MakeGarbageCollected<SVGIntegerOptionalInteger>(
-              MakeGarbageCollected<SVGInteger>(initial_value),
-              MakeGarbageCollected<SVGInteger>(initial_value)),
-          CSSPropertyID::kInvalid,
+          SVGIntegerOptionalInteger::Create(SVGInteger::Create(initial_value),
+                                            SVGInteger::Create(initial_value)),
+          CSSPropertyInvalid,
           initial_value),
-      first_integer_(MakeGarbageCollected<SVGAnimatedInteger>(
-          context_element,
-          attribute_name,
-          BaseValue()->FirstInteger())),
-      second_integer_(MakeGarbageCollected<SVGAnimatedInteger>(
-          context_element,
-          attribute_name,
-          BaseValue()->SecondInteger())) {
+      first_integer_(SVGAnimatedInteger::Create(context_element,
+                                                attribute_name,
+                                                BaseValue()->FirstInteger())),
+      second_integer_(
+          SVGAnimatedInteger::Create(context_element,
+                                     attribute_name,
+                                     BaseValue()->SecondInteger())) {
   first_integer_->SetParentOptionalInteger(this);
   second_integer_->SetParentOptionalInteger(this);
 }

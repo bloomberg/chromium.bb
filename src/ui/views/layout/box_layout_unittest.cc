@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <memory>
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/test/test_views.h"
@@ -20,7 +18,7 @@ namespace {
 
 class BoxLayoutTest : public testing::Test {
  public:
-  void SetUp() override { host_ = std::make_unique<View>(); }
+  void SetUp() override { host_.reset(new View); }
 
   std::unique_ptr<View> host_;
 };

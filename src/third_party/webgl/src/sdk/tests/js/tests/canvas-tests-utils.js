@@ -238,6 +238,7 @@ var webgl1Methods = [
   "vertexAttrib4fv",
   "vertexAttribPointer",
   "viewport",
+  "commit"
 ];
 
 var webgl2Methods = [

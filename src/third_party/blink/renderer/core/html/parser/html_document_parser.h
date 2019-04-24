@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner_host.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -235,7 +236,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   std::unique_ptr<HTMLToken> token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
-  Member<HTMLParserScriptRunner> script_runner_;
+  TraceWrapperMember<HTMLParserScriptRunner> script_runner_;
   Member<HTMLTreeBuilder> tree_builder_;
 
   std::unique_ptr<HTMLPreloadScanner> preload_scanner_;

@@ -7,6 +7,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -139,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
 
   // Second client: Start sync setup.
   StartSyncSetup(1);
-  ASSERT_TRUE(GetSyncService(1)->IsSetupInProgress());
-  ASSERT_FALSE(GetSyncService(1)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_TRUE(GetSyncService(1)->IsFirstSetupInProgress());
 
   // Second client: Turn on pref B while sync setup is in progress.
   GetProfile(1)->GetPrefs()->SetBoolean(pref_B, true);

@@ -26,17 +26,35 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/transient_window_manager.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace app_list {
 namespace {
 
+// The y offset for app list animation when overview mode toggles.
+constexpr int kOverviewAnimationYOffset = 100;
+
+// The duration in milliseconds for app list animation when overview mode
+// toggles.
+constexpr base::TimeDelta kOverviewAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
+}
+
+void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
+                            ui::ScopedLayerAnimationSettings* settings,
+                            bool observe) {
+  settings->SetTransitionDuration(kOverviewAnimationDuration);
+  settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+  settings->SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  DCHECK(reporter);
+  settings->SetAnimationMetricsReporter(reporter);
 }
 
 // Callback from the compositor when it presented a valid frame. Used to
@@ -59,9 +77,37 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 
 }  // namespace
 
+class AppListPresenterImpl::OverviewAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  OverviewAnimationMetricsReporter() = default;
+  ~OverviewAnimationMetricsReporter() override = default;
+
+  void Start(bool enter) {
+    enter_ = enter;
+  }
+
+  void Report(int value) override {
+    if (enter_) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.EnterOverview", value);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.ExitOverview", value);
+    }
+  }
+
+ private:
+  bool enter_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationMetricsReporter);
+};
+
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegate> delegate)
-    : delegate_(std::move(delegate)) {
+    : delegate_(std::move(delegate)),
+      overview_animation_metrics_reporter_(
+          std::make_unique<OverviewAnimationMetricsReporter>()) {
   DCHECK(delegate_);
   delegate_->SetPresenter(this);
 }
@@ -123,26 +169,6 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   is_visible_ = false;
   const int64_t display_id = GetDisplayId();
   RequestPresentationTime(display_id, event_time_stamp);
-
-  // Hide the active window if it is a transient descendant of |view_|'s widget.
-  aura::Window* window = view_->GetWidget()->GetNativeWindow();
-  aura::Window* active_window =
-      ::wm::GetActivationClient(window->GetRootWindow())->GetActiveWindow();
-  if (active_window) {
-    aura::Window* transient_parent =
-        ::wm::TransientWindowManager::GetOrCreate(active_window)
-            ->transient_parent();
-    while (transient_parent) {
-      if (window == transient_parent) {
-        active_window->Hide();
-        break;
-      }
-      transient_parent =
-          ::wm::TransientWindowManager::GetOrCreate(transient_parent)
-              ->transient_parent();
-    }
-  }
-
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
@@ -153,17 +179,19 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
     view_->GetWidget()->Deactivate();
 
   delegate_->OnClosing();
-  ScheduleDismissAnimation();
+  ScheduleAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
-bool AppListPresenterImpl::HandleCloseOpenFolder() {
-  return is_visible_ && view_ && view_->HandleCloseOpenFolder();
-}
+bool AppListPresenterImpl::CloseOpenedPage() {
+  if (!is_visible_)
+    return false;
 
-bool AppListPresenterImpl::HandleCloseOpenSearchBox() {
-  return is_visible_ && view_ && view_->HandleCloseOpenSearchBox();
+  // If the app list is currently visible, there should be an existing view.
+  DCHECK(view_);
+
+  return view_->CloseOpenedPage();
 }
 
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
@@ -174,12 +202,11 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
                             show_source == kShelfButtonFullscreen;
   if (IsVisible()) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == ash::mojom::AppListViewState::kPeeking) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+      if (view_->app_list_state() == AppListViewState::PEEKING) {
+        view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() ==
-                 ash::mojom::AppListViewState::kHalf) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenSearch);
+      } else if (view_->app_list_state() == AppListViewState::HALF) {
+        view_->SetState(AppListViewState::FULLSCREEN_SEARCH);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
@@ -188,7 +215,7 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+    view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -209,14 +236,13 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
     view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
 }
 
-void AppListPresenterImpl::EndDragFromShelf(
-    ash::mojom::AppListViewState app_list_state) {
+void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   if (view_) {
-    if (app_list_state == ash::mojom::AppListViewState::kClosed ||
-        view_->app_list_state() == ash::mojom::AppListViewState::kClosed) {
+    if (app_list_state == AppListViewState::CLOSED ||
+        view_->app_list_state() == AppListViewState::CLOSED) {
       view_->Dismiss();
     } else {
-      view_->SetState(app_list_state);
+      view_->SetState(AppListViewState(app_list_state));
     }
     view_->SetIsInDrag(false);
     view_->UpdateChildViewsYPositionAndOpacity();
@@ -246,13 +272,30 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
         layer->GetAnimator());
-    callback.Run(settings.get());
+    callback.Run(settings.get(), /*observe=*/false);
   }
   layer->SetOpacity(opacity);
   layer->SetTransform(translation);
 
   // Update child views' y positions to target state to avoid stale positions.
   view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
+}
+
+void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
+                                                         bool animate) {
+  // If animating, set the source parameters.
+  if (animate) {
+    UpdateYPositionAndOpacityForHomeLauncher(
+        start ? 0 : kOverviewAnimationYOffset, start ? 1.f : 0.f,
+        base::NullCallback());
+
+    overview_animation_metrics_reporter_->Start(start);
+  }
+  UpdateYPositionAndOpacityForHomeLauncher(
+      start ? kOverviewAnimationYOffset : 0, start ? 0.f : 1.f,
+      animate ? base::BindRepeating(&UpdateOverviewSettings,
+                                    overview_animation_metrics_reporter_.get())
+              : base::NullCallback());
 }
 
 void AppListPresenterImpl::ShowEmbeddedAssistantUI(bool show) {
@@ -309,7 +352,7 @@ void AppListPresenterImpl::ResetView() {
   view_ = nullptr;
 }
 
-void AppListPresenterImpl::ScheduleDismissAnimation() {
+void AppListPresenterImpl::ScheduleAnimation() {
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
 
@@ -320,9 +363,8 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);
   const base::TimeDelta animation_duration =
-      dismiss_without_animation_ ? base::TimeDelta::FromMilliseconds(0)
-                                 : delegate_->GetVisibilityAnimationDuration(
-                                       root_window, /*is_visible=*/false);
+      delegate_->GetVisibilityAnimationDuration(root_window,
+                                                view_->is_fullscreen());
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
   target_bounds.Offset(offset);
   widget->GetNativeView()->SetBounds(target_bounds);

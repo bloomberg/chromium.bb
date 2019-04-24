@@ -93,6 +93,11 @@ static void SafeSetError(const std::string& message, std::string* error_desc) {
   }
 }
 
+static bool ValidPacket(bool rtcp, const rtc::CopyOnWriteBuffer* packet) {
+  // Check the packet size. We could check the header too if needed.
+  return packet && IsValidRtpRtcpPacketSize(rtcp, packet->size());
+}
+
 template <class Codec>
 void RtpParametersFromMediaDescription(
     const MediaContentDescriptionImpl<Codec>* desc,
@@ -397,8 +402,6 @@ void BaseChannel::OnTransportReadyToSend(bool ready) {
 bool BaseChannel::SendPacket(bool rtcp,
                              rtc::CopyOnWriteBuffer* packet,
                              const rtc::PacketOptions& options) {
-  // Until all the code is migrated to use RtpPacketType instead of bool.
-  RtpPacketType packet_type = rtcp ? RtpPacketType::kRtcp : RtpPacketType::kRtp;
   // SendPacket gets called from MediaEngine, on a pacer or an encoder thread.
   // If the thread is not our network thread, we will post to our network
   // so that the real work happens on our network. This avoids us having to
@@ -427,9 +430,9 @@ bool BaseChannel::SendPacket(bool rtcp,
   }
 
   // Protect ourselves against crazy data.
-  if (!IsValidRtpPacketSize(packet_type, packet->size())) {
+  if (!ValidPacket(rtcp, packet)) {
     RTC_LOG(LS_ERROR) << "Dropping outgoing " << content_name_ << " "
-                      << RtpPacketTypeToString(packet_type)
+                      << RtpRtcpStringLiteral(rtcp)
                       << " packet: wrong size=" << packet->size();
     return false;
   }
@@ -521,9 +524,7 @@ void BaseChannel::OnPacketReceived(bool rtcp,
     //    for us to just eat packets here. This is all sidestepped if RTCP mux
     //    is used anyway.
     RTC_LOG(LS_WARNING)
-        << "Can't process incoming "
-        << RtpPacketTypeToString(rtcp ? RtpPacketType::kRtcp
-                                      : RtpPacketType::kRtp)
+        << "Can't process incoming " << RtpRtcpStringLiteral(rtcp)
         << " packet when SRTP is inactive and crypto is required";
     return;
   }
@@ -538,10 +539,13 @@ void BaseChannel::ProcessPacket(bool rtcp,
                                 int64_t packet_time_us) {
   RTC_DCHECK(worker_thread_->IsCurrent());
 
+  // Need to copy variable because OnRtcpReceived/OnPacketReceived
+  // requires non-const pointer to buffer. This doesn't memcpy the actual data.
+  rtc::CopyOnWriteBuffer data(packet);
   if (rtcp) {
-    media_channel_->OnRtcpReceived(packet, packet_time_us);
+    media_channel_->OnRtcpReceived(&data, packet_time_us);
   } else {
-    media_channel_->OnPacketReceived(packet, packet_time_us);
+    media_channel_->OnPacketReceived(&data, packet_time_us);
   }
 }
 

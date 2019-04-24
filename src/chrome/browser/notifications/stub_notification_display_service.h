@@ -48,9 +48,6 @@ class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
   // Sets |closure| to be invoked when any notification has been added.
   void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
-  // Sets |closure| to be invoked when any notification has been closed.
-  void SetNotificationClosedClosure(base::RepeatingClosure closure);
-
   // Returns a vector of the displayed Notification objects.
   std::vector<message_center::Notification> GetDisplayedNotificationsForType(
       NotificationHandler::Type type) const;
@@ -130,7 +127,6 @@ class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
       const std::string& notification_id);
 
   base::RepeatingClosure notification_added_closure_;
-  base::RepeatingClosure notification_closed_closure_;
   std::vector<NotificationData> notifications_;
   Profile* profile_;
 

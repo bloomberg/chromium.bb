@@ -210,10 +210,7 @@ class ComponentLoader {
       const base::Optional<std::string>& description_string,
       const base::Closure& done_cb,
       std::unique_ptr<base::DictionaryValue> manifest);
-
-  // Finishes loading an extension tts engine.
-  void FinishLoadSpeechSynthesisExtension(const char* extension_id);
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   PrefService* profile_prefs_;
   PrefService* local_state_;

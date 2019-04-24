@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
@@ -113,8 +112,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
 
     private void search(String searchText) {
         RecordUserAction.record("MobileActionMode.WebSearch");
-        TabModelSelector selector = TabModelSelector.from(mTab);
-        if (selector == null) return;
+        if (mTab.getTabModelSelector() == null) return;
 
         String query = ActionModeCallbackHelper.sanitizeQuery(
                 searchText, ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
@@ -122,7 +120,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
 
         TrackerFactory.getTrackerForProfile(mTab.getProfile())
                 .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
-        selector.openNewTab(generateUrlParamsForSearch(query),
+        mTab.getTabModelSelector().openNewTab(generateUrlParamsForSearch(query),
                 TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, mTab.isIncognito());
     }
 }

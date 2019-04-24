@@ -26,6 +26,7 @@
 namespace blink {
 namespace {
 
+const char kNonExistingTrialName[] = "This trial does not exist";
 const char kFrobulateTrialName[] = "Frobulate";
 const char kFrobulateEnabledOrigin[] = "https://www.example.com";
 const char kFrobulateEnabledOriginUnsecure[] = "http://www.example.com";
@@ -92,11 +93,11 @@ class OriginTrialContextTest : public testing::Test,
     execution_context_->SetIsSecureContext(SecurityOrigin::IsSecure(page_url));
   }
 
-  bool IsFeatureEnabled(const String& origin, OriginTrialFeature feature) {
+  bool IsTrialEnabled(const String& origin, const String& feature_name) {
     UpdateSecurityOrigin(origin);
     // Need at least one token to ensure the token validator is called.
     origin_trial_context_->AddToken(kTokenPlaceholder);
-    return origin_trial_context_->IsFeatureEnabled(feature);
+    return origin_trial_context_->IsTrialEnabled(feature_name);
   }
 
   void ExpectStatusUniqueMetric(OriginTrialTokenStatus status, int count) {
@@ -118,9 +119,9 @@ class OriginTrialContextTest : public testing::Test,
 TEST_F(OriginTrialContextTest, EnabledNonExistingTrial) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
                                 kFrobulateTrialName);
-  bool is_non_existing_feature_enabled = IsFeatureEnabled(
-      kFrobulateEnabledOrigin, OriginTrialFeature::kNonExisting);
-  EXPECT_FALSE(is_non_existing_feature_enabled);
+  bool is_non_existing_trial_enabled =
+      IsTrialEnabled(kFrobulateEnabledOrigin, kNonExistingTrialName);
+  EXPECT_FALSE(is_non_existing_trial_enabled);
 
   // Status metric should be updated.
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kSuccess, 1);
@@ -130,8 +131,8 @@ TEST_F(OriginTrialContextTest, EnabledNonExistingTrial) {
 TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOrigin) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
                                 kFrobulateTrialName);
-  bool is_origin_enabled = IsFeatureEnabled(
-      kFrobulateEnabledOrigin, OriginTrialFeature::kOriginTrialsSampleAPI);
+  bool is_origin_enabled =
+      IsTrialEnabled(kFrobulateEnabledOrigin, kFrobulateTrialName);
   EXPECT_TRUE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
 
@@ -144,8 +145,8 @@ TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOrigin) {
 TEST_F(OriginTrialContextTest, InvalidTokenResponseFromPlatform) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kMalformed,
                                 kFrobulateTrialName);
-  bool is_origin_enabled = IsFeatureEnabled(
-      kFrobulateEnabledOrigin, OriginTrialFeature::kOriginTrialsSampleAPI);
+  bool is_origin_enabled =
+      IsTrialEnabled(kFrobulateEnabledOrigin, kFrobulateTrialName);
   EXPECT_FALSE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
 
@@ -159,8 +160,7 @@ TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOrigin) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
                                 kFrobulateTrialName);
   bool is_origin_enabled =
-      IsFeatureEnabled(kFrobulateEnabledOriginUnsecure,
-                       OriginTrialFeature::kOriginTrialsSampleAPI);
+      IsTrialEnabled(kFrobulateEnabledOriginUnsecure, kFrobulateTrialName);
   EXPECT_FALSE(is_origin_enabled);
   EXPECT_EQ(0, TokenValidator()->CallCount());
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
@@ -226,14 +226,14 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
 
 TEST_F(OriginTrialContextTest, FeaturePolicy) {
   // Create a dummy document with an OriginTrialContext.
-  auto dummy = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
   Document* document = &dummy->GetDocument();
   OriginTrialContext* context = OriginTrialContext::FromOrCreate(document);
 
   // Enable the sample origin trial API ("Frobulate").
-  context->AddFeature(OriginTrialFeature::kOriginTrialsSampleAPI);
+  context->AddFeature(origin_trials::kOriginTrialsSampleAPITrialName);
   EXPECT_TRUE(
-      context->IsFeatureEnabled(OriginTrialFeature::kOriginTrialsSampleAPI));
+      context->IsTrialEnabled(origin_trials::kOriginTrialsSampleAPITrialName));
 
   // Make a mock feature name map with "frobulate".
   FeatureNameMap feature_map;

@@ -243,11 +243,6 @@ void ExtensionUpdater::SetExtensionCacheForTesting(
   extension_cache_ = extension_cache;
 }
 
-void ExtensionUpdater::SetExtensionDownloaderForTesting(
-    std::unique_ptr<ExtensionDownloader> downloader) {
-  downloader_.swap(downloader);
-}
-
 void ExtensionUpdater::DoCheckSoon() {
   DCHECK(will_check_soon_);
   CheckNow(CheckParams());

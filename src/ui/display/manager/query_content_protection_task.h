@@ -5,13 +5,12 @@
 #ifndef UI_DISPLAY_MANAGER_QUERY_CONTENT_PROTECTION_TASK_H_
 #define UI_DISPLAY_MANAGER_QUERY_CONTENT_PROTECTION_TASK_H_
 
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 
@@ -20,40 +19,46 @@ namespace display {
 class DisplayLayoutManager;
 class NativeDisplayDelegate;
 
-class DISPLAY_MANAGER_EXPORT QueryContentProtectionTask
-    : public DisplayConfigurator::ContentProtectionTask {
+class DISPLAY_MANAGER_EXPORT QueryContentProtectionTask {
  public:
-  // |connection_mask| includes mirroring displays, and a protection method is
-  // only included in |protection_mask| if also enabled on mirroring displays.
-  using ResponseCallback = base::OnceCallback<
-      void(Status status, uint32_t connection_mask, uint32_t protection_mask)>;
+  struct Response {
+    bool success = false;
+    uint32_t link_mask = 0;
+    uint32_t enabled = 0;
+    uint32_t unfulfilled = 0;
+  };
+
+  typedef base::Callback<void(Response)> ResponseCallback;
 
   QueryContentProtectionTask(DisplayLayoutManager* layout_manager,
                              NativeDisplayDelegate* native_display_delegate,
                              int64_t display_id,
-                             ResponseCallback callback);
-  ~QueryContentProtectionTask() override;
+                             const ResponseCallback& callback);
+  ~QueryContentProtectionTask();
 
-  void Run() override;
+  void Run();
 
  private:
-  void OnGetHDCPState(bool success, HDCPState state);
+  // Callback for NativeDisplayDelegate::GetHDCPState()
+  void OnHDCPStateUpdate(bool success, HDCPState state);
 
-  DisplayLayoutManager* const layout_manager_;            // Not owned.
-  NativeDisplayDelegate* const native_display_delegate_;  // Not owned.
+  DisplayLayoutManager* layout_manager_;  // Not owned.
 
-  const int64_t display_id_;
+  NativeDisplayDelegate* native_display_delegate_;  // Not owned.
 
+  // Display ID for the query.
+  int64_t display_id_;
+
+  // Called at the end of the query to signal completion.
   ResponseCallback callback_;
 
-  uint32_t connection_mask_ = DISPLAY_CONNECTION_TYPE_NONE;
-  uint32_t protection_mask_ = CONTENT_PROTECTION_METHOD_NONE;
-  uint32_t no_protection_mask_ = CONTENT_PROTECTION_METHOD_NONE;
+  Response response_;
 
-  bool success_ = true;
-  size_t pending_requests_ = 0;
+  // Tracks the number of NativeDisplayDelegate requests sent but not answered
+  // yet.
+  size_t pending_requests_;
 
-  base::WeakPtrFactory<QueryContentProtectionTask> weak_ptr_factory_{this};
+  base::WeakPtrFactory<QueryContentProtectionTask> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryContentProtectionTask);
 };

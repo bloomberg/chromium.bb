@@ -7,9 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/foundation_util.h"
 #import "ui/base/cocoa/command_dispatcher.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
+#include "ui/views/views_export.h"
+#include "ui/views/widget/util_mac.h"
 
 namespace views {
 class BridgedNativeWidgetImpl;
@@ -18,25 +18,24 @@ class BridgedNativeWidgetImpl;
 @protocol WindowTouchBarDelegate;
 
 // Weak lets Chrome launch even if a future macOS doesn't have the below classes
+
 WEAK_IMPORT_ATTRIBUTE
 @interface NSNextStepFrame : NSView
 @end
 
-WEAK_IMPORT_ATTRIBUTE
-@interface NSThemeFrame : NSView
-@end
+@class NSThemeFrame;
 
-VIEWS_BRIDGE_MAC_EXPORT
+VIEWS_EXPORT
 @interface NativeWidgetMacNSWindowBorderlessFrame : NSNextStepFrame
 @end
 
-VIEWS_BRIDGE_MAC_EXPORT
+VIEWS_EXPORT
 @interface NativeWidgetMacNSWindowTitledFrame : NSThemeFrame
 @end
 
 // The NSWindow used by BridgedNativeWidget. Provides hooks into AppKit that
 // can only be accomplished by overriding methods.
-VIEWS_BRIDGE_MAC_EXPORT
+VIEWS_EXPORT
 @interface NativeWidgetMacNSWindow : NSWindow<CommandDispatchingWindow>
 
 // Set a CommandDispatcherDelegate, i.e. to implement key event handling.

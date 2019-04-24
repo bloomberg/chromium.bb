@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace content {
 class RenderProcessHost;
@@ -36,8 +35,8 @@ class CastStabilityMetricsProvider
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  CastStabilityMetricsProvider(::metrics::MetricsService* metrics_service,
-                               PrefService* pref_service);
+  explicit CastStabilityMetricsProvider(
+      ::metrics::MetricsService* metrics_service);
   ~CastStabilityMetricsProvider() override;
 
   // metrics::MetricsDataProvider implementation:
@@ -68,9 +67,6 @@ class CastStabilityMetricsProvider
   // Records a renderer process hang.
   void LogRendererHang();
 
-  // Increments the specified pref by 1.
-  void IncrementPrefValue(const char* path);
-
   // Registrar for receiving stability-related notifications.
   content::NotificationRegistrar registrar_;
 
@@ -78,8 +74,6 @@ class CastStabilityMetricsProvider
   // MetricsService is responsible for the lifetime of
   // CastStabilityMetricsProvider.
   ::metrics::MetricsService* metrics_service_;
-
-  PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CastStabilityMetricsProvider);
 };

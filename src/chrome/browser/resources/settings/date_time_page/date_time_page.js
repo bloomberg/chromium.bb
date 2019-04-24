@@ -41,20 +41,11 @@ Polymer({
         if (settings.routes.DATETIME_TIMEZONE_SUBPAGE) {
           map.set(
               settings.routes.DATETIME_TIMEZONE_SUBPAGE.path,
-              '#timeZoneSettingsTrigger');
+              '#timeZoneSettingsTrigger .subpage-arrow button');
         }
         return map;
       },
     },
-
-    /** @private */
-    timeZoneSettingSubLabel_: {
-      type: String,
-      computed: `computeTimeZoneSettingSubLabel_(
-          activeTimeZoneDisplayName,
-          prefs.generated.resolve_timezone_by_geolocation_on_off.value,
-          prefs.generated.resolve_timezone_by_geolocation_method_short.value)`
-    }
   },
 
   /** @override */
@@ -79,24 +70,24 @@ Polymer({
   },
 
   /**
+   * Returns display name of the given time zone detection method.
+   * @param {settings.TimeZoneAutoDetectMethod} method
+   *     prefs.generated.resolve_timezone_by_geolocation_method_short.value
    * @return {string}
    * @private
    */
-  computeTimeZoneSettingSubLabel_: function() {
-    if (!this.getPref('generated.resolve_timezone_by_geolocation_on_off')
-             .value) {
-      return this.activeTimeZoneDisplayName;
-    }
-    const method = /** @type {number} */ (
-        this.getPref('generated.resolve_timezone_by_geolocation_method_short')
-            .value);
-    const id = [
+  getTimeZoneAutoDetectMethodDisplayName_: function(method) {
+    const id = ([
       'setTimeZoneAutomaticallyDisabled',
       'setTimeZoneAutomaticallyIpOnlyDefault',
       'setTimeZoneAutomaticallyWithWiFiAccessPointsData',
-      'setTimeZoneAutomaticallyWithAllLocationInfo',
-    ][method];
-    return id ? this.i18n(id) : '';
+      'setTimeZoneAutomaticallyWithAllLocationInfo'
+    ])[method];
+    if (id) {
+      return this.i18n(id);
+    }
+
+    return '';
   },
 
   onTimeZoneSettings_: function() {

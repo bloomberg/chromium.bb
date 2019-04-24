@@ -7,9 +7,9 @@
 namespace views {
 namespace test {
 
-TestLayoutManager::TestLayoutManager() = default;
+TestLayoutManager::TestLayoutManager() {}
 
-TestLayoutManager::~TestLayoutManager() = default;
+TestLayoutManager::~TestLayoutManager() {}
 
 void TestLayoutManager::Layout(View* host) {}
 

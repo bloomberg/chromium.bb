@@ -42,7 +42,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -437,7 +436,7 @@ void HungRendererDialogView::TabDestroyed() {
 // HungRendererDialogView, views::View overrides:
 
 void HungRendererDialogView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
   if (!initialized_ && details.is_add && details.child == this && GetWidget())
     Init();
@@ -455,9 +454,8 @@ void HungRendererDialogView::Init() {
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
-  auto hung_pages_table = std::make_unique<views::TableView>(
+  hung_pages_table_ = new views::TableView(
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
-  hung_pages_table_ = hung_pages_table.get();
 
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
@@ -476,11 +474,9 @@ void HungRendererDialogView::Init() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(1.0, kColumnSetId);
-  layout->AddView(
-      views::TableView::CreateScrollViewWithTable(std::move(hung_pages_table))
-          .release(),
-      1, 1, views::GridLayout::FILL, views::GridLayout::FILL, kTableViewWidth,
-      kTableViewHeight);
+  layout->AddView(hung_pages_table_->CreateParentIfNecessary(), 1, 1,
+                  views::GridLayout::FILL, views::GridLayout::FILL,
+                  kTableViewWidth, kTableViewHeight);
 
   initialized_ = true;
 }

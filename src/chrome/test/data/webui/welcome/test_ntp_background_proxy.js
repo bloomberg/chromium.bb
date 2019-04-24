@@ -9,16 +9,11 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
       'clearBackground',
       'getBackgrounds',
       'preloadImage',
-      'recordBackgroundImageFailedToLoad',
-      'recordBackgroundImageLoadTime',
       'setBackground',
     ]);
 
     /** @private {!Array<!nux.NtpBackgroundData} */
     this.backgroundsList_ = [];
-
-    /** @private {boolean} */
-    this.preloadImageSuccess_ = true;
   }
 
   /** @override */
@@ -35,27 +30,12 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
   /** @override */
   preloadImage(url) {
     this.methodCalled('preloadImage');
-    return this.preloadImageSuccess_ ? Promise.resolve() : Promise.reject();
-  }
-
-  /** @override */
-  recordBackgroundImageFailedToLoad() {
-    this.methodCalled('recordBackgroundImageFailedToLoad');
-  }
-
-  /** @override */
-  recordBackgroundImageLoadTime(loadTime) {
-    this.methodCalled('recordBackgroundImageLoadTime', loadTime);
+    return Promise.resolve();
   }
 
   /** @override */
   setBackground(id) {
     this.methodCalled('setBackground', id);
-  }
-
-  /** @param {boolean} success */
-  setPreloadImageSuccess(success) {
-    this.preloadImageSuccess_ = success;
   }
 
   /** @param {!Array<!nux.NtpBackgroundData>} backgroundsList */

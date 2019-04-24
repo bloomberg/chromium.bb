@@ -58,7 +58,6 @@ class CORE_EXPORT CSSPaintImageGenerator
   virtual bool HasAlpha() const = 0;
   virtual const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const = 0;
   virtual bool IsImageGeneratorReady() const = 0;
-  virtual int WorkletId() const = 0;
 
   virtual void Trace(blink::Visitor* visitor) {}
 };

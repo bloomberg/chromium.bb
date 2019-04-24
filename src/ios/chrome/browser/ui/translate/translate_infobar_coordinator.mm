@@ -27,9 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kLanguageSelectorPopupMenuId = @"kLanguageSelectorPopupMenuId";
-NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
-
 @interface TranslateInfobarCoordinator () <LanguageSelectionHandler,
                                            PopupMenuPresenterDelegate,
                                            PopupMenuTableViewControllerDelegate,
@@ -120,8 +117,7 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   self.mediator.infobarDelegate = context.languageData;
   self.mediator.unavailableLanguageIndex = context.unavailableLanguageIndex;
 
-  [self
-      presentPopupMenuWithAccessibilityIdentifier:kLanguageSelectorPopupMenuId];
+  [self presentPopupMenu];
 }
 
 - (void)dismissLanguageSelector {
@@ -149,8 +145,7 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   self.mediator.infobarDelegate = infobarDelegate;
   self.mediator.unavailableLanguageIndex = -1;
 
-  [self
-      presentPopupMenuWithAccessibilityIdentifier:kTranslateOptionsPopupMenuId];
+  [self presentPopupMenu];
 }
 
 - (void)dismissTranslateOptionSelector {
@@ -231,11 +226,10 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
 #pragma mark - Private
 
 // Presents a popup menu with animation.
-- (void)presentPopupMenuWithAccessibilityIdentifier:(NSString*)identifier {
+- (void)presentPopupMenu {
   self.viewController = [[PopupMenuTableViewController alloc] init];
   self.viewController.baseViewController = self.baseViewController;
   self.viewController.delegate = self;
-  self.viewController.tableView.accessibilityIdentifier = identifier;
 
   self.mediator.consumer = self.viewController;
 

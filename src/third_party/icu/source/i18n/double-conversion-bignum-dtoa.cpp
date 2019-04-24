@@ -34,7 +34,7 @@
 #include "unicode/utypes.h"
 #if !UCONFIG_NO_FORMATTING
 
-#include <cmath>
+#include <math.h>
 
 // ICU PATCH: Customize header file paths for ICU.
 

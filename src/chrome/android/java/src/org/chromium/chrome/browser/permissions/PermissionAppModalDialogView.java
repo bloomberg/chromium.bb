@@ -44,7 +44,6 @@ class PermissionAppModalDialogView {
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
                                 delegate.getSecondaryButtonText())
                         .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
-                        .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
                         .build();
     }
 

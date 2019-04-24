@@ -5,7 +5,11 @@
 // Custom bindings for the automation API.
 var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
-var automationInternal = getInternalApi('automationInternal');
+var automation = apiBridge || require('binding').Binding.create('automation');
+var automationInternal =
+    getInternalApi ?
+        getInternalApi('automationInternal') :
+        require('binding').Binding.create('automationInternal').generate();
 var exceptionHandler = require('uncaught_exception_handler');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
@@ -18,6 +22,12 @@ var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
+
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function hasLastError() {
+  return bindingUtil ?
+      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
+}
 
 /**
  * A namespace to export utility functions to other files in automation.
@@ -95,11 +105,10 @@ automationUtil.updateFocusedNodeOnBlur = function() {
   automationUtil.focusedNode = focus ? focus.root : null;
 };
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
-automationUtil.tabIDToAutomationNode = {};
   apiFunctions.setHandleRequest('getTree', function getTree(tabID, callback) {
     StartCachingAccessibilityTrees();
 
@@ -110,22 +119,14 @@ automationUtil.tabIDToAutomationNode = {};
     // the tree is available (either due to having been cached earlier, or after
     // an accessibility event occurs which causes the tree to be populated), the
     // callback can be called.
-    if (tabID && automationUtil.tabIDToAutomationNode[tabID]) {
-      callback(automationUtil.tabIDToAutomationNode[tabID]);
-      return;
-    }
-
     var params = { tabID: tabID };
     automationInternal.enableTab(params,
-                                 function onEnable(treeID, resultTabID) {
-          if (bindingUtil.hasLastError()) {
+        function onEnable(id) {
+          if (hasLastError()) {
             callback();
             return;
           }
-          automationUtil.storeTreeCallback(treeID, function(root) {
-            automationUtil.tabIDToAutomationNode[resultTabID] = root;
-            callback(root);
-          });
+          automationUtil.storeTreeCallback(id, callback);
         });
   });
 
@@ -136,7 +137,7 @@ automationUtil.tabIDToAutomationNode = {};
       desktopTree = AutomationRootNode.get(desktopId);
     if (!desktopTree) {
       automationInternal.enableDesktop(function(treeId) {
-        if (bindingUtil.hasLastError()) {
+        if (hasLastError()) {
           AutomationRootNode.destroy(treeId);
           desktopId = undefined;
           callback();
@@ -331,11 +332,6 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
   if (targetTree) {
     privates(targetTree).impl.destroy();
     AutomationRootNode.destroy(id);
-    for (var tabID in automationUtil.tabIDToAutomationNode) {
-      if (automationUtil.tabIDToAutomationNode[tabID] == targetTree) {
-        delete automationUtil.tabIDToAutomationNode[tabID];
-      }
-    }
   } else {
     logging.WARNING('no targetTree to destroy');
   }
@@ -365,3 +361,6 @@ automationInternal.onGetTextLocationResult.addListener(function(
     return;
   privates(targetTree).impl.onGetTextLocationResult(textLocationParams);
 });
+
+if (!apiBridge)
+  exports.$set('binding', automation.generate());

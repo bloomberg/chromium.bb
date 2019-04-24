@@ -22,8 +22,7 @@
 #include "api/video_codecs/sdp_video_format.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "rtc_base/atomic_ops.h"
-#include "rtc_base/synchronization/sequence_checker.h"
-#include "rtc_base/system/rtc_export.h"
+#include "rtc_base/sequenced_task_checker.h"
 
 namespace webrtc {
 
@@ -34,7 +33,7 @@ class VideoEncoderFactory;
 // webrtc::VideoEncoder instances with the given VideoEncoderFactory.
 // The object is created and destroyed on the worker thread, but all public
 // interfaces should be called from the encoder task queue.
-class RTC_EXPORT SimulcastEncoderAdapter : public VideoEncoder {
+class SimulcastEncoderAdapter : public VideoEncoder {
  public:
   explicit SimulcastEncoderAdapter(VideoEncoderFactory* factory,
                                    const SdpVideoFormat& format);
@@ -46,9 +45,11 @@ class RTC_EXPORT SimulcastEncoderAdapter : public VideoEncoder {
                  int number_of_cores,
                  size_t max_payload_size) override;
   int Encode(const VideoFrame& input_image,
-             const std::vector<VideoFrameType>* frame_types) override;
+             const CodecSpecificInfo* codec_specific_info,
+             const std::vector<FrameType>* frame_types) override;
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
-  void SetRates(const RateControlParameters& parameters) override;
+  int SetRateAllocation(const VideoBitrateAllocation& bitrate,
+                        uint32_t new_framerate) override;
 
   // Eventual handler for the contained encoders' EncodedImageCallbacks, but
   // called from an internal helper that also knows the correct stream
@@ -108,7 +109,7 @@ class RTC_EXPORT SimulcastEncoderAdapter : public VideoEncoder {
   EncoderInfo encoder_info_;
 
   // Used for checking the single-threaded access of the encoder interface.
-  SequenceChecker encoder_queue_;
+  rtc::SequencedTaskChecker encoder_queue_;
 
   // Store encoders in between calls to Release and InitEncode, so they don't
   // have to be recreated. Remaining encoders are destroyed by the destructor.

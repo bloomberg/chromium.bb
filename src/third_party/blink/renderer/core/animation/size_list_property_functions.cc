@@ -11,9 +11,9 @@ namespace blink {
 static const FillLayer* GetFillLayerForSize(const CSSProperty& property,
                                             const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyID::kBackgroundSize:
+    case CSSPropertyBackgroundSize:
       return &style.BackgroundLayers();
-    case CSSPropertyID::kWebkitMaskSize:
+    case CSSPropertyWebkitMaskSize:
       return &style.MaskLayers();
     default:
       NOTREACHED();
@@ -24,9 +24,9 @@ static const FillLayer* GetFillLayerForSize(const CSSProperty& property,
 static FillLayer* AccessFillLayerForSize(const CSSProperty& property,
                                          ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyID::kBackgroundSize:
+    case CSSPropertyBackgroundSize:
       return &style.AccessBackgroundLayers();
-    case CSSPropertyID::kWebkitMaskSize:
+    case CSSPropertyWebkitMaskSize:
       return &style.AccessMaskLayers();
     default:
       NOTREACHED();

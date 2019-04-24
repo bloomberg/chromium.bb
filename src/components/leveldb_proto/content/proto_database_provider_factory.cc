@@ -4,37 +4,38 @@
 
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
+#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/no_destructor.h"
-#include "components/keyed_service/core/simple_dependency_manager.h"
-#include "components/keyed_service/core/simple_factory_key.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "content/public/browser/browser_context.h"
 
 namespace leveldb_proto {
 
 // static
 ProtoDatabaseProviderFactory* ProtoDatabaseProviderFactory::GetInstance() {
-  static base::NoDestructor<ProtoDatabaseProviderFactory> instance;
-  return instance.get();
+  return base::Singleton<ProtoDatabaseProviderFactory>::get();
 }
 
 // static
-ProtoDatabaseProvider* ProtoDatabaseProviderFactory::GetForKey(
-    SimpleFactoryKey* key) {
-  return static_cast<ProtoDatabaseProvider*>(
-      GetInstance()->GetServiceForKey(key, true));
+leveldb_proto::ProtoDatabaseProvider*
+ProtoDatabaseProviderFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return static_cast<leveldb_proto::ProtoDatabaseProvider*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 ProtoDatabaseProviderFactory::ProtoDatabaseProviderFactory()
-    : SimpleKeyedServiceFactory("leveldb_proto::ProtoDatabaseProvider",
-                                SimpleDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+          "leveldb_proto::ProtoDatabaseProvider",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 ProtoDatabaseProviderFactory::~ProtoDatabaseProviderFactory() = default;
 
-std::unique_ptr<KeyedService>
-ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key) const {
-  return std::make_unique<ProtoDatabaseProvider>(key->GetPath());
+KeyedService* ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  base::FilePath profile_dir = context->GetPath();
+  return leveldb_proto::ProtoDatabaseProvider::Create(profile_dir);
 }
 
 }  // namespace leveldb_proto

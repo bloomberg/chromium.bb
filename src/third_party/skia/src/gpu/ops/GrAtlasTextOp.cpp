@@ -140,8 +140,8 @@ GrDrawOp::FixedFunctionFlags GrAtlasTextOp::fixedFunctionFlags() const {
     return FixedFunctionFlags::kNone;
 }
 
-GrProcessorSet::Analysis GrAtlasTextOp::finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                                 GrFSAAType fsaaType, GrClampType clampType) {
+GrProcessorSet::Analysis GrAtlasTextOp::finalize(
+        const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) {
     GrProcessorAnalysisCoverage coverage;
     GrProcessorAnalysisColor color;
     if (kColorBitmapMask_MaskType == fMaskType) {
@@ -165,7 +165,7 @@ GrProcessorSet::Analysis GrAtlasTextOp::finalize(const GrCaps& caps, const GrApp
             break;
     }
     auto analysis = fProcessors.finalize(
-            color, coverage, clip, &GrUserStencilSettings::kUnused, fsaaType, caps, clampType,
+            color, coverage, clip, &GrUserStencilSettings::kUnused, fsaaType, caps,
             &fGeoData[0].fColor);
     fUsesLocalCoords = analysis.usesLocalCoords();
     return analysis;
@@ -390,8 +390,9 @@ void GrAtlasTextOp::onPrepareDraws(Target* target) {
 }
 
 void GrAtlasTextOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {
+    static const uint32_t kPipelineFlags = 0;
     flushState->executeDrawsAndUploadsForMeshDrawOp(
-            this, chainBounds, std::move(fProcessors), GrPipeline::InputFlags::kNone);
+            this, chainBounds, std::move(fProcessors), kPipelineFlags);
 }
 
 void GrAtlasTextOp::flush(GrMeshDrawOp::Target* target, FlushInfo* flushInfo) const {

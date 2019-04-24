@@ -4,10 +4,7 @@
 
 'use strict';
 
-/**
- * Reference to the backend.
- * @type {eocInternals.mojom.PageHandlerProxy}
- */
+// Reference to the backend.
 let pageHandler = null;
 
 (function() {
@@ -29,8 +26,8 @@ function clearChildrenForId(domId) {
 // Get the general properties.
 function updatePageWithProperties() {
   pageHandler.getProperties().then(response => {
-    Object.keys(response.properties).forEach(function(field) {
-      $(field).textContent = response.properties[field];
+    response.properties.forEach(function(value, field) {
+      $(field).textContent = value;
     });
   });
 }
@@ -144,7 +141,10 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup backend mojo.
-  pageHandler = eocInternals.mojom.PageHandler.getProxy();
+  pageHandler = new eocInternals.mojom.PageHandlerPtr;
+  Mojo.bindInterface(
+      eocInternals.mojom.PageHandler.name,
+      mojo.makeRequest(pageHandler).handle);
 
   updatePageWithProperties();
   updatePageWithCachedMetricEvents();

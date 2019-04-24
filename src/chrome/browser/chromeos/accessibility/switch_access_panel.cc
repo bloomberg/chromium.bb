@@ -34,23 +34,13 @@ SwitchAccessPanel::SwitchAccessPanel(content::BrowserContext* browser_context)
 
 void SwitchAccessPanel::Show(const gfx::Rect& element_bounds,
                              int width,
-                             int height,
-                             bool back_button_only) {
+                             int height) {
   // TODO(crbug/893752): Support multiple displays
   gfx::Rect screen_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
-  gfx::Rect panel_bounds;
-
-  if (back_button_only) {
-    int x = element_bounds.right();
-    int y = element_bounds.y() - height;
-    panel_bounds.SetRect(x, y, width, height);
-    panel_bounds.AdjustToFit(screen_bounds);
-  } else {
-    panel_bounds =
-        CalculatePanelBounds(element_bounds, screen_bounds, width, height);
-  }
+  gfx::Rect panel_bounds =
+      CalculatePanelBounds(element_bounds, screen_bounds, width, height);
 
   GetAccessibilityController()->SetAccessibilityPanelBounds(
       panel_bounds, ash::mojom::AccessibilityPanelState::BOUNDED);

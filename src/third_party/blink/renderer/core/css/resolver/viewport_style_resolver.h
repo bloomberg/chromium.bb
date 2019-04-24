@@ -47,6 +47,10 @@ class StyleRuleViewport;
 class CORE_EXPORT ViewportStyleResolver
     : public GarbageCollectedFinalized<ViewportStyleResolver> {
  public:
+  static ViewportStyleResolver* Create(Document& document) {
+    return MakeGarbageCollected<ViewportStyleResolver>(document);
+  }
+
   explicit ViewportStyleResolver(Document&);
 
   void InitialStyleChanged();

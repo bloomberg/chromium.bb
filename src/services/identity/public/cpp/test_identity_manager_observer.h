@@ -30,6 +30,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   void SetOnPrimaryAccountClearedCallback(base::OnceClosure callback);
   const CoreAccountInfo& PrimaryAccountFromClearedCallback();
 
+  void SetOnPrimaryAccountSigninFailedCallback(base::OnceClosure callback);
+  const GoogleServiceAuthError& ErrorFromSigninFailedCallback() const;
+
   void SetOnRefreshTokenUpdatedCallback(base::OnceClosure callback);
   const CoreAccountInfo& AccountFromRefreshTokenUpdatedCallback();
 
@@ -65,6 +68,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
+
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
@@ -91,6 +97,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
 
   base::OnceClosure on_primary_account_cleared_callback_;
   CoreAccountInfo primary_account_from_cleared_callback_;
+
+  base::OnceClosure on_primary_account_signin_failed_callback_;
+  GoogleServiceAuthError google_signin_failed_error_;
 
   base::OnceClosure on_refresh_token_updated_callback_;
   CoreAccountInfo account_from_refresh_token_updated_callback_;

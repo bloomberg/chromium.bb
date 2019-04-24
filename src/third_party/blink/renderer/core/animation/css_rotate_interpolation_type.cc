@@ -148,15 +148,17 @@ OptionalRotation GetRotation(const ComputedStyle& style) {
 }
 
 InterpolationValue ConvertRotation(const OptionalRotation& rotation) {
-  return InterpolationValue(std::make_unique<InterpolableNumber>(0),
+  return InterpolationValue(InterpolableNumber::Create(0),
                             CSSRotateNonInterpolableValue::Create(rotation));
 }
 
 class InheritedRotationChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  explicit InheritedRotationChecker(const OptionalRotation& inherited_rotation)
-      : inherited_rotation_(inherited_rotation) {}
+  static std::unique_ptr<InheritedRotationChecker> Create(
+      const OptionalRotation& inherited_rotation) {
+    return base::WrapUnique(new InheritedRotationChecker(inherited_rotation));
+  }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -170,6 +172,9 @@ class InheritedRotationChecker
   }
 
  private:
+  InheritedRotationChecker(const OptionalRotation& inherited_rotation)
+      : inherited_rotation_(inherited_rotation) {}
+
   const OptionalRotation inherited_rotation_;
 };
 
@@ -192,7 +197,7 @@ InterpolationValue CSSRotateInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   OptionalRotation inherited_rotation = GetRotation(*state.ParentStyle());
   conversion_checkers.push_back(
-      std::make_unique<InheritedRotationChecker>(inherited_rotation));
+      InheritedRotationChecker::Create(inherited_rotation));
   return ConvertRotation(inherited_rotation);
 }
 
@@ -218,8 +223,7 @@ PairwiseInterpolationValue CSSRotateInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   return PairwiseInterpolationValue(
-      std::make_unique<InterpolableNumber>(0),
-      std::make_unique<InterpolableNumber>(1),
+      InterpolableNumber::Create(0), InterpolableNumber::Create(1),
       CSSRotateNonInterpolableValue::Create(
           ToCSSRotateNonInterpolableValue(*start.non_interpolable_value),
           ToCSSRotateNonInterpolableValue(*end.non_interpolable_value)));

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -52,7 +53,7 @@ class TextDecoderStream final : public ScriptWrappable {
  private:
   class Transformer;
 
-  const Member<TransformStream> transform_;
+  const TraceWrapperMember<TransformStream> transform_;
   const WTF::TextEncoding encoding_;
   const bool fatal_;
   const bool ignore_bom_;

@@ -85,8 +85,8 @@ class ConstructForwardVarargsParameters final {
     return p.bit_field_;
   }
 
-  using ArityField = BitField<size_t, 0, 16>;
-  using StartIndexField = BitField<uint32_t, 16, 16>;
+  typedef BitField<size_t, 0, 16> ArityField;
+  typedef BitField<uint32_t, 16, 16> StartIndexField;
 
   uint32_t const bit_field_;
 };
@@ -147,8 +147,8 @@ class CallForwardVarargsParameters final {
     return p.bit_field_;
   }
 
-  using ArityField = BitField<size_t, 0, 15>;
-  using StartIndexField = BitField<uint32_t, 15, 15>;
+  typedef BitField<size_t, 0, 15> ArityField;
+  typedef BitField<uint32_t, 15, 15> StartIndexField;
 
   uint32_t const bit_field_;
 };
@@ -195,9 +195,9 @@ class CallParameters final {
     return base::hash_combine(p.bit_field_, p.frequency_, p.feedback_);
   }
 
-  using ArityField = BitField<size_t, 0, 28>;
-  using SpeculationModeField = BitField<SpeculationMode, 28, 1>;
-  using ConvertReceiverModeField = BitField<ConvertReceiverMode, 29, 2>;
+  typedef BitField<size_t, 0, 28> ArityField;
+  typedef BitField<SpeculationMode, 28, 1> SpeculationModeField;
+  typedef BitField<ConvertReceiverMode, 29, 2> ConvertReceiverModeField;
 
   uint32_t const bit_field_;
   CallFrequency const frequency_;
@@ -446,8 +446,7 @@ bool operator!=(PropertyAccess const&, PropertyAccess const&);
 
 size_t hash_value(PropertyAccess const&);
 
-V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&,
-                                           PropertyAccess const&);
+std::ostream& operator<<(std::ostream&, PropertyAccess const&);
 
 PropertyAccess const& PropertyAccessOf(const Operator* op);
 
@@ -569,22 +568,22 @@ class CreateClosureParameters final {
  public:
   CreateClosureParameters(Handle<SharedFunctionInfo> shared_info,
                           Handle<FeedbackCell> feedback_cell, Handle<Code> code,
-                          AllocationType allocation)
+                          PretenureFlag pretenure)
       : shared_info_(shared_info),
         feedback_cell_(feedback_cell),
         code_(code),
-        allocation_(allocation) {}
+        pretenure_(pretenure) {}
 
   Handle<SharedFunctionInfo> shared_info() const { return shared_info_; }
   Handle<FeedbackCell> feedback_cell() const { return feedback_cell_; }
   Handle<Code> code() const { return code_; }
-  AllocationType allocation() const { return allocation_; }
+  PretenureFlag pretenure() const { return pretenure_; }
 
  private:
   Handle<SharedFunctionInfo> const shared_info_;
   Handle<FeedbackCell> const feedback_cell_;
   Handle<Code> const code_;
-  AllocationType const allocation_;
+  PretenureFlag const pretenure_;
 };
 
 bool operator==(CreateClosureParameters const&, CreateClosureParameters const&);
@@ -723,10 +722,10 @@ class V8_EXPORT_PRIVATE JSOperatorBuilder final
   const Operator* CreateAsyncFunctionObject(int register_count);
   const Operator* CreateCollectionIterator(CollectionKind, IterationKind);
   const Operator* CreateBoundFunction(size_t arity, Handle<Map> map);
-  const Operator* CreateClosure(
-      Handle<SharedFunctionInfo> shared_info,
-      Handle<FeedbackCell> feedback_cell, Handle<Code> code,
-      AllocationType allocation = AllocationType::kYoung);
+  const Operator* CreateClosure(Handle<SharedFunctionInfo> shared_info,
+                                Handle<FeedbackCell> feedback_cell,
+                                Handle<Code> code,
+                                PretenureFlag pretenure = NOT_TENURED);
   const Operator* CreateIterResultObject();
   const Operator* CreateStringIterator();
   const Operator* CreateKeyValueArray();

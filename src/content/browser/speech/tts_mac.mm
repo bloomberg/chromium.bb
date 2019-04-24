@@ -73,7 +73,6 @@ class TtsPlatformImplMac : public content::TtsPlatformImpl {
   void OnSpeechEvent(NSSpeechSynthesizer* sender,
                      content::TtsEventType event_type,
                      int char_index,
-                     int char_length,
                      const std::string& error_message);
 
   // Get the single instance of this class.
@@ -256,7 +255,6 @@ void TtsPlatformImplMac::GetVoices(std::vector<content::VoiceData>* outVoices) {
 void TtsPlatformImplMac::OnSpeechEvent(NSSpeechSynthesizer* sender,
                                        content::TtsEventType event_type,
                                        int char_index,
-                                       int char_length,
                                        const std::string& error_message) {
   // Don't send events from an utterance that's already completed.
   // This depends on the fact that we construct a new NSSpeechSynthesizer
@@ -267,8 +265,9 @@ void TtsPlatformImplMac::OnSpeechEvent(NSSpeechSynthesizer* sender,
   if (event_type == content::TTS_EVENT_END)
     char_index = utterance_.size();
 
+  // TODO: Use mac's word length here.
   content::TtsController::GetInstance()->OnTtsEvent(
-      utterance_id_, event_type, char_index, char_length, error_message);
+      utterance_id_, event_type, char_index, -1, error_message);
   last_char_index_ = char_index;
 }
 
@@ -297,7 +296,7 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
         didFinishSpeaking:(BOOL)finished_speaking {
-  ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_END, 0, -1, "");
+  ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_END, 0, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
@@ -309,7 +308,7 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
     return;
 
   ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_WORD,
-                             word_range.location, word_range.length, "");
+                             word_range.location, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
@@ -323,7 +322,7 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 
   std::string message_utf8 = base::SysNSStringToUTF8(message);
   ttsImplMac_->OnSpeechEvent(sender, content::TTS_EVENT_ERROR, character_index,
-                             -1, message_utf8);
+                             message_utf8);
 }
 
 @end

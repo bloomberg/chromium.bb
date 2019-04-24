@@ -33,8 +33,6 @@
 #include <memory>
 
 #include "base/time/time.h"
-#include "net/base/load_flags.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -43,8 +41,6 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-
-using blink::mojom::FetchCacheMode;
 
 namespace blink {
 
@@ -72,7 +68,7 @@ WebURLRequest::WebURLRequest(const WebURLRequest& r)
       resource_request_(&owned_resource_request_->resource_request) {}
 
 WebURLRequest::WebURLRequest(const WebURL& url) : WebURLRequest() {
-  SetUrl(url);
+  SetURL(url);
 }
 
 WebURLRequest& WebURLRequest::operator=(const WebURLRequest& r) {
@@ -93,8 +89,8 @@ WebURL WebURLRequest::Url() const {
   return resource_request_->Url();
 }
 
-void WebURLRequest::SetUrl(const WebURL& url) {
-  resource_request_->SetUrl(url);
+void WebURLRequest::SetURL(const WebURL& url) {
+  resource_request_->SetURL(url);
 }
 
 WebURL WebURLRequest::SiteForCookies() const {
@@ -148,21 +144,21 @@ WebString WebURLRequest::HttpMethod() const {
   return resource_request_->HttpMethod();
 }
 
-void WebURLRequest::SetHttpMethod(const WebString& http_method) {
-  resource_request_->SetHttpMethod(http_method);
+void WebURLRequest::SetHTTPMethod(const WebString& http_method) {
+  resource_request_->SetHTTPMethod(http_method);
 }
 
 WebString WebURLRequest::HttpHeaderField(const WebString& name) const {
   return resource_request_->HttpHeaderField(name);
 }
 
-void WebURLRequest::SetHttpHeaderField(const WebString& name,
+void WebURLRequest::SetHTTPHeaderField(const WebString& name,
                                        const WebString& value) {
   CHECK(!DeprecatedEqualIgnoringCase(name, "referer"));
-  resource_request_->SetHttpHeaderField(name, value);
+  resource_request_->SetHTTPHeaderField(name, value);
 }
 
-void WebURLRequest::SetHttpReferrer(
+void WebURLRequest::SetHTTPReferrer(
     const WebString& web_referrer,
     network::mojom::ReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
@@ -172,19 +168,19 @@ void WebURLRequest::SetHttpReferrer(
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHttpReferrer(Referrer(referrer, referrer_policy));
+  resource_request_->SetHTTPReferrer(Referrer(referrer, referrer_policy));
 }
 
-void WebURLRequest::AddHttpHeaderField(const WebString& name,
+void WebURLRequest::AddHTTPHeaderField(const WebString& name,
                                        const WebString& value) {
-  resource_request_->AddHttpHeaderField(name, value);
+  resource_request_->AddHTTPHeaderField(name, value);
 }
 
-void WebURLRequest::ClearHttpHeaderField(const WebString& name) {
-  resource_request_->ClearHttpHeaderField(name);
+void WebURLRequest::ClearHTTPHeaderField(const WebString& name) {
+  resource_request_->ClearHTTPHeaderField(name);
 }
 
-void WebURLRequest::VisitHttpHeaderFields(WebHTTPHeaderVisitor* visitor) const {
+void WebURLRequest::VisitHTTPHeaderFields(WebHTTPHeaderVisitor* visitor) const {
   const HTTPHeaderMap& map = resource_request_->HttpHeaderFields();
   for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)
     visitor->VisitHeader(it->key, it->value);
@@ -194,8 +190,8 @@ WebHTTPBody WebURLRequest::HttpBody() const {
   return WebHTTPBody(resource_request_->HttpBody());
 }
 
-void WebURLRequest::SetHttpBody(const WebHTTPBody& http_body) {
-  resource_request_->SetHttpBody(http_body);
+void WebURLRequest::SetHTTPBody(const WebHTTPBody& http_body) {
+  resource_request_->SetHTTPBody(http_body);
 }
 
 bool WebURLRequest::ReportUploadProgress() const {
@@ -218,12 +214,16 @@ mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
+network::mojom::RequestContextFrameType WebURLRequest::GetFrameType() const {
+  return resource_request_->GetFrameType();
+}
+
 network::mojom::ReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
   return resource_request_->GetReferrerPolicy();
 }
 
-void WebURLRequest::SetHttpOriginIfNeeded(const WebSecurityOrigin& origin) {
-  resource_request_->SetHttpOriginIfNeeded(origin.Get());
+void WebURLRequest::SetHTTPOriginIfNeeded(const WebSecurityOrigin& origin) {
+  resource_request_->SetHTTPOriginIfNeeded(origin.Get());
 }
 
 bool WebURLRequest::HasUserGesture() const {
@@ -237,6 +237,11 @@ void WebURLRequest::SetHasUserGesture(bool has_user_gesture) {
 void WebURLRequest::SetRequestContext(
     mojom::RequestContextType request_context) {
   resource_request_->SetRequestContext(request_context);
+}
+
+void WebURLRequest::SetFrameType(
+    network::mojom::RequestContextFrameType frame_type) {
+  resource_request_->SetFrameType(frame_type);
 }
 
 int WebURLRequest::RequestorID() const {
@@ -421,8 +426,12 @@ void WebURLRequest::SetRequestedWithHeader(const WebString& value) {
   resource_request_->SetRequestedWithHeader(value);
 }
 
-const WebString WebURLRequest::GetPurposeHeader() const {
-  return resource_request_->GetPurposeHeader();
+const WebString WebURLRequest::GetClientDataHeader() const {
+  return resource_request_->GetClientDataHeader();
+}
+
+void WebURLRequest::SetClientDataHeader(const WebString& value) {
+  resource_request_->SetClientDataHeader(value);
 }
 
 const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {
@@ -432,62 +441,9 @@ void WebURLRequest::SetFetchWindowId(const base::UnguessableToken& id) {
   resource_request_->SetFetchWindowId(id);
 }
 
-int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
-  int load_flags = net::LOAD_NORMAL;
-
-  switch (resource_request_->GetCacheMode()) {
-    case FetchCacheMode::kNoStore:
-      load_flags |= net::LOAD_DISABLE_CACHE;
-      break;
-    case FetchCacheMode::kValidateCache:
-      load_flags |= net::LOAD_VALIDATE_CACHE;
-      break;
-    case FetchCacheMode::kBypassCache:
-      load_flags |= net::LOAD_BYPASS_CACHE;
-      break;
-    case FetchCacheMode::kForceCache:
-      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kOnlyIfCached:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      break;
-    case FetchCacheMode::kDefault:
-      break;
-    case FetchCacheMode::kUnspecifiedForceCacheMiss:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
-      break;
-  }
-
-  if (!resource_request_->AllowStoredCredentials()) {
-    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
-
-  if (resource_request_->GetRequestContext() ==
-      blink::mojom::RequestContextType::PREFETCH)
-    load_flags |= net::LOAD_PREFETCH;
-
-  if (resource_request_->GetExtraData()) {
-    if (resource_request_->GetExtraData()->is_for_no_state_prefetch())
-      load_flags |= net::LOAD_PREFETCH;
-  }
-  if (resource_request_->AllowsStaleResponse())
-    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
-
-  return load_flags;
-}
-
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;
-}
-
-base::Optional<WebString> WebURLRequest::GetDevToolsId() const {
-  return resource_request_->GetDevToolsId();
 }
 
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}

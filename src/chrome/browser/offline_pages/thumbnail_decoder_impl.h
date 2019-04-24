@@ -7,11 +7,8 @@
 
 #include <memory>
 
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/offline_pages/core/thumbnail_decoder.h"
-
-namespace image_fetcher {
-class ImageDecoder;
-}  // namespace image_fetcher
 
 namespace offline_pages {
 

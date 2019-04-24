@@ -40,7 +40,7 @@ Polymer({
   },
 
   observers: [
-    'onDpiSettingChange_(settings.dpi.*, capabilityWithLabels_.option)',
+    'onDpiSettingChange_(settings.dpi.value, capabilityWithLabels_.option)',
   ],
 
   /**
@@ -72,15 +72,18 @@ Polymer({
     return result;
   },
 
-  /** @private */
-  onDpiSettingChange_: function() {
+  /**
+   * @param {!print_preview_new.SelectOption} value The new value of the dpi
+   *     setting.
+   * @private
+   */
+  onDpiSettingChange_: function(value) {
     if (this.capabilityWithLabels_ === null ||
         this.capabilityWithLabels_ === undefined) {
       return;
     }
 
-    const dpiValue = /** @type {print_preview_new.DpiOption} */ (
-        this.getSettingValue('dpi'));
+    const dpiValue = /** @type {print_preview_new.DpiOption} */ (value);
     for (const option of assert(this.capabilityWithLabels_.option)) {
       const dpiOption =
           /** @type {print_preview_new.LabelledDpiOption} */ (option);

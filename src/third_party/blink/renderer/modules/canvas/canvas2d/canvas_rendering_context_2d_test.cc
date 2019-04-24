@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -145,6 +144,10 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 
   class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
    public:
+    static WrapGradients* Create() {
+      return MakeGarbageCollected<WrapGradients>();
+    }
+
     void Trace(blink::Visitor* visitor) {
       visitor->Trace(opaque_gradient_);
       visitor->Trace(alpha_gradient_);
@@ -178,7 +181,7 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 };
 
 CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
-    : wrap_gradients_(MakeGarbageCollected<WrapGradients>()),
+    : wrap_gradients_(WrapGradients::Create()),
       opaque_bitmap_(IntSize(10, 10), kOpaqueBitmap),
       alpha_bitmap_(IntSize(10, 10), kTransparentBitmap) {}
 
@@ -187,7 +190,7 @@ void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
   String canvas_type("2d");
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = opacity_mode == kNonOpaque;
-  attributes.desynchronized = latency_mode == kLowLatency;
+  attributes.low_latency = latency_mode == kLowLatency;
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
 }
 
@@ -214,16 +217,16 @@ void CanvasRenderingContext2DTest::SetUp() {
   partial_image_data_ = ImageData::Create(IntSize(2, 2));
 
   NonThrowableExceptionState exception_state;
-  auto* opaque_gradient =
-      MakeGarbageCollected<CanvasGradient>(FloatPoint(0, 0), FloatPoint(10, 0));
+  CanvasGradient* opaque_gradient =
+      CanvasGradient::Create(FloatPoint(0, 0), FloatPoint(10, 0));
   opaque_gradient->addColorStop(0, String("green"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   opaque_gradient->addColorStop(1, String("blue"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   this->OpaqueGradient().SetCanvasGradient(opaque_gradient);
 
-  auto* alpha_gradient =
-      MakeGarbageCollected<CanvasGradient>(FloatPoint(0, 0), FloatPoint(10, 0));
+  CanvasGradient* alpha_gradient =
+      CanvasGradient::Create(FloatPoint(0, 0), FloatPoint(10, 0));
   alpha_gradient->addColorStop(0, String("green"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   alpha_gradient->addColorStop(1, String("rgba(0, 0, 255, 0.5)"),
@@ -232,15 +235,14 @@ void CanvasRenderingContext2DTest::SetUp() {
   StringOrCanvasGradientOrCanvasPattern wrapped_alpha_gradient;
   this->AlphaGradient().SetCanvasGradient(alpha_gradient);
 
-  global_memory_cache_ =
-      ReplaceMemoryCacheForTesting(MakeGarbageCollected<MemoryCache>(
-          blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+  global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 }
 
 void CanvasRenderingContext2DTest::TearDown() {
-  ThreadState::Current()->CollectAllGarbageForTesting(
-      BlinkGC::kNoHeapPointersOnStack);
-
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
   SharedGpuContext::ResetForTesting();
 }
@@ -816,7 +818,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
   ASSERT_EQ(ImageResourceContent::UpdateImageResult::kNoDecodeError,
             update_result);
 
-  auto* image_element = MakeGarbageCollected<HTMLImageElement>(document);
+  HTMLImageElement* image_element = HTMLImageElement::Create(document);
   image_element->SetImageForTest(resource_content);
 
   context->clearRect(0, 0, 2, 2);
@@ -866,21 +868,20 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
                                         "_DisplayP3", "_ProPhoto", "_Rec2020"};
   std::vector<String> alpha_status = {"_opaque", "_transparent"};
 
-  StringBuilder path;
-  path.Append(test::CoreTestDataPath());
-  path.Append("/png-16bit/");
+  String path = test::CoreTestDataPath();
+  path.append("/png-16bit/");
   for (auto interlace : interlace_status) {
     for (auto color_profile : color_profiles) {
       for (auto alpha : alpha_status) {
-        StringBuilder full_path;
-        full_path.Append(path);
-        full_path.Append("2x2_16bit");
-        full_path.Append(interlace);
-        full_path.Append(color_profile);
-        full_path.Append(alpha);
-        full_path.Append(".png");
-        TestDrawSingleHighBitDepthPNGOnCanvas(full_path.ToString(), context,
-                                              document, script_state);
+        String filename = "2x2_16bit";
+        filename.append(interlace);
+        filename.append(color_profile);
+        filename.append(alpha);
+        filename.append(".png");
+        String full_path = path;
+        full_path.append(filename);
+        TestDrawSingleHighBitDepthPNGOnCanvas(full_path, context, document,
+                                              script_state);
       }
     }
   }
@@ -1244,7 +1245,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
 
 TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable desynchronized on Mac.
+  // TODO(crbug.com/922218): enable lowLatency on Mac.
   return;
 #endif
   CreateContext(kNonOpaque, kLowLatency);

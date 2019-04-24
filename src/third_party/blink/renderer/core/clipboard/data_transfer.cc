@@ -320,7 +320,7 @@ Vector<String> DataTransfer::types() {
 }
 
 FileList* DataTransfer::files() const {
-  auto* files = MakeGarbageCollected<FileList>();
+  FileList* files = FileList::Create();
   if (!CanReadData())
     return files;
 
@@ -601,7 +601,7 @@ DataTransferItemList* DataTransfer::items() {
   // of items each time. We now return a wrapper that always wraps the *same*
   // set of items, so JS shouldn't be able to tell, but we probably still want
   // to fix this.
-  return MakeGarbageCollected<DataTransferItemList>(this, data_object_);
+  return DataTransferItemList::Create(this, data_object_);
 }
 
 DataObject* DataTransfer::GetDataObject() const {

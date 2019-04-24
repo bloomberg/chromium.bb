@@ -10,8 +10,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,10 +35,6 @@ public class ClientAppDataRegister {
             mPreferences = ContextUtils.getApplicationContext()
                     .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         }
-
-        // Trigger a Preferences read in a background thread to try to load the Preferences file
-        // before we need it.
-        PostTask.postTask(TaskTraits.BEST_EFFORT, this::getUids);
     }
 
     /**
@@ -75,11 +69,7 @@ public class ClientAppDataRegister {
     }
 
     private Set<String> getUids() {
-        // We try to ensure that this is loaded on a background thread before it is needed (see
-        // constructor), but if the load hasn't completed, disable StrictMode so we don't crash.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            return new HashSet<>(mPreferences.getStringSet(UIDS_KEY, Collections.emptySet()));
-        }
+        return new HashSet<>(mPreferences.getStringSet(UIDS_KEY, Collections.emptySet()));
     }
 
     public void removePackage(int uid) {

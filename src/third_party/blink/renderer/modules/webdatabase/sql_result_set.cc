@@ -34,7 +34,7 @@
 namespace blink {
 
 SQLResultSet::SQLResultSet()
-    : rows_(MakeGarbageCollected<SQLResultSetRowList>()),
+    : rows_(SQLResultSetRowList::Create()),
       insert_id_(0),
       rows_affected_(0),
       insert_id_set_(false),

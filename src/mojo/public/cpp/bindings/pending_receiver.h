@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
@@ -35,17 +34,11 @@ class PendingReceiver {
   // any Remote and cannot be used to bind a Receiver.
   //
   // A valid PendingReceiver is commonly obtained by calling
-  // |Remote::BindNewPipeAndPassReceiver()| on an existing unbound Remote
-  // instance or less commonly by calling calling
-  // |PendingRemote::InitWithNewPipeAndPassReceiver()| on an existing but
-  // invalid PendingRemote instance.
+  // |Remote::BindNewReceiver()| on an existing unbound Remote instance or less
+  // commonly by calling calling |PendingRemote::MakeReceiver()| on an existing
+  // but invalid PendingRemote instance.
   PendingReceiver() = default;
   PendingReceiver(PendingReceiver&&) noexcept = default;
-
-  // Temporary implicit move constructor to aid in converting from use of
-  // InterfaceRequest<Interface> to PendingReceiver.
-  PendingReceiver(InterfaceRequest<Interface>&& request)
-      : PendingReceiver(request.PassMessagePipe()) {}
 
   // Constructs a valid PendingReceiver from a valid raw message pipe handle.
   explicit PendingReceiver(ScopedMessagePipeHandle pipe)
@@ -56,12 +49,6 @@ class PendingReceiver {
   ~PendingReceiver() = default;
 
   PendingReceiver& operator=(PendingReceiver&&) noexcept = default;
-
-  // Temporary implicit conversion operator to InterfaceRequest<Interface> to
-  // aid in converting usage to PendingReceiver.
-  operator InterfaceRequest<Interface>() {
-    return InterfaceRequest<Interface>(PassPipe());
-  }
 
   // Indicates whether the PendingReceiver is valid, meaning it can ne used to
   // bind a Receiver that wants to begin dispatching method calls made by the
@@ -74,10 +61,10 @@ class PendingReceiver {
   // effectively be dropped.
   void reset() { pipe_.reset(); }
 
-  // Passes ownership of this PendingReceiver's message pipe handle. After this
+  // Takes ownership of this PendingReceiver's message pipe handle. After this
   // call, the PendingReceiver is no longer in a valid state and can no longer
   // be used to bind a Receiver.
-  ScopedMessagePipeHandle PassPipe() WARN_UNUSED_RESULT {
+  ScopedMessagePipeHandle TakePipe() WARN_UNUSED_RESULT {
     return std::move(pipe_);
   }
 

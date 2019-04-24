@@ -16,8 +16,6 @@
 
 namespace net {
 
-class ClientSocketPool;
-
 class MockClientSocketPoolManager : public ClientSocketPoolManager {
  public:
   MockClientSocketPoolManager();
@@ -25,22 +23,23 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
 
   // Sets socket pool that gets used for the specified ProxyServer.
   void SetSocketPool(const ProxyServer& proxy_server,
-                     std::unique_ptr<ClientSocketPool> pool);
+                     std::unique_ptr<TransportClientSocketPool> pool);
 
   // ClientSocketPoolManager methods:
   void FlushSocketPoolsWithError(int error) override;
   void CloseIdleSockets() override;
-  ClientSocketPool* GetSocketPool(const ProxyServer& proxy_server) override;
+  TransportClientSocketPool* GetSocketPool(
+      const ProxyServer& proxy_server) override;
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
   void DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
       const std::string& parent_dump_absolute_name) const override;
 
  private:
-  using ClientSocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<ClientSocketPool>>;
+  using TransportClientSocketPoolMap =
+      std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
 
-  ClientSocketPoolMap socket_pools_;
+  TransportClientSocketPoolMap socket_pools_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketPoolManager);
 };

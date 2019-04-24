@@ -1,2 +1,0 @@
-[document web]
-++[text] name='aria-role presentation'

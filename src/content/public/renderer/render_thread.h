@@ -53,9 +53,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   // be accessed when running on the render thread itself.
   static RenderThread* Get();
 
-  // Returns true if the current thread is the main thread.
-  static bool IsMainThread();
-
   RenderThread();
   ~RenderThread() override;
 

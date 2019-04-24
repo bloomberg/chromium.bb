@@ -55,9 +55,9 @@ class V8_BASE_EXPORT Mutex final {
 
   // The implementation-defined native handle type.
 #if V8_OS_POSIX
-  using NativeHandle = pthread_mutex_t;
+  typedef pthread_mutex_t NativeHandle;
 #elif V8_OS_WIN
-  using NativeHandle = SRWLOCK;
+  typedef SRWLOCK NativeHandle;
 #endif
 
   NativeHandle& native_handle() {
@@ -101,8 +101,8 @@ class V8_BASE_EXPORT Mutex final {
 //     // Do something.
 //   }
 //
-using LazyMutex = LazyStaticInstance<Mutex, DefaultConstructTrait<Mutex>,
-                                     ThreadSafeInitOnceTrait>::type;
+typedef LazyStaticInstance<Mutex, DefaultConstructTrait<Mutex>,
+                           ThreadSafeInitOnceTrait>::type LazyMutex;
 
 #define LAZY_MUTEX_INITIALIZER LAZY_STATIC_INSTANCE_INITIALIZER
 
@@ -153,9 +153,9 @@ class V8_BASE_EXPORT RecursiveMutex final {
  private:
   // The implementation-defined native handle type.
 #if V8_OS_POSIX
-  using NativeHandle = pthread_mutex_t;
+  typedef pthread_mutex_t NativeHandle;
 #elif V8_OS_WIN
-  using NativeHandle = CRITICAL_SECTION;
+  typedef CRITICAL_SECTION NativeHandle;
 #endif
 
   NativeHandle native_handle_;
@@ -177,9 +177,9 @@ class V8_BASE_EXPORT RecursiveMutex final {
 //     // Do something.
 //   }
 //
-using LazyRecursiveMutex =
-    LazyStaticInstance<RecursiveMutex, DefaultConstructTrait<RecursiveMutex>,
-                       ThreadSafeInitOnceTrait>::type;
+typedef LazyStaticInstance<RecursiveMutex,
+                           DefaultConstructTrait<RecursiveMutex>,
+                           ThreadSafeInitOnceTrait>::type LazyRecursiveMutex;
 
 #define LAZY_RECURSIVE_MUTEX_INITIALIZER LAZY_STATIC_INSTANCE_INITIALIZER
 
@@ -241,9 +241,9 @@ class V8_BASE_EXPORT SharedMutex final {
  private:
   // The implementation-defined native handle type.
 #if V8_OS_POSIX
-  using NativeHandle = pthread_rwlock_t;
+  typedef pthread_rwlock_t NativeHandle;
 #elif V8_OS_WIN
-  using NativeHandle = SRWLOCK;
+  typedef SRWLOCK NativeHandle;
 #endif
 
   NativeHandle native_handle_;

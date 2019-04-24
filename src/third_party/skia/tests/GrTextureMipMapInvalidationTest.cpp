@@ -14,12 +14,7 @@
 #include "Test.h"
 
 // Tests that MIP maps are created and invalidated as expected when drawing to and from GrTextures.
-DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrTextureMipMapInvalidationTest, reporter, ctxInfo) {
-    GrContext* context = ctxInfo.grContext();
-    if (!context->priv().caps()->mipMapSupport()) {
-        return;
-    }
-
+DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrTextureMipMapInvalidationTest, reporter, ctxInfo) {
     auto isMipped = [] (SkSurface* surf) {
         const GrTexture* texture = surf->makeImageSnapshot()->getTexture();
         return GrMipMapped::kYes == texture->texturePriv().mipMapped();
@@ -29,6 +24,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrTextureMipMapInvalidationTest, reporter, ct
         return surf->makeImageSnapshot()->getTexture()->texturePriv().mipMapsAreDirty();
     };
 
+    GrContext* context = ctxInfo.grContext();
     auto info = SkImageInfo::MakeN32Premul(256, 256);
     for (auto allocateMips : {false, true}) {
         auto surf1 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info, 0,

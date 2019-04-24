@@ -201,9 +201,11 @@ DEF_TEST(PolyUtils, reporter) {
         SkScalar rad = 0;
         const SkScalar drad = SK_ScalarPI / n;
         for (int i = 0; i < n; i++) {
-            *poly.push() = SkPoint::Make(c + SkScalarCos(rad) * r1, c + SkScalarSin(rad) * r1);
+            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
+            *poly.push() = SkPoint::Make(c + cosV * r1, c + sinV * r1);
             rad += drad;
-            *poly.push() = SkPoint::Make(c + SkScalarCos(rad) * r2, c + SkScalarSin(rad) * r2);
+            sinV = SkScalarSinCos(rad, &cosV);
+            *poly.push() = SkPoint::Make(c + cosV * r2, c + sinV * r2);
             rad += drad;
         }
         REPORTER_ASSERT(reporter, SkGetPolygonWinding(poly.begin(), poly.count()) > 0);

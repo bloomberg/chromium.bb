@@ -80,7 +80,6 @@ using ::rtc::SocketAddress;
 using ::testing::_;
 using ::testing::Combine;
 using ::testing::Contains;
-using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -1123,7 +1122,7 @@ class MediaExpectations {
 // virtual network, fake A/V capture and fake encoder/decoders. The
 // PeerConnections share the threads/socket servers, but use separate versions
 // of everything else (including "PeerConnectionFactory"s).
-class PeerConnectionIntegrationBaseTest : public ::testing::Test {
+class PeerConnectionIntegrationBaseTest : public testing::Test {
  public:
   explicit PeerConnectionIntegrationBaseTest(SdpSemantics sdp_semantics)
       : sdp_semantics_(sdp_semantics),
@@ -3207,7 +3206,6 @@ TEST_P(PeerConnectionIntegrationTest, RtpDataChannelsRejectedByCallee) {
       CreatePeerConnectionWrappersWithConfig(rtc_config_1, rtc_config_2));
   ConnectFakeSignaling();
   caller()->CreateDataChannel();
-  ASSERT_TRUE(caller()->data_channel() != nullptr);
   caller()->AddAudioVideoTracks();
   callee()->AddAudioVideoTracks();
   caller()->CreateAndSetAndSignalOffer();
@@ -3321,8 +3319,7 @@ TEST_P(PeerConnectionIntegrationTest, SctpDataChannelConfigSentToOtherSide) {
   ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
   ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
   ASSERT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
-  // Since "negotiated" is false, the "id" parameter should be ignored.
-  EXPECT_NE(init.id, callee()->data_channel()->id());
+  EXPECT_EQ(init.id, callee()->data_channel()->id());
   EXPECT_EQ("data-channel", callee()->data_channel()->label());
   EXPECT_EQ(init.maxRetransmits, callee()->data_channel()->maxRetransmits());
   EXPECT_FALSE(callee()->data_channel()->negotiated());
@@ -3578,8 +3575,7 @@ TEST_P(PeerConnectionIntegrationTest,
   // configuration.
   ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
   ASSERT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
-  // Since "negotiate" is false, the "id" parameter is ignored.
-  EXPECT_NE(init.id, callee()->data_channel()->id());
+  EXPECT_EQ(init.id, callee()->data_channel()->id());
   EXPECT_EQ("data-channel", callee()->data_channel()->label());
   EXPECT_EQ(init.maxRetransmits, callee()->data_channel()->maxRetransmits());
   EXPECT_FALSE(callee()->data_channel()->negotiated());
@@ -4841,8 +4837,8 @@ TEST_P(PeerConnectionIntegrationTest, RtcEventLogOutputWriteCalled) {
   ConnectFakeSignaling();
 
   auto output = absl::make_unique<testing::NiceMock<MockRtcEventLogOutput>>();
-  ON_CALL(*output, IsActive()).WillByDefault(::testing::Return(true));
-  ON_CALL(*output, Write(::testing::_)).WillByDefault(::testing::Return(true));
+  ON_CALL(*output, IsActive()).WillByDefault(testing::Return(true));
+  ON_CALL(*output, Write(::testing::_)).WillByDefault(testing::Return(true));
   EXPECT_CALL(*output, Write(::testing::_)).Times(::testing::AtLeast(1));
   EXPECT_TRUE(caller()->pc()->StartRtcEventLog(
       std::move(output), webrtc::RtcEventLog::kImmediateOutput));

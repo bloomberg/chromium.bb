@@ -94,7 +94,8 @@ GamepadSource GamepadPlatformDataFetcherWin::source() {
 }
 
 void GamepadPlatformDataFetcherWin::OnAddedToProvider() {
-  xinput_dll_ = base::ScopedNativeLibrary(base::FilePath(XInputDllFileName()));
+  xinput_dll_.Reset(
+      base::LoadNativeLibrary(base::FilePath(XInputDllFileName()), nullptr));
   xinput_available_ = GetXInputDllFunctions();
 }
 

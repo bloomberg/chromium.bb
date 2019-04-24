@@ -89,12 +89,13 @@ ResourceRequesterInfo::CreateForRendererTesting(int child_id) {
 }
 
 scoped_refptr<ResourceRequesterInfo>
-ResourceRequesterInfo::CreateForBrowserSideNavigation() {
+ResourceRequesterInfo::CreateForBrowserSideNavigation(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::BROWSER_SIDE_NAVIGATION,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
-      nullptr /* service_worker_context */, GetContextsCallback()));
+      service_worker_context.get(), GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -134,6 +135,7 @@ scoped_refptr<ResourceRequesterInfo>
 ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
     const GetContextsCallback& get_contexts_callback) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,

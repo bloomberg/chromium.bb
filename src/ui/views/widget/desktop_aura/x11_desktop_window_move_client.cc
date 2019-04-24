@@ -14,9 +14,12 @@
 
 namespace views {
 
-X11DesktopWindowMoveClient::X11DesktopWindowMoveClient() = default;
+X11DesktopWindowMoveClient::X11DesktopWindowMoveClient()
+    : move_loop_(this),
+      host_(NULL) {
+}
 
-X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() = default;
+X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() {}
 
 void X11DesktopWindowMoveClient::OnMouseMovement(const gfx::Point& screen_point,
                                                  int flags,
@@ -31,7 +34,7 @@ void X11DesktopWindowMoveClient::OnMouseReleased() {
 }
 
 void X11DesktopWindowMoveClient::OnMoveLoopEnded() {
-  host_ = nullptr;
+  host_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

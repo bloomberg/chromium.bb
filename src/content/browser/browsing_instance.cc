@@ -26,7 +26,8 @@ const char* const kDefaultInstanceSiteURL = "http://unisolated.invalid";
 int BrowsingInstance::next_browsing_instance_id_ = 1;
 
 BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
-    : isolation_context_(
+    : browser_context_(browser_context),
+      isolation_context_(
           BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++),
           BrowserOrResourceContext(browser_context)),
       active_contents_count_(0u),
@@ -40,10 +41,6 @@ void BrowsingInstance::RenderProcessHostDestroyed(RenderProcessHost* host) {
   // not if the renderer process goes away while the RenderProcessHost remains.
   default_process_->RemoveObserver(this);
   default_process_ = nullptr;
-}
-
-BrowserContext* BrowsingInstance::GetBrowserContext() const {
-  return isolation_context_.browser_or_resource_context().ToBrowserContext();
 }
 
 void BrowsingInstance::SetDefaultProcess(RenderProcessHost* default_process) {
@@ -60,8 +57,9 @@ bool BrowsingInstance::IsDefaultSiteInstance(
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
+          .possibly_invalid_spec();
 
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
@@ -78,10 +76,8 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   // No current SiteInstance for this site, so let's create one.
   scoped_refptr<SiteInstanceImpl> instance = new SiteInstanceImpl(this);
 
-  // Set the site of this new SiteInstance, which will register it with us,
-  // unless this URL should leave the SiteInstance's site unassigned.
-  if (SiteInstance::ShouldAssignSiteForURL(url))
-    instance->SetSite(url);
+  // Set the site of this new SiteInstance, which will register it with us.
+  instance->SetSite(url);
   return instance;
 }
 
@@ -98,17 +94,19 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
     return;
   }
 
+  BrowserOrResourceContext context(browser_context_);
   *site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context_, url, true /* should_use_effective_urls */);
-  *lock_url =
-      SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
+      context, isolation_context_, url, true /* should_use_effective_urls */);
+  *lock_url = SiteInstanceImpl::DetermineProcessLockURL(
+      context, isolation_context_, url);
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
+          .possibly_invalid_spec();
 
   auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end())
@@ -123,8 +121,8 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
   if (allow_default_instance &&
       !base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances) &&
-      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,
-                                                         url)) {
+      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+          browser_context_, isolation_context_, url)) {
     DCHECK(!default_process_);
     if (!default_site_instance_) {
       default_site_instance_ = new SiteInstanceImpl(this);

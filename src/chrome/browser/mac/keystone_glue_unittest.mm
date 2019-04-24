@@ -36,7 +36,12 @@ namespace ksr = keystone_registration;
   return NO;
 }
 
-- (BOOL)setActiveWithError:(NSError**)error {
+- (BOOL)setActive {
+  return NO;
+}
+
+- (BOOL)setActiveWithReportingAttributes:(NSArray*)reportingAttributes
+                                   error:(NSError**)error {
   return NO;
 }
 

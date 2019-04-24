@@ -27,6 +27,12 @@ const int kInvalidChunkIndex = -1;
 
 }  // namespace
 
+// static
+ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::Create(
+    LocalFrame& frame) {
+  return MakeGarbageCollected<ColdModeSpellCheckRequester>(frame);
+}
+
 void ColdModeSpellCheckRequester::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(root_editable_);

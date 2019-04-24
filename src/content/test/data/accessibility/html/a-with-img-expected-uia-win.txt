@@ -1,14 +1,14 @@
 region
-++document
+++document IsKeyboardFocusable=true
 ++++group
-++++++link Name='Link with image at start.'
+++++++link Name='Link with image at start.' IsKeyboardFocusable=true
 ++++++++img Name='Link'
 ++++++description Name=' '
-++++++link Name='Link with image in the middle.'
+++++++link Name='Link with image in the middle.' IsKeyboardFocusable=true
 ++++++++img Name='image'
 ++++++description Name=' '
-++++++link Name='Link with broken in the middle.'
+++++++link Name='Link with broken in the middle.' IsKeyboardFocusable=true
 ++++++++img Name='broken'
 ++++++description Name=' '
-++++++link Name='Link with image at the end'
+++++++link Name='Link with image at the end' IsKeyboardFocusable=true
 ++++++++img Name='end'

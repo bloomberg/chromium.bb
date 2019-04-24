@@ -52,16 +52,22 @@ const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
 String MojoBindingsScriptPath() {
-  return test::ExecutableDir() + "/gen/mojo/public/js/mojo_bindings.js";
+  String filepath = test::ExecutableDir();
+  filepath.append("/gen/mojo/public/js/mojo_bindings.js");
+  return filepath;
 }
 
 String TestBindingsScriptPath() {
-  return test::ExecutableDir() +
-         "/gen/third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom.js";
+  String filepath = test::ExecutableDir();
+  filepath.append(
+      "/gen/third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom.js");
+  return filepath;
 }
 
 String TestScriptPath() {
-  return test::BlinkRootDir() + "/renderer/core/mojo/tests/JsToCppTest.js";
+  String filepath = test::BlinkRootDir();
+  filepath.append("/renderer/core/mojo/tests/JsToCppTest.js");
+  return filepath;
 }
 
 v8::Local<v8::Value> ExecuteScript(const String& script_path,
@@ -391,7 +397,7 @@ class JsToCppTest : public testing::Test {
     ASSERT_TRUE(start_fn->IsFunction());
     v8::Local<v8::Object> global_proxy = scope.GetContext()->Global();
     v8::Local<v8::Value> args[1] = {
-        ToV8(MakeGarbageCollected<MojoHandle>(
+        ToV8(MojoHandle::Create(
                  mojo::ScopedHandle::From(js_side_request.PassMessagePipe())),
              global_proxy, scope.GetIsolate())};
     V8ScriptRunner::CallFunction(start_fn.As<v8::Function>(),
@@ -413,8 +419,7 @@ TEST_F(JsToCppTest, Echo) {
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
 
-// Flaky. http://crbug.com/952627
-TEST_F(JsToCppTest, DISABLED_BitFlip) {
+TEST_F(JsToCppTest, BitFlip) {
   // These tests generate a lot of expected validation errors. Suppress logging.
   mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
 

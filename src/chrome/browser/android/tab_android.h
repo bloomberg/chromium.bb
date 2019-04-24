@@ -28,6 +28,8 @@ namespace cc {
 class Layer;
 }
 
+struct NavigateParams;
+
 namespace android {
 class TabWebContentsDelegateAndroid;
 class TabContentManager;
@@ -105,6 +107,8 @@ class TabAndroid {
   void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
 
+  void HandlePopupNavigation(NavigateParams* params);
+
   bool HasPrerenderedUrl(GURL gurl);
 
   // Returns true if this tab is currently presented in the context of custom
@@ -175,6 +179,13 @@ class TabAndroid {
   static void CreateHistoricalTabFromContents(
       content::WebContents* web_contents);
 
+  void UpdateBrowserControlsState(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint constraints,
+      jint current,
+      jboolean animate);
+
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
@@ -186,6 +197,16 @@ class TabAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& delegate);
+
+  // TODO(dtrainor): Remove this, pull content_layer() on demand.
+  void AttachToTabContentManager(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jtab_content_manager);
+
+  void ClearThumbnailPlaceholder(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   bool HasPrerenderedUrl(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
@@ -211,12 +232,6 @@ class TabAndroid {
       jboolean enabled);
 
   bool ShouldEnableEmbeddedMediaExperience() const;
-
-  void SetNightModeEnabled(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jboolean enabled);
-
-  bool NightModeEnabled() const;
 
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
@@ -249,7 +264,6 @@ class TabAndroid {
   GURL webapp_manifest_scope_;
   bool picture_in_picture_enabled_;
   bool embedded_media_experience_enabled_;
-  bool night_mode_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

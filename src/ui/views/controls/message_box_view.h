@@ -11,17 +11,14 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 class Checkbox;
 class Label;
-class LayoutProvider;
 class Link;
 class LinkListener;
-class ScrollView;
 class Textfield;
 
 // This class displays the contents of a message box. It is intended for use
@@ -105,29 +102,23 @@ class VIEWS_EXPORT MessageBoxView : public View {
   // called when a view is initialized or changed.
   void ResetLayoutManager();
 
-  // Return the proper horizontal insets based on the given layout provider.
-  gfx::Insets GetHorizontalInsets(const LayoutProvider* provider);
-
   // Message for the message box.
   std::vector<Label*> message_labels_;
 
-  // Scrolling view containing the message labels.
-  ScrollView* scroll_view_ = nullptr;
-
   // Input text field for the message box.
-  Textfield* prompt_field_ = nullptr;
+  Textfield* prompt_field_;
 
   // Checkbox for the message box.
-  Checkbox* checkbox_ = nullptr;
+  Checkbox* checkbox_;
 
   // Link displayed at the bottom of the view.
-  Link* link_ = nullptr;
-
-  // Spacing between rows in the grid layout.
-  int inter_row_vertical_spacing_ = 0;
+  Link* link_;
 
   // Maximum width of the message label.
   int message_width_;
+
+  // Spacing between rows in the grid layout.
+  int inter_row_vertical_spacing_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };

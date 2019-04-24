@@ -51,12 +51,11 @@ public:
                  const GrPrimitiveProcessor& primPRoc, const GrPipeline& pipeline,
                  const GrTextureProxy* const primProcTextures[]);
 
-    void setDrawState(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
+    void bind(id<MTLRenderCommandEncoder>);
 
-    static void SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
-                                           const GrRenderTarget* renderTarget,
-                                           GrSurfaceOrigin rtOrigin,
-                                           SkIRect scissorRect);
+    void setBlendConstants(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
+
+    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
 
 private:
     /**
@@ -96,12 +95,6 @@ private:
     };
 
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
-
-    void bind(id<MTLRenderCommandEncoder>);
-
-    void setBlendConstants(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
-
-    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
 
     struct SamplerBindings {
         id<MTLSamplerState> fSampler;

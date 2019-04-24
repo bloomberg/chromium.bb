@@ -128,11 +128,6 @@ pluralRanges:table(nofallback){
             }
             {
                 "other",
-                "one",
-                "one",
-            }
-            {
-                "other",
                 "other",
                 "other",
             }

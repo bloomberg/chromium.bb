@@ -34,7 +34,7 @@ KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return KeyedServiceFactory::SetTestingFactoryAndUse(
-      context,
+      context, nullptr /* side_parameter */,
       base::BindRepeating(
           [](const TestingFactory& testing_factory, void* context) {
             return testing_factory.Run(
@@ -46,7 +46,8 @@ KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
 BrowserContextKeyedServiceFactory::BrowserContextKeyedServiceFactory(
     const char* name,
     BrowserContextDependencyManager* manager)
-    : KeyedServiceFactory(name, manager, BROWSER_CONTEXT) {}
+    : KeyedServiceFactory(name, manager) {
+}
 
 BrowserContextKeyedServiceFactory::~BrowserContextKeyedServiceFactory() {
 }
@@ -54,7 +55,8 @@ BrowserContextKeyedServiceFactory::~BrowserContextKeyedServiceFactory() {
 KeyedService* BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
     content::BrowserContext* context,
     bool create) {
-  return KeyedServiceFactory::GetServiceForContext(context, create);
+  return KeyedServiceFactory::GetServiceForContext(
+      context, nullptr /* side_parameter */, create);
 }
 
 content::BrowserContext*
@@ -91,7 +93,8 @@ void BrowserContextKeyedServiceFactory::BrowserContextDestroyed(
 
 std::unique_ptr<KeyedService>
 BrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
-    void* context) const {
+    void* context,
+    void* side_parameter) const {
   // TODO(isherman): The wrapped BuildServiceInstanceFor() should return a
   // scoped_ptr as well.
   return base::WrapUnique(
@@ -125,5 +128,6 @@ void BrowserContextKeyedServiceFactory::RegisterPrefs(
 }
 
 void BrowserContextKeyedServiceFactory::CreateServiceNow(void* context) {
-  KeyedServiceFactory::GetServiceForContext(context, true);
+  KeyedServiceFactory::GetServiceForContext(context,
+                                            nullptr /* side_parameter */, true);
 }

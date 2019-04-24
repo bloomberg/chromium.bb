@@ -283,15 +283,15 @@ public class TestWebServer extends WebServer {
      * Sets a redirect.
      *
      * @param requestPath The path to respond to.
-     * @param targetLocation The path (or absolute URL) to redirect to.
+     * @param targetPath The path to redirect to.
      * @return The full URL including the path that should be requested to get the expected
      *         response.
      */
-    public String setRedirect(String requestPath, String targetLocation) {
+    public String setRedirect(String requestPath, String targetPath) {
         List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
-        responseHeaders.add(Pair.create("Location", targetLocation));
+        responseHeaders.add(Pair.create("Location", targetPath));
 
-        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(targetLocation),
+        return setResponseInternal(requestPath, ApiCompatibilityUtils.getBytesUtf8(targetPath),
                 responseHeaders, null, RESPONSE_STATUS_MOVED_TEMPORARILY);
     }
 

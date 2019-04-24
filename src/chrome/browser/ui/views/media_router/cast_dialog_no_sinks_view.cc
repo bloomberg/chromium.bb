@@ -12,9 +12,8 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_helper.h"
 #include "chrome/common/url_constants.h"
@@ -35,8 +34,8 @@
 
 namespace media_router {
 
-CastDialogNoSinksView::CastDialogNoSinksView(Profile* profile)
-    : profile_(profile), weak_factory_(this) {
+CastDialogNoSinksView::CastDialogNoSinksView(Browser* browser)
+    : browser_(browser), weak_factory_(this) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   looking_for_sinks_view_ = CreateLookingForSinksView();
@@ -68,8 +67,7 @@ void CastDialogNoSinksView::ShowHelpIconView() {
 
 void CastDialogNoSinksView::ShowHelpCenterArticle() {
   const GURL url = GURL(chrome::kCastNoDestinationFoundURL);
-  NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
-  Navigate(&params);
+  chrome::AddSelectedTabWithURL(browser_, url, ui::PAGE_TRANSITION_LINK);
 }
 
 views::View* CastDialogNoSinksView::CreateLookingForSinksView() {

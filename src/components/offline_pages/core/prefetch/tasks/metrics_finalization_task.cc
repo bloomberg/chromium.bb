@@ -67,10 +67,6 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
 
   std::vector<PrefetchItemStats> urls;
   while (statement.Step()) {
-    PrefetchItemErrorCode error_code =
-        ToPrefetchItemErrorCode(statement.ColumnInt(6))
-            .value_or(PrefetchItemErrorCode::INVALID_ITEM);
-
     urls.emplace_back(statement.ColumnInt64(0),  // offline_id
                       statement.ColumnInt(1),    // generate_bundle_attempts
                       statement.ColumnInt(2),    // get_operation_attempts
@@ -78,8 +74,9 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
                       statement.ColumnInt64(4),  // archive_body_length
                       store_utils::FromDatabaseTime(
                           statement.ColumnInt64(5)),  // creation_time
-                      error_code,                     // error_code
-                      statement.ColumnInt64(7));      // file_size
+                      static_cast<PrefetchItemErrorCode>(
+                          statement.ColumnInt(6)),  // error_code
+                      statement.ColumnInt64(7));    // file_size
   }
 
   return urls;
@@ -113,12 +110,10 @@ void CountEntriesInEachState(sql::Database* db) {
       "SELECT state, COUNT (*) FROM prefetch_items GROUP BY state";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   while (statement.Step()) {
-    base::Optional<PrefetchItemState> state =
-        ToPrefetchItemState(statement.ColumnInt(0));
-    if (!state)
-      continue;
+    PrefetchItemState state =
+        static_cast<PrefetchItemState>(statement.ColumnInt(0));
     int count = statement.ColumnInt(1);
-    LogStateCountMetrics(state.value(), count);
+    LogStateCountMetrics(state, count);
   }
 }
 

@@ -42,7 +42,7 @@ bool VaapiVP9Accelerator::SubmitDecode(
     const scoped_refptr<VP9Picture>& pic,
     const Vp9SegmentationParams& seg,
     const Vp9LoopFilterParams& lf,
-    const Vp9ReferenceFrameVector& ref_frames,
+    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
     const base::Closure& done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |done_cb| should be null as we return false from IsFrameContextRequired().
@@ -58,12 +58,11 @@ bool VaapiVP9Accelerator::SubmitDecode(
   pic_param.frame_height =
       base::checked_cast<uint16_t>(frame_hdr->frame_height);
 
-  CHECK_EQ(kVp9NumRefFrames, base::size(pic_param.reference_frames));
+  CHECK_EQ(ref_pictures.size(), base::size(pic_param.reference_frames));
   for (size_t i = 0; i < base::size(pic_param.reference_frames); ++i) {
-    auto ref_pic = ref_frames.GetFrame(i);
-    if (ref_pic) {
+    if (ref_pictures[i]) {
       pic_param.reference_frames[i] =
-          ref_pic->AsVaapiVP9Picture()->GetVASurfaceID();
+          ref_pictures[i]->AsVaapiVP9Picture()->GetVASurfaceID();
     } else {
       pic_param.reference_frames[i] = VA_INVALID_SURFACE;
     }

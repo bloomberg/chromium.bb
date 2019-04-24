@@ -20,7 +20,6 @@
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/features.h"
 
@@ -40,7 +39,7 @@ void DestroyPrerenderContents(
 }
 
 void StartDisplayingBlockingPage(
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    scoped_refptr<BaseUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {
@@ -49,22 +48,6 @@ void StartDisplayingBlockingPage(
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
     } else {
-      // With committed interstitials, if this is a main frame load, we need to
-      // get the navigation URL and referrer URL from the navigation entry now,
-      // since they are required for threat reporting, and the entry will be
-      // destroyed once the request is failed.
-      if (base::FeatureList::IsEnabled(kCommittedSBInterstitials) &&
-          resource.IsMainPageLoadBlocked()) {
-        content::NavigationEntry* entry =
-            web_contents->GetController().GetPendingEntry();
-        if (entry) {
-          security_interstitials::UnsafeResource resource_copy(resource);
-          resource_copy.navigation_url = entry->GetURL();
-          resource_copy.referrer_url = entry->GetReferrer().url;
-          ui_manager->DisplayBlockingPage(resource_copy);
-          return;
-        }
-      }
       ui_manager->DisplayBlockingPage(resource);
       return;
     }
@@ -110,9 +93,19 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&StartDisplayingBlockingPage, ui_manager_, resource));
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials) &&
+      is_main_frame) {
+    ui_manager_->AddUnsafeResource(resource.url, resource);
+    // With committed interstitials we just cancel the load from here, the
+    // actual interstitial will be shown from the
+    // SafeBrowsingNavigationThrottle.
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(resource.callback, false));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&StartDisplayingBlockingPage, ui_manager_, resource));
+  }
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {

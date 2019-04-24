@@ -15,7 +15,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -33,6 +32,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -374,9 +374,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:identityAccountItem withIdentity:identity];
 
-  identityAccountItem.mode = _syncSetupService->IsSyncEnabled()
-                                 ? TableViewAccountModeEnabled
-                                 : TableViewAccountModeDisabled;
+  identityAccountItem.enabled = _syncSetupService->IsSyncEnabled();
   ChromeIdentity* authenticatedIdentity =
       AuthenticationServiceFactory::GetForBrowserState(_browserState)
           ->GetAuthenticatedIdentity();
@@ -618,11 +616,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                      ACCESS_POINT_UNKNOWN]
         baseViewController:self];
   } else if (ShouldShowSyncSettings(syncState)) {
-    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-    } else {
-      [self.dispatcher showSyncSettingsFromViewController:self];
-    }
+    [self.dispatcher showSyncSettingsFromViewController:self];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
   }
@@ -784,9 +778,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewAccountItem* accountItem =
           base::mac::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
-      accountItem.mode = _syncSetupService->IsSyncEnabled()
-                             ? TableViewAccountModeEnabled
-                             : TableViewAccountModeDisabled;
+      accountItem.enabled = _syncSetupService->IsSyncEnabled();
       [accountsToReconfigure addObject:accountItem];
     }
     [self reconfigureCellsForItems:accountsToReconfigure];

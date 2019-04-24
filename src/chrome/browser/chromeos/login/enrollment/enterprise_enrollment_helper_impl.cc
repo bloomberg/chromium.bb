@@ -75,7 +75,7 @@ namespace chromeos {
 EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl() {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
-  CryptohomeClient::Get()->TpmCanAttemptOwnership(
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
       EmptyVoidDBusMethodCallback());
 }
 
@@ -96,7 +96,8 @@ void EnterpriseEnrollmentHelperImpl::Setup(
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
-    const std::string& auth_code) {
+    const std::string& auth_code,
+    bool fetch_additional_token) {
   DCHECK(oauth_status_ == OAUTH_NOT_STARTED);
   oauth_status_ = OAUTH_STARTED_WITH_AUTH_CODE;
   oauth_fetcher_ = policy::PolicyOAuth2TokenFetcher::CreateInstance();
@@ -105,7 +106,8 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 fetch_additional_token /* is_additional_token */));
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(
@@ -206,6 +208,11 @@ void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {
   if (oauth_status_ != OAUTH_NOT_STARTED) {
+    // Do not revoke the additional token if enrollment has finished
+    // successfully.
+    if (!success_ && additional_token_.length())
+      (new TokenRevoker())->Start(additional_token_);
+
     if (oauth_fetcher_) {
       if (!oauth_fetcher_->OAuth2AccessToken().empty())
         (new TokenRevoker())->Start(oauth_fetcher_->OAuth2AccessToken());
@@ -329,6 +336,7 @@ void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
 }
 
 void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
+    bool is_additional_token,
     const std::string& token,
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE) {
@@ -338,7 +346,21 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
     return;
   }
 
-  EnrollUsingToken(token);
+  if (!is_additional_token) {
+    EnrollUsingToken(token);
+    return;
+  }
+
+  additional_token_ = token;
+  std::string refresh_token = oauth_fetcher_->OAuth2RefreshToken();
+  oauth_fetcher_ = policy::PolicyOAuth2TokenFetcher::CreateInstance();
+  oauth_fetcher_->StartWithRefreshToken(
+      refresh_token,
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 false /* is_additional_token */));
 }
 
 void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(

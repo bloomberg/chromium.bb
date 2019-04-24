@@ -42,20 +42,17 @@ export default class SessionIdCacheRequest extends CacheRequestBase {
   }
 
   async isKnown_(sid) {
-    const other = await this.findInProgressRequest(async other => {
-      const otherResponse = await other.responsePromise;
-      return otherResponse.sid === sid;
-    });
+    const other = await this.findInProgressRequest(async other =>
+      ((await other.responsePromise) === sid));
     if (other) return true;
-    const transaction = await this.transaction([STORE_SIDS], READONLY);
+    const db = await this.databasePromise;
+    const transaction = db.transaction([STORE_SIDS], READONLY);
     const store = transaction.objectStore(STORE_SIDS);
     const entry = await store.get(sid);
     return entry !== undefined;
   }
 
-  async maybeValidate_(sid) {
-    const isKnown = await this.isKnown_(sid);
-    if (isKnown) return;
+  async validate_(sid) {
     const response = await fetch(this.fetchEvent.request);
     const json = await response.json();
     if (json.sid !== sid) {
@@ -64,7 +61,8 @@ export default class SessionIdCacheRequest extends CacheRequestBase {
   }
 
   async writeDatabase(sid) {
-    const transaction = await this.transaction([STORE_SIDS], READWRITE);
+    const db = await this.databasePromise;
+    const transaction = db.transaction([STORE_SIDS], READWRITE);
     const store = transaction.objectStore(STORE_SIDS);
     store.put(new Date(), sid);
     await transaction.complete;
@@ -72,23 +70,21 @@ export default class SessionIdCacheRequest extends CacheRequestBase {
 
   async getResponse() {
     const body = await this.fetchEvent.request.clone().formData();
-    const sid = await sha(body.get('page_state'));
-    // Update the timestamp even if the sid was already in the database so that
-    // we can evict LRU.
-    this.scheduleWrite(sid);
-    this.fetchEvent.waitUntil(this.maybeValidate_(sid));
-    return {sid};
+    return await sha(body.get('page_state'));
   }
 
   async respond() {
     // Allow the browser to handle GET /short_uri?sid requests.
-    if (this.fetchEvent.request.method !== 'POST') {
-      // Normally, super.respond() or scheduleWrite() would call onComplete(),
-      // but we're skipping those so we must call onComplete here.
-      this.onComplete();
-      return;
-    }
+    if (this.fetchEvent.request.method !== 'POST') return;
 
-    await super.respond();
+    this.fetchEvent.respondWith(this.responsePromise.then(
+        sid => jsonResponse({sid})));
+
+    const sid = await this.responsePromise;
+    const isKnown = await this.isKnown_(sid);
+    if (!isKnown) await this.validate_(sid);
+    // Update the timestamp even if the sid was already in the database so that
+    // we can evict LRU.
+    this.scheduleWrite(sid);
   }
 }

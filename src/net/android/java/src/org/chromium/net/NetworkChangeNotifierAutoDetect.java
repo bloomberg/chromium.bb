@@ -35,7 +35,6 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.compat.ApiHelperForM;
 
@@ -315,9 +314,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             // Determine if the VPN applies to the current user by seeing if a socket can be bound
             // to the VPN.
             Socket s = new Socket();
-            // Disable detectUntaggedSockets StrictMode policy to avoid false positives, as |s|
-            // isn't used to send or receive traffic. https://crbug.com/946531
-            try (StrictModeContext unused = StrictModeContext.allowAllVmPolicies()) {
+            try {
                 // Avoid using network.getSocketFactory().createSocket() because it leaks.
                 // https://crbug.com/805424
                 network.bindSocket(s);
@@ -1138,6 +1135,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mNetworkState = networkState;
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint({"NewApi", "ParcelCreator"})
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
         NetworkConnectivityIntentFilter() {
             addAction(ConnectivityManager.CONNECTIVITY_ACTION);

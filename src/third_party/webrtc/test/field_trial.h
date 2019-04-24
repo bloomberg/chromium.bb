@@ -37,8 +37,6 @@ void ValidateFieldTrialsStringOrDie(const std::string& config);
 class ScopedFieldTrials {
  public:
   explicit ScopedFieldTrials(const std::string& config);
-  ScopedFieldTrials(const ScopedFieldTrials&) = delete;
-  ScopedFieldTrials& operator=(const ScopedFieldTrials&) = delete;
   ~ScopedFieldTrials();
 
  private:

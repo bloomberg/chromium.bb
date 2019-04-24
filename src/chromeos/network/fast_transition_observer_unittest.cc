@@ -6,8 +6,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chromeos/constants/chromeos_pref_names.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -21,7 +21,7 @@ namespace test {
 class FastTransitionObserverTest : public ::testing::Test {
  public:
   FastTransitionObserverTest() {
-    shill_clients::InitializeFakes();
+    DBusThreadManager::Initialize();
     network_state_handler_ = NetworkStateHandler::InitializeForTest();
     NetworkHandler::Initialize();
     local_state_ = std::make_unique<TestingPrefServiceSimple>();
@@ -36,13 +36,14 @@ class FastTransitionObserverTest : public ::testing::Test {
     local_state_.reset();
     network_state_handler_.reset();
     NetworkHandler::Shutdown();
-    shill_clients::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   TestingPrefServiceSimple* local_state() { return local_state_.get(); }
 
   bool GetFastTransitionStatus() {
-    return ShillManagerClient::Get()
+    return DBusThreadManager::Get()
+        ->GetShillManagerClient()
         ->GetTestInterface()
         ->GetFastTransitionStatus();
   }

@@ -19,7 +19,6 @@ struct DisplayParams {
         , fColorSpace(nullptr)
         , fMSAASampleCount(1)
         , fSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType)
-        , fDisableVsync(false)
     {}
 
     SkColorType         fColorType;
@@ -27,7 +26,6 @@ struct DisplayParams {
     int                 fMSAASampleCount;
     GrContextOptions    fGrContextOptions;
     SkSurfaceProps      fSurfaceProps;
-    bool                fDisableVsync;
 };
 
 }   // namespace sk_app

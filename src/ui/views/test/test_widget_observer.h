@@ -20,7 +20,7 @@ class TestWidgetObserver : public WidgetObserver {
   explicit TestWidgetObserver(Widget* widget);
   ~TestWidgetObserver() override;
 
-  bool widget_closed() const { return widget_ == nullptr; }
+  bool widget_closed() const { return widget_ == NULL; }
 
  private:
   // WidgetObserver overrides:

@@ -134,27 +134,25 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
     // Disable autodetection for XML/JSON to honor the default encoding (UTF-8)
     // for unlabelled documents.
     if (DOMImplementation::IsXMLMIMEType(mime_type)) {
-      decoder =
-          std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
-              TextResourceDecoderOptions::kXMLContent, default_encoding));
+      decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kXMLContent, default_encoding));
       use_hint_encoding = false;
     } else if (DOMImplementation::IsJSONMIMEType(mime_type)) {
-      decoder =
-          std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
-              TextResourceDecoderOptions::kJSONContent, default_encoding));
+      decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kJSONContent, default_encoding));
       use_hint_encoding = false;
     } else {
       WTF::TextEncoding hint_encoding;
       if (use_hint_encoding &&
           parent_frame->GetDocument()->EncodingWasDetectedHeuristically())
         hint_encoding = parent_frame->GetDocument()->Encoding();
-      decoder = std::make_unique<TextResourceDecoder>(
+      decoder = TextResourceDecoder::Create(
           TextResourceDecoderOptions::CreateWithAutoDetection(
               DetermineContentType(mime_type), default_encoding, hint_encoding,
               document->Url()));
     }
   } else {
-    decoder = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
         DetermineContentType(mime_type), encoding_from_domain));
   }
   DCHECK(decoder);

@@ -317,10 +317,6 @@ enum RESULT {
    * Params is required
    */
   NULL_POINTER_PARAMS = -311,
-  /**
-   * Executor for RequestFinishedInfoListener is required
-   */
-  NULL_POINTER_REQUEST_FINISHED_INFO_LISTENER_EXECUTOR = -312,
 };
 
 /**
@@ -863,9 +859,6 @@ interface UrlRequestCallback {
    * Invoked when request is completed successfully. Once invoked, no other
    * UrlRequestCallback methods will be invoked.
    *
-   * Implementations of {@link #OnSucceeded} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
-   *
    * @param request Request that succeeded.
    * @param info Response information.
    */
@@ -875,9 +868,6 @@ interface UrlRequestCallback {
    * Invoked if request failed for any reason after UrlRequest.start().
    * Once invoked, no other UrlRequestCallback methods will be invoked.
    * |error| provides information about the failure.
-   *
-   * Implementations of {@link #OnFailed} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
    *
    * @param request Request that failed.
    * @param info Response information. May be null if no response was
@@ -889,9 +879,6 @@ interface UrlRequestCallback {
   /**
    * Invoked if request was canceled via UrlRequest.cancel(). Once
    * invoked, no other UrlRequestCallback methods will be invoked.
-   *
-   * Implementations of {@link #OnCanceled} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
    *
    * @param request Request that was canceled.
    * @param info Response information. May be null if no response was
@@ -1151,7 +1138,7 @@ struct UrlRequestParams {
 
   /**
    * Marks that the executors this request will use to notify callbacks (for
-   * UploadDataProvider and UrlRequestCallback) is intentionally performing
+   * UploadDataProvider andUrlRequestCallback) is intentionally performing
    * inline execution without switching to another thread.
    *
    * <p><b>Warning:</b> This option makes it easy to accidentally block the network thread.

@@ -24,26 +24,20 @@ FocusElementAction::~FocusElementAction() {}
 void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
   const FocusElementProto& focus_element = proto_.focus_element();
+  DCHECK_GT(focus_element.element().selectors_size(), 0);
+
   if (!focus_element.title().empty()) {
     delegate->SetStatusMessage(focus_element.title());
   }
-  Selector selector = Selector(focus_element.element()).MustBeVisible();
-  if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
-    UpdateProcessedAction(INVALID_SELECTOR);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-  delegate->ShortWaitForElement(
-      selector,
+  delegate->ShortWaitForElementExist(
+      Selector(focus_element.element()),
       base::BindOnce(&FocusElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+                     std::move(callback)));
 }
 
 void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
-                                          const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -52,7 +46,7 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->FocusElement(
-      selector,
+      Selector(proto_.focus_element().element()),
       base::BindOnce(&FocusElementAction::OnFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -60,10 +54,10 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
 
 void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
                                         ProcessActionCallback callback,
-                                        const ClientStatus& status) {
+                                        bool status) {
   delegate->SetTouchableElementArea(
       proto().focus_element().touchable_element_area());
-  UpdateProcessedAction(status);
+  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

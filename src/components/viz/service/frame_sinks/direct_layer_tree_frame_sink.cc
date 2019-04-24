@@ -234,6 +234,12 @@ void DirectLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(
   // Not needed in non-OOP-D mode.
 }
 
+void DirectLayerTreeFrameSink::DidSwapAfterSnapshotRequestReceived(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  // TODO(samans): Implement this method once the plumbing for latency info also
+  // works for non-OOP-D.
+}
+
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   // Submitting a CompositorFrame can synchronously draw and dispatch a frame
@@ -253,7 +259,7 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
 
 void DirectLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const PresentationFeedbackMap& feedbacks) {
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   for (const auto& pair : feedbacks)
     client_->DidPresentCompositorFrame(pair.first, pair.second);
 

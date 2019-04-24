@@ -8,7 +8,6 @@
 encodes their contents as an array of C strings that gets compiled in to Chrome
 and loaded at runtime."""
 
-from __future__ import print_function
 
 import ast
 import json
@@ -533,13 +532,13 @@ def main():
   opts, args = parser.parse_args()
 
   if not opts.output:
-    print("--output argument required", file=sys.stderr)
+    print >> sys.stderr, "--output argument required"
     return 1
 
   if opts.gypi_file:
     # .gypi-style input.
     if not opts.gypi_relative_to:
-      print("--gypi-relative-to is required with --gypi-file", file=sys.stderr)
+      print >> sys.stderr, "--gypi-relative-to is required with --gypi-file"
       return 1
     json_files = read_json_files_from_gypi(opts.gypi_file)
     json_files = [ os.path.join(opts.gypi_relative_to, f) for f in json_files ]
@@ -548,7 +547,7 @@ def main():
     # Regular file list input.
     json_files = read_json_files_from_file(opts.file_list)
   else:
-    print("Either --file-list or --gypi-file is required.", file=sys.stderr)
+    print >> sys.stderr, "Either --file-list or --gypi-file is required."
     return 1
 
   cpp_code = CC_HEADER
@@ -559,19 +558,18 @@ def main():
       json_text = f.read()
     try:
       config = json.loads(json_text)
-    except ValueError as e:
-      print("%s: error parsing JSON: %s" % (json_file, e), file=sys.stderr)
+    except ValueError, e:
+      print >> sys.stderr, "%s: error parsing JSON: %s" % (json_file, e)
       found_invalid_config = True
       continue
     if 'origin' not in config:
-      print('%s: no origin found' % json_file, file=sys.stderr)
+      print >> sys.stderr, '%s: no origin found' % json_file
       found_invalid_config = True
       continue
     origin = config['origin']
     if not origin_is_whitelisted(origin):
-      print(
-          '%s: origin "%s" not in whitelist' % (json_file, origin),
-          file=sys.stderr)
+      print >> sys.stderr, ('%s: origin "%s" not in whitelist' %
+                            (json_file, origin))
       found_invalid_config = True
       continue
 
@@ -587,7 +585,7 @@ def main():
   if found_invalid_config:
     return 1
 
-  with open(opts.output, 'w') as f:
+  with open(opts.output, 'wb') as f:
     f.write(cpp_code)
 
   return 0

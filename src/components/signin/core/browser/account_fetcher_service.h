@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -21,7 +20,7 @@
 
 class AccountInfoFetcher;
 class AccountTrackerService;
-class ProfileOAuth2TokenService;
+class OAuth2TokenService;
 class PrefRegistrySimple;
 class SigninClient;
 
@@ -39,7 +38,8 @@ class ImageDecoder;
 class ImageFetcherImpl;
 }  // namespace image_fetcher
 
-class AccountFetcherService : public OAuth2TokenService::Observer {
+class AccountFetcherService : public KeyedService,
+                              public OAuth2TokenService::Observer {
  public:
   // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
@@ -55,11 +55,12 @@ class AccountFetcherService : public OAuth2TokenService::Observer {
   static void RegisterPrefs(PrefRegistrySimple* user_prefs);
 
   void Initialize(SigninClient* signin_client,
-                  ProfileOAuth2TokenService* token_service,
+                  OAuth2TokenService* token_service,
                   AccountTrackerService* account_tracker_service,
                   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder);
 
-  void Shutdown();
+  // KeyedService implementation
+  void Shutdown() override;
 
   // Indicates if all user information has been fetched. If the result is false,
   // there are still unfininshed fetchers.
@@ -142,7 +143,7 @@ class AccountFetcherService : public OAuth2TokenService::Observer {
                       const image_fetcher::RequestMetadata& image_metadata);
 
   AccountTrackerService* account_tracker_service_ = nullptr;  // Not owned.
-  ProfileOAuth2TokenService* token_service_ = nullptr;        // Not owned.
+  OAuth2TokenService* token_service_ = nullptr;               // Not owned.
   SigninClient* signin_client_ = nullptr;                     // Not owned.
   bool network_fetches_enabled_ = false;
   bool network_initialized_ = false;

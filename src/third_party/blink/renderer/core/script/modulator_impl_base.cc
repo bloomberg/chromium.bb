@@ -11,14 +11,14 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
-#include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -30,13 +30,12 @@ ModulatorImplBase::ModulatorImplBase(ScriptState* script_state)
     : script_state_(script_state),
       task_runner_(ExecutionContext::From(script_state_)
                        ->GetTaskRunner(TaskType::kNetworking)),
-      map_(MakeGarbageCollected<ModuleMap>(this)),
-      tree_linker_registry_(MakeGarbageCollected<ModuleTreeLinkerRegistry>()),
-      module_record_resolver_(MakeGarbageCollected<ModuleRecordResolverImpl>(
+      map_(ModuleMap::Create(this)),
+      tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
+      script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
           ExecutionContext::From(script_state_))),
-      dynamic_module_resolver_(
-          MakeGarbageCollected<DynamicModuleResolver>(this)) {
+      dynamic_module_resolver_(DynamicModuleResolver::Create(this)) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
 }
@@ -48,8 +47,7 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
 }
 
 bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
-  return RuntimeEnabledFeatures::BuiltInModuleInfraEnabled(
-      GetExecutionContext());
+  return origin_trials::BuiltInModuleInfraEnabled(GetExecutionContext());
 }
 
 bool ModulatorImplBase::BuiltInModuleEnabled(
@@ -62,7 +60,7 @@ bool ModulatorImplBase::BuiltInModuleEnabled(
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
     case blink::layered_api::Module::kKvStorage:
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
-             RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
+             origin_trials::BuiltInModuleKvStorageEnabled(
                  GetExecutionContext());
   }
 }
@@ -224,15 +222,15 @@ void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
   if (import_map_) {
     // Only one import map is allowed.
     // TODO(crbug.com/927119): Implement merging.
-    GetExecutionContext()->AddConsoleMessage(
-        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
+    GetExecutionContext()->AddErrorMessage(
+        ConsoleLogger::Source::kOther,
         "Multiple import maps are not yet supported. https://crbug.com/927119");
     return;
   }
 
   if (!BuiltInModuleInfraEnabled()) {
-    GetExecutionContext()->AddConsoleMessage(
-        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
+    GetExecutionContext()->AddErrorMessage(
+        ConsoleLogger::Source::kOther,
         "Import maps are disabled when Layered API Infra is disabled.");
     return;
   }
@@ -262,10 +260,10 @@ void ModulatorImplBase::ResolveDynamically(
 
 // <specdef href="https://html.spec.whatwg.org/C/#hostgetimportmetaproperties">
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
-    ModuleRecord record) const {
+    ScriptModule record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
   const ModuleScript* module_script =
-      module_record_resolver_->GetHostDefined(record);
+      script_module_resolver_->GetHostDefined(record);
   DCHECK(module_script);
 
   // <spec step="2">Let urlString be module script's base URL,
@@ -277,20 +275,20 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptValue ModulatorImplBase::InstantiateModule(ModuleRecord module_record) {
+ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kInstantiateModuleScript);
 
   ScriptState::Scope scope(script_state_);
-  return module_record.Instantiate(script_state_);
+  return script_module.Instantiate(script_state_);
 }
 
 Vector<Modulator::ModuleRequest>
-ModulatorImplBase::ModuleRequestsFromModuleRecord(ModuleRecord module_record) {
+ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   ScriptState::Scope scope(script_state_);
-  Vector<String> specifiers = module_record.ModuleRequests(script_state_);
+  Vector<String> specifiers = script_module.ModuleRequests(script_state_);
   Vector<TextPosition> positions =
-      module_record.ModuleRequestPositions(script_state_);
+      script_module.ModuleRequestPositions(script_state_);
   DCHECK_EQ(specifiers.size(), positions.size());
   Vector<ModuleRequest> requests;
   requests.ReserveInitialCapacity(specifiers.size());
@@ -318,13 +316,13 @@ void ModulatorImplBase::ProduceCacheModuleTree(
 
   discovered_set->insert(module_script);
 
-  ModuleRecord record = module_script->Record();
+  ScriptModule record = module_script->Record();
   DCHECK(!record.IsNull());
 
   module_script->ProduceCache();
 
   Vector<Modulator::ModuleRequest> child_specifiers =
-      ModuleRequestsFromModuleRecord(record);
+      ModuleRequestsFromScriptModule(record);
 
   for (const auto& module_request : child_specifiers) {
     KURL child_url =
@@ -361,7 +359,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
   // <spec step="4">Prepare to run script given settings.</spec>
   //
-  // This is placed here to also cover ModuleRecord::ReportException().
+  // This is placed here to also cover ScriptModule::ReportException().
   ScriptState::Scope scope(script_state_);
 
   // <spec step="5">Let evaluationStatus be null.</spec>
@@ -378,7 +376,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const ModuleRecord& record = module_script->Record();
+    const ScriptModule& record = module_script->Record();
     CHECK(!record.IsNull());
 
     // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
@@ -407,7 +405,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
     // <spec step="8.2">Otherwise, report the exception given by
     // evaluationStatus.[[Value]] for script.</spec>
-    ModuleRecord::ReportException(script_state_, error.V8Value());
+    ScriptModule::ReportException(script_state_, error.V8Value());
   }
 
   // <spec step="9">Clean up after running script with settings.</spec>
@@ -420,7 +418,7 @@ void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);
-  visitor->Trace(module_record_resolver_);
+  visitor->Trace(script_module_resolver_);
   visitor->Trace(dynamic_module_resolver_);
   visitor->Trace(import_map_);
 

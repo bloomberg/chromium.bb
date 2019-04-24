@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_PREFERENCES_SCREEN_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_PREFERENCES_SCREEN_VIEW_H_
 
-#include <string>
-
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
@@ -29,9 +27,6 @@ class DemoPreferencesScreenView {
 
   // Sets view and screen.
   virtual void Bind(DemoPreferencesScreen* screen) = 0;
-
-  // Called to set the input method id on JS side.
-  virtual void SetInputMethodId(const std::string& input_method) = 0;
 };
 
 }  // namespace chromeos

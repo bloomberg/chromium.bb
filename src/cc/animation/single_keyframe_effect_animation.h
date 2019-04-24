@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <memory>
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
@@ -36,10 +37,6 @@ class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimation : public Animation {
   static scoped_refptr<SingleKeyframeEffectAnimation> Create(int id);
   scoped_refptr<Animation> CreateImplInstance() const override;
 
-  SingleKeyframeEffectAnimation(const SingleKeyframeEffectAnimation&) = delete;
-  SingleKeyframeEffectAnimation& operator=(
-      const SingleKeyframeEffectAnimation&) = delete;
-
   ElementId element_id() const;
 
   void AttachElement(ElementId element_id);
@@ -67,6 +64,8 @@ class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimation : public Animation {
                                          std::unique_ptr<KeyframeEffect>);
 
   ~SingleKeyframeEffectAnimation() override;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleKeyframeEffectAnimation);
 };
 
 }  // namespace cc

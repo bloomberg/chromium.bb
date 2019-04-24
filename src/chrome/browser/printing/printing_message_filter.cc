@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -41,7 +42,10 @@ namespace printing {
 
 namespace {
 
-PrintingMessageFilter::TestDelegate* g_test_delegate = nullptr;
+PrintMsg_Print_Params& GetTestUpdatePrintSettingsReply() {
+  static base::NoDestructor<PrintMsg_Print_Params> params;
+  return *params;
+}
 
 class PrintingMessageFilterShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
@@ -85,8 +89,10 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
 }  // namespace
 
 // static
-void PrintingMessageFilter::SetDelegateForTesting(TestDelegate* delegate) {
-  g_test_delegate = delegate;
+void PrintingMessageFilter::SetTestUpdatePrintSettingsReply(
+    const PrintMsg_Print_Params& print_params) {
+  auto& test_params = GetTestUpdatePrintSettingsReply();
+  test_params = print_params;
 }
 
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
@@ -276,8 +282,9 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   }
 #endif
 
-  if (g_test_delegate)
-    params.params = g_test_delegate->GetPrintParams();
+  auto& test_params = GetTestUpdatePrintSettingsReply();
+  if (test_params.document_cookie > 0)
+    params.params = test_params;
 
   PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params,
                                                      canceled);

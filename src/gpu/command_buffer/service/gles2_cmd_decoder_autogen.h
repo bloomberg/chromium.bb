@@ -5561,15 +5561,16 @@ error::Error GLES2DecoderImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewOVR(
+error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
-  const volatile gles2::cmds::FramebufferTextureMultiviewOVR& c =
-      *static_cast<const volatile gles2::cmds::FramebufferTextureMultiviewOVR*>(
+  const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE& c =
+      *static_cast<
+          const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
           cmd_data);
-  if (!features().ovr_multiview2) {
+  if (!features().angle_multiview) {
     return error::kUnknownCommand;
   }
 
@@ -5580,12 +5581,13 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewOVR(
   GLint baseViewIndex = static_cast<GLint>(c.baseViewIndex);
   GLsizei numViews = static_cast<GLsizei>(c.numViews);
   if (numViews < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glFramebufferTextureMultiviewOVR",
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glFramebufferTextureMultiviewLayeredANGLE",
                        "numViews < 0");
     return error::kNoError;
   }
-  DoFramebufferTextureMultiviewOVR(target, attachment, texture, level,
-                                   baseViewIndex, numViews);
+  DoFramebufferTextureMultiviewLayeredANGLE(target, attachment, texture, level,
+                                            baseViewIndex, numViews);
   return error::kNoError;
 }
 
@@ -5613,7 +5615,6 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
                            CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   uint32_t mailbox_size;
   if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
@@ -5623,10 +5624,11 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, mailbox_size, immediate_data_size);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalformat, mailbox);
+  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox, internalformat);
   return error::kNoError;
 }
 

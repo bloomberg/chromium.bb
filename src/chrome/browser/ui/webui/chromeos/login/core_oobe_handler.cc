@@ -62,6 +62,8 @@ namespace chromeos {
 
 namespace {
 
+const char kJsScreenPath[] = "cr.ui.Oobe";
+
 bool IsRemoraRequisition() {
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->platform_part()
@@ -92,6 +94,7 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
       version_info_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(js_calls_container);
+  set_call_js_prefix(kJsScreenPath);
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   CHECK(accessibility_manager);
   accessibility_subscription_ = accessibility_manager->RegisterCallback(
@@ -205,6 +208,7 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
+  AddCallback("screenAssetsLoaded", &CoreOobeHandler::HandleScreenAssetsLoaded);
   AddRawCallback("skipToLoginForTesting",
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
   AddCallback("skipToUpdateForTesting",
@@ -213,6 +217,7 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
   AddCallback("toggleEnableDebuggingScreen",
               &CoreOobeHandler::HandleEnableDebuggingScreen);
+  AddCallback("headerBarVisible", &CoreOobeHandler::HandleHeaderBarVisible);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
   // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
@@ -296,6 +301,10 @@ void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
 void CoreOobeHandler::ReloadEulaContent(
     const base::DictionaryValue& dictionary) {
   CallJS("cr.ui.Oobe.reloadEulaContent", dictionary);
+}
+
+void CoreOobeHandler::ShowControlBar(bool show) {
+  CallJS("cr.ui.Oobe.showControlBar", show);
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
@@ -393,6 +402,11 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
   }
 }
 
+void CoreOobeHandler::HandleScreenAssetsLoaded(
+    const std::string& screen_async_load_id) {
+  GetOobeUI()->OnScreenAssetsLoaded(screen_async_load_id);
+}
+
 void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
   LoginScreenContext context;
 
@@ -463,6 +477,11 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
   if (page_is_ready())
     UpdateOobeUIVisibility();
+}
+
+void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
+    bool reboot_on_shutdown) {
+  CallJS("cr.ui.Oobe.showShutdown", !reboot_on_shutdown);
 }
 
 void CoreOobeHandler::SetLoginUserCount(int user_count) {
@@ -565,6 +584,7 @@ void CoreOobeHandler::UpdateKeyboardState() {
   if (!features::IsUsingWindowService()) {
     const bool is_keyboard_shown =
         ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+    ShowControlBar(!is_keyboard_shown);
     SetVirtualKeyboardShown(is_keyboard_shown);
   }
 }
@@ -598,10 +618,15 @@ void CoreOobeHandler::OnAccessibilityStatusChanged(
 
 void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
   if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(
-        LoginDisplayHost::default_host()->GetNativeWindow());
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
+}
+
+void CoreOobeHandler::HandleHeaderBarVisible() {
+  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
+  if (login_display_host)
+    login_display_host->SetStatusAreaVisible(true);
 }
 
 void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{
-  const INPUT_EMAIL_PATTERN = '^[a-zA-Z0-9.!#$%&\'*+=?^_`{|}~-]+(@[^\\s@]+)?$';
+Polymer((function() {
+  var INPUT_EMAIL_PATTERN = '^[a-zA-Z0-9.!#$%&\'*+=?^_`{|}~-]+(@[^\\s@]+)?$';
 
-  Polymer({
+  return {
     is: 'gaia-input',
 
     properties: {
@@ -24,7 +24,6 @@
       pattern: String
     },
 
-    /** @override */
     attached: function() {
       this.typeChanged_();
     },
@@ -33,7 +32,6 @@
       this.isInvalid = false;
     },
 
-    /** @private */
     updateDomainVisibility_: function() {
       this.$.domainLabel.hidden = (this.type !== 'email') || !this.domain ||
           (this.value && this.value.indexOf('@') !== -1);
@@ -47,14 +45,12 @@
       this.$.input.focus();
     },
 
-    /** @return {!boolean} */
     checkValidity: function() {
       var valid = this.$.ironInput.validate();
       this.isInvalid = !valid;
       return valid;
     },
 
-    /** @private */
     typeChanged_: function() {
       if (this.type == 'email') {
         this.$.input.pattern = INPUT_EMAIL_PATTERN;
@@ -69,5 +65,5 @@
       }
       this.updateDomainVisibility_();
     },
-  });
-}
+  };
+})());

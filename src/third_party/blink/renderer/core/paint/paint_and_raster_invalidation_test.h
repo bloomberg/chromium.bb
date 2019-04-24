@@ -15,8 +15,7 @@ namespace blink {
 class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
  public:
   PaintAndRasterInvalidationTest()
-      : PaintControllerPaintTest(
-            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
   ContentLayerClientImpl* GetContentLayerClient(size_t index = 0) const {

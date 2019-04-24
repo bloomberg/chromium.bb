@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 var AutomationEvent = require('automationEvent').AutomationEvent;
-var automationInternal = getInternalApi('automationInternal');
+var automationInternal =
+    getInternalApi ?
+        getInternalApi('automationInternal') :
+        require('binding').Binding.create('automationInternal').generate();
 var exceptionHandler = require('uncaught_exception_handler');
 
 var natives = requireNative('automationInternal');

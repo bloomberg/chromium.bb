@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -16,12 +16,40 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kFakeDeviceId[] = "device_id";
+constexpr char kNonDemoDomain[] = "non-demo-mode.com";
+
 void SetDemoConfigPref(DemoSession::DemoModeConfig demo_config) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(prefs::kDemoModeConfig, static_cast<int>(demo_config));
 }
 
-void CheckDemoMode() {
+}  // namespace
+
+// Tests locking device to policy::DEVICE_MODE_DEMO mode. It is an equivalent to
+// going through online demo mode setup or using offline setup.
+class DemoSessionDemoDeviceModeTest : public LoginManagerTest {
+ protected:
+  DemoSessionDemoDeviceModeTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(
+            StubInstallAttributes::CreateDemoMode(kFakeDeviceId)) {}
+  ~DemoSessionDemoDeviceModeTest() override = default;
+
+  // LoginManagerTest:
+  void SetUpOnMainThread() override {
+    LoginManagerTest::SetUpOnMainThread();
+    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  }
+
+ private:
+  const ScopedStubInstallAttributes install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(DemoSessionDemoDeviceModeTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSessionDemoDeviceModeTest, IsDemoMode) {
   EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
   EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
             DemoSession::GetDemoConfig());
@@ -36,7 +64,63 @@ void CheckDemoMode() {
             DemoSession::GetDemoConfig());
 }
 
-void CheckNoDemoMode() {
+// Tests locking device to demo mode domain without policy::DEVICE_MODE_DEMO
+// mode. It is an equivalent to enrolling device directly by using enterprise
+// enrollment flow.
+class DemoSessionDemoEnrolledDeviceTest : public LoginManagerTest {
+ protected:
+  DemoSessionDemoEnrolledDeviceTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(StubInstallAttributes::CreateCloudManaged(
+            DemoSetupController::kDemoModeDomain,
+            kFakeDeviceId)) {}
+  ~DemoSessionDemoEnrolledDeviceTest() override = default;
+
+  // LoginManagerTest:
+  void SetUpOnMainThread() override {
+    LoginManagerTest::SetUpOnMainThread();
+    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  }
+
+ private:
+  const ScopedStubInstallAttributes install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(DemoSessionDemoEnrolledDeviceTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSessionDemoEnrolledDeviceTest, IsDemoMode) {
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOnline, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
+}
+
+class DemoSessionNonDemoEnrolledDeviceTest : public LoginManagerTest {
+ public:
+  DemoSessionNonDemoEnrolledDeviceTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(
+            StubInstallAttributes::CreateCloudManaged(kNonDemoDomain,
+                                                      kFakeDeviceId)) {}
+  ~DemoSessionNonDemoEnrolledDeviceTest() override = default;
+
+ private:
+  ScopedStubInstallAttributes install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(DemoSessionNonDemoEnrolledDeviceTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSessionNonDemoEnrolledDeviceTest, NotDemoMode) {
   EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
   EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 
@@ -49,123 +133,87 @@ void CheckNoDemoMode() {
   EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
-}  // namespace
-
-// Tests locking device to policy::DEVICE_MODE_DEMO mode. It is an equivalent to
-// going through online demo mode setup or using offline setup.
-class DemoSessionDemoDeviceModeTest : public OobeBaseTest {
- protected:
-  DemoSessionDemoDeviceModeTest() = default;
-  ~DemoSessionDemoDeviceModeTest() override = default;
-
-  // OobeBaseTest:
-  void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
-    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
-  }
-
- private:
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE};
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionDemoDeviceModeTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DemoSessionDemoDeviceModeTest, IsDemoMode) {
-  CheckDemoMode();
-}
-
-// Tests locking device to demo mode domain without policy::DEVICE_MODE_DEMO
-// mode. It is an equivalent to enrolling device directly by using enterprise
-// enrollment flow.
-class DemoSessionDemoEnrolledDeviceTest : public OobeBaseTest {
- protected:
-  DemoSessionDemoEnrolledDeviceTest() : OobeBaseTest() {
-    device_state_.set_domain(policy::kDemoModeDomain);
-  }
-
-  ~DemoSessionDemoEnrolledDeviceTest() override = default;
-
-  // OobeBaseTest:
-  void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
-    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
-  }
-
- private:
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionDemoEnrolledDeviceTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DemoSessionDemoEnrolledDeviceTest, IsDemoMode) {
-  CheckDemoMode();
-}
-
-class DemoSessionNonDemoEnrolledDeviceTest : public OobeBaseTest {
+class DemoSessionConsumerDeviceTest : public LoginManagerTest {
  public:
-  DemoSessionNonDemoEnrolledDeviceTest() = default;
-  ~DemoSessionNonDemoEnrolledDeviceTest() override = default;
-
- private:
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionNonDemoEnrolledDeviceTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DemoSessionNonDemoEnrolledDeviceTest, NotDemoMode) {
-  CheckNoDemoMode();
-}
-
-class DemoSessionConsumerDeviceTest : public OobeBaseTest {
- public:
-  DemoSessionConsumerDeviceTest() = default;
+  DemoSessionConsumerDeviceTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(StubInstallAttributes::CreateConsumerOwned()) {}
   ~DemoSessionConsumerDeviceTest() override = default;
 
  private:
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
+  ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionConsumerDeviceTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DemoSessionConsumerDeviceTest, NotDemoMode) {
-  CheckNoDemoMode();
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
-class DemoSessionUnownedDeviceTest : public OobeBaseTest {
+class DemoSessionUnownedDeviceTest : public LoginManagerTest {
  public:
-  DemoSessionUnownedDeviceTest() = default;
+  DemoSessionUnownedDeviceTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(StubInstallAttributes::CreateUnset()) {}
   ~DemoSessionUnownedDeviceTest() override = default;
 
  private:
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+  ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionUnownedDeviceTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DemoSessionUnownedDeviceTest, NotDemoMode) {
-  CheckNoDemoMode();
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
-class DemoSessionActiveDirectoryDeviceTest : public OobeBaseTest {
+class DemoSessionActiveDirectoryDeviceTest : public LoginManagerTest {
  public:
-  DemoSessionActiveDirectoryDeviceTest() = default;
+  DemoSessionActiveDirectoryDeviceTest()
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         true /* should_initialize_webui */),
+        install_attributes_(StubInstallAttributes::CreateActiveDirectoryManaged(
+            DemoSetupController::kDemoModeDomain,
+            kFakeDeviceId)) {}
   ~DemoSessionActiveDirectoryDeviceTest() override = default;
 
  private:
-  DeviceStateMixin device_state_{
-      &mixin_host_,
-      DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED};
+  ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionActiveDirectoryDeviceTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DemoSessionActiveDirectoryDeviceTest, NotDemoMode) {
-  CheckNoDemoMode();
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
 }  // namespace chromeos

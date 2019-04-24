@@ -43,7 +43,6 @@ public class FindToolbarPhone extends FindToolbar {
     protected void updateVisualsForTabModel(boolean isIncognito) {
         int queryTextColorId;
         int queryHintTextColorId;
-        int dividerColorId;
         if (isIncognito) {
             setBackgroundColor(ColorUtils.getDefaultThemeColor(getResources(), true));
             ColorStateList white = ColorUtils.getIconTint(getContext(), true);
@@ -52,7 +51,7 @@ public class FindToolbarPhone extends FindToolbar {
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, white);
             queryTextColorId = R.color.find_in_page_query_white_color;
             queryHintTextColorId = R.color.find_in_page_query_incognito_hint_color;
-            dividerColorId = R.color.white_alpha_12;
+
         } else {
             setBackgroundColor(ColorUtils.getDefaultThemeColor(getResources(), false));
             ColorStateList dark = ColorUtils.getIconTint(getContext(), false);
@@ -61,21 +60,20 @@ public class FindToolbarPhone extends FindToolbar {
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, dark);
             queryTextColorId = R.color.default_text_color;
             queryHintTextColorId = R.color.find_in_page_query_default_hint_color;
-            dividerColorId = R.color.divider_bg_color;
         }
         mFindQuery.setTextColor(
                 ApiCompatibilityUtils.getColor(getContext().getResources(), queryTextColorId));
         mFindQuery.setHintTextColor(
                 ApiCompatibilityUtils.getColor(getContext().getResources(), queryHintTextColorId));
-        mDivider.setBackgroundResource(dividerColorId);
     }
 
     @Override
     protected int getStatusColor(boolean failed, boolean incognito) {
-        if (incognito) {
-            final int colorResourceId = failed ? R.color.default_red_light : R.color.white_alpha_50;
-            return ApiCompatibilityUtils.getColor(getContext().getResources(), colorResourceId);
+        if (!failed && incognito) {
+            return ApiCompatibilityUtils.getColor(
+                    getContext().getResources(), R.color.white_alpha_50);
         }
+
         return super.getStatusColor(failed, incognito);
     }
 }

@@ -152,11 +152,10 @@ class NET_EXPORT Backend {
   // on what will succeed and what will fail.  In particular the blockfile
   // backend will leak entries closed after backend deletion, while others
   // handle it properly.
-  Backend(net::CacheType cache_type) : cache_type_(cache_type) {}
   virtual ~Backend() {}
 
   // Returns the type of this cache.
-  net::CacheType GetCacheType() const { return cache_type_; }
+  virtual net::CacheType GetCacheType() const = 0;
 
   // Returns the number of entries in the cache.
   virtual int32_t GetEntryCount() const = 0;
@@ -285,9 +284,6 @@ class NET_EXPORT Backend {
 
   // Returns the maximum length an individual stream can have.
   virtual int64_t MaxFileSize() const = 0;
-
- private:
-  const net::CacheType cache_type_;
 };
 
 // This interface represents an entry in the disk cache.

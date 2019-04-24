@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/callback_forward.h"
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
@@ -59,7 +58,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityDispatcher {
   void RunAndDeleteTask(Task* task);
 
   MockableTime* time_;
-  std::set<std::unique_ptr<Task>, base::UniquePtrComparator> tasks_;
+  std::set<std::unique_ptr<Task>> tasks_;
   std::set<Task*> eligible_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityDispatcher);

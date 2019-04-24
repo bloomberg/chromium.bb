@@ -45,9 +45,7 @@ class TabletModeControllerTestApi {
   void CloseLid();
   void SetTabletMode(bool on);
 
-  // Called to simulate the device suspend and resume.
-  void SuspendImminent();
-  void SuspendDone(base::TimeDelta sleep_duration);
+  bool GetDeferBoundsUpdates(aura::Window* window);
 
   // Sets the event blocker on the tablet mode controller.
   void set_event_blocker(

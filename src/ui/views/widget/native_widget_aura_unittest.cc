@@ -44,8 +44,8 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
 // activatability so that the focus rules can be tested.
 class TestFocusRules : public wm::BaseFocusRules {
  public:
-  TestFocusRules() = default;
-  ~TestFocusRules() override = default;
+  TestFocusRules() {}
+  ~TestFocusRules() override {}
 
   void set_can_activate(bool can_activate) { can_activate_ = can_activate; }
 
@@ -66,8 +66,8 @@ class TestFocusRules : public wm::BaseFocusRules {
 
 class NativeWidgetAuraTest : public aura::test::AuraTestBase {
  public:
-  NativeWidgetAuraTest() = default;
-  ~NativeWidgetAuraTest() override = default;
+  NativeWidgetAuraTest() {}
+  ~NativeWidgetAuraTest() override {}
 
   TestFocusRules* test_focus_rules() { return test_focus_rules_; }
 
@@ -75,8 +75,7 @@ class NativeWidgetAuraTest : public aura::test::AuraTestBase {
   void SetUp() override {
     AuraTestBase::SetUp();
     test_focus_rules_ = new TestFocusRules;
-    focus_controller_ =
-        std::make_unique<wm::FocusController>(test_focus_rules_);
+    focus_controller_.reset(new wm::FocusController(test_focus_rules_));
     wm::SetActivationClient(root_window(), focus_controller_.get());
     host()->SetBoundsInPixels(gfx::Rect(640, 480));
   }
@@ -221,8 +220,8 @@ TEST_F(NativeWidgetAuraTest, ToggleState) {
 
 class TestLayoutManagerBase : public aura::LayoutManager {
  public:
-  TestLayoutManagerBase() = default;
-  ~TestLayoutManagerBase() override = default;
+  TestLayoutManagerBase() {}
+  ~TestLayoutManagerBase() override {}
 
   // aura::LayoutManager:
   void OnWindowResized() override {}
@@ -241,8 +240,8 @@ class TestLayoutManagerBase : public aura::LayoutManager {
 // Used by ShowMaximizedDoesntBounceAround. See it for details.
 class MaximizeLayoutManager : public TestLayoutManagerBase {
  public:
-  MaximizeLayoutManager() = default;
-  ~MaximizeLayoutManager() override = default;
+  MaximizeLayoutManager() {}
+  ~MaximizeLayoutManager() override {}
 
  private:
   // aura::LayoutManager:
@@ -258,7 +257,8 @@ class MaximizeLayoutManager : public TestLayoutManagerBase {
 // OnNativeWidgetSizeChanged that is invoked during Init matters.
 class TestWidget : public views::Widget {
  public:
-  TestWidget() = default;
+  TestWidget() : did_size_change_more_than_once_(false) {
+  }
 
   // Returns true if the size changes to a non-empty size, and then to another
   // size.
@@ -275,7 +275,7 @@ class TestWidget : public views::Widget {
   }
 
  private:
-  bool did_size_change_more_than_once_ = false;
+  bool did_size_change_more_than_once_;
   gfx::Size last_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidget);
@@ -302,8 +302,8 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
 
 class PropertyTestLayoutManager : public TestLayoutManagerBase {
  public:
-  PropertyTestLayoutManager() = default;
-  ~PropertyTestLayoutManager() override = default;
+  PropertyTestLayoutManager() : added_(false) {}
+  ~PropertyTestLayoutManager() override {}
 
   bool added() const { return added_; }
 
@@ -317,7 +317,7 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
     added_ = true;
   }
 
-  bool added_ = false;
+  bool added_;
 
   DISALLOW_COPY_AND_ASSIGN(PropertyTestLayoutManager);
 };
@@ -325,7 +325,7 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
 class PropertyTestWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {}
-  ~PropertyTestWidgetDelegate() override = default;
+  ~PropertyTestWidgetDelegate() override {}
 
  private:
   // views::WidgetDelegate:
@@ -376,7 +376,9 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
 // View subclass that tracks whether it has gotten a gesture event.
 class GestureTrackingView : public views::View {
  public:
-  GestureTrackingView() = default;
+  GestureTrackingView()
+      : got_gesture_event_(false),
+        consume_gesture_event_(true) {}
 
   void set_consume_gesture_event(bool value) {
     consume_gesture_event_ = value;
@@ -398,10 +400,10 @@ class GestureTrackingView : public views::View {
 
  private:
   // Was OnGestureEvent() invoked?
-  bool got_gesture_event_ = false;
+  bool got_gesture_event_;
 
   // Dictates what OnGestureEvent() returns.
-  bool consume_gesture_event_ = true;
+  bool consume_gesture_event_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureTrackingView);
 };
@@ -600,8 +602,8 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
 // Used to track calls to WidgetDelegate::OnWidgetMove().
 class MoveTestWidgetDelegate : public WidgetDelegateView {
  public:
-  MoveTestWidgetDelegate() = default;
-  ~MoveTestWidgetDelegate() override = default;
+  MoveTestWidgetDelegate() : got_move_(false) {}
+  ~MoveTestWidgetDelegate() override {}
 
   void ClearGotMove() { got_move_ = false; }
   bool got_move() const { return got_move_; }
@@ -610,7 +612,7 @@ class MoveTestWidgetDelegate : public WidgetDelegateView {
   void OnWidgetMove() override { got_move_ = true; }
 
  private:
-  bool got_move_ = false;
+  bool got_move_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveTestWidgetDelegate);
 };

@@ -10,8 +10,8 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
@@ -27,7 +27,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 
 class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncDisabledByUserChecker(syncer::ProfileSyncService* service)
+  explicit SyncDisabledByUserChecker(browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -79,12 +79,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 #else
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
                        StartsSyncTransportOnSignin) {
+  ASSERT_FALSE(browser_defaults::kSyncAutoStarts);
+
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Signing in (without explicitly setting up Sync) should trigger starting the
   // Sync machinery in standalone transport mode.
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
-  EXPECT_NE(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(syncer::SyncService::TransportState::START_DEFERRED,
             GetSyncService(0)->GetTransportState());
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncTransportActive());
@@ -92,12 +94,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  // Both IsSyncRequested and IsFirstSetupComplete should remain false (i.e.
-  // at their default values). They only get set during the Sync setup flow,
-  // either by the Sync confirmation dialog or by the settings page if going
-  // through the advanced settings flow.
-  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
-  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
+  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -126,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
   ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
-  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
-      syncer::UserSelectableType::kBookmarks));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetChosenDataTypes().Has(
+      syncer::BOOKMARKS));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 
   // Turn off Sync-the-feature by user choice. The machinery should start up
@@ -170,13 +167,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
-  // Trigger a "Reset Sync" from the dashboard and wait for it to apply. This
-  // involves clearing the server data so that the birthday gets incremented,
-  // and also sending an appropriate error.
-  GetFakeServer()->ClearServerData();
+  // Trigger a "Reset Sync" from the dashboard and wait for it to apply.
   ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
       sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Reset Sync from Dashboard",
-      "https://chrome.google.com/sync", sync_pb::SyncEnums::UNKNOWN_ACTION));
+      "https://chrome.google.com/sync",
+      sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
   EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
   GetFakeServer()->ClearActionableError();
 

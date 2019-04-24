@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -25,7 +26,6 @@ import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -63,7 +63,7 @@ public class SuggestionsBottomSheetTest {
                 InstrumentationRegistry.getInstrumentation(), suggestionViewHolder.itemView);
         assertTrue(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
-        TestThreadUtils.runOnUiThreadBlocking(mActivityRule.getActivity()::closeContextMenu);
+        ThreadUtils.runOnUiThreadBlocking(mActivityRule.getActivity()::closeContextMenu);
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
     }
 

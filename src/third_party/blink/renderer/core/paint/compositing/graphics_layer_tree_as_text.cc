@@ -69,7 +69,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map,
     const FloatPoint& position) {
-  auto json = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> json = JSONObject::Create();
 
   if (flags & kLayerTreeIncludesDebugInfo) {
     json->SetString("this", PointerAsString(layer));
@@ -141,7 +141,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
 
   GraphicsLayerPaintingPhase painting_phase = layer->PaintingPhase();
   if ((flags & kLayerTreeIncludesPaintingPhases) && painting_phase) {
-    auto painting_phases_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> painting_phases_json = JSONArray::Create();
     if (painting_phase & kGraphicsLayerPaintBackground)
       painting_phases_json->PushString("GraphicsLayerPaintBackground");
     if (painting_phase & kGraphicsLayerPaintForeground)
@@ -174,7 +174,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
       (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
     bool debug = flags & kLayerTreeIncludesDebugInfo;
     {
-      auto compositing_reasons_json = std::make_unique<JSONArray>();
+      std::unique_ptr<JSONArray> compositing_reasons_json = JSONArray::Create();
       CompositingReasons compositing_reasons = layer->GetCompositingReasons();
       auto names = debug ? CompositingReason::Descriptions(compositing_reasons)
                          : CompositingReason::ShortNames(compositing_reasons);
@@ -183,7 +183,8 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
       json->SetArray("compositingReasons", std::move(compositing_reasons_json));
     }
     {
-      auto squashing_disallowed_reasons_json = std::make_unique<JSONArray>();
+      std::unique_ptr<JSONArray> squashing_disallowed_reasons_json =
+          JSONArray::Create();
       SquashingDisallowedReasons squashing_disallowed_reasons =
           layer->GetSquashingDisallowedReasons();
       auto names = debug ? SquashingDisallowedReason::Descriptions(
@@ -198,7 +199,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
   }
 
   if (layer->MaskLayer()) {
-    auto mask_layer_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> mask_layer_json = JSONArray::Create();
     mask_layer_json->PushObject(
         GraphicsLayerAsJSON(layer->MaskLayer(), flags, rendering_context_map,
                             FloatPoint(layer->MaskLayer()->GetPosition())));
@@ -206,7 +207,8 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
   }
 
   if (layer->ContentsClippingMaskLayer()) {
-    auto contents_clipping_mask_layer_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> contents_clipping_mask_layer_json =
+        JSONArray::Create();
     contents_clipping_mask_layer_json->PushObject(GraphicsLayerAsJSON(
         layer->ContentsClippingMaskLayer(), flags, rendering_context_map,
         FloatPoint(layer->ContentsClippingMaskLayer()->GetPosition())));
@@ -234,13 +236,13 @@ class LayersAsJSONArray {
   LayersAsJSONArray(LayerTreeFlags flags)
       : flags_(flags),
         next_transform_id_(1),
-        layers_json_(std::make_unique<JSONArray>()),
-        transforms_json_(std::make_unique<JSONArray>()) {}
+        layers_json_(JSONArray::Create()),
+        transforms_json_(JSONArray::Create()) {}
 
   // Outputs the layer tree rooted at |layer| as a JSON array, in paint order,
   // and the transform tree also as a JSON array.
   std::unique_ptr<JSONObject> operator()(const GraphicsLayer& layer) {
-    auto json = std::make_unique<JSONObject>();
+    auto json = JSONObject::Create();
     Walk(layer, 0, FloatPoint());
     json->SetArray("layers", std::move(layers_json_));
     if (transforms_json_->size())
@@ -249,7 +251,7 @@ class LayersAsJSONArray {
   }
 
   JSONObject* AddTransformJSON(int& transform_id) {
-    auto transform_json = std::make_unique<JSONObject>();
+    auto transform_json = JSONObject::Create();
     int parent_transform_id = transform_id;
     transform_id = next_transform_id_++;
     transform_json->SetInteger("id", transform_id);
@@ -330,7 +332,7 @@ std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(
       layer, flags, rendering_context_map, FloatPoint(layer->GetPosition()));
 
   if (layer->Children().size()) {
-    auto children_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> children_json = JSONArray::Create();
     for (wtf_size_t i = 0; i < layer->Children().size(); i++) {
       children_json->PushObject(GraphicsLayerTreeAsJSON(
           layer->Children()[i], flags, rendering_context_map));

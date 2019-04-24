@@ -13,6 +13,7 @@
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -90,8 +91,7 @@ class TCPSocketUnitTestBase : public extensions::ExtensionServiceTestBase {
     url_request_context_.Init();
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_ptr_),
-        &url_request_context_,
-        /*cors_exempt_header_list=*/std::vector<std::string>());
+        &url_request_context_);
     partition_.set_network_context(network_context_ptr_.get());
   }
 

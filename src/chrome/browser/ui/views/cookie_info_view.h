@@ -46,7 +46,7 @@ class CookieInfoView : public views::View {
  protected:
   // views::View:
   void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
+      const ViewHierarchyChangedDetails& details) override;
 
  private:
   // Layout helper routines.

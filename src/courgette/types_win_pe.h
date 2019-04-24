@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COURGETTE_TYPES_WIN_PE_H_
-#define COURGETTE_TYPES_WIN_PE_H_
+#ifndef TYPES_WIN_PE_H_
+#define TYPES_WIN_PE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -58,10 +58,8 @@ const uint16_t kImageNtOptionalHdr32Magic = 0x10b;
 const uint16_t kImageNtOptionalHdr64Magic = 0x20b;
 
 const size_t kSizeOfCoffHeader = 20;
-const size_t kMinPeHeaderSize = 4 /*signature*/ + kSizeOfCoffHeader;
 const size_t kOffsetOfDataDirectoryFromImageOptionalHeader32 = 96;
 const size_t kOffsetOfDataDirectoryFromImageOptionalHeader64 = 112;
 
-}  // namespace courgette
-
-#endif  // COURGETTE_TYPES_WIN_PE_H_
+}  // namespace
+#endif  // TYPES_WIN_PE_H_

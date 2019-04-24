@@ -16,13 +16,8 @@ class PageHint;
 
 namespace previews {
 
-// Returns whether |optimization| is disabled subject to it being part of
-// an optimization hint experiment. |optimization| could be disabled either
-// because: it is only to be used with a named optimization experiment; or it
-// is not to be used with a named excluded experiment. One experiment name
-// may be configured for the client with the experiment_name parameter to the
-// kOptimizationHintsExperiments feature.
-bool IsDisabledPerOptimizationHintExperiment(
+// Returns true if the optimization is part of a disabled experiment.
+bool IsDisabledExperimentalOptimization(
     const optimization_guide::proto::Optimization& optimization);
 
 // Returns the matching PageHint for |gurl| if found in |hint|.

@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -15,7 +16,7 @@
 
 <script>
 
-test((t) => {
+test_after_layout_and_paint((t) => {
     document.getElementById("tbutton").focus();
     tbutton1 = accessibilityController.focusedElement;
     assert_equals(tbutton1.role, "AXRole: AXToggleButton");

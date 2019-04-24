@@ -528,7 +528,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
     return response;
 
   Document& document = dom_node->GetDocument();
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       document.Lifecycle());
   LocalFrame* local_frame = document.GetFrame();

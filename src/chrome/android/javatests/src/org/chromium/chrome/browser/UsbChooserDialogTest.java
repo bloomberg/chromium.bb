@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -24,7 +25,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
@@ -72,7 +72,7 @@ public class UsbChooserDialogTest {
     }
 
     private UsbChooserDialogWithFakeNatives createDialog() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
                     UsbChooserDialogWithFakeNatives dialog =
                             new UsbChooserDialogWithFakeNatives();
@@ -160,7 +160,7 @@ public class UsbChooserDialogTest {
         final Button button = (Button) dialog.findViewById(R.id.positive);
         final int position = 1;
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mChooserDialog.addDevice("device_id_0", "device_name_0");
             mChooserDialog.addDevice("device_id_1", "device_name_1");
             mChooserDialog.addDevice("device_id_2", "device_name_2");

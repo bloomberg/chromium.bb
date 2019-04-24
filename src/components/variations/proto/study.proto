@@ -205,16 +205,6 @@ message Study {
     KIOSK   = 3;
   }
 
-  // Enum to pass as optional bool.
-  enum OptionalBool {
-    // Neither True nor False. (For cases like missing / unset / default etc.)
-    OPTIONAL_BOOL_MISSING = 0;
-    // Explicit True.
-    OPTIONAL_BOOL_TRUE = 1;
-    // Explicit False.
-    OPTIONAL_BOOL_FALSE = 2;
-  }
-
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //

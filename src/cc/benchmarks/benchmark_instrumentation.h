@@ -5,6 +5,7 @@
 #ifndef CC_BENCHMARKS_BENCHMARK_INSTRUMENTATION_H_
 #define CC_BENCHMARKS_BENCHMARK_INSTRUMENTATION_H_
 
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats.h"
@@ -37,15 +38,14 @@ class ScopedBeginFrameTask {
     TRACE_EVENT_BEGIN1(internal::Category(), event_name_,
                        internal::kBeginFrameId, begin_frame_id);
   }
-  ScopedBeginFrameTask(const ScopedBeginFrameTask&) = delete;
   ~ScopedBeginFrameTask() {
     TRACE_EVENT_END0(internal::Category(), event_name_);
   }
 
-  ScopedBeginFrameTask& operator=(const ScopedBeginFrameTask&) = delete;
-
  private:
   const char* event_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedBeginFrameTask);
 };
 
 void IssueImplThreadRenderingStatsEvent(const RenderingStats& stats);

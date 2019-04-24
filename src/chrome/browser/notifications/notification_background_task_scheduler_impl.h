@@ -11,7 +11,7 @@
 
 // Default implementation of NotificatioNBackgroundTaskScheduler.
 class NotificationBackgroundTaskSchedulerImpl
-    : public notifications::NotificationBackgroundTaskScheduler {
+    : public NotificationBackgroundTaskScheduler {
  public:
   NotificationBackgroundTaskSchedulerImpl();
   ~NotificationBackgroundTaskSchedulerImpl() override;

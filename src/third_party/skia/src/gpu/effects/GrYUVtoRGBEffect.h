@@ -12,27 +12,20 @@
 
 #include "GrFragmentProcessor.h"
 #include "GrCoordTransform.h"
-#include "GrTextureDomain.h"
 
 #include "SkYUVAIndex.h"
 
 class GrYUVtoRGBEffect : public GrFragmentProcessor {
 public:
-    // The domain supported by this effect is more limited than the general GrTextureDomain due
-    // to the multi-planar, varying resolution images that it has to sample. If 'domain' is provided
-    // it is the Y plane's domain. This will automatically inset for bilinear filtering, and only
-    // the clamp wrap mode is supported.
     static std::unique_ptr<GrFragmentProcessor> Make(const sk_sp<GrTextureProxy> proxies[],
                                                      const SkYUVAIndex indices[4],
                                                      SkYUVColorSpace yuvColorSpace,
-                                                     GrSamplerState::Filter filterMode,
-                                                     const SkMatrix& localMatrix = SkMatrix::I(),
-                                                     const SkRect* domain = nullptr);
+                                                     GrSamplerState::Filter filterMode);
 #ifdef SK_DEBUG
     SkString dumpInfo() const override;
 #endif
 
-    SkYUVColorSpace yuvColorSpace() const { return fYUVColorSpace; }
+    const SkMatrix44& colorSpaceMatrix() const { return fColorSpaceMatrix; }
     const SkYUVAIndex& yuvaIndex(int i) const { return fYUVAIndices[i]; }
 
     GrYUVtoRGBEffect(const GrYUVtoRGBEffect& src);
@@ -42,31 +35,13 @@ public:
 private:
     GrYUVtoRGBEffect(const sk_sp<GrTextureProxy> proxies[], const SkSize scales[],
                      const GrSamplerState::Filter filterModes[], int numPlanes,
-                     const SkYUVAIndex yuvaIndices[4], SkYUVColorSpace yuvColorSpace,
-                     const SkMatrix& localMatrix, const SkRect* domain)
+                     const SkYUVAIndex yuvaIndices[4], const SkMatrix44& colorSpaceMatrix)
             : INHERITED(kGrYUVtoRGBEffect_ClassID, kNone_OptimizationFlags)
-            , fDomains{GrTextureDomain::IgnoredDomain(), GrTextureDomain::IgnoredDomain(),
-                       GrTextureDomain::IgnoredDomain(), GrTextureDomain::IgnoredDomain()}
-            , fYUVColorSpace(yuvColorSpace) {
+            , fColorSpaceMatrix(colorSpaceMatrix) {
         for (int i = 0; i < numPlanes; ++i) {
-            SkMatrix planeMatrix = SkMatrix::MakeScale(scales[i].width(), scales[i].height());
-            if (domain) {
-                SkASSERT(filterModes[i] != GrSamplerState::Filter::kMipMap);
-
-                SkRect scaledDomain = planeMatrix.mapRect(*domain);
-                if (filterModes[i] != GrSamplerState::Filter::kNearest) {
-                    // Inset by half a pixel for bilerp, after scaling to the size of the plane
-                    scaledDomain.inset(0.5f, 0.5f);
-                }
-
-                fDomains[i] = GrTextureDomain(proxies[i].get(), scaledDomain,
-                        GrTextureDomain::kClamp_Mode, GrTextureDomain::kClamp_Mode, i);
-            }
-
-            planeMatrix.postConcat(localMatrix);
             fSamplers[i].reset(std::move(proxies[i]),
                                GrSamplerState(GrSamplerState::WrapMode::kClamp, filterModes[i]));
-            fSamplerTransforms[i] = planeMatrix;
+            fSamplerTransforms[i] = SkMatrix::MakeScale(scales[i].width(), scales[i].height());
             fSamplerCoordTransforms[i] =
                     GrCoordTransform(fSamplerTransforms[i], fSamplers[i].proxy());
         }
@@ -87,9 +62,8 @@ private:
     TextureSampler   fSamplers[4];
     SkMatrix44       fSamplerTransforms[4];
     GrCoordTransform fSamplerCoordTransforms[4];
-    GrTextureDomain  fDomains[4];
     SkYUVAIndex      fYUVAIndices[4];
-    SkYUVColorSpace  fYUVColorSpace;
+    SkMatrix44       fColorSpaceMatrix;
 
     typedef GrFragmentProcessor INHERITED;
 };

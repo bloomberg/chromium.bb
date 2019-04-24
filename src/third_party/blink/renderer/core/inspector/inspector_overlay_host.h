@@ -38,20 +38,22 @@ class CORE_EXPORT InspectorOverlayHost final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class Delegate : public GarbageCollectedMixin {
+  class Listener : public GarbageCollectedMixin {
    public:
-    virtual ~Delegate() = default;
-    virtual void Dispatch(const String& message) = 0;
+    virtual ~Listener() = default;
+    virtual void OverlayResumed() = 0;
+    virtual void OverlaySteppedOver() = 0;
   };
 
-  explicit InspectorOverlayHost(Delegate*);
+  explicit InspectorOverlayHost(Listener*);
   void Trace(blink::Visitor*) override;
 
-  void send(const String& message);
-  void ClearDelegate();
+  void resume();
+  void stepOver();
+  void ClearListener();
 
  private:
-  Member<Delegate> delegate_;
+  Member<Listener> listener_;
 };
 
 }  // namespace blink

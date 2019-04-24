@@ -34,11 +34,10 @@ enum class GrQuadType {
 };
 static const int kGrQuadTypeCount = static_cast<int>(GrQuadType::kLast) + 1;
 
-// If an SkRect is transformed by this matrix, what class of quad is required to represent it.
+// If an SkRect is transformed by this matrix, what class of quad is required to represent it. Since
+// quadType() is only provided on Gr[Persp]Quad in debug builds, production code should use this
+// to efficiently determine quad types.
 GrQuadType GrQuadTypeForTransformedRect(const SkMatrix& matrix);
-// Perform minimal analysis of 'pts' (which are suitable for MakeFromSkQuad), and determine a
-// quad type that will be as minimally general as possible.
-GrQuadType GrQuadTypeForPoints(const SkPoint pts[4], const SkMatrix& matrix);
 
 // Resolve disagreements between the overall requested AA type and the per-edge quad AA flags.
 // knownQuadType must have come from GrQuadTypeForTransformedRect with the matrix that created the
@@ -95,8 +94,12 @@ public:
     Sk4f x4f() const { return Sk4f::Load(fX); }
     Sk4f y4f() const { return Sk4f::Load(fY); }
 
-    // True if anti-aliasing affects this quad. Only valid when quadType == kRect_QuadType
+    // True if anti-aliasing affects this quad. Requires quadType() == kRect_QuadType
     bool aaHasEffectOnRect() const;
+
+#ifdef SK_DEBUG
+    GrQuadType quadType() const;
+#endif
 
 private:
     template<typename T>
@@ -139,6 +142,8 @@ public:
     SkPoint3 point(int i) const { return {fX[i], fY[i], fW[i]}; }
 
     SkRect bounds(GrQuadType type) const {
+        SkASSERT(this->quadType() <= type);
+
         Sk4f x = this->x4f();
         Sk4f y = this->y4f();
         if (type == GrQuadType::kPerspective) {
@@ -162,8 +167,12 @@ public:
 
     bool hasPerspective() const { return (w4f() != Sk4f(1.f)).anyTrue(); }
 
-    // True if anti-aliasing affects this quad. Only valid when quadType == kRect_QuadType
+    // True if anti-aliasing affects this quad. Requires quadType() == kRect_QuadType
     bool aaHasEffectOnRect() const;
+
+#ifdef SK_DEBUG
+    GrQuadType quadType() const;
+#endif
 
 private:
     template<typename T>
@@ -249,6 +258,8 @@ protected:
 
     // Returns the added item data so that its metadata can be initialized if T is not void
     QuadData<T>& pushBackImpl(const GrQuad& quad, GrQuadType type) {
+        SkASSERT(quad.quadType() <= type);
+
         this->upgradeType(type);
         QuadData<T>& item = fXYs.push_back();
         memcpy(item.fX, quad.fX, 4 * sizeof(float));
@@ -260,6 +271,8 @@ protected:
     }
 
     QuadData<T>& pushBackImpl(const GrPerspQuad& quad, GrQuadType type) {
+        SkASSERT(quad.quadType() <= type);
+
         this->upgradeType(type);
         QuadData<T>& item = fXYs.push_back();
         memcpy(item.fX, quad.fX, 4 * sizeof(float));

@@ -14,7 +14,6 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::find;
@@ -28,7 +27,9 @@ using sync_pb::SyncEnums;
 
 namespace syncer {
 
-static char kValidAccessToken[] = "AccessToken";
+using syncable::WriteTransaction;
+
+static char kValidAuthToken[] = "AuthToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
@@ -50,7 +51,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       next_position_in_parent_(2),
       num_get_updates_requests_(0) {
   SetNewTimestamp(0);
-  SetAccessToken(kValidAccessToken);
+  SetAuthToken(kValidAuthToken);
 }
 
 MockConnectionManager::~MockConnectionManager() {
@@ -73,7 +74,7 @@ void MockConnectionManager::SetMidCommitObserver(
 
 bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
                                              const string& path,
-                                             const string& access_token) {
+                                             const string& auth_token) {
   ClientToServerMessage post;
   if (!post.ParseFromString(params->buffer_in)) {
     ADD_FAILURE();
@@ -106,18 +107,18 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
       ADD_FAILURE();
       return false;
     }
-    syncable::WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
+    WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
-  if (access_token.empty()) {
+  if (auth_token.empty()) {
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
     return false;
   }
 
-  if (access_token != kValidAccessToken) {
+  if (auth_token != kValidAuthToken) {
     // Simulate server-side auth failure.
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-    ClearAccessToken();
+    ClearAuthToken();
   }
 
   if (--countdown_to_postbuffer_fail_ == 0) {
@@ -432,6 +433,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
     ent->CopyFrom(last_sent_commit().entries(0));
     ent->clear_insert_after_item_id();
     ent->clear_old_parent_id();
+    ent->set_position_in_parent(
+        last_commit_response().entryresponse(0).position_in_parent());
     ent->set_version(last_commit_response().entryresponse(0).version());
     ent->set_id_string(last_commit_response().entryresponse(0).id_string());
 
@@ -486,6 +489,10 @@ void MockConnectionManager::SetLastUpdateServerTag(const string& tag) {
 
 void MockConnectionManager::SetLastUpdateClientTag(const string& tag) {
   GetMutableLastUpdate()->set_client_defined_unique_tag(tag);
+}
+
+void MockConnectionManager::SetLastUpdatePosition(int64_t server_position) {
+  GetMutableLastUpdate()->set_position_in_parent(server_position);
 }
 
 void MockConnectionManager::SetNewTimestamp(int ts) {
@@ -787,9 +794,11 @@ void MockConnectionManager::SetServerNotReachable() {
 }
 
 void MockConnectionManager::UpdateConnectionStatus() {
-  SetServerResponse(server_reachable_
-                        ? HttpResponse::ForSuccess()
-                        : HttpResponse::ForNetError(net::ERR_FAILED));
+  if (!server_reachable_) {
+    SetServerStatus(HttpResponse::CONNECTION_UNAVAILABLE);
+  } else {
+    SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
+  }
 }
 
 }  // namespace syncer

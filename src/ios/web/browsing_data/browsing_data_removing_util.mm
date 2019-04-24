@@ -14,11 +14,9 @@
 namespace web {
 
 void ClearBrowsingData(BrowserState* browser_state,
-                       ClearBrowsingDataMask types,
-                       base::Time modified_since,
-                       base::OnceClosure closure) {
+                       ClearBrowsingDataMask types) {
   BrowsingDataRemover::FromBrowserState(browser_state)
-      ->ClearBrowsingData(types, modified_since, std::move(closure));
+      ->ClearBrowsingData(types);
 }
 
 }  // namespace web

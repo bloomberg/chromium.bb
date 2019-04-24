@@ -316,9 +316,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ExpectTracerOffsetQueryMocks();
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
@@ -333,9 +332,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(false);
@@ -362,9 +360,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
@@ -436,9 +433,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const bool valid_timer = gpu_timing_client_->IsAvailable();
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
 
@@ -516,9 +512,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
@@ -574,9 +569,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    FakeDecoderClient client;
     MockOutputter outputter;
-    MockGLES2Decoder decoder(&client, &command_buffer_service, &outputter);
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     EXPECT_CALL(decoder, MakeCurrent()).WillRepeatedly(Return(true));
     GPUTracerTester tracer(&decoder);
@@ -712,8 +706,7 @@ class GPUTracerTest : public GpuServiceTest {
   void SetUp() override {
     g_fakeCPUTime = 0;
     GpuServiceTest::SetUpWithGLVersion("3.2", "");
-    decoder_.reset(
-        new MockGLES2Decoder(&client_, &command_buffer_service_, &outputter_));
+    decoder_.reset(new MockGLES2Decoder(&command_buffer_service_, &outputter_));
     EXPECT_CALL(*decoder_, GetGLContext())
         .Times(AtMost(1))
         .WillRepeatedly(Return(GetGLContext()));
@@ -727,7 +720,6 @@ class GPUTracerTest : public GpuServiceTest {
   }
 
   FakeCommandBufferServiceBase command_buffer_service_;
-  FakeDecoderClient client_;
   MockOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<GPUTracerTester> tracer_tester_;

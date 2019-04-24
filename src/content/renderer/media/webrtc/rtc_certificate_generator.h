@@ -24,12 +24,12 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
   // blink::WebRTCCertificateGenerator implementation.
   void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
-      blink::WebRTCCertificateCallback completion_callback,
+      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
-      blink::WebRTCCertificateCallback completion_callback,
+      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
   rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(

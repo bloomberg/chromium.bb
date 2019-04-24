@@ -14,10 +14,7 @@ def rel_path_to_url(rel_path, url_base="/"):
 
 def from_os_path(path):
     assert os.path.sep == "/" or platform.system() == "Windows"
-    if "/" == os.path.sep:
-        rv = path
-    else:
-        rv = path.replace(os.path.sep, "/")
+    rv = path.replace(os.path.sep, "/")
     if "\\" in rv:
         raise ValueError("path contains \\ when separator is %s" % os.path.sep)
     return rv
@@ -27,8 +24,6 @@ def to_os_path(path):
     assert os.path.sep == "/" or platform.system() == "Windows"
     if "\\" in path:
         raise ValueError("normalised path contains \\")
-    if "/" == os.path.sep:
-        return path
     return path.replace("/", os.path.sep)
 
 

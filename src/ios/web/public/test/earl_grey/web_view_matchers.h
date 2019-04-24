@@ -7,11 +7,9 @@
 
 #include <string>
 
-#import <Foundation/Foundation.h>
+#import <EarlGrey/EarlGrey.h>
 
 #import "ios/web/public/web_state/web_state.h"
-
-@protocol GREYMatcher;
 
 namespace web {
 

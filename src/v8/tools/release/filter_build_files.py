@@ -23,10 +23,6 @@ import sys
 
 EXECUTABLE_FILES = [
   'd8',
-]
-
-# Additional executable files added only to ref archive type.
-REFBUILD_EXECUTABLE_FILES = [
   'cctest',
 ]
 
@@ -56,7 +52,7 @@ def main(argv):
                       help='Path to an output file. The files will '
                            'be stored in json list with absolute paths.')
   parser.add_argument('-t', '--type',
-                      choices=['all', 'exe', 'lib', 'ref'], default='all',
+                      choices=['all', 'exe', 'lib'], default='all',
                       help='Specifies the archive type.')
   args = parser.parse_args()
 
@@ -65,8 +61,8 @@ def main(argv):
 
   args.dir = os.path.abspath(args.dir)
 
-  # Skip libraries for exe and ref archive types.
-  if args.type in ('exe', 'ref'):
+  # Skip libraries for exe archive type.
+  if args.type == 'exe':
     library_files = []
   else:
     library_files = LIBRARY_FILES[args.platform]
@@ -76,9 +72,6 @@ def main(argv):
     executable_files = []
   else:
     executable_files = EXECUTABLE_FILES
-
-  if args.type == 'ref':
-    executable_files.extend(REFBUILD_EXECUTABLE_FILES)
 
   list_of_files = []
   def add_files_from_globs(globs):

@@ -13,7 +13,12 @@
 #include <memory>
 
 #include "api/task_queue/queued_task.h"
-#include "rtc_base/thread_annotations.h"
+
+// TODO(bugs.webrtc.org/10191): Remove when
+// rtc::TaskQueue* rtc::TaskQueue::Current() is unused.
+namespace rtc {
+class TaskQueue;
+}  // namespace rtc
 
 namespace webrtc {
 
@@ -21,7 +26,7 @@ namespace webrtc {
 // in FIFO order and that tasks never overlap. Tasks may always execute on the
 // same worker thread and they may not. To DCHECK that tasks are executing on a
 // known task queue, use IsCurrent().
-class RTC_LOCKABLE TaskQueueBase {
+class TaskQueueBase {
  public:
   // Starts destruction of the task queue.
   // On return ensures no task are running and no new tasks are able to start
@@ -71,6 +76,10 @@ class RTC_LOCKABLE TaskQueueBase {
   // Users of the TaskQueue should call Delete instead of directly deleting
   // this object.
   virtual ~TaskQueueBase() = default;
+
+ private:
+  friend class rtc::TaskQueue;
+  rtc::TaskQueue* task_queue_ = nullptr;
 };
 
 struct TaskQueueDeleter {

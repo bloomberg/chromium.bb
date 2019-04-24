@@ -107,7 +107,7 @@ private:
      *
      * If present, the special LanguageBreakEngine used for handling
      * characters that are in the dictionary set, but not handled by any
-     * LanguageBreakEngine.
+     * LangugageBreakEngine.
      * @internal (private)
      */
     UnhandledEngine     *fUnhandledBreakEngine;
@@ -260,7 +260,7 @@ public:
      * @return TRUE if both BreakIterators are not same.
      *  @stable ICU 2.0
      */
-    inline UBool operator!=(const BreakIterator& that) const;
+    UBool operator!=(const BreakIterator& that) const;
 
     /**
      * Returns a newly-constructed RuleBasedBreakIterator with the same

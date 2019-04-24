@@ -293,13 +293,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -310,13 +319,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -327,13 +345,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ],
     "isolated_scripts": [
@@ -353,12 +380,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -377,12 +413,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -401,12 +446,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -425,12 +479,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -453,12 +516,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -484,12 +556,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -523,12 +604,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -548,12 +638,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -572,12 +671,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -596,13 +704,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
@@ -620,13 +737,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -641,13 +767,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -658,13 +793,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -675,13 +819,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ],
     "isolated_scripts": [
@@ -701,12 +854,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -725,12 +887,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -749,12 +920,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -773,12 +953,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -801,12 +990,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -832,12 +1030,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -871,12 +1078,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -896,12 +1112,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -920,12 +1145,21 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -944,13 +1178,22 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-384.90\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"10de:1cb3-410.78\", \"os\": \"Ubuntu\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
@@ -1694,6 +1937,18 @@
           "shards": 2
         }
       }
+    ],
+    "scripts": [
+      {
+        "name": "check_static_initializers",
+        "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
+        "name": "webkit_lint",
+        "script": "blink_lint_expectations.py",
+        "swarming": {}
+      }
     ]
   },
   "Mac Retina Debug (AMD)": {
@@ -2391,6 +2646,18 @@
           "shards": 2
         }
       }
+    ],
+    "scripts": [
+      {
+        "name": "check_static_initializers",
+        "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
+        "name": "webkit_lint",
+        "script": "blink_lint_expectations.py",
+        "swarming": {}
+      }
     ]
   },
   "Win10 Debug (NVIDIA)": {
@@ -2405,7 +2672,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2422,7 +2689,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2440,7 +2707,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2456,7 +2723,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2475,7 +2742,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2489,7 +2756,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2515,7 +2782,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2539,7 +2806,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2563,7 +2830,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2587,7 +2854,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2615,7 +2882,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2646,7 +2913,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2685,7 +2952,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2710,7 +2977,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2734,7 +3001,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2758,7 +3025,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2781,7 +3048,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2791,7 +3058,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2810,7 +3077,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2820,7 +3087,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2836,7 +3103,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2846,7 +3113,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2863,7 +3130,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2873,7 +3140,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2888,7 +3155,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2898,7 +3165,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2916,7 +3183,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2926,7 +3193,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2939,7 +3206,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2949,7 +3216,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2974,7 +3241,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -2984,7 +3251,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3007,7 +3274,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3017,7 +3284,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3040,7 +3307,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3050,7 +3317,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3073,7 +3340,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3083,7 +3350,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3110,7 +3377,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3120,7 +3387,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3150,7 +3417,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3160,7 +3427,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3198,7 +3465,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3208,7 +3475,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3232,7 +3499,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3242,7 +3509,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3265,7 +3532,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3275,7 +3542,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -3298,7 +3565,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "nvidia-quadro-p400-win10-stable",
+              "gpu": "10de:1cb3-24.21.14.1195",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -3309,7 +3576,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "[{\"gpu\": \"10de:1cb3-24.21.14.1195\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],

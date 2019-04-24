@@ -22,11 +22,28 @@ class UsbDeviceHandle;
 
 using UsbTransferType = mojom::UsbTransferType;
 using UsbTransferDirection = mojom::UsbTransferDirection;
-using UsbSynchronizationType = mojom::UsbSynchronizationType;
-using UsbUsageType = mojom::UsbUsageType;
+
+enum UsbSynchronizationType {
+  USB_SYNCHRONIZATION_NONE = 0,
+  USB_SYNCHRONIZATION_ASYNCHRONOUS,
+  USB_SYNCHRONIZATION_ADAPTIVE,
+  USB_SYNCHRONIZATION_SYNCHRONOUS,
+};
+
+enum UsbUsageType {
+  // Isochronous endpoint usages.
+  USB_USAGE_DATA = 0,
+  USB_USAGE_FEEDBACK,
+  USB_USAGE_EXPLICIT_FEEDBACK,
+  // Interrupt endpoint usages.
+  USB_USAGE_PERIODIC,
+  USB_USAGE_NOTIFICATION,
+  // Not currently defined by any spec.
+  USB_USAGE_RESERVED,
+};
 
 struct UsbEndpointDescriptor {
-  explicit UsbEndpointDescriptor(const uint8_t* data);
+  UsbEndpointDescriptor(const uint8_t* data);
   UsbEndpointDescriptor(uint8_t address,
                         uint8_t attributes,
                         uint16_t maximum_packet_size,
@@ -46,7 +63,7 @@ struct UsbEndpointDescriptor {
 };
 
 struct UsbInterfaceDescriptor {
-  explicit UsbInterfaceDescriptor(const uint8_t* data);
+  UsbInterfaceDescriptor(const uint8_t* data);
   UsbInterfaceDescriptor(uint8_t interface_number,
                          uint8_t alternate_setting,
                          uint8_t interface_class,
@@ -68,7 +85,7 @@ struct UsbInterfaceDescriptor {
 };
 
 struct UsbConfigDescriptor {
-  explicit UsbConfigDescriptor(const uint8_t* data);
+  UsbConfigDescriptor(const uint8_t* data);
   UsbConfigDescriptor(uint8_t configuration_value,
                       bool self_powered,
                       bool remote_wakeup,

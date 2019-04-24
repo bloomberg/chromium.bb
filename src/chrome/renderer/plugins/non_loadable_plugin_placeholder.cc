@@ -27,7 +27,6 @@ NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
           IDR_BLOCKED_PLUGIN_HTML));
 
   base::DictionaryValue values;
-  values.SetString("name", "");
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
 
@@ -42,7 +41,6 @@ plugins::PluginPlaceholder* NonLoadablePluginPlaceholder::CreateErrorPlugin(
     content::RenderFrame* render_frame,
     const base::FilePath& file_path) {
   base::DictionaryValue values;
-  values.SetString("name", "");
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));
 

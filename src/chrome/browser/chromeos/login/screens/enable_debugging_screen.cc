@@ -5,14 +5,16 @@
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
 EnableDebuggingScreen::EnableDebuggingScreen(
+    BaseScreenDelegate* delegate,
     EnableDebuggingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING),
+    : BaseScreen(delegate, OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -22,16 +24,7 @@ EnableDebuggingScreen::EnableDebuggingScreen(
 
 EnableDebuggingScreen::~EnableDebuggingScreen() {
   if (view_)
-    view_->SetDelegate(nullptr);
-}
-
-void EnableDebuggingScreen::OnExit(bool success) {
-  exit_callback_.Run();
-}
-
-void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
-  if (view_ == view)
-    view_ = nullptr;
+    view_->SetDelegate(NULL);
 }
 
 void EnableDebuggingScreen::Show() {
@@ -42,6 +35,15 @@ void EnableDebuggingScreen::Show() {
 void EnableDebuggingScreen::Hide() {
   if (view_)
     view_->Hide();
+}
+
+void EnableDebuggingScreen::OnExit(bool success) {
+  exit_callback_.Run();
+}
+
+void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {
+  if (view_ == view)
+    view_ = NULL;
 }
 
 }  // namespace chromeos

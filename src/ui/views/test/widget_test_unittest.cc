@@ -113,5 +113,5 @@ TEST_F(DesktopWidgetTestTest, GetAllWidgets) {
   ExpectClose(&expected, {frameless}, "frameless");
 }
 
-}  // namespace test
 }  // namespace views
+}  // namespace test

@@ -151,6 +151,8 @@ class SyncEngine
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
 
  private:
   class WorkerObserver;

@@ -38,7 +38,6 @@ class ASH_EXPORT CrosDisplayConfig : public mojom::CrosDisplayConfigController {
                               GetDisplayUnitInfoListCallback callback) override;
   void SetDisplayProperties(const std::string& id,
                             mojom::DisplayConfigPropertiesPtr properties,
-                            mojom::DisplayConfigSource source,
                             SetDisplayPropertiesCallback callback) override;
   void SetUnifiedDesktopEnabled(bool enabled) override;
   void OverscanCalibration(const std::string& display_id,

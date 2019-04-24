@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/scoped_command_line.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +18,6 @@ testing::AssertionResult RunManifestVersionSuccess(
     std::unique_ptr<base::DictionaryValue> manifest,
     Manifest::Type expected_type,
     int expected_manifest_version,
-    bool expect_warning = false,
     Extension::InitFromValueFlags custom_flag = Extension::NO_FLAGS) {
   std::string error;
   scoped_refptr<const Extension> extension = Extension::Create(
@@ -38,19 +36,6 @@ testing::AssertionResult RunManifestVersionSuccess(
     return testing::AssertionFailure()
            << "Wrong manifest version: " << extension->manifest_version();
   }
-
-  bool has_manifest_version_warning = false;
-  for (const auto& warning : extension->install_warnings()) {
-    if (warning.key == manifest_keys::kManifestVersion) {
-      has_manifest_version_warning = true;
-      break;
-    }
-  }
-
-  if (has_manifest_version_warning != expect_warning)
-    return testing::AssertionFailure()
-           << "Expected warning: " << expect_warning
-           << ", Found Warning: " << has_manifest_version_warning;
 
   return testing::AssertionSuccess();
 }
@@ -85,8 +70,7 @@ TEST(ExtensionTest, ExtensionManifestVersions) {
 
   const Manifest::Type kType = Manifest::TYPE_EXTENSION;
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(2), kType, 2));
-  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3,
-                                        true /* expect warning */));
+  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3));
 
   // Manifest v1 is deprecated, and should not load.
   EXPECT_TRUE(RunManifestVersionFailure(get_manifest(1)));
@@ -125,8 +109,7 @@ TEST(ExtensionTest, PlatformAppManifestVersions) {
 
   const Manifest::Type kType = Manifest::TYPE_PLATFORM_APP;
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(2), kType, 2));
-  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3,
-                                        true /* expect warning */));
+  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3));
   // Omitting the key defaults to v2 for platform apps.
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(base::nullopt), kType, 2));
 
@@ -163,8 +146,7 @@ TEST(ExtensionTest, HostedAppManifestVersions) {
 
   const Manifest::Type kType = Manifest::TYPE_HOSTED_APP;
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(2), kType, 2));
-  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3,
-                                        true /* expect warning */));
+  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3));
 
   // Manifest v1 is deprecated, but should still load for hosted apps.
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(1), kType, 1));
@@ -190,8 +172,7 @@ TEST(ExtensionTest, UserScriptManifestVersions) {
 
   const Manifest::Type kType = Manifest::TYPE_USER_SCRIPT;
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(2), kType, 2));
-  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3,
-                                        true /* expect warning */));
+  EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(3), kType, 3));
 
   // Manifest v1 is deprecated, but should still load for user scripts.
   EXPECT_TRUE(RunManifestVersionSuccess(get_manifest(1), kType, 1));

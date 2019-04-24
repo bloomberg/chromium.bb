@@ -27,15 +27,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
 
-#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/vector2d.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGPoint CGPoint;
@@ -45,6 +44,10 @@ typedef struct CGPoint CGPoint;
 #endif
 #endif
 
+namespace gfx {
+class Vector2d;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT IntPoint {
@@ -53,10 +56,9 @@ class PLATFORM_EXPORT IntPoint {
  public:
   constexpr IntPoint() : x_(0), y_(0) {}
   constexpr IntPoint(int x, int y) : x_(x), y_(y) {}
-  constexpr explicit IntPoint(const IntSize& size)
+  explicit IntPoint(const IntSize& size)
       : x_(size.Width()), y_(size.Height()) {}
-  constexpr explicit IntPoint(const gfx::Point& p) : x_(p.x()), y_(p.y()) {}
-  constexpr explicit IntPoint(const gfx::Vector2d& v) : x_(v.x()), y_(v.y()) {}
+  explicit IntPoint(const gfx::Point& point) : x_(point.x()), y_(point.y()) {}
 
   static IntPoint Zero() { return IntPoint(); }
 
@@ -73,8 +75,8 @@ class PLATFORM_EXPORT IntPoint {
     y_ += dy;
   }
   void SaturatedMove(int dx, int dy) {
-    x_ = base::ClampAdd(x_, dx);
-    y_ = base::ClampAdd(y_, dy);
+    x_ = ClampAdd(x_, dx);
+    y_ = ClampAdd(y_, dy);
   }
 
   void Scale(float sx, float sy) {
@@ -104,12 +106,10 @@ class PLATFORM_EXPORT IntPoint {
   operator CGPoint() const;
 #endif
 
-  constexpr operator gfx::Point() const { return gfx::Point(x_, y_); }
+  operator gfx::Point() const;
   // IntPoint is used as an offset, but outside blink, the Vector2d type is used
   // for offsets instead. Addition of Point+Vector2d gives an offseted Point.
-  constexpr explicit operator gfx::Vector2d() const {
-    return gfx::Vector2d(x_, y_);
-  }
+  explicit operator gfx::Vector2d() const;
 
   String ToString() const;
 

@@ -245,9 +245,9 @@ void ContextNULL::stencilThenCoverStrokePathInstanced(const std::vector<gl::Path
                                                       const GLfloat *transformValues)
 {}
 
-gl::GraphicsResetStatus ContextNULL::getResetStatus()
+GLenum ContextNULL::getResetStatus()
 {
-    return gl::GraphicsResetStatus::NoError;
+    return GL_NO_ERROR;
 }
 
 std::string ContextNULL::getVendorString() const
@@ -390,12 +390,6 @@ std::vector<PathImpl *> ContextNULL::createPaths(GLsizei range)
         result[idx] = new PathNULL();
     }
     return result;
-}
-
-MemoryObjectImpl *ContextNULL::createMemoryObject()
-{
-    UNREACHABLE();
-    return nullptr;
 }
 
 angle::Result ContextNULL::dispatchCompute(const gl::Context *context,

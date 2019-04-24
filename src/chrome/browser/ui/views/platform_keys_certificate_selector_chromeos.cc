@@ -36,7 +36,7 @@ class ClientCertIdentityPlatformKeys : public net::ClientCertIdentity {
   ~ClientCertIdentityPlatformKeys() override = default;
 
   void AcquirePrivateKey(
-      base::OnceCallback<void(scoped_refptr<net::SSLPrivateKey>)>
+      const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)>&
           private_key_callback) override {
     NOTREACHED();
   }

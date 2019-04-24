@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace assistant_client {
-struct SpeakerIdEnrollmentStatus;
 struct SpeakerIdEnrollmentUpdate;
 }  // namespace assistant_client
 
@@ -54,8 +53,6 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   void HandleSpeakerIdEnrollmentUpdate(
       const assistant_client::SpeakerIdEnrollmentUpdate& update);
   void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
-  void HandleSpeakerIdEnrollmentStatusSync(
-      const assistant_client::SpeakerIdEnrollmentStatus& status);
 
   Service* const service_;
   AssistantManagerServiceImpl* const assistant_manager_service_;

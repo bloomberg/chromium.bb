@@ -16,6 +16,18 @@ namespace wasm {
 
 namespace {
 
+const char* GetExecutionTierAsString(ExecutionTier tier) {
+  switch (tier) {
+    case ExecutionTier::kBaseline:
+      return "liftoff";
+    case ExecutionTier::kOptimized:
+      return "turbofan";
+    case ExecutionTier::kInterpreter:
+      return "interpreter";
+  }
+  UNREACHABLE();
+}
+
 class WasmInstructionBufferImpl {
  public:
   class View : public AssemblerBuffer {
@@ -70,8 +82,8 @@ class WasmInstructionBufferImpl {
   OwnedVector<uint8_t> buffer_ =
       OwnedVector<uint8_t>::New(AssemblerBase::kMinimalBufferSize);
 
-  // While the buffer is grown, we need to temporarily also keep the old buffer
-  // alive.
+  // While the buffer is grown, we need to temporarily also keep the old
+  // buffer alive.
   OwnedVector<uint8_t> old_buffer_;
 };
 
@@ -105,18 +117,17 @@ std::unique_ptr<WasmInstructionBuffer> WasmInstructionBuffer::New() {
 // static
 ExecutionTier WasmCompilationUnit::GetDefaultExecutionTier(
     const WasmModule* module) {
-  // Liftoff does not support the special asm.js opcodes, thus always compile
-  // asm.js modules with TurboFan.
-  if (module->origin == kAsmJsOrigin) return ExecutionTier::kTurbofan;
-  if (FLAG_wasm_interpret_all) return ExecutionTier::kInterpreter;
-  return FLAG_liftoff ? ExecutionTier::kLiftoff : ExecutionTier::kTurbofan;
+  return FLAG_liftoff && module->origin == kWasmOrigin
+             ? ExecutionTier::kBaseline
+             : ExecutionTier::kOptimized;
 }
 
-WasmCompilationUnit::WasmCompilationUnit(int index, ExecutionTier tier)
-    : func_index_(index), tier_(tier) {
+WasmCompilationUnit::WasmCompilationUnit(WasmEngine* wasm_engine, int index,
+                                         ExecutionTier tier)
+    : wasm_engine_(wasm_engine), func_index_(index), requested_tier_(tier) {
   if (V8_UNLIKELY(FLAG_wasm_tier_mask_for_testing) && index < 32 &&
       (FLAG_wasm_tier_mask_for_testing & (1 << index))) {
-    tier = ExecutionTier::kTurbofan;
+    tier = ExecutionTier::kOptimized;
   }
   SwitchTier(tier);
 }
@@ -126,7 +137,7 @@ WasmCompilationUnit::WasmCompilationUnit(int index, ExecutionTier tier)
 WasmCompilationUnit::~WasmCompilationUnit() = default;
 
 WasmCompilationResult WasmCompilationUnit::ExecuteCompilation(
-    WasmEngine* wasm_engine, CompilationEnv* env,
+    CompilationEnv* env,
     const std::shared_ptr<WireBytesStorage>& wire_bytes_storage,
     Counters* counters, WasmFeatures* detected) {
   auto* func = &env->module->functions[func_index_];
@@ -141,37 +152,29 @@ WasmCompilationResult WasmCompilationUnit::ExecuteCompilation(
                                              wasm_compile, function_time);
   TimedHistogramScope wasm_compile_function_time_scope(timed_histogram);
 
-  // Exactly one compiler-specific unit must be set.
-  DCHECK_EQ(1, !!liftoff_unit_ + !!turbofan_unit_ + !!interpreter_unit_);
-
   if (FLAG_trace_wasm_compiler) {
-    const char* tier =
-        liftoff_unit_ ? "liftoff" : turbofan_unit_ ? "turbofan" : "interpreter";
-    PrintF("Compiling wasm function %d with %s\n\n", func_index_, tier);
+    PrintF("Compiling wasm function %d with %s\n\n", func_index_,
+           GetExecutionTierAsString(executed_tier_));
   }
 
   WasmCompilationResult result;
-  if (liftoff_unit_) {
-    result = liftoff_unit_->ExecuteCompilation(wasm_engine->allocator(), env,
-                                               func_body, counters, detected);
-    if (!result.succeeded()) {
-      // If Liftoff failed, fall back to turbofan.
+  switch (executed_tier_) {
+    case ExecutionTier::kBaseline:
+      result =
+          liftoff_unit_->ExecuteCompilation(env, func_body, counters, detected);
+      if (result.succeeded()) break;
+      // Otherwise, fall back to turbofan.
+      SwitchTier(ExecutionTier::kOptimized);
       // TODO(wasm): We could actually stop or remove the tiering unit for this
       // function to avoid compiling it twice with TurboFan.
-      SwitchTier(ExecutionTier::kTurbofan);
-      DCHECK_NOT_NULL(turbofan_unit_);
-    }
+      V8_FALLTHROUGH;
+    case ExecutionTier::kOptimized:
+      result = turbofan_unit_->ExecuteCompilation(env, func_body, counters,
+                                                  detected);
+      break;
+    case ExecutionTier::kInterpreter:
+      UNREACHABLE();  // TODO(titzer): compile interpreter entry stub.
   }
-  if (turbofan_unit_) {
-    result = turbofan_unit_->ExecuteCompilation(wasm_engine, env, func_body,
-                                                counters, detected);
-  }
-  if (interpreter_unit_) {
-    result = interpreter_unit_->ExecuteCompilation(wasm_engine, env, func_body,
-                                                   counters, detected);
-  }
-  result.func_index = func_index_;
-  result.requested_tier = tier_;
 
   if (result.succeeded()) {
     counters->wasm_generated_code_size()->Increment(
@@ -182,32 +185,45 @@ WasmCompilationResult WasmCompilationUnit::ExecuteCompilation(
   return result;
 }
 
+WasmCode* WasmCompilationUnit::Publish(WasmCompilationResult result,
+                                       NativeModule* native_module) {
+  if (!result.succeeded()) {
+    native_module->compilation_state()->SetError(func_index_,
+                                                 std::move(result.error));
+    return nullptr;
+  }
+
+  DCHECK(result.succeeded());
+  WasmCode::Tier code_tier = executed_tier_ == ExecutionTier::kBaseline
+                                 ? WasmCode::kLiftoff
+                                 : WasmCode::kTurbofan;
+  DCHECK_EQ(result.code_desc.buffer, result.instr_buffer.get());
+
+  WasmCode* code = native_module->AddCode(
+      func_index_, result.code_desc, result.frame_slot_count,
+      result.tagged_parameter_slots, std::move(result.protected_instructions),
+      std::move(result.source_positions), WasmCode::kFunction, code_tier);
+  return code;
+}
+
 void WasmCompilationUnit::SwitchTier(ExecutionTier new_tier) {
   // This method is being called in the constructor, where neither
-  // {liftoff_unit_} nor {turbofan_unit_} nor {interpreter_unit_} are set, or to
-  // switch tier from kLiftoff to kTurbofan, in which case {liftoff_unit_} is
-  // already set.
+  // {liftoff_unit_} nor {turbofan_unit_} are set, or to switch tier from
+  // kLiftoff to kTurbofan, in which case {liftoff_unit_} is already set.
+  executed_tier_ = new_tier;
   switch (new_tier) {
-    case ExecutionTier::kLiftoff:
+    case ExecutionTier::kBaseline:
       DCHECK(!turbofan_unit_);
       DCHECK(!liftoff_unit_);
-      DCHECK(!interpreter_unit_);
-      liftoff_unit_.reset(new LiftoffCompilationUnit());
+      liftoff_unit_.reset(new LiftoffCompilationUnit(this));
       return;
-    case ExecutionTier::kTurbofan:
+    case ExecutionTier::kOptimized:
       DCHECK(!turbofan_unit_);
-      DCHECK(!interpreter_unit_);
       liftoff_unit_.reset();
       turbofan_unit_.reset(new compiler::TurbofanWasmCompilationUnit(this));
       return;
     case ExecutionTier::kInterpreter:
-      DCHECK(!turbofan_unit_);
-      DCHECK(!liftoff_unit_);
-      DCHECK(!interpreter_unit_);
-      interpreter_unit_.reset(new compiler::InterpreterCompilationUnit(this));
-      return;
-    case ExecutionTier::kNone:
-      UNREACHABLE();
+      UNREACHABLE();  // TODO(titzer): allow compiling interpreter entry stub.
   }
   UNREACHABLE();
 }
@@ -223,18 +239,12 @@ void WasmCompilationUnit::CompileWasmFunction(Isolate* isolate,
                              wire_bytes.start() + function->code.offset(),
                              wire_bytes.start() + function->code.end_offset()};
 
-  WasmCompilationUnit unit(function->func_index, tier);
+  WasmCompilationUnit unit(isolate->wasm_engine(), function->func_index, tier);
   CompilationEnv env = native_module->CreateCompilationEnv();
   WasmCompilationResult result = unit.ExecuteCompilation(
-      isolate->wasm_engine(), &env,
-      native_module->compilation_state()->GetWireBytesStorage(),
+      &env, native_module->compilation_state()->GetWireBytesStorage(),
       isolate->counters(), detected);
-  if (result.succeeded()) {
-    WasmCodeRefScope code_ref_scope;
-    native_module->AddCompiledCode(std::move(result));
-  } else {
-    native_module->compilation_state()->SetError();
-  }
+  unit.Publish(std::move(result), native_module);
 }
 
 }  // namespace wasm

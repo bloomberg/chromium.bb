@@ -452,7 +452,6 @@ interface BarProp
     getter visible
     method constructor
 interface BarcodeDetector
-    static method getSupportedFormats
     attribute @@toStringTag
     method constructor
     method detect
@@ -1071,11 +1070,6 @@ interface ClipboardEvent : Event
     attribute @@toStringTag
     getter clipboardData
     method constructor
-interface ClipboardItem
-    attribute @@toStringTag
-    getter types
-    method constructor
-    method getType
 interface CloseEvent : Event
     attribute @@toStringTag
     getter code
@@ -1480,7 +1474,6 @@ interface DetectedBarcode
     attribute @@toStringTag
     getter boundingBox
     getter cornerPoints
-    getter format
     getter rawValue
     method constructor
     method toJSON
@@ -2365,74 +2358,6 @@ interface Gyroscope : Sensor
     method constructor
 interface HID : EventTarget
     attribute @@toStringTag
-    getter onconnect
-    getter ondisconnect
-    method constructor
-    method getDevices
-    method requestDevice
-    setter onconnect
-    setter ondisconnect
-interface HIDCollectionInfo
-    attribute @@toStringTag
-    getter children
-    getter featureReports
-    getter inputReports
-    getter outputReports
-    getter reportIds
-    getter usage
-    getter usagePage
-    method constructor
-interface HIDConnectionEvent : Event
-    attribute @@toStringTag
-    getter device
-    method constructor
-interface HIDDevice : EventTarget
-    attribute @@toStringTag
-    getter collections
-    getter oninputreport
-    getter opened
-    getter productId
-    getter productName
-    getter vendorId
-    method close
-    method constructor
-    method open
-    method receiveFeatureReport
-    method sendFeatureReport
-    method sendReport
-    setter oninputreport
-interface HIDInputReportEvent : Event
-    attribute @@toStringTag
-    getter data
-    getter device
-    getter reportId
-    method constructor
-interface HIDReportInfo
-    attribute @@toStringTag
-    getter items
-    getter reportId
-    method constructor
-interface HIDReportItem
-    attribute @@toStringTag
-    getter designatorMaximum
-    getter designatorMinimum
-    getter hasNull
-    getter isAbsolute
-    getter isArray
-    getter isRange
-    getter logicalMaximum
-    getter logicalMinimum
-    getter physicalMaximum
-    getter physicalMinimum
-    getter reportCount
-    getter reportSize
-    getter stringMaximum
-    getter stringMinimum
-    getter unit
-    getter unitExponent
-    getter usageMaximum
-    getter usageMinimum
-    getter usages
     method constructor
 interface HTMLAllCollection
     attribute @@toStringTag
@@ -3638,7 +3563,6 @@ interface HTMLPortalElement : HTMLElement
     getter src
     method activate
     method constructor
-    method postMessage
     setter src
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag
@@ -3990,7 +3914,6 @@ interface HTMLVideoElement : HTMLMediaElement
     getter intrinsicSize
     getter onenterpictureinpicture
     getter onleavepictureinpicture
-    getter playsInline
     getter poster
     getter videoHeight
     getter videoWidth
@@ -4012,7 +3935,6 @@ interface HTMLVideoElement : HTMLMediaElement
     setter intrinsicSize
     setter onenterpictureinpicture
     setter onleavepictureinpicture
-    setter playsInline
     setter poster
     setter width
 interface HashChangeEvent : Event
@@ -4205,19 +4127,21 @@ interface IdleDeadline
     getter didTimeout
     method constructor
     method timeRemaining
-interface IdleDetector : EventTarget
+interface IdleManager
     attribute @@toStringTag
-    getter onchange
-    getter state
     method constructor
-    method start
-    method stop
-    setter onchange
+    method query
 interface IdleState
     attribute @@toStringTag
     getter screen
     getter user
     method constructor
+interface IdleStatus : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter state
+    method constructor
+    setter onchange
 interface Image
     attribute @@toStringTag
     getter align
@@ -4903,6 +4827,7 @@ interface Navigator
     getter geolocation
     getter hardwareConcurrency
     getter hid
+    getter idle
     getter keyboard
     getter language
     getter languages
@@ -5364,11 +5289,8 @@ interface Performance : EventTarget
     setter onresourcetimingbufferfull
 interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag
-    getter id
     getter identifier
     getter intersectionRect
-    getter naturalHeight
-    getter naturalWidth
     getter responseEnd
     method constructor
     method toJSON
@@ -5566,8 +5488,6 @@ interface PopStateEvent : Event
     method constructor
 interface PortalActivateEvent : Event
     attribute @@toStringTag
-    getter data
-    method adoptPredecessor
     method constructor
 interface PortalHost : EventTarget
     attribute @@toStringTag
@@ -5731,6 +5651,7 @@ interface RTCDtlsTransport : EventTarget
     getter onstatechange
     getter state
     method constructor
+    method getRemoteCertificates
     setter onerror
     setter onstatechange
 interface RTCError : DOMException
@@ -5809,7 +5730,6 @@ interface RTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
-    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream
@@ -5887,8 +5807,7 @@ interface RTCQuicTransport : EventTarget
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
-    getter jitterBufferDelayHint
-    getter rtcpTransport
+    getter rtcp_transport
     getter track
     getter transport
     method constructor
@@ -5896,12 +5815,11 @@ interface RTCRtpReceiver
     method getParameters
     method getStats
     method getSynchronizationSources
-    setter jitterBufferDelayHint
 interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag
     getter dtmf
-    getter rtcpTransport
+    getter rtcp_transport
     getter track
     getter transport
     method constructor
@@ -5919,15 +5837,6 @@ interface RTCRtpTransceiver
     getter stopped
     method constructor
     setter direction
-interface RTCSctpTransport : EventTarget
-    attribute @@toStringTag
-    getter maxChannels
-    getter maxMessageSize
-    getter onstatechange
-    getter state
-    getter transport
-    method constructor
-    setter onstatechange
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp
@@ -7441,7 +7350,6 @@ interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent
 interface SpeechSynthesisEvent : Event
     attribute @@toStringTag
     getter charIndex
-    getter charLength
     getter elapsedTime
     getter name
     getter utterance
@@ -8152,7 +8060,6 @@ interface WebGL2ComputeRenderingContext
     attribute ACTIVE_VARIABLES
     attribute ALIASED_LINE_WIDTH_RANGE
     attribute ALIASED_POINT_SIZE_RANGE
-    attribute ALL_BARRIER_BITS
     attribute ALPHA
     attribute ALPHA_BITS
     attribute ALREADY_SIGNALED
@@ -10308,12 +10215,20 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebGLVideoFrameInfo
+interface WebGPU
     attribute @@toStringTag
-    getter currentTime
-    getter textureHeight
-    getter textureWidth
     method constructor
+    method getAdapter
+interface WebGPUAdapter
+    attribute @@toStringTag
+    getter name
+    method constructor
+    method createDevice
+interface WebGPUDevice
+    attribute @@toStringTag
+    getter adapter
+    method constructor
+    method dummy
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -10563,23 +10478,26 @@ interface XRFrame
     attribute @@toStringTag
     getter session
     method constructor
+    method getInputPose
     method getPose
     method getViewerPose
 interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
     method constructor
+interface XRInputPose
+    attribute @@toStringTag
+    getter emulatedPosition
+    getter gripTransform
+    getter targetRay
+    method constructor
 interface XRInputSource
     attribute @@toStringTag
-    getter gamepad
-    getter gripSpace
     getter handedness
     getter targetRayMode
-    getter targetRaySpace
     method constructor
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
-    getter buttonIndex
     getter frame
     getter inputSource
     method constructor
@@ -10608,11 +10526,6 @@ interface XRReferenceSpace : XRSpace
     method constructor
     setter onreset
     setter originOffset
-interface XRReferenceSpaceEvent : Event
-    attribute @@toStringTag
-    getter referenceSpace
-    getter transform
-    method constructor
 interface XRRenderState
     attribute @@toStringTag
     getter baseLayer
@@ -10622,7 +10535,6 @@ interface XRRenderState
     method constructor
 interface XRRigidTransform
     attribute @@toStringTag
-    getter inverse
     getter matrix
     getter orientation
     getter position
@@ -10636,7 +10548,6 @@ interface XRSession : EventTarget
     getter onfocus
     getter onresetpose
     getter renderState
-    getter viewerSpace
     method cancelAnimationFrame
     method constructor
     method end
@@ -10656,6 +10567,10 @@ interface XRSessionEvent : Event
 interface XRSpace : EventTarget
     attribute @@toStringTag
     method constructor
+interface XRStageBounds
+    attribute @@toStringTag
+    getter geometry
+    method constructor
 interface XRStationaryReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter subtype
@@ -10668,6 +10583,7 @@ interface XRView
     getter eye
     getter projectionMatrix
     getter transform
+    getter viewMatrix
     method constructor
 interface XRViewerPose : XRPose
     attribute @@toStringTag
@@ -10690,7 +10606,6 @@ interface XRWebGLLayer : XRLayer
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth
-    getter ignoreDepthValues
     getter stencil
     method constructor
     method getViewport
@@ -10748,7 +10663,6 @@ interface webkitRTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
-    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream
@@ -11059,6 +10973,7 @@ interface webkitURL
     getter taskWorklet
     getter toolbar
     getter visualViewport
+    getter webgpu
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -11250,6 +11165,7 @@ interface webkitURL
     setter statusbar
     setter toolbar
     setter visualViewport
+    setter webgpu
 PASS successfullyParsed is true
 
 TEST COMPLETE

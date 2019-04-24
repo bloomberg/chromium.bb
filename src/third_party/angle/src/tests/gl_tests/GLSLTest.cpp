@@ -609,160 +609,6 @@ void main()
     ANGLE_GL_PROGRAM(program, kVS, kFS);
 }
 
-// Draw an array of points with the first vertex offset at 0 using gl_VertexID
-TEST_P(GLSLTest_ES3, GLVertexIDOffsetZeroDrawArray)
-{
-    constexpr int kStartIndex  = 0;
-    constexpr int kArrayLength = 5;
-    constexpr char kVS[]       = R"(#version 300 es
-precision highp float;
-void main() {
-    gl_Position = vec4(float(gl_VertexID)/10.0, 0, 0, 1);
-    gl_PointSize = 3.0;
-})";
-
-    constexpr char kFS[] = R"(#version 300 es
-precision highp float;
-out vec4 outColor;
-void main() {
-    outColor = vec4(255.0, 0.0, 0.0, 1.0);
-})";
-
-    ANGLE_GL_PROGRAM(program, kVS, kFS);
-
-    glUseProgram(program);
-    glDrawArrays(GL_POINTS, kStartIndex, kArrayLength);
-
-    double pointCenterX = static_cast<double>(getWindowWidth()) / 2.0;
-    double pointCenterY = static_cast<double>(getWindowHeight()) / 2.0;
-    for (int i = kStartIndex; i < kStartIndex + kArrayLength; i++)
-    {
-        double pointOffsetX = static_cast<double>(i * getWindowWidth()) / 20.0;
-        EXPECT_PIXEL_COLOR_EQ(static_cast<int>(pointCenterX + pointOffsetX),
-                              static_cast<int>(pointCenterY), GLColor::red);
-    }
-}
-
-// Helper function for the GLVertexIDIntegerTextureDrawArrays test
-void GLVertexIDIntegerTextureDrawArrays_helper(int first, int count, GLenum err)
-{
-    glDrawArrays(GL_POINTS, first, count);
-
-    int pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA_INTEGER, GL_INT, pixel);
-    // If we call this function with err as GL_NO_ERROR, then we expect no error and check the
-    // pixels.
-    if (err == static_cast<GLenum>(GL_NO_ERROR))
-    {
-        EXPECT_GL_NO_ERROR();
-        EXPECT_EQ(pixel[0], first + count - 1);
-    }
-    else
-    {
-        // If we call this function with err set, we will allow the error, but check the pixels if
-        // the error hasn't occurred.
-        GLenum glError = glGetError();
-        if (glError == err || glError == static_cast<GLenum>(GL_NO_ERROR))
-        {
-            EXPECT_EQ(pixel[0], first + count - 1);
-        }
-    }
-}
-
-// Ensure gl_VertexID gets passed to an integer texture properly when drawArrays is called. This
-// is based off the WebGL test:
-// https://github.com/KhronosGroup/WebGL/blob/master/sdk/tests/conformance2/rendering/vertex-id.html
-TEST_P(GLSLTest_ES3, GLVertexIDIntegerTextureDrawArrays)
-{
-    // Have to set a large point size because the window size is much larger than the texture
-    constexpr char kVS[] = R"(#version 300 es
-flat out highp int vVertexID;
-void main() {
-    vVertexID = gl_VertexID;
-    gl_Position = vec4(0,0,0,1);
-    gl_PointSize = 1000.0;
-})";
-
-    constexpr char kFS[] = R"(#version 300 es
-flat in highp int vVertexID;
-out highp int oVertexID;
-void main() {
-    oVertexID = vVertexID;
-})";
-
-    ANGLE_GL_PROGRAM(program, kVS, kFS);
-    glUseProgram(program);
-
-    GLTexture texture;
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32I, 1, 1);
-    GLFramebuffer fbo;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    EXPECT_GL_NO_ERROR();
-
-    // Clear the texture to 42 to ensure the first test case doesn't accidentally pass
-    GLint val = 42;
-    glClearBufferiv(GL_COLOR, 0, &val);
-    int pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA_INTEGER, GL_INT, pixel);
-    EXPECT_EQ(pixel[0], val);
-
-    GLVertexIDIntegerTextureDrawArrays_helper(0, 1, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(1, 1, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(10000, 1, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(100000, 1, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(1000000, 1, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(0, 2, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(1, 2, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(10000, 2, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(100000, 2, GL_NO_ERROR);
-    GLVertexIDIntegerTextureDrawArrays_helper(1000000, 2, GL_NO_ERROR);
-
-    int32_t int32Max = 0x7FFFFFFF;
-    GLVertexIDIntegerTextureDrawArrays_helper(int32Max - 2, 1, GL_OUT_OF_MEMORY);
-    GLVertexIDIntegerTextureDrawArrays_helper(int32Max - 1, 1, GL_OUT_OF_MEMORY);
-    GLVertexIDIntegerTextureDrawArrays_helper(int32Max, 1, GL_OUT_OF_MEMORY);
-}
-
-// Draw an array of points with the first vertex offset at 5 using gl_VertexID
-TEST_P(GLSLTest_ES3, GLVertexIDOffsetFiveDrawArray)
-{
-    // Bug in Nexus drivers, offset does not work. (anglebug.com/3264)
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
-
-    constexpr int kStartIndex  = 5;
-    constexpr int kArrayLength = 5;
-    constexpr char kVS[]       = R"(#version 300 es
-precision highp float;
-void main() {
-    gl_Position = vec4(float(gl_VertexID)/10.0, 0, 0, 1);
-    gl_PointSize = 3.0;
-})";
-
-    constexpr char kFS[] = R"(#version 300 es
-precision highp float;
-out vec4 outColor;
-void main() {
-    outColor = vec4(255.0, 0.0, 0.0, 1.0);
-})";
-
-    ANGLE_GL_PROGRAM(program, kVS, kFS);
-
-    glUseProgram(program);
-    glDrawArrays(GL_POINTS, kStartIndex, kArrayLength);
-
-    double pointCenterX = static_cast<double>(getWindowWidth()) / 2.0;
-    double pointCenterY = static_cast<double>(getWindowHeight()) / 2.0;
-    for (int i = kStartIndex; i < kStartIndex + kArrayLength; i++)
-    {
-        double pointOffsetX = static_cast<double>(i * getWindowWidth()) / 20.0;
-        EXPECT_PIXEL_COLOR_EQ(static_cast<int>(pointCenterX + pointOffsetX),
-                              static_cast<int>(pointCenterY), GLColor::red);
-    }
-}
-
 TEST_P(GLSLTest, ElseIfRewriting)
 {
     constexpr char kVS[] =
@@ -3363,8 +3209,8 @@ TEST_P(GLSLTest_ES3, VaryingStructUsedInFragmentShader)
 // This test covers passing a struct containing a sampler as a function argument.
 TEST_P(GLSLTest, StructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; };
@@ -3455,8 +3301,8 @@ void main()
 // This test covers passing an array of structs containing samplers as a function argument.
 TEST_P(GLSLTest, ArrayOfStructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     constexpr char kFS[] =
         "precision mediump float;\n"
@@ -3506,10 +3352,10 @@ TEST_P(GLSLTest, ArrayOfStructsWithSamplersAsFunctionArg)
 // This test covers passing a struct containing an array of samplers as a function argument.
 TEST_P(GLSLTest, StructWithSamplerArrayAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
-    // TODO(jmadill): Fix on Android/vulkan if possible. http://anglebug.com/2703
+    // TODO(jmadill): Fix on Android if possible. http://anglebug.com/2703
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
 
     constexpr char kFS[] =
@@ -3560,8 +3406,8 @@ TEST_P(GLSLTest, StructWithSamplerArrayAsFunctionArg)
 // This test covers passing nested structs containing a sampler as a function argument.
 TEST_P(GLSLTest, NestedStructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; };
@@ -3611,8 +3457,8 @@ void main()
 // This test covers passing a compound structs containing a sampler as a function argument.
 TEST_P(GLSLTest, CompoundStructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; bool b; };
@@ -3663,8 +3509,8 @@ void main()
 // This test covers passing nested compound structs containing a sampler as a function argument.
 TEST_P(GLSLTest, NestedCompoundStructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { sampler2D samplerMember; bool b; };
@@ -3728,8 +3574,8 @@ void main()
 // Same as the prior test but with reordered struct members.
 TEST_P(GLSLTest, MoreNestedCompoundStructsWithSamplersAsFunctionArg)
 {
-    // Shader failed to compile on Nexus devices. http://anglebug.com/2114
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsAdreno() && IsOpenGLES());
+    // Shader failed to compile on Android. http://anglebug.com/2114
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     const char kFragmentShader[] = R"(precision mediump float;
 struct S { bool b; sampler2D samplerMember; };
@@ -4849,6 +4695,9 @@ TEST_P(GLSLTest, PointCoordConsistency)
 
     // AMD's OpenGL drivers may have the same issue. http://anglebug.com/1643
     ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
+
+    // http://anglebug.com/2599: Fails on the 5x due to driver bug.
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
 
     constexpr char kPointCoordVS[] = R"(attribute vec2 position;
 uniform vec2 viewportSize;

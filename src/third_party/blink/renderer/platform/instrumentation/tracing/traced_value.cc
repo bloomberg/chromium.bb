@@ -12,6 +12,10 @@
 
 namespace blink {
 
+std::unique_ptr<TracedValue> TracedValue::Create() {
+  return base::WrapUnique(new TracedValue());
+}
+
 TracedValue::TracedValue() = default;
 
 TracedValue::~TracedValue() = default;
@@ -43,10 +47,6 @@ void TracedValue::SetBooleanWithCopiedName(const char* name, bool value) {
 void TracedValue::SetString(const char* name, const String& value) {
   StringUTF8Adaptor adaptor(value);
   traced_value_.SetString(name, adaptor.AsStringPiece());
-}
-
-void TracedValue::SetValue(const char* name, TracedValue* value) {
-  traced_value_.SetValue(name, &value->traced_value_);
 }
 
 void TracedValue::SetStringWithCopiedName(const char* name,

@@ -31,9 +31,11 @@ Full references with examples are available for:
 
 Check out [a graphical overview of examples](api/catalog.htm)
 
-All public APIs are indexed by Doxygen.
+All public APIs are indexed by Doxygen. The Doxyen index is current, but the
+content is dated and incomplete. Doxygen content will be superseded by
+full references with examples.
 
-*   [Skia Doxygen](https://api.skia.org)
+*   [Skia Doxygen](http://skia-doc.commondatastorage.googleapis.com/doxygen/doxygen/html/index.html)
 
 ## Overview
 

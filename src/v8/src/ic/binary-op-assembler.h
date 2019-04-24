@@ -17,7 +17,7 @@ class CodeAssemblerState;
 
 class BinaryOpAssembler : public CodeStubAssembler {
  public:
-  using Node = compiler::Node;
+  typedef compiler::Node Node;
 
   explicit BinaryOpAssembler(compiler::CodeAssemblerState* state)
       : CodeStubAssembler(state) {}
@@ -48,8 +48,8 @@ class BinaryOpAssembler : public CodeStubAssembler {
                                           bool rhs_is_smi);
 
  private:
-  using SmiOperation = std::function<Node*(Node*, Node*, Variable*)>;
-  using FloatOperation = std::function<Node*(Node*, Node*)>;
+  typedef std::function<Node*(Node*, Node*, Variable*)> SmiOperation;
+  typedef std::function<Node*(Node*, Node*)> FloatOperation;
 
   Node* Generate_BinaryOperationWithFeedback(
       Node* context, Node* lhs, Node* rhs, Node* slot_id, Node* feedback_vector,

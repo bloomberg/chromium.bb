@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -693,8 +692,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_SentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
-                                  base::NullCallback());
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE, 16000000));
   // There shouldn't be too much usage on the browser process. Note that it
@@ -732,8 +730,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_TotalSentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
-                                  base::NullCallback());
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
 
   // This test uses |setTimeout| to exceed the Nyquist ratio to ensure that at
   // least 1 refresh has happened of no traffic.
@@ -748,8 +745,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_TotalSentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
-                                  base::NullCallback());
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE,
       16000000 * 2));
@@ -903,20 +899,10 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
 
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Simulate a user gesture on the frame about to be navigated so that the
-  // corresponding navigation entry is not marked as skippable.
-  content::RenderFrameHost* child_frame = ChildFrameAt(tab->GetMainFrame(), 0);
-  content::RenderFrameHost* grandchild_frame = ChildFrameAt(child_frame, 0);
-  grandchild_frame->ExecuteJavaScriptWithUserGestureForTests(
-      base::UTF8ToUTF16("a=5"));
-
   GURL d_url = embedded_test_server()->GetURL(
       "d.com", "/cross_site_iframe_factory.html?d(e)");
   ASSERT_TRUE(content::ExecuteScript(
-      tab->GetMainFrame(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       "frames[0][0].location.href = '" + d_url.spec() + "';"));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -929,7 +915,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnySubframe()));
 
-  ASSERT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -942,7 +927,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
 
-  ASSERT_TRUE(chrome::CanGoForward(browser()));
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   // When the subframe appears in the cloned process, it must have a valid

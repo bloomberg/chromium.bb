@@ -124,5 +124,4 @@ void ContextImpl::handleError(GLenum errorCode,
     errorStream << "Internal error: " << gl::FmtHex(errorCode) << ": " << message;
     mErrors->handleError(errorCode, errorStream.str().c_str(), file, function, line);
 }
-
 }  // namespace rx

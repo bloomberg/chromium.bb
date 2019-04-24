@@ -37,6 +37,16 @@ void PasswordTabHelper::SetPasswordControllerDelegate(
   controller_.delegate = delegate;
 }
 
+void PasswordTabHelper::GenerateAndOfferPassword(
+    NSString* formName,
+    NSString* newPasswordIdentifier,
+    NSString* confirmPasswordIdentifier) {
+  [controller_ generatePasswordForFormName:formName
+                     newPasswordIdentifier:newPasswordIdentifier
+                 confirmPasswordIdentifier:confirmPasswordIdentifier
+                         completionHandler:nil];
+}
+
 id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }
@@ -45,13 +55,9 @@ id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
   return controller_.passwordFormFiller;
 }
 
-password_manager::PasswordGenerationFrameHelper*
-PasswordTabHelper::GetGenerationHelper() {
-  return controller_.passwordGenerationHelper;
-}
-
-password_manager::PasswordManager* PasswordTabHelper::GetPasswordManager() {
-  return controller_.passwordManager;
+password_manager::PasswordGenerationManager*
+PasswordTabHelper::GetPasswordGenerationManager() {
+  return controller_.passwordGenerationManager;
 }
 
 PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)

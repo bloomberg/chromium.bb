@@ -59,12 +59,19 @@ void AssistantMainView::RequestFocus() {
   dialog_plate_->RequestFocus();
 }
 
-void AssistantMainView::InitLayout() {
-  constexpr int radius = search_box::kSearchBoxBorderCornerRadiusSearchResult;
+void AssistantMainView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  layer_mask_->layer()->SetBounds(GetLocalBounds());
+}
 
+void AssistantMainView::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetRoundedCornerRadius({radius, radius, radius, radius});
+
+  layer_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(
+          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadiusSearchResult));
+  layer_mask_->layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMaskLayer(layer_mask_->layer());
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(

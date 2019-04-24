@@ -19,7 +19,7 @@ class PartialSerializer;
 class StartupSerializer;
 
 // Wrapper around reservation sizes and the serialization payload.
-class V8_EXPORT_PRIVATE SnapshotData : public SerializedData {
+class SnapshotData : public SerializedData {
  public:
   // Used when producing.
   explicit SnapshotData(const Serializer* serializer);
@@ -72,7 +72,7 @@ class Snapshot : public AllStatic {
   // To be implemented by the snapshot source.
   static const v8::StartupData* DefaultSnapshotBlob();
 
-  V8_EXPORT_PRIVATE static bool VerifyChecksum(const v8::StartupData* data);
+  static bool VerifyChecksum(const v8::StartupData* data);
 
   // ---------------- Serialization ----------------
 

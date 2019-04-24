@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
@@ -122,10 +121,8 @@ class SupervisedUserTest : public InProcessBrowserTest,
 
   void SendAccessRequest(WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
-      tab->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::ASCIIToUTF16(
-              "supervisedUserErrorPageController.requestPermission()"),
-          base::NullCallback());
+      tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(
+          "supervisedUserErrorPageController.requestPermission()"));
       return;
     }
 
@@ -143,8 +140,7 @@ class SupervisedUserTest : public InProcessBrowserTest,
   void GoBack(WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
       tab->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::ASCIIToUTF16("supervisedUserErrorPageController.goBack()"),
-          base::NullCallback());
+          base::ASCIIToUTF16("supervisedUserErrorPageController.goBack()"));
       return;
     }
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();

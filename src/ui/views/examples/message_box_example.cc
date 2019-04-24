@@ -18,7 +18,8 @@ namespace examples {
 MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {
 }
 
-MessageBoxExample::~MessageBoxExample() = default;
+MessageBoxExample::~MessageBoxExample() {
+}
 
 void MessageBoxExample::CreateExampleView(View* container) {
   message_box_view_ = new MessageBoxView(
@@ -54,7 +55,7 @@ void MessageBoxExample::CreateExampleView(View* container) {
 void MessageBoxExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
-        ASCIIToUTF16(message_box_view_->IsCheckBoxSelected() ? "on" : "off"));
+        ASCIIToUTF16(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));
     PrintStatus(message_box_view_->IsCheckBoxSelected() ?
        "Check Box Selected" : "Check Box Not Selected");
   } else if (sender == toggle_) {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
@@ -46,11 +47,7 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
                                          DurationBehavior behavior,
                                          base::TimeDelta delayed_by);
 
-  ScrollOffsetAnimationCurve(const ScrollOffsetAnimationCurve&) = delete;
   ~ScrollOffsetAnimationCurve() override;
-
-  ScrollOffsetAnimationCurve& operator=(const ScrollOffsetAnimationCurve&) =
-      delete;
 
   void SetInitialValue(const gfx::ScrollOffset& initial_value,
                        base::TimeDelta delayed_by = base::TimeDelta());
@@ -96,6 +93,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   bool has_set_initial_value_;
 
   static base::Optional<double> animation_duration_for_testing_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimationCurve);
 };
 
 }  // namespace cc

@@ -379,14 +379,14 @@ createCommonDataFile(const char *destDir, const char *name, const char *entrypoi
             "        {0, 0, 0, 0}\n"
             "    },\n"
             "    \"\", %lu, 0, {\n",
-            static_cast<unsigned long>(32-4-sizeof(UDataInfo)),
-            static_cast<unsigned long>(fileCount),
+            (unsigned long)32-4-sizeof(UDataInfo),
+            (unsigned long)fileCount,
             entrypointName,
-            static_cast<unsigned long>(sizeof(UDataInfo)),
+            (unsigned long)sizeof(UDataInfo),
             U_IS_BIG_ENDIAN,
             U_CHARSET_FAMILY,
             U_SIZEOF_UCHAR,
-            static_cast<unsigned long>(fileCount)
+            (unsigned long)fileCount
         );
         T_FileStream_writeLine(out, buffer);
 

@@ -10,9 +10,11 @@
 namespace blink {
 
 TEST(WebCompositorAnimationTest, DefaultSettings) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
-  auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-      *curve, compositor_target_property::OPACITY, 0, 1);
+  std::unique_ptr<CompositorAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 1, 0);
 
   // Ensure that the defaults are correct.
   EXPECT_EQ(1, keyframe_model->Iterations());
@@ -23,9 +25,11 @@ TEST(WebCompositorAnimationTest, DefaultSettings) {
 }
 
 TEST(WebCompositorAnimationTest, ModifiedSettings) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
-  auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-      *curve, compositor_target_property::OPACITY, 0, 1);
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 1, 0);
   keyframe_model->SetIterations(2);
   keyframe_model->SetStartTime(2);
   keyframe_model->SetTimeOffset(2);

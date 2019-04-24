@@ -16,7 +16,11 @@ using ::webrtc::TaskQueueTest;
 // Wrapper around WebrtcTaskQueueFactory to set up required testing environment.
 class TestTaskQueueFactory final : public webrtc::TaskQueueFactory {
  public:
-  TestTaskQueueFactory() : factory_(CreateWebRtcTaskQueueFactory()) {}
+  // webrtc tests block TaskQueue to verify how it behave when it is too busy,
+  // allow base sync primitives for that blocking.
+  TestTaskQueueFactory()
+      : factory_(
+            CreateWebRtcTaskQueueFactory({base::WithBaseSyncPrimitives()})) {}
 
   std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
   CreateTaskQueue(absl::string_view name, Priority priority) const override {

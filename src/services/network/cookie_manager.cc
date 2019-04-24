@@ -7,18 +7,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/process/process.h"
-#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/cookie_managers_shared.h"
+#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "url/gurl.h"
 
@@ -29,7 +26,18 @@ namespace network {
 
 namespace {
 
-bool g_crash_on_get_cookie_list = false;
+// Converts the one-argument callbacks to two-argument callback that ignores
+// the second arument for the cookie_store
+net::CookieStore::GetCookieListCallback IgnoreSecondArg(
+    base::OnceCallback<void(const net::CookieList&)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(const net::CookieList&)> callback,
+         const net::CookieList& cookies,
+         const net::CookieStatusList& excluded_list) {
+        std::move(callback).Run(cookies);
+      },
+      std::move(callback));
+}
 
 }  // namespace
 
@@ -46,9 +54,13 @@ void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
 CookieManager::CookieManager(
     net::CookieStore* cookie_store,
     scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
+    scoped_refptr<SessionCleanupChannelIDStore>
+        session_cleanup_channel_id_store,
     mojom::CookieManagerParamsPtr params)
     : cookie_store_(cookie_store),
-      session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)) {
+      session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)),
+      session_cleanup_channel_id_store_(
+          std::move(session_cleanup_channel_id_store)) {
   if (params) {
     cookie_settings_.set_block_third_party_cookies(
         params->block_third_party_cookies);
@@ -59,9 +71,6 @@ CookieManager::CookieManager(
         params->matching_scheme_cookies_allowed_schemes);
     cookie_settings_.set_third_party_cookies_allowed_schemes(
         params->third_party_cookies_allowed_schemes);
-    // Don't wait for callback, the work happens synchronously.
-    AllowFileSchemeCookies(params->allow_file_scheme_cookies,
-                           base::DoNothing());
   }
 }
 
@@ -70,6 +79,11 @@ CookieManager::~CookieManager() {
     session_cleanup_cookie_store_->DeleteSessionCookies(
         cookie_settings_.CreateDeleteCookieOnExitPredicate());
   }
+  if (session_cleanup_channel_id_store_) {
+    session_cleanup_channel_id_store_->DeleteSessionChannelIDs(
+        base::BindRepeating(&CookieSettings::IsCookieSessionOnly,
+                            base::Unretained(&cookie_settings_)));
+  }
 }
 
 void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
@@ -77,29 +91,23 @@ void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
-  cookie_store_->GetAllCookiesAsync(
-      net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
+  cookie_store_->GetAllCookiesAsync(IgnoreSecondArg(std::move(callback)));
 }
 
 void CookieManager::GetCookieList(const GURL& url,
                                   const net::CookieOptions& cookie_options,
                                   GetCookieListCallback callback) {
-#if !defined(OS_IOS)
-  if (g_crash_on_get_cookie_list)
-    base::Process::TerminateCurrentProcessImmediately(1);
-#endif
-
-  cookie_store_->GetCookieListWithOptionsAsync(url, cookie_options,
-                                               std::move(callback));
+  cookie_store_->GetCookieListWithOptionsAsync(
+      url, cookie_options, IgnoreSecondArg(std::move(callback)));
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        const std::string& source_scheme,
-                                       const net::CookieOptions& cookie_options,
+                                       bool modify_http_only,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), source_scheme,
-      cookie_options, std::move(callback));
+      modify_http_only, AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void CookieManager::DeleteCanonicalCookie(
@@ -211,29 +219,14 @@ void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
   cookie_store_->FlushStore(std::move(callback));
 }
 
-void CookieManager::AllowFileSchemeCookies(
-    bool allow,
-    AllowFileSchemeCookiesCallback callback) {
-  std::vector<std::string> cookieable_schemes(
-      net::CookieMonster::kDefaultCookieableSchemes,
-      net::CookieMonster::kDefaultCookieableSchemes +
-          net::CookieMonster::kDefaultCookieableSchemesCount);
-  if (allow) {
-    cookieable_schemes.push_back(url::kFileScheme);
-  }
-  cookie_store_->SetCookieableSchemes(cookieable_schemes, std::move(callback));
-}
-
 void CookieManager::SetForceKeepSessionState() {
   cookie_store_->SetForceKeepSessionState();
+  if (session_cleanup_channel_id_store_)
+    session_cleanup_channel_id_store_->SetForceKeepSessionState();
 }
 
 void CookieManager::BlockThirdPartyCookies(bool block) {
   cookie_settings_.set_block_third_party_cookies(block);
-}
-
-void CookieManager::CrashOnGetCookieList() {
-  g_crash_on_get_cookie_list = true;
 }
 
 CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {

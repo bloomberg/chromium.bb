@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE RecordParsed {
 
   template <class T> const T* rdata() const {
     if (T::kType != type_)
-      return nullptr;
+      return NULL;
     return static_cast<const T*>(rdata_.get());
   }
 

@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -49,7 +50,6 @@ import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.ArrayList;
@@ -219,8 +219,12 @@ public class SearchActivityTest {
         setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         // Start loading native, then let the activity finish initialization.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> searchActivity.startDelayedNativeInitialization());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                searchActivity.startDelayedNativeInitialization();
+            }
+        });
 
         Assert.assertEquals(
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
@@ -269,7 +273,7 @@ public class SearchActivityTest {
             public Void call() throws InterruptedException, TimeoutException {
                 // Finish initialization.  It should notice the URL is queued up and start the
                 // browser.
-                TestThreadUtils.runOnUiThreadBlocking(
+                ThreadUtils.runOnUiThreadBlocking(
                         () -> { searchActivity.startDelayedNativeInitialization(); });
 
                 Assert.assertEquals(
@@ -332,8 +336,12 @@ public class SearchActivityTest {
 
         // Set some text in the search box, then continue startup.
         setUrlBarText(searchActivity, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mTestDelegate.onSearchEngineFinalizedCallback.onResult(true));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mTestDelegate.onSearchEngineFinalizedCallback.onResult(true);
+            }
+        });
 
         // Let the initialization finish completely.
         Assert.assertEquals(
@@ -506,7 +514,7 @@ public class SearchActivityTest {
                 return false;
             }
         });
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
             urlBar.setText(url);
         });

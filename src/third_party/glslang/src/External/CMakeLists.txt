@@ -10,8 +10,7 @@ if(BUILD_TESTING)
         if(WIN32)
             set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         endif(WIN32)
-        # EXCLUDE_FROM_ALL keeps the install target from installing GTEST files.
-        add_subdirectory(googletest EXCLUDE_FROM_ALL)
+        add_subdirectory(googletest)
         set(GTEST_TARGETS
             gtest
             gtest_main

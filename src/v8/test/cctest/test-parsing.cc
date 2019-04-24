@@ -6072,7 +6072,7 @@ TEST(PrivateStaticClassFieldsErrors) {
                     private_static_fields, arraysize(private_static_fields));
 }
 
-TEST(PrivateNameResolutionErrors) {
+TEST(PrivateNameNoErrors) {
   // clang-format off
   const char* context_data[][2] = {
       {"class X { bar() { ", " } }"},
@@ -6119,7 +6119,7 @@ TEST(PrivateNameResolutionErrors) {
   RunParserSyncTest(context_data, statement_data, kError);
 
   static const ParserFlag private_fields[] = {kAllowHarmonyPrivateFields};
-  RunParserSyncTest(context_data, statement_data, kError, nullptr, 0,
+  RunParserSyncTest(context_data, statement_data, kSuccess, nullptr, 0,
                     private_fields, arraysize(private_fields));
 }
 
@@ -11291,15 +11291,27 @@ TEST(LexicalLoopVariable) {
   }
 }
 
-TEST(PrivateNamesSyntaxErrorEarly) {
+TEST(PrivateNamesSyntaxErrorWithScopeAnalysis) {
   i::Isolate* isolate = CcTest::i_isolate();
   i::HandleScope scope(isolate);
   LocalContext env;
 
-  const char* context_data[][2] = {
-      {"", ""}, {"\"use strict\";", ""}, {nullptr, nullptr}};
+  auto test = [isolate](const char* program, bool is_lazy) {
+    i::FLAG_harmony_private_fields = true;
+    i::Factory* const factory = isolate->factory();
+    i::Handle<i::String> source =
+        factory->NewStringFromUtf8(i::CStrVector(program)).ToHandleChecked();
+    i::Handle<i::Script> script = factory->NewScript(source);
+    i::ParseInfo info(isolate, script);
 
-  const char* statement_data[] = {
+    info.set_allow_lazy_parsing(is_lazy);
+    CHECK(i::parsing::ParseProgram(&info, isolate));
+    CHECK(i::Rewriter::Rewrite(&info));
+    CHECK(!i::DeclarationScope::Analyze(&info));
+    return info.pending_error_handler()->has_pending_error();
+  };
+
+  const char* data[] = {
       "class A {"
       "  foo() { return this.#bar; }"
       "}",
@@ -11359,12 +11371,12 @@ TEST(PrivateNamesSyntaxErrorEarly) {
       "function t(){"
       "  return class { getA() { return this.#foo; } }"
       "}",
+  };
 
-      nullptr};
-
-  static const ParserFlag flags[] = {kAllowHarmonyPrivateFields};
-  RunParserSyncTest(context_data, statement_data, kError, nullptr, 0, flags, 1);
-  RunParserSyncTest(context_data, statement_data, kError);
+  for (const char* source : data) {
+    CHECK(test(source, true));
+    CHECK(test(source, false));
+  }
 }
 
 TEST(HashbangSyntax) {

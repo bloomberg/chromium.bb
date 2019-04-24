@@ -96,8 +96,8 @@ static inline bool ShouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 
 FrameSelection::FrameSelection(LocalFrame& frame)
     : frame_(frame),
-      layout_selection_(MakeGarbageCollected<LayoutSelection>(*this)),
-      selection_editor_(MakeGarbageCollected<SelectionEditor>(frame)),
+      layout_selection_(LayoutSelection::Create(*this)),
+      selection_editor_(SelectionEditor::Create(frame)),
       granularity_(TextGranularity::kCharacter),
       x_pos_for_vertical_arrow_navigation_(NoXPosForVerticalArrowNavigation()),
       focused_(frame.GetPage() &&
@@ -148,9 +148,9 @@ size_t FrameSelection::CharacterIndexForPoint(const IntPoint& point) const {
 
 VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
     const {
-  // TODO(editing-dev): Hoist UpdateStyleAndLayout
+  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   return ComputeVisibleSelectionInDOMTree();
 }
 
@@ -422,9 +422,9 @@ void FrameSelection::Clear() {
 }
 
 bool FrameSelection::SelectionHasFocus() const {
-  // TODO(editing-dev): Hoist UpdateStyleAndLayout
+  // TODO(editing-dev): Hoist UpdateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (ComputeVisibleSelectionInFlatTree().IsNone())
     return false;
   const Node* current =
@@ -536,9 +536,9 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
   if (!IsAvailable() || GetSelectionInDOMTree().IsNone())
     return false;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (ComputeVisibleSelectionInDOMTree().IsNone()) {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
@@ -633,9 +633,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
   }
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!IsStartOfDocument(ComputeVisibleSelectionInDOMTree().VisibleStart()))
     return;
@@ -657,9 +657,10 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   if (!owner_element_parent)
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
-  // needs to be audited. See http://crbug.com/590369 for more details.
-  owner_element_parent->GetDocument().UpdateStyleAndLayout();
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  owner_element_parent->GetDocument()
+      .UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // This method's purpose is it to make it easier to select iframes (in order
   // to delete them).  Don't do anything if the iframe isn't deletable.
@@ -899,7 +900,7 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
   if (Element* target =
           ComputeVisibleSelectionInDOMTreeDeprecated().RootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
-    GetDocument().UpdateStyleAndLayoutTree();
+    GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
     while (target) {
       // We don't want to set focus on a subframe when selecting in a parent
       // frame, so add the !isFrameElement check here. There's probably a better
@@ -987,10 +988,10 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
                                      RevealExtentOption reveal_extent_option) {
   DCHECK(IsAvailable());
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // Calculation of absolute caret bounds requires clean layout.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())

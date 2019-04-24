@@ -58,7 +58,7 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
 
   // DisplayItemClient methods
   String DebugName() const final { return "PaintRecordBuilder"; }
-  IntRect VisualRect() const final { return IntRect(); }
+  LayoutRect VisualRect() const final { return LayoutRect(); }
 
  private:
   PaintController* paint_controller_;

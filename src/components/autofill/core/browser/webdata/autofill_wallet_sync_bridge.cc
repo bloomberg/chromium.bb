@@ -198,9 +198,7 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     return error;
   }
 
-  // We want to notify the metadata bridge about all changes so that the
-  // metadata bridge can track changes in the data bridge and react accordingly.
-  SetSyncData(entity_data, /*notify_metadata_bridge=*/true);
+  SetSyncData(entity_data);
 
   // After the first sync, we are sure that initial sync is done.
   if (!initial_sync_done_) {
@@ -279,10 +277,7 @@ void AutofillWalletSyncBridge::ApplyStopSyncChanges(
       SyncWalletDataRecordClearedEntitiesCount(count);
     }
 
-    // Do not notify the metadata bridge because we do not want to upstream the
-    // deletions. The metadata bridge deletes its data independently when sync
-    // gets stopped.
-    SetSyncData(syncer::EntityChangeList(), /*notify_metadata_bridge=*/false);
+    SetSyncData(syncer::EntityChangeList());
 
     initial_sync_done_ = false;
   }
@@ -328,8 +323,7 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
 }
 
 void AutofillWalletSyncBridge::SetSyncData(
-    const syncer::EntityChangeList& entity_data,
-    bool notify_metadata_bridge) {
+    const syncer::EntityChangeList& entity_data) {
   bool wallet_data_changed = false;
 
   // Extract the Autofill types from the sync |entity_data|.
@@ -342,10 +336,10 @@ void AutofillWalletSyncBridge::SetSyncData(
   bool should_log_diff;
   wallet_data_changed |=
       SetPaymentsCustomerData(std::move(customer_data), &should_log_diff);
-  wallet_data_changed |= SetWalletCards(
-      std::move(wallet_cards), should_log_diff, notify_metadata_bridge);
-  wallet_data_changed |= SetWalletAddresses(
-      std::move(wallet_addresses), should_log_diff, notify_metadata_bridge);
+  wallet_data_changed |=
+      SetWalletCards(std::move(wallet_cards), should_log_diff);
+  wallet_data_changed |=
+      SetWalletAddresses(std::move(wallet_addresses), should_log_diff);
 
   // Commit the transaction to make sure the data and the metadata with the
   // new progress marker is written down (especially on Android where we
@@ -360,8 +354,7 @@ void AutofillWalletSyncBridge::SetSyncData(
 
 bool AutofillWalletSyncBridge::SetWalletCards(
     std::vector<CreditCard> wallet_cards,
-    bool log_diff,
-    bool notify_metadata_bridge) {
+    bool log_diff) {
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
   // server. To preserve user's preferred billing address and most recent use
@@ -393,11 +386,8 @@ bool AutofillWalletSyncBridge::SetWalletCards(
     } else {
       table->SetServerCreditCards(wallet_cards);
     }
-    if (notify_metadata_bridge) {
-      for (const CreditCardChange& change : diff.changes) {
-        web_data_backend_->NotifyOfCreditCardChanged(change);
-      }
-    }
+    for (const CreditCardChange& change : diff.changes)
+      web_data_backend_->NotifyOfCreditCardChanged(change);
     return true;
   }
   return false;
@@ -405,16 +395,7 @@ bool AutofillWalletSyncBridge::SetWalletCards(
 
 bool AutofillWalletSyncBridge::SetWalletAddresses(
     std::vector<AutofillProfile> wallet_addresses,
-    bool log_diff,
-    bool notify_metadata_bridge) {
-  // We do not have to CopyRelevantWalletMetadataFromDisk() because we will
-  // never overwrite the same entity with different data (server_id is generated
-  // based on content so addresses have the same server_id iff they have the
-  // same content). For that reason it is impossible to issue a DELETE and ADD
-  // for the same entity just because some of its fields got changed. As a
-  // result, we do not need to care to have up-to-date use stats for cards
-  // because we never notify on an existing one.
-
+    bool log_diff) {
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
@@ -441,11 +422,8 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
     } else {
       table->SetServerProfiles(wallet_addresses);
     }
-    if (notify_metadata_bridge) {
-      for (const AutofillProfileChange& change : diff.changes) {
-        web_data_backend_->NotifyOfAutofillProfileChanged(change);
-      }
-    }
+    for (const AutofillProfileChange& change : diff.changes)
+      web_data_backend_->NotifyOfAutofillProfileChanged(change);
     return true;
   }
   return false;
@@ -513,11 +491,8 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
   std::sort(old_ptrs.begin(), old_ptrs.end(), compare);
   std::sort(new_ptrs.begin(), new_ptrs.end(), compare);
 
-  AutofillWalletDiff<Item> result;
-  // We collect ADD changes separately to ensure proper order.
-  std::vector<AutofillDataModelChange<Item>> add_changes;
-
   // Walk over both of them and count added/removed elements.
+  AutofillWalletDiff<Item> result;
   auto old_it = old_ptrs.begin();
   auto new_it = new_ptrs.begin();
   while (old_it != old_ptrs.end() || new_it != new_ptrs.end()) {
@@ -533,24 +508,18 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
     if (cmp < 0) {
       ++result.items_removed;
       result.changes.emplace_back(AutofillDataModelChange<Item>::REMOVE,
-                                  (*old_it)->server_id(), *old_it);
+                                  (*old_it)->server_id(), nullptr);
       ++old_it;
     } else if (cmp == 0) {
       ++old_it;
       ++new_it;
     } else {
       ++result.items_added;
-      add_changes.emplace_back(AutofillDataModelChange<Item>::ADD,
-                               (*new_it)->server_id(), *new_it);
+      result.changes.emplace_back(AutofillDataModelChange<Item>::ADD,
+                                  (*new_it)->server_id(), *new_it);
       ++new_it;
     }
   }
-
-  // Append ADD changes to make sure they all come after all REMOVE changes.
-  // Since we CopyRelevantWalletMetadataFromDisk(), the ADD contains all current
-  // metadata if we happen to REMOVE and ADD the same entity.
-  result.changes.insert(result.changes.end(), add_changes.begin(),
-                        add_changes.end());
 
   DCHECK_EQ(old_data.size() + result.items_added - result.items_removed,
             new_data.size());

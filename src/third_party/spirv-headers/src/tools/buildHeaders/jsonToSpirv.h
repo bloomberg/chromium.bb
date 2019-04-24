@@ -38,7 +38,7 @@ namespace spv {
 std::pair<bool, std::string> ReadFile(const std::string& path);
 
 // Fill in all the parameters
-void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders);
+void jsonToSpirv(const std::string& jsonPath);
 
 // For parameterizing operands.
 enum OperandClass {

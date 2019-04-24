@@ -148,7 +148,7 @@ void ScreenOrientation::SetAngle(uint16_t angle) {
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
                                       const AtomicString& lock_string) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(state);
   ScriptPromise promise = resolver->Promise();
 
   Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
@@ -161,7 +161,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
     return promise;
   }
 
-  if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
+  if (document->IsSandboxed(kSandboxOrientationLock)) {
     DOMException* exception =
         DOMException::Create(DOMExceptionCode::kSecurityError,
                              "The document is sandboxed and lacks the "

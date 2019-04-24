@@ -32,7 +32,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/focus/focus_manager.h"
@@ -248,8 +247,7 @@ void BookmarkEditorView::ShowContextMenuForViewImpl(
 
   context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                   NULL, gfx::Rect(point, gfx::Size()),
-                                  views::MenuAnchorPosition::kTopRight,
-                                  source_type);
+                                  views::MENU_ANCHOR_TOPRIGHT, source_type);
 }
 
 const char* BookmarkEditorView::GetClassName() const {
@@ -321,11 +319,10 @@ void BookmarkEditorView::Init() {
   title_tf_->SetText(title);
   title_tf_->set_controller(this);
 
-  std::unique_ptr<views::TreeView> tree_view;
   if (show_tree_) {
-    tree_view = std::make_unique<views::TreeView>();
-    tree_view->SetRootShown(false);
-    tree_view->set_context_menu_controller(this);
+    tree_view_ = new views::TreeView;
+    tree_view_->SetRootShown(false);
+    tree_view_->set_context_menu_controller(this);
 
     new_folder_button_.reset(views::MdTextButton::CreateSecondaryUiButton(
         this,
@@ -403,10 +400,7 @@ void BookmarkEditorView::Init() {
         views::GridLayout::kFixedSize,
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
     layout->StartRow(1.0, single_column_view_set_id);
-    tree_view_ = tree_view.get();
-    layout->AddView(
-        views::TreeView::CreateScrollViewWithTree(std::move(tree_view))
-            .release());
+    layout->AddView(tree_view_->CreateParentIfNecessary());
   }
 
   if (!show_tree_ || bb_model_->loaded())

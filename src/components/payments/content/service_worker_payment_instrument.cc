@@ -174,8 +174,7 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
   event_data->top_origin = top_origin_;
   event_data->payment_request_origin = frame_origin_;
 
-  DCHECK(spec_->details().modifiers);
-  for (const auto& modifier : *spec_->details().modifiers) {
+  for (const auto& modifier : spec_->details().modifiers) {
     if (base::ContainsKey(supported_url_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
@@ -264,8 +263,7 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
     supported_methods.insert(stored_payment_app_info_->enabled_methods.begin(),
                              stored_payment_app_info_->enabled_methods.end());
   }
-  DCHECK(spec_->details().modifiers);
-  for (const auto& modifier : *spec_->details().modifiers) {
+  for (const auto& modifier : spec_->details().modifiers) {
     if (base::ContainsKey(supported_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());

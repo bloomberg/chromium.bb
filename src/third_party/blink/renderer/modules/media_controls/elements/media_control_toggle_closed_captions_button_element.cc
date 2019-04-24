@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -47,7 +46,7 @@ bool UseClosedCaptionsIcon() {
 MediaControlToggleClosedCaptionsButtonElement::
     MediaControlToggleClosedCaptionsButtonElement(
         MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls) {
+    : MediaControlInputElement(media_controls, kMediaIgnore) {
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
                    WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton)));
@@ -92,11 +91,11 @@ MediaControlToggleClosedCaptionsButtonElement::GetOverflowMenuSubtitleString()
   for (unsigned i = 0; i < track_list->length(); i++) {
     TextTrack* track = track_list->AnonymousIndexedGetter(i);
     if (track && track->mode() == TextTrack::ShowingKeyword())
-      return GetMediaControls().GetTextTrackManager().GetTextTrackLabel(track);
+      return GetMediaControls().GetTextTrackLabel(track);
   }
 
   // Return the label for no text track.
-  return GetMediaControls().GetTextTrackManager().GetTextTrackLabel(nullptr);
+  return GetMediaControls().GetTextTrackLabel(nullptr);
 }
 
 const char*
@@ -112,9 +111,9 @@ void MediaControlToggleClosedCaptionsButtonElement::DefaultEventHandler(
     if (MediaElement().textTracks()->length() == 1) {
       // If only one track exists, toggle it on/off
       if (MediaElement().textTracks()->HasShowingTracks())
-        GetMediaControls().GetTextTrackManager().DisableShowingTextTracks();
+        GetMediaControls().DisableShowingTextTracks();
       else
-        GetMediaControls().GetTextTrackManager().ShowTextTrackAtIndex(0);
+        GetMediaControls().ShowTextTrackAtIndex(0);
     } else {
       GetMediaControls().ToggleTextTrackList();
     }

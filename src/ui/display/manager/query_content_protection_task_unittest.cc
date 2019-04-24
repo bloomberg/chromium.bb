@@ -11,10 +11,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_layout_manager.h"
+#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_display_layout_manager.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
@@ -38,34 +37,27 @@ std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
 
 class QueryContentProtectionTaskTest : public testing::Test {
  public:
-  using Status = QueryContentProtectionTask::Status;
+  QueryContentProtectionTaskTest()
+      : display_delegate_(&log_), has_response_(false) {}
+  ~QueryContentProtectionTaskTest() override {}
 
-  QueryContentProtectionTaskTest() = default;
-  ~QueryContentProtectionTaskTest() override = default;
-
-  void ResponseCallback(Status status,
-                        uint32_t connection_mask,
-                        uint32_t protection_mask) {
-    response_ = Response{status, connection_mask, protection_mask};
+  void ResponseCallback(QueryContentProtectionTask::Response response) {
+    has_response_ = true;
+    response_ = response;
   }
 
  protected:
   ActionLogger log_;
-  TestNativeDisplayDelegate display_delegate_{&log_};
+  TestNativeDisplayDelegate display_delegate_;
 
-  struct Response {
-    Status status;
-    uint32_t connection_mask;
-    uint32_t protection_mask;
-  };
-
-  base::Optional<Response> response_;
+  bool has_response_;
+  QueryContentProtectionTask::Response response_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QueryContentProtectionTaskTest);
 };
 
-TEST_F(QueryContentProtectionTaskTest, QueryInternalDisplay) {
+TEST_F(QueryContentProtectionTaskTest, QueryWithNoHDCPCapableDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(
       CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_INTERNAL));
@@ -78,13 +70,14 @@ TEST_F(QueryContentProtectionTaskTest, QueryInternalDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::SUCCESS, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, response_->connection_mask);
-  EXPECT_EQ(0u, response_->protection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryUnknownDisplay) {
+TEST_F(QueryContentProtectionTaskTest, QueryWithUnknownDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_UNKNOWN));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -96,13 +89,14 @@ TEST_F(QueryContentProtectionTaskTest, QueryUnknownDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::FAILURE, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_UNKNOWN, response_->connection_mask);
-  EXPECT_EQ(0u, response_->protection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_FALSE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_UNKNOWN, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryDisplayThatCannotGetHdcp) {
+TEST_F(QueryContentProtectionTaskTest, FailQueryWithHDMIDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -115,12 +109,12 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayThatCannotGetHdcp) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::FAILURE, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_FALSE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpDisabled) {
+TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndUnfulfilled) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -132,13 +126,14 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpDisabled) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::SUCCESS, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
-  EXPECT_EQ(0u, response_->protection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpEnabled) {
+TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndFulfilled) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -151,13 +146,14 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpEnabled) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::SUCCESS, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
-  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_->protection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryInMultiDisplayMode) {
+TEST_F(QueryContentProtectionTaskTest, QueryWith2HDCPDisplays) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
@@ -170,13 +166,14 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMultiDisplayMode) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::SUCCESS, response_->status);
-  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_->connection_mask);
-  EXPECT_EQ(0u, response_->protection_mask);
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
 }
 
-TEST_F(QueryContentProtectionTaskTest, QueryInMirroringMode) {
+TEST_F(QueryContentProtectionTaskTest, QueryWithMirrorHDCPDisplays) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
@@ -189,12 +186,13 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMirroringMode) {
                  base::Unretained(this)));
   task.Run();
 
-  ASSERT_TRUE(response_);
-  EXPECT_EQ(Status::SUCCESS, response_->status);
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
   EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI |
                                   DISPLAY_CONNECTION_TYPE_DVI),
-            response_->connection_mask);
-  EXPECT_EQ(0u, response_->protection_mask);
+            response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
 }
 
 }  // namespace test

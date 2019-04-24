@@ -127,7 +127,6 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
           ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
 
-  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification,
-                           /*metadata=*/nullptr);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification);
   notification_displayed_ = true;
 }

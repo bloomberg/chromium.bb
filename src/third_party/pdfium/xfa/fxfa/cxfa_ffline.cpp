@@ -84,8 +84,8 @@ void CXFA_FFLine::GetRectFromHand(CFX_RectF& rect,
 
 void CXFA_FFLine::RenderWidget(CXFA_Graphics* pGS,
                                const CFX_Matrix& matrix,
-                               HighlightOption highlight) {
-  if (!HasVisibleStatus())
+                               uint32_t dwStatus) {
+  if (!IsMatchVisibleStatus(dwStatus))
     return;
 
   CXFA_Value* value = m_pNode->GetFormValueIfExists();
@@ -96,6 +96,7 @@ void CXFA_FFLine::RenderWidget(CXFA_Graphics* pGS,
   float fLineWidth = 1.0f;
   XFA_AttributeValue iStrokeType = XFA_AttributeValue::Unknown;
   XFA_AttributeValue iCap = XFA_AttributeValue::Unknown;
+
   CXFA_Line* line = value->GetLineIfExists();
   if (line) {
     CXFA_Edge* edge = line->GetEdgeIfExists();

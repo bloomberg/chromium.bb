@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
       web_contents_added_observer.GetWebContents();
 
   // A tab has opened at the Google Payments link.
-  EXPECT_EQ(autofill::payments::GetManageAddressesUrl(),
+  EXPECT_EQ(autofill::payments::GetManageAddressesUrl(0),
             new_tab_contents->GetVisibleURL());
 }
 

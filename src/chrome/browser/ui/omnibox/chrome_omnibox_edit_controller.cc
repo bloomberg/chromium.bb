@@ -38,6 +38,7 @@ void ChromeOmniboxEditController::OnAutocompleteAccept(
 }
 
 void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
+  GetLocationBarModel()->set_input_in_progress(in_progress);
   UpdateWithoutTabRestore();
 }
 

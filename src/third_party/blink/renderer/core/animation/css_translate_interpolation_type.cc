@@ -19,7 +19,7 @@ namespace blink {
 namespace {
 
 InterpolationValue CreateNoneValue() {
-  return InterpolationValue(std::make_unique<InterpolableList>(0));
+  return InterpolationValue(InterpolableList::Create(0));
 }
 
 bool IsNoneValue(const InterpolationValue& value) {
@@ -29,11 +29,13 @@ bool IsNoneValue(const InterpolationValue& value) {
 class InheritedTranslateChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  InheritedTranslateChecker(
-      scoped_refptr<TranslateTransformOperation> inherited_translate)
-      : inherited_translate_(std::move(inherited_translate)) {}
   ~InheritedTranslateChecker() override = default;
 
+  static std::unique_ptr<InheritedTranslateChecker> Create(
+      scoped_refptr<TranslateTransformOperation> inherited_translate) {
+    return base::WrapUnique(
+        new InheritedTranslateChecker(std::move(inherited_translate)));
+  }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -47,6 +49,10 @@ class InheritedTranslateChecker
   }
 
  private:
+  InheritedTranslateChecker(
+      scoped_refptr<TranslateTransformOperation> inherited_translate)
+      : inherited_translate_(std::move(inherited_translate)) {}
+
   scoped_refptr<TransformOperation> inherited_translate_;
 };
 
@@ -58,8 +64,8 @@ enum TranslateComponentIndex : unsigned {
 };
 
 std::unique_ptr<InterpolableValue> CreateTranslateIdentity() {
-  auto result =
-      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(kTranslateComponentIndexCount);
   result->Set(kTranslateX,
               LengthInterpolationFunctions::CreateNeutralInterpolableValue());
   result->Set(kTranslateY,
@@ -75,8 +81,8 @@ InterpolationValue ConvertTranslateOperation(
   if (!translate)
     return CreateNoneValue();
 
-  auto result =
-      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(kTranslateComponentIndexCount);
   result->Set(kTranslateX, LengthInterpolationFunctions::MaybeConvertLength(
                                translate->X(), zoom)
                                .interpolable_value);
@@ -109,7 +115,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertInherit(
   TranslateTransformOperation* inherited_translate =
       state.ParentStyle()->Translate();
   conversion_checkers.push_back(
-      std::make_unique<InheritedTranslateChecker>(inherited_translate));
+      InheritedTranslateChecker::Create(inherited_translate));
   return ConvertTranslateOperation(inherited_translate,
                                    state.ParentStyle()->EffectiveZoom());
 }
@@ -122,12 +128,12 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertValue(
     return CreateNoneValue();
   }
 
-  const auto& list = To<CSSValueList>(value);
+  const CSSValueList& list = ToCSSValueList(value);
   if (list.length() < 1 || list.length() > 3)
     return nullptr;
 
-  auto result =
-      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::Create(kTranslateComponentIndexCount);
   for (wtf_size_t i = 0; i < kTranslateComponentIndexCount; i++) {
     InterpolationValue component = nullptr;
     if (i < list.length()) {

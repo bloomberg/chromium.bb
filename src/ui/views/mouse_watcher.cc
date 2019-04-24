@@ -22,7 +22,7 @@ namespace views {
 
 // Amount of time between when the mouse moves outside the Host's zone and when
 // the listener is notified.
-constexpr int kNotifyListenerTimeMs = 300;
+const int kNotifyListenerTimeMs = 300;
 
 class MouseWatcher::Observer : public ui::EventObserver {
  public:
@@ -36,17 +36,16 @@ class MouseWatcher::Observer : public ui::EventObserver {
 
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override {
-    using EventType = MouseWatcherHost::EventType;
     switch (event.type()) {
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED:
-        HandleMouseEvent(EventType::kMove);
+        HandleMouseEvent(MouseWatcherHost::MOUSE_MOVE);
         break;
       case ui::ET_MOUSE_EXITED:
-        HandleMouseEvent(EventType::kExit);
+        HandleMouseEvent(MouseWatcherHost::MOUSE_EXIT);
         break;
       case ui::ET_MOUSE_PRESSED:
-        HandleMouseEvent(EventType::kPress);
+        HandleMouseEvent(MouseWatcherHost::MOUSE_PRESS);
         break;
       default:
         NOTREACHED();
@@ -56,13 +55,13 @@ class MouseWatcher::Observer : public ui::EventObserver {
 
  private:
   MouseWatcherHost* host() const { return mouse_watcher_->host_.get(); }
+
   // Called when a mouse event we're interested is seen.
-  void HandleMouseEvent(MouseWatcherHost::EventType event_type) {
-    using EventType = MouseWatcherHost::EventType;
-    // It's safe to use GetLastMouseLocation() here as this function is invoked
+  void HandleMouseEvent(MouseWatcherHost::MouseEventType event_type) {
+    // It's safe to use last_mouse_location() here as this function is invoked
     // during event dispatching.
     if (!host()->Contains(event_monitor_->GetLastMouseLocation(), event_type)) {
-      if (event_type == EventType::kPress) {
+      if (event_type == MouseWatcherHost::MOUSE_PRESS) {
         NotifyListener();
       } else if (!notify_listener_factory_.HasWeakPtrs()) {
         // Mouse moved outside the host's zone, start a timer to notify the
@@ -71,7 +70,7 @@ class MouseWatcher::Observer : public ui::EventObserver {
             FROM_HERE,
             base::BindOnce(&Observer::NotifyListener,
                            notify_listener_factory_.GetWeakPtr()),
-            event_type == EventType::kMove
+            event_type == MouseWatcherHost::MOUSE_MOVE
                 ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
                 : mouse_watcher_->notify_on_exit_time_);
       }

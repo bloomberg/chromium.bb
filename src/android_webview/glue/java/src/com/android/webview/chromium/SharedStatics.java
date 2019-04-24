@@ -115,11 +115,7 @@ public class SharedStatics {
      * to users.
      */
     public Uri getSafeBrowsingPrivacyPolicyUrl() {
-        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
-    }
-
-    public boolean isMultiProcessEnabled() {
-        return AwContentsStatics.isMultiProcessEnabled();
     }
 }

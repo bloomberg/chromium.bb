@@ -41,6 +41,12 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    InstallOwnerKey();
+    MarkAsEnterpriseOwned();
+    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
   void TearDownOnMainThread() override {
     // This shuts down the login UI.
     base::ThreadTaskRunnerHandle::Get()->PostTask(

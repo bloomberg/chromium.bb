@@ -26,11 +26,11 @@ namespace {
 
 // The minimum scale factor to use when scaling rectangle layers. Smaller values
 // were causing visual anomalies.
-constexpr float kMinimumRectScale = 0.0001f;
+const float kMinimumRectScale = 0.0001f;
 
 // The minimum scale factor to use when scaling circle layers. Smaller values
 // were causing visual anomalies.
-constexpr float kMinimumCircleScale = 0.001f;
+const float kMinimumCircleScale = 0.001f;
 
 // All the sub animations that are used to animate each of the InkDropStates.
 // These are used to get time durations with
@@ -108,7 +108,7 @@ enum InkDropSubAnimations {
 };
 
 // The scale factor used to burst the ACTION_TRIGGERED bubble as it fades out.
-constexpr float kQuickActionBurstScale = 1.3f;
+const float kQuickActionBurstScale = 1.3f;
 
 // Duration constants for InkDropStateSubAnimations. See the
 // InkDropStateSubAnimations enum documentation for more info.
@@ -135,7 +135,11 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMilliseconds(kAnimationDurationInMs[state]);
+  return base::TimeDelta::FromMilliseconds(
+      (InkDropRipple::UseFastAnimations()
+           ? 1
+           : InkDropRipple::kSlowAnimationDurationFactor) *
+      kAnimationDurationInMs[state]);
 }
 
 }  // namespace

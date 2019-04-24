@@ -302,9 +302,9 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
+views::LinuxUI::NonClientWindowFrameAction GetDefaultMiddleClickAction() {
   if (GtkVersionCheck(3, 14))
-    return views::LinuxUI::WindowFrameAction::kNone;
+    return views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
@@ -313,22 +313,21 @@ views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
       // middle mouse button to create tab groups. We don't support that in
       // Chrome, but at least avoid lowering windows in response to middle
       // clicks to avoid surprising users who expect the KDE behavior.
-      return views::LinuxUI::WindowFrameAction::kNone;
+      return views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
     default:
-      return views::LinuxUI::WindowFrameAction::kLower;
+      return views::LinuxUI::WINDOW_FRAME_ACTION_LOWER;
   }
 }
 
 }  // namespace
 
 GtkUi::GtkUi() {
-  using Action = views::LinuxUI::WindowFrameAction;
-  using ActionSource = views::LinuxUI::WindowFrameActionSource;
-  window_frame_actions_ = {
-      {ActionSource::kDoubleClick, Action::kToggleMaximize},
-      {ActionSource::kMiddleClick, GetDefaultMiddleClickAction()},
-      {ActionSource::kRightClick, Action::kMenu}};
-
+  window_frame_actions_[WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK] =
+      views::LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
+  window_frame_actions_[WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK] =
+      GetDefaultMiddleClickAction();
+  window_frame_actions_[WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK] =
+      views::LinuxUI::WINDOW_FRAME_ACTION_MENU;
   // Force Gtk to use Xwayland if it would have used wayland.  libgtkui assumes
   // the use of X11 (eg. X11InputMethodContextImplGtk) and will crash under
   // other backends.
@@ -489,8 +488,8 @@ ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
   return native_theme_;
 }
 
-void GtkUi::SetNativeThemeOverride(NativeThemeGetter callback) {
-  native_theme_overrider_ = std::move(callback);
+void GtkUi::SetNativeThemeOverride(const NativeThemeGetter& callback) {
+  native_theme_overrider_ = callback;
 }
 
 bool GtkUi::GetDefaultUsesSystemTheme() const {
@@ -666,8 +665,9 @@ void GtkUi::SetWindowButtonOrdering(
   }
 }
 
-void GtkUi::SetWindowFrameAction(WindowFrameActionSource source,
-                                 WindowFrameAction action) {
+void GtkUi::SetNonClientWindowFrameAction(
+    NonClientWindowFrameActionSourceType source,
+    NonClientWindowFrameAction action) {
   window_frame_actions_[source] = action;
 }
 
@@ -701,8 +701,8 @@ ui::SelectFileDialog* GtkUi::CreateSelectFileDialog(
   return SelectFileDialogImpl::Create(listener, std::move(policy));
 }
 
-views::LinuxUI::WindowFrameAction GtkUi::GetWindowFrameAction(
-    WindowFrameActionSource source) {
+views::LinuxUI::NonClientWindowFrameAction GtkUi::GetNonClientWindowFrameAction(
+    NonClientWindowFrameActionSourceType source) {
   return window_frame_actions_[source];
 }
 
@@ -836,6 +836,8 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
+  // Separates the detached bookmark bar from the NTP.
+  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] = tab_border;
 
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
       native_theme_->GetSystemColor(
@@ -908,6 +910,10 @@ void GtkUi::UpdateColors() {
         color_utils::GetResultingPaintColor(GetBgColor(""), frame_color);
 
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
+    color_map[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
+
+    color_map[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
+        tab_color;
     color_map[ThemeProperties::COLOR_DOWNLOAD_SHELF] = tab_color;
     color_map[ThemeProperties::COLOR_INFOBAR] = tab_color;
     color_map[ThemeProperties::COLOR_STATUS_BUBBLE] = tab_color;

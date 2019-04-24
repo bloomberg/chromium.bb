@@ -576,28 +576,28 @@ class RemovePluginPrivateDataTester {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 bool IsWebSafeSchemeForTest(const std::string& scheme) {
-  return scheme == url::kHttpScheme;
+  return scheme == "http";
 }
 
 bool DoesOriginMatchForUnprotectedWeb(
-    const url::Origin& origin,
+    const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
   if (IsWebSafeSchemeForTest(origin.scheme()))
-    return !special_storage_policy->IsStorageProtected(origin.GetURL());
+    return !special_storage_policy->IsStorageProtected(origin.GetOrigin());
 
   return false;
 }
 
 bool DoesOriginMatchForBothProtectedAndUnprotectedWeb(
-    const url::Origin& origin,
+    const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
   return true;
 }
 
 bool DoesOriginMatchUnprotected(
-    const url::Origin& origin,
+    const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return origin.scheme() != kOriginDevTools.scheme();
+  return origin.GetOrigin().scheme() != kOriginDevTools.scheme();
 }
 
 void ClearQuotaData(content::StoragePartition* partition,

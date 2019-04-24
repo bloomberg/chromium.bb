@@ -341,7 +341,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   if (!GetState().IsTransformInvertible() || path.IsEmpty())
     return;
 
-  canvas()->GetDocument().UpdateStyleAndLayout();
+  canvas()->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   LayoutObject* renderer = canvas()->GetLayoutObject();
   LayoutBox* layout_box = canvas()->GetLayoutBox();
@@ -661,13 +661,13 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
 HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
   if (HitRegionsCount() <= 0)
-    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
+    return HitTestCanvasResult::Create(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
   FloatPoint local_pos =
       box->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
-  if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
-    local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
+  if (box->HasBorderOrPadding())
+    local_pos.Move(-box->PhysicalContentBoxOffset());
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
                          ? 1.0f
                          : canvas()->width() / box->ContentWidth();
@@ -680,12 +680,12 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
   if (hit_region) {
     Element* control = hit_region->Control();
     if (control && canvas()->IsSupportedInteractiveCanvasFallback(*control)) {
-      return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(),
-                                                       hit_region->Control());
+      return HitTestCanvasResult::Create(hit_region->Id(),
+                                         hit_region->Control());
     }
-    return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(), nullptr);
+    return HitTestCanvasResult::Create(hit_region->Id(), nullptr);
   }
-  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
+  return HitTestCanvasResult::Create(String(), nullptr);
 }
 
 String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {
@@ -944,7 +944,8 @@ CanvasRenderingContext2D::getContextAttributes() const {
     settings->setColorSpace(ColorSpaceAsString());
     settings->setPixelFormat(PixelFormatAsString());
   }
-  settings->setDesynchronized(canvas()->LowLatencyEnabled());
+  if (origin_trials::LowLatencyCanvasEnabled(&canvas()->GetDocument()))
+    settings->setLowLatency(canvas()->LowLatencyEnabled());
   return settings;
 }
 
@@ -1011,7 +1012,7 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
 
 void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
                                                           Element* element) {
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   AXObjectCache* ax_object_cache =
       element->GetDocument().ExistingAXObjectCache();
   LayoutBoxModelObject* lbmo = canvas()->GetLayoutBoxModelObject();
@@ -1072,13 +1073,13 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
   }
 
   if (!hit_region_manager_)
-    hit_region_manager_ = MakeGarbageCollected<HitRegionManager>();
+    hit_region_manager_ = HitRegionManager::Create();
 
   // Remove previous region (with id or control)
   hit_region_manager_->RemoveHitRegionById(options->id());
   hit_region_manager_->RemoveHitRegionByControl(options->control());
 
-  auto* hit_region = MakeGarbageCollected<HitRegion>(hit_region_path, options);
+  HitRegion* hit_region = HitRegion::Create(hit_region_path, options);
   Element* element = hit_region->Control();
   if (element && element->IsDescendantOf(canvas()))
     UpdateElementAccessibility(hit_region->GetPath(), hit_region->Control());

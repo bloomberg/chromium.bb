@@ -15,6 +15,12 @@ class RelatedApplication final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static RelatedApplication* Create(const String& platform,
+                                    const String& url,
+                                    const String& id) {
+    return MakeGarbageCollected<RelatedApplication>(platform, url, id);
+  }
+
   RelatedApplication(const String& platform,
                      const String& url,
                      const String& id)

@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -77,13 +76,13 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
 
  protected:
   int VerifyTestServerCert(
-      net::CompletionOnceCallback test_callback,
+      const net::TestCompletionCallback& test_callback,
       net::CertVerifyResult* verify_result,
       std::unique_ptr<net::CertVerifier::Request>* request) {
     return cert_verifier_->Verify(
         net::CertVerifier::RequestParams(test_server_cert_.get(), "127.0.0.1",
                                          0, std::string()),
-        verify_result, std::move(test_callback), request,
+        verify_result, test_callback.callback(), request,
         net::NetLogWithSource());
   }
 
@@ -139,8 +138,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();
@@ -153,8 +151,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
 
@@ -177,8 +174,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyTrustedCert) {
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      VerifyTestServerCert(callback.callback(), &verify_result, &request);
+  int error = VerifyTestServerCert(callback, &verify_result, &request);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   EXPECT_TRUE(request);
   error = callback.WaitForResult();
@@ -197,8 +193,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();
@@ -217,8 +212,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();
@@ -232,8 +226,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     EXPECT_EQ(net::OK, error);
   }
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
@@ -244,8 +237,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     // Note: Changing the trust anchors should flush the cache.
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
@@ -266,8 +258,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest,
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();
@@ -286,8 +277,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest,
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();
@@ -304,8 +294,7 @@ TEST_F(CertVerifierWithTrustAnchorsTest,
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
-    int error =
-        VerifyTestServerCert(callback.callback(), &verify_result, &request);
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
     EXPECT_TRUE(request);
     error = callback.WaitForResult();

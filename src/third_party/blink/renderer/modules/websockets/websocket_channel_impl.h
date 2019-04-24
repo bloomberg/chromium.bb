@@ -36,6 +36,7 @@
 #include <utility>
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -61,8 +62,10 @@ class WebSocketHandshakeThrottle;
 // This is an implementation of WebSocketChannel. This is created on the main
 // thread for Document, or on the worker thread for WorkerGlobalScope. All
 // functions must be called on the execution context's thread.
-class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
-                                                  public WebSocketHandleClient {
+class MODULES_EXPORT WebSocketChannelImpl final
+    : public WebSocketChannel,
+      public WebSocketHandleClient,
+      public WebCallbacks<void, const WebString&> {
  public:
   // You can specify the source file and the line number information
   // explicitly by passing the last parameter.
@@ -112,16 +115,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class WebSocketChannelImplHandshakeThrottleTest;
-  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
-                           ThrottleSucceedsFirst);
-  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
-                           HandshakeSucceedsFirst);
-  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
-                           ThrottleReportsErrorBeforeConnect);
-  FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
-                           ThrottleReportsErrorAfterConnect);
-
   class BlobLoader;
   class Message;
   struct ConnectInfo;
@@ -177,8 +170,10 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
   void DidStartClosingHandshake(WebSocketHandle*) override;
 
-  // Completion callback. It is called with the results of throttling.
-  void OnCompletion(const base::Optional<WebString>& error);
+  // WebCallbacks<void, const WebString&> functions. These are called with the
+  // results of throttling.
+  void OnSuccess() override;
+  void OnError(const WebString& console_message) override;
 
   // Methods for BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
@@ -197,7 +192,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   // expects that disconnect() is called before the deletion.
   Member<WebSocketChannelClient> client_;
   KURL url_;
-  uint64_t identifier_;
+  unsigned long identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
   Vector<char> receiving_message_data_;
@@ -207,8 +202,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   uint64_t sending_quota_;
   uint64_t received_data_size_for_flow_control_;
   wtf_size_t sent_size_of_top_message_;
-  FrameScheduler::SchedulingAffectingFeatureHandle
-      feature_handle_for_scheduler_;
+  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
+      connection_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;

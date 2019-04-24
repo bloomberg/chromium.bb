@@ -358,7 +358,7 @@ void SocketConnectFunction::StartConnect() {
   }
 
   socket->Connect(addresses_,
-                  base::BindOnce(&SocketConnectFunction::OnConnect, this));
+                  base::BindRepeating(&SocketConnectFunction::OnConnect, this));
 }
 
 void SocketConnectFunction::OnConnect(int result) {
@@ -604,7 +604,7 @@ void SocketWriteFunction::AsyncWorkStart() {
   }
 
   socket->Write(io_buffer_, io_buffer_size_,
-                base::BindOnce(&SocketWriteFunction::OnCompleted, this));
+                base::BindRepeating(&SocketWriteFunction::OnCompleted, this));
 }
 
 void SocketWriteFunction::OnCompleted(int bytes_written) {
@@ -633,8 +633,9 @@ void SocketRecvFromFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->RecvFrom(params_->buffer_size.get() ? *params_->buffer_size : 4096,
-                   base::BindOnce(&SocketRecvFromFunction::OnCompleted, this));
+  socket->RecvFrom(
+      params_->buffer_size.get() ? *params_->buffer_size : 4096,
+      base::BindRepeating(&SocketRecvFromFunction::OnCompleted, this));
 }
 
 void SocketRecvFromFunction::OnCompleted(int bytes_read,
@@ -734,7 +735,7 @@ void SocketSendToFunction::StartSendTo() {
   }
 
   socket->SendTo(io_buffer_, io_buffer_size_, addresses_.front(),
-                 base::BindOnce(&SocketSendToFunction::OnCompleted, this));
+                 base::BindRepeating(&SocketSendToFunction::OnCompleted, this));
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
@@ -922,7 +923,7 @@ void SocketJoinGroupFunction::AsyncWorkStart() {
 
   static_cast<UDPSocket*>(socket)->JoinGroup(
       params_->address,
-      base::BindOnce(&SocketJoinGroupFunction::OnCompleted, this));
+      base::BindRepeating(&SocketJoinGroupFunction::OnCompleted, this));
 }
 
 void SocketJoinGroupFunction::OnCompleted(int result) {
@@ -975,7 +976,7 @@ void SocketLeaveGroupFunction::AsyncWorkStart() {
 
   static_cast<UDPSocket*>(socket)->LeaveGroup(
       params_->address,
-      base::BindOnce(&SocketLeaveGroupFunction::OnCompleted, this));
+      base::BindRepeating(&SocketLeaveGroupFunction::OnCompleted, this));
 }
 
 void SocketLeaveGroupFunction::OnCompleted(int result) {

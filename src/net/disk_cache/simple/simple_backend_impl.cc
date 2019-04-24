@@ -26,7 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -237,11 +237,11 @@ SimpleBackendImpl::SimpleBackendImpl(
     int64_t max_bytes,
     net::CacheType cache_type,
     net::NetLog* net_log)
-    : Backend(cache_type),
-      cleanup_tracker_(std::move(cleanup_tracker)),
+    : cleanup_tracker_(std::move(cleanup_tracker)),
       file_tracker_(file_tracker ? file_tracker
                                  : g_simple_file_tracker.Pointer()),
       path_(path),
+      cache_type_(cache_type),
       cache_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
@@ -282,16 +282,16 @@ net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
 
   index_ = std::make_unique<SimpleIndex>(
       base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
-      GetCacheType(),
+      cache_type_,
       std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
-                                        GetCacheType(), path_));
+                                        cache_type_, path_));
   index_->ExecuteWhenReady(
-      base::BindOnce(&RecordIndexLoad, GetCacheType(), base::TimeTicks::Now()));
+      base::BindOnce(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
       cache_runner_.get(), FROM_HERE,
       base::BindOnce(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
-                     orig_max_size_, GetCacheType()),
+                     orig_max_size_, cache_type_),
       base::BindOnce(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
                      std::move(completion_callback)));
   return net::ERR_IO_PENDING;
@@ -324,11 +324,11 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
   to_handle_waiters.swap(it->second);
   entries_pending_doom_.erase(it);
 
-  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", GetCacheType(),
+  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", cache_type_,
                    to_handle_waiters.size());
 
   for (PostDoomWaiter& post_doom : to_handle_waiters) {
-    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", GetCacheType(),
+    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", cache_type_,
                      (base::TimeTicks::Now() - post_doom.time_queued));
     std::move(post_doom.run_post_doom).Run();
   }
@@ -392,6 +392,10 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
                      mass_doom_entry_hashes_ptr, path_),
       base::BindOnce(&SimpleBackendImpl::DoomEntriesComplete, AsWeakPtr(),
                      base::Passed(&mass_doom_entry_hashes), barrier_callback));
+}
+
+net::CacheType SimpleBackendImpl::GetCacheType() const {
+  return net::DISK_CACHE;
 }
 
 int32_t SimpleBackendImpl::GetEntryCount() const {
@@ -512,7 +516,7 @@ SimpleBackendImpl::MaybeOptimisticCreateForPostDoom(
   if (post_doom->empty() &&
       entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
     simple_entry = new SimpleEntryImpl(
-        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
+        cache_type_, path_, cleanup_tracker_.get(), entry_hash,
         entry_operations_mode_, this, file_tracker_, net_log_,
         GetNewEntryPriority(request_priority));
     simple_entry->SetKey(key);
@@ -598,8 +602,6 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
   // From Backend::Iterator:
   net::Error OpenNextEntry(Entry** next_entry,
                            CompletionOnceCallback callback) override {
-    if (!backend_)
-      return net::ERR_FAILED;
     CompletionOnceCallback open_next_entry_impl = base::BindOnce(
         &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
         next_entry, std::move(callback));
@@ -627,7 +629,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       uint64_t entry_hash = hashes_to_enumerate_->back();
       hashes_to_enumerate_->pop_back();
       if (backend_->index()->Has(entry_hash)) {
-        *next_entry = nullptr;
+        *next_entry = NULL;
         CompletionOnceCallback continue_iteration = base::BindOnce(
             &SimpleIterator::CheckIterationReturnValue,
             weak_factory_.GetWeakPtr(), next_entry, copyable_callback);
@@ -842,7 +844,7 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   const bool did_insert = insert_result.second;
   if (did_insert) {
     SimpleEntryImpl* entry = it->second = new SimpleEntryImpl(
-        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
+        cache_type_, path_, cleanup_tracker_.get(), entry_hash,
         entry_operations_mode_, this, file_tracker_, net_log_,
         GetNewEntryPriority(request_priority));
     entry->SetKey(key);
@@ -885,7 +887,7 @@ net::Error SimpleBackendImpl::OpenEntryFromHash(
   }
 
   scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(
-      GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
+      cache_type_, path_, cleanup_tracker_.get(), entry_hash,
       entry_operations_mode_, this, file_tracker_, net_log_,
       GetNewEntryPriority(net::HIGHEST));
   CompletionOnceCallback backend_callback =
@@ -964,7 +966,7 @@ void SimpleBackendImpl::DoomEntriesComplete(
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
   // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 uint32_t SimpleBackendImpl::GetNewEntryPriority(

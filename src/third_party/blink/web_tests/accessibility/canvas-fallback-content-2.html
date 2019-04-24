@@ -3,6 +3,7 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div>
   <a id="link1" href="#">Link</a>
@@ -78,7 +79,7 @@ function check(id1, id2) {
     assert_equals(axElement2.maxValue, axElement1.maxValue);
 }
 
-test((t) => {
+test_after_layout_and_paint((t) => {
     check("link1", "link2");
     check("button1", "button2");
     check("labeled-button1", "labeled-button2");

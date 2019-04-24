@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -58,11 +59,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
-  LayerTreeFrameSink(const LayerTreeFrameSink&) = delete;
 
   ~LayerTreeFrameSink() override;
-
-  LayerTreeFrameSink& operator=(const LayerTreeFrameSink&) = delete;
 
   base::WeakPtr<LayerTreeFrameSink> GetWeakPtr();
 
@@ -155,6 +153,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
  private:
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSink);
 };
 
 }  // namespace cc

@@ -73,11 +73,11 @@ int main(const int argc, char *const *const argv) {
     Dav1dContext *c;
     Dav1dData data;
     unsigned n_out = 0, total, fps[2];
-    const char *version = dav1d_version();
+    const char *version = dav1d_version_vcs();
 
-    if (strcmp(version, DAV1D_VERSION)) {
+    if (strcmp(version, DAV1D_VERSION_VCS)) {
         fprintf(stderr, "Version mismatch (library: %s, executable: %s)\n",
-                version, DAV1D_VERSION);
+                version, DAV1D_VERSION_VCS);
         return -1;
     }
 
@@ -100,7 +100,7 @@ int main(const int argc, char *const *const argv) {
     }
 
     if (!cli_settings.quiet)
-        fprintf(stderr, "dav1d %s - by VideoLAN\n", dav1d_version());
+        fprintf(stderr, "dav1d %s - by VideoLAN\n", dav1d_version_vcs());
 
     // skip frames until a sequence header is found
     if (cli_settings.skip) {

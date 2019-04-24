@@ -9,11 +9,11 @@
 
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_data_producer.h"
+#include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/test_tools/mock_random.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/test_tools/simple_data_producer.h"
 
 namespace net {
 namespace test {
@@ -79,8 +79,7 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
 
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_,
-                          quic::kQuicDefaultConnectionIdLength);
+                          clock_->Now(), perspective_);
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   char buffer[quic::kDefaultMaxPacketSize];
@@ -102,7 +101,7 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
                                             payloads, true, encryption_level_);
   }
   size_t encrypted_size = framer.EncryptInPlace(
-      quic::ENCRYPTION_INITIAL, header.packet_number,
+      quic::ENCRYPTION_NONE, header.packet_number,
       GetStartOfEncryptedData(framer.transport_version(), header), length,
       quic::kDefaultMaxPacketSize, buffer);
   EXPECT_EQ(quic::kDefaultMaxPacketSize, encrypted_size);
@@ -138,7 +137,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
 
 std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
-  SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  SetEncryptionLevel(quic::ENCRYPTION_NONE);
   InitializeHeader(packet_num, /*include_version=*/true);
 
   quic::CryptoHandshakeMessage message =
@@ -149,15 +148,15 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
   quic::QuicCryptoFrame crypto_frame;
   quic::test::SimpleDataProducer producer;
   quic::QuicStreamFrameDataProducer* producer_p = nullptr;
-  if (!QuicVersionUsesCryptoFrames(version_)) {
+  if (version_ < quic::QUIC_VERSION_47) {
     quic::QuicStreamFrame frame(quic::QuicUtils::GetCryptoStreamId(version_),
                                 /*fin=*/false, /*offset=*/0,
                                 data.AsStringPiece());
     frames.push_back(quic::QuicFrame(frame));
   } else {
     crypto_frame =
-        quic::QuicCryptoFrame(quic::ENCRYPTION_INITIAL, 0, data.length());
-    producer.SaveCryptoData(quic::ENCRYPTION_INITIAL, 0, data.AsStringPiece());
+        quic::QuicCryptoFrame(quic::ENCRYPTION_NONE, 0, data.length());
+    producer.SaveCryptoData(quic::ENCRYPTION_NONE, 0, data.AsStringPiece());
     frames.push_back(quic::QuicFrame(&crypto_frame));
     producer_p = &producer;
   }
@@ -499,11 +498,8 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
+  close.error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-  }
 
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
@@ -554,11 +550,8 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
+  close.error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-  }
 
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
@@ -591,12 +584,8 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
   }
 
   quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
+  close.error_code = quic_error;
   close.error_details = quic_error_details;
-  if (version_ == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-  }
-
   return MakePacket(header, quic::QuicFrame(&close));
 }
 
@@ -702,8 +691,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   }
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_,
-                          quic::kQuicDefaultConnectionIdLength);
+                          clock_->Now(), perspective_);
   quic::QuicFrames frames;
   quic::QuicFrame ack_frame(&ack);
   frames.push_back(ack_frame);
@@ -711,10 +699,10 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
 
   std::unique_ptr<quic::QuicPacket> packet(
       quic::test::BuildUnsizedDataPacket(&framer, header, frames));
-  char buffer[quic::kMaxOutgoingPacketSize];
+  char buffer[quic::kMaxPacketSize];
   size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_INITIAL, header.packet_number,
-                            *packet, buffer, quic::kMaxOutgoingPacketSize);
+      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
+                            *packet, buffer, quic::kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
@@ -1199,8 +1187,7 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
     quic::QuicStreamFrameDataProducer* data_producer) {
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_,
-                          quic::kQuicDefaultConnectionIdLength);
+                          clock_->Now(), perspective_);
   if (data_producer != nullptr) {
     framer.set_data_producer(data_producer);
   }
@@ -1208,10 +1195,10 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
       &framer, header, frames, max_plaintext_size));
-  char buffer[quic::kMaxOutgoingPacketSize];
+  char buffer[quic::kMaxPacketSize];
   size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_INITIAL, header.packet_number,
-                            *packet, buffer, quic::kMaxOutgoingPacketSize);
+      framer.EncryptPayload(quic::ENCRYPTION_NONE, header.packet_number,
+                            *packet, buffer, quic::kMaxPacketSize);
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
@@ -1356,7 +1343,7 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
   encryption_level_ = level;
     switch (level) {
-      case quic::ENCRYPTION_INITIAL:
+      case quic::ENCRYPTION_NONE:
         long_header_type_ = quic::INITIAL;
         break;
       case quic::ENCRYPTION_ZERO_RTT:

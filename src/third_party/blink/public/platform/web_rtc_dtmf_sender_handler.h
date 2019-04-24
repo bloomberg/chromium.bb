@@ -43,8 +43,8 @@ class WebRTCDTMFSenderHandler {
 
   virtual bool CanInsertDTMF() = 0;
   virtual bool InsertDTMF(const WebString& tones,
-                          int duration,
-                          int inter_tone_gap) = 0;
+                          long duration,
+                          long inter_tone_gap) = 0;
 };
 
 }  // namespace blink

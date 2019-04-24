@@ -20,7 +20,7 @@ namespace blink {
 
 MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls) {
+    : MediaControlInputElement(media_controls, kMediaIgnore) {
   setType(input_type_names::kButton);
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(

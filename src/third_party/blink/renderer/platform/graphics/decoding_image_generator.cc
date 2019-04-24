@@ -67,9 +67,7 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
   std::vector<FrameMetadata> frames = {FrameMetadata()};
   sk_sp<DecodingImageGenerator> generator = DecodingImageGenerator::Create(
       std::move(frame), info, std::move(segment_reader), std::move(frames),
-      PaintImage::GetNextContentId(), true /* all_data_received */,
-      true /* is_eligible_for_accelerated_decoding */,
-      false /* can_yuv_decode */);
+      PaintImage::GetNextContentId(), true);
   return std::make_unique<SkiaPaintImageGenerator>(
       std::move(generator), PaintImage::kDefaultFrameIndex,
       PaintImage::kDefaultGeneratorClientId);
@@ -82,13 +80,10 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
     scoped_refptr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId content_id,
-    bool all_data_received,
-    bool is_eligible_for_accelerated_decoding,
-    bool can_yuv_decode) {
+    bool all_data_received) {
   return sk_sp<DecodingImageGenerator>(new DecodingImageGenerator(
       std::move(frame_generator), info, std::move(data), std::move(frames),
-      content_id, all_data_received, is_eligible_for_accelerated_decoding,
-      can_yuv_decode));
+      content_id, all_data_received));
 }
 
 DecodingImageGenerator::DecodingImageGenerator(
@@ -97,23 +92,15 @@ DecodingImageGenerator::DecodingImageGenerator(
     scoped_refptr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId complete_frame_content_id,
-    bool all_data_received,
-    bool is_eligible_for_accelerated_decoding,
-    bool can_yuv_decode)
+    bool all_data_received)
     : PaintImageGenerator(info, std::move(frames)),
       frame_generator_(std::move(frame_generator)),
       data_(std::move(data)),
       all_data_received_(all_data_received),
-      is_eligible_for_accelerated_decoding_(
-          is_eligible_for_accelerated_decoding),
-      can_yuv_decode_(can_yuv_decode),
+      can_yuv_decode_(false),
       complete_frame_content_id_(complete_frame_content_id) {}
 
 DecodingImageGenerator::~DecodingImageGenerator() = default;
-
-bool DecodingImageGenerator::IsEligibleForAcceleratedDecoding() const {
-  return is_eligible_for_accelerated_decoding_;
-}
 
 sk_sp<SkData> DecodingImageGenerator::GetEncodedData() const {
   TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");

@@ -90,12 +90,8 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
 std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
     blink::WebRTCRtpTransceiverImplementationType implementation_type) {
   std::unique_ptr<blink::WebRTCRtpTransceiver> transceiver;
-  FakeRTCRtpSender sender(
-      "senderTrackId", {"senderStreamId"},
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-  FakeRTCRtpReceiver receiver(
-      "receiverTrackId", {"receiverStreamId"},
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+  FakeRTCRtpSender sender("senderTrackId", {"senderStreamId"});
+  FakeRTCRtpReceiver receiver("receiverTrackId", {"receiverStreamId"});
   if (implementation_type ==
       blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
     transceiver = std::make_unique<FakeRTCRtpTransceiver>(
@@ -214,13 +210,8 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   FakeRTCRtpTransceiver transceiver(
-      "midValue",
-      FakeRTCRtpSender("senderTrackId", {"streamIdA", "streamIdB"},
-                       blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      FakeRTCRtpReceiver(
-          "receiverTrackId", {"streamIdC"},
-          blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      true /* stopped */,
+      "midValue", FakeRTCRtpSender("senderTrackId", {"streamIdA", "streamIdB"}),
+      FakeRTCRtpReceiver("receiverTrackId", {"streamIdC"}), true /* stopped */,
       webrtc::RtpTransceiverDirection::kSendRecv /* direction */,
       webrtc::RtpTransceiverDirection::kInactive /* current_direction */);
   std::string update_value;
@@ -255,13 +246,8 @@ TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesNull) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   FakeRTCRtpTransceiver transceiver(
-      base::nullopt,
-      FakeRTCRtpSender(base::nullopt, {},
-                       blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      FakeRTCRtpReceiver(
-          "receiverTrackId", {},
-          blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      false /* stopped */,
+      base::nullopt, FakeRTCRtpSender(base::nullopt, {}),
+      FakeRTCRtpReceiver("receiverTrackId", {}), false /* stopped */,
       webrtc::RtpTransceiverDirection::kInactive /* direction */,
       base::nullopt /* current_direction */);
   std::string update_value;

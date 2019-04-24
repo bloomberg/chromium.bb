@@ -87,7 +87,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   // Write a message to the consoles of extensions listening to a given service
   // type.
   void WriteToConsole(const std::string& service_type,
-                      blink::mojom::ConsoleMessageLevel level,
+                      content::ConsoleMessageLevel level,
                       const std::string& message);
 
   // Returns true if an extension or platform app |extension_id| is allowed to

@@ -11,19 +11,20 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 
 namespace blink {
 class MediaStreamAudioSource;
-class MediaStreamVideoTrack;
 class WebString;
 }
 
 namespace content {
+
+class MediaStreamVideoSource;
+class MediaStreamVideoTrack;
 
 // ApplyConstraintsProcessor is responsible for processing applyConstraints()
 // requests. Only one applyConstraints() request can be processed at a time.
@@ -50,18 +51,16 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
   void ProcessVideoDeviceRequest();
   void MaybeStopSourceForRestart(const media::VideoCaptureFormats& formats);
   void MaybeSourceStoppedForRestart(
-      blink::MediaStreamVideoSource::RestartResult result);
+      MediaStreamVideoSource::RestartResult result);
   void FindNewFormatAndRestart(const media::VideoCaptureFormats& formats);
-  void MaybeSourceRestarted(
-      blink::MediaStreamVideoSource::RestartResult result);
+  void MaybeSourceRestarted(MediaStreamVideoSource::RestartResult result);
 
   // Helpers for all video requests.
   void ProcessVideoRequest();
-  blink::MediaStreamVideoTrack* GetCurrentVideoTrack();
-  blink::MediaStreamVideoSource* GetCurrentVideoSource();
+  MediaStreamVideoTrack* GetCurrentVideoTrack();
+  MediaStreamVideoSource* GetCurrentVideoSource();
   bool AbortIfVideoRequestStateInvalid();  // Returns true if aborted.
-  blink::VideoCaptureSettings SelectVideoSettings(
-      media::VideoCaptureFormats formats);
+  VideoCaptureSettings SelectVideoSettings(media::VideoCaptureFormats formats);
   void FinalizeVideoRequest();
 
   // Helpers for audio requests.
@@ -81,7 +80,7 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
   // |video_source_| and |request_completed_cb_| are the video source and
   // reply callback for the current request.
   blink::WebApplyConstraintsRequest current_request_;
-  blink::MediaStreamVideoSource* video_source_ = nullptr;
+  MediaStreamVideoSource* video_source_ = nullptr;
   base::OnceClosure request_completed_cb_;
 
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;

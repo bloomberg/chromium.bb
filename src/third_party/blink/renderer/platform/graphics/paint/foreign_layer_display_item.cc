@@ -26,11 +26,10 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
 
   DOMNodeId OwnerNodeId() const final { return layer_->owner_node_id(); }
 
-  IntRect VisualRect() const final {
+  LayoutRect VisualRect() const final {
     const auto& offset = layer_->offset_to_transform_parent();
-    const auto& bounds = layer_->bounds();
-    return EnclosingIntRect(
-        FloatRect(offset.x(), offset.y(), bounds.width(), bounds.height()));
+    return LayoutRect(LayoutPoint(offset.x(), offset.y()),
+                      LayoutSize(IntSize(layer_->bounds())));
   }
 
   cc::Layer* GetLayer() const { return layer_.get(); }

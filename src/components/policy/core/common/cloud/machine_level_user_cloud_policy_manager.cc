@@ -51,8 +51,7 @@ void MachineLevelUserCloudPolicyManager::Connect(
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
       policy_dir_.Append(kComponentPolicyCache),
-      (local_state->GetBoolean(
-           policy_prefs::kCloudPolicyOverridesPlatformPolicy)
+      (local_state->GetBoolean(policy_prefs::kCloudPolicyOverridesMachinePolicy)
            ? POLICY_SOURCE_PRIORITY_CLOUD
            : POLICY_SOURCE_CLOUD),
       client.get(), schema_registry());

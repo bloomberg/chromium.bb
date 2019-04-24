@@ -338,14 +338,10 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (secondary_view_) {
     gfx::Point point_in_secondary_view(point);
     ConvertPointToTarget(this, secondary_view_, &point_in_secondary_view);
-    View* handler =
-        secondary_view_->GetTooltipHandlerForPoint(point_in_secondary_view);
-    if (handler) {
-      gfx::Point point_in_handler_view(point);
-      ConvertPointToTarget(this, handler, &point_in_handler_view);
-      if (!handler->GetTooltipText(point_in_secondary_view).empty()) {
-        return handler;
-      }
+    base::string16 tooltip;
+    if (secondary_view_->HitTestPoint(point_in_secondary_view) &&
+        secondary_view_->GetTooltipText(point_in_secondary_view, &tooltip)) {
+      return secondary_view_;
     }
   }
 
@@ -401,7 +397,7 @@ void HoverButton::SetSubtitleColor(SkColor color) {
     subtitle_->SetEnabledColor(color);
 }
 
-void HoverButton::OnMenuButtonClicked(Button* source,
+void HoverButton::OnMenuButtonClicked(MenuButton* source,
                                       const gfx::Point& point,
                                       const ui::Event* event) {
   if (listener_)

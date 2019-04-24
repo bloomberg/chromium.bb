@@ -197,7 +197,6 @@ void MergeReturnPass::ProcessStructuredBlock(BasicBlock* block) {
       tail_opcode == SpvOpUnreachable) {
     assert(CurrentState().InLoop() && "Should be in the dummy loop.");
     BranchToBlock(block, CurrentState().LoopMergeId());
-    return_blocks_.insert(block->id());
   }
 }
 
@@ -233,19 +232,11 @@ void MergeReturnPass::UpdatePhiNodes(BasicBlock* new_source,
   const auto& target_pred = cfg()->preds(target->id());
   if (target_pred.size() == 1) {
     MarkForNewPhiNodes(target, context()->get_instr_block(target_pred[0]));
-  } else {
-    // If the loop contained a break and a return, OpPhi instructions may be
-    // required starting from the dominator of the loop merge.
-    DominatorAnalysis* dom_tree =
-        context()->GetDominatorAnalysis(target->GetParent());
-    auto idom = dom_tree->ImmediateDominator(target);
-    if (idom) {
-      MarkForNewPhiNodes(target, idom);
-    }
   }
 }
 
 void MergeReturnPass::CreatePhiNodesForInst(BasicBlock* merge_block,
+                                            uint32_t predecessor,
                                             Instruction& inst) {
   DominatorAnalysis* dom_tree =
       context()->GetDominatorAnalysis(merge_block->GetParent());
@@ -284,22 +275,22 @@ void MergeReturnPass::CreatePhiNodesForInst(BasicBlock* merge_block,
 
     // There is at least one values that needs to be replaced.
     // First create the OpPhi instruction.
-    InstructionBuilder builder(
-        context(), &*merge_block->begin(),
-        IRContext::kAnalysisDefUse | IRContext::kAnalysisInstrToBlockMapping);
+    InstructionBuilder builder(context(), &*merge_block->begin(),
+                               IRContext::kAnalysisDefUse);
     uint32_t undef_id = Type2Undef(inst.type_id());
     std::vector<uint32_t> phi_operands;
 
-    // Add the OpPhi operands. If the predecessor is a return block use undef,
-    // otherwise use |inst|'s id.
+    // Add the operands for the defining instructions.
+    phi_operands.push_back(inst.result_id());
+    phi_operands.push_back(predecessor);
+
+    // Add undef from all other blocks.
     std::vector<uint32_t> preds = cfg()->preds(merge_block->id());
     for (uint32_t pred_id : preds) {
-      if (return_blocks_.count(pred_id)) {
+      if (pred_id != predecessor) {
         phi_operands.push_back(undef_id);
-      } else {
-        phi_operands.push_back(inst.result_id());
+        phi_operands.push_back(pred_id);
       }
-      phi_operands.push_back(pred_id);
     }
 
     Instruction* new_phi = builder.AddPhi(inst.type_id(), phi_operands);
@@ -408,14 +399,8 @@ bool MergeReturnPass::BreakFromConstruct(
   // Forget about the edges leaving block.  They will be removed.
   cfg()->RemoveSuccessorEdges(block);
 
-  auto old_body_id = TakeNextId();
-  BasicBlock* old_body = block->SplitBasicBlock(context(), old_body_id, iter);
+  BasicBlock* old_body = block->SplitBasicBlock(context(), TakeNextId(), iter);
   predicated->insert(old_body);
-  // If a return block is being split, mark the new body block also as a return
-  // block.
-  if (return_blocks_.count(block->id())) {
-    return_blocks_.insert(old_body_id);
-  }
 
   // If |block| was a continue target for a loop |old_body| is now the correct
   // continue target.
@@ -674,7 +659,7 @@ void MergeReturnPass::AddNewPhiNodes(BasicBlock* bb, BasicBlock* pred,
   BasicBlock* current_bb = pred;
   while (current_bb != nullptr && current_bb->id() != header_id) {
     for (Instruction& inst : *current_bb) {
-      CreatePhiNodesForInst(bb, inst);
+      CreatePhiNodesForInst(bb, pred->id(), inst);
     }
     current_bb = dom_tree->ImmediateDominator(current_bb);
   }

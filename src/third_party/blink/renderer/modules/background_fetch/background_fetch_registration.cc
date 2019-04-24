@@ -28,6 +28,7 @@ namespace blink {
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     const String& developer_id,
+    const String& unique_id,
     uint64_t upload_total,
     uint64_t uploaded,
     uint64_t download_total,
@@ -35,6 +36,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     mojom::BackgroundFetchResult result,
     mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id_(developer_id),
+      unique_id_(unique_id),
       upload_total_(upload_total),
       uploaded_(uploaded),
       download_total_(download_total),
@@ -45,8 +47,9 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     ServiceWorkerRegistration* registration,
-    WebBackgroundFetchRegistration web_registration)
-    : developer_id_(std::move(web_registration.developer_id)),
+    const WebBackgroundFetchRegistration& web_registration)
+    : developer_id_(web_registration.developer_id),
+      unique_id_(web_registration.unique_id),
       upload_total_(web_registration.upload_total),
       uploaded_(web_registration.uploaded),
       download_total_(web_registration.download_total),
@@ -55,29 +58,17 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       failure_reason_(web_registration.failure_reason),
       observer_binding_(this) {
   DCHECK(registration);
-
-  mojom::blink::BackgroundFetchRegistrationServicePtrInfo
-      registration_service_info(
-          std::move(web_registration.registration_service_handle),
-          web_registration.registration_service_version);
-  DCHECK(registration_service_info);
-
-  Initialize(registration, mojom::blink::BackgroundFetchRegistrationServicePtr(
-                               std::move(registration_service_info)));
+  Initialize(registration);
 }
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
 void BackgroundFetchRegistration::Initialize(
-    ServiceWorkerRegistration* registration,
-    mojom::blink::BackgroundFetchRegistrationServicePtr registration_service) {
+    ServiceWorkerRegistration* registration) {
   DCHECK(!registration_);
   DCHECK(registration);
-  DCHECK(!registration_service_);
-  DCHECK(registration_service);
 
   registration_ = registration;
-  registration_service_ = std::move(registration_service);
 
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kBackgroundFetch);
@@ -85,7 +76,8 @@ void BackgroundFetchRegistration::Initialize(
   observer_binding_.Bind(mojo::MakeRequest(&observer, task_runner),
                          task_runner);
 
-  registration_service_->AddRegistrationObserver(std::move(observer));
+  BackgroundFetchBridge::From(registration_)
+      ->AddRegistrationObserver(unique_id_, std::move(observer));
 }
 
 void BackgroundFetchRegistration::OnProgress(
@@ -162,15 +154,14 @@ ExecutionContext* BackgroundFetchRegistration::GetExecutionContext() const {
 }
 
 ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(registration_);
-  DCHECK(registration_service_);
-
-  registration_service_->Abort(WTF::Bind(&BackgroundFetchRegistration::DidAbort,
-                                         WrapPersistent(this),
-                                         WrapPersistent(resolver)));
+  BackgroundFetchBridge::From(registration_)
+      ->Abort(developer_id_, unique_id_,
+              WTF::Bind(&BackgroundFetchRegistration::DidAbort,
+                        WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -226,7 +217,7 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
             "available."));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Convert |request| to mojom::blink::FetchAPIRequestPtr.
@@ -244,13 +235,13 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   }
 
   DCHECK(registration_);
-  DCHECK(registration_service_);
 
-  registration_service_->MatchRequests(
-      std::move(request_to_match), std::move(cache_query_options), match_all,
-      WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
-                WrapPersistent(this), WrapPersistent(resolver), match_all));
-
+  BackgroundFetchBridge::From(registration_)
+      ->MatchRequests(
+          developer_id_, unique_id_, std::move(request_to_match),
+          std::move(cache_query_options), match_all,
+          WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
+                    WrapPersistent(this), WrapPersistent(resolver), match_all));
   return promise;
 }
 

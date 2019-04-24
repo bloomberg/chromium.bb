@@ -8,13 +8,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(30);
-
-}  // namespace
 
 StatusChangeChecker::StatusChangeChecker()
     : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
@@ -36,6 +29,10 @@ bool StatusChangeChecker::TimedOut() const {
   return timed_out_;
 }
 
+base::TimeDelta StatusChangeChecker::GetTimeoutDuration() {
+  return base::TimeDelta::FromSeconds(45);
+}
+
 void StatusChangeChecker::StopWaiting() {
   if (run_loop_.running())
     run_loop_.Quit();
@@ -53,7 +50,7 @@ void StatusChangeChecker::StartBlockingWait() {
   DCHECK(!run_loop_.running());
 
   base::OneShotTimer timer;
-  timer.Start(FROM_HERE, kTimeout,
+  timer.Start(FROM_HERE, GetTimeoutDuration(),
               base::BindRepeating(&StatusChangeChecker::OnTimeout,
                                   base::Unretained(this)));
 
@@ -61,7 +58,7 @@ void StatusChangeChecker::StartBlockingWait() {
 }
 
 void StatusChangeChecker::OnTimeout() {
-  ADD_FAILURE() << "Await -> Timed out: " << GetDebugMessage();
+  DVLOG(1) << "Await -> Timed out: " << GetDebugMessage();
   timed_out_ = true;
   StopWaiting();
 }

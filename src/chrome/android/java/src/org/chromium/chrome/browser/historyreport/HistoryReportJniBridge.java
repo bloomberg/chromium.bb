@@ -7,11 +7,10 @@ package org.chromium.chrome.browser.historyreport;
 import static org.chromium.base.ThreadUtils.assertOnBackgroundThread;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.task.PostTask;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,8 +33,12 @@ public class HistoryReportJniBridge implements SearchJniBridge {
         if (observer == null) return false;
         if (mNativeHistoryReportJniBridge != 0) return true;
         mDataChangeObserver = observer;
-        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
-                () -> { mNativeHistoryReportJniBridge = nativeInit(); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mNativeHistoryReportJniBridge = nativeInit();
+            }
+        });
         if (mNativeHistoryReportJniBridge == 0) {
             Log.w(TAG, "JNI bridge initialization unsuccessful.");
             return false;

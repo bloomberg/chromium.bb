@@ -309,7 +309,6 @@ utrie2_clone(const UTrie2 *other, UErrorCode *pErrorCode) {
 
     trie=(UTrie2 *)uprv_malloc(sizeof(UTrie2));
     if(trie==NULL) {
-        *pErrorCode=U_MEMORY_ALLOCATION_ERROR;
         return NULL;
     }
     uprv_memcpy(trie, other, sizeof(UTrie2));
@@ -334,7 +333,6 @@ utrie2_clone(const UTrie2 *other, UErrorCode *pErrorCode) {
     }
 
     if(trie->memory==NULL && trie->newTrie==NULL) {
-        *pErrorCode=U_MEMORY_ALLOCATION_ERROR;
         uprv_free(trie);
         trie=NULL;
     }

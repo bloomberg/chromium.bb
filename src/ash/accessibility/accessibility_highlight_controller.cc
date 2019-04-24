@@ -22,26 +22,13 @@ namespace ash {
 
 namespace {
 
-constexpr char kHighlightCallerId[] = "HighlightController";
-// The color for the keyboard focus ring. (The same orange color as ChromeVox.)
-const SkColor kFocusColor = SkColorSetRGB(247, 152, 58);
-
 // Returns the input method shared between ash and the browser for in-process
 // ash. Returns null for out-of-process ash.
 ui::InputMethod* GetSharedInputMethod() {
   return Shell::Get()->window_tree_host_manager()->input_method();
 }
 
-void SetFocusRing(AccessibilityFocusRingController* controller,
-                  std::vector<gfx::Rect> rects) {
-  mojom::FocusRingPtr focus_ring = mojom::FocusRing::New();
-  focus_ring->rects_in_screen = rects;
-  focus_ring->behavior = mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
-  focus_ring->type = mojom::FocusRingType::GLOW;
-  focus_ring->color = kFocusColor;
-
-  controller->SetFocusRing(kHighlightCallerId, std::move(focus_ring));
-}
+constexpr char kHighlightCallerId[] = "HighlightController";
 
 }  // namespace
 
@@ -58,7 +45,9 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
 AccessibilityHighlightController::~AccessibilityHighlightController() {
   AccessibilityFocusRingController* controller =
       Shell::Get()->accessibility_focus_ring_controller();
-  SetFocusRing(controller, std::vector<gfx::Rect>());
+  controller->SetFocusRing(std::vector<gfx::Rect>(),
+                           mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING,
+                           kHighlightCallerId);
   controller->HideCaretRing();
   controller->HideCursorRing();
 
@@ -169,16 +158,22 @@ void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
   // both are visible.
   if (caret_ && caret_visible_) {
     controller->SetCaretRing(caret_point_);
-    SetFocusRing(controller, std::vector<gfx::Rect>());
+    controller->SetFocusRing(std::vector<gfx::Rect>(),
+                             mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING,
+                             kHighlightCallerId);
   } else if (focus_) {
     controller->HideCaretRing();
     std::vector<gfx::Rect> rects;
     if (!focus_rect_.IsEmpty())
       rects.push_back(focus_rect_);
-    SetFocusRing(controller, rects);
+    controller->SetFocusRing(rects,
+                             mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING,
+                             kHighlightCallerId);
   } else {
     controller->HideCaretRing();
-    SetFocusRing(controller, std::vector<gfx::Rect>());
+    controller->SetFocusRing(std::vector<gfx::Rect>(),
+                             mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING,
+                             kHighlightCallerId);
   }
 }
 

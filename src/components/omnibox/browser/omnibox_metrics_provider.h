@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -19,7 +18,8 @@ struct OmniboxLog;
 // section of the UMA proto.
 class OmniboxMetricsProvider : public metrics::MetricsProvider {
  public:
-  OmniboxMetricsProvider();
+  explicit OmniboxMetricsProvider(
+      const base::Callback<bool(void)>& is_off_the_record_callback);
   ~OmniboxMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
@@ -43,6 +43,10 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
   // Saved cache of generated Omnibox event protos, to be copied into the UMA
   // proto when ProvideCurrentSessionData() is called.
   metrics::ChromeUserMetricsExtension omnibox_events_cache;
+
+  // Callback passed in from the embedder that returns whether the user is
+  // currently operating off-the-record.
+  const base::Callback<bool(void)> is_off_the_record_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxMetricsProvider);
 };

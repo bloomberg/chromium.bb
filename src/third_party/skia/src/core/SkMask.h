@@ -40,8 +40,6 @@ struct SkMask {
     uint32_t    fRowBytes;
     Format      fFormat;
 
-    static bool IsValidFormat(uint8_t format) { return format < kCountMaskFormats; }
-
     /** Returns true if the mask is empty: i.e. it has an empty bounds.
      */
     bool isEmpty() const { return fBounds.isEmpty(); }

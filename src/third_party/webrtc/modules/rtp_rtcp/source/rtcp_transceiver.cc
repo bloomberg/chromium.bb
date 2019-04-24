@@ -22,10 +22,7 @@
 namespace webrtc {
 namespace {
 struct Destructor {
-  void operator()() {
-    rtcp_transceiver->StopPeriodicTask();
-    rtcp_transceiver = nullptr;
-  }
+  void operator()() { rtcp_transceiver = nullptr; }
   std::unique_ptr<RtcpTransceiverImpl> rtcp_transceiver;
 };
 }  // namespace

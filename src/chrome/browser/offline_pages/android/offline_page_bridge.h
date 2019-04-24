@@ -5,11 +5,7 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_BRIDGE_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_BRIDGE_H_
 
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+#include <stdint.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -263,7 +259,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void GetPageBySizeAndDigestDone(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
       const GURL& intent_url,
-      const std::vector<OfflinePageItem>& offline_pages);
+      const OfflinePageItem* offline_page);
 
   void NotifyIfDoneLoading() const;
 
@@ -274,12 +270,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void PublishInternalArchive(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
       const PublishSource publish_source,
-      const OfflinePageItem* offline_pages);
-
-  void PublishInternalArchiveOfFirstItem(
-      const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
-      const PublishSource publish_source,
-      const std::vector<OfflinePageItem>& offline_pages);
+      const OfflinePageItem* offline_page);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.

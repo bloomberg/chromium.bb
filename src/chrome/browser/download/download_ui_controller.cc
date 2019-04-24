@@ -154,8 +154,10 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
     auto* security_state_tab_helper =
         SecurityStateTabHelper::FromWebContents(web_contents);
     if (security_state_tab_helper) {
+      security_state::SecurityInfo security_info;
+      security_state_tab_helper->GetSecurityInfo(&security_info);
       UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.DownloadStarted",
-                                security_state_tab_helper->GetSecurityLevel(),
+                                security_info.security_level,
                                 security_state::SECURITY_LEVEL_COUNT);
     }
   }

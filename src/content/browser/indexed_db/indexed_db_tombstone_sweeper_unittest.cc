@@ -140,7 +140,7 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
     scoped_refptr<LevelDBState> level_db_state;
     leveldb::Status s;
     std::tie(level_db_state, s, std::ignore) =
-        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDB(
             base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
             indexed_db::GetDefaultLevelDBComparator());
     ASSERT_TRUE(s.ok());

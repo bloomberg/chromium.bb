@@ -7,9 +7,13 @@
 namespace views {
 namespace test {
 
-CaptureTrackingView::CaptureTrackingView() = default;
+CaptureTrackingView::CaptureTrackingView()
+    : got_press_(false),
+      got_capture_lost_(false) {
+}
 
-CaptureTrackingView::~CaptureTrackingView() = default;
+CaptureTrackingView::~CaptureTrackingView() {
+}
 
 bool CaptureTrackingView::OnMousePressed(const ui::MouseEvent& event) {
   got_press_ = true;

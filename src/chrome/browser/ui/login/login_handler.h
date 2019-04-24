@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/base/auth.h"
 
 class GURL;
 class LoginInterstitialDelegate;
@@ -31,6 +30,10 @@ class LoginInterstitialDelegate;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace net {
+class AuthChallengeInfo;
+}  // namespace net
 
 // This is the base implementation for the OS-specific classes that prompt for
 // authentication information.
@@ -53,7 +56,7 @@ class LoginHandler : public content::LoginDelegate,
     const autofill::PasswordForm& form;
   };
 
-  LoginHandler(const net::AuthChallengeInfo& auth_info,
+  LoginHandler(net::AuthChallengeInfo* auth_info,
                content::WebContents* web_contents,
                LoginAuthRequiredCallback auth_required_callback);
   ~LoginHandler() override;
@@ -64,7 +67,7 @@ class LoginHandler : public content::LoginDelegate,
   // them, the login request is aborted and the callback will not be called. The
   // callback must remain valid until one of those two events occurs.
   static std::unique_ptr<LoginHandler> Create(
-      const net::AuthChallengeInfo& auth_info,
+      net::AuthChallengeInfo* auth_info,
       content::WebContents* web_contents,
       LoginAuthRequiredCallback auth_required_callback);
 
@@ -90,7 +93,7 @@ class LoginHandler : public content::LoginDelegate,
                const content::NotificationDetails& details) override;
 
   // Who/where/what asked for the authentication.
-  const net::AuthChallengeInfo& auth_info() const { return auth_info_; }
+  const net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
 
  protected:
   // Implement this to initialize the underlying platform specific view. If
@@ -166,7 +169,7 @@ class LoginHandler : public content::LoginDelegate,
                           LoginModelData* login_model_data);
 
   // Who/where/what asked for the authentication.
-  net::AuthChallengeInfo auth_info_;
+  scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
@@ -229,7 +232,7 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // request by destroying the returned LoginDelegate. It must do this before
 // invalidating the callback.
 std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,

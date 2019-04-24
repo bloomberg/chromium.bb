@@ -64,8 +64,16 @@ id<MTLLibrary> GrMtlPipelineStateBuilder::createMtlShaderLibrary(
         SkSL::Program::Kind kind,
         const SkSL::Program::Settings& settings,
         GrProgramDesc* desc) {
+    SkString shaderString;
+    for (int i = 0; i < builder.fCompilerStrings.count(); ++i) {
+        if (builder.fCompilerStrings[i]) {
+            shaderString.append(builder.fCompilerStrings[i]);
+            shaderString.append("\n");
+        }
+    }
+
     SkSL::Program::Inputs inputs;
-    id<MTLLibrary> shaderLibrary = GrCompileMtlShaderLibrary(fGpu, builder.fCompilerString.c_str(),
+    id<MTLLibrary> shaderLibrary = GrCompileMtlShaderLibrary(fGpu, shaderString.c_str(),
                                                              kind, settings, &inputs);
     if (shaderLibrary == nil) {
         return nil;
@@ -313,7 +321,7 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(GrRenderTarget* renderTa
                                                         const GrPrimitiveProcessor& primProc,
                                                         const GrPipeline& pipeline,
                                                         Desc* desc) {
-    auto pipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    auto pipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
 
     fVS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
     fFS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
@@ -403,7 +411,7 @@ bool GrMtlPipelineStateBuilder::Desc::Build(Desc* desc,
                                             const GrPipeline& pipeline,
                                             GrPrimitiveType primitiveType,
                                             GrMtlGpu* gpu) {
-    if (!INHERITED::Build(desc, renderTarget, primProc,
+    if (!INHERITED::Build(desc, renderTarget->config(), primProc,
                           GrPrimitiveType::kLines == primitiveType, pipeline, gpu)) {
         return false;
     }

@@ -240,7 +240,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   Member<WebGLRenderingContextBase> rendering_context_;
   Member<XRFrameTransport> frame_transport_;
 
-  Member<ScriptedAnimationController> scripted_animation_controller_;
+  TraceWrapperMember<ScriptedAnimationController>
+      scripted_animation_controller_;
   bool pending_vrdisplay_raf_ = false;
   bool pending_presenting_vsync_ = false;
   bool pending_non_immersive_vsync_ = false;

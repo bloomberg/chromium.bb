@@ -4,13 +4,15 @@
 
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
-WrongHWIDScreen::WrongHWIDScreen(WrongHWIDScreenView* view,
+WrongHWIDScreen::WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
+                                 WrongHWIDScreenView* view,
                                  const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_WRONG_HWID),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_WRONG_HWID),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

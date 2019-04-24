@@ -35,7 +35,7 @@ namespace blink {
 using namespace cssvalue;
 using namespace html_names;
 
-HTMLHRElement::HTMLHRElement(Document& document)
+inline HTMLHRElement::HTMLHRElement(Document& document)
     : HTMLElement(kHrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHRElement)
@@ -54,58 +54,55 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginLeft, 0,
+          style, CSSPropertyMarginLeft, 0,
           CSSPrimitiveValue::UnitType::kPixels);
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginRight, CSSValueID::kAuto);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
+                                              CSSValueAuto);
     } else if (DeprecatedEqualIgnoringCase(value, "right")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
-                                              CSSValueID::kAuto);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft,
+                                              CSSValueAuto);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginRight, 0,
+          style, CSSPropertyMarginRight, 0,
           CSSPrimitiveValue::UnitType::kPixels);
     } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
-                                              CSSValueID::kAuto);
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kMarginRight, CSSValueID::kAuto);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft,
+                                              CSSValueAuto);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
+                                              CSSValueAuto);
     }
   } else if (name == kWidthAttr) {
     bool ok;
     int v = value.ToInt(&ok);
-    if (ok && !v) {
+    if (ok && !v)
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kWidth, 1,
-          CSSPrimitiveValue::UnitType::kPixels);
-    } else {
-      AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-    }
+          style, CSSPropertyWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
+    else
+      AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else if (name == kColorAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
-                                            CSSValueID::kSolid);
-    AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
-    AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
+                                            CSSValueSolid);
+    AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (name == kNoshadeAttr) {
     if (!hasAttribute(kColorAttr)) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderStyle, CSSValueID::kSolid);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
+                                              CSSValueSolid);
 
       const CSSColorValue& dark_gray_value =
           *CSSColorValue::Create(Color::kDarkGray);
-      style->SetProperty(CSSPropertyID::kBorderColor, dark_gray_value);
-      style->SetProperty(CSSPropertyID::kBackgroundColor, dark_gray_value);
+      style->SetProperty(CSSPropertyBorderColor, dark_gray_value);
+      style->SetProperty(CSSPropertyBackgroundColor, dark_gray_value);
     }
   } else if (name == kSizeAttr) {
     int size = value.ToInt();
-    if (size <= 1) {
+    if (size <= 1)
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderBottomWidth, 0,
+          style, CSSPropertyBorderBottomWidth, 0,
           CSSPrimitiveValue::UnitType::kPixels);
-    } else {
+    else
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kHeight, size - 2,
+          style, CSSPropertyHeight, size - 2,
           CSSPrimitiveValue::UnitType::kPixels);
-    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

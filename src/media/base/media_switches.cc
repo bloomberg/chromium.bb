@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "ui/base/mpris/buildflags/buildflags.h"
 
 namespace switches {
 
@@ -97,11 +96,10 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 // or <path>%noloop to stop after playing the file to completion.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
-// Use a fake device for accelerated decoding of MJPEG. This allows, for
-// example, testing of the communication to the GPU service without requiring
-// actual accelerator hardware to be present.
-const char kUseFakeMjpegDecodeAccelerator[] =
-    "use-fake-mjpeg-decode-accelerator";
+// Use fake device for accelerated decoding of JPEG. This allows, for example,
+// testing of the communication to the GPU service without requiring actual
+// accelerator hardware to be present.
+const char kUseFakeJpegDecodeAccelerator[] = "use-fake-jpeg-decode-accelerator";
 
 // Disable hardware acceleration of mjpeg decode for captured frame, where
 // available.
@@ -269,7 +267,7 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
@@ -302,11 +300,7 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 // If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
 // aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable VA-API hardware low power encoder for all codecs.
-const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
@@ -336,8 +330,7 @@ const base::Feature kHardwareSecureDecryption{
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
   "HardwareMediaKeyHandling",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
-    BUILDFLAG(USE_MPRIS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -369,6 +362,14 @@ const base::Feature kAutoplayWhitelistSettings{
 const base::Feature kMediaControlsExpandGesture{
     "MediaControlsExpandGesture", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Lock the screen orientation when a video goes fullscreen.
+const base::Feature kVideoFullscreenOrientationLock{
+    "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enter/exit fullscreen when device is rotated to/from the video orientation.
+const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // An experimental feature to enable persistent-license type support in MediaDrm
 // when using Encrypted Media Extensions (EME) API.
 // TODO(xhwang): Remove this after feature launch. See http://crbug.com/493521
@@ -391,11 +392,6 @@ const base::Feature kMediaDrmPreprovisioningAtStartup{
 // Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Prevents using SurfaceLayer for videos. This is meant to be used by embedders
-// that cannot support SurfaceLayer at the moment.
-const base::Feature kDisableSurfaceLayerForVideo{
-    "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // defined(OS_ANDROID)
 
@@ -508,7 +504,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
     return false;
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeMjpegDecodeAccelerator)) {
+          switches::kUseFakeJpegDecodeAccelerator)) {
     return true;
   }
 #if defined(OS_CHROMEOS)

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "extensions/common/error_utils.h"
 
 namespace extensions {
@@ -16,10 +17,13 @@ ParseInfo::ParseInfo(ParseResult result, int rule_id)
 ParseInfo::ParseInfo(const ParseInfo&) = default;
 ParseInfo& ParseInfo::operator=(const ParseInfo&) = default;
 
-std::string ParseInfo::GetErrorDescription() const {
-  // Every error except ERROR_PERSISTING_RULESET requires |rule_id_|.
+std::string ParseInfo::GetErrorDescription(
+    const base::StringPiece json_rules_filename) const {
+  // Every error except ERROR_PERSISTING_RULESET and ERROR_LIST_NOT_PASSED
+  // requires |rule_id_|.
   DCHECK_EQ(!rule_id_.has_value(),
-            result_ == ParseResult::ERROR_PERSISTING_RULESET);
+            result_ == ParseResult::ERROR_PERSISTING_RULESET ||
+                result_ == ParseResult::ERROR_LIST_NOT_PASSED);
 
   std::string error;
   switch (result_) {
@@ -28,75 +32,85 @@ std::string ParseInfo::GetErrorDescription() const {
       break;
     case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
       error = ErrorUtils::FormatErrorMessage(kErrorResourceTypeDuplicated,
+                                             json_rules_filename,
                                              std::to_string(*rule_id_));
       break;
     case ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyRedirectRuleKey, std::to_string(*rule_id_), kPriorityKey);
+          kErrorEmptyRedirectRuleKey, json_rules_filename,
+          std::to_string(*rule_id_), kPriorityKey);
       break;
     case ParseResult::ERROR_EMPTY_REDIRECT_URL:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRedirectRuleKey,
-                                             std::to_string(*rule_id_),
-                                             kRedirectUrlKey);
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyRedirectRuleKey, json_rules_filename,
+          std::to_string(*rule_id_), kRedirectUrlKey);
       break;
     case ParseResult::ERROR_INVALID_RULE_ID:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidRuleKey,
-                                             std::to_string(*rule_id_), kIDKey,
-                                             std::to_string(kMinValidID));
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidRuleKey, json_rules_filename, std::to_string(*rule_id_),
+          kIDKey, std::to_string(kMinValidID));
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRuleKey, std::to_string(*rule_id_), kPriorityKey,
-          std::to_string(kMinValidPriority));
+          kErrorInvalidRuleKey, json_rules_filename, std::to_string(*rule_id_),
+          kPriorityKey, std::to_string(kMinValidPriority));
       break;
     case ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES:
       error = ErrorUtils::FormatErrorMessage(kErrorNoApplicableResourceTypes,
-
+                                             json_rules_filename,
                                              std::to_string(*rule_id_));
       break;
     case ParseResult::ERROR_EMPTY_DOMAINS_LIST:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, std::to_string(*rule_id_), kDomainsKey);
+          kErrorEmptyList, json_rules_filename, std::to_string(*rule_id_),
+          kDomainsKey);
       break;
     case ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, std::to_string(*rule_id_), kResourceTypesKey);
+          kErrorEmptyList, json_rules_filename, std::to_string(*rule_id_),
+          kResourceTypesKey);
       break;
     case ParseResult::ERROR_EMPTY_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyUrlFilter, std::to_string(*rule_id_), kUrlFilterKey);
+          kErrorEmptyUrlFilter, json_rules_filename, std::to_string(*rule_id_),
+          kUrlFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRedirectUrl, std::to_string(*rule_id_), kRedirectUrlKey);
+          kErrorInvalidRedirectUrl, json_rules_filename,
+          std::to_string(*rule_id_), kRedirectUrlKey);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
-      error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,
-                                             std::to_string(*rule_id_));
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorDuplicateIDs, json_rules_filename, std::to_string(*rule_id_));
       break;
     case ParseResult::ERROR_PERSISTING_RULESET:
-      error = kErrorPersisting;
+      error =
+          ErrorUtils::FormatErrorMessage(kErrorPersisting, json_rules_filename);
+      break;
+    case ParseResult::ERROR_LIST_NOT_PASSED:
+      error = ErrorUtils::FormatErrorMessage(kErrorListNotPassed,
+                                             json_rules_filename);
       break;
     case ParseResult::ERROR_NON_ASCII_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kUrlFilterKey);
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_id_),
+          kUrlFilterKey);
       break;
     case ParseResult::ERROR_NON_ASCII_DOMAIN:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kDomainsKey);
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_id_),
+          kDomainsKey);
       break;
     case ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kExcludedDomainsKey);
+          kErrorNonAscii, json_rules_filename, std::to_string(*rule_id_),
+          kExcludedDomainsKey);
       break;
     case ParseResult::ERROR_INVALID_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidUrlFilter, std::to_string(*rule_id_), kUrlFilterKey);
-      break;
-    case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
-                                             std::to_string(*rule_id_),
-                                             kRemoveHeadersListKey);
+          kErrorInvalidUrlFilter, json_rules_filename,
+          std::to_string(*rule_id_), kUrlFilterKey);
       break;
   }
   return error;

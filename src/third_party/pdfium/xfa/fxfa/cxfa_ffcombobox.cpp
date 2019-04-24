@@ -30,10 +30,10 @@ CXFA_FFComboBox::CXFA_FFComboBox(CXFA_Node* pNode)
 
 CXFA_FFComboBox::~CXFA_FFComboBox() {}
 
-CFX_RectF CXFA_FFComboBox::GetBBox(FocusOption focus) {
+CFX_RectF CXFA_FFComboBox::GetBBox(uint32_t dwStatus, FocusOption focus) {
   if (focus == kDrawFocus)
     return CFX_RectF();
-  return CXFA_FFWidget::GetBBox(kDoNotDrawFocus);
+  return CXFA_FFWidget::GetBBox(dwStatus, kDoNotDrawFocus);
 }
 
 bool CXFA_FFComboBox::PtInActiveRect(const CFX_PointF& point) {

@@ -10,30 +10,18 @@
  */
 function CrostiniImpl() {
   /**
-   * True if VM is enabled.
-   * @private {Object<boolean>}
+   * True if crostini is enabled.
+   * @private {boolean}
    */
-  this.enabled_ = {};
+  this.enabled_ = false;
 
   /**
-   * Maintains a list of paths shared with VMs.
-   * Keyed by entry.toURL(), maps to list of VMs.
-   * @private @dict {!Object<!Array<string>>}
+   * Maintains a list of paths shared with the crostini container.
+   * Keyed by entry.toURL().
+   * @private @dict {!Object<boolean>}
    */
   this.shared_paths_ = {};
 }
-
-/**
- * Default Crostini VM is 'termina'.
- * @const
- */
-CrostiniImpl.DEFAULT_VM = 'termina';
-
-/**
- * Plugin VM 'PluginVm'.
- * @const
- */
-CrostiniImpl.PLUGIN_VM = 'PluginVm';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
@@ -59,8 +47,8 @@ CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
-  [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
-  [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
 ]);
 
 /**
@@ -86,21 +74,19 @@ CrostiniImpl.prototype.listen = function() {
 };
 
 /**
- * Set whether the specified VM is enabled.
- * @param {string} vmName
+ * Set from feature 'crostini-files'.
  * @param {boolean} enabled
  */
-CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
-  this.enabled_[vmName] = enabled;
+CrostiniImpl.prototype.setEnabled = function(enabled) {
+  this.enabled_ = enabled;
 };
 
 /**
  * Returns true if crostini is enabled.
- * @param {string} vmName
  * @return {boolean}
  */
-CrostiniImpl.prototype.isEnabled = function(vmName) {
-  return this.enabled_[vmName];
+CrostiniImpl.prototype.isEnabled = function() {
+  return this.enabled_;
 };
 
 /**
@@ -115,27 +101,18 @@ CrostiniImpl.prototype.getRoot_ = function(entry) {
 };
 
 /**
- * Registers an entry as a shared path for the specified VM.
- * @param {string} vmName
+ * Registers an entry as a shared path.
  * @param {!Entry} entry
  */
-CrostiniImpl.prototype.registerSharedPath = function(vmName, entry) {
+CrostiniImpl.prototype.registerSharedPath = function(entry) {
   const url = entry.toURL();
   // Remove any existing paths that are children of the new path.
-  // These paths will still be shared as a result of a parent path being
-  // shared, but if the parent is unshared in the future, these children
-  // paths should not remain.
-  for (const [path, vms] of Object.entries(this.shared_paths_)) {
+  for (let path in this.shared_paths_) {
     if (path.startsWith(url)) {
-      this.unregisterSharedPath_(vmName, path);
+      delete this.shared_paths_[path];
     }
   }
-  const vms = this.shared_paths_[url];
-  if (this.shared_paths_[url]) {
-    this.shared_paths_[url].push(vmName);
-  } else {
-    this.shared_paths_[url] = [vmName];
-  }
+  this.shared_paths_[url] = true;
 
   // Record UMA.
   const root = this.getRoot_(entry);
@@ -148,30 +125,11 @@ CrostiniImpl.prototype.registerSharedPath = function(vmName, entry) {
 };
 
 /**
- * Unregisters path as a shared path from the specified VM.
- * @param {string} vmName
- * @param {string} path
- * @private
- */
-CrostiniImpl.prototype.unregisterSharedPath_ = function(vmName, path) {
-  const vms = this.shared_paths_[path];
-  if (vms) {
-    const newVms = vms.filter(vm => vm != vmName);
-    if (newVms.length > 0) {
-      this.shared_paths_[path] = newVms;
-    } else {
-      delete this.shared_paths_[path];
-    }
-  }
-};
-
-/**
- * Unregisters entry as a shared path from the specified VM.
- * @param {string} vmName
+ * Unregisters entry as a shared path.
  * @param {!Entry} entry
  */
-CrostiniImpl.prototype.unregisterSharedPath = function(vmName, entry) {
-  this.unregisterSharedPath_(vmName, entry.toURL());
+CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
+  delete this.shared_paths_[entry.toURL()];
 };
 
 /**
@@ -182,23 +140,22 @@ CrostiniImpl.prototype.unregisterSharedPath = function(vmName, entry) {
 CrostiniImpl.prototype.onChange_ = function(event) {
   if (event.eventType === 'share') {
     for (const entry of event.entries) {
-      this.registerSharedPath(event.vmName, entry);
+      this.registerSharedPath(entry);
     }
   } else if (event.eventType === 'unshare') {
     for (const entry of event.entries) {
-      this.unregisterSharedPath(event.vmName, entry);
+      this.unregisterSharedPath(entry);
     }
   }
 };
 
 /**
- * Returns true if entry is shared with the specified VM.
- * @param {string} vmName
+ * Returns true if entry is shared.
  * @param {!Entry} entry
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-CrostiniImpl.prototype.isPathShared = function(vmName, entry) {
+CrostiniImpl.prototype.isPathShared = function(entry) {
   // Check path and all ancestor directories.
   let path = entry.toURL();
   let root = path;
@@ -207,24 +164,21 @@ CrostiniImpl.prototype.isPathShared = function(vmName, entry) {
   }
 
   while (path.length > root.length) {
-    const vms = this.shared_paths_[path];
-    if (vms && vms.includes(vmName)) {
+    if (this.shared_paths_[path]) {
       return true;
     }
     path = path.substring(0, path.lastIndexOf('/'));
   }
-  const rootVms = this.shared_paths_[root];
-  return !!rootVms && rootVms.includes(vmName);
+  return !!this.shared_paths_[root];
 };
 
 /**
- * Returns true if entry can be shared with the specified VM.
- * @param {string} vmName
+ * Returns true if entry can be shared with Crostini.
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
  */
-CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
-  if (!this.enabled_[vmName]) {
+CrostiniImpl.prototype.canSharePath = function(entry, persist) {
+  if (!this.enabled_) {
     return false;
   }
 

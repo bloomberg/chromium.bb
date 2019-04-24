@@ -4,7 +4,9 @@
 
 // https://html.spec.whatwg.org/C/#htmlhyperlinkelementutils
 
-interface mixin HTMLHyperlinkElementUtils {
+[
+    NoInterfaceObject // Always used on target of 'implements'
+] interface HTMLHyperlinkElementUtils {
 
     [CEReactions, RaisesException=Setter] stringifier attribute URLString href;
     readonly attribute USVString origin;

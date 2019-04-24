@@ -401,6 +401,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if DisableKeepAliveRefCount() was called.
   virtual bool IsKeepAliveRefCountDisabled() = 0;
 
+  // Purges and suspends the renderer process.
+  virtual void PurgeAndSuspend() = 0;
+
   // Resumes the renderer process.
   virtual void Resume() = 0;
 

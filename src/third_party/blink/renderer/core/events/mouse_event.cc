@@ -34,8 +34,6 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -222,26 +220,17 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     const LocalDOMWindow* dom_window,
     MouseEventInit* initializer) {
   FloatPoint client_point;
-  FloatPoint screen_point = web_pointer_properties.PositionInScreen();
   float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint root_frame_point = web_pointer_properties.PositionInWidget();
-    if (Page* p = frame->GetPage()) {
-      if (p->GetPointerLockController().GetElement() &&
-          !p->GetPointerLockController().LockPending()) {
-        p->GetPointerLockController().GetPointerLockPosition(&root_frame_point,
-                                                             &screen_point);
-      }
-    }
-    FloatPoint frame_point =
-        frame->View()->ConvertFromRootFrame(root_frame_point);
+    FloatPoint page_point = frame->View()->ConvertFromRootFrame(
+        web_pointer_properties.PositionInWidget());
     scale_factor = 1.0f / frame->PageZoomFactor();
-    client_point = frame_point.ScaledBy(scale_factor);
+    client_point = page_point.ScaledBy(scale_factor);
   }
 
-  initializer->setScreenX(screen_point.X());
-  initializer->setScreenY(screen_point.Y());
+  initializer->setScreenX(web_pointer_properties.PositionInScreen().x);
+  initializer->setScreenY(web_pointer_properties.PositionInScreen().y);
   initializer->setClientX(client_point.X());
   initializer->setClientY(client_point.Y());
 
@@ -480,7 +469,7 @@ void MouseEvent::ComputeRelativePosition() {
   float inverse_zoom_factor = 1 / PageZoomFactor(this);
 
   // Must have an updated layout tree for this math to work correctly.
-  target_node->GetDocument().UpdateStyleAndLayout();
+  target_node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Adjust offsetLocation to be relative to the target's padding box.
   if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {

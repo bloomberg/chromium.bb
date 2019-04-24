@@ -11,7 +11,9 @@ var GuestViewContainerElement =
     require('guestViewContainerElement').GuestViewContainerElement;
 var WebViewImpl = require('webView').WebViewImpl;
 var WEB_VIEW_API_METHODS = require('webViewApiMethods').WEB_VIEW_API_METHODS;
-var WebViewInternal = getInternalApi('webViewInternal');
+var WebViewInternal = getInternalApi ?
+    getInternalApi('webViewInternal') :
+    require('webViewInternal').WebViewInternal;
 
 class WebViewElement extends GuestViewContainerElement {}
 

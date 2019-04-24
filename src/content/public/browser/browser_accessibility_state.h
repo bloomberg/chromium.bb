@@ -56,14 +56,7 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // browser starts up, when accessibility state histograms are updated.
   // Use this to register a method to update additional accessibility
   // histograms.
-  //
-  // Use this variant for a callback that must be run on the UI thread,
-  // for example something that needs to access prefs.
-  virtual void AddUIThreadHistogramCallback(base::OnceClosure callback) = 0;
-
-  // Use this variant for a callback that's better to run on another
-  // thread, for example something that may block or run slowly.
-  virtual void AddOtherThreadHistogramCallback(base::OnceClosure callback) = 0;
+  virtual void AddHistogramCallback(base::Closure callback) = 0;
 
   virtual void UpdateHistogramsForTesting() = 0;
 };

@@ -63,13 +63,13 @@ static network::cors::OriginAccessList& GetOriginAccessList() {
 
 using OriginSet = HashSet<String>;
 
-static OriginSet& TrustworthyOriginSafelist() {
-  DEFINE_STATIC_LOCAL(OriginSet, safelist, ());
-  return safelist;
+static OriginSet& TrustworthyOriginSet() {
+  DEFINE_STATIC_LOCAL(OriginSet, trustworthy_origin_set, ());
+  return trustworthy_origin_set;
 }
 
 void SecurityPolicy::Init() {
-  TrustworthyOriginSafelist();
+  TrustworthyOriginSet();
 }
 
 bool SecurityPolicy::ShouldHideReferrer(const KURL& url, const KURL& referrer) {
@@ -181,32 +181,31 @@ Referrer SecurityPolicy::GenerateReferrer(
       referrer_policy_no_default);
 }
 
-void SecurityPolicy::AddOriginToTrustworthySafelist(
-    const String& origin_or_pattern) {
+void SecurityPolicy::AddOriginTrustworthyWhiteList(const String& origin) {
 #if DCHECK_IS_ON()
   // Must be called before we start other threads.
   DCHECK(WTF::IsBeforeThreadCreated());
 #endif
-  // Origins and hostname patterns must be canonicalized (including
-  // canonicalization to 8-bit strings) before being inserted into
-  // TrustworthyOriginSafelist().
-  CHECK(origin_or_pattern.Is8Bit());
-  TrustworthyOriginSafelist().insert(origin_or_pattern);
+  TrustworthyOriginSet().insert(origin);
 }
 
-bool SecurityPolicy::IsOriginTrustworthySafelisted(
+bool SecurityPolicy::IsOriginWhiteListedTrustworthy(
     const SecurityOrigin& origin) {
-  // Early return if |origin| cannot possibly be matched.
-  if (origin.IsOpaque() || TrustworthyOriginSafelist().IsEmpty())
+  // Early return if there are no whitelisted origins to avoid unnecessary
+  // allocations, copies, and frees.
+  if (origin.IsOpaque() || TrustworthyOriginSet().IsEmpty())
     return false;
-
-  if (TrustworthyOriginSafelist().Contains(origin.ToRawString()))
+  if (TrustworthyOriginSet().Contains(origin.ToRawString()))
     return true;
 
   // KURL and SecurityOrigin hosts should be canonicalized to 8-bit strings.
   CHECK(origin.Host().Is8Bit());
   StringUTF8Adaptor host_adaptor(origin.Host());
-  for (const auto& origin_or_pattern : TrustworthyOriginSafelist()) {
+  for (const auto& origin_or_pattern : TrustworthyOriginSet()) {
+    // Origins and hostname patterns are expected to be canonicalized (including
+    // canonicalization to 8-bit strings) before being inserted into the
+    // TrustworthyOriginSet().
+    CHECK(origin_or_pattern.Is8Bit());
     StringUTF8Adaptor origin_or_pattern_adaptor(origin_or_pattern);
     if (base::MatchPattern(host_adaptor.AsStringPiece(),
                            origin_or_pattern_adaptor.AsStringPiece())) {
@@ -217,11 +216,11 @@ bool SecurityPolicy::IsOriginTrustworthySafelisted(
   return false;
 }
 
-bool SecurityPolicy::IsUrlTrustworthySafelisted(const KURL& url) {
+bool SecurityPolicy::IsUrlWhiteListedTrustworthy(const KURL& url) {
   // Early return to avoid initializing the SecurityOrigin.
-  if (TrustworthyOriginSafelist().IsEmpty())
+  if (TrustworthyOriginSet().IsEmpty())
     return false;
-  return IsOriginTrustworthySafelisted(*SecurityOrigin::Create(url).get());
+  return IsOriginWhiteListedTrustworthy(*SecurityOrigin::Create(url).get());
 }
 
 bool SecurityPolicy::IsOriginAccessAllowed(

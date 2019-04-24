@@ -76,10 +76,11 @@ bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }
 
-void WebContentsDelegate::CanDownload(const GURL& url,
-                                      const std::string& request_method,
-                                      base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(true);
+void WebContentsDelegate::CanDownload(
+    const GURL& url,
+    const std::string& request_method,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
 }
 
 bool WebContentsDelegate::HandleContextMenu(RenderFrameHost* render_frame_host,
@@ -210,12 +211,12 @@ bool WebContentsDelegate::ShouldBlockMediaRequest(const GURL& url) {
 }
 #endif
 
-void WebContentsDelegate::RequestPpapiBrokerPermission(
+bool WebContentsDelegate::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
     const base::FilePath& plugin_path,
-    base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(false);
+    const base::Callback<void(bool)>& callback) {
+  return false;
 }
 
 WebContentsDelegate::~WebContentsDelegate() {

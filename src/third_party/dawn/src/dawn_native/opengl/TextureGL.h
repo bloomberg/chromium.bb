@@ -32,10 +32,7 @@ namespace dawn_native { namespace opengl {
     class Texture : public TextureBase {
       public:
         Texture(Device* device, const TextureDescriptor* descriptor);
-        Texture(Device* device,
-                const TextureDescriptor* descriptor,
-                GLuint handle,
-                TextureState state);
+        Texture(Device* device, const TextureDescriptor* descriptor, GLuint handle);
         ~Texture();
 
         GLuint GetHandle() const;
@@ -43,8 +40,6 @@ namespace dawn_native { namespace opengl {
         TextureFormatInfo GetGLFormat() const;
 
       private:
-        void DestroyImpl() override;
-
         GLuint mHandle;
         GLenum mTarget;
     };
@@ -60,7 +55,6 @@ namespace dawn_native { namespace opengl {
       private:
         GLuint mHandle;
         GLenum mTarget;
-        bool mOwnsHandle;
     };
 
 }}  // namespace dawn_native::opengl

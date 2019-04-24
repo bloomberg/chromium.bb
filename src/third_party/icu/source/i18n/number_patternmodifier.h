@@ -21,16 +21,10 @@ U_NAMESPACE_BEGIN
 // data member of AdoptingModifierStore.
 // (When building DLLs for Windows this is required.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
 // Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable : 4661)
-#endif
+#pragma warning(suppress: 4661)
 template class U_I18N_API LocalPointerBase<number::impl::AdoptingModifierStore>;
 template class U_I18N_API LocalPointer<number::impl::AdoptingModifierStore>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 
 namespace number {
@@ -46,7 +40,7 @@ class U_I18N_API ImmutablePatternModifier : public MicroPropsGenerator, public U
 
     void processQuantity(DecimalQuantity&, MicroProps& micros, UErrorCode& status) const U_OVERRIDE;
 
-    void applyToMicros(MicroProps& micros, const DecimalQuantity& quantity, UErrorCode& status) const;
+    void applyToMicros(MicroProps& micros, DecimalQuantity& quantity) const;
 
     const Modifier* getModifier(int8_t signum, StandardPlural::Form plural) const;
 
@@ -101,11 +95,8 @@ class U_I18N_API MutablePatternModifier
      * Sets a reference to the parsed decimal format pattern, usually obtained from
      * {@link PatternStringParser#parseToPatternInfo(String)}, but any implementation of {@link AffixPatternProvider} is
      * accepted.
-     *
-     * @param field
-     *            Which field to use for literal characters in the pattern.
      */
-    void setPatternInfo(const AffixPatternProvider *patternInfo, Field field);
+    void setPatternInfo(const AffixPatternProvider *patternInfo);
 
     /**
      * Sets attributes that imply changes to the literal interpretation of the pattern string affixes.
@@ -212,9 +203,8 @@ class U_I18N_API MutablePatternModifier
 
     // Pattern details (initialized in setPatternInfo and setPatternAttributes)
     const AffixPatternProvider *fPatternInfo;
-    Field fField;
     UNumberSignDisplay fSignDisplay;
-    bool fPerMilleReplacesPercent;
+    bool perMilleReplacesPercent;
 
     // Symbol details (initialized in setSymbols)
     const DecimalFormatSymbols *fSymbols;

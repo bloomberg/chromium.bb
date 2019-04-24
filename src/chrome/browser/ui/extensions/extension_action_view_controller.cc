@@ -46,13 +46,11 @@ ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
     ExtensionAction* extension_action,
-    ToolbarActionsBar* main_bar,
-    bool in_overflow_mode)
+    ToolbarActionsBar* toolbar_actions_bar)
     : extension_(extension),
       browser_(browser),
-      in_overflow_mode_(in_overflow_mode),
       extension_action_(extension_action),
-      main_bar_(main_bar),
+      toolbar_actions_bar_(toolbar_actions_bar),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
@@ -61,7 +59,6 @@ ExtensionActionViewController::ExtensionActionViewController(
           extensions::ExtensionRegistry::Get(browser_->profile())),
       popup_host_observer_(this),
       weak_factory_(this) {
-  DCHECK(main_bar);
   DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
@@ -122,27 +119,30 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
   base::string16 title_utf16 =
       base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
 
-  // Include a "host access" portion of the tooltip if the extension has or
-  // wants access to the site.
-  PageInteractionStatus interaction_status =
-      GetPageInteractionStatus(web_contents);
-  int interaction_status_description_id = -1;
-  switch (interaction_status) {
-    case PageInteractionStatus::kNone:
-      // No string for neither having nor wanting access.
-      break;
-    case PageInteractionStatus::kPending:
-      interaction_status_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
-      break;
-    case PageInteractionStatus::kActive:
-      interaction_status_description_id = IDS_EXTENSIONS_HAS_ACCESS_TO_SITE;
-      break;
-  }
+  // With runtime host permissions, include a "host access" portion of the
+  // tooltip if the extension has or wants access to the site.
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kRuntimeHostPermissions)) {
+    PageInteractionStatus interaction_status =
+        GetPageInteractionStatus(web_contents);
+    int interaction_status_description_id = -1;
+    switch (interaction_status) {
+      case PageInteractionStatus::kNone:
+        // No string for neither having nor wanting access.
+        break;
+      case PageInteractionStatus::kPending:
+        interaction_status_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
+        break;
+      case PageInteractionStatus::kActive:
+        interaction_status_description_id = IDS_EXTENSIONS_HAS_ACCESS_TO_SITE;
+        break;
+    }
 
-  if (interaction_status_description_id != -1) {
-    title_utf16 = base::StrCat(
-        {title_utf16, base::UTF8ToUTF16("\n"),
-         l10n_util::GetStringUTF16(interaction_status_description_id)});
+    if (interaction_status_description_id != -1) {
+      title_utf16 = base::StrCat(
+          {title_utf16, base::UTF8ToUTF16("\n"),
+           l10n_util::GetStringUTF16(interaction_status_description_id)});
+    }
   }
 
   return title_utf16;
@@ -204,13 +204,13 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
       extensions::ExtensionContextMenuModel::VISIBLE;
-
-  if (main_bar_->popped_out_action() == this) {
-    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!main_bar_->IsActionVisibleOnMainBar(this)) {
-    visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
+  if (toolbar_actions_bar_) {
+    if (toolbar_actions_bar_->popped_out_action() == this)
+      visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+    else if (!toolbar_actions_bar_->IsActionVisibleOnMainBar(this))
+      visibility = extensions::ExtensionContextMenuModel::OVERFLOWED;
+    // Else, VISIBLE is correct.
   }
-
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_.reset(new extensions::ExtensionContextMenuModel(
       extension(), browser_, visibility, this));
@@ -218,8 +218,10 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (main_bar_->popped_out_action() == this && !IsShowingPopup())
-    main_bar_->UndoPopOut();
+  if (toolbar_actions_bar_ &&
+      toolbar_actions_bar_->popped_out_action() == this && !IsShowingPopup()) {
+    toolbar_actions_bar_->UndoPopOut();
+  }
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
@@ -326,6 +328,17 @@ bool ExtensionActionViewController::ExtensionIsValid() const {
   return extension_registry_->enabled_extensions().Contains(extension_->id());
 }
 
+void ExtensionActionViewController::HideActivePopup() {
+  if (toolbar_actions_bar_) {
+    toolbar_actions_bar_->HideActivePopup();
+  } else {
+    DCHECK_EQ(ActionInfo::TYPE_PAGE, extension_action_->action_type());
+    // In the traditional toolbar, page actions only know how to close their own
+    // popups.
+    HidePopup();
+  }
+}
+
 bool ExtensionActionViewController::GetExtensionCommand(
     extensions::Command* command) {
   DCHECK(command);
@@ -350,22 +363,32 @@ ExtensionActionViewController::GetIconImageSourceForTesting(
 
 ExtensionActionViewController*
 ExtensionActionViewController::GetPreferredPopupViewController() {
-  return static_cast<ExtensionActionViewController*>(
-      main_bar_->GetActionForId(GetId()));
+  if (toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode()) {
+    return static_cast<ExtensionActionViewController*>(
+        toolbar_actions_bar_->GetMainControllerForAction(this));
+  }
+
+  return this;
 }
 
 bool ExtensionActionViewController::TriggerPopupWithUrl(
     PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
-  DCHECK(!in_overflow_mode_)
-      << "Only the main bar's extensions should ever try to show a popup";
   if (!ExtensionIsValid())
     return false;
 
+  bool already_showing = IsShowingPopup();
+
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.
-  main_bar_->HideActivePopup();
+  HideActivePopup();
+
+  // If we were showing a popup already, then we treat the action to open the
+  // same one as a desire to close it (like clicking a menu button that was
+  // already open).
+  if (already_showing)
+    return false;
 
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
@@ -375,12 +398,15 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 
   popup_host_ = host.get();
   popup_host_observer_.Add(popup_host_);
-  main_bar_->SetPopupOwner(this);
+  if (toolbar_actions_bar_)
+    toolbar_actions_bar_->SetPopupOwner(this);
 
-  if (!main_bar_->IsActionVisibleOnMainBar(this)) {
-    main_bar_->CloseOverflowMenuIfOpen();
-    main_bar_->PopOutAction(
-        this, show_action == SHOW_POPUP_AND_INSPECT,
+  if (toolbar_actions_bar_ &&
+      !toolbar_actions_bar_->IsActionVisibleOnMainBar(this)) {
+    toolbar_actions_bar_->CloseOverflowMenuIfOpen();
+    toolbar_actions_bar_->PopOutAction(
+        this,
+        show_action == SHOW_POPUP_AND_INSPECT,
         base::Bind(&ExtensionActionViewController::ShowPopup,
                    weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
                    grant_tab_permissions, show_action));
@@ -407,10 +433,11 @@ void ExtensionActionViewController::ShowPopup(
 void ExtensionActionViewController::OnPopupClosed() {
   popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
-  main_bar_->SetPopupOwner(nullptr);
-  if (main_bar_->popped_out_action() == this &&
-      !view_delegate_->IsMenuRunning()) {
-    main_bar_->UndoPopOut();
+  if (toolbar_actions_bar_) {
+    toolbar_actions_bar_->SetPopupOwner(nullptr);
+    if (toolbar_actions_bar_->popped_out_action() == this &&
+        !view_delegate_->IsMenuRunning())
+      toolbar_actions_bar_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();
 }
@@ -438,13 +465,21 @@ ExtensionActionViewController::GetIconImageSource(
   bool grayscale = false;
   bool was_blocked = false;
   bool action_is_visible = extension_action_->GetIsVisible(tab_id);
-  PageInteractionStatus interaction_status =
-      GetPageInteractionStatus(web_contents);
-  // We only grayscale the icon if it cannot interact with the page and the icon
-  // is disabled.
-  grayscale =
-      interaction_status == PageInteractionStatus::kNone && !action_is_visible;
-  was_blocked = interaction_status == PageInteractionStatus::kPending;
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kRuntimeHostPermissions)) {
+    PageInteractionStatus interaction_status =
+        GetPageInteractionStatus(web_contents);
+    // With the runtime host permissions feature, we only grayscale the icon if
+    // it cannot interact with the page and the icon is disabled.
+    grayscale = interaction_status == PageInteractionStatus::kNone &&
+                !action_is_visible;
+    was_blocked = interaction_status == PageInteractionStatus::kPending;
+  } else {
+    // Without runtime host permissions enabled, grayscaling is purely used to
+    // indicate "clickability", and not any kind of access.
+    grayscale = !action_is_visible;
+    // was_blocked is always false without runtime host permissions.
+  }
 
   image_source->set_grayscale(grayscale);
   image_source->set_paint_blocked_actions_decoration(was_blocked);
@@ -453,8 +488,10 @@ ExtensionActionViewController::GetIconImageSource(
   // overflowed, we add a decoration so that the user can see which overflowed
   // action wants to run (since they wouldn't be able to see the change from
   // grayscale to color).
+  bool is_overflow =
+      toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
   image_source->set_paint_page_action_decoration(
-      !was_blocked && in_overflow_mode_ && PageActionWantsToRun(web_contents));
+      !was_blocked && is_overflow && PageActionWantsToRun(web_contents));
 
   return image_source;
 }

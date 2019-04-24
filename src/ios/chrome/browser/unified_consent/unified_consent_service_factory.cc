@@ -15,7 +15,6 @@
 #include "components/unified_consent/unified_consent_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 
@@ -73,10 +72,9 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-  // List of synced prefs that can be configured during the settings opt-in
-  // flow.
+  // TODO(crbug.com/933647): Initialize this vector with iOS specific synced
+  // prefs.
   std::vector<std::string> synced_service_pref_names;
-  synced_service_pref_names.push_back(prefs::kSearchSuggestEnabled);
 
   return std::make_unique<unified_consent::UnifiedConsentService>(
       user_pref_service, identity_manager, sync_service,

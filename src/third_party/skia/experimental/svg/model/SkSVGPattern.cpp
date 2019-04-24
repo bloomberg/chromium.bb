@@ -161,9 +161,9 @@ bool SkSVGPattern::onAsPaint(const SkSVGRenderContext& ctx, SkPaint* paint) cons
     // Cannot call into INHERITED:: because SkSVGHiddenContainer skips rendering.
     contentNode->SkSVGContainer::onRender(recordingContext);
 
-    paint->setShader(recorder.finishRecordingAsPicture()->makeShader(
-                                                 SkTileMode::kRepeat,
-                                                 SkTileMode::kRepeat,
+    paint->setShader(SkShader::MakePictureShader(recorder.finishRecordingAsPicture(),
+                                                 SkShader::kRepeat_TileMode,
+                                                 SkShader::kRepeat_TileMode,
                                                  patternTransform,
                                                  &tile));
     return true;

@@ -50,6 +50,8 @@ namespace sw
 			PlaneEquation V[MAX_INTERFACE_COMPONENTS];
 		};
 
+		float area;
+
 		// Masks for two-sided stencil
 		int64_t clockwiseMask;
 		int64_t invClockwiseMask;

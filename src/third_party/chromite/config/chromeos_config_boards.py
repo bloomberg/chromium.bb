@@ -37,14 +37,13 @@ arm_internal_release_boards = frozenset([
     'flapjack',
     'gale',
     'gonzo',
+    'gru',
     'hana',
     'kevin',
     'kevin-arcnext',
     'kevin64',
     'kukui',
     'lasilla-ground',
-    'littlejoe',
-    'mistral',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
@@ -63,7 +62,6 @@ arm_internal_release_boards = frozenset([
     'veyron_rialto',
     'veyron_speedy',
     'veyron_tiger',
-    'viking',
     'whirlwind',
     'wooten',
 ])
@@ -96,6 +94,7 @@ x86_internal_release_boards = frozenset([
     'clapper',
     'coral',
     'cyan',
+    'dragonegg',
     'edgar',
     'enguarde',
     'eve',
@@ -108,7 +107,6 @@ x86_internal_release_boards = frozenset([
     'fizz',
     'fizz-accelerator',
     'fizz-moblab',
-    'fizz-labstation',
     'gandof',
     'glados',
     'glimmer',
@@ -131,6 +129,7 @@ x86_internal_release_boards = frozenset([
     'lakitu_next',
     'lars',
     'leon',
+    'link',
     'lulu',
     'mccloud',
     'monroe',
@@ -172,7 +171,6 @@ x86_internal_release_boards = frozenset([
     'ultima',
     'winky',
     'wizpig',
-    'wristpin',
     'wolf',
     'zako',
 ])
@@ -202,10 +200,6 @@ beaglebone_boards = frozenset([
     'beaglebone_servo',
 ])
 
-dustbuster_boards = frozenset([
-    'wristpin',
-])
-
 lakitu_boards = frozenset([
     'lakitu',
     'lakitu-gpu',
@@ -227,11 +221,6 @@ loonix_boards = frozenset([
     'octavius',
     'romer',
     'wooten',
-])
-
-wshwos_boards = frozenset([
-    'littlejoe',
-    'viking',
 ])
 
 moblab_boards = frozenset([
@@ -261,11 +250,10 @@ toolchains_from_source = frozenset([
 ])
 
 noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
-                      | scribe_boards | wshwos_boards | dustbuster_boards)
+                      | scribe_boards)
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
-                   | termina_boards | beaglebone_boards | wshwos_boards
-                   | dustbuster_boards)
+                   | termina_boards | beaglebone_boards)
 
 norootfs_verification_boards = frozenset([
 ])

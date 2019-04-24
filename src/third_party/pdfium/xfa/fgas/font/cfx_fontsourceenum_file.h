@@ -31,10 +31,10 @@ class CFX_FontSourceEnum_File {
   struct HandleParentPath {
     HandleParentPath() = default;
     HandleParentPath(const HandleParentPath& x) {
-      pFolderHandle = x.pFolderHandle;
+      pFileHandle = x.pFileHandle;
       bsParentPath = x.bsParentPath;
     }
-    FX_FolderHandle* pFolderHandle;
+    FX_FileHandle* pFileHandle;
     ByteString bsParentPath;
   };
 

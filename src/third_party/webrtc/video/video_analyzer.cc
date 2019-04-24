@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "absl/algorithm/container.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/rtp_rtcp/source/rtp_format.h"
 #include "modules/rtp_rtcp/source/rtp_utility.h"
@@ -49,23 +48,21 @@ bool IsFlexfec(int payload_type) {
 }
 }  // namespace
 
-VideoAnalyzer::VideoAnalyzer(
-    test::LayerFilteringTransport* transport,
-    const std::string& test_label,
-    double avg_psnr_threshold,
-    double avg_ssim_threshold,
-    int duration_frames,
-    FILE* graph_data_output_file,
-    const std::string& graph_title,
-    uint32_t ssrc_to_analyze,
-    uint32_t rtx_ssrc_to_analyze,
-    size_t selected_stream,
-    int selected_sl,
-    int selected_tl,
-    bool is_quick_test_enabled,
-    Clock* clock,
-    std::string rtp_dump_name,
-    test::SingleThreadedTaskQueueForTesting* task_queue)
+VideoAnalyzer::VideoAnalyzer(test::LayerFilteringTransport* transport,
+                             const std::string& test_label,
+                             double avg_psnr_threshold,
+                             double avg_ssim_threshold,
+                             int duration_frames,
+                             FILE* graph_data_output_file,
+                             const std::string& graph_title,
+                             uint32_t ssrc_to_analyze,
+                             uint32_t rtx_ssrc_to_analyze,
+                             size_t selected_stream,
+                             int selected_sl,
+                             int selected_tl,
+                             bool is_quick_test_enabled,
+                             Clock* clock,
+                             std::string rtp_dump_name)
     : transport_(transport),
       receiver_(nullptr),
       call_(nullptr),
@@ -101,10 +98,10 @@ VideoAnalyzer::VideoAnalyzer(
       avg_psnr_threshold_(avg_psnr_threshold),
       avg_ssim_threshold_(avg_ssim_threshold),
       is_quick_test_enabled_(is_quick_test_enabled),
+      stats_polling_thread_(&PollStatsThread, this, "StatsPoller"),
       done_(true, false),
       clock_(clock),
-      start_ms_(clock->TimeInMilliseconds()),
-      task_queue_(task_queue) {
+      start_ms_(clock->TimeInMilliseconds()) {
   // Create thread pool for CPU-expensive PSNR/SSIM calculations.
 
   // Try to use about as many threads as cores, but leave kMinCoresLeft alone,
@@ -222,7 +219,8 @@ PacketReceiver::DeliveryStatus VideoAnalyzer::DeliverPacket(
     rtc::CritScope lock(&crit_);
     int64_t timestamp =
         wrap_handler_.Unwrap(header.timestamp - rtp_timestamp_delta_);
-    recv_times_[timestamp] = clock_->CurrentNtpInMilliseconds();
+    recv_times_[timestamp] =
+        Clock::GetRealTimeClock()->CurrentNtpInMilliseconds();
   }
 
   return receiver_->DeliverPacket(media_type, std::move(packet),
@@ -255,7 +253,7 @@ bool VideoAnalyzer::SendRtp(const uint8_t* packet,
   RTPHeader header;
   parser.Parse(&header);
 
-  int64_t current_time = clock_->CurrentNtpInMilliseconds();
+  int64_t current_time = Clock::GetRealTimeClock()->CurrentNtpInMilliseconds();
 
   bool result = transport_->SendRtp(packet, length, options);
   {
@@ -293,7 +291,8 @@ bool VideoAnalyzer::SendRtcp(const uint8_t* packet, size_t length) {
 }
 
 void VideoAnalyzer::OnFrame(const VideoFrame& video_frame) {
-  int64_t render_time_ms = clock_->CurrentNtpInMilliseconds();
+  int64_t render_time_ms =
+      Clock::GetRealTimeClock()->CurrentNtpInMilliseconds();
 
   rtc::CritScope lock(&crit_);
 
@@ -338,12 +337,7 @@ void VideoAnalyzer::Wait() {
   // at time-out check if frames_processed is going up. If so, give it more
   // time, otherwise fail. Hopefully this will reduce test flakiness.
 
-  {
-    rtc::CritScope lock(&comparison_lock_);
-    stop_stats_poller_ = false;
-    stats_polling_task_id_ = task_queue_->PostDelayedTask(
-        [this]() { PollStats(); }, kSendStatsPollingIntervalMs);
-  }
+  stats_polling_thread_.Start();
 
   int last_frames_processed = -1;
   int last_frames_captured = -1;
@@ -388,15 +382,11 @@ void VideoAnalyzer::Wait() {
   if (iteration > 0)
     printf("- Farewell, sweet Concorde!\n");
 
-  {
-    rtc::CritScope lock(&comparison_lock_);
-    stop_stats_poller_ = true;
-    task_queue_->CancelTask(stats_polling_task_id_);
-  }
-
   PrintResults();
   if (graph_data_output_file_)
     PrintSamplesToFile();
+
+  stats_polling_thread_.Stop();
 }
 
 void VideoAnalyzer::StartMeasuringCpuProcessTime() {
@@ -467,56 +457,57 @@ bool VideoAnalyzer::IsInSelectedSpatialAndTemporalLayer(
   }
 }
 
+void VideoAnalyzer::PollStatsThread(void* obj) {
+  static_cast<VideoAnalyzer*>(obj)->PollStats();
+}
+
 void VideoAnalyzer::PollStats() {
-  rtc::CritScope crit(&comparison_lock_);
-  if (stop_stats_poller_) {
-    return;
-  }
+  while (!done_.Wait(kSendStatsPollingIntervalMs)) {
+    rtc::CritScope crit(&comparison_lock_);
 
-  Call::Stats call_stats = call_->GetStats();
-  send_bandwidth_bps_.AddSample(call_stats.send_bandwidth_bps);
+    Call::Stats call_stats = call_->GetStats();
+    send_bandwidth_bps_.AddSample(call_stats.send_bandwidth_bps);
 
-  VideoSendStream::Stats send_stats = send_stream_->GetStats();
-  // It's not certain that we yet have estimates for any of these stats.
-  // Check that they are positive before mixing them in.
-  if (send_stats.encode_frame_rate > 0)
-    encode_frame_rate_.AddSample(send_stats.encode_frame_rate);
-  if (send_stats.avg_encode_time_ms > 0)
-    encode_time_ms_.AddSample(send_stats.avg_encode_time_ms);
-  if (send_stats.encode_usage_percent > 0)
-    encode_usage_percent_.AddSample(send_stats.encode_usage_percent);
-  if (send_stats.media_bitrate_bps > 0)
-    media_bitrate_bps_.AddSample(send_stats.media_bitrate_bps);
-  size_t fec_bytes = 0;
-  for (const auto& kv : send_stats.substreams) {
-    fec_bytes += kv.second.rtp_stats.fec.payload_bytes +
-                 kv.second.rtp_stats.fec.padding_bytes;
-  }
-  fec_bitrate_bps_.AddSample((fec_bytes - last_fec_bytes_) * 8);
-  last_fec_bytes_ = fec_bytes;
-
-  if (receive_stream_ != nullptr) {
-    VideoReceiveStream::Stats receive_stats = receive_stream_->GetStats();
-    if (receive_stats.decode_ms > 0)
-      decode_time_ms_.AddSample(receive_stats.decode_ms);
-    if (receive_stats.max_decode_ms > 0)
-      decode_time_max_ms_.AddSample(receive_stats.max_decode_ms);
-    if (receive_stats.width > 0 && receive_stats.height > 0) {
-      pixels_.AddSample(receive_stats.width * receive_stats.height);
+    VideoSendStream::Stats send_stats = send_stream_->GetStats();
+    // It's not certain that we yet have estimates for any of these stats.
+    // Check that they are positive before mixing them in.
+    if (send_stats.encode_frame_rate > 0)
+      encode_frame_rate_.AddSample(send_stats.encode_frame_rate);
+    if (send_stats.avg_encode_time_ms > 0)
+      encode_time_ms_.AddSample(send_stats.avg_encode_time_ms);
+    if (send_stats.encode_usage_percent > 0)
+      encode_usage_percent_.AddSample(send_stats.encode_usage_percent);
+    if (send_stats.media_bitrate_bps > 0)
+      media_bitrate_bps_.AddSample(send_stats.media_bitrate_bps);
+    size_t fec_bytes = 0;
+    for (const auto& kv : send_stats.substreams) {
+      fec_bytes += kv.second.rtp_stats.fec.payload_bytes +
+                   kv.second.rtp_stats.fec.padding_bytes;
     }
+    fec_bitrate_bps_.AddSample((fec_bytes - last_fec_bytes_) * 8);
+    last_fec_bytes_ = fec_bytes;
+
+    if (receive_stream_ != nullptr) {
+      VideoReceiveStream::Stats receive_stats = receive_stream_->GetStats();
+      if (receive_stats.decode_ms > 0)
+        decode_time_ms_.AddSample(receive_stats.decode_ms);
+      if (receive_stats.max_decode_ms > 0)
+        decode_time_max_ms_.AddSample(receive_stats.max_decode_ms);
+      if (receive_stats.width > 0 && receive_stats.height > 0) {
+        pixels_.AddSample(receive_stats.width * receive_stats.height);
+      }
+    }
+
+    if (audio_receive_stream_ != nullptr) {
+      AudioReceiveStream::Stats receive_stats =
+          audio_receive_stream_->GetStats();
+      audio_expand_rate_.AddSample(receive_stats.expand_rate);
+      audio_accelerate_rate_.AddSample(receive_stats.accelerate_rate);
+      audio_jitter_buffer_ms_.AddSample(receive_stats.jitter_buffer_ms);
+    }
+
+    memory_usage_.AddSample(rtc::GetProcessResidentSizeBytes());
   }
-
-  if (audio_receive_stream_ != nullptr) {
-    AudioReceiveStream::Stats receive_stats = audio_receive_stream_->GetStats();
-    audio_expand_rate_.AddSample(receive_stats.expand_rate);
-    audio_accelerate_rate_.AddSample(receive_stats.accelerate_rate);
-    audio_jitter_buffer_ms_.AddSample(receive_stats.jitter_buffer_ms);
-  }
-
-  memory_usage_.AddSample(rtc::GetProcessResidentSizeBytes());
-
-  stats_polling_task_id_ = task_queue_->PostDelayedTask(
-      [this]() { PollStats(); }, kSendStatsPollingIntervalMs);
 }
 
 bool VideoAnalyzer::FrameComparisonThread(void* obj) {
@@ -662,8 +653,8 @@ void VideoAnalyzer::PrintResults() {
   //  Disable quality check for quick test, as quality checks may fail
   //  because too few samples were collected.
   if (!is_quick_test_enabled_) {
-    EXPECT_GT(*psnr_.GetMean(), avg_psnr_threshold_);
-    EXPECT_GT(*ssim_.GetMean(), avg_ssim_threshold_);
+    EXPECT_GT(psnr_.Mean(), avg_psnr_threshold_);
+    EXPECT_GT(ssim_.Mean(), avg_ssim_threshold_);
   }
 }
 
@@ -737,19 +728,20 @@ void VideoAnalyzer::PerformFrameComparison(
 }
 
 void VideoAnalyzer::PrintResult(const char* result_type,
-                                Statistics stats,
+                                test::Statistics stats,
                                 const char* unit) {
-  test::PrintResultMeanAndError(
-      result_type, "", test_label_.c_str(), stats.GetMean().value_or(0),
-      stats.GetStandardDeviation().value_or(0), unit, false);
+  test::PrintResultMeanAndError(result_type, "", test_label_.c_str(),
+                                stats.Mean(), stats.StandardDeviation(), unit,
+                                false);
 }
 
 void VideoAnalyzer::PrintSamplesToFile() {
   FILE* out = graph_data_output_file_;
   rtc::CritScope crit(&comparison_lock_);
-  absl::c_sort(samples_, [](const Sample& A, const Sample& B) -> bool {
-    return A.input_time_ms < B.input_time_ms;
-  });
+  std::sort(samples_.begin(), samples_.end(),
+            [](const Sample& A, const Sample& B) -> bool {
+              return A.input_time_ms < B.input_time_ms;
+            });
 
   fprintf(out, "%s\n", graph_title_.c_str());
   fprintf(out, "%" PRIuS "\n", samples_.size());

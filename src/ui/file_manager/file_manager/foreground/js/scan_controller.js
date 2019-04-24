@@ -14,7 +14,10 @@
  * @struct
  */
 function ScanController(
-    directoryModel, listContainer, spinnerController, commandHandler,
+    directoryModel,
+    listContainer,
+    spinnerController,
+    commandHandler,
     selectionHandler) {
   /**
    * @type {!DirectoryModel}
@@ -93,6 +96,10 @@ ScanController.prototype.onScanStarted_ = function() {
     this.listContainer_.endBatchUpdates();
   }
 
+  if (this.commandHandler_) {
+    this.commandHandler_.updateAvailability();
+  }
+
   this.listContainer_.startBatchUpdates();
   this.scanInProgress_ = true;
 
@@ -124,6 +131,10 @@ ScanController.prototype.onScanCompleted_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
+
+  if (this.commandHandler_) {
+    this.commandHandler_.updateAvailability();
+  }
 };
 
 /**
@@ -171,6 +182,10 @@ ScanController.prototype.onScanCancelled_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
+
+  if (this.commandHandler_) {
+    this.commandHandler_.updateAvailability();
+  }
 };
 
 /**

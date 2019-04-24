@@ -15,11 +15,7 @@ Polymer({
   properties: {
     /**
      * Reference to OOBE screen object.
-     * @type {!{
-     *     onInstall: function(),
-     *     onRetry: function(),
-     *     onSkip: function(),
-     * }}
+     * @type {!OobeTypes.Screen}
      */
     screen: {
       type: Object,

@@ -210,12 +210,12 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
 
   // Ensure buttons were added in the correct place.
-  auto button_iter =
-      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
+  int managed_button_index =
+      bookmark_bar_view_->GetIndexOf(test_helper_->managed_bookmarks_button());
   for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
-    ++button_iter;
-    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
-    EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
+    views::View* button = test_helper_->GetBookmarkButton(i);
+    EXPECT_EQ(bookmark_bar_view_->GetIndexOf(button),
+              managed_button_index + 1 + i);
   }
 }
 
@@ -234,12 +234,12 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   bookmark_bar_view_->Layout();
   EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
-  auto button_iter =
-      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
+  int managed_button_index =
+      bookmark_bar_view_->GetIndexOf(test_helper_->managed_bookmarks_button());
   for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
-    ++button_iter;
-    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
-    EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
+    views::View* button = test_helper_->GetBookmarkButton(i);
+    EXPECT_EQ(bookmark_bar_view_->GetIndexOf(button),
+              managed_button_index + 1 + i);
   }
 }
 
@@ -399,9 +399,12 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::LabelButton* button = test_helper_->GetBookmarkButton(0);
   ASSERT_TRUE(button);
   gfx::Point p;
-  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), button->GetTooltipText(p));
+  base::string16 text;
+  button->GetTooltipText(p, &text);
+  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), text);
   button->SetText(base::ASCIIToUTF16("new title"));
-  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), button->GetTooltipText(p));
+  button->GetTooltipText(p, &text);
+  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), text);
 
   widget.CloseNow();
 }

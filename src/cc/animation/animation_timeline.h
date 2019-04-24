@@ -8,6 +8,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/animation/animation_export.h"
 
@@ -25,9 +26,6 @@ class CC_ANIMATION_EXPORT AnimationTimeline
  public:
   static scoped_refptr<AnimationTimeline> Create(int id);
   scoped_refptr<AnimationTimeline> CreateImplInstance() const;
-
-  AnimationTimeline(const AnimationTimeline&) = delete;
-  AnimationTimeline& operator=(const AnimationTimeline&) = delete;
 
   int id() const { return id_; }
 
@@ -75,6 +73,8 @@ class CC_ANIMATION_EXPORT AnimationTimeline
   // Impl-only AnimationTimeline has no main thread instance and lives on
   // it's own.
   bool is_impl_only_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationTimeline);
 };
 
 }  // namespace cc

@@ -46,11 +46,8 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
    * @param {!Protocol.Page.Viewport=} clip
    * @return {!Promise<?string>}
    */
-  async captureScreenshot(format, quality, clip) {
-    await SDK.OverlayModel.muteHighlight();
-    const result = await this._agent.captureScreenshot(format, quality, clip, true);
-    await SDK.OverlayModel.unmuteHighlight();
-    return result;
+  captureScreenshot(format, quality, clip) {
+    return this._agent.captureScreenshot(format, quality, clip, true);
   }
 
   /**
@@ -157,14 +154,6 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
    */
   frameStoppedLoading(frameId) {
   }
-
-  /**
-   * @override
-   * @param {!Protocol.Page.FrameId} frameId
-   */
-  frameRequestedNavigation(frameId) {
-  }
-
 
   /**
    * @override

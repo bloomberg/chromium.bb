@@ -81,7 +81,7 @@ class Rankings {
     }
 
     // scoped_ptr::reset will delete the object.
-    void reset(CacheRankingsBlock* p = nullptr) {
+    void reset(CacheRankingsBlock* p = NULL) {
       if (p != get())
         rankings_->FreeRankingsBlock(get());
       std::unique_ptr<CacheRankingsBlock>::reset(p);
@@ -192,9 +192,8 @@ class Rankings {
   // Updates the iterators whenever node is being changed.
   void UpdateIterators(CacheRankingsBlock* node);
 
-  // Updates the iterators when node at address |addr| is being removed to point
-  // to |next| instead.
-  void UpdateIteratorsForRemoved(CacheAddr addr, CacheRankingsBlock* next);
+  // Invalidates the iterators pointing to this node.
+  void InvalidateIterators(CacheRankingsBlock* node);
 
   // Keeps track of the number of entries on a list.
   void IncrementCounter(List list);

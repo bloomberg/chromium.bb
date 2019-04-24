@@ -153,27 +153,38 @@ class AssistantContainerLayout : public views::LayoutManager {
 
   // views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* host) const override {
-    // Our preferred width is the width of our largest visible child.
     int preferred_width = 0;
-    for (const views::View* child : host->children()) {
-      if (child->visible()) {
-        preferred_width =
-            std::max(child->GetPreferredSize().width(), preferred_width);
-      }
+
+    for (int i = 0; i < host->child_count(); ++i) {
+      const views::View* child = host->child_at(i);
+
+      // We do not include invisible children in our size calculation.
+      if (!child->visible())
+        continue;
+
+      // Our preferred width is the width of our largest visible child.
+      preferred_width =
+          std::max(child->GetPreferredSize().width(), preferred_width);
     }
+
     return gfx::Size(preferred_width,
                      GetPreferredHeightForWidth(host, preferred_width));
   }
 
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override {
-    // Our preferred height is the height of our largest visible child.
     int preferred_height = 0;
-    for (const views::View* child : host->children()) {
-      if (child->visible()) {
-        preferred_height =
-            std::max(child->GetHeightForWidth(width), preferred_height);
-      }
+
+    for (int i = 0; i < host->child_count(); ++i) {
+      const views::View* child = host->child_at(i);
+
+      // We do not include invisible children in our size calculation.
+      if (!child->visible())
+        continue;
+
+      // Our preferred height is the height of our largest visible child.
+      preferred_height =
+          std::max(child->GetHeightForWidth(width), preferred_height);
     }
 
     // The height of container view should not exceed work area height to
@@ -190,7 +201,9 @@ class AssistantContainerLayout : public views::LayoutManager {
     const int host_center_x = host->GetBoundsInScreen().CenterPoint().x();
     const int host_height = host->height();
 
-    for (auto* child : host->children()) {
+    for (int i = 0; i < host->child_count(); ++i) {
+      views::View* child = host->child_at(i);
+
       const gfx::Size child_size = child->GetPreferredSize();
 
       // Children are horizontally centered. This means that both the |host|
@@ -266,7 +279,7 @@ void AssistantContainerView::AddedToWidget() {
       std::make_unique<AssistantContainerEventTargeter>());
 }
 
-ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() {
+ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() const {
   return ax::mojom::Role::kWindow;
 }
 
@@ -294,7 +307,7 @@ void AssistantContainerView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void AssistantContainerView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   // Do nothing. We override this method to prevent a super class implementation
   // from taking effect which would otherwise cause ChromeVox to read the entire
   // Assistant view hierarchy.
@@ -380,8 +393,9 @@ void AssistantContainerView::UpdateAnchor() {
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
-  for (auto* child : children())
-    child->SetVisible(false);
+  for (int i = 0; i < child_count(); ++i) {
+    child_at(i)->SetVisible(false);
+  }
 
   switch (ui_mode) {
     case AssistantUiMode::kMiniUi:

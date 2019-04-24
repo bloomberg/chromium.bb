@@ -26,10 +26,6 @@ Polymer({
 
     delay: {type: Number, observer: 'delayChanged_'},
 
-    newPrintPreview: {type: Boolean, reflectToAttribute: true},
-
-    showOnLeft: {type: Boolean, reflectToAttribute: true},
-
     /**
      * Index of the icon currently being displayed.
      */

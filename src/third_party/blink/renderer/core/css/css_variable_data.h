@@ -43,12 +43,10 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
       bool is_animation_tainted,
       bool has_font_units,
       bool has_root_font_units,
-      bool absolutized,
-      const String& base_url,
-      const WTF::TextEncoding& charset) {
+      bool absolutized) {
     return base::AdoptRef(new CSSVariableData(
         resolved_tokens, std::move(backing_strings), is_animation_tainted,
-        has_font_units, has_root_font_units, absolutized, base_url, charset));
+        has_font_units, has_root_font_units, absolutized));
   }
 
   CSSParserTokenRange TokenRange() const { return tokens_; }
@@ -61,6 +59,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   bool IsAnimationTainted() const { return is_animation_tainted_; }
 
   bool NeedsVariableResolution() const { return needs_variable_resolution_; }
+
+  bool NeedsUrlResolution() const { return needs_url_resolution_; }
 
   // True if the CSSVariableData has tokens with units that are relative to the
   // font-size of the current element, e.g. 'em'.
@@ -85,6 +85,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   CSSVariableData()
       : is_animation_tainted_(false),
         needs_variable_resolution_(false),
+        needs_url_resolution_(false),
         has_font_units_(false),
         has_root_font_units_(false),
         absolutized_(false) {}
@@ -100,18 +101,15 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
                   bool is_animation_tainted,
                   bool has_font_units,
                   bool has_root_font_units,
-                  bool absolutized,
-                  const String& base_url,
-                  const WTF::TextEncoding& charset)
+                  bool absolutized)
       : backing_strings_(std::move(backing_strings)),
         tokens_(resolved_tokens),
         is_animation_tainted_(is_animation_tainted),
         needs_variable_resolution_(false),
+        needs_url_resolution_(false),
         has_font_units_(has_font_units),
         has_root_font_units_(has_root_font_units),
-        absolutized_(absolutized),
-        base_url_(base_url),
-        charset_(charset) {}
+        absolutized_(absolutized) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 
@@ -122,6 +120,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   Vector<CSSParserToken> tokens_;
   const bool is_animation_tainted_;
   const bool needs_variable_resolution_;
+  bool needs_url_resolution_;
   bool has_font_units_;
   bool has_root_font_units_;
   bool absolutized_;

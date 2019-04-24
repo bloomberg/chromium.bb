@@ -36,8 +36,6 @@ class HTTPSForwarder {
   bool Initialize(const std::string& ssl_host,
                   const GURL& forward_target) WARN_UNUSED_RESULT;
 
-  bool Stop() WARN_UNUSED_RESULT;
-
  private:
   std::string ssl_host_;
 

@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="static_eventTarget">
 
@@ -12,7 +13,7 @@
 <script>
 window.jsTestIsAsync = true;
 
-async_test((t) => {
+async_test_after_layout_and_paint((t) => {
     // This forces building the accessibility tree, because selection change
     // events only fire on elements that already exist.
     accessibilityController.accessibleElementById('dummy');

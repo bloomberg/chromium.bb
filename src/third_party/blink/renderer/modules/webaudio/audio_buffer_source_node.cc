@@ -411,10 +411,7 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
   // This synchronizes with process().
   MutexLocker process_locker(process_lock_);
 
-  if (!buffer) {
-    // Clear out the shared buffer.
-    shared_buffer_.reset();
-  } else {
+  if (buffer) {
     buffer_has_been_set_ = true;
 
     // Do any necesssary re-configuration to the buffer's number of channels.

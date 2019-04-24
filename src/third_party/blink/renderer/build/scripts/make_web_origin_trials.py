@@ -10,7 +10,7 @@ import template_expander
 
 # We want exactly the same parsing as RuntimeFeatureWriter but generate
 # different files.
-class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
+class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
     file_basename = 'web_origin_trials'
 
     def __init__(self, json5_file_path, output_dir):

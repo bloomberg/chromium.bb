@@ -15,9 +15,11 @@
 #include "third_party/base/compiler_specific.h"
 
 ByteString FX_UTF8Encode(WideStringView wsStr) {
+  size_t len = wsStr.GetLength();
+  const wchar_t* pStr = wsStr.unterminated_c_str();
   CFX_UTF8Encoder encoder;
-  for (size_t i = 0; i < wsStr.GetLength(); ++i)
-    encoder.Input(wsStr[i]);
+  while (len-- > 0)
+    encoder.Input(*pStr++);
 
   return ByteString(encoder.GetResult());
 }

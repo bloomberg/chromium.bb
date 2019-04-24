@@ -22,11 +22,8 @@ namespace ash {
 // remembers their visibility and recovers the visibility after overview mode.
 class ASH_EXPORT ScopedOverviewHideWindows : public aura::WindowObserver {
  public:
-  // |windows| the list of windows to hide in overview mode. If |force_hidden|
-  // is true, the hidden windows may have their visibility altered during
-  // overview, but we want to keep them hidden.
-  ScopedOverviewHideWindows(const std::vector<aura::Window*>& windows,
-                            bool force_hidden);
+  // |windows| the list of windows to hide in overview mode.
+  explicit ScopedOverviewHideWindows(const std::vector<aura::Window*>& windows);
   ~ScopedOverviewHideWindows() override;
 
   // aura::WindowObserver:
@@ -35,8 +32,6 @@ class ASH_EXPORT ScopedOverviewHideWindows : public aura::WindowObserver {
 
  private:
   std::map<aura::Window*, bool> window_visibility_;
-  bool force_hidden_;
-
   DISALLOW_COPY_AND_ASSIGN(ScopedOverviewHideWindows);
 };
 

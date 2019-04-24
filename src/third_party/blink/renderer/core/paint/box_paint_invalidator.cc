@@ -140,9 +140,9 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   // - pixel snapping, or not snapping e.g. for some visual overflowing effects,
   // - scale, rotate, skew etc. transforms,
   // - visual (ink) overflows.
-  if (LayoutRect(context_.old_visual_rect) !=
+  if (context_.old_visual_rect !=
           LayoutRect(context_.old_paint_offset, box_.PreviousSize()) ||
-      LayoutRect(context_.fragment_data->VisualRect()) !=
+      context_.fragment_data->VisualRect() !=
           LayoutRect(context_.fragment_data->PaintOffset(), box_.Size())) {
     return PaintInvalidationReason::kGeometry;
   }

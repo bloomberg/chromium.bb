@@ -108,9 +108,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // events. Defaults to false.
   virtual bool RequiresDoubleTapGestureEvents() const;
 
-  // See LayerDelegate::UpdateVisualState() for details.
-  virtual void UpdateVisualState() {}
-
  protected:
   ~WindowDelegate() override {}
 };

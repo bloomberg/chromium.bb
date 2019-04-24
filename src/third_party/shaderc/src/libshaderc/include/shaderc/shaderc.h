@@ -23,9 +23,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-#include "shaderc/env.h"
-#include "shaderc/status.h"
-#include "shaderc/visibility.h"
+#include "libshaderc_util/common.h"
+#include "libshaderc_util/visibility.h"
 
 // Source language kind.
 typedef enum {

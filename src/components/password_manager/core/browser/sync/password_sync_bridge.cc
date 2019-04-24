@@ -8,11 +8,9 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -153,32 +151,17 @@ bool ShouldRecoverPasswordsDuringMerge() {
          !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
-// A simple class for scoping a password store sync transaction. If the
-// transaction hasn't been committed, it will be rolled back when it goes out of
-// scope.
+// A simple class for scoping a password store sync transaction. This does not
+// support rollback since the password store sync doesn't either.
 class ScopedStoreTransaction {
  public:
   explicit ScopedStoreTransaction(PasswordStoreSync* store) : store_(store) {
     store_->BeginTransaction();
-    committed_ = false;
   }
-
-  void Commit() {
-    if (!committed_) {
-      store_->CommitTransaction();
-      committed_ = true;
-    }
-  }
-
-  ~ScopedStoreTransaction() {
-    if (!committed_) {
-      store_->RollbackTransaction();
-    }
-  }
+  ~ScopedStoreTransaction() { store_->CommitTransaction(); }
 
  private:
   PasswordStoreSync* store_;
-  bool committed_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedStoreTransaction);
 };
@@ -258,19 +241,6 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  base::Optional<syncer::ModelError> error = MergeSyncDataInternal(
-      std::move(metadata_change_list), std::move(entity_data));
-  if (error) {
-    base::UmaHistogramCounts10000(
-        "Sync.DownloadedPasswordsCountWhenInitialMergeFails",
-        entity_data.size());
-  }
-  return error;
-}
-
-base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
-    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityChangeList entity_data) {
   // This method merges the local and remote passwords based on their client
   // tags. For a form |F|, there are three cases to handle:
   // 1. |F| exists only in the local model --> |F| should be Put() in the change
@@ -290,14 +260,11 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       password_store_sync_->ReadAllLogins(&key_to_local_form_map);
 
   if (read_result == FormRetrievalResult::kDbError) {
-    metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
     return syncer::ModelError(FROM_HERE,
                               "Failed to load entries from password store.");
   }
   if (read_result == FormRetrievalResult::kEncrytionServiceFailure) {
     if (!ShouldRecoverPasswordsDuringMerge()) {
-      metrics_util::LogPasswordSyncState(
-          metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
       return syncer::ModelError(FROM_HERE,
                                 "Failed to load entries from password store. "
                                 "Encryption service failure.");
@@ -305,14 +272,11 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     base::Optional<syncer::ModelError> cleanup_result_error =
         CleanupPasswordStore();
     if (cleanup_result_error) {
-      metrics_util::LogPasswordSyncState(
-          metrics_util::NOT_SYNCING_FAILED_CLEANUP);
       return cleanup_result_error;
     }
     // Clean up done successfully, try to read again.
     read_result = password_store_sync_->ReadAllLogins(&key_to_local_form_map);
     if (read_result != FormRetrievalResult::kSuccess) {
-      metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
       return syncer::ModelError(
           FROM_HERE,
           "Failed to load entries from password store after cleanup.");
@@ -324,15 +288,15 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
   // EntityChange. Note that |entity_data| only contains client tag *hashes*.
   std::map<std::string, const syncer::EntityChange*>
       client_tag_to_remote_entity_change_map;
-  for (const std::unique_ptr<syncer::EntityChange>& entity_change :
-       entity_data) {
-    client_tag_to_remote_entity_change_map[GetClientTag(
-        entity_change->data())] = entity_change.get();
+  for (const syncer::EntityChange& entity_change : entity_data) {
+    client_tag_to_remote_entity_change_map[GetClientTag(entity_change.data())] =
+        &entity_change;
   }
 
   // This is used to keep track of all the changes applied to the password
   // store to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
+  base::Optional<syncer::ModelError> error;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
     const base::Time time_now = base::Time::Now();
@@ -397,8 +361,6 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
                 remote_entity_change, /*sync_time=*/time_now));
         DCHECK_LE(changes.size(), 1U);
         if (changes.empty()) {
-          metrics_util::LogPasswordSyncState(
-              metrics_util::NOT_SYNCING_FAILED_UPDATE);
           return syncer::ModelError(
               FROM_HERE, "Failed to update an entry in the password store.");
         }
@@ -416,10 +378,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // a password_store_sync_->AddLoginSync() and invoke the
     // change_processor()->UpdateStorageKey(). Password comparison is done by
     // comparing the client tags.
-    for (const std::unique_ptr<syncer::EntityChange>& entity_change :
-         entity_data) {
+    for (const syncer::EntityChange& entity_change : entity_data) {
       const std::string client_tag_of_remote_password =
-          GetClientTag(entity_change->data());
+          GetClientTag(entity_change.data());
       if (client_tags_of_local_passwords.count(client_tag_of_remote_password) !=
           0) {
         // Passwords in both local and remote models have been processed
@@ -428,7 +389,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       }
 
       PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
-          PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+          PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
 
       // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below is
       // legit. However, recent crashes suggest that 2 changes are returned
@@ -438,8 +399,6 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       // DCHECK_LE(changes.size(), 1U);
       DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
-        metrics_util::LogPasswordSyncState(
-            metrics_util::NOT_SYNCING_FAILED_ADD);
         return syncer::ModelError(
             FROM_HERE, "Failed to add an entry in the password store.");
       }
@@ -453,7 +412,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       }
 
       change_processor()->UpdateStorageKey(
-          entity_change->data(),
+          entity_change.data(),
           /*storage_key=*/
           base::NumberToString(changes.back().primary_key()),
           metadata_change_list.get());
@@ -470,14 +429,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // CreateMetadataChangeList() so downcasting is safe.
     static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
         ->TransferChangesTo(&sync_metadata_store_change_list);
-    base::Optional<syncer::ModelError> error =
-        sync_metadata_store_change_list.TakeError();
-    if (error) {
-      metrics_util::LogPasswordSyncState(
-          metrics_util::NOT_SYNCING_FAILED_METADATA_PERSISTENCE);
-      return error;
-    }
-    transaction.Commit();
+    error = sync_metadata_store_change_list.TakeError();
   }  // End of scoped transaction.
 
   if (!password_store_changes.empty()) {
@@ -488,7 +440,6 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
 
-  metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
   return base::nullopt;
 }
 
@@ -503,16 +454,16 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
   // This is used to keep track of all the changes applied to the password store
   // to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
+  base::Optional<syncer::ModelError> error;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
 
-    for (const std::unique_ptr<syncer::EntityChange>& entity_change :
-         entity_changes) {
+    for (const syncer::EntityChange& entity_change : entity_changes) {
       PasswordStoreChangeList changes;
-      switch (entity_change->type()) {
+      switch (entity_change.type()) {
         case syncer::EntityChange::ACTION_ADD:
           changes = password_store_sync_->AddLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+              PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
           // If the addition has been successful, inform the processor about the
           // assigned storage key. AddLoginSync() might return multiple changes
           // and the last one should be the one representing the actual addition
@@ -537,24 +488,24 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           }
 
           change_processor()->UpdateStorageKey(
-              entity_change->data(),
+              entity_change.data(),
               /*storage_key=*/
               base::NumberToString(changes.back().primary_key()),
               metadata_change_list.get());
           break;
         case syncer::EntityChange::ACTION_UPDATE:
           changes = password_store_sync_->UpdateLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+              PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
           if (changes.empty()) {
             return syncer::ModelError(
                 FROM_HERE, "Failed to update an entry in the password store.");
           }
           DCHECK_EQ(1U, changes.size());
           DCHECK(changes[0].primary_key() ==
-                 ParsePrimaryKey(entity_change->storage_key()));
+                 ParsePrimaryKey(entity_change.storage_key()));
           break;
         case syncer::EntityChange::ACTION_DELETE: {
-          int primary_key = ParsePrimaryKey(entity_change->storage_key());
+          int primary_key = ParsePrimaryKey(entity_change.storage_key());
           changes =
               password_store_sync_->RemoveLoginByPrimaryKeySync(primary_key);
           if (changes.empty()) {
@@ -579,12 +530,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // CreateMetadataChangeList() so downcasting is safe.
     static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
         ->TransferChangesTo(&sync_metadata_store_change_list);
-    base::Optional<syncer::ModelError> error =
-        sync_metadata_store_change_list.TakeError();
-    if (error) {
-      return error;
-    }
-    transaction.Commit();
+    error = sync_metadata_store_change_list.TakeError();
   }  // End of scoped transaction.
 
   if (!password_store_changes.empty()) {
@@ -593,7 +539,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // observers since they aren't interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
-  return base::nullopt;
+  return error;
 }
 
 void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
@@ -666,9 +612,10 @@ bool PasswordSyncBridge::SupportsGetStorageKey() const {
 
 void PasswordSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  if (delete_metadata_change_list) {
-    password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
-  }
+  // TODO(crbug.com/902349): Implement disable-sync case by a more robust
+  // implementation, via a dedicated method in PasswordStoreSync.
+  ModelTypeSyncBridge::ApplyStopSyncChanges(
+      std::move(delete_metadata_change_list));
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {
@@ -678,14 +625,10 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {
     case DatabaseCleanupResult::kSuccess:
       break;
     case DatabaseCleanupResult::kEncryptionUnavailable:
-      metrics_util::LogPasswordSyncState(
-          metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
       return syncer::ModelError(
           FROM_HERE, "Failed to get encryption key during database cleanup.");
     case DatabaseCleanupResult::kItemFailure:
     case DatabaseCleanupResult::kDatabaseUnavailable:
-      metrics_util::LogPasswordSyncState(
-          metrics_util::NOT_SYNCING_FAILED_CLEANUP);
       return syncer::ModelError(FROM_HERE, "Failed to cleanup database.");
   }
   return base::nullopt;

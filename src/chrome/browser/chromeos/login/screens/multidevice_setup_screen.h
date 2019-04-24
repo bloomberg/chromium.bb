@@ -13,11 +13,13 @@
 
 namespace chromeos {
 
+class BaseScreenDelegate;
 class MultiDeviceSetupScreenView;
 
 class MultiDeviceSetupScreen : public BaseScreen {
  public:
-  MultiDeviceSetupScreen(MultiDeviceSetupScreenView* view,
+  MultiDeviceSetupScreen(BaseScreenDelegate* base_screen_delegate,
+                         MultiDeviceSetupScreenView* view,
                          const base::RepeatingClosure& exit_callback);
   ~MultiDeviceSetupScreen() override;
 

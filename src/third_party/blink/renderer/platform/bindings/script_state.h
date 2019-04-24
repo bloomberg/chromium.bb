@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_cross_origin_setter_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "v8/include/v8.h"
@@ -95,6 +94,9 @@ class PLATFORM_EXPORT ScriptState final
     v8::HandleScope handle_scope_;
     v8::Local<v8::Context> context_;
   };
+
+  static ScriptState* Create(v8::Local<v8::Context>,
+                             scoped_refptr<DOMWrapperWorld>);
 
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
   ~ScriptState();
@@ -207,6 +209,10 @@ class PLATFORM_EXPORT ScriptState final
 class ScriptStateProtectingContext
     : public GarbageCollectedFinalized<ScriptStateProtectingContext> {
  public:
+  static ScriptStateProtectingContext* Create(ScriptState* script_state) {
+    return MakeGarbageCollected<ScriptStateProtectingContext>(script_state);
+  }
+
   explicit ScriptStateProtectingContext(ScriptState* script_state)
       : script_state_(script_state) {
     if (script_state_) {

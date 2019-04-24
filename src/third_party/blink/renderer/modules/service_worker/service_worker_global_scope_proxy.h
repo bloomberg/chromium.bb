@@ -89,16 +89,16 @@ class ServiceWorkerGlobalScopeProxy final
   void DispatchActivateEvent(int) override;
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      WebBackgroundFetchRegistration registration) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      WebBackgroundFetchRegistration registration) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      WebBackgroundFetchRegistration registration) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      WebBackgroundFetchRegistration registration) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchCookieChangeEvent(
       int event_id,
       const WebCanonicalCookie& cookie,
@@ -151,7 +151,7 @@ class ServiceWorkerGlobalScopeProxy final
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
-  void ReportConsoleMessage(mojom::ConsoleMessageSource,
+  void ReportConsoleMessage(MessageSource,
                             mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;

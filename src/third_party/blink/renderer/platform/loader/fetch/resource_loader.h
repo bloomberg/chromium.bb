@@ -50,6 +50,7 @@
 
 namespace blink {
 
+class ConsoleLogger;
 class FetchContext;
 class ResourceError;
 class ResourceFetcher;
@@ -69,11 +70,16 @@ class PLATFORM_EXPORT ResourceLoader final
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
  public:
+  static ResourceLoader* Create(ResourceFetcher*,
+                                ResourceLoadScheduler*,
+                                Resource*,
+                                uint32_t inflight_keepalive_bytes = 0);
+
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*,
                  ResourceLoadScheduler*,
                  Resource*,
-                 uint32_t inflight_keepalive_bytes = 0);
+                 uint32_t inflight_keepalive_bytes);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 
@@ -96,8 +102,6 @@ class PLATFORM_EXPORT ResourceLoader final
 
   ResourceFetcher* Fetcher() { return fetcher_; }
   bool ShouldBeKeptAliveWhenDetached() const;
-
-  void AbortResponseBodyLoading();
 
   // WebURLLoaderClient
   //
@@ -161,6 +165,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // ResourceLoadSchedulerClient.
   void Run() override;
+  ConsoleLogger* GetConsoleLogger() override;
 
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
@@ -244,7 +249,6 @@ class PLATFORM_EXPORT ResourceLoader final
     std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;
 
   // True if loading is deferred.
   bool defers_ = false;

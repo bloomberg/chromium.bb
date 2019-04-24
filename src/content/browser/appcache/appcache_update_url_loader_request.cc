@@ -171,6 +171,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveCachedMetadata(
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
+  NOTIMPLEMENTED();
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnStartLoadingResponseBody(

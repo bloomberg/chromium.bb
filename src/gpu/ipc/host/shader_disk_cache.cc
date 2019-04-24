@@ -415,15 +415,15 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
     switch (op_type_) {
       case VERIFY_CACHE_SETUP:
         rv = cache_->SetAvailableCallback(
-            base::BindOnce(&ShaderClearHelper::DoClearShaderCache,
-                           weak_ptr_factory_.GetWeakPtr()));
+            base::BindRepeating(&ShaderClearHelper::DoClearShaderCache,
+                                weak_ptr_factory_.GetWeakPtr()));
         op_type_ = DELETE_CACHE;
         break;
       case DELETE_CACHE:
-        rv =
-            cache_->Clear(delete_begin_, delete_end_,
-                          base::BindOnce(&ShaderClearHelper::DoClearShaderCache,
-                                         weak_ptr_factory_.GetWeakPtr()));
+        rv = cache_->Clear(
+            delete_begin_, delete_end_,
+            base::BindRepeating(&ShaderClearHelper::DoClearShaderCache,
+                                weak_ptr_factory_.GetWeakPtr()));
         op_type_ = TERMINATE;
         break;
       case TERMINATE:
@@ -593,13 +593,13 @@ void ShaderDiskCache::Cache(const std::string& key, const std::string& shader) {
 
 int ShaderDiskCache::Clear(const base::Time begin_time,
                            const base::Time end_time,
-                           net::CompletionOnceCallback completion_callback) {
+                           const net::CompletionCallback& completion_callback) {
   int rv;
   if (begin_time.is_null()) {
-    rv = backend_->DoomAllEntries(std::move(completion_callback));
+    rv = backend_->DoomAllEntries(completion_callback);
   } else {
-    rv = backend_->DoomEntriesBetween(begin_time, end_time,
-                                      std::move(completion_callback));
+    rv =
+        backend_->DoomEntriesBetween(begin_time, end_time, completion_callback);
   }
   return rv;
 }
@@ -611,10 +611,10 @@ int32_t ShaderDiskCache::Size() {
 }
 
 int ShaderDiskCache::SetAvailableCallback(
-    net::CompletionOnceCallback callback) {
+    const net::CompletionCallback& callback) {
   if (cache_available_)
     return net::OK;
-  available_callback_ = std::move(callback);
+  available_callback_ = callback;
   return net::ERR_IO_PENDING;
 }
 
@@ -630,8 +630,8 @@ void ShaderDiskCache::CacheCreatedCallback(int rv) {
 
 void ShaderDiskCache::EntryComplete(ShaderDiskCacheEntry* entry) {
   entries_.erase(entry);
-  if (entries_.empty() && cache_complete_callback_)
-    std::move(cache_complete_callback_).Run(net::OK);
+  if (entries_.empty() && !cache_complete_callback_.is_null())
+    cache_complete_callback_.Run(net::OK);
 }
 
 void ShaderDiskCache::ReadComplete() {
@@ -641,16 +641,18 @@ void ShaderDiskCache::ReadComplete() {
   // of the old cache values off disk. This prevents a potential race where we
   // are reading from disk and execute a cache clear at the same time.
   cache_available_ = true;
-  if (available_callback_)
-    std::move(available_callback_).Run(net::OK);
+  if (!available_callback_.is_null()) {
+    available_callback_.Run(net::OK);
+    available_callback_.Reset();
+  }
 }
 
 int ShaderDiskCache::SetCacheCompleteCallback(
-    net::CompletionOnceCallback callback) {
+    const net::CompletionCallback& callback) {
   if (entries_.empty()) {
     return net::OK;
   }
-  cache_complete_callback_ = std::move(callback);
+  cache_complete_callback_ = callback;
   return net::ERR_IO_PENDING;
 }
 

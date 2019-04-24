@@ -156,7 +156,6 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
   bool HasActiveFloat32ColorAttachment() const;
-  GLsizei last_color_attachment_id() const { return last_color_attachment_id_; }
   GLenum GetDepthFormat() const;
   GLenum GetStencilFormat() const;
   GLenum GetDrawBufferInternalFormat() const;
@@ -242,11 +241,6 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   ~Framebuffer();
 
-  // Helper function updating cached last color attachment id bound.
-  // Called when attachments_ changed
-  void OnInsertUpdateLastColorAttachmentId(GLenum attachment);
-  void OnEraseUpdateLastColorAttachmentId(GLenum attachment);
-
   void MarkAsDeleted();
 
   void MarkAttachmentsAsCleared(
@@ -310,8 +304,6 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   uint32_t draw_buffer_bound_mask_;
   // This is the mask for the actual draw buffers sent to driver.
   uint32_t adjusted_draw_buffer_bound_mask_;
-  // The largest i of all GL_COLOR_ATTACHMENTi
-  GLsizei last_color_attachment_id_;
 
   GLenum read_buffer_;
 

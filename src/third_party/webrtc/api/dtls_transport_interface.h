@@ -11,15 +11,10 @@
 #ifndef API_DTLS_TRANSPORT_INTERFACE_H_
 #define API_DTLS_TRANSPORT_INTERFACE_H_
 
-#include <memory>
-#include <utility>
-
-#include "absl/types/optional.h"
 #include "api/ice_transport_interface.h"
 #include "api/rtc_error.h"
 #include "api/scoped_refptr.h"
 #include "rtc_base/ref_count.h"
-#include "rtc_base/ssl_certificate.h"
 
 namespace webrtc {
 
@@ -39,31 +34,11 @@ enum class DtlsTransportState {
 // DTLSTransport.
 class DtlsTransportInformation {
  public:
-  DtlsTransportInformation();
-  explicit DtlsTransportInformation(DtlsTransportState state);
-  DtlsTransportInformation(
-      DtlsTransportState state,
-      absl::optional<int> ssl_cipher_suite,
-      std::unique_ptr<rtc::SSLCertChain> remote_ssl_certificates);
-  // Copy and assign
-  DtlsTransportInformation(const DtlsTransportInformation& c);
-  DtlsTransportInformation& operator=(const DtlsTransportInformation& c);
-  // Move
-  DtlsTransportInformation(DtlsTransportInformation&& other) = default;
-  DtlsTransportInformation& operator=(DtlsTransportInformation&& other) =
-      default;
-
+  explicit DtlsTransportInformation(DtlsTransportState state) : state_(state) {}
   DtlsTransportState state() const { return state_; }
-  absl::optional<int> ssl_cipher_suite() const { return ssl_cipher_suite_; }
-  // The accessor returns a temporary pointer, it does not release ownership.
-  const rtc::SSLCertChain* remote_ssl_certificates() const {
-    return remote_ssl_certificates_.get();
-  }
-
+  // TODO(hta): Add remote certificate access
  private:
   DtlsTransportState state_;
-  absl::optional<int> ssl_cipher_suite_;
-  std::unique_ptr<rtc::SSLCertChain> remote_ssl_certificates_;
 };
 
 class DtlsTransportObserverInterface {

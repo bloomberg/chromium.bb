@@ -8,7 +8,7 @@ namespace blink {
 
 // static
 WebPlatformMediaStreamTrack* WebPlatformMediaStreamTrack::GetTrack(
-    const WebMediaStreamTrack& track) {
+    const blink::WebMediaStreamTrack& track) {
   return track.IsNull() ? nullptr : track.GetPlatformTrack();
 }
 

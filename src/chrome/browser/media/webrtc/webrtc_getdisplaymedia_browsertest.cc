@@ -21,6 +21,7 @@ struct TestConfig {
   const char* display_surface;
   const char* logical_surface;
   const char* cursor;
+  bool expect_audio;
 };
 
 }  // namespace
@@ -104,6 +105,8 @@ class WebRtcGetDisplayMediaBrowserTestWithFakeUI
         switches::kUseFakeDeviceForMediaStream,
         base::StringPrintf("display-media-type=%s",
                            test_config_.display_surface));
+    if (!test_config_.expect_audio)
+      command_line->AppendSwitch(switches::kDisableAudioSupportForDesktopShare);
   }
 
  protected:
@@ -143,7 +146,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab->GetMainFrame(), "hasAudioTrack();", &result));
-  EXPECT_EQ(result, "true");
+  EXPECT_EQ(result, test_config_.expect_audio ? "true" : "false");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
@@ -168,9 +171,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_EQ(result, base::StringPrintf("%d", kMaxFrameRate));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         WebRtcGetDisplayMediaBrowserTestWithFakeUI,
-                         testing::Values(TestConfig{"monitor", "true", "never"},
-                                         TestConfig{"window", "true", "never"},
-                                         TestConfig{"browser", "true",
-                                                    "never"}));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    WebRtcGetDisplayMediaBrowserTestWithFakeUI,
+    testing::Values(TestConfig{"monitor", "true", "never", false},
+                    TestConfig{"window", "true", "never", false},
+                    TestConfig{"browser", "true", "never", false},
+                    TestConfig{"browser", "true", "never", true}));

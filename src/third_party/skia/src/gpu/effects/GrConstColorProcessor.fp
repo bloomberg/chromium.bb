@@ -49,13 +49,13 @@ void main() {
     }
 
     SkPMColor4f constantOutputForConstantInput(const SkPMColor4f& input) const override {
-        switch (mode) {
+        switch (fMode) {
             case InputMode::kIgnore:
-                return color;
+                return fColor;
             case InputMode::kModulateA:
-                return color * input.fA;
+                return fColor * input.fA;
             case InputMode::kModulateRGBA:
-                return color * input;
+                return fColor * input;
         }
         SK_ABORT("Unexpected mode");
         return SK_PMColor4fTRANSPARENT;

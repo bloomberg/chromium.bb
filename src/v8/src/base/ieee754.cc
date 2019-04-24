@@ -57,7 +57,7 @@ namespace {
 
 #if V8_TARGET_LITTLE_ENDIAN
 
-union ieee_double_shape_type {
+typedef union {
   double value;
   struct {
     uint32_t lsw;
@@ -66,11 +66,11 @@ union ieee_double_shape_type {
   struct {
     uint64_t w;
   } xparts;
-};
+} ieee_double_shape_type;
 
 #else
 
-union ieee_double_shape_type {
+typedef union {
   double value;
   struct {
     uint32_t msw;
@@ -79,7 +79,7 @@ union ieee_double_shape_type {
   struct {
     uint64_t w;
   } xparts;
-};
+} ieee_double_shape_type;
 
 #endif
 

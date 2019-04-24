@@ -62,9 +62,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderViewHost* GetRenderViewHost() override;
   MockRenderProcessHost* GetProcess() override;
   TestRenderWidgetHost* GetRenderWidgetHost() override;
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+  void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
-  bool IsTestRenderFrameHost() const override;
 
   // RenderFrameHostTester implementation.
   void InitializeRenderFrameIfNeeded() override;
@@ -81,6 +80,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) override;
   const std::vector<std::string>& GetConsoleMessages() override;
+
+  void SendNavigateWithReplacement(int nav_entry_id,
+                                   bool did_create_new_entry,
+                                   const GURL& url);
 
   using ModificationCallback =
       base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
@@ -223,7 +226,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token) override;
   void SendCommitFailedNavigation(
@@ -240,6 +242,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
  private:
   void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
+                                  bool should_replace_entry,
                                   const GURL& url,
                                   ui::PageTransition transition,
                                   int response_code,
@@ -258,6 +261,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   BuildDidCommitParams(int nav_entry_id,
                        bool did_create_new_entry,
+                       bool should_replace_entry,
                        const GURL& url,
                        ui::PageTransition transition,
                        int response_code);

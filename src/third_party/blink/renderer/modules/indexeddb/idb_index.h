@@ -48,6 +48,13 @@ class IDBIndex final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static IDBIndex* Create(scoped_refptr<IDBIndexMetadata> metadata,
+                          IDBObjectStore* object_store,
+                          IDBTransaction* transaction) {
+    return MakeGarbageCollected<IDBIndex>(std::move(metadata), object_store,
+                                          transaction);
+  }
+
   IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
   ~IDBIndex() override;
 
@@ -74,7 +81,7 @@ class IDBIndex final : public ScriptWrappable {
   IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
   IDBRequest* getAll(ScriptState*,
                      const ScriptValue& range,
-                     uint32_t max_count,
+                     unsigned long max_count,
                      ExceptionState&);
   IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
@@ -126,7 +133,7 @@ class IDBIndex final : public ScriptWrappable {
                           IDBRequest::AsyncTraceState metrics);
   IDBRequest* GetAllInternal(ScriptState*,
                              const ScriptValue& range,
-                             uint32_t max_count,
+                             unsigned long max_count,
                              ExceptionState&,
                              bool key_only,
                              IDBRequest::AsyncTraceState metrics);

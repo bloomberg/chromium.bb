@@ -310,7 +310,7 @@ bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
   }
 
   ResetEventIfSignaled(addr_overlapped_.hEvent);
-  HANDLE handle = nullptr;
+  HANDLE handle = NULL;
   DWORD ret = NotifyAddrChange(&handle, &addr_overlapped_);
   if (ret != ERROR_IO_PENDING)
     return false;

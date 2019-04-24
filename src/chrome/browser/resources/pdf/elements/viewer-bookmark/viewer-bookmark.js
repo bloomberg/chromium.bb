@@ -91,7 +91,7 @@ Polymer({
   },
 
   onSpace_: function(e) {
-    // cr-icon-button stops propagation of space events, so there's no need
+    // paper-icon-button stops propagation of space events, so there's no need
     // to check the event source here.
     this.onClick();
     // Prevent default space scroll behavior.

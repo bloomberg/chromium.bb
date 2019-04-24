@@ -114,7 +114,7 @@ void TCPSocketEventDispatcher::StartRead(const ReadParams& params) {
   if (buffer_size <= 0)
     buffer_size = kDefaultBufferSize;
   socket->Read(buffer_size,
-               base::BindOnce(&TCPSocketEventDispatcher::ReadCallback, params));
+               base::Bind(&TCPSocketEventDispatcher::ReadCallback, params));
 }
 
 // static

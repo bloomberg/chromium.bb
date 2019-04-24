@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.permissions;
 
-import android.support.test.filters.MediumTest;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +11,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.DialogShownCriteria;
@@ -48,15 +46,16 @@ public class PermissionNavigationTest {
      *
      * @throws Exception
      */
+    // @MediumTest
+    // @Feature({"Permissions"})
     @Test
-    @MediumTest
-    @Feature({"Permissions"})
     @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
+    // Flaky on official bots, https://crbug.com/699851#c8
+    @DisabledTest
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
         mPermissionRule.setUpUrl(TEST_FILE);
         mPermissionRule.runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
-        DialogShownCriteria criteriaShown = new DialogShownCriteria(
-                mPermissionRule.getActivity().getModalDialogManager(), "Dialog not shown", true);
+        DialogShownCriteria criteriaShown = new DialogShownCriteria("Dialog not shown", true);
         CriteriaHelper.pollUiThread(criteriaShown);
 
         mPermissionRule.runJavaScriptCodeInCurrentTab("navigate()");
@@ -73,8 +72,7 @@ public class PermissionNavigationTest {
         callbackHelper.waitForCallback(0);
         tab.removeObserver(navigationWaiter);
 
-        DialogShownCriteria criteriaNotShown = new DialogShownCriteria(
-                mPermissionRule.getActivity().getModalDialogManager(), "Dialog shown", false);
+        DialogShownCriteria criteriaNotShown = new DialogShownCriteria("Dialog shown", false);
         CriteriaHelper.pollUiThread(criteriaNotShown);
     }
 }

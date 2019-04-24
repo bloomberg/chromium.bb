@@ -23,7 +23,6 @@ class FloatRoundedRect;
 class GraphicsContext;
 class ImageResourceObserver;
 class IntRect;
-class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 

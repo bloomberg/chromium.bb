@@ -37,7 +37,7 @@ class GrCCCoverageProcessor : public GrGeometryProcessor {
 public:
     enum class PrimitiveType {
         kTriangles,
-        kWeightedTriangles,  // Triangles (from the tessellator) whose winding magnitude > 1.
+        kWeightedTriangles, // Triangles (from the tessellator) whose winding magnitude > 1.
         kQuadratics,
         kCubics,
         kConics
@@ -68,21 +68,16 @@ public:
         void setW(const Sk2f& P0, const Sk2f& P1, const Sk2f& P2, const Sk2f& trans, float w);
     };
 
-    virtual void reset(PrimitiveType, GrResourceProvider*) = 0;
-
-    PrimitiveType primitiveType() const { return fPrimitiveType; }
-
-    // Number of bezier points for curves, or 3 for triangles.
-    int numInputPoints() const { return PrimitiveType::kCubics == fPrimitiveType ? 4 : 3; }
-
-    bool isTriangles() const {
-        return PrimitiveType::kTriangles == fPrimitiveType ||
-               PrimitiveType::kWeightedTriangles == fPrimitiveType;
-    }
-
-    int hasInputWeight() const {
-        return PrimitiveType::kWeightedTriangles == fPrimitiveType ||
-               PrimitiveType::kConics == fPrimitiveType;
+    GrCCCoverageProcessor(GrResourceProvider* rp, PrimitiveType type)
+            : INHERITED(kGrCCCoverageProcessor_ClassID)
+            , fPrimitiveType(type)
+            , fImpl(rp->caps()->shaderCaps()->geometryShaderSupport() ? Impl::kGeometryShader
+                                                                      : Impl::kVertexShader) {
+        if (Impl::kGeometryShader == fImpl) {
+            this->initGS();
+        } else {
+            this->initVS(rp);
+        }
     }
 
     // GrPrimitiveProcessor overrides.
@@ -92,32 +87,30 @@ public:
         return SkStringPrintf("%s\n%s", this->name(), this->INHERITED::dumpInfo().c_str());
     }
 #endif
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
-        SkDEBUGCODE(this->getDebugBloatKey(b));
-        b->add32((int)fPrimitiveType);
-    }
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
 #ifdef SK_DEBUG
     // Increases the 1/2 pixel AA bloat by a factor of debugBloat.
     void enableDebugBloat(float debugBloat) { fDebugBloat = debugBloat; }
     bool debugBloatEnabled() const { return fDebugBloat > 0; }
     float debugBloat() const { SkASSERT(this->debugBloatEnabled()); return fDebugBloat; }
-    void getDebugBloatKey(GrProcessorKeyBuilder* b) const {
-        uint32_t bloatBits;
-        memcpy(&bloatBits, &fDebugBloat, 4);
-        b->add32(bloatBits);
-    }
 #endif
 
     // Appends a GrMesh that will draw the provided instances. The instanceBuffer must be an array
     // of either TriPointInstance or QuadPointInstance, depending on this processor's RendererPass,
     // with coordinates in the desired shape's final atlas-space position.
-    virtual void appendMesh(sk_sp<const GrGpuBuffer> instanceBuffer, int instanceCount,
-                            int baseInstance, SkTArray<GrMesh>* out) const = 0;
+    void appendMesh(sk_sp<GrGpuBuffer> instanceBuffer, int instanceCount, int baseInstance,
+                    SkTArray<GrMesh>* out) const {
+        if (Impl::kGeometryShader == fImpl) {
+            this->appendGSMesh(std::move(instanceBuffer), instanceCount, baseInstance, out);
+        } else {
+            this->appendVSMesh(std::move(instanceBuffer), instanceCount, baseInstance, out);
+        }
+    }
 
-    virtual void draw(GrOpFlushState*, const GrPipeline&, const SkIRect scissorRects[],
-                      const GrMesh[], int meshCount, const SkRect& drawBounds) const;
+    void draw(GrOpFlushState*, const GrPipeline&, const SkIRect scissorRects[], const GrMesh[],
+              int meshCount, const SkRect& drawBounds) const;
 
     // The Shader provides code to calculate each pixel's coverage in a RenderPass. It also
     // provides details about shape-specific geometry.
@@ -204,26 +197,82 @@ public:
             return Scope::kGeoToFrag == varying.scope() ? varying.gsOut() : varying.vsOut();
         }
 
-        // Our friendship with GrGLSLShaderBuilder does not propagate to subclasses.
+        // Our friendship with GrGLSLShaderBuilder does not propogate to subclasses.
         inline static SkString& AccessCodeString(GrGLSLShaderBuilder* s) { return s->code(); }
     };
 
-protected:
+private:
+    class GSImpl;
+    class GSTriangleHullImpl;
+    class GSCurveHullImpl;
+    class GSCornerImpl;
+    class VSImpl;
+    class TriangleShader;
+
     // Slightly undershoot a bloat radius of 0.5 so vertices that fall on integer boundaries don't
     // accidentally bleed into neighbor pixels.
     static constexpr float kAABloatRadius = 0.491111f;
 
-    GrCCCoverageProcessor(ClassID classID) : INHERITED(classID) {}
+    // Number of bezier points for curves, or 3 for triangles.
+    int numInputPoints() const { return PrimitiveType::kCubics == fPrimitiveType ? 4 : 3; }
 
-    virtual GrGLSLPrimitiveProcessor* onCreateGLSLInstance(std::unique_ptr<Shader>) const = 0;
+    bool isTriangles() const {
+        return PrimitiveType::kTriangles == fPrimitiveType ||
+               PrimitiveType::kWeightedTriangles == fPrimitiveType;
+    }
 
-    // Our friendship with GrGLSLShaderBuilder does not propagate to subclasses.
-    inline static SkString& AccessCodeString(GrGLSLShaderBuilder* s) { return s->code(); }
+    int hasInputWeight() const {
+        return PrimitiveType::kWeightedTriangles == fPrimitiveType ||
+               PrimitiveType::kConics == fPrimitiveType;
+    }
 
-    PrimitiveType fPrimitiveType;
+    enum class Impl : bool {
+        kGeometryShader,
+        kVertexShader
+    };
+
+    // Geometry shader backend draws primitives in two subpasses.
+    enum class GSSubpass : bool {
+        kHulls,
+        kCorners
+    };
+
+    GrCCCoverageProcessor(const GrCCCoverageProcessor& proc, GSSubpass subpass)
+            : INHERITED(kGrCCCoverageProcessor_ClassID)
+            , fPrimitiveType(proc.fPrimitiveType)
+            , fImpl(Impl::kGeometryShader)
+            SkDEBUGCODE(, fDebugBloat(proc.fDebugBloat))
+            , fGSSubpass(subpass) {
+        SkASSERT(Impl::kGeometryShader == proc.fImpl);
+        this->initGS();
+    }
+
+    void initGS();
+    void initVS(GrResourceProvider*);
+
+    void appendGSMesh(sk_sp<const GrGpuBuffer> instanceBuffer, int instanceCount, int baseInstance,
+                      SkTArray<GrMesh>* out) const;
+    void appendVSMesh(sk_sp<const GrGpuBuffer> instanceBuffer, int instanceCount, int baseInstance,
+                      SkTArray<GrMesh>* out) const;
+
+    GrGLSLPrimitiveProcessor* createGSImpl(std::unique_ptr<Shader>) const;
+    GrGLSLPrimitiveProcessor* createVSImpl(std::unique_ptr<Shader>) const;
+    // The type and meaning of this attribute depends on whether we're using VSImpl or GSImpl.
+    Attribute fVertexAttribute;
+
+    const PrimitiveType fPrimitiveType;
+    const Impl fImpl;
     SkDEBUGCODE(float fDebugBloat = 0);
 
-    class TriangleShader;
+    // Used by GSImpl.
+    const GSSubpass fGSSubpass = GSSubpass::kHulls;
+
+    // Used by VSImpl.
+    Attribute fInstanceAttributes[2];
+    sk_sp<const GrGpuBuffer> fVSVertexBuffer;
+    sk_sp<const GrGpuBuffer> fVSIndexBuffer;
+    int fVSNumIndicesPerInstance;
+    GrPrimitiveType fVSTriangleType;
 
     typedef GrGeometryProcessor INHERITED;
 };

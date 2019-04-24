@@ -4,24 +4,23 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.view.View;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -30,7 +29,6 @@ import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackSourceProvider;
-import org.chromium.chrome.browser.firstrun.FreIntentCreator;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
@@ -53,8 +51,6 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.touchless.TouchlessUiController;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
@@ -62,11 +58,8 @@ import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
-import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
-import org.chromium.services.service_manager.InterfaceRegistry;
 
 import java.util.Collections;
 import java.util.List;
@@ -98,21 +91,8 @@ public abstract class AppHooks {
      * @param callback Callback that should receive the results of the AndroidEdu device check.
      */
     public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onSchoolCheckDone(false));
+        new Handler(Looper.getMainLooper()).post(() -> callback.onSchoolCheckDone(false));
     }
-
-    /**
-     * Perform platform-specific command line initialization.
-     * @param instance CommandLine instance to be updated.
-     */
-    public void initCommandLine(CommandLine instance) {}
-
-    /**
-     * Inform platform of current display mode.
-     * @param displayMode the new display mode (see WebDisplayMode)
-     * @param activity the affected activity.
-     */
-    public void setDisplayModeForActivity(int displayMode, Activity activity) {}
 
     /**
      * Creates a new {@link AccountManagerDelegate}.
@@ -283,8 +263,18 @@ public abstract class AppHooks {
     }
 
     /**
+     * Starts a service from {@code intent} with the expectation that it will make itself a
+     * foreground service with {@link android.app.Service#startForeground(int, Notification)}.
+     *
+     * @param intent The {@link Intent} to fire to start the service.
+     */
+    public void startForegroundService(Intent intent) {
+        ContextCompat.startForegroundService(ContextUtils.getApplicationContext(), intent);
+    }
+
+    /**
      * Upgrades a service from background to foreground after calling
-     * {@link Service#startForegroundService(Intent)}.
+     * {@link #startForegroundService(Intent)}.
      * @param service The service to be foreground.
      * @param id The notification id.
      * @param notification The notification attached to the foreground service.
@@ -377,28 +367,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * @param activity An activity for access to different features.
-     */
-    public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
-
-    /**
-     * @param activity An activity for access to different features.
-     * @return A new {@link TouchlessUiController} instance.
-     */
-    public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
-        return null;
-    }
-
-    /**
-     * Get the UI controller from the activity if it exists.
-     * @param activity The activity to get the UI controller from.
-     * @return The UI controller or null.
-     */
-    public TouchlessUiController getTouchlessUiControllerForActivity(ChromeActivity activity) {
-        return null;
-    }
-
-    /**
      * Checks the Google Play services availability on the this device.
      *
      * This is a workaround for the
@@ -422,40 +390,4 @@ public abstract class AppHooks {
         }
         return ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
     }
-
-    /**
-     * Returns a new {@link FreIntentCreator} instance.
-     */
-    public FreIntentCreator createFreIntentCreator() {
-        return new FreIntentCreator();
-    }
-
-    /**
-     * @return true if the webAppIntent has been intercepted.
-     */
-    public boolean interceptWebAppIntent(Intent intent, ChromeActivity activity) {
-        return false;
-    }
-
-    /**
-     * @param registry The Chrome interface registry for the RenderFrameHost.
-     * @param renderFrameHost The RenderFrameHost the Interface Registry is for.
-     */
-    public void registerChromeRenderFrameHostInterfaces(
-            InterfaceRegistry registry, RenderFrameHost renderFrameHost) {
-        return;
-    }
-
-    /**
-     * @param contentView The root content view for the containing activity.
-     * @return A new {@link ImmersiveModeManager} or null if there isn't one.
-     */
-    public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
-        return null;
-    }
-
-    /**
-     * Starts monitoring network quality. Must be called after native initialization is complete.
-     */
-    public void startMonitoringNetworkQuality() {}
 }

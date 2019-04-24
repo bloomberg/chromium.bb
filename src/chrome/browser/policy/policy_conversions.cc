@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -137,10 +138,7 @@ Value GetPolicyValue(
                                    known_policy_schema, is_pretty_print));
   value.SetKey(
       "scope",
-      Value((policy.scope == policy::POLICY_SCOPE_USER)
-                ? "user"
-                : ((policy.scope == policy::POLICY_SCOPE_MACHINE) ? "machine"
-                                                                  : "merged")));
+      Value((policy.scope == policy::POLICY_SCOPE_USER) ? "user" : "machine"));
   value.SetKey("level", Value((policy.level == policy::POLICY_LEVEL_RECOMMENDED)
                                   ? "recommended"
                                   : "mandatory"));
@@ -232,15 +230,16 @@ void GetChromePolicyValues(content::BrowserContext* context,
   policy::PolicyService* policy_service = GetPolicyService(context);
   policy::PolicyMap map;
 
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
+  auto* schema_registry_service_factory =
+      SchemaRegistryServiceFactory::GetForContext(context);
+  if (!schema_registry_service_factory ||
+      !schema_registry_service_factory->registry()) {
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return;
   }
 
   const scoped_refptr<policy::SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
+      schema_registry_service_factory->registry()->schema_map();
 
   PolicyNamespace policy_namespace =
       PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
@@ -355,7 +354,6 @@ const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
     {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
     {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
     {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
 };
 
 Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
@@ -386,14 +384,15 @@ Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
     LOG(ERROR) << "Can not dump extension policies, no extension registry";
     return all_policies;
   }
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
+  auto* schema_registry_service_factory =
+      SchemaRegistryServiceFactory::GetForContext(context);
+  if (!schema_registry_service_factory ||
+      !schema_registry_service_factory->registry()) {
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return all_policies;
   }
   const scoped_refptr<policy::SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
+      schema_registry_service_factory->registry()->schema_map();
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
@@ -456,14 +455,15 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
     return all_policies;
   }
   Value extension_values(Value::Type::DICTIONARY);
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
+  auto* schema_registry_service_factory =
+      SchemaRegistryServiceFactory::GetForContext(context);
+  if (!schema_registry_service_factory ||
+      !schema_registry_service_factory->registry()) {
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return all_policies;
   }
   const scoped_refptr<policy::SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
+      schema_registry_service_factory->registry()->schema_map();
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.

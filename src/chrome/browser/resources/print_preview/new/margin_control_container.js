@@ -162,11 +162,6 @@ Polymer({
   /** @private */
   onMarginSettingsChange_: function() {
     const margins = this.getSettingValue('customMargins');
-    if (margins.marginTop === undefined) {
-      // This may be called when print preview model initially sets the
-      // settings. It sets custom margins empty by default.
-      return;
-    }
     this.shadowRoot.querySelectorAll('print-preview-margin-control')
         .forEach(control => {
           const key = print_preview_new.MARGIN_KEY_MAP.get(control.side);

@@ -11,25 +11,20 @@
 #ifndef RTC_BASE_TASK_QUEUE_FOR_TEST_H_
 #define RTC_BASE_TASK_QUEUE_FOR_TEST_H_
 
-#include <utility>
-
-#include "absl/strings/string_view.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/constructor_magic.h"
 #include "rtc_base/event.h"
 #include "rtc_base/task_queue.h"
 #include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/thread_annotations.h"
 
-namespace webrtc {
-
-class RTC_LOCKABLE TaskQueueForTest : public rtc::TaskQueue {
+namespace rtc {
+namespace test {
+class RTC_LOCKABLE TaskQueueForTest : public TaskQueue {
  public:
-  using rtc::TaskQueue::TaskQueue;
-  explicit TaskQueueForTest(absl::string_view name = "TestQueue",
+  explicit TaskQueueForTest(const char* queue_name,
                             Priority priority = Priority::NORMAL);
-  TaskQueueForTest(const TaskQueueForTest&) = delete;
-  TaskQueueForTest& operator=(const TaskQueueForTest&) = delete;
-  ~TaskQueueForTest() = default;
+  ~TaskQueueForTest();
 
   // A convenience, test-only method that blocks the current thread while
   // a task executes on the task queue.
@@ -40,9 +35,11 @@ class RTC_LOCKABLE TaskQueueForTest : public rtc::TaskQueue {
   void SendTask(Closure* task) {
     RTC_DCHECK(!IsCurrent());
     rtc::Event event;
-    PostTask(ToQueuedTask(
-        [&task] { RTC_CHECK_EQ(false, static_cast<QueuedTask*>(task)->Run()); },
-        [&event] { event.Set(); }));
+    PostTask(webrtc::ToQueuedTask(
+        [&task]() {
+          RTC_CHECK_EQ(false, static_cast<QueuedTask*>(task)->Run());
+        },
+        [&event]() { event.Set(); }));
     event.Wait(rtc::Event::kForever);
   }
 
@@ -52,12 +49,15 @@ class RTC_LOCKABLE TaskQueueForTest : public rtc::TaskQueue {
   void SendTask(Closure&& task) {
     RTC_DCHECK(!IsCurrent());
     rtc::Event event;
-    PostTask(
-        ToQueuedTask(std::forward<Closure>(task), [&event] { event.Set(); }));
+    PostTask(webrtc::ToQueuedTask(std::forward<Closure>(task),
+                                  [&event] { event.Set(); }));
     event.Wait(rtc::Event::kForever);
   }
-};
 
-}  // namespace webrtc
+ private:
+  RTC_DISALLOW_COPY_AND_ASSIGN(TaskQueueForTest);
+};
+}  // namespace test
+}  // namespace rtc
 
 #endif  // RTC_BASE_TASK_QUEUE_FOR_TEST_H_

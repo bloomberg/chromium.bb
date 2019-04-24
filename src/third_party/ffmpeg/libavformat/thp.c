@@ -45,7 +45,7 @@ typedef struct ThpDemuxContext {
 } ThpDemuxContext;
 
 
-static int thp_probe(const AVProbeData *p)
+static int thp_probe(AVProbeData *p)
 {
     double d;
     /* check file header */

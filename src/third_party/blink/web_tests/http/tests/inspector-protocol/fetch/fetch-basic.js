@@ -3,14 +3,11 @@
       `Tests basic function of the fetch domain.`);
 
   var FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
-  var helper = new FetchHelper(testRunner, testRunner.browserP());
+  var helper = new FetchHelper(testRunner, testRunner.browserP(), dp);
   await helper.enable();
-  helper.onceRequest().continueRequest();
-  dp.Page.enable();
-  dp.Page.reload();
-  await dp.Page.onceLoadEventFired();
 
   helper.onceRequest().fulfill({
+    fetchId: params.fetchId,
     responseCode: 200,
     responseHeaders: [],
     body: btoa("overriden response body")

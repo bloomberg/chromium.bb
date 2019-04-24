@@ -39,14 +39,12 @@ PositionInFlatTree TextSegments::FindBoundaryForward(
     Finder* finder) {
   DCHECK(position.IsNotNull());
   PositionInFlatTree last_position = position;
-  bool is_start_contents = true;
   for (const auto& inline_contents :
        TextOffsetMapping::ForwardRangeOf(position)) {
     const TextOffsetMapping mapping(inline_contents);
     const String text = mapping.GetText();
     const unsigned offset =
-        is_start_contents ? mapping.ComputeTextOffset(position) : 0;
-    is_start_contents = false;
+        last_position == position ? mapping.ComputeTextOffset(position) : 0;
     const TextSegments::Finder::Position result = finder->Find(text, offset);
     if (result.IsBefore())
       return mapping.GetPositionBefore(result.Offset());
@@ -64,15 +62,13 @@ PositionInFlatTree TextSegments::FindBoundaryBackward(
     Finder* finder) {
   DCHECK(position.IsNotNull());
   PositionInFlatTree last_position = position;
-  bool is_start_contents = true;
   for (const auto& inline_contents :
        TextOffsetMapping::BackwardRangeOf(position)) {
     const TextOffsetMapping mapping(inline_contents);
     const String text = mapping.GetText();
-    const unsigned offset = is_start_contents
+    const unsigned offset = last_position == position
                                 ? mapping.ComputeTextOffset(position)
                                 : mapping.GetText().length();
-    is_start_contents = false;
     const TextSegments::Finder::Position result = finder->Find(text, offset);
     if (result.IsBefore())
       return mapping.GetPositionBefore(result.Offset());

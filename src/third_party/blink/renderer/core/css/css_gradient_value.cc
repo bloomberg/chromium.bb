@@ -55,10 +55,10 @@ namespace {
 bool ColorIsDerivedFromElement(const CSSIdentifierValue& value) {
   CSSValueID value_id = value.GetValueID();
   switch (value_id) {
-    case CSSValueID::kInternalQuirkInherit:
-    case CSSValueID::kWebkitLink:
-    case CSSValueID::kWebkitActivelink:
-    case CSSValueID::kCurrentcolor:
+    case CSSValueInternalQuirkInherit:
+    case CSSValueWebkitLink:
+    case CSSValueWebkitActivelink:
+    case CSSValueCurrentcolor:
       return true;
     default:
       return false;
@@ -91,10 +91,9 @@ bool AppendPosition(StringBuilder& result,
 }  // anonymous ns
 
 bool CSSGradientColorStop::IsCacheable() const {
-  if (!IsHint()) {
-    auto* identifier_value = DynamicTo<CSSIdentifierValue>(color_.Get());
-    if (identifier_value && ColorIsDerivedFromElement(*identifier_value))
-      return false;
+  if (!IsHint() && color_->IsIdentifierValue() &&
+      ColorIsDerivedFromElement(ToCSSIdentifierValue(*color_))) {
+    return false;
   }
 
   return !offset_ || !offset_->IsFontRelativeLength();
@@ -130,15 +129,15 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
   scoped_refptr<Gradient> gradient;
   switch (GetClassType()) {
     case kLinearGradientClass:
-      gradient = To<CSSLinearGradientValue>(this)->CreateGradient(
+      gradient = ToCSSLinearGradientValue(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     case kRadialGradientClass:
-      gradient = To<CSSRadialGradientValue>(this)->CreateGradient(
+      gradient = ToCSSRadialGradientValue(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     case kConicGradientClass:
-      gradient = To<CSSConicGradientValue>(this)->CreateGradient(
+      gradient = ToCSSConicGradientValue(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     default:
@@ -292,7 +291,7 @@ static Color ResolveStopColor(const CSSValue& stop_color,
                               const ComputedStyle& style) {
   return document.GetTextLinkColors().ColorFromCSSValue(
       stop_color, style.VisitedDependentColor(GetCSSPropertyColor()),
-      style.GetColorScheme());
+      document.GetColorScheme());
 }
 
 void CSSGradientValue::AddDeprecatedStops(GradientDesc& desc,
@@ -638,32 +637,33 @@ static float PositionFromValue(const CSSValue* value,
 
   // In this case the center of the gradient is given relative to an edge in the
   // form of: [ top | bottom | right | left ] [ <percentage> | <length> ].
-  if (const auto* pair = DynamicTo<CSSValuePair>(*value)) {
-    CSSValueID origin_id = To<CSSIdentifierValue>(pair->First()).GetValueID();
-    value = &pair->Second();
+  if (value->IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(*value);
+    CSSValueID origin_id = ToCSSIdentifierValue(pair.First()).GetValueID();
+    value = &pair.Second();
 
-    if (origin_id == CSSValueID::kRight || origin_id == CSSValueID::kBottom) {
+    if (origin_id == CSSValueRight || origin_id == CSSValueBottom) {
       // For right/bottom, the offset is relative to the far edge.
       origin = edge_distance;
       sign = -1;
     }
   }
 
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    switch (identifier_value->GetValueID()) {
-      case CSSValueID::kTop:
+  if (value->IsIdentifierValue()) {
+    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+      case CSSValueTop:
         DCHECK(!is_horizontal);
         return 0;
-      case CSSValueID::kLeft:
+      case CSSValueLeft:
         DCHECK(is_horizontal);
         return 0;
-      case CSSValueID::kBottom:
+      case CSSValueBottom:
         DCHECK(!is_horizontal);
         return size.Height();
-      case CSSValueID::kRight:
+      case CSSValueRight:
         DCHECK(is_horizontal);
         return size.Width();
-      case CSSValueID::kCenter:
+      case CSSValueCenter:
         return origin + sign * .5f * edge_distance;
       default:
         NOTREACHED();
@@ -671,7 +671,7 @@ static float PositionFromValue(const CSSValue* value,
     }
   }
 
-  const CSSPrimitiveValue* primitive_value = To<CSSPrimitiveValue>(value);
+  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);
 
   if (primitive_value->IsNumber())
     return origin +
@@ -781,8 +781,8 @@ String CSSLinearGradientValue::CustomCSSText() const {
       wrote_something = true;
     } else if ((first_x_ || first_y_) &&
                !(!first_x_ && first_y_ && first_y_->IsIdentifierValue() &&
-                 To<CSSIdentifierValue>(first_y_.Get())->GetValueID() ==
-                     CSSValueID::kBottom)) {
+                 ToCSSIdentifierValue(first_y_.Get())->GetValueID() ==
+                     CSSValueBottom)) {
       result.Append("to ");
       if (first_x_ && first_y_) {
         result.Append(first_x_->CssText());
@@ -915,15 +915,13 @@ scoped_refptr<Gradient> CSSLinearGradientValue::CreateGradient(
           // "Magic" corners, so the 50% line touches two corners.
           float rise = size.Width();
           float run = size.Height();
-          auto* first_x_identifier_value =
-              DynamicTo<CSSIdentifierValue>(first_x_.Get());
-          if (first_x_identifier_value &&
-              first_x_identifier_value->GetValueID() == CSSValueID::kLeft)
+          if (first_x_ && first_x_->IsIdentifierValue() &&
+              ToCSSIdentifierValue(first_x_.Get())->GetValueID() ==
+                  CSSValueLeft)
             run *= -1;
-          auto* first_y_identifier_value =
-              DynamicTo<CSSIdentifierValue>(first_y_.Get());
-          if (first_y_identifier_value &&
-              first_y_identifier_value->GetValueID() == CSSValueID::kBottom)
+          if (first_y_ && first_y_->IsIdentifierValue() &&
+              ToCSSIdentifierValue(first_y_.Get())->GetValueID() ==
+                  CSSValueBottom)
             rise *= -1;
           // Compute angle, and flip it back to "bearing angle" degrees.
           float angle = 90 - rad2deg(atan2(rise, run));
@@ -1108,14 +1106,14 @@ String CSSRadialGradientValue::CustomCSSText() const {
 
     // The only ambiguous case that needs an explicit shape to be provided
     // is when a sizing keyword is used (or all sizing is omitted).
-    if (shape_ && shape_->GetValueID() != CSSValueID::kEllipse &&
+    if (shape_ && shape_->GetValueID() != CSSValueEllipse &&
         (sizing_behavior_ || (!sizing_behavior_ && !end_horizontal_size_))) {
       result.Append("circle");
       wrote_something = true;
     }
 
     if (sizing_behavior_ &&
-        sizing_behavior_->GetValueID() != CSSValueID::kFarthestCorner) {
+        sizing_behavior_->GetValueID() != CSSValueFarthestCorner) {
       if (wrote_something)
         result.Append(' ');
       result.Append(sizing_behavior_->CssText());
@@ -1272,25 +1270,23 @@ scoped_refptr<Gradient> CSSRadialGradientValue::CreateGradient(
             ? ResolveRadius(end_vertical_size_.Get(), conversion_data, &height)
             : second_radius.Width());
   } else {
-    EndShapeType shape =
-        (shape_ && shape_->GetValueID() == CSSValueID::kCircle) ||
-                (!shape_ && !sizing_behavior_ && end_horizontal_size_ &&
-                 !end_vertical_size_)
-            ? kCircleEndShape
-            : kEllipseEndShape;
+    EndShapeType shape = (shape_ && shape_->GetValueID() == CSSValueCircle) ||
+                                 (!shape_ && !sizing_behavior_ &&
+                                  end_horizontal_size_ && !end_vertical_size_)
+                             ? kCircleEndShape
+                             : kEllipseEndShape;
 
-    switch (sizing_behavior_ ? sizing_behavior_->GetValueID()
-                             : CSSValueID::kInvalid) {
-      case CSSValueID::kContain:
-      case CSSValueID::kClosestSide:
+    switch (sizing_behavior_ ? sizing_behavior_->GetValueID() : 0) {
+      case CSSValueContain:
+      case CSSValueClosestSide:
         second_radius = RadiusToSide(second_point, size, shape,
                                      [](float a, float b) { return a < b; });
         break;
-      case CSSValueID::kFarthestSide:
+      case CSSValueFarthestSide:
         second_radius = RadiusToSide(second_point, size, shape,
                                      [](float a, float b) { return a > b; });
         break;
-      case CSSValueID::kClosestCorner:
+      case CSSValueClosestCorner:
         second_radius = RadiusToCorner(second_point, size, shape,
                                        [](float a, float b) { return a < b; });
         break;
@@ -1364,11 +1360,10 @@ bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
       return false;
     // There's a size keyword.
     if (!EqualIdentifiersWithDefault(sizing_behavior_, other.sizing_behavior_,
-                                     CSSValueID::kFarthestCorner))
+                                     CSSValueFarthestCorner))
       return false;
     // Here the shape is 'ellipse' unless explicitly set to 'circle'.
-    if (!EqualIdentifiersWithDefault(shape_, other.shape_,
-                                     CSSValueID::kEllipse))
+    if (!EqualIdentifiersWithDefault(shape_, other.shape_, CSSValueEllipse))
       return false;
   }
   return stops_ == other.stops_;

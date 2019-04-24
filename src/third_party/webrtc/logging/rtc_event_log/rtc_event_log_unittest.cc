@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/default_task_queue_factory.h"
 #include "logging/rtc_event_log/events/rtc_event_audio_network_adaptation.h"
 #include "logging/rtc_event_log/events/rtc_event_audio_playout.h"
 #include "logging/rtc_event_log/events/rtc_event_audio_receive_stream_config.h"
@@ -41,7 +40,6 @@
 #include "logging/rtc_event_log/events/rtc_event_video_send_stream_config.h"
 #include "logging/rtc_event_log/output/rtc_event_log_output_file.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
-#include "logging/rtc_event_log/rtc_event_log_factory.h"
 #include "logging/rtc_event_log/rtc_event_log_parser.h"
 #include "logging/rtc_event_log/rtc_event_log_unittest_helper.h"
 #include "logging/rtc_event_log/rtc_stream_config.h"
@@ -113,7 +111,7 @@ class RtcEventLogSession
         encoding_type_(std::get<2>(GetParam())),
         gen_(seed_ * 880001UL),
         verifier_(encoding_type_) {
-    clock_.SetTime(Timestamp::us(prng_.Rand<uint32_t>()));
+    clock_.SetTimeMicros(prng_.Rand<uint32_t>());
     // Find the name of the current test, in order to use it as a temporary
     // filename.
     // TODO(terelius): Use a general utility function to generate a temp file.
@@ -215,7 +213,7 @@ void RtcEventLogSession::WriteAudioRecvConfigs(size_t audio_recv_streams,
   RTC_CHECK(event_log != nullptr);
   uint32_t ssrc;
   for (size_t i = 0; i < audio_recv_streams; i++) {
-    clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+    clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
     do {
       ssrc = prng_.Rand<uint32_t>();
     } while (SsrcUsed(ssrc, incoming_extensions_));
@@ -232,7 +230,7 @@ void RtcEventLogSession::WriteAudioSendConfigs(size_t audio_send_streams,
   RTC_CHECK(event_log != nullptr);
   uint32_t ssrc;
   for (size_t i = 0; i < audio_send_streams; i++) {
-    clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+    clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
     do {
       ssrc = prng_.Rand<uint32_t>();
     } while (SsrcUsed(ssrc, outgoing_extensions_));
@@ -254,14 +252,14 @@ void RtcEventLogSession::WriteVideoRecvConfigs(size_t video_recv_streams,
   RtpHeaderExtensionMap all_extensions =
       ParsedRtcEventLog::GetDefaultHeaderExtensionMap();
 
-  clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+  clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
   uint32_t ssrc = prng_.Rand<uint32_t>();
   incoming_extensions_.emplace_back(prng_.Rand<uint32_t>(), all_extensions);
   auto event = gen_.NewVideoReceiveStreamConfig(ssrc, all_extensions);
   event_log->Log(event->Copy());
   video_recv_config_list_.push_back(std::move(event));
   for (size_t i = 1; i < video_recv_streams; i++) {
-    clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+    clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
     do {
       ssrc = prng_.Rand<uint32_t>();
     } while (SsrcUsed(ssrc, incoming_extensions_));
@@ -283,14 +281,14 @@ void RtcEventLogSession::WriteVideoSendConfigs(size_t video_send_streams,
   RtpHeaderExtensionMap all_extensions =
       ParsedRtcEventLog::GetDefaultHeaderExtensionMap();
 
-  clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+  clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
   uint32_t ssrc = prng_.Rand<uint32_t>();
   outgoing_extensions_.emplace_back(prng_.Rand<uint32_t>(), all_extensions);
   auto event = gen_.NewVideoSendStreamConfig(ssrc, all_extensions);
   event_log->Log(event->Copy());
   video_send_config_list_.push_back(std::move(event));
   for (size_t i = 1; i < video_send_streams; i++) {
-    clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+    clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
     do {
       ssrc = prng_.Rand<uint32_t>();
     } while (SsrcUsed(ssrc, outgoing_extensions_));
@@ -307,11 +305,8 @@ void RtcEventLogSession::WriteLog(EventCounts count,
   // TODO(terelius): Allow test to run with either a real or a fake clock_.
   // Maybe always use the ScopedFakeClock, but conditionally SleepMs()?
 
-  auto task_queue_factory = CreateDefaultTaskQueueFactory();
-  RtcEventLogFactory rtc_event_log_factory(task_queue_factory.get());
   // The log file will be flushed to disk when the event_log goes out of scope.
-  std::unique_ptr<RtcEventLog> event_log =
-      rtc_event_log_factory.CreateRtcEventLog(encoding_type_);
+  std::unique_ptr<RtcEventLog> event_log(RtcEventLog::Create(encoding_type_));
 
   // We can't send or receive packets without configured streams.
   RTC_CHECK_GE(count.video_recv_streams, 1);
@@ -327,7 +322,7 @@ void RtcEventLogSession::WriteLog(EventCounts count,
   size_t remaining_events_at_start = remaining_events - num_events_before_start;
   for (; remaining_events > 0; remaining_events--) {
     if (remaining_events == remaining_events_at_start) {
-      clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+      clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
       event_log->StartLogging(
           absl::make_unique<RtcEventLogOutputFile>(temp_filename_, 10000000),
           output_period_ms_);
@@ -335,7 +330,7 @@ void RtcEventLogSession::WriteLog(EventCounts count,
       utc_start_time_us_ = rtc::TimeUTCMicros();
     }
 
-    clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
+    clock_.AdvanceTimeMicros(prng_.Rand(20) * 1000);
     size_t selection = prng_.Rand(remaining_events - 1);
     first_timestamp_ms_ = std::min(first_timestamp_ms_, rtc::TimeMillis());
     last_timestamp_ms_ = std::max(last_timestamp_ms_, rtc::TimeMillis());
@@ -814,7 +809,7 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
   // TODO(terelius): Maybe make a separate RtcEventLogImplTest that can access
   // the size of the cyclic buffer?
   constexpr size_t kNumEvents = 20000;
-  constexpr int64_t kStartTimeSeconds = 1;
+  constexpr int64_t kStartTime = 1000000;
   constexpr int32_t kStartBitrate = 1000000;
 
   auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
@@ -825,14 +820,11 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
 
   std::unique_ptr<rtc::ScopedFakeClock> fake_clock =
       absl::make_unique<rtc::ScopedFakeClock>();
-  fake_clock->SetTime(Timestamp::seconds(kStartTimeSeconds));
+  fake_clock->SetTimeMicros(kStartTime);
 
-  auto task_queue_factory = CreateDefaultTaskQueueFactory();
-  RtcEventLogFactory rtc_event_log_factory(task_queue_factory.get());
   // When log_dumper goes out of scope, it causes the log file to be flushed
   // to disk.
-  std::unique_ptr<RtcEventLog> log_dumper =
-      rtc_event_log_factory.CreateRtcEventLog(encoding_type_);
+  std::unique_ptr<RtcEventLog> log_dumper(RtcEventLog::Create(encoding_type_));
 
   for (size_t i = 0; i < kNumEvents; i++) {
     // The purpose of the test is to verify that the log can handle
@@ -843,14 +835,14 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
     // consistency checks when we read back.
     log_dumper->Log(absl::make_unique<RtcEventProbeResultSuccess>(
         i, kStartBitrate + i * 1000));
-    fake_clock->AdvanceTime(TimeDelta::ms(10));
+    fake_clock->AdvanceTimeMicros(10000);
   }
   int64_t start_time_us = rtc::TimeMicros();
   int64_t utc_start_time_us = rtc::TimeUTCMicros();
   log_dumper->StartLogging(
       absl::make_unique<RtcEventLogOutputFile>(temp_filename, 10000000),
       RtcEventLog::kImmediateOutput);
-  fake_clock->AdvanceTime(TimeDelta::ms(10));
+  fake_clock->AdvanceTimeMicros(10000);
   int64_t stop_time_us = rtc::TimeMicros();
   log_dumper->StopLogging();
 
@@ -883,9 +875,9 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
   // destroyed before the new one is created, so we have to reset() first.
   fake_clock.reset();
   fake_clock = absl::make_unique<rtc::ScopedFakeClock>();
-  fake_clock->SetTime(Timestamp::us(first_timestamp_us));
+  fake_clock->SetTimeMicros(first_timestamp_us);
   for (size_t i = 1; i < probe_success_events.size(); i++) {
-    fake_clock->AdvanceTime(TimeDelta::ms(10));
+    fake_clock->AdvanceTimeMicros(10000);
     verifier_.VerifyLoggedBweProbeSuccessEvent(
         RtcEventProbeResultSuccess(first_id + i, first_bitrate_bps + i * 1000),
         probe_success_events[i]);

@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include <cfgmgr32.h>
-#include <shlobj.h>
+#include <shellapi.h>
 
 #pragma comment(linker, "/export:FwdExport=KERNEL32.CreateFileA")
 
@@ -22,9 +22,8 @@ __declspec(dllexport) void ExportFunc2() {
   CM_MapCrToWin32Err(CR_SUCCESS, ERROR_SUCCESS);
 
   // Call into shell32.dll.
-  PWSTR path = nullptr;
-  if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Public, 0, nullptr, &path)))
-    CoTaskMemFree(path);
+  SHFILEOPSTRUCT file_operation = {0};
+  SHFileOperation(&file_operation);
 
   // Call into kernel32.dll.
   HANDLE h = CreateEvent(NULL, FALSE, FALSE, NULL);

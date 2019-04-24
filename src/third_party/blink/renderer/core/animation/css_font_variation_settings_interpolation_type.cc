@@ -57,11 +57,16 @@ static bool TagsMatch(const NonInterpolableValue& a,
 
 class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
  public:
-  explicit UnderlyingTagsChecker(const Vector<AtomicString>& tags)
-      : tags_(tags) {}
   ~UnderlyingTagsChecker() final = default;
 
+  static std::unique_ptr<UnderlyingTagsChecker> Create(
+      const Vector<AtomicString>& tags) {
+    return base::WrapUnique(new UnderlyingTagsChecker(tags));
+  }
+
  private:
+  UnderlyingTagsChecker(const Vector<AtomicString>& tags) : tags_(tags) {}
+
   bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
     return tags_ == GetTags(*underlying.non_interpolable_value);
@@ -73,13 +78,18 @@ class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
 class InheritedFontVariationSettingsChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  explicit InheritedFontVariationSettingsChecker(
-      const FontVariationSettings* settings)
-      : settings_(settings) {}
-
   ~InheritedFontVariationSettingsChecker() final = default;
 
+  static std::unique_ptr<InheritedFontVariationSettingsChecker> Create(
+      const FontVariationSettings* settings) {
+    return base::WrapUnique(
+        new InheritedFontVariationSettingsChecker(settings));
+  }
+
  private:
+  InheritedFontVariationSettingsChecker(const FontVariationSettings* settings)
+      : settings_(settings) {}
+
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(
@@ -96,11 +106,10 @@ static InterpolationValue ConvertFontVariationSettings(
     return nullptr;
   }
   wtf_size_t length = settings->size();
-  auto numbers = std::make_unique<InterpolableList>(length);
+  std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
-    numbers->Set(i,
-                 std::make_unique<InterpolableNumber>(settings->at(i).Value()));
+    numbers->Set(i, InterpolableNumber::Create(settings->at(i).Value()));
     tags.push_back(settings->at(i).Tag());
   }
   return InterpolationValue(
@@ -112,7 +121,7 @@ InterpolationValue
 CSSFontVariationSettingsInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  conversion_checkers.push_back(std::make_unique<UnderlyingTagsChecker>(
+  conversion_checkers.push_back(UnderlyingTagsChecker::Create(
       GetTags(*underlying.non_interpolable_value)));
   return InterpolationValue(underlying.interpolable_value->CloneAndZero(),
                             underlying.non_interpolable_value);
@@ -132,7 +141,7 @@ CSSFontVariationSettingsInterpolationType::MaybeConvertInherit(
   const FontVariationSettings* inherited =
       state.ParentStyle()->GetFontDescription().VariationSettings();
   conversion_checkers.push_back(
-      std::make_unique<InheritedFontVariationSettingsChecker>(inherited));
+      InheritedFontVariationSettingsChecker::Create(inherited));
   return ConvertFontVariationSettings(inherited);
 }
 
@@ -140,16 +149,17 @@ InterpolationValue CSSFontVariationSettingsInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  const auto* list = DynamicTo<CSSValueList>(value);
-  if (!list) {
+  if (!value.IsValueList()) {
     return nullptr;
   }
-  wtf_size_t length = list->length();
-  auto numbers = std::make_unique<InterpolableList>(length);
+  const CSSValueList& list = ToCSSValueList(value);
+  wtf_size_t length = list.length();
+  std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
-    const auto& item = To<cssvalue::CSSFontVariationValue>(list->Item(i));
-    numbers->Set(i, std::make_unique<InterpolableNumber>(item.Value()));
+    const cssvalue::CSSFontVariationValue& item =
+        cssvalue::ToCSSFontVariationValue(list.Item(i));
+    numbers->Set(i, InterpolableNumber::Create(item.Value()));
     tags.push_back(item.Tag());
   }
   return InterpolationValue(

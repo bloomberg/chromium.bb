@@ -21,17 +21,17 @@ void UrlLoadingNotifier::RemoveObserver(UrlLoadingObserverBridge* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void UrlLoadingNotifier::TabWillLoadUrl(const GURL& url,
+void UrlLoadingNotifier::TabWillOpenUrl(const GURL& url,
                                         ui::PageTransition transition_type) {
   for (auto& observer : observers_)
-    observer.TabWillLoadUrl(url, transition_type);
+    observer.TabWillOpenUrl(url, transition_type);
 }
 
-void UrlLoadingNotifier::TabFailedToLoadUrl(
+void UrlLoadingNotifier::TabFailedToOpenUrl(
     const GURL& url,
     ui::PageTransition transition_type) {
   for (auto& observer : observers_)
-    observer.TabFailedToLoadUrl(url, transition_type);
+    observer.TabFailedToOpenUrl(url, transition_type);
 }
 
 void UrlLoadingNotifier::TabDidPrerenderUrl(
@@ -47,22 +47,20 @@ void UrlLoadingNotifier::TabDidReloadUrl(const GURL& url,
     observer.TabDidReloadUrl(url, transition_type);
 }
 
-void UrlLoadingNotifier::TabDidLoadUrl(const GURL& url,
+void UrlLoadingNotifier::TabDidOpenUrl(const GURL& url,
                                        ui::PageTransition transition_type) {
   for (auto& observer : observers_)
-    observer.TabDidLoadUrl(url, transition_type);
+    observer.TabDidOpenUrl(url, transition_type);
 }
 
-void UrlLoadingNotifier::NewTabWillLoadUrl(const GURL& url,
-                                           bool user_initiated) {
+void UrlLoadingNotifier::NewTabWillOpenUrl(const GURL& url, bool in_incognito) {
   for (auto& observer : observers_)
-    observer.NewTabWillLoadUrl(url, user_initiated);
+    observer.NewTabWillOpenUrl(url, in_incognito);
 }
 
-void UrlLoadingNotifier::NewTabDidLoadUrl(const GURL& url,
-                                          bool user_initiated) {
+void UrlLoadingNotifier::NewTabDidOpenUrl(const GURL& url, bool in_incognito) {
   for (auto& observer : observers_)
-    observer.NewTabDidLoadUrl(url, user_initiated);
+    observer.NewTabDidOpenUrl(url, in_incognito);
 }
 
 void UrlLoadingNotifier::WillSwitchToTabWithUrl(const GURL& url,

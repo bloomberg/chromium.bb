@@ -8,6 +8,7 @@
 #include "SkLightingImageFilter.h"
 #include "SkBitmap.h"
 #include "SkColorData.h"
+#include "SkColorSpaceXformer.h"
 #include "SkImageFilterPriv.h"
 #include "SkPoint3.h"
 #include "SkReadBuffer.h"
@@ -111,6 +112,8 @@ public:
         return fColor == other.fColor;
     }
     virtual SkImageFilterLight* transform(const SkMatrix& matrix) const = 0;
+
+    virtual sk_sp<SkImageFilterLight> makeColorSpace(SkColorSpaceXformer*) const = 0;
 
     // Defined below SkLight's subclasses.
     void flattenLight(SkWriteBuffer& buffer) const;
@@ -540,6 +543,7 @@ protected:
 
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
                                         SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> makeFragmentProcessor(sk_sp<GrTextureProxy>,
@@ -575,6 +579,7 @@ protected:
 
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
                                         SkIPoint* offset) const override;
+    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> makeFragmentProcessor(sk_sp<GrTextureProxy>,
@@ -821,6 +826,13 @@ class GrGLLight;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static SkColor xform_color(const SkPoint3& color, SkColorSpaceXformer* xformer) {
+    SkColor origColor = SkColorSetRGB(SkScalarRoundToInt(color.fX),
+                                      SkScalarRoundToInt(color.fY),
+                                      SkScalarRoundToInt(color.fZ));
+    return xformer->apply(origColor);
+}
+
 class SkDistantLight : public SkImageFilterLight {
 public:
     SkDistantLight(const SkPoint3& direction, SkColor color)
@@ -840,6 +852,10 @@ public:
         SkDEBUGFAIL("Should not call in GPU-less build");
         return nullptr;
 #endif
+    }
+
+    sk_sp<SkImageFilterLight> makeColorSpace(SkColorSpaceXformer* xformer) const override {
+        return sk_make_sp<SkDistantLight>(fDirection, xform_color(this->color(), xformer));
     }
 
     bool isEqual(const SkImageFilterLight& other) const override {
@@ -899,6 +915,10 @@ public:
 #endif
     }
 
+    sk_sp<SkImageFilterLight> makeColorSpace(SkColorSpaceXformer* xformer) const override {
+        return sk_make_sp<SkPointLight>(fLocation, xform_color(this->color(), xformer));
+    }
+
     bool isEqual(const SkImageFilterLight& other) const override {
         if (other.type() != kPoint_LightType) {
             return false;
@@ -948,7 +968,8 @@ public:
      : INHERITED(color),
        fLocation(location),
        fTarget(target),
-       fSpecularExponent(SkScalarPin(specularExponent, kSpecularExponentMin, kSpecularExponentMax))
+       fSpecularExponent(SkScalarPin(specularExponent, kSpecularExponentMin, kSpecularExponentMax)),
+       fCutoffAngle(cutoffAngle)
     {
        fS = target - location;
        fast_normalize(&fS);
@@ -956,6 +977,11 @@ public:
        const SkScalar antiAliasThreshold = 0.016f;
        fCosInnerConeAngle = fCosOuterConeAngle + antiAliasThreshold;
        fConeScale = SkScalarInvert(antiAliasThreshold);
+    }
+
+    sk_sp<SkImageFilterLight> makeColorSpace(SkColorSpaceXformer* xformer) const override {
+        return sk_make_sp<SkSpotLight>(fLocation, fTarget, fSpecularExponent, fCutoffAngle,
+                                       xform_color(this->color(), xformer));
     }
 
     SkImageFilterLight* transform(const SkMatrix& matrix) const override {
@@ -1081,6 +1107,7 @@ private:
     SkPoint3 fLocation;
     SkPoint3 fTarget;
     SkScalar fSpecularExponent;
+    SkScalar fCutoffAngle;
     SkScalar fCosOuterConeAngle;
     SkScalar fCosInnerConeAngle;
     SkScalar fConeScale;
@@ -1335,6 +1362,18 @@ sk_sp<SkSpecialImage> SkDiffuseLightingImageFilter::onFilterImage(SkSpecialImage
                                           dst);
 }
 
+sk_sp<SkImageFilter> SkDiffuseLightingImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer)
+const {
+    SkASSERT(1 == this->countInputs());
+    auto input = xformer->apply(this->getInput(0));
+    auto light = this->light()->makeColorSpace(xformer);
+    if (input.get() != this->getInput(0) || light.get() != this->light()) {
+        return SkDiffuseLightingImageFilter::Make(std::move(light), 255.0f * this->surfaceScale(),
+                                                  fKD, std::move(input), this->getCropRectIfSet());
+    }
+    return this->refMe();
+}
+
 #if SK_SUPPORT_GPU
 std::unique_ptr<GrFragmentProcessor> SkDiffuseLightingImageFilter::makeFragmentProcessor(
         sk_sp<GrTextureProxy> proxy,
@@ -1468,6 +1507,20 @@ sk_sp<SkSpecialImage> SkSpecularLightingImageFilter::onFilterImage(SkSpecialImag
                                                               bounds);
 
     return SkSpecialImage::MakeFromRaster(SkIRect::MakeWH(bounds.width(), bounds.height()), dst);
+}
+
+sk_sp<SkImageFilter> SkSpecularLightingImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer)
+const {
+    SkASSERT(1 == this->countInputs());
+
+    auto input = xformer->apply(this->getInput(0));
+    auto light = this->light()->makeColorSpace(xformer);
+    if (input.get() != this->getInput(0) || light.get() != this->light()) {
+        return SkSpecularLightingImageFilter::Make(std::move(light),
+                                                   255.0f * this->surfaceScale(), fKS, fShininess,
+                                                   std::move(input), this->getCropRectIfSet());
+    }
+    return this->refMe();
 }
 
 #if SK_SUPPORT_GPU

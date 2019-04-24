@@ -284,9 +284,7 @@ void ControllerPresentationConnection::Init(
 
   DidChangeState(mojom::blink::PresentationConnectionState::CONNECTING);
   target_connection_ = std::move(connection_ptr);
-  connection_binding_.Bind(
-      std::move(connection_request),
-      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
+  connection_binding_.Bind(std::move(connection_request));
 }
 
 void ControllerPresentationConnection::CloseInternal() {
@@ -334,9 +332,7 @@ void ReceiverPresentationConnection::Init(
     mojom::blink::PresentationConnectionPtr controller_connection_ptr,
     mojom::blink::PresentationConnectionRequest receiver_connection_request) {
   target_connection_ = std::move(controller_connection_ptr);
-  connection_binding_.Bind(
-      std::move(receiver_connection_request),
-      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
+  connection_binding_.Bind(std::move(receiver_connection_request));
 
   target_connection_->DidChangeState(
       mojom::blink::PresentationConnectionState::CONNECTED);
@@ -556,7 +552,7 @@ void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
 
   switch (binary_type_) {
     case kBinaryTypeBlob: {
-      auto blob_data = std::make_unique<BlobData>();
+      std::unique_ptr<BlobData> blob_data = BlobData::Create();
       blob_data->AppendBytes(data, length);
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));

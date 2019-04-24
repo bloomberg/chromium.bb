@@ -104,12 +104,11 @@ suite('TimeseriesRequest', function() {
     assert.strictEqual(request.body_.get('columns'), expectedColumns);
   });
 
-  test('details', async function() {
+  test('histograms', () => {
     const request = new cp.TimeseriesRequest({
-      levelOfDetail: cp.LEVEL_OF_DETAIL.DETAILS,
+      levelOfDetail: cp.LEVEL_OF_DETAIL.HISTOGRAMS,
     });
-    const expectedColumns = 'revision,timestamp,avg,std,count,' +
-      'revisions,annotations';
+    const expectedColumns = 'revision,histogram';
     assert.strictEqual(request.body_.get('columns'), expectedColumns);
   });
 

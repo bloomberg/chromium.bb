@@ -852,7 +852,8 @@ CollationDataBuilder::copyFromBaseCE32(UChar32 c, uint32_t ce32, UBool withConte
         ce32 = encodeOneCE(Collation::unassignedCEFromCodePoint(c), errorCode);
         break;
     default:
-        UPRV_UNREACHABLE;  // require ce32 == base->getFinalCE32(ce32)
+        U_ASSERT(FALSE);  // require ce32 == base->getFinalCE32(ce32)
+        break;
     }
     return ce32;
 }

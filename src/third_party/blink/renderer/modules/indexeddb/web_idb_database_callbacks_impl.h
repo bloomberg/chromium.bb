@@ -39,19 +39,23 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
 
  public:
-  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
+  static std::unique_ptr<WebIDBDatabaseCallbacksImpl> Create(
+      IDBDatabaseCallbacks*);
+
   ~WebIDBDatabaseCallbacksImpl() override;
 
   void OnForcedClose() override;
-  void OnVersionChange(int64_t old_version, int64_t new_version) override;
-  void OnAbort(int64_t transaction_id, const IDBDatabaseError&) override;
-  void OnComplete(int64_t transaction_id) override;
+  void OnVersionChange(long long old_version, long long new_version) override;
+  void OnAbort(long long transaction_id, const IDBDatabaseError&) override;
+  void OnComplete(long long transaction_id) override;
   void OnChanges(const ObservationIndexMap&,
                  Vector<Persistent<IDBObservation>> observations,
                  const TransactionMap& transactions) override;
   void Detach() override;
 
  private:
+  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
+
   Persistent<IDBDatabaseCallbacks> callbacks_;
 };
 

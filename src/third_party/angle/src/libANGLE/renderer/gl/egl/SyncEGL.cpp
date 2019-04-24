@@ -31,9 +31,7 @@ void SyncEGL::onDestroy(const egl::Display *display)
     mSync = EGL_NO_SYNC_KHR;
 }
 
-egl::Error SyncEGL::initialize(const egl::Display *display,
-                               const gl::Context *context,
-                               EGLenum type)
+egl::Error SyncEGL::initialize(const egl::Display *display, EGLenum type)
 {
     ASSERT(type == EGL_SYNC_FENCE_KHR);
     mSync = mEGL->createSyncKHR(type, nullptr);
@@ -45,7 +43,6 @@ egl::Error SyncEGL::initialize(const egl::Display *display,
 }
 
 egl::Error SyncEGL::clientWait(const egl::Display *display,
-                               const gl::Context *context,
                                EGLint flags,
                                EGLTime timeout,
                                EGLint *outResult)
@@ -62,9 +59,7 @@ egl::Error SyncEGL::clientWait(const egl::Display *display,
     return egl::NoError();
 }
 
-egl::Error SyncEGL::serverWait(const egl::Display *display,
-                               const gl::Context *context,
-                               EGLint flags)
+egl::Error SyncEGL::serverWait(const egl::Display *display, EGLint flags)
 {
     ASSERT(mSync != EGL_NO_SYNC_KHR);
     EGLint result = mEGL->waitSyncKHR(mSync, flags);

@@ -740,7 +740,9 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   void OnMenuStructureChanged() override {
     if (menu_item_->HasSubmenu()) {
       // Remove all menu items from submenu.
-      menu_item_->RemoveAllMenuItems();
+      views::SubmenuView* submenu = menu_item_->GetSubmenu();
+      while (submenu->child_count() > 0)
+        menu_item_->RemoveMenuItemAt(submenu->child_count() - 1);
 
       // Remove all elements in |AppMenu::command_id_to_entry_| that map to
       // |model_|.
@@ -773,9 +775,9 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
+AppMenu::AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items)
     : browser_(browser),
-      run_types_(run_types),
+      run_flags_(run_flags),
       alert_reopen_tab_items_(alert_reopen_tab_items) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
@@ -804,18 +806,15 @@ void AppMenu::Init(ui::MenuModel* model) {
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
   }
-  if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS)
-    types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
-
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
 void AppMenu::RunMenu(views::MenuButton* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  menu_runner_->RunMenuAt(
-      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
-      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
+  menu_runner_->RunMenuAt(host->GetWidget(), host,
+                          host->GetAnchorBoundsInScreen(),
+                          views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
 }
 
 void AppMenu::CloseMenu() {

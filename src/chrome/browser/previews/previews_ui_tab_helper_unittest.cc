@@ -83,6 +83,9 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     PrefRegistrySimple* registry =
         drp_test_context_->pref_service()->registry();
     registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
+    data_reduction_proxy_settings
+        ->set_data_reduction_proxy_enabled_pref_name_for_test(
+            drp_test_context_->GetDataReductionProxyEnabledPrefName());
     data_reduction_proxy_settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
         drp_test_context_->request_context_getter(), profile(),
@@ -140,7 +143,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
-TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysUI) {
+TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -150,9 +153,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysUI) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -186,7 +187,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
 #endif
 
 TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationCreatesNoScriptPreviewsUI) {
+       DidFinishNavigationCreatesNoScriptPreviewsInfoBar) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -196,9 +197,7 @@ TEST_F(PreviewsUITabHelperUnitTest,
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -286,7 +285,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineUI) {
+TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -324,9 +323,7 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineUI) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
-#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.

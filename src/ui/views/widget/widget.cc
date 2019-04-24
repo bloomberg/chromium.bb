@@ -56,8 +56,8 @@ void BuildViewsWithLayers(View* view, View::Views* views) {
   if (view->layer()) {
     views->push_back(view);
   } else {
-    for (View* child : view->children())
-      BuildViewsWithLayers(child, views);
+    for (int i = 0; i < view->child_count(); ++i)
+      BuildViewsWithLayers(view->child_at(i), views);
   }
 }
 
@@ -98,7 +98,7 @@ class DefaultWidgetDelegate : public WidgetDelegate {
  public:
   explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
   }
-  ~DefaultWidgetDelegate() override = default;
+  ~DefaultWidgetDelegate() override {}
 
   // Overridden from WidgetDelegate:
   void DeleteDelegate() override { delete this; }
@@ -147,7 +147,8 @@ Widget::InitParams::InitParams(Type type)
 
 Widget::InitParams::InitParams(const InitParams& other) = default;
 
-Widget::InitParams::~InitParams() = default;
+Widget::InitParams::~InitParams() {
+}
 
 bool Widget::InitParams::CanActivate() const {
   if (activatable != InitParams::ACTIVATABLE_DEFAULT)
@@ -160,7 +161,27 @@ bool Widget::InitParams::CanActivate() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-Widget::Widget() = default;
+Widget::Widget()
+    : native_widget_(nullptr),
+      widget_delegate_(nullptr),
+      non_client_view_(nullptr),
+      dragged_view_(nullptr),
+      ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      is_secondary_widget_(true),
+      frame_type_(FRAME_TYPE_DEFAULT),
+      always_render_as_active_(false),
+      saved_show_state_(ui::SHOW_STATE_DEFAULT),
+      focus_on_creation_(true),
+      is_top_level_(false),
+      native_widget_initialized_(false),
+      native_widget_destroyed_(false),
+      is_mouse_button_pressed_(false),
+      ignore_capture_loss_(false),
+      last_mouse_event_was_move_(false),
+      auto_release_capture_(true),
+      views_with_layers_dirty_(false),
+      movement_disabled_(false),
+      observer_manager_(this) {}
 
 Widget::~Widget() {
   DestroyRootView();
@@ -215,7 +236,7 @@ Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
 Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(native_view);
-  return native_widget ? native_widget->GetWidget() : nullptr;
+  return native_widget ? native_widget->GetWidget() : NULL;
 }
 
 // static
@@ -223,14 +244,14 @@ Widget* Widget::GetWidgetForNativeWindow(gfx::NativeWindow native_window) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
           native_window);
-  return native_widget ? native_widget->GetWidget() : nullptr;
+  return native_widget ? native_widget->GetWidget() : NULL;
 }
 
 // static
 Widget* Widget::GetTopLevelWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetTopLevelNativeWidget(native_view);
-  return native_widget ? native_widget->GetWidget() : nullptr;
+  return native_widget ? native_widget->GetWidget() : NULL;
 }
 
 // static
@@ -316,7 +337,7 @@ void Widget::Init(const InitParams& in_params) {
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
-  default_theme_provider_ = std::make_unique<ui::DefaultThemeProvider>();
+  default_theme_provider_.reset(new ui::DefaultThemeProvider);
   native_widget_->InitNativeWidget(params);
   if (params.type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
@@ -407,10 +428,11 @@ bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const {
   return false;
 }
 
-void Widget::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
+void Widget::ViewHierarchyChanged(
+    const View::ViewHierarchyChangedDetails& details) {
   if (!details.is_add) {
     if (details.child == dragged_view_)
-      dragged_view_ = nullptr;
+      dragged_view_ = NULL;
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(details.child);
@@ -471,7 +493,7 @@ void Widget::SetContentsView(View* view) {
     // |non_client_view_|. If you get this error, either use a different type
     // when initializing the widget, or don't call SetContentsView().
     DCHECK(!non_client_view_);
-    non_client_view_ = nullptr;
+    non_client_view_ = NULL;
   }
 }
 
@@ -700,7 +722,7 @@ void Widget::SetFullscreen(bool fullscreen) {
   native_widget_->SetFullscreen(fullscreen);
 
   if (non_client_view_)
-    non_client_view_->InvalidateLayout();
+    non_client_view_->Layout();
 }
 
 bool Widget::IsFullscreen() const {
@@ -757,12 +779,12 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
 
 FocusManager* Widget::GetFocusManager() {
   Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }
 
 const FocusManager* Widget::GetFocusManager() const {
   const Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }
 
 ui::InputMethod* Widget::GetInputMethod() {
@@ -802,7 +824,7 @@ void Widget::RunShellDrag(View* view,
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {
-    dragged_view_ = nullptr;
+    dragged_view_ = NULL;
     view->OnDragDone();
   }
   OnDragComplete();
@@ -813,10 +835,6 @@ void Widget::RunShellDrag(View* view,
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
   native_widget_->SchedulePaintInRect(rect);
-}
-
-void Widget::ScheduleLayout() {
-  native_widget_->ScheduleLayout();
 }
 
 void Widget::SetCursor(gfx::NativeCursor cursor) {
@@ -1417,11 +1435,6 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
   return true;
 }
 
-void Widget::LayoutRootViewIfNecessary() {
-  if (root_view_ && root_view_->needs_layout())
-    root_view_->Layout();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, ui::EventSource implementation:
 ui::EventSink* Widget::GetEventSink() {
@@ -1439,14 +1452,14 @@ FocusTraversable* Widget::GetFocusTraversableParent() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return nullptr;
+  return NULL;
 }
 
 View* Widget::GetFocusTraversableParentView() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return nullptr;
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1475,7 +1488,7 @@ void Widget::DestroyRootView() {
   if (is_top_level() && focus_manager_)
     focus_manager_->SetFocusedView(nullptr);
   NotifyWillRemoveView(root_view_.get());
-  non_client_view_ = nullptr;
+  non_client_view_ = NULL;
   root_view_.reset();
 }
 

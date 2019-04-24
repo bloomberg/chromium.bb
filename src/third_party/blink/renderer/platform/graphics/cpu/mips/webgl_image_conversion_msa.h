@@ -5,9 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_MIPS_WEBGL_IMAGE_CONVERSION_MSA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_MIPS_WEBGL_IMAGE_CONVERSION_MSA_H_
 
-#include "base/compiler_specific.h"
-
-#if defined(HAVE_MIPS_MSA_INTRINSICS)
+#if HAVE_MIPS_MSA_INTRINSICS
 
 #include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 

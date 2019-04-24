@@ -10,6 +10,7 @@
 #include "src/base/lazy-instance.h"
 #include "src/base/template-utils.h"
 #include "src/debug/debug.h"
+#include "src/deoptimizer.h"
 #include "src/frames-inl.h"
 #include "src/locked-queue-inl.h"
 #include "src/log.h"
@@ -55,12 +56,10 @@ ProfilerEventsProcessor::ProfilerEventsProcessor(Isolate* isolate,
 
 SamplingEventsProcessor::SamplingEventsProcessor(Isolate* isolate,
                                                  ProfileGenerator* generator,
-                                                 base::TimeDelta period,
-                                                 bool use_precise_sampling)
+                                                 base::TimeDelta period)
     : ProfilerEventsProcessor(isolate, generator),
       sampler_(new CpuSampler(isolate, this)),
-      period_(period),
-      use_precise_sampling_(use_precise_sampling) {
+      period_(period) {
   sampler_->Start();
 }
 
@@ -203,16 +202,13 @@ void SamplingEventsProcessor::Run() {
 
     if (nextSampleTime > now) {
 #if V8_OS_WIN
-      if (use_precise_sampling_ &&
-          nextSampleTime - now < base::TimeDelta::FromMilliseconds(100)) {
+      if (nextSampleTime - now < base::TimeDelta::FromMilliseconds(100)) {
         // Do not use Sleep on Windows as it is very imprecise, with up to 16ms
         // jitter, which is unacceptable for short profile intervals.
         while (base::TimeTicks::HighResolutionNow() < nextSampleTime) {
         }
       } else  // NOLINT
-#else
-      USE(use_precise_sampling_);
-#endif  // V8_OS_WIN
+#endif
       {
         // Allow another thread to interrupt the delay between samples in the
         // event of profiler shutdown.
@@ -338,11 +334,6 @@ void CpuProfiler::set_sampling_interval(base::TimeDelta value) {
   sampling_interval_ = value;
 }
 
-void CpuProfiler::set_use_precise_sampling(bool value) {
-  DCHECK(!is_profiling_);
-  use_precise_sampling_ = value;
-}
-
 void CpuProfiler::ResetProfiles() {
   profiles_.reset(new CpuProfilesCollection(isolate_));
   profiles_->set_cpu_profiler(this);
@@ -404,8 +395,8 @@ void CpuProfiler::StartProcessorIfNotStarted() {
     codemap_needs_initialization = true;
     CreateEntriesForRuntimeCallStats();
   }
-  processor_.reset(new SamplingEventsProcessor(
-      isolate_, generator_.get(), sampling_interval_, use_precise_sampling_));
+  processor_.reset(new SamplingEventsProcessor(isolate_, generator_.get(),
+                                               sampling_interval_));
   if (profiler_listener_) {
     profiler_listener_->set_observer(processor_.get());
   } else {

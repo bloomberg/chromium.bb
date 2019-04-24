@@ -13,7 +13,9 @@ using testing::_;
 
 namespace content {
 
-MockWebRTCPeerConnectionHandlerClient::MockWebRTCPeerConnectionHandlerClient() {
+MockWebRTCPeerConnectionHandlerClient::
+MockWebRTCPeerConnectionHandlerClient()
+    : candidate_mline_index_(-1) {
   ON_CALL(*this, DidGenerateICECandidate(_))
       .WillByDefault(
           testing::Invoke(this, &MockWebRTCPeerConnectionHandlerClient::

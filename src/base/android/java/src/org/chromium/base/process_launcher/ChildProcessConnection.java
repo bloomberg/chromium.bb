@@ -26,7 +26,6 @@ import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -86,8 +85,8 @@ public class ChildProcessConnection {
 
     @VisibleForTesting
     protected interface ChildServiceConnectionFactory {
-        ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
-                ChildServiceConnectionDelegate delegate, String instanceName);
+        ChildServiceConnection createConnection(
+                Intent bindIntent, int bindFlags, ChildServiceConnectionDelegate delegate);
     }
 
     /** Interface representing a connection to the Android service. Can be mocked in unit-tests. */
@@ -105,21 +104,16 @@ public class ChildProcessConnection {
         private final Intent mBindIntent;
         private final int mBindFlags;
         private final Handler mHandler;
-        private final Executor mExecutor;
         private final ChildServiceConnectionDelegate mDelegate;
-        private final String mInstanceName;
         private boolean mBound;
 
         private ChildServiceConnectionImpl(Context context, Intent bindIntent, int bindFlags,
-                Handler handler, Executor executor, ChildServiceConnectionDelegate delegate,
-                String instanceName) {
+                Handler handler, ChildServiceConnectionDelegate delegate) {
             mContext = context;
             mBindIntent = bindIntent;
             mBindFlags = bindFlags;
             mHandler = handler;
-            mExecutor = executor;
             mDelegate = delegate;
-            mInstanceName = instanceName;
         }
 
         @Override
@@ -127,8 +121,8 @@ public class ChildProcessConnection {
             if (!mBound) {
                 try {
                     TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                    mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
-                            mHandler, mExecutor, mInstanceName);
+                    mBound = BindService.doBindService(
+                            mContext, mBindIntent, this, mBindFlags, mHandler);
                 } finally {
                     TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
                 }
@@ -177,7 +171,6 @@ public class ChildProcessConnection {
     }
 
     private final Handler mLauncherHandler;
-    private final Executor mLauncherExecutor;
     private final ComponentName mServiceName;
 
     // Parameters passed to the child process through the service binding intent.
@@ -270,19 +263,16 @@ public class ChildProcessConnection {
     private boolean mCleanExit;
 
     public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
-            boolean bindAsExternalService, Bundle serviceBundle, String instanceName) {
+            boolean bindAsExternalService, Bundle serviceBundle) {
         this(context, serviceName, bindToCaller, bindAsExternalService, serviceBundle,
-                null /* connectionFactory */, instanceName);
+                null /* connectionFactory */);
     }
 
     @VisibleForTesting
     public ChildProcessConnection(final Context context, ComponentName serviceName,
             boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
-            ChildServiceConnectionFactory connectionFactory, String instanceName) {
+            ChildServiceConnectionFactory connectionFactory) {
         mLauncherHandler = new Handler();
-        mLauncherExecutor = (Runnable runnable) -> {
-            mLauncherHandler.post(runnable);
-        };
         assert isRunningOnLauncherThread();
         mServiceName = serviceName;
         mServiceBundle = serviceBundle != null ? serviceBundle : new Bundle();
@@ -292,10 +282,10 @@ public class ChildProcessConnection {
         if (connectionFactory == null) {
             connectionFactory = new ChildServiceConnectionFactory() {
                 @Override
-                public ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
-                        ChildServiceConnectionDelegate delegate, String instanceName) {
-                    return new ChildServiceConnectionImpl(context, bindIntent, bindFlags,
-                            mLauncherHandler, mLauncherExecutor, delegate, instanceName);
+                public ChildServiceConnection createConnection(
+                        Intent bindIntent, int bindFlags, ChildServiceConnectionDelegate delegate) {
+                    return new ChildServiceConnectionImpl(
+                            context, bindIntent, bindFlags, mLauncherHandler, delegate);
                 }
             };
         }
@@ -331,12 +321,11 @@ public class ChildProcessConnection {
         int defaultFlags = Context.BIND_AUTO_CREATE
                 | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
 
-        mModerateBinding =
-                connectionFactory.createConnection(intent, defaultFlags, delegate, instanceName);
+        mModerateBinding = connectionFactory.createConnection(intent, defaultFlags, delegate);
         mStrongBinding = connectionFactory.createConnection(
-                intent, defaultFlags | Context.BIND_IMPORTANT, delegate, instanceName);
+                intent, defaultFlags | Context.BIND_IMPORTANT, delegate);
         mWaivedBinding = connectionFactory.createConnection(
-                intent, defaultFlags | Context.BIND_WAIVE_PRIORITY, delegate, instanceName);
+                intent, defaultFlags | Context.BIND_WAIVE_PRIORITY, delegate);
     }
 
     public final IChildProcessService getService() {

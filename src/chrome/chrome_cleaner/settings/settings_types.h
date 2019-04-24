@@ -13,7 +13,7 @@ enum class SandboxType {
   // Signal no sandbox.
   kNonSandboxed = 0,
   kTest,
-  kEngine,
+  kEset,
   kParser,
   kZipArchiver,
   kNumValues,

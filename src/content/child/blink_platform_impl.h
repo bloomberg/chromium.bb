@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/files/file.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -47,17 +46,18 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
 
   // Platform methods (partial implementation):
   blink::WebThemeEngine* ThemeEngine() override;
-  base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
-                              int desired_flags) override;
+  blink::Platform::FileHandle DatabaseOpenFile(
+      const blink::WebString& vfs_file_name,
+      int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
-  int32_t DatabaseGetFileAttributes(
+  long DatabaseGetFileAttributes(
       const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetSpaceAvailableForOrigin(
+  long long DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
+  long long DatabaseGetSpaceAvailableForOrigin(
       const blink::WebSecurityOrigin& origin) override;
   bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
-                           int64_t size) override;
+                           long long size) override;
 
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;

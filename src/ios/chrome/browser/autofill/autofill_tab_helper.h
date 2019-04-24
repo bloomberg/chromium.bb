@@ -20,7 +20,7 @@ class ChromeAutofillClientIOS;
 }
 
 namespace password_manager {
-class PasswordManager;
+class PasswordGenerationManager;
 }
 
 namespace ios {
@@ -36,7 +36,7 @@ class AutofillTabHelper : public web::WebStateObserver,
   // Create an AutofillTabHelper and attaches it to the given |web_state|.
   static void CreateForWebState(
       web::WebState* web_state,
-      password_manager::PasswordManager* password_manager);
+      password_manager::PasswordGenerationManager* password_generation_manager);
 
   // Sets a weak reference to the view controller used to present UI.
   void SetBaseViewController(UIViewController* base_view_controller);
@@ -47,8 +47,9 @@ class AutofillTabHelper : public web::WebStateObserver,
  private:
   friend class web::WebStateUserData<AutofillTabHelper>;
 
-  AutofillTabHelper(web::WebState* web_state,
-                    password_manager::PasswordManager* password_manager);
+  AutofillTabHelper(
+      web::WebState* web_state,
+      password_manager::PasswordGenerationManager* password_generation_manager);
 
   // web::WebStateObserver implementation.
   void WebStateDestroyed(web::WebState* web_state) override;

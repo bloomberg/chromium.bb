@@ -12,10 +12,9 @@
 <script type="text/javascript" src="options_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxChromeOptionsScript.js">
 </script>
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/cr_elements/icons.html">
+  <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 </head>
 
 <body>
@@ -52,29 +51,20 @@
     </label>
   </div>
 
-  <div class="option">
-    <input id="announceDownloadNotifications" type="checkbox" class="checkbox pref"
-        name="announceDownloadNotifications">
-    <label for="announceDownloadNotifications" class="i18n" msgid="options_announce_download">
-      Announce download notifications.
-    </label>
-  </div>
-
   <h2 class="i18n description" msgid="options_audio_description"
-      id="audio-description">
+      id="audioDescription">
     When playing audio
   </h2>
 
   <div class="option">
-    <select id="audio-strategy" class="pref"
-      aria-labelledby="audio-description">
-      <option id="audio-normal" class="i18n" msgid="options_audio_normal">
+    <select id="audioStrategy" class="pref" aria-labelledby="audioDescription">
+      <option id="audioNormal" class="i18n" msgid="options_audio_normal">
         play at normal volume even if ChromeVox is speaking
       </option>
-      <option id="audio-duck" class="i18n" msgid="options_audio_duck">
+      <option id="audioDuck" class="i18n" msgid="options_audio_duck">
         play at lower volume when ChromeVox is speaking
       </option>
-      <option id="audio-suspend" class="i18n" msgid="options_audio_suspend">
+      <option id="audioSuspend" class="i18n" msgid="options_audio_suspend">
         pause playback when ChromeVox is speaking
       </option>
     </select>
@@ -98,250 +88,129 @@
     </label>
   </div>
 
-  <div id="richTextIndicationOptions">
-    <h2 class="i18n" msgid="options_rich_text_header">Rich Text Attributes</h2>
-    <div class="option">
-      <input id="customizeRichTextIndication" type="checkbox" class="checkbox pref" name="customizeRichTextIndication">
-      <label for="customizeRichTextIndication" class="i18n" msgid="options_rich_text_checkbox_label">
-        Customize Rich text indication
-      </label>
-    </div>
-    <div id="additionalRichTextIndicationOptions">
-      <div class="option">
-        <span class="i18n description" msgid="options_misspell_description" id="misspellDescription">
-          Indicate misspell:
-        </span>
-        <select id="indicateMisspell" aria-labelledby="misspellDescription" name="indicateMisspell">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_bold_description" id="boldDescription">
-          Indicate bold:
-        </span>
-        <select id="indicateBold" aria-labelledby="boldDescription" name="indicateBold">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_italic_description" id="italicDescription">
-          Indicate italic:
-        </span>
-        <select id="indicateItalic" aria-labelledby="italicDescription" name="indicateItalic">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_underline_description" id="underlineDescription">
-          Indicate underline:
-        </span>
-        <select id="indicateUnderline" aria-labelledby="underlineDescription" name="indicateUnderline">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
   <h2 class="chromeos i18n" msgid="options_braille">Braille</h2>
-  <!-- Braille Settings -->
   <div class="chromeos option">
-    <label>
-      <cr-icon-button iron-icon="cr:expand-more"
-          class="developer-option-icon-button" id="braille-settings-more"
-          name="chromevox-braille-settings"></cr-icon-button>
-      <cr-icon-button iron-icon="cr:expand-less"
-          class="developer-option-icon-button" id="braille-settings-less"
-          name="chromevox-developer-options" hidden></cr-icon-button>
-      <span class="i18n" msgid="options_braille_settings">
-        Braille Settings
-      </span>
-    </label>
-    <div class="settings-expand-row" id="6-dot-braille" hidden>
-      <label>
-      <cr-radio-button class="left" id="braille-description-6">
-        6-dot braille table
-      </cr-radio-button>
-      <select class="braille-description-selection right" id="braille-table-6"
-        aria-labelledby="braille-description-6"></select>
-      </label>
-    </div>
-
-    <div class="settings-expand-row" id="8-dot-braille" hidden>
-      <label>
-        <cr-radio-button class="left" id="braille-description-8">
-          8-dot braille table
-        </cr-radio-button>
-        <select class="braille-description-selection right"
-          id="braille-table-8" aria-labelledby="braille-description-8">
-        </select>
-      </label>
-    </div>
-    <div class="settings-expand-row" id="braille-word-wrap" hidden>
-      <label>
-        <input id="braille-word-wrap" type="checkbox" class="checkbox pref"
-               name="braille-word-wrap">
-        <span class="i18n" msgid="options_braille_word_wrap">
-          Enable word wrap
-        </span>
-      </label>
-    </div>
+    <span class="i18n description" msgid="options_braille_description_6"
+          id="braille_description_6">
+      Select a 6-dot braille table:
+    </span>
+    <select id="brailleTable6" aria-labelledby="braille_description_6"></select>
   </div>
-
-  <!-- Bluetooth braille display -->
   <div class="chromeos option">
-    <label>
-      <cr-icon-button iron-icon="cr:expand-more"
-          class="developer-option-icon-button" id="bt-braille-settings-more"
-          name="chromevox-braille-settings"></cr-icon-button>
-      <cr-icon-button iron-icon="cr:expand-less"
-          class="developer-option-icon-button" id="bt-braille-settings-less"
-          name="chromevox-developer-options" hidden></cr-icon-button>
-      <span class="i18n" msgid="options_bluetooth_braille_display_title">
-        Bluetooth braille display
-      </span>
-    </label>
-     <div id="bluetooth-braille" hidden>
-     </div>
+    <span class="i18n description" msgid="options_braille_description_8"
+          id="braille_description_8">
+      Select an 8-dot braille table:
+    </span>
+    <select id="brailleTable8" aria-labelledby="braille_description_8"></select>
   </div>
-
-  <!-- Virtual braille display -->
+  <div class="chromeos option">
+    <button id="brailleTableType"></button><span>&nbsp;</span>
+  </div>
   <div class="chromeos option">
     <label>
-      <cr-icon-button iron-icon="cr:expand-more"
-          class="developer-option-icon-button"
-          id="virtual-braille-settings-more" name="chromevox-braille-settings">
-      </cr-icon-button>
-      <cr-icon-button iron-icon="cr:expand-less"
-          class="developer-option-icon-button"
-          id="virtual-braille-settings-less" name="chromevox-developer-options"
-          hidden></cr-icon-button>
-      <span class="i18n settings-description"
-        msgid="options_virtual_braille_display">
-        Virtual braille display
-      </span>
-      <span class="i18n settings-sub-description"
-        msgid="options_virtual_braille_display_details">
-        Simulates the output of a refreshable braille display
-        in the ChromeVox panel at the top of the screen.
+      <input id="brailleWordWrap" type="checkbox" class="checkbox pref"
+             name="brailleWordWrap">
+      <span class="i18n" msgid="options_braille_word_wrap">
+        Enable word wrap
       </span>
     </label>
-    <div class="settings-expand-row"
-      id="virtual-braille-settings-num-lines" hidden>
-        <span class="i18n description left"
-              msgid="options_virtual_braille_display_rows"
-              id="virtual-braille-display-rows-description">
-          Lines:
-        </span>
-        <input type="number" min="1" class="right"
-          id="virtual-braille-display-rows-input">
-    </div>
-    <div class="settings-expand-row"
-      id="virtual-braille-settings-lines-cells" hidden>
-      <label>
-        <span class="i18n description left"
-              msgid="options_virtual_braille_display_columns"
-              id="virtual-braille-display-columns-description">
-          Cells in each line:
-        </span>
-        <input type="number" min="1" class="right"
-          id="virtual-braille-display-columns-input">
-      </label>
-    </div>
-    <div class="settings-expand-row"
-      id="virtual-braille-settings-display" hidden>
-      <label>
-        <span class="i18n description left" msgid="options_display_style">
-          Display Style</span>
-          <select id="change-display-style"
-            class="pref right change-display-style"
-              aria-labelledby="audio-description">
-            <option class="i18n" msgid="options_display_style_interleave">
-              Interleave
-            </option>
-            <option class="i18n" msgid="options_display_style_side_by_side">
-            Side-by-side
-            </option>
-          </select>
-      </label>
-    </div>
   </div>
 
   <div id="bluetoothBraille"></div>
 
+  <h2 class="i18n" msgid="options_virtual_braille_display">
+    Virtual Braille Display
+  </h2>
+  <p class="i18n" msgid="options_virtual_braille_display_details">
+    Simulates the output of a refreshable braille display
+    in the ChromeVox panel at the top of the screen.
+  </p>
+  <div class="option">
+  <label>
+    <span class="i18n description" msgid="options_virtual_braille_display_rows"
+          id="virtual_braille_display_rows_description">
+      Lines:
+    </span>
+    <input type="number" min="1" id="virtual_braille_display_rows_input">
+  </label>
+  </div>
+  <div class="option">
+  <label>
+    <span class="i18n description"
+          msgid="options_virtual_braille_display_columns"
+          id="virtual_braille_display_columns_description">
+      Cells in each line:
+    </span>
+    <input type="number" min="1" id="virtual_braille_display_columns_input">
+  </label>
+  </div>
+  <div class="option">
+    <span id="currentDisplayStyle"></span>
+    <button id="changeDisplayStyle"></button>
+  </div>
+
   <h2 class="i18n" msgid="options_developer_options" id="developerDescription">
     Developer Options
   </h2>
-  <div class="chromeos option">
+  <div class="chromeos option" id="developerLog">
     <label>
-      <cr-icon-button iron-icon="cr:expand-more"
-          aria-describedby="developer-options-label" aria-expanded="false"
-          class="developer-option-icon-button"
-          id="chromevox-developer-options-more"
-          name="chromevox-developer-options"></cr-icon-button>
-      <cr-icon-button iron-icon="cr:expand-less"
-          aria-describedby="developer-options-label" aria-expanded="true"
-          class="developer-option-icon-button"
-          id="chromevox-developer-options-less"
-          name="chromevox-developer-options" hidden></cr-icon-button>
-      <span class="i18n" msgid="options_developer_options"
-            id="developer-options-label">
+      <paper-icon-button icon="cr:expand-more"
+        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsMore"
+        name="chromeVoxDeveloperOptions"></paper-icon-button>
+      <paper-icon-button icon="cr:expand-less"
+        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsLess"
+        name="chromeVoxDeveloperOptions" hidden></paper-icon-button>
+      <span class="i18n" msgid="options_developer_options">
         Enable developer options
       </span>
     </label>
-    <div class="settings-expand-row" id="developer-speech-logging">
-      <label>
-        <input id="enable-speech-logging" type="checkbox"
-               class="checkbox pref logging" name="enableSpeechLogging">
-        <span class="i18n" msgid="options_developer_speech_logging">
-          Enable speech logging
-        </span>
-      </label>
-    </div>
-    <div class="settings-expand-row" id="developer-earcon-logging">
-      <label>
-        <input id="enable-earcon-logging" type="checkbox"
-               class="checkbox pref logging" name="enableEarcon-logging">
-        <span class="i18n" msgid="options_developer_earcon_logging">
-          Enable earcon logging
-        </span>
-      </label>
-    </div>
-    <div class="settings-expand-row" id="developer-braille-logging">
-      <label>
-        <input id="enable-braille-logging" type="checkbox"
-               class="checkbox pref logging" name="enable-braillelogging">
-        <span class="i18n" msgid="options_developer_braille_logging">
-          Enable braille logging
-        </span>
-      </label>
-    </div>
-    <div class="settings-expand-row" id="developer-event-stream">
-      <label>
-        <span class="i18n" msgid="options_event_stream_logging">
-          Enable event stream logging
-        </span>
-      </label>
-      <button id="toggle-event-stream-filters"></button>
-    </div>
-     <div class="settings-expand-row" id="show-developer-log">
-      <label>
-        <cr-icon-button iron-icon="cr:open-in-new"
-          aria-describedby="show-log-label" class="developer-option-icon-button"
-          id="open-developer-log"></cr-icon-button>
-        <span class="i18n settings-description" msgid="options_show_log"
-              id="show-log-label">
-          Show Log</span>
-        <span class="i18n settings-sub-description"
-          msgid="options_show_log_key">Search + O + W</span>
-      </label>
-    </div>
+  </div>
+  <div class="option" id="developerSpeechLogging">
+    <label>
+      <input id="enableSpeechLogging" type="checkbox"
+             class="checkbox pref logging" name="enableSpeechLogging">
+      <span class="i18n" msgid="options_developer_speech_logging">
+        Enable speech logging
+      </span>
+    </label>
+  </div>
+  <div class="option" id="developerEarconLogging">
+    <label>
+      <input id="enableEarconLogging" type="checkbox"
+             class="checkbox pref logging" name="enableEarconLogging">
+      <span class="i18n" msgid="options_developer_earcon_logging">
+        Enable earcon logging
+      </span>
+    </label>
+  </div>
+  <div class="option" id="developerBrailleLogging">
+    <label>
+      <input id="enableBrailleLogging" type="checkbox"
+             class="checkbox pref logging" name="enableBrailleLogging">
+      <span class="i18n" msgid="options_developer_braille_logging">
+        Enable braille logging
+      </span>
+    </label>
+  </div>
+  <div class="option" id="developerEventStream">
+    <label>
+      <span class="i18n" msgid="options_event_stream_logging">
+        Enable event stream logging
+      </span>
+    </label>
+    <button id="toggleEventStreamFilters"></button>
+  </div>
+   <div class="option" id="showDeveloperLog">
+    <label>
+      <paper-icon-button icon="cr:open-in-new"
+        class="developer-option-icon-button" id="openDeveloperLog">
+      </paper-icon-button>
+      <span class="i18n" msgid="options_show_log"></span>
+      <span class="i18n sub-description" msgid="options_show_log_key"></span>
+    </label>
   </div>
 
-  <div id="event-stream-filters" hidden>
+  <div id="eventStreamFilters" hidden>
     <label><div class="option-eventstream">
       <input name="activedescendantchanged" type="checkbox"
              class="checkbox pref eventstream">

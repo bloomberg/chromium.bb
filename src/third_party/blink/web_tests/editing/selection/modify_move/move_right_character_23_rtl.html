@@ -3,14 +3,10 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../assert_selection.js"></script>
 <script>
-const usesBidiAffinity = window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled;
-
 selection_test(
   '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>',
   '23-0 rtl right character');
 
 selection_test(
@@ -34,179 +30,133 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lore|m\n        <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>',
   '23-4 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-5 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n|        <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n|        <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-6 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n |       <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n |       <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-7 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n  |      <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n  |      <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-8 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n   |     <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n   |     <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-9 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n    |    <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n    |    <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-10 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n     |   <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n     |   <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-11 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n      |  <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n      |  <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-12 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n       | <div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n       | <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-13 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        |<div></div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        |<div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">L|orem\n        <div></div>\n        ipsum</div>',
   '23-14 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div>|</div>\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    // The input position is canonicalized into "|ipsum", which causes the
-    // current behavior. It might be changed in the future.
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-15 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>|\n        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-16 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n|        ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-17 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n |       ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-18 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n  |      ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-19 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n   |     ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-20 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n    |    ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-21 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n     |   ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-22 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n      |  ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-23 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n       | ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-24 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        |ipsum</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>'
-    : '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem|\n        <div></div>\n        ipsum</div>',
   '23-25 rtl right character');
 
 selection_test(
@@ -230,16 +180,12 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        ipsu|m</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        ipsum|</div>'
-    : '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        |ipsum</div>',
+  '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        |ipsum</div>',
   '23-29 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        ipsum|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  usesBidiAffinity
-    ? '<div contenteditable dir="rtl">|Lorem\n        <div></div>\n        ipsum</div>'
-    : '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>',
+  '<div contenteditable dir="rtl">Lorem\n        <div></div>\n        i|psum</div>',
   '23-30 rtl right character');
 </script>

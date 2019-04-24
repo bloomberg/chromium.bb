@@ -24,6 +24,12 @@ BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
                                                      BluetoothDevice* device)
     : ContextLifecycleObserver(context), device_(device), connected_(false) {}
 
+BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::Create(
+    ExecutionContext* context,
+    BluetoothDevice* device) {
+  return MakeGarbageCollected<BluetoothRemoteGATTServer>(context, device);
+}
+
 void BluetoothRemoteGATTServer::ContextDestroyed(ExecutionContext*) {
   Dispose();
 }
@@ -101,7 +107,7 @@ void BluetoothRemoteGATTServer::ConnectCallback(
 }
 
 ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::WebBluetoothService* service =
@@ -224,7 +230,7 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
                           BluetoothOperation::kServicesRetrieval));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   AddToActiveAlgorithms(resolver);
 

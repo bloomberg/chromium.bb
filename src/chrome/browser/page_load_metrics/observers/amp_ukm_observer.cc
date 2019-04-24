@@ -15,8 +15,6 @@ AmpUkmObserver::AmpUkmObserver() {}
 AmpUkmObserver::~AmpUkmObserver() {}
 
 void AmpUkmObserver::OnLoadingBehaviorObserved(
-    content::RenderFrameHost* rfh,
-    int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::AmpPageLoad builder(info.source_id);
   bool should_record = false;

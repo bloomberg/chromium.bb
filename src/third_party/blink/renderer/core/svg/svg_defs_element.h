@@ -36,7 +36,7 @@ class SVGDefsElement final : public SVGGraphicsElement {
   bool SupportsFocus() const override { return false; }
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 }  // namespace blink

@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -94,9 +93,6 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::SetUpApp(): Setting "
                   << "DefaultToPersist cookie at " << app_url << " before PWA "
                   << "installation.";
-  net::CookieOptions options;
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
@@ -107,7 +103,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
               base::Time::Now() /* last_access_time */,
               !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
               net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", options,
+          "https", false /* modify_http_only */,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::
                              OnSetRememberDeviceByDefaultCookieResult,
                          weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
@@ -180,8 +176,8 @@ void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& app_url,
     const GURL& install_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
-  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    bool succeeded) {
+  if (!succeeded) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::"
         << "OnSetRememberDeviceByDefaultCookieResult(): Failed to set "
@@ -218,19 +214,19 @@ void AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult(
     return;
   }
 
-  web_app::InstallOptions options(install_url,
-                                  web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kInternal);
-  options.override_previous_user_uninstall = true;
+  web_app::PendingAppManager::AppInfo info(install_url,
+                                           web_app::LaunchContainer::kWindow,
+                                           web_app::InstallSource::kInternal);
+  info.override_previous_user_uninstall = true;
   // The ServiceWorker does not load in time for the installability check, so
   // bypass it as a workaround.
-  options.bypass_service_worker_check = true;
-  options.require_manifest = true;
+  info.bypass_service_worker_check = true;
+  info.require_manifest = true;
 
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
                   << "Installing PWA for " << install_url << ".";
   pending_app_manager_->Install(
-      std::move(options),
+      std::move(info),
       base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnAppInstallResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      app_url));
@@ -273,9 +269,6 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
   // The client checks for this cookie to redirect users to the new domain. This
   // prevents unwanted connection stealing between old and new clients should
   // the user try to open old client.
-  net::CookieOptions options;
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
@@ -286,7 +279,7 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
               base::Time::Now() /* last_access_time */,
               !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
               net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", options,
+          "https", false /* modify_http_only */,
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
               weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));
@@ -295,8 +288,8 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
 void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
     const GURL& app_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
-  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    bool succeeded) {
+  if (!succeeded) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "
         << "Failed to set migration cookie for " << app_url << ". Proceeding "

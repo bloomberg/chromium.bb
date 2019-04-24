@@ -15,9 +15,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -25,6 +24,69 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
+ public:
+  void Init(dbus::Bus* bus) override { NOTIMPLEMENTED(); }
+
+  void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
+                    int password_fd,
+                    JoinCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void AuthenticateUser(const authpolicy::AuthenticateUserRequest& request,
+                        int password_fd,
+                        AuthCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void GetUserStatus(const authpolicy::GetUserStatusRequest& request,
+                     GetUserStatusCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void GetUserKerberosFiles(const std::string& object_guid,
+                            GetUserKerberosFilesCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void RefreshDevicePolicy(RefreshPolicyCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void RefreshUserPolicy(const AccountId& account_id,
+                         RefreshPolicyCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  refresh_user_policy_callback_error_));
+  }
+
+  void ConnectToSignal(
+      const std::string& signal_name,
+      dbus::ObjectProxy::SignalCallback signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    NOTIMPLEMENTED();
+  }
+
+  void SetRefreshUserPolicyCallbackError(authpolicy::ErrorType error) {
+    refresh_user_policy_callback_error_ = error;
+  }
+
+ private:
+  authpolicy::ErrorType refresh_user_policy_callback_error_ =
+      authpolicy::ERROR_NONE;
+};
+
+}  // namespace
 
 namespace policy {
 
@@ -35,24 +97,20 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
  public:
   ActiveDirectoryPolicyManagerTest()
       : user_manager_enabler_(
-            std::make_unique<chromeos::FakeChromeUserManager>()),
-        install_attributes_(
-            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
-                "realm.com",
-                "device_id")) {}
+            std::make_unique<chromeos::FakeChromeUserManager>()) {}
 
   // testing::Test overrides:
   void SetUp() override {
-    chromeos::AuthPolicyClient::InitializeFake();
-    fake_client()->SetStarted(true);
-    fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_NONE);
+    auto mock_client_unique_ptr = std::make_unique<TestAuthPolicyClient>();
+    mock_client_ = mock_client_unique_ptr.get();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
+        std::move(mock_client_unique_ptr));
   }
 
   void TearDown() override {
     if (mock_external_data_manager())
       EXPECT_CALL(*mock_external_data_manager(), Disconnect());
     policy_manager_->Shutdown();
-    chromeos::AuthPolicyClient::Shutdown();
   }
 
  protected:
@@ -83,10 +141,8 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
       testing::Mock::VerifyAndClearExpectations(mock_external_data_manager());
   }
 
-  // Owned by the AuthPolicyClient global instance.
-  chromeos::FakeAuthPolicyClient* fake_client() {
-    return chromeos::FakeAuthPolicyClient::Get();
-  }
+  // Owned by DBusThreadManager.
+  TestAuthPolicyClient* mock_client_ = nullptr;
 
   // Used to set FakeUserManager.
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -99,7 +155,6 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryPolicyManagerTest);
 };
 
@@ -161,8 +216,8 @@ class UserActiveDirectoryPolicyManagerTest
 TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait_HasCachedPolicy) {
   CreatePolicyManager(base::TimeDelta());
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   mock_store()->policy_ = std::make_unique<enterprise_management::PolicyData>();
   mock_store()->NotifyStoreLoaded();
@@ -174,8 +229,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait_HasCachedPolicy) {
 TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait_NoCachedPolicy) {
   CreatePolicyManager(base::TimeDelta());
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   mock_store()->NotifyStoreError();
 
@@ -192,8 +247,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
        WaitFinite_LoadSuccess_FetchSuccess_LoadSuccess) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to succeed.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_NONE);
+  // Configure mock policy fetch to succeed.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -220,8 +275,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
        WaitFinite_LoadSuccess_FetchSuccess_LoadFail) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to succeed.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_NONE);
+  // Configure mock policy fetch to succeed.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -247,8 +302,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
 TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_LoadSuccess_FetchFail) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -277,8 +332,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_LoadSuccess_FetchFail) {
 TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_FetchFail_LoadSuccess) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -299,8 +354,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_FetchFail_LoadSuccess) {
 TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_LoadFail_FetchFail) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -331,8 +386,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
        WaitFinite_LoadSuccess_FetchTimeout) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -352,8 +407,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
        WaitFinite_LoadFail_FetchTimeout_FetchSuccess) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_NONE);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
@@ -381,8 +436,8 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
        WaitFinite_LoadFail_FetchTimeout_FetchFail) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
-  // Configure policy fetch to fail.
-  fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_UNKNOWN);
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();

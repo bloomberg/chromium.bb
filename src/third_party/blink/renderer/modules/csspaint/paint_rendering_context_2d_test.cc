@@ -24,7 +24,7 @@ void PaintRenderingContext2DTest::SetUp() {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   context_settings->setAlpha(false);
-  ctx_ = MakeGarbageCollected<PaintRenderingContext2D>(
+  ctx_ = PaintRenderingContext2D::Create(
       IntSize(kWidth, kHeight), CanvasColorParams(), context_settings, kZoom);
 }
 

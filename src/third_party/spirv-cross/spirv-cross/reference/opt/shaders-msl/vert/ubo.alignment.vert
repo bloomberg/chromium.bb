@@ -7,7 +7,7 @@ struct UBO
 {
     float4x4 mvp;
     float2 targSize;
-    char _m2_pad[8];
+    char pad2[8];
     packed_float3 color;
     float opacity;
 };

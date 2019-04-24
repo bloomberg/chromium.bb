@@ -19,7 +19,9 @@ class CORE_EXPORT PerformanceLayoutJank final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit PerformanceLayoutJank(double fraction);
+  static PerformanceLayoutJank* Create(double fraction);
+
+  PerformanceLayoutJank(double fraction);
   ~PerformanceLayoutJank() override;
 
   AtomicString entryType() const override;

@@ -26,13 +26,29 @@ class DrawIndexedTest : public DawnTest {
 
             renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-            dawn::ShaderModule vsModule =
-                utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            dawn::VertexInputDescriptor input;
+            input.inputSlot = 0;
+            input.stride = 4 * sizeof(float);
+            input.stepMode = dawn::InputStepMode::Vertex;
+
+            dawn::VertexAttributeDescriptor attribute;
+            attribute.shaderLocation = 0;
+            attribute.inputSlot = 0;
+            attribute.offset = 0;
+            attribute.format = dawn::VertexFormat::FloatR32G32B32A32;
+
+            dawn::InputState inputState = device.CreateInputStateBuilder()
+                                              .SetInput(&input)
+                                              .SetAttribute(&attribute)
+                                              .GetResult();
+
+            dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
                     gl_Position = pos;
-                })");
+                })"
+            );
 
             dawn::ShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
                 #version 450
@@ -46,10 +62,8 @@ class DrawIndexedTest : public DawnTest {
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
-            descriptor.cInputState.numInputs = 1;
-            descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
-            descriptor.cInputState.numAttributes = 1;
-            descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
+            descriptor.indexFormat = dawn::IndexFormat::Uint32;
+            descriptor.inputState = inputState;
             descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
             pipeline = device.CreateRenderPipeline(&descriptor);
@@ -67,11 +81,9 @@ class DrawIndexedTest : public DawnTest {
                  1.0f, -1.0f, 0.0f, 1.0f,
                 -1.0f,  1.0f, 0.0f, 1.0f
             });
-            indexBuffer = utils::CreateBufferFromData<uint32_t>(
-                device, dawn::BufferUsageBit::Index,
-                {0, 1, 2, 0, 3, 1,
-                 // The indices below are added to test negatve baseVertex
-                 0 + 4, 1 + 4, 2 + 4, 0 + 4, 3 + 4, 1 + 4});
+            indexBuffer = utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsageBit::Index, {
+                0, 1, 2, 0, 3, 1
+            });
         }
 
         utils::BasicRenderPass renderPass;
@@ -79,22 +91,17 @@ class DrawIndexedTest : public DawnTest {
         dawn::Buffer vertexBuffer;
         dawn::Buffer indexBuffer;
 
-        void Test(uint32_t indexCount,
-                  uint32_t instanceCount,
-                  uint32_t firstIndex,
-                  int32_t baseVertex,
-                  uint32_t firstInstance,
-                  uint64_t bufferOffset,
-                  RGBA8 bottomLeftExpected,
+        void Test(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex,
+                  uint32_t baseVertex, uint32_t firstInstance, RGBA8 bottomLeftExpected,
                   RGBA8 topRightExpected) {
-            uint64_t zeroOffset = 0;
+            uint32_t zeroOffset = 0;
             dawn::CommandEncoder encoder = device.CreateCommandEncoder();
             {
                 dawn::RenderPassEncoder pass = encoder.BeginRenderPass(
                     &renderPass.renderPassInfo);
                 pass.SetPipeline(pipeline);
                 pass.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-                pass.SetIndexBuffer(indexBuffer, bufferOffset);
+                pass.SetIndexBuffer(indexBuffer, 0);
                 pass.DrawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
                 pass.EndPass();
             }
@@ -114,30 +121,27 @@ TEST_P(DrawIndexedTest, Uint32) {
     RGBA8 notFilled(0, 0, 0, 0);
 
     // Test a draw with no indices.
-    Test(0, 0, 0, 0, 0, 0, notFilled, notFilled);
+    Test(0, 0, 0, 0, 0, notFilled, notFilled);
     // Test a draw with only the first 3 indices of the first quad (bottom left triangle)
-    Test(3, 1, 0, 0, 0, 0, filled, notFilled);
+    Test(3, 1, 0, 0, 0, filled, notFilled);
     // Test a draw with only the last 3 indices of the first quad (top right triangle)
-    Test(3, 1, 3, 0, 0, 0, notFilled, filled);
+    Test(3, 1, 3, 0, 0, notFilled, filled);
     // Test a draw with all 6 indices (both triangles).
-    Test(6, 1, 0, 0, 0, 0, filled, filled);
+    Test(6, 1, 0, 0, 0, filled, filled);
 }
 
 // Test the parameter 'baseVertex' of DrawIndexed() works.
 TEST_P(DrawIndexedTest, BaseVertex) {
+    // TODO(jiawei.shao@intel.com): enable 'baseVertex' on OpenGL back-ends
+    DAWN_SKIP_TEST_IF(IsOpenGL());
+
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 
     // Test a draw with only the first 3 indices of the second quad (top right triangle)
-    Test(3, 1, 0, 4, 0, 0, notFilled, filled);
+    Test(3, 1, 0, 4, 0, notFilled, filled);
     // Test a draw with only the last 3 indices of the second quad (bottom left triangle)
-    Test(3, 1, 3, 4, 0, 0, filled, notFilled);
-
-    // Test negative baseVertex
-    // Test a draw with only the first 3 indices of the first quad (bottom left triangle)
-    Test(3, 1, 0, -4, 0, 6 * sizeof(uint32_t), filled, notFilled);
-    // Test a draw with only the last 3 indices of the first quad (top right triangle)
-    Test(3, 1, 3, -4, 0, 6 * sizeof(uint32_t), notFilled, filled);
+    Test(3, 1, 3, 4, 0, filled, notFilled);
 }
 
 DAWN_INSTANTIATE_TEST(DrawIndexedTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);

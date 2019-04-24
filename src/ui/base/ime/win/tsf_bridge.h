@@ -9,8 +9,8 @@
 #include <windows.h>
 #include <wrl/client.h>
 
-#include "base/component_export.h"
 #include "base/macros.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 class TextInputClient;
@@ -26,7 +26,7 @@ class TextInputClient;
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFBridge {
+class UI_BASE_IME_EXPORT TSFBridge {
  public:
   virtual ~TSFBridge();
 

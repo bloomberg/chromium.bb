@@ -220,8 +220,8 @@ DisableNullDrawGLBindings::~DisableNullDrawGLBindings() {
   SetNullDrawGLBindingsEnabled(initial_enabled_);
 }
 
-GLWindowSystemBindingInfo::GLWindowSystemBindingInfo() {}
-GLWindowSystemBindingInfo::~GLWindowSystemBindingInfo() {}
+GLWindowSystemBindingInfo::GLWindowSystemBindingInfo()
+    : direct_rendering(true) {}
 
 std::string GetGLExtensionsFromCurrentContext() {
   return GetGLExtensionsFromCurrentContext(g_current_gl_context);

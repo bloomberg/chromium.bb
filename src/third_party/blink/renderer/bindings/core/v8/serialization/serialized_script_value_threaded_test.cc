@@ -63,7 +63,7 @@ TEST(SerializedScriptValueThreadedTest,
 
             // Make sure this thread's references in the Oilpan heap are dropped
             // before the main thread continues.
-            ThreadState::Current()->CollectAllGarbageForTesting();
+            ThreadState::Current()->CollectAllGarbage();
           },
           CrossThreadUnretained(&worker_thread), serialized));
 

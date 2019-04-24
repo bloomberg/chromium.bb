@@ -13,9 +13,7 @@ class TestPaintWorkletInput : public PaintWorkletInput {
  public:
   explicit TestPaintWorkletInput(const gfx::SizeF& size)
       : container_size_(size) {}
-
   gfx::SizeF GetSize() const override;
-  int WorkletId() const override;
 
  protected:
   ~TestPaintWorkletInput() override = default;

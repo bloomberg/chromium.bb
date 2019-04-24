@@ -18,10 +18,7 @@ enum AutofillSyncSigninState {
   kSignedInAndWalletSyncTransportEnabled,
   // The user is signed in, has enabled the sync feature and has not disabled
   // Wallet sync.
-  kSignedInAndSyncFeatureEnabled,
-  // The user has enabled the sync feature, but has then signed out, so sync is
-  // paused.
-  kSyncPaused,
+  kSignedInAndSyncFeature,
   kNumSyncStates,
 };
 

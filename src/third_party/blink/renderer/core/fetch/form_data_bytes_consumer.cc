@@ -92,7 +92,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
     Vector<char> data;
     form_data_->Flatten(data);
     form_data_ = nullptr;
-    auto blob_data = std::make_unique<BlobData>();
+    std::unique_ptr<BlobData> blob_data = BlobData::Create();
     blob_data->AppendBytes(data.data(), data.size());
     auto length = blob_data->length();
     state_ = PublicState::kClosed;
@@ -399,7 +399,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
       return;
     }
 
-    auto blob_data = std::make_unique<BlobData>();
+    std::unique_ptr<BlobData> blob_data = BlobData::Create();
     for (const auto& element : form_data_->Elements()) {
       switch (element.type_) {
         case FormDataElement::kData:
@@ -486,7 +486,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
 
  private:
   scoped_refptr<EncodedFormData> form_data_;
-  Member<BytesConsumer> blob_bytes_consumer_;
+  TraceWrapperMember<BytesConsumer> blob_bytes_consumer_;
 };
 
 }  // namespace

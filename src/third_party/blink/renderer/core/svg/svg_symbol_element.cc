@@ -40,8 +40,7 @@ void SVGSymbolElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     InvalidateInstances();
 }
 
-LayoutObject* SVGSymbolElement::CreateLayoutObject(const ComputedStyle&,
-                                                   LegacyLayout) {
+LayoutObject* SVGSymbolElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGHiddenContainer(this);
 }
 

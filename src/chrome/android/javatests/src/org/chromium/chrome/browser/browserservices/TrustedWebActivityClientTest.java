@@ -27,14 +27,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.TimeoutException;
 
@@ -127,8 +124,8 @@ public class TrustedWebActivityClientTest {
         mTargetContext = InstrumentationRegistry.getTargetContext();
         mBuilder = new StandardNotificationBuilder(mTargetContext);
         mClient = new TrustedWebActivityClient(new TrustedWebActivityServiceConnectionManager(
-                ContextUtils.getApplicationContext()),
-                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()));
+                ContextUtils.getApplicationContext()), new TrustedWebActivityUmaRecorder(),
+                NotificationUmaTracker.getInstance());
 
         // TestTrustedWebActivityService is in the test support apk.
         TrustedWebActivityClient.registerClient(mTargetContext, ORIGIN, TEST_SUPPORT_PACKAGE);
@@ -178,9 +175,8 @@ public class TrustedWebActivityClientTest {
 
     private void postNotification()
             throws TimeoutException, InterruptedException {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder,
-                    NotificationUmaTracker.getInstance());
+        ThreadUtils.runOnUiThread(() -> {
+            mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder);
         });
 
         mResponseHandler.mNotifyNotification.waitForCallback();
@@ -193,8 +189,8 @@ public class TrustedWebActivityClientTest {
     @Test
     @SmallTest
     public void testCancelNotification() throws TimeoutException, InterruptedException {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> mClient.cancelNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID));
+        ThreadUtils.runOnUiThread(() ->
+            mClient.cancelNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID));
 
         mResponseHandler.mCancelNotification.waitForCallback();
 

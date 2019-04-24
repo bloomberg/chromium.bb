@@ -141,7 +141,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     base::Histogram* histogram = static_cast<base::Histogram*>(
         base::StatisticsRecorder::FindHistogram(histogram_name));
 
-    if (histogram == nullptr)
+    if (histogram == NULL)
       return 0;
 
     std::unique_ptr<base::HistogramSamples> samples =

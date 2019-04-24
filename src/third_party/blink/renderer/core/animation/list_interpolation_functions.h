@@ -8,7 +8,6 @@
 #include <memory>
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
 #include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -17,13 +16,11 @@ class UnderlyingValueOwner;
 class InterpolationType;
 
 class CORE_EXPORT ListInterpolationFunctions {
-  STACK_ALLOCATED();
-
  public:
   template <typename CreateItemCallback>
   static InterpolationValue CreateList(wtf_size_t length, CreateItemCallback);
   static InterpolationValue CreateEmptyList() {
-    return InterpolationValue(std::make_unique<InterpolableList>(0));
+    return InterpolationValue(InterpolableList::Create(0));
   }
 
   enum class LengthMatchingStrategy {
@@ -105,7 +102,8 @@ InterpolationValue ListInterpolationFunctions::CreateList(
     CreateItemCallback create_item) {
   if (length == 0)
     return CreateEmptyList();
-  auto interpolable_list = std::make_unique<InterpolableList>(length);
+  std::unique_ptr<InterpolableList> interpolable_list =
+      InterpolableList::Create(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item = create_item(i);

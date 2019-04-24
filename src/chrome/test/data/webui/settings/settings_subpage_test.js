@@ -48,7 +48,7 @@ cr.define('settings_subpage', function() {
       const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      subpage.$$('cr-icon-button').click();
+      subpage.$$('button').click();
       assertEquals(settings.routes.PRIVACY, settings.getCurrentRoute());
     });
 
@@ -60,7 +60,7 @@ cr.define('settings_subpage', function() {
       const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      subpage.$$('cr-icon-button').click();
+      subpage.$$('button').click();
 
       window.addEventListener('popstate', function(event) {
         assertEquals(settings.routes.BASIC, settings.getCurrentRoute());

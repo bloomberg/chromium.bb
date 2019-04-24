@@ -23,7 +23,7 @@ class Operator;
 
 // NodeIds are identifying numbers for nodes that can be used to index auxiliary
 // out-of-line data associated with each node.
-using NodeId = uint32_t;
+typedef uint32_t NodeId;
 
 // Lowers all simplified memory access and allocation related nodes (i.e.
 // Allocate, LoadField, StoreField and friends) to machine operators.
@@ -45,23 +45,21 @@ class MemoryOptimizer final {
   // together.
   class AllocationGroup final : public ZoneObject {
    public:
-    AllocationGroup(Node* node, AllocationType allocation, Zone* zone);
-    AllocationGroup(Node* node, AllocationType allocation, Node* size,
+    AllocationGroup(Node* node, PretenureFlag pretenure, Zone* zone);
+    AllocationGroup(Node* node, PretenureFlag pretenure, Node* size,
                     Zone* zone);
     ~AllocationGroup() = default;
 
     void Add(Node* object);
     bool Contains(Node* object) const;
-    bool IsYoungGenerationAllocation() const {
-      return allocation() == AllocationType::kYoung;
-    }
+    bool IsNewSpaceAllocation() const { return pretenure() == NOT_TENURED; }
 
-    AllocationType allocation() const { return allocation_; }
+    PretenureFlag pretenure() const { return pretenure_; }
     Node* size() const { return size_; }
 
    private:
     ZoneSet<NodeId> node_ids_;
-    AllocationType const allocation_;
+    PretenureFlag const pretenure_;
     Node* const size_;
 
     DISALLOW_IMPLICIT_CONSTRUCTORS(AllocationGroup);
@@ -81,7 +79,7 @@ class MemoryOptimizer final {
       return new (zone) AllocationState(group, size, top);
     }
 
-    bool IsYoungGenerationAllocation() const;
+    bool IsNewSpaceAllocation() const;
 
     AllocationGroup* group() const { return group_; }
     Node* top() const { return top_; }
@@ -102,7 +100,7 @@ class MemoryOptimizer final {
   };
 
   // An array of allocation states used to collect states on merges.
-  using AllocationStates = ZoneVector<AllocationState const*>;
+  typedef ZoneVector<AllocationState const*> AllocationStates;
 
   // We thread through tokens to represent the current state on a given effect
   // path through the graph.

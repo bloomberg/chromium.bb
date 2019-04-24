@@ -29,7 +29,6 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorAndroid
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
-  bool NeedsSurfaceOccludingDamageRect() override;
 
   void SetSoftwareMirrorMode(bool enabled) override;
 

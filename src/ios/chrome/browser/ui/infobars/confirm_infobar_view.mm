@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -770,7 +771,11 @@ UIImage* InfoBarCloseImage() {
 }
 
 - (void)resetBackground {
-  self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  if (IsUIRefreshPhase1Enabled()) {
+    self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  } else {
+    self.backgroundColor = [UIColor whiteColor];
+  }
   CGFloat shadowY = 0;
   shadowY = -[shadow_ image].size.height;  // Shadow above the infobar.
   [shadow_ setFrame:CGRectMake(0, shadowY, self.bounds.size.width,

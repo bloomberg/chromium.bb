@@ -296,8 +296,7 @@ ListContainer.prototype.findListItemForNode = function(node) {
   const item = this.currentList.getListItemAncestor(node);
   // TODO(serya): list should check that.
   return item && this.currentList.isItem(item) ?
-      assertInstanceof(item, cr.ui.ListItem) :
-      null;
+      assertInstanceof(item, cr.ui.ListItem) : null;
 };
 
 /**
@@ -387,7 +386,9 @@ ListContainer.prototype.onKeyDown_ = function(event) {
  */
 ListContainer.prototype.onKeyPress_ = function(event) {
   // Ignore keypress handler in the rename input box.
-  if (event.srcElement.tagName == 'INPUT' || event.ctrlKey || event.metaKey ||
+  if (event.srcElement.tagName == 'INPUT' ||
+      event.ctrlKey ||
+      event.metaKey ||
       event.altKey) {
     event.stopImmediatePropagation();
     return;
@@ -395,8 +396,8 @@ ListContainer.prototype.onKeyPress_ = function(event) {
 
   const now = new Date();
   const character = String.fromCharCode(event.charCode).toLowerCase();
-  const text =
-      now - this.textSearchState.date > 1000 ? '' : this.textSearchState.text;
+  const text = now - this.textSearchState.date > 1000 ? '' :
+      this.textSearchState.text;
   this.textSearchState.text = text + character;
   this.textSearchState.date = now;
 

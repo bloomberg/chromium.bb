@@ -6,147 +6,13 @@
 tr.exportTo('cp', () => {
   const NOTIFICATION_MS = 5000;
 
-  // loadMore() below chases cursors when loading untriaged alerts until it's
-  // loaded enough alert groups and spent enough time waiting for the backend.
-  const ENOUGH_GROUPS = 100;
-  const ENOUGH_LOADING_MS = 60000;
-
   class AlertsSection extends cp.ElementBase {
-    static get template() {
-      return Polymer.html`
-        <style>
-          #triage_controls {
-            align-items: center;
-            display: flex;
-            padding-left: 24px;
-            transition: background-color var(--transition-short, 0.2s),
-                        color var(--transition-short, 0.2s);
-          }
-
-          #triage_controls[anySelected] {
-            background-color: var(--primary-color-light, lightblue);
-            color: var(--primary-color-dark, blue);
-          }
-
-          #triage_controls .button {
-            background: unset;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 8px;
-            text-transform: uppercase;
-          }
-
-          #triage_controls .button[disabled] {
-            color: var(--neutral-color-dark, grey);
-            font-weight: normal;
-          }
-
-          #count {
-            flex-grow: 1;
-          }
-        </style>
-
-        <alerts-controls
-            id="controls"
-            state-path="[[statePath]]"
-            on-sources="onSources_">
-        </alerts-controls>
-
-        <cp-loading loading$="[[isLoading_(isLoading, preview.isLoading)]]">
-        </cp-loading>
-
-        <template is="dom-if" if="[[!isEmpty_(alertGroups)]]">
-          <div id="triage_controls"
-              anySelected$="[[!isEqual_(0, selectedAlertsCount)]]">
-            <div id="count">
-              [[selectedAlertsCount]] selected of
-              [[summary_(showingTriaged, alertGroups)]]
-            </div>
-
-            <span style="position: relative;">
-              <div class="button"
-                  disabled$="[[!canTriage_(alertGroups)]]"
-                  on-click="onTriageNew_">
-                New Bug
-              </div>
-
-              <triage-new
-                  tabindex="0"
-                  state-path="[[statePath]].newBug"
-                  on-submit="onTriageNewSubmit_">
-              </triage-new>
-            </span>
-
-            <span style="position: relative;">
-              <div class="button"
-                  disabled$="[[!canTriage_(alertGroups)]]"
-                  on-click="onTriageExisting_">
-                Existing Bug
-              </div>
-
-              <triage-existing
-                  tabindex="0"
-                  state-path="[[statePath]].existingBug"
-                  on-submit="onTriageExistingSubmit_">
-              </triage-existing>
-            </span>
-
-            <div class="button"
-                disabled$="[[!canTriage_(alertGroups)]]"
-                on-click="onIgnore_">
-              Ignore
-            </div>
-
-            <div class="button"
-                disabled$="[[!canUnassignAlerts_(alertGroups)]]"
-                on-click="onUnassign_">
-              Unassign
-            </div>
-          </div>
-        </template>
-
-        <alerts-table
-            state-path="[[statePath]]"
-            on-selected="onSelected_"
-            on-alert-click="onAlertClick_">
-        </alerts-table>
-
-        <iron-collapse opened="[[!allTriaged_(alertGroups, showingTriaged)]]">
-          <chart-compound
-              id="preview"
-              state-path="[[statePath]].preview"
-              linked-state-path="[[linkedStatePath]]"
-              on-line-count-change="onPreviewLineCountChange_">
-            Select alerts using the checkboxes in the table above to preview
-            their timeseries.
-          </chart-compound>
-        </iron-collapse>
-      `;
-    }
-
     ready() {
       super.ready();
       this.scrollIntoView(true);
     }
 
-    isLoading_(isLoading, isPreviewLoading) {
-      return isLoading || isPreviewLoading;
-    }
-
-    summary_(showingTriaged, alertGroups) {
-      return AlertsSection.summary(
-          showingTriaged, alertGroups, this.totalCount);
-    }
-
-    allTriaged_(alertGroups, showingTriaged) {
-      if (!alertGroups) return true;
-      if (showingTriaged) return alertGroups.length === 0;
-      return alertGroups.filter(group =>
-        group.alerts.length > group.triaged.count).length === 0;
-    }
-
     canTriage_(alertGroups) {
-      if (!window.IS_PRODUCTION) return false;
       const selectedAlerts = cp.AlertsTable.getSelectedAlerts(alertGroups);
       if (selectedAlerts.length === 0) return false;
       for (const alert of selectedAlerts) {
@@ -207,17 +73,9 @@ tr.exportTo('cp', () => {
       this.dispatch('ignore', this.statePath);
     }
 
-    onSelected_(event) {
-      this.dispatch('maybeLayoutPreview', this.statePath);
-    }
-
-    onAlertClick_(event) {
+    onSelectAlert_(event) {
       this.dispatch('selectAlert', this.statePath,
           event.detail.alertGroupIndex, event.detail.alertIndex);
-    }
-
-    onPreviewLineCountChange_() {
-      this.dispatch('updateAlertColors', this.statePath);
     }
   }
 
@@ -227,10 +85,8 @@ tr.exportTo('cp', () => {
     existingBug: options => cp.TriageExisting.buildState({}),
     isLoading: options => false,
     newBug: options => cp.TriageNew.buildState({}),
-    preview: options => cp.ChartCompound.buildState(options),
-    sectionId: options => options.sectionId || cp.simpleGUID(),
     selectedAlertPath: options => undefined,
-    totalCount: options => 0,
+    selectedAlertsCount: options => 0,
   };
 
   AlertsSection.buildState = options =>
@@ -238,85 +94,7 @@ tr.exportTo('cp', () => {
 
   AlertsSection.properties = {
     ...cp.buildProperties('state', AlertsSection.State),
-    ...cp.buildProperties('linkedState', {
-      // AlertsSection only needs the linkedStatePath property to forward to
-      // ChartCompound.
-    }),
   };
-
-  async function wrapRequest(body) {
-    const request = new cp.AlertsRequest({body});
-    const response = await request.response;
-    return {body, response};
-  }
-
-  // The BatchIterator in actions.loadAlerts yielded a batch of results.
-  // Collect all alerts from all batches into `alerts`.
-  // Chase cursors in `nextRequests`.
-  // Fetch triaged alerts when a request for untriaged alerts returns.
-  function handleBatch(results, showingTriaged) {
-    const alerts = [];
-    const nextRequests = [];
-    const triagedRequests = [];
-    let totalCount = 0;
-    for (const {body, response} of results) {
-      alerts.push.apply(alerts, response.anomalies);
-
-      if (body.count_limit) totalCount += response.count;
-
-      const cursor = response.next_cursor;
-      if (cursor) {
-        const request = {...body, cursor};
-        delete request.count_limit;
-        nextRequests.push(request);
-      }
-
-      if (!showingTriaged && body.bug_id === '') {
-        // Prepare to fetch triaged alerts for the untriaged alerts that
-        // were just received.
-        const request = {...body, bug_id: '*'};
-        delete request.recovered;
-        delete request.count_limit;
-        delete request.cursor;
-        delete request.is_improvement;
-        triagedRequests.push(request);
-      }
-    }
-
-    return {alerts, nextRequests, triagedRequests, totalCount};
-  }
-
-  // This function may add requests to `batches`.
-  // See handleBatch for `nextRequests` and `triagedRequests`.
-  function loadMore(batches, alertGroups, nextRequests, triagedRequests,
-      triagedMaxStartRevision, started) {
-    const minStartRevision = tr.b.math.Statistics.min(
-        alertGroups, group => tr.b.math.Statistics.min(
-            group.alerts, a => a.startRevision));
-
-    if (!triagedMaxStartRevision ||
-        (minStartRevision < triagedMaxStartRevision)) {
-      for (const request of triagedRequests) {
-        request.min_start_revision = minStartRevision;
-        if (triagedMaxStartRevision) {
-          request.max_start_revision = triagedMaxStartRevision;
-        }
-        batches.add(wrapRequest(request));
-      }
-    }
-
-    for (const next of nextRequests) {
-      // Always chase down cursors for triaged alerts.
-      // Limit the number of alertGroups displayed to prevent OOM.
-      if (next.bug_id === '*' ||
-          (alertGroups.length < ENOUGH_GROUPS &&
-          ((performance.now() - started) < ENOUGH_LOADING_MS))) {
-        batches.add(wrapRequest(next));
-      }
-    }
-
-    return minStartRevision;
-  }
 
   AlertsSection.actions = {
     selectAlert: (statePath, alertGroupIndex, alertIndex) =>
@@ -340,13 +118,6 @@ tr.exportTo('cp', () => {
       const state = Polymer.Path.get(getState(), statePath);
       localStorage.setItem('recentlyModifiedBugs', JSON.stringify(
           state.recentlyModifiedBugs));
-    },
-
-    updateAlertColors: statePath => async(dispatch, getState) => {
-      dispatch({
-        type: AlertsSection.reducers.updateAlertColors.name,
-        statePath,
-      });
     },
 
     submitExistingBug: statePath => async(dispatch, getState) => {
@@ -392,9 +163,6 @@ tr.exportTo('cp', () => {
         });
 
         state = Polymer.Path.get(getState(), statePath);
-        if (bugId !== 0) {
-          dispatch(Redux.UPDATE(`${statePath}.preview`, {lineDescriptors: []}));
-        }
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err);
@@ -461,13 +229,6 @@ tr.exportTo('cp', () => {
       const selectedAlerts = cp.AlertsTable.getSelectedAlerts(
           state.alertGroups);
       const alertKeys = new Set(selectedAlerts.map(a => a.key));
-      dispatch({
-        type: AlertsSection.reducers.removeOrUpdateAlerts.name,
-        statePath,
-        alertKeys,
-        bugId: '[creating]',
-      });
-
       let bugId;
       try {
         const request = new cp.NewBugRequest({
@@ -496,7 +257,6 @@ tr.exportTo('cp', () => {
           bugId,
         });
         state = Polymer.Path.get(getState(), statePath);
-        dispatch(Redux.UPDATE(`${statePath}.preview`, {lineDescriptors: []}));
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err);
@@ -520,52 +280,42 @@ tr.exportTo('cp', () => {
     },
 
     loadAlerts: (statePath, sources) => async(dispatch, getState) => {
-      const started = performance.now();
       dispatch({
         type: AlertsSection.reducers.startLoadingAlerts.name,
         statePath,
-        started,
       });
-      if (sources.length) {
+      const rootState = getState();
+      const state = Polymer.Path.get(rootState, statePath);
+
+      if (sources.length > 0) {
         dispatch(cp.MenuInput.actions.blurAll());
       }
 
-      // When a request for untriaged alerts finishes, a request is started for
-      // overlapping triaged alerts. This is used to avoid fetching the same
-      // triaged alerts multiple times.
-      let triagedMaxStartRevision;
+      async function wrapRequest(body) {
+        const request = new cp.AlertsRequest({body});
+        const response = await request.response;
+        return {body, response};
+      }
 
-      // Use a BatchIterator to batch AlertsRequest.response.
-      // Each batch of results is handled in handleBatch(), then displayed by
-      // dispatching reducers.receiveAlerts.
-      // loadMore() may add more AlertsRequests to the BatchIterator to chase
-      // datastore query cursors.
       const batches = new cp.BatchIterator(sources.map(wrapRequest));
+
       for await (const {results, errors} of batches) {
-        let state = Polymer.Path.get(getState(), statePath);
-        if (!state || state.started !== started) {
-          // Abandon this loadAlerts if the section was closed or if
-          // loadAlerts() was called again before this one finished.
-          return;
-        }
+        // TODO(benjhayden): return if re-entered.
+        const alerts = [];
+        for (const {body, response} of results) {
+          const cursor = response.next_cursor;
+          // TODO(benjhayden): When should this stop chasing cursors so it
+          // doesn't try to load all old alerts for this sheriff?
+          if (cursor) batches.add(wrapRequest({...body, cursor}));
 
-        const {alerts, nextRequests, triagedRequests, totalCount} = handleBatch(
-            results, state.showingTriaged);
-        if (alerts.length || errors.length) {
-          dispatch({
-            type: AlertsSection.reducers.receiveAlerts.name,
-            statePath,
-            alerts,
-            errors,
-            totalCount,
-          });
+          alerts.push.apply(alerts, response.anomalies);
         }
-        state = Polymer.Path.get(getState(), statePath);
-        if (!state) return;
-
-        triagedMaxStartRevision = loadMore(
-            batches, state.alertGroups, nextRequests, triagedRequests,
-            triagedMaxStartRevision, started);
+        dispatch({
+          type: AlertsSection.reducers.receiveAlerts.name,
+          statePath,
+          alerts,
+          errors,
+        });
         await cp.animationFrame();
       }
 
@@ -574,49 +324,11 @@ tr.exportTo('cp', () => {
         statePath,
       });
     },
-
-    layoutPreview: statePath => async(dispatch, getState) => {
-      const state = Polymer.Path.get(getState(), statePath);
-      const alerts = cp.AlertsTable.getSelectedAlerts(state.alertGroups);
-      const lineDescriptors = alerts.map(AlertsSection.computeLineDescriptor);
-      if (lineDescriptors.length === 1) {
-        lineDescriptors.push({
-          ...lineDescriptors[0],
-          buildType: 'ref',
-        });
-      }
-      const previewPath = `${statePath}.preview`;
-      dispatch(Redux.UPDATE(previewPath, {lineDescriptors}));
-    },
-
-    maybeLayoutPreview: statePath => async(dispatch, getState) => {
-      const state = Polymer.Path.get(getState(), statePath);
-      if (!state.selectedAlertsCount) {
-        dispatch(Redux.UPDATE(`${statePath}.preview`, {lineDescriptors: []}));
-        return;
-      }
-
-      dispatch(AlertsSection.actions.layoutPreview(statePath));
-    },
-  };
-
-  AlertsSection.computeLineDescriptor = alert => {
-    return {
-      baseUnit: alert.baseUnit,
-      suites: [alert.suite],
-      measurement: alert.measurement,
-      bots: [alert.master + ':' + alert.bot],
-      cases: [alert.case],
-      statistic: 'avg',
-      buildType: 'test',
-    };
   };
 
   AlertsSection.reducers = {
     selectAlert: (state, action, rootState) => {
-      if (state.alertGroups === cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS) {
-        return state;
-      }
+      if (state.areAlertGroupsPlaceholders) return state;
       const alertPath =
         `alertGroups.${action.alertGroupIndex}.alerts.${action.alertIndex}`;
       const alert = Polymer.Path.get(state, alertPath);
@@ -628,20 +340,11 @@ tr.exportTo('cp', () => {
         return {
           ...state,
           selectedAlertPath: undefined,
-          preview: {
-            ...state.preview,
-            lineDescriptors: cp.AlertsTable.getSelectedAlerts(
-                state.alertGroups).map(AlertsSection.computeLineDescriptor),
-          },
         };
       }
       return {
         ...state,
         selectedAlertPath: alertPath,
-        preview: {
-          ...state.preview,
-          lineDescriptors: [AlertsSection.computeLineDescriptor(alert)],
-        },
       };
     },
 
@@ -684,27 +387,6 @@ tr.exportTo('cp', () => {
         triagedBugId: action.triagedBugId,
         recentlyModifiedBugs,
       };
-    },
-
-    updateAlertColors: (state, action, rootState) => {
-      const colorByDescriptor = new Map();
-      for (const line of state.preview.chartLayout.lines) {
-        colorByDescriptor.set(cp.ChartTimeseries.stringifyDescriptor(
-            line.descriptor), line.color);
-      }
-
-      function updateAlert(alert) {
-        const descriptor = cp.ChartTimeseries.stringifyDescriptor(
-            AlertsSection.computeLineDescriptor(alert));
-        const color = colorByDescriptor.get(descriptor);
-        return {...alert, color};
-      }
-
-      const alertGroups = state.alertGroups.map(alertGroup => {
-        const alerts = alertGroup.alerts.map(updateAlert);
-        return {...alertGroup, alerts};
-      });
-      return {...state, alertGroups};
     },
 
     updateSelectedAlertsCount: state => {
@@ -764,89 +446,70 @@ tr.exportTo('cp', () => {
       };
     },
 
-    receiveAlerts: (state, {alerts, errors, totalCount}, rootState) => {
+    receiveAlerts: (state, {alerts, errors}, rootState) => {
+      state = {
+        ...state,
+        selectedAlertsCount: 0,
+      };
+
       // |alerts| are all new.
       // Group them together with previously-received alerts from
-      // state.alertGroups[].alerts.
-      alerts = alerts.map(AlertsSection.transformAlert);
-      if (state.alertGroups !== cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS) {
-        for (const alertGroup of state.alertGroups) {
-          alerts.push(...alertGroup.alerts);
-        }
-      }
+      // state.alertGroups[].alerts, which are post-transformation.
+      // d.groupAlerts() requires pre-transformed objects.
+      // Some previously-received alerts may have been triaged already, so we
+      // can't simply accumulate pre-transformation alerts across batches.
 
       if (!alerts.length) {
-        return state;
-        // Wait till finalizeAlerts to display the happy cat.
-      }
-
-      // The user may have already selected and/or triaged some alerts, so keep
-      // that information, just re-group the alerts.
-      const expandedGroupAlertKeys = new Set();
-      const expandedTriagedAlertKeys = new Set();
-      for (const group of state.alertGroups) {
-        if (group.isExpanded) {
-          expandedGroupAlertKeys.add(group.alerts[0].key);
+        state = {
+          ...state,
+          alertGroups: cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS,
+          areAlertGroupsPlaceholders: true,
+          showBugColumn: true,
+          showMasterColumn: true,
+          showTestCaseColumn: true,
+        };
+        if (state.sheriff.selectedOptions.length === 0 &&
+            state.bug.selectedOptions.length === 0 &&
+            state.report.selectedOptions.length === 0) {
+          return state;
         }
-        if (group.triaged.isExpanded) {
-          expandedTriagedAlertKeys.add(group.alerts[0].key);
-        }
-      }
-
-      const groupBugs = state.showingTriaged && (
-        state.bug.selectedOptions.length === 1);
-      let alertGroups = cp.groupAlerts(alerts, groupBugs);
-      alertGroups = alertGroups.map((alerts, groupIndex) => {
-        let isExpanded = false;
-        let isTriagedExpanded = false;
-        for (const a of alerts) {
-          if (expandedGroupAlertKeys.has(a.key)) isExpanded = true;
-          if (expandedTriagedAlertKeys.has(a.key)) isTriagedExpanded = true;
-        }
-
         return {
+          ...state,
+          alertGroups: [],
+          areAlertGroupsPlaceholders: false,
+        };
+      }
+
+      let alertGroups = d.groupAlerts(alerts, state.showingTriaged);
+      alertGroups = alertGroups.map((alerts, groupIndex) => {
+        alerts = alerts.map(AlertsSection.transformAlert);
+        return {
+          isExpanded: false,
           alerts,
-          isExpanded,
           triaged: {
-            isExpanded: isTriagedExpanded,
+            isExpanded: false,
             count: alerts.filter(a => a.bugId).length,
           }
         };
       });
 
-      if (!state.showingTriaged && state.sheriff.selectedOptions.length) {
-        // Remove completely-triaged groups to save memory.
-        alertGroups = alertGroups.filter(group =>
-          group.alerts.length > group.triaged.count);
-        if (!alertGroups.length) {
-          return state;
-          // Wait till finalizeAlerts to display the happy cat.
-        }
-      }
-
       alertGroups = cp.AlertsTable.sortGroups(
           alertGroups, state.sortColumn, state.sortDescending,
           state.showingTriaged);
 
-      if (totalCount) {
-        state = {...state, totalCount};
-      }
-
       // Don't automatically select the first group. Users often want to sort
       // the table by some column before previewing any alerts.
 
-      return AlertsSection.reducers.updateColumns({...state, alertGroups});
+      return AlertsSection.reducers.updateColumns({
+        ...state, alertGroups, areAlertGroupsPlaceholders: false,
+      });
     },
 
     finalizeAlerts: (state, action, rootState) => {
-      state = {...state, isLoading: false};
-      if (state.alertGroups === cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS &&
-          (state.sheriff.selectedOptions.length ||
-           state.bug.selectedOptions.length ||
-           state.report.selectedOptions.length)) {
-        state = {...state, alertGroups: []};
-      }
-      return state;
+      return {
+        ...state,
+        isLoading: false,
+      };
     },
 
     updateColumns: (state, action, rootState) => {
@@ -854,7 +517,7 @@ tr.exportTo('cp', () => {
       let showBugColumn = false;
       let showTriagedColumn = false;
       const masters = new Set();
-      const cases = new Set();
+      const testCases = new Set();
       for (const group of state.alertGroups) {
         if (group.triaged.count < group.alerts.length) {
           showTriagedColumn = true;
@@ -864,7 +527,7 @@ tr.exportTo('cp', () => {
             showBugColumn = true;
           }
           masters.add(alert.master);
-          cases.add(alert.case);
+          testCases.add(alert.testCase);
         }
       }
       if (state.showingTriaged) showTriagedColumn = false;
@@ -873,35 +536,14 @@ tr.exportTo('cp', () => {
         ...state,
         showBugColumn,
         showMasterColumn: masters.size > 1,
-        showTestCaseColumn: cases.size > 1,
+        showTestCaseColumn: testCases.size > 1,
         showTriagedColumn,
       };
     },
 
-    startLoadingAlerts: (state, {started}, rootState) => {
-      return {
-        ...state,
-        alertGroups: cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS,
-        isLoading: true,
-        started,
-        totalCount: 0,
-      };
+    startLoadingAlerts: (state, action, rootState) => {
+      return {...state, isLoading: true};
     },
-  };
-
-  AlertsSection.newStateOptionsFromQueryParams = queryParams => {
-    return {
-      sheriffs: queryParams.getAll('sheriff').map(
-          sheriffName => sheriffName.replace(/_/g, ' ')),
-      bugs: queryParams.getAll('bug'),
-      reports: queryParams.getAll('ar'),
-      minRevision: queryParams.get('minRev') || queryParams.get('rev'),
-      maxRevision: queryParams.get('maxRev') || queryParams.get('rev'),
-      sortColumn: queryParams.get('sort') || 'startRevision',
-      showingImprovements: queryParams.get('improvements') !== null,
-      showingTriaged: queryParams.get('triaged') !== null,
-      sortDescending: queryParams.get('descending') !== null,
-    };
   };
 
   AlertsSection.transformAlert = alert => {
@@ -952,8 +594,8 @@ tr.exportTo('cp', () => {
       percentDeltaValue,
       startRevision: alert.start_revision,
       endRevision: alert.end_revision,
-      case: alert.descriptor.testCase,
-      suite: alert.descriptor.testSuite,
+      testCase: alert.descriptor.testCase,
+      testSuite: alert.descriptor.testSuite,
       v1ReportLink: alert.dashboard_link,
     };
   };
@@ -972,70 +614,10 @@ tr.exportTo('cp', () => {
         state.report.selectedOptions.length) {
       return false;
     }
-    if (state.minRevision && state.minRevision.match(/^\d+$/)) {
-      return false;
-    }
-    if (state.maxRevision && state.maxRevision.match(/^\d+$/)) {
-      return false;
-    }
     return true;
   };
 
-  AlertsSection.getSessionState = state => {
-    return {
-      sheriffs: state.sheriff.selectedOptions,
-      bugs: state.bug.selectedOptions,
-      showingImprovements: state.showingImprovements,
-      showingTriaged: state.showingTriaged,
-      sortColumn: state.sortColumn,
-      sortDescending: state.sortDescending,
-    };
-  };
-
-  AlertsSection.getRouteParams = state => {
-    const queryParams = new URLSearchParams();
-    for (const sheriff of state.sheriff.selectedOptions) {
-      queryParams.append('sheriff', sheriff.replace(/ /g, '_'));
-    }
-    for (const bug of state.bug.selectedOptions) {
-      queryParams.append('bug', bug);
-    }
-    for (const name of state.report.selectedOptions) {
-      queryParams.append('ar', name);
-    }
-
-    const minRev = state.minRevision && state.minRevision.match(/^\d+$/);
-    const maxRev = state.maxRevision && state.maxRevision.match(/^\d+$/);
-    if ((minRev || maxRev) &&
-        !queryParams.get('sheriff') &&
-        !queryParams.get('bug') &&
-        !queryParams.get('ar')) {
-      queryParams.set('alerts', '');
-    }
-    if (minRev && maxRev && state.minRevision === state.maxRevision) {
-      queryParams.set('rev', state.minRevision);
-    } else {
-      if (minRev) {
-        queryParams.set('minRev', state.minRevision);
-      }
-      if (maxRev) {
-        queryParams.set('maxRev', state.maxRevision);
-      }
-    }
-
-    if (state.showingImprovements) queryParams.set('improvements', '');
-    if (state.showingTriaged) queryParams.set('triaged', '');
-    if (state.sortColumn !== 'startRevision') {
-      queryParams.set('sort', state.sortColumn);
-    }
-    if (state.sortDescending) queryParams.set('descending', '');
-    return queryParams;
-  };
-
   AlertsSection.matchesOptions = (state, options) => {
-    if (!options || !state || !state.report || !state.sheriff || !state.bug) {
-      return false;
-    }
     if (!tr.b.setsEqual(new Set(options.reports),
         new Set(state.report.selectedOptions))) {
       return false;
@@ -1049,29 +631,6 @@ tr.exportTo('cp', () => {
       return false;
     }
     return true;
-  };
-
-  AlertsSection.summary = (showingTriaged, alertGroups, totalCount) => {
-    if (!alertGroups ||
-        (alertGroups === cp.AlertsTable.PLACEHOLDER_ALERT_GROUPS)) {
-      return '0 alerts';
-    }
-    let groupCount = 0;
-    let displayedCount = 0;
-    for (const group of alertGroups) {
-      if (showingTriaged) {
-        ++groupCount;
-        displayedCount += group.alerts.length;
-      } else if (group.alerts.length > group.triaged.count) {
-        ++groupCount;
-        displayedCount += group.alerts.length - group.triaged.count;
-      }
-    }
-    totalCount = Math.max(totalCount, displayedCount);
-    return (
-      `${displayedCount} displayed in ` +
-      `${groupCount} group${cp.plural(groupCount)} of ` +
-      `${totalCount} alert${cp.plural(totalCount)}`);
   };
 
   cp.ElementBase.register(AlertsSection);

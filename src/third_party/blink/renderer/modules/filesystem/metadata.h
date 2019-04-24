@@ -41,6 +41,14 @@ class Metadata final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static Metadata* Create(const FileMetadata& platform_metadata) {
+    return MakeGarbageCollected<Metadata>(platform_metadata);
+  }
+
+  static Metadata* Create(Metadata* metadata) {
+    return MakeGarbageCollected<Metadata>(metadata->platform_metadata_);
+  }
+
   explicit Metadata(const FileMetadata& platform_metadata)
       : platform_metadata_(platform_metadata) {}
 

@@ -35,7 +35,6 @@ shared_library("eventlog_provider") {
   ]
 
   if (!is_asan) {
-    no_default_deps = true
     ldflags = [ "/NOENTRY" ]
   }
 

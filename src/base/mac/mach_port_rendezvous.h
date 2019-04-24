@@ -102,7 +102,6 @@ class BASE_EXPORT MachPortRendezvousServer {
 
  private:
   friend class MachPortRendezvousServerTest;
-  friend struct MachPortRendezvousFuzzer;
 
   struct ClientData {
     ClientData(ScopedDispatchObject<dispatch_source_t> exit_watcher,

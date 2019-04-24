@@ -21,7 +21,7 @@ namespace {
 
 class OwnedDelegate : public gfx::AnimationDelegate {
  public:
-  OwnedDelegate() = default;
+  OwnedDelegate() {}
 
   ~OwnedDelegate() override { deleted_ = true; }
 
@@ -55,7 +55,7 @@ bool OwnedDelegate::canceled_ = false;
 
 class TestView : public View {
  public:
-  TestView() = default;
+  TestView() {}
 
   void SchedulePaintInRect(const gfx::Rect& r) override {
     if (dirty_rect_.IsEmpty())

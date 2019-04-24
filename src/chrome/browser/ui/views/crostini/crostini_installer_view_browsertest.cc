@@ -165,10 +165,6 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   EXPECT_TRUE(crostini::CrostiniManager::GetForProfile(browser()->profile())
                   ->GetInstallerViewStatus());
 
-  base::RunLoop run_loop;
-  ActiveView()->SetGetFreeDiskSpaceCallbackForTesting(run_loop.QuitClosure());
-  run_loop.Run();
-
   ActiveView()->GetDialogClientView()->AcceptWindow();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_FALSE(HasAcceptButton());
@@ -224,10 +220,6 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
   EXPECT_TRUE(crostini::CrostiniManager::GetForProfile(browser()->profile())
                   ->GetInstallerViewStatus());
 
-  base::RunLoop run_loop;
-  ActiveView()->SetGetFreeDiskSpaceCallbackForTesting(run_loop.QuitClosure());
-  run_loop.Run();
-
   ActiveView()->GetDialogClientView()->AcceptWindow();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_TRUE(HasAcceptButton());
@@ -280,10 +272,6 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   vm_tools::concierge::StartVmResponse response;
   response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
   waiting_fake_concierge_client_->set_start_vm_response(std::move(response));
-
-  base::RunLoop run_loop;
-  ActiveView()->SetGetFreeDiskSpaceCallbackForTesting(run_loop.QuitClosure());
-  run_loop.Run();
 
   ActiveView()->GetDialogClientView()->AcceptWindow();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());

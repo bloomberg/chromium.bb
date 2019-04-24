@@ -30,8 +30,8 @@ class SkiaChalkboardDesktopPageSet(story.StorySet):
 
     urls_list = [
       # Why: from fmalita
-      ('https://testdrive-archive.azurewebsites.net/performance/chalkboard/'
-       'Images/Chalkboard.svg'),
+      ('http://ie.microsoft.com/testdrive/Performance/Chalkboard/Images/'
+       'Chalkboard.svg'),
     ]
 
     for url in urls_list:

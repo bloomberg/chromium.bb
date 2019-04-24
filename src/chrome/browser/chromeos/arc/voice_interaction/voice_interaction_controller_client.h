@@ -21,8 +21,7 @@ namespace arc {
 // state changes that does not have an observer interface.
 class VoiceInteractionControllerClient
     : public content::NotificationObserver,
-      public user_manager::UserManager::UserSessionStateObserver,
-      public ArcSessionManager::Observer {
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   class Observer {
    public:
@@ -70,9 +69,6 @@ class VoiceInteractionControllerClient
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Override ArcSessionManager::Observer
-  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   void SetProfile(Profile* profile);
 

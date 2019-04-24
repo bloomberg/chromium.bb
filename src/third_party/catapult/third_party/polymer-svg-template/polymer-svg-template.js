@@ -7,15 +7,14 @@
    https://github.com/garryyao/polymer-svg-template
 */
 'use strict';
-window.PolymerSvgTemplate = nameOrContent => {
+window.PolymerSvgTemplate = name => {
   const ua = window.navigator.userAgent;
 
   // owner document of this import module
   const doc = document.currentScript.ownerDocument;
   const ns = doc.body.namespaceURI;
 
-  walkTemplate((typeof nameOrContent === 'string') ?
-      Polymer.DomModule.import(name, 'template').content : nameOrContent);
+  walkTemplate(Polymer.DomModule.import(name, 'template').content);
 
   function upgradeTemplate(el) {
     const attribs = el.attributes;

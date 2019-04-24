@@ -95,18 +95,20 @@ typedef enum UDateTimePatternField {
     UDATPG_FIELD_COUNT
 } UDateTimePatternField;
 
+#ifndef U_HIDE_DRAFT_API
 /**
  * Field display name width constants for udatpg_getFieldDisplayName().
- * @stable ICU 61
+ * @draft ICU 61
  */
 typedef enum UDateTimePGDisplayWidth {
-    /** @stable ICU 61 */
+    /** @draft ICU 61 */
     UDATPG_WIDE,
-    /** @stable ICU 61 */
+    /** @draft ICU 61 */
     UDATPG_ABBREVIATED,
-    /** @stable ICU 61 */
+    /** @draft ICU 61 */
     UDATPG_NARROW
 } UDateTimePGDisplayWidth;
+#endif  // U_HIDE_DRAFT_API
 
 /**
  * Masks to control forcing the length of specified fields in the returned
@@ -438,6 +440,7 @@ udatpg_getAppendItemName(const UDateTimePatternGenerator *dtpg,
                          UDateTimePatternField field,
                          int32_t *pLength);
 
+#ifndef U_HIDE_DRAFT_API
 /**
  * The general interface to get a display name for a particular date/time field,
  * in one of several possible display widths.
@@ -461,14 +464,15 @@ udatpg_getAppendItemName(const UDateTimePatternGenerator *dtpg,
  * @return
  *         The full length of the name; if greater than capacity, fieldName contains a
  *         truncated result.
- * @stable ICU 61
+ * @draft ICU 61
  */
-U_STABLE int32_t U_EXPORT2
+U_DRAFT int32_t U_EXPORT2
 udatpg_getFieldDisplayName(const UDateTimePatternGenerator *dtpg,
                            UDateTimePatternField field,
                            UDateTimePGDisplayWidth width,
                            UChar *fieldName, int32_t capacity,
                            UErrorCode *pErrorCode);
+#endif  // U_HIDE_DRAFT_API
 
 /**
  * The DateTimeFormat is a message format pattern used to compose date and

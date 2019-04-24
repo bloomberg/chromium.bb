@@ -146,7 +146,7 @@ TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(
   GetWidget()->GetContentsView()->AddChildView(view_);
 }
 
-TestInitialFocusWidgetDelegate::~TestInitialFocusWidgetDelegate() = default;
+TestInitialFocusWidgetDelegate::~TestInitialFocusWidgetDelegate() {}
 
 View* TestInitialFocusWidgetDelegate::GetInitiallyFocusedView() {
   return view_;
@@ -161,7 +161,7 @@ WidgetActivationWaiter::WidgetActivationWaiter(Widget* widget, bool active)
   widget->AddObserver(this);
 }
 
-WidgetActivationWaiter::~WidgetActivationWaiter() = default;
+WidgetActivationWaiter::~WidgetActivationWaiter() {}
 
 void WidgetActivationWaiter::Wait() {
   if (!observed_)

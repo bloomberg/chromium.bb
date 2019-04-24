@@ -25,7 +25,7 @@ namespace base {
 // The implementation is thread-safe.
 class V8_BASE_EXPORT BoundedPageAllocator : public v8::PageAllocator {
  public:
-  using Address = uintptr_t;
+  typedef uintptr_t Address;
 
   BoundedPageAllocator(v8::PageAllocator* page_allocator, Address start,
                        size_t size, size_t allocate_page_size);

@@ -5,8 +5,5 @@ en_GB{
     Languages{
         nds_NL{"West Low German"}
     }
-    Scripts{
-        Thai{"Thai"}
-    }
-    Version{"2.1.47.86"}
+    Version{"2.1.44.18"}
 }

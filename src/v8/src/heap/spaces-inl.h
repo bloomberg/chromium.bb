@@ -186,10 +186,8 @@ size_t PagedSpace::RelinkFreeListCategories(Page* page) {
     added += category->available();
     category->Relink();
   });
-
-  DCHECK_IMPLIES(!page->IsFlagSet(Page::NEVER_ALLOCATE_ON_PAGE),
-                 page->AvailableInFreeList() ==
-                     page->AvailableInFreeListFromAllocatedBytes());
+  DCHECK_EQ(page->AvailableInFreeList(),
+            page->AvailableInFreeListFromAllocatedBytes());
   return added;
 }
 

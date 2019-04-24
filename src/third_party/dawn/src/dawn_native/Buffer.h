@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_BUFFER_H_
 #define DAWNNATIVE_BUFFER_H_
 
+#include "dawn_native/Builder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
@@ -53,8 +54,8 @@ namespace dawn_native {
 
         // Dawn API
         void SetSubData(uint32_t start, uint32_t count, const uint8_t* data);
-        void MapReadAsync(DawnBufferMapReadCallback callback, DawnCallbackUserdata userdata);
-        void MapWriteAsync(DawnBufferMapWriteCallback callback, DawnCallbackUserdata userdata);
+        void MapReadAsync(dawnBufferMapReadCallback callback, dawnCallbackUserdata userdata);
+        void MapWriteAsync(dawnBufferMapWriteCallback callback, dawnCallbackUserdata userdata);
         void Unmap();
         void Destroy();
 
@@ -62,15 +63,13 @@ namespace dawn_native {
         BufferBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         void CallMapReadCallback(uint32_t serial,
-                                 DawnBufferMapAsyncStatus status,
+                                 dawnBufferMapAsyncStatus status,
                                  const void* pointer,
                                  uint32_t dataLength);
         void CallMapWriteCallback(uint32_t serial,
-                                  DawnBufferMapAsyncStatus status,
+                                  dawnBufferMapAsyncStatus status,
                                   void* pointer,
                                   uint32_t dataLength);
-
-        void DestroyInternal();
 
       private:
         virtual MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data);
@@ -84,15 +83,27 @@ namespace dawn_native {
         MaybeError ValidateUnmap() const;
         MaybeError ValidateDestroy() const;
 
-        uint64_t mSize = 0;
+        uint32_t mSize = 0;
         dawn::BufferUsageBit mUsage = dawn::BufferUsageBit::None;
 
-        DawnBufferMapReadCallback mMapReadCallback = nullptr;
-        DawnBufferMapWriteCallback mMapWriteCallback = nullptr;
-        DawnCallbackUserdata mMapUserdata = 0;
+        dawnBufferMapReadCallback mMapReadCallback = nullptr;
+        dawnBufferMapWriteCallback mMapWriteCallback = nullptr;
+        dawnCallbackUserdata mMapUserdata = 0;
         uint32_t mMapSerial = 0;
 
         BufferState mState;
+    };
+
+    // This builder class is kept around purely for testing but should not be used.
+    class BufferBuilder : public Builder<BufferBase> {
+      public:
+        BufferBuilder(DeviceBase* device) : Builder(device) {
+            UNREACHABLE();
+        }
+
+        void SetSize(uint32_t) {
+            UNREACHABLE();
+        }
     };
 
 }  // namespace dawn_native

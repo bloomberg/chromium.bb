@@ -34,7 +34,8 @@ class AdDelayBrowserTest
   void SetUp() override {
     secure_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    secure_server_->AddDefaultHandlers(GetChromeTestDataDir());
+    secure_server_->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
 
     scoped_features_.InitAndEnableFeatureWithParameters(
         subresource_filter::kDelayUnsafeAds,

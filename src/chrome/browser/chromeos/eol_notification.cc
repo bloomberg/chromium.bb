@@ -165,8 +165,7 @@ void EolNotification::Update() {
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 }  // namespace chromeos

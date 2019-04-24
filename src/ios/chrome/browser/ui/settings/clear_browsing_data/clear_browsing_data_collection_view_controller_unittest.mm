@@ -10,10 +10,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -37,6 +38,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using testing::Return;
 
 @interface ClearBrowsingDataCollectionViewController (ExposedForTesting)
 - (NSString*)counterTextFromResult:
@@ -53,11 +56,6 @@ enum ItemEnum {
   kDeleteFormDataItem
 };
 
-std::unique_ptr<KeyedService> CreateTestSyncService(
-    web::BrowserState* context) {
-  return std::make_unique<syncer::TestSyncService>();
-}
-
 class ClearBrowsingDataCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
@@ -67,7 +65,7 @@ class ClearBrowsingDataCollectionViewControllerTest
     // Setup identity services.
     TestChromeBrowserState::TestingFactories factories = {
         {ProfileSyncServiceFactory::GetInstance(),
-         base::BindRepeating(&CreateTestSyncService)},
+         base::BindRepeating(&BuildMockProfileSyncService)},
     };
     browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
         CreateChromeBrowserStateForIdentityTestEnvironment(factories);
@@ -76,7 +74,7 @@ class ClearBrowsingDataCollectionViewControllerTest
         new IdentityTestEnvironmentChromeBrowserStateAdaptor(
             browser_state_.get()));
 
-    test_sync_service_ = static_cast<syncer::TestSyncService*>(
+    mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
   }
 
@@ -110,14 +108,14 @@ class ClearBrowsingDataCollectionViewControllerTest
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
       identity_test_env_adaptor_;
-  syncer::TestSyncService* test_sync_service_;
+  browser_sync::ProfileSyncServiceMock* mock_sync_service_;
 };
 
 // Tests ClearBrowsingDataCollectionViewControllerTest is set up with all
 // appropriate items and sections.
 TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
-  test_sync_service_->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
   CreateController();
   CheckController();
 
@@ -150,8 +148,8 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest, TestModel) {
 
 TEST_F(ClearBrowsingDataCollectionViewControllerTest,
        TestItemsSignedInSyncOff) {
-  test_sync_service_->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
   identity_test_env()->SetPrimaryAccount("syncuser@example.com");
   CreateController();
   CheckController();
@@ -178,13 +176,18 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
 
 TEST_F(ClearBrowsingDataCollectionViewControllerTest,
        TestItemsSignedInSyncActiveHistoryOff) {
-  test_sync_service_->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_NONE);
-  test_sync_service_->SetTransportState(
-      syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_->SetFirstSetupComplete(true);
-  test_sync_service_->SetActiveDataTypes(syncer::ModelTypeSet());
-  test_sync_service_->SetIsUsingSecondaryPassphrase(true);
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
+      .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
+  EXPECT_CALL(*mock_sync_service_, GetTransportState())
+      .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
+  EXPECT_CALL(*mock_sync_service_->GetUserSettingsMock(),
+              IsFirstSetupComplete())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sync_service_, GetActiveDataTypes())
+      .WillRepeatedly(Return(syncer::ModelTypeSet()));
+  EXPECT_CALL(*mock_sync_service_->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
 
   identity_test_env()->SetPrimaryAccount("syncuser@example.com");
   CreateController();

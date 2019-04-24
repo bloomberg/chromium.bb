@@ -33,10 +33,10 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -327,15 +327,17 @@ static bool IsSVGText(Text* text) {
          !IsSVGForeignObjectElement(*parent_or_shadow_host_node);
 }
 
-LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style,
-                                         LegacyLayout legacy) {
+LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style) {
   if (IsSVGText(this))
     return new LayoutSVGInlineText(this, DataImpl());
 
   if (style.HasTextCombine())
     return new LayoutTextCombine(this, DataImpl());
 
-  return LayoutObjectFactory::CreateText(this, DataImpl(), legacy);
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
+    return new LayoutNGText(this, DataImpl());
+
+  return new LayoutText(this, DataImpl());
 }
 
 void Text::AttachLayoutTree(AttachContext& context) {
@@ -403,11 +405,11 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
       // The computed style or the need for an anonymous inline wrapper for a
       // display:contents text child changed.
       SetNeedsReattachLayoutTree();
-    } else {
-      layout_text->SetStyle(std::move(new_style));
-      if (NeedsStyleRecalc())
-        layout_text->SetText(DataImpl());
+      return;
     }
+    layout_text->SetStyle(std::move(new_style));
+    if (NeedsStyleRecalc())
+      layout_text->SetText(DataImpl());
   } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
                            NeedsWhitespaceLayoutObject(*new_style))) {
     SetNeedsReattachLayoutTree();

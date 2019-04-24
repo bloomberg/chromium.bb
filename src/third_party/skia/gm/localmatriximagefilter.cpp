@@ -5,19 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "SkBlurImageFilter.h"
+#include "gm.h"
 #include "SkCanvas.h"
+#include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkModeColorFilter.h"
 #include "SkMorphologyImageFilter.h"
 #include "SkOffsetImageFilter.h"
 #include "SkSurface.h"
-#include "ToolUtils.h"
-#include "gm.h"
+#include "sk_tool_utils.h"
 
 static sk_sp<SkImage> make_image(SkCanvas* rootCanvas) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-    auto        surface(ToolUtils::makeSurface(rootCanvas, info));
+    auto surface(sk_tool_utils::makeSurface(rootCanvas, info));
 
     SkPaint paint;
     paint.setAntiAlias(true);

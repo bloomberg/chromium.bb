@@ -271,7 +271,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     }
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
-      if (!actions_view_->children().empty()) {
+      if (actions_view_->has_children()) {
         return list_view_->HandleVerticalFocusMovement(
             this, event.key_code() == ui::VKEY_UP);
       }
@@ -282,6 +282,10 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return false;
+}
+
+void SearchResultView::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
 }
 
 void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
@@ -296,7 +300,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
-        (actions_view_->children().empty() ? 0 : kActionButtonRightMargin));
+        (actions_view_->has_children() ? kActionButtonRightMargin : 0));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
                           kTextTrailPadding - progress_bar_->bounds().width() -
@@ -522,8 +526,7 @@ void SearchResultView::OnGetContextMenu(
       std::string(), this, source_type, this,
       AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure());
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(gfx::Rect(point, gfx::Size()),
-                     views::MenuAnchorPosition::kTopLeft,
+  context_menu_->Run(gfx::Rect(point, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
                      views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
 }

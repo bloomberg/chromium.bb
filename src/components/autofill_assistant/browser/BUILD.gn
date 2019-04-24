@@ -23,7 +23,6 @@ java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
     "metrics.h",
     "overlay_state.h",
-    "payment_request.h",
   ]
 }
 
@@ -37,8 +36,6 @@ jumbo_static_library("browser") {
     "actions/autofill_action.h",
     "actions/click_action.cc",
     "actions/click_action.h",
-    "actions/expect_navigation_action.cc",
-    "actions/expect_navigation_action.h",
     "actions/focus_element_action.cc",
     "actions/focus_element_action.h",
     "actions/get_payment_information_action.cc",
@@ -73,8 +70,6 @@ jumbo_static_library("browser") {
     "actions/upload_dom_action.h",
     "actions/wait_for_dom_action.cc",
     "actions/wait_for_dom_action.h",
-    "actions/wait_for_navigation_action.cc",
-    "actions/wait_for_navigation_action.h",
     "batch_element_checker.cc",
     "batch_element_checker.h",
     "chip.cc",
@@ -82,8 +77,6 @@ jumbo_static_library("browser") {
     "client.h",
     "client_memory.cc",
     "client_memory.h",
-    "client_status.cc",
-    "client_status.h",
     "controller.cc",
     "controller.h",
     "details.cc",
@@ -105,8 +98,6 @@ jumbo_static_library("browser") {
     "protocol_utils.h",
     "rectf.cc",
     "rectf.h",
-    "retry_timer.cc",
-    "retry_timer.h",
     "script.cc",
     "script.h",
     "script_executor.cc",
@@ -123,10 +114,6 @@ jumbo_static_library("browser") {
     "service.cc",
     "service.h",
     "state.h",
-    "string_conversions_util.cc",
-    "string_conversions_util.h",
-    "trigger_context.cc",
-    "trigger_context.h",
     "ui_controller.cc",
     "ui_controller.h",
     "ui_delegate.h",
@@ -172,12 +159,9 @@ source_set("unit_tests") {
     "mock_web_controller.cc",
     "mock_web_controller.h",
     "protocol_utils_unittest.cc",
-    "retry_timer_unittest.cc",
     "script_executor_unittest.cc",
     "script_precondition_unittest.cc",
     "script_tracker_unittest.cc",
-    "selector_unittest.cc",
-    "string_conversions_util_unittest.cc",
   ]
 
   deps = [

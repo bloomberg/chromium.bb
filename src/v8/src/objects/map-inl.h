@@ -54,11 +54,7 @@ SYNCHRONIZED_ACCESSORS_CHECKED(Map, layout_descriptor, LayoutDescriptor,
 WEAK_ACCESSORS(Map, raw_transitions, kTransitionsOrPrototypeInfoOffset)
 
 // |bit_field| fields.
-// Concurrent access to |has_prototype_slot| and |has_non_instance_prototype|
-// is explicitly whitelisted here. The former is never modified after the map
-// is setup but it's being read by concurrent marker when pointer compression
-// is enabled. The latter bit can be modified on a live objects.
-BIT_FIELD_ACCESSORS(Map, relaxed_bit_field, has_non_instance_prototype,
+BIT_FIELD_ACCESSORS(Map, bit_field, has_non_instance_prototype,
                     Map::HasNonInstancePrototypeBit)
 BIT_FIELD_ACCESSORS(Map, bit_field, is_callable, Map::IsCallableBit)
 BIT_FIELD_ACCESSORS(Map, bit_field, has_named_interceptor,
@@ -69,7 +65,7 @@ BIT_FIELD_ACCESSORS(Map, bit_field, is_undetectable, Map::IsUndetectableBit)
 BIT_FIELD_ACCESSORS(Map, bit_field, is_access_check_needed,
                     Map::IsAccessCheckNeededBit)
 BIT_FIELD_ACCESSORS(Map, bit_field, is_constructor, Map::IsConstructorBit)
-BIT_FIELD_ACCESSORS(Map, relaxed_bit_field, has_prototype_slot,
+BIT_FIELD_ACCESSORS(Map, bit_field, has_prototype_slot,
                     Map::HasPrototypeSlotBit)
 
 // |bit_field2| fields.
@@ -426,14 +422,6 @@ void Map::set_bit_field(byte value) {
   WRITE_BYTE_FIELD(*this, kBitFieldOffset, value);
 }
 
-byte Map::relaxed_bit_field() const {
-  return RELAXED_READ_BYTE_FIELD(*this, kBitFieldOffset);
-}
-
-void Map::set_relaxed_bit_field(byte value) {
-  RELAXED_WRITE_BYTE_FIELD(*this, kBitFieldOffset, value);
-}
-
 byte Map::bit_field2() const {
   return READ_BYTE_FIELD(*this, kBitField2Offset);
 }
@@ -500,10 +488,6 @@ bool Map::has_dictionary_elements() const {
   return IsDictionaryElementsKind(elements_kind());
 }
 
-bool Map::is_frozen_or_sealed_elements() const {
-  return IsPackedFrozenOrSealedElementsKind(elements_kind());
-}
-
 void Map::set_is_dictionary_map(bool value) {
   uint32_t new_bit_field3 = IsDictionaryMapBit::update(bit_field3(), value);
   new_bit_field3 = IsUnstableBit::update(new_bit_field3, value);
@@ -568,11 +552,9 @@ bool Map::IsPrimitiveMap() const {
   return instance_type() <= LAST_PRIMITIVE_TYPE;
 }
 
-HeapObject Map::prototype() const {
-  return HeapObject::cast(READ_FIELD(*this, kPrototypeOffset));
-}
+Object Map::prototype() const { return READ_FIELD(*this, kPrototypeOffset); }
 
-void Map::set_prototype(HeapObject value, WriteBarrierMode mode) {
+void Map::set_prototype(Object value, WriteBarrierMode mode) {
   DCHECK(value->IsNull() || value->IsJSReceiver());
   WRITE_FIELD(*this, kPrototypeOffset, value);
   CONDITIONAL_WRITE_BARRIER(*this, kPrototypeOffset, value, mode);
@@ -684,10 +666,10 @@ void Map::AppendDescriptor(Isolate* isolate, Descriptor* desc) {
 #endif
 }
 
-HeapObject Map::GetBackPointer() const {
+Object Map::GetBackPointer() const {
   Object object = constructor_or_backpointer();
   if (object->IsMap()) {
-    return Map::cast(object);
+    return object;
   }
   return GetReadOnlyRoots().undefined_value();
 }

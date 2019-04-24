@@ -85,7 +85,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
                                          FontResourceClient* client) const {
   if (!fetched_) {
     ResourceRequest resource_request(absolute_resource_);
-    resource_request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
@@ -108,7 +108,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
       scope->EnsureFetcher();
     }
-    fetched_ = MakeGarbageCollected<FontResourceHelper>(
+    fetched_ = FontResourceHelper::Create(
         FontResource::Fetch(params, context->Fetcher(), client),
         context->GetTaskRunner(TaskType::kInternalLoading).get());
   } else {

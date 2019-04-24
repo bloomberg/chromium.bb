@@ -188,7 +188,7 @@ GrPathRenderer::CanDrawPath GrSmallPathRenderer::onCanDrawPath(const CanDrawPath
         return CanDrawPath::kNo;
     }
     // This does non-inverse coverage-based antialiased fills.
-    if (!(AATypeFlags::kCoverage & args.fAATypeFlags)) {
+    if (GrAAType::kCoverage != args.fAAType) {
         return CanDrawPath::kNo;
     }
     // TODO: Support inverse fill
@@ -268,6 +268,8 @@ public:
         fShapeCache = shapeCache;
         fShapeList = shapeList;
         fGammaCorrect = gammaCorrect;
+        fWideColor = !SkPMColor4fFitsInBytes(color);
+
     }
 
     const char* name() const override { return "SmallPathOp"; }
@@ -296,11 +298,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
         return fHelper.finalizeProcessors(
-                caps, clip, fsaaType, clampType, GrProcessorAnalysisCoverage::kSingleChannel,
-                &fShapes.front().fColor, &fWideColor);
+                caps, clip, fsaaType, GrProcessorAnalysisCoverage::kSingleChannel,
+                &fShapes.front().fColor);
     }
 
 private:

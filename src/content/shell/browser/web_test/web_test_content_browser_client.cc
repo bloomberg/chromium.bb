@@ -33,6 +33,7 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
 #include "content/shell/browser/web_test/web_test_message_filter.h"
+#include "content/shell/common/shell_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/mock_clipboard_host.h"
@@ -87,7 +88,9 @@ class TestOverlayWindow : public OverlayWindow {
 
 }  // namespace
 
-WebTestContentBrowserClient::WebTestContentBrowserClient() {
+WebTestContentBrowserClient::WebTestContentBrowserClient()
+    : mock_platform_notification_service_(
+          std::make_unique<MockPlatformNotificationService>()) {
   DCHECK(!g_web_test_browser_client);
 
   g_web_test_browser_client = this;
@@ -199,6 +202,10 @@ void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableLeakDetection));
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDisplayCompositorPixelDump)) {
+    command_line->AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
+  }
 }
 
 BrowserMainParts* WebTestContentBrowserClient::CreateBrowserMainParts(
@@ -277,13 +284,7 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 }
 
 PlatformNotificationService*
-WebTestContentBrowserClient::GetPlatformNotificationService(
-    content::BrowserContext* browser_context) {
-  if (!mock_platform_notification_service_) {
-    mock_platform_notification_service_.reset(
-        new MockPlatformNotificationService(browser_context));
-  }
-
+WebTestContentBrowserClient::GetPlatformNotificationService() {
   return mock_platform_notification_service_.get();
 }
 
@@ -317,7 +318,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToFrame(
 }
 
 std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,

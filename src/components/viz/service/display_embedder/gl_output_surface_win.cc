@@ -10,9 +10,9 @@ namespace viz {
 
 GLOutputSurfaceWin::GLOutputSurfaceWin(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    UpdateVSyncParametersCallback update_vsync_callback,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
     bool use_overlays)
-    : GLOutputSurface(context_provider, std::move(update_vsync_callback)) {
+    : GLOutputSurface(context_provider, synthetic_begin_frame_source) {
   if (use_overlays) {
     overlay_validator_ =
         std::make_unique<CompositorOverlayCandidateValidatorWin>();

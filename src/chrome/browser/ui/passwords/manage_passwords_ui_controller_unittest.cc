@@ -201,13 +201,6 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
       scoped_refptr<password_manager::PasswordFormMetricsRecorder>
           metrics_recorder);
 
-  std::unique_ptr<password_manager::PasswordFormManager>
-  CreateFormManagerWithBlacklistedMatches(
-      const autofill::PasswordForm& observed_form,
-      const std::vector<const autofill::PasswordForm*>& blacklisted_matches,
-      scoped_refptr<password_manager::PasswordFormMetricsRecorder>
-          metrics_recorder);
-
   std::unique_ptr<password_manager::PasswordFormManager> CreateFormManager();
 
   std::unique_ptr<password_manager::PasswordFormManager>
@@ -276,29 +269,12 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const std::vector<const autofill::PasswordForm*>& best_matches,
     scoped_refptr<password_manager::PasswordFormMetricsRecorder>
         metrics_recorder) {
-  auto test_form_manager =
-      std::make_unique<password_manager::PasswordFormManager>(
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+      new password_manager::PasswordFormManager(
           &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
-          std::make_unique<password_manager::StubFormSaver>(), &fetcher_);
+          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
   test_form_manager->Init(metrics_recorder);
-  fetcher_.SetNonFederated(best_matches);
-  fetcher_.NotifyFetchCompleted();
-  return test_form_manager;
-}
-
-std::unique_ptr<password_manager::PasswordFormManager>
-ManagePasswordsUIControllerTest::CreateFormManagerWithBlacklistedMatches(
-    const autofill::PasswordForm& observed_form,
-    const std::vector<const autofill::PasswordForm*>& blacklisted_matches,
-    scoped_refptr<password_manager::PasswordFormMetricsRecorder>
-        metrics_recorder) {
-  auto test_form_manager =
-      std::make_unique<password_manager::PasswordFormManager>(
-          &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
-          std::make_unique<password_manager::StubFormSaver>(), &fetcher_);
-  test_form_manager->Init(metrics_recorder);
-  fetcher_.SetBlacklisted(blacklisted_matches);
-  fetcher_.NotifyFetchCompleted();
+  fetcher_.SetNonFederated(best_matches, 0u);
   return test_form_manager;
 }
 
@@ -386,8 +362,8 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.blacklisted_by_user = true;
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager =
-      CreateFormManagerWithBlacklistedMatches(test_local_form(), {&blacklisted},
-                                              nullptr);
+      CreateFormManagerWithBestMatches(test_local_form(), {&blacklisted},
+                                       nullptr);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   EXPECT_FALSE(controller()->opened_automatic_bubble());

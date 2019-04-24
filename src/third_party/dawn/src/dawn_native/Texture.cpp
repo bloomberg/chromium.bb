@@ -47,6 +47,22 @@ namespace dawn_native {
             }
         }
 
+        bool IsTextureViewDimensionCompatibleWithTextureSampleCount(
+            dawn::TextureViewDimension textureViewDimension,
+            const uint32_t sampleCount) {
+            switch (textureViewDimension) {
+                case dawn::TextureViewDimension::Cube:
+                case dawn::TextureViewDimension::CubeArray:
+                    return sampleCount == 1;
+                case dawn::TextureViewDimension::e2D:
+                case dawn::TextureViewDimension::e2DArray:
+                    return true;
+                default:
+                    UNREACHABLE();
+                    return false;
+            }
+        }
+
         // TODO(jiawei.shao@intel.com): support validation on all texture view dimensions
         bool IsArrayLayerValidForTextureViewDimension(
             dawn::TextureViewDimension textureViewDimension,
@@ -84,21 +100,18 @@ namespace dawn_native {
 
         // TODO(jiawei.shao@intel.com): support more sample count.
         MaybeError ValidateSampleCount(const TextureDescriptor* descriptor) {
-            if (!IsValidSampleCount(descriptor->sampleCount)) {
-                return DAWN_VALIDATION_ERROR("The sample count of the texture is not supported.");
-            }
-
-            if (descriptor->sampleCount > 1) {
-                if (descriptor->mipLevelCount > 1) {
+            switch (descriptor->sampleCount) {
+                case 1:
+                    break;
+                case 4:
+                    if (descriptor->mipLevelCount > 1) {
+                        return DAWN_VALIDATION_ERROR(
+                            "The mipmap level count of a multisampled texture must be 1.");
+                    }
+                    break;
+                default:
                     return DAWN_VALIDATION_ERROR(
-                        "The mipmap level count of a multisampled texture must be 1.");
-                }
-
-                // Multisampled 2D array texture is not supported because on Metal it requires the
-                // version of macOS be greater than 10.14.
-                if (descriptor->arrayLayerCount > 1) {
-                    return DAWN_VALIDATION_ERROR("Multisampled 2D array texture is not supported.");
-                }
+                        "The sample count of the texture is not supported.");
             }
 
             return {};
@@ -118,6 +131,13 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR(
                     "The dimension of the texture view is not compatible with the dimension of the"
                     "original texture");
+            }
+
+            if (!IsTextureViewDimensionCompatibleWithTextureSampleCount(
+                    descriptor->dimension, texture->GetSampleCount())) {
+                return DAWN_VALIDATION_ERROR(
+                    "The dimension of the texture view is not compatible with the sample count of "
+                    "the original texture");
             }
 
             if (!IsTextureSizeValidForTextureViewDimension(descriptor->dimension,
@@ -184,10 +204,6 @@ namespace dawn_native {
         }
 
         DAWN_TRY(device->ValidateObject(texture));
-        if (texture->GetTextureState() == TextureBase::TextureState::Destroyed) {
-            return DAWN_VALIDATION_ERROR("Destroyed texture used to create texture view");
-        }
-
         DAWN_TRY(ValidateTextureViewDimension(descriptor->dimension));
         DAWN_TRY(ValidateTextureFormat(descriptor->format));
 
@@ -298,22 +314,9 @@ namespace dawn_native {
         }
     }
 
-    bool IsValidSampleCount(uint32_t sampleCount) {
-        switch (sampleCount) {
-            case 1:
-            case 4:
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
     // TextureBase
 
-    TextureBase::TextureBase(DeviceBase* device,
-                             const TextureDescriptor* descriptor,
-                             TextureState state)
+    TextureBase::TextureBase(DeviceBase* device, const TextureDescriptor* descriptor)
         : ObjectBase(device),
           mDimension(descriptor->dimension),
           mFormat(descriptor->format),
@@ -321,8 +324,7 @@ namespace dawn_native {
           mArrayLayerCount(descriptor->arrayLayerCount),
           mMipLevelCount(descriptor->mipLevelCount),
           mSampleCount(descriptor->sampleCount),
-          mUsage(descriptor->usage),
-          mState(state) {
+          mUsage(descriptor->usage) {
     }
 
     TextureBase::TextureBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -363,16 +365,8 @@ namespace dawn_native {
         return mUsage;
     }
 
-    TextureBase::TextureState TextureBase::GetTextureState() const {
-        ASSERT(!IsError());
-        return mState;
-    }
-
     MaybeError TextureBase::ValidateCanUseInSubmitNow() const {
         ASSERT(!IsError());
-        if (mState == TextureState::Destroyed) {
-            return DAWN_VALIDATION_ERROR("Destroyed texture used in a submit");
-        }
         return {};
     }
 
@@ -381,7 +375,7 @@ namespace dawn_native {
         return mSampleCount > 1;
     }
 
-    TextureViewBase* TextureBase::CreateDefaultView() {
+    TextureViewBase* TextureBase::CreateDefaultTextureView() {
         TextureViewDescriptor descriptor = {};
 
         if (!IsError()) {
@@ -391,31 +385,8 @@ namespace dawn_native {
         return GetDevice()->CreateTextureView(this, &descriptor);
     }
 
-    TextureViewBase* TextureBase::CreateView(const TextureViewDescriptor* descriptor) {
+    TextureViewBase* TextureBase::CreateTextureView(const TextureViewDescriptor* descriptor) {
         return GetDevice()->CreateTextureView(this, descriptor);
-    }
-
-    void TextureBase::Destroy() {
-        if (GetDevice()->ConsumedError(ValidateDestroy())) {
-            return;
-        }
-        ASSERT(!IsError());
-        DestroyInternal();
-    }
-
-    void TextureBase::DestroyImpl() {
-    }
-
-    void TextureBase::DestroyInternal() {
-        if (mState == TextureState::OwnedInternal) {
-            DestroyImpl();
-        }
-        mState = TextureState::Destroyed;
-    }
-
-    MaybeError TextureBase::ValidateDestroy() const {
-        DAWN_TRY(GetDevice()->ValidateObject(this));
-        return {};
     }
 
     // TextureViewBase

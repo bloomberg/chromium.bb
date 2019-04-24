@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/device_event_log/device_event_log.h"
 #include "device/fido/ble/fido_ble_connection.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
@@ -62,6 +61,7 @@ bool EncryptOutgoingMessage(
     return false;
 
   message_to_encrypt->assign(ciphertext.begin(), ciphertext.end());
+  VLOG(2) << "Successfully encrypted outgoing caBLE message.";
   return true;
 }
 
@@ -123,22 +123,20 @@ FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
 
 FidoCableDevice::~FidoCableDevice() = default;
 
-FidoDevice::CancelToken FidoCableDevice::DeviceTransact(
-    std::vector<uint8_t> command,
-    DeviceCallback callback) {
+void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
+                                     DeviceCallback callback) {
   if (!EncryptOutgoingMessage(encryption_data_, &command)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
-    FIDO_LOG(ERROR) << "Failed to encrypt outgoing caBLE message.";
-    return 0;
+    return;
   }
 
   ++encryption_data_->write_sequence_num;
 
-  FIDO_LOG(DEBUG) << "Sending encrypted message to caBLE client";
-  return AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
-                            std::move(callback));
+  VLOG(2) << "Sending encrypted message to caBLE client";
+  AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
+                     std::move(callback));
 }
 
 void FidoCableDevice::OnResponseFrame(FrameCallback callback,

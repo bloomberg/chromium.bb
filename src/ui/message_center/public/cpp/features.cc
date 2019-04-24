@@ -6,7 +6,13 @@
 
 namespace message_center {
 
-const base::Feature kNewStyleNotifications{"NewStyleNotifications",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kNewStyleNotifications {
+  "NewStyleNotifications",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 }  // namespace message_center

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
-#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -144,15 +143,8 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
 
   if (options->hasShowTrigger()) {
     auto* timestamp_trigger = options->showTrigger();
-    auto timestamp = base::Time::FromJsTime(timestamp_trigger->timestamp());
-
-    if (timestamp - base::Time::Now() > kMaxNotificationShowTriggerDelay) {
-      exception_state.ThrowTypeError(
-          "Notification trigger timestamp too far ahead in the future.");
-      return nullptr;
-    }
-
-    notification_data->show_trigger_timestamp = timestamp;
+    notification_data->show_trigger_timestamp =
+        base::Time::FromJsTime(timestamp_trigger->timestamp());
   }
 
   return notification_data;

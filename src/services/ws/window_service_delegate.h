@@ -18,7 +18,6 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -156,12 +155,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
       WindowTree* tree,
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle);
-
-  // Connects a particular client to the active input-method engine.
-  // This is called when a client that has the active focus requests the
-  // input-method engine (which typically happens every time focus changes).
-  virtual void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
-                                  ime::mojom::ImeEngineClientPtr client) {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;

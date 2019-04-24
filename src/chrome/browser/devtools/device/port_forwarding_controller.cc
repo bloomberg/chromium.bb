@@ -54,7 +54,8 @@ enum {
   kStatusOK = 0,
 };
 
-const char kErrorCodePath[] = "error.code";
+const char kErrorCodeParam[] = "code";
+const char kErrorParam[] = "error";
 const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
@@ -67,47 +68,54 @@ const char kConnectionIdParam[] = "connectionId";
 
 static bool ParseNotification(const std::string& json,
                               std::string* method,
-                              base::Optional<base::Value>* params) {
-  base::Optional<base::Value> value = base::JSONReader::Read(json);
+                              std::unique_ptr<base::DictionaryValue>* params) {
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value || !value->is_dict())
     return false;
 
-  const std::string* method_value = value->FindStringKey(kMethodParam);
-  if (!method_value)
-    return false;
-  *method = *method_value;
+  std::unique_ptr<base::DictionaryValue> dict(
+      static_cast<base::DictionaryValue*>(value.release()));
 
-  auto extracted_param = value->ExtractKey(kParamsParam);
-  if (extracted_param && extracted_param->is_dict())
-    *params = std::move(extracted_param);
+  if (!dict->GetString(kMethodParam, method))
+    return false;
+
+  std::unique_ptr<base::Value> params_value;
+  dict->Remove(kParamsParam, &params_value);
+  if (params_value && params_value->is_dict())
+    params->reset(static_cast<base::DictionaryValue*>(params_value.release()));
+
   return true;
 }
 
 static bool ParseResponse(const std::string& json,
                           int* command_id,
                           int* error_code) {
-  base::Optional<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value || !value->is_dict())
     return false;
-  base::Optional<int> command_id_opt = value->FindIntKey(kIdParam);
-  if (!command_id_opt)
+
+  std::unique_ptr<base::DictionaryValue> dict(
+      static_cast<base::DictionaryValue*>(value.release()));
+
+  if (!dict->GetInteger(kIdParam, command_id))
     return false;
-  *command_id = *command_id_opt;
 
-  base::Optional<int> error_value = value->FindIntPath(kErrorCodePath);
-  if (error_value)
-    *error_code = *error_value;
-
+  *error_code = 0;
+  base::DictionaryValue* error_dict = nullptr;
+  if (dict->GetDictionary(kErrorParam, &error_dict))
+    error_dict->GetInteger(kErrorCodeParam, error_code);
   return true;
 }
 
-static std::string SerializeCommand(int command_id,
-                                    const std::string& method,
-                                    base::Value params) {
-  base::Value command(base::Value::Type::DICTIONARY);
-  command.SetIntKey(kIdParam, command_id);
-  command.SetStringKey(kMethodParam, method);
-  command.SetKey(kParamsParam, std::move(params));
+static std::string SerializeCommand(
+    int command_id,
+    const std::string& method,
+    std::unique_ptr<base::DictionaryValue> params) {
+  base::DictionaryValue command;
+  command.SetInteger(kIdParam, command_id);
+  command.SetString(kMethodParam, method);
+  if (params)
+    command.Set(kParamsParam, std::move(params));
 
   std::string json_command;
   base::JSONWriter::Write(command, &json_command);
@@ -481,9 +489,13 @@ void PortForwardingController::Connection::SerializeChanges(
 void PortForwardingController::Connection::SendCommand(
     const std::string& method, int port) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::Value params(base::Value::Type::DICTIONARY);
-  DCHECK(method == kBindMethod || kUnbindMethod == method);
-  params.SetIntKey(kPortParam, port);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue);
+  if (method == kBindMethod) {
+    params->SetInteger(kPortParam, port);
+  } else {
+    DCHECK_EQ(kUnbindMethod, method);
+    params->SetInteger(kPortParam, port);
+  }
   int id = ++command_id_;
 
   if (method == kBindMethod) {
@@ -567,21 +579,20 @@ void PortForwardingController::Connection::OnFrameRead(
     return;
 
   std::string method;
-  base::Optional<base::Value> params;
+  std::unique_ptr<base::DictionaryValue> params;
   if (!ParseNotification(message, &method, &params))
     return;
 
   if (method != kAcceptedEvent || !params)
     return;
 
-  base::Optional<int> port = params->FindIntKey(kPortParam);
-  if (!port)
-    return;
-  const std::string* connection_id = params->FindStringKey(kConnectionIdParam);
-  if (!connection_id)
+  int port;
+  std::string connection_id;
+  if (!params->GetInteger(kPortParam, &port) ||
+      !params->GetString(kConnectionIdParam, &connection_id))
     return;
 
-  auto it = forwarding_map_.find(*port);
+  auto it = forwarding_map_.find(port);
   if (it == forwarding_map_.end())
     return;
 
@@ -593,7 +604,7 @@ void PortForwardingController::Connection::OnFrameRead(
     return;
   std::string destination_host = tokens[0];
 
-  device_->OpenSocket(*connection_id,
+  device_->OpenSocket(connection_id.c_str(),
                       base::Bind(&SocketTunnel::StartTunnel, profile_,
                                  destination_host, destination_port));
 }
@@ -647,14 +658,15 @@ void PortForwardingController::OnPrefsChange() {
   forwarding_map_.clear();
 
   if (pref_service_->GetBoolean(prefs::kDevToolsPortForwardingEnabled)) {
-    const base::Value* value =
+    const base::DictionaryValue* dict =
         pref_service_->GetDictionary(prefs::kDevToolsPortForwardingConfig);
-    for (const auto& dict_element : value->DictItems()) {
+    for (base::DictionaryValue::Iterator it(*dict);
+         !it.IsAtEnd(); it.Advance()) {
       int port_num;
-      if (base::StringToInt(dict_element.first, &port_num) &&
-          dict_element.second.is_string()) {
-        forwarding_map_[port_num] = dict_element.second.GetString();
-      }
+      std::string location;
+      if (base::StringToInt(it.key(), &port_num) &&
+          dict->GetString(it.key(), &location))
+        forwarding_map_[port_num] = location;
     }
   }
 

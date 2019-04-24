@@ -4,10 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <utility>
-
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -23,11 +20,11 @@
 // activate a task when the application has finished loading.
 @interface ViewsContentClientAppController : NSObject<NSApplicationDelegate> {
  @private
-  base::OnceClosure onApplicationDidFinishLaunching_;
+  base::Closure task_;
 }
 
 // Set the task to run after receiving -applicationDidFinishLaunching:.
-- (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task;
+- (void)setTask:(const base::Closure&)task;
 
 @end
 
@@ -70,12 +67,9 @@ void ViewsContentClientMainPartsMac::PreMainMessageLoopRun() {
   // the widget can activate, but (even if configured) the mainMenu won't be
   // ready to switch over in the OSX UI, so it will look strange.
   NSWindow* window_context = nil;
-  [app_controller_
-      setOnApplicationDidFinishLaunching:
-          base::BindOnce(&ViewsContentClient::OnPreMainMessageLoopRun,
-                         base::Unretained(views_content_client()),
-                         base::Unretained(browser_context()),
-                         base::Unretained(window_context))];
+  [app_controller_ setTask:base::Bind(views_content_client()->task(),
+                                      base::Unretained(browser_context()),
+                                      base::Unretained(window_context))];
 }
 
 ViewsContentClientMainPartsMac::~ViewsContentClientMainPartsMac() {
@@ -105,8 +99,8 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 
 @implementation ViewsContentClientAppController
 
-- (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task {
-  onApplicationDidFinishLaunching_ = std::move(task);
+- (void)setTask:(const base::Closure&)task {
+  task_ = task;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
@@ -133,7 +127,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 
   CHECK([NSApp isKindOfClass:[ShellCrApplication class]]);
 
-  std::move(onApplicationDidFinishLaunching_).Run();
+  task_.Run();
 }
 
 @end

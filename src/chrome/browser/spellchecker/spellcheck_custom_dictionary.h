@@ -147,7 +147,6 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   void Load() override;
 
   // Overridden from syncer::SyncableService:
-  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -219,8 +218,6 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
 
   // True if the dictionary has been loaded. Otherwise false.
   bool is_loaded_;
-
-  base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // A post-startup task to fix the invalid custom dictionary file.
   base::CancelableOnceClosure fix_invalid_file_;

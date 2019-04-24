@@ -9,13 +9,6 @@
 let CrostiniSharedPath;
 
 /**
- * @typedef {{label: string,
- *            guid: string,
- *            shared: boolean}}
- */
-let CrostiniSharedUsbDevice;
-
-/**
  * @fileoverview A helper object used by the "Linux Apps" (Crostini) section
  * to install and uninstall Crostini.
  */
@@ -34,22 +27,8 @@ cr.define('settings', function() {
      */
     getCrostiniSharedPathsDisplayText(paths) {}
 
-    /**
-     * @return {!Promise<!Array<CrostiniSharedUsbDevice>>}
-     */
-    getCrostiniSharedUsbDevices() {}
-
-    /**
-     * @param {string} guid Unique device identifier.
-     * @param {boolean} shared Whether device is currently shared with Crostini.
-     */
-    setCrostiniUsbDeviceShared(guid, shared) {}
-
-    /**
-     * @param {string} vmName VM to stop sharing path with.
-     * @param {string} path Path to stop sharing.
-     */
-    removeCrostiniSharedPath(vmName, path) {}
+    /** @param {string} path Path to stop sharing. */
+    removeCrostiniSharedPath(path) {}
 
     /* Request chrome send a crostini-installer-status-changed event with the
     current installer status */
@@ -80,18 +59,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getCrostiniSharedUsbDevices() {
-      return cr.sendWithPromise('getCrostiniSharedUsbDevices');
-    }
-
-    /** @override */
-    setCrostiniUsbDeviceShared(guid, shared) {
-      return chrome.send('setCrostiniUsbDeviceShared', [guid, shared]);
-    }
-
-    /** @override */
-    removeCrostiniSharedPath(vmName, path) {
-      chrome.send('removeCrostiniSharedPath', [vmName, path]);
+    removeCrostiniSharedPath(path) {
+      chrome.send('removeCrostiniSharedPath', [path]);
     }
 
     /** @override */

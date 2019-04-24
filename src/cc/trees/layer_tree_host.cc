@@ -663,6 +663,10 @@ bool LayerTreeHost::IsVisible() const {
   return visible_;
 }
 
+void LayerTreeHost::NotifyInputThrottledUntilCommit() {
+  proxy_->NotifyInputThrottledUntilCommit();
+}
+
 void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
@@ -676,7 +680,9 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time, bool raster) {
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
-  proxy->CompositeImmediately(frame_begin_time, raster);
+
+  proxy->CompositeImmediately(frame_begin_time,
+                              raster || next_commit_forces_redraw_);
 }
 
 bool LayerTreeHost::UpdateLayers() {
@@ -688,7 +694,6 @@ bool LayerTreeHost::UpdateLayers() {
   DCHECK(!root_layer()->parent());
   base::ElapsedTimer timer;
 
-  client_->WillUpdateLayers();
   bool result = DoUpdateLayers();
   client_->DidUpdateLayers();
   micro_benchmark_controller_.DidUpdateLayers();
@@ -881,11 +886,9 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
       info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
       !info.browser_controls_constraint_changed &&
-      !info.scroll_gesture_did_end &&
-      info.is_pinch_gesture_active == is_pinch_gesture_active_from_impl_) {
+      !info.scroll_gesture_did_end) {
     return;
   }
-  is_pinch_gesture_active_from_impl_ = info.is_pinch_gesture_active;
 
   // Preemptively apply the scroll offset and scale delta here before sending
   // it to the client.  If the client comes back and sets it to the same
@@ -903,9 +906,8 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   // may be translated appropriately.
   client_->ApplyViewportChanges(
       {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
-       info.page_scale_delta, info.is_pinch_gesture_active,
-       info.top_controls_delta, info.browser_controls_constraint,
-       info.scroll_gesture_did_end});
+       info.page_scale_delta, info.top_controls_delta,
+       info.browser_controls_constraint, info.scroll_gesture_did_end});
   SetNeedsUpdateLayers();
 }
 
@@ -1326,16 +1328,11 @@ void LayerTreeHost::SetRasterColorSpace(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
 
-void LayerTreeHost::SetExternalPageScaleFactor(
-    float page_scale_factor,
-    bool is_external_pinch_gesture_active) {
-  if (external_page_scale_factor_ == page_scale_factor &&
-      is_external_pinch_gesture_active_ == is_external_pinch_gesture_active) {
+void LayerTreeHost::SetExternalPageScaleFactor(float page_scale_factor) {
+  if (external_page_scale_factor_ == page_scale_factor)
     return;
-  }
 
   external_page_scale_factor_ = page_scale_factor;
-  is_external_pinch_gesture_active_ = is_external_pinch_gesture_active;
   SetNeedsCommit();
 }
 
@@ -1591,8 +1588,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     if (viewport_layers_.outer_viewport_scroll)
       ids.outer_viewport_scroll = viewport_layers_.outer_viewport_scroll->id();
     tree_impl->SetViewportLayersFromIds(ids);
-    DCHECK(IsUsingLayerLists() || viewport_layers_.inner_viewport_scroll
-                                      ->IsContainerForFixedPositionLayers());
+    DCHECK(viewport_layers_.inner_viewport_scroll
+               ->IsContainerForFixedPositionLayers());
   } else {
     tree_impl->ClearViewportLayers();
   }
@@ -1656,8 +1653,6 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
-  host_impl->set_external_pinch_gesture_active(
-      is_external_pinch_gesture_active_);
   RecordGpuRasterizationHistogram(host_impl);
 
   host_impl->SetDebugState(debug_state_);
@@ -1833,17 +1828,8 @@ void LayerTreeHost::ElementIsAnimatingChanged(
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
-  property_trees()->ElementIsAnimatingChanged(element_id_map, mask, state,
-                                              true);
-}
-
-void LayerTreeHost::AnimationScalesChanged(ElementId element_id,
-                                           ElementListType list_type,
-                                           float maximum_scale,
-                                           float starting_scale) {
-  DCHECK_EQ(ElementListType::ACTIVE, list_type);
-  property_trees()->AnimationScalesChanged(element_id, maximum_scale,
-                                           starting_scale);
+  property_trees()->ElementIsAnimatingChanged(mutator_host(), element_id_map,
+                                              list_type, mask, state, true);
 }
 
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(

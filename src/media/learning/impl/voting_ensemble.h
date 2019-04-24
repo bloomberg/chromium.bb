@@ -23,7 +23,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) VotingEnsemble : public Model {
   ~VotingEnsemble() override;
 
   // Model
-  TargetHistogram PredictDistribution(const FeatureVector& instance) override;
+  TargetDistribution PredictDistribution(
+      const FeatureVector& instance) override;
 
  private:
   std::vector<std::unique_ptr<Model>> models_;

@@ -41,14 +41,14 @@ bool StyleColor::IsColorKeyword(CSSValueID id) {
   //   '-internal-quirk-inherit'
   //   '-internal-root-color'
   //
-  return (id >= CSSValueID::kAqua && id <= CSSValueID::kInternalRootColor) ||
-         (id >= CSSValueID::kAliceblue && id <= CSSValueID::kYellowgreen) ||
-         id == CSSValueID::kMenu;
+  return (id >= CSSValueAqua && id <= CSSValueInternalRootColor) ||
+         (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) ||
+         id == CSSValueMenu;
 }
 
 bool StyleColor::IsSystemColor(CSSValueID id) {
-  return (id >= CSSValueID::kActiveborder && id <= CSSValueID::kWindowtext) ||
-         id == CSSValueID::kMenu;
+  return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) ||
+         id == CSSValueMenu;
 }
 
 }  // namespace blink

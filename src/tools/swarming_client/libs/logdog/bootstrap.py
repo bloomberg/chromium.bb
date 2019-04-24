@@ -5,7 +5,7 @@
 import collections
 import os
 
-from . import stream, streamname
+from libs.logdog import stream, streamname
 
 
 class NotBootstrappedError(RuntimeError):
@@ -14,8 +14,7 @@ class NotBootstrappedError(RuntimeError):
 
 
 _ButlerBootstrapBase = collections.namedtuple('_ButlerBootstrapBase',
-    ('project', 'prefix', 'streamserver_uri', 'coordinator_host',
-     'namespace'))
+    ('project', 'prefix', 'streamserver_uri', 'coordinator_host'))
 
 
 class ButlerBootstrap(_ButlerBootstrapBase):
@@ -26,12 +25,10 @@ class ButlerBootstrap(_ButlerBootstrapBase):
   environment and identifies those parameters.
   """
 
-  # TODO(iannucci): move all of these to LUCI_CONTEXT
   _ENV_PROJECT = 'LOGDOG_STREAM_PROJECT'
   _ENV_PREFIX = 'LOGDOG_STREAM_PREFIX'
   _ENV_STREAM_SERVER_PATH = 'LOGDOG_STREAM_SERVER_PATH'
   _ENV_COORDINATOR_HOST = 'LOGDOG_COORDINATOR_HOST'
-  _ENV_NAMESPACE = 'LOGDOG_NAMESPACE'
 
   @classmethod
   def probe(cls, env=None):
@@ -55,23 +52,14 @@ class ButlerBootstrap(_ButlerBootstrapBase):
       raise NotBootstrappedError('Missing prefix [%s]' % (cls._ENV_PREFIX,))
     try:
       streamname.validate_stream_name(prefix)
-    except ValueError as exp:
-      raise NotBootstrappedError('Prefix (%s) is invalid: %s' % (prefix, exp))
-
-    namespace = env.get(cls._ENV_NAMESPACE, '')
-    if namespace:
-      try:
-        streamname.validate_stream_name(namespace)
-      except ValueError as exp:
-        raise NotBootstrappedError(
-            'Namespace (%s) is invalid: %s' % (prefix, exp))
+    except ValueError as e:
+      raise NotBootstrappedError('Prefix (%s) is invalid: %s' % (prefix, e))
 
     return cls(
         project=project,
         prefix=prefix,
         streamserver_uri=env.get(cls._ENV_STREAM_SERVER_PATH),
-        coordinator_host=env.get(cls._ENV_COORDINATOR_HOST),
-        namespace=namespace)
+        coordinator_host=env.get(cls._ENV_COORDINATOR_HOST))
 
   def stream_client(self, reg=None):
     """Returns: (StreamClient) stream client for the bootstrap streamserver URI.
@@ -95,5 +83,4 @@ class ButlerBootstrap(_ButlerBootstrapBase):
         self.streamserver_uri,
         project=self.project,
         prefix=self.prefix,
-        coordinator_host=self.coordinator_host,
-        namespace=self.namespace)
+        coordinator_host=self.coordinator_host)

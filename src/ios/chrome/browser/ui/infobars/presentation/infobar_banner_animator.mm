@@ -51,7 +51,6 @@
     CGRect presentedViewStartFrame = presentedViewFinalFrame;
     presentedViewStartFrame.origin.y = -CGRectGetWidth(containerView.bounds);
     presentedView.frame = presentedViewStartFrame;
-    presentedView.alpha = 0;
   } else {
     presentedViewFinalFrame = presentedView.frame;
     presentedViewFinalFrame.origin.y = -CGRectGetWidth(containerView.bounds);
@@ -65,7 +64,6 @@
       options:UIViewAnimationOptionTransitionNone
       animations:^{
         presentedView.frame = presentedViewFinalFrame;
-        presentedView.alpha = 1;
       }
       completion:^(BOOL finished) {
         BOOL success = ![transitionContext transitionWasCancelled];

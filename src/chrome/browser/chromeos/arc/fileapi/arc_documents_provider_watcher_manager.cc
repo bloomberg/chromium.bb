@@ -22,7 +22,7 @@ namespace arc {
 namespace {
 
 void OnAddWatcherOnUIThread(
-    const storage::WatcherManager::StatusCallback& callback,
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -30,7 +30,7 @@ void OnAddWatcherOnUIThread(
 }
 
 void OnRemoveWatcherOnUIThread(
-    const storage::WatcherManager::StatusCallback& callback,
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -38,7 +38,7 @@ void OnRemoveWatcherOnUIThread(
 }
 
 void OnNotificationOnUIThread(
-    const storage::WatcherManager::NotificationCallback& notification_callback,
+    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback,
     ArcDocumentsProviderRoot::ChangeType change_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -47,9 +47,8 @@ void OnNotificationOnUIThread(
 
 void AddWatcherOnUIThread(
     const storage::FileSystemURL& url,
-    const storage::WatcherManager::StatusCallback& callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
@@ -73,7 +72,7 @@ void AddWatcherOnUIThread(
 
 void RemoveWatcherOnUIThread(
     const storage::FileSystemURL& url,
-    const ArcDocumentsProviderRoot::WatcherStatusCallback& callback) {
+    const ArcDocumentsProviderRoot::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =

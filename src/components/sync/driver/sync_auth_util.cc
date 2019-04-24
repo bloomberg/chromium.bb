@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
@@ -43,16 +42,6 @@ SyncAccountInfo DetermineAccountToUse(
     }
   }
   return SyncAccountInfo();
-}
-
-bool IsWebSignout(const GoogleServiceAuthError& auth_error) {
-  // The identity code sets an account's refresh token to be invalid (error
-  // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
-  // the web.
-  return auth_error ==
-         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-             GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                 CREDENTIALS_REJECTED_BY_CLIENT);
 }
 
 }  // namespace syncer

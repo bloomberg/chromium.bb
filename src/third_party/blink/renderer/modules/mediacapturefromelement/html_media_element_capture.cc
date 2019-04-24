@@ -96,9 +96,7 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
   }
   if (media_element_->HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(
-        &web_stream, media_element_->GetWebMediaPlayer(),
-        media_element_->GetExecutionContext()->GetTaskRunner(
-            TaskType::kInternalMediaRealTime));
+        &web_stream, media_element_->GetWebMediaPlayer());
   }
 
   WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
@@ -183,9 +181,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   }
   if (element.HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(
-        &web_stream, element.GetWebMediaPlayer(),
-        element.GetExecutionContext()->GetTaskRunner(
-            TaskType::kInternalMediaRealTime));
+        &web_stream, element.GetWebMediaPlayer());
   }
   listener->UpdateSources(context);
 

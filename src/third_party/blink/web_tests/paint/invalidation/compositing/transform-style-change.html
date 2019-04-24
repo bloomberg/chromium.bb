@@ -5,8 +5,14 @@
 <script>
 function test() {
     document.getElementById("box").style.transformStyle = "flat";
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    testRunner.dumpAsTextWithPixelResults();
+}
 // Force one composite with preserve-3d
-runAfterLayoutAndPaint(test, true);
+runAfterLayoutAndPaint(test);
 </script>

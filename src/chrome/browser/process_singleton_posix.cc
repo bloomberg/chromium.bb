@@ -58,7 +58,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -593,7 +592,7 @@ class ProcessSingleton::LinuxWatcher
   // The ProcessSingleton that owns us.
   ProcessSingleton* const parent_;
 
-  std::set<std::unique_ptr<SocketReader>, base::UniquePtrComparator> readers_;
+  std::set<std::unique_ptr<SocketReader>> readers_;
 
   DISALLOW_COPY_AND_ASSIGN(LinuxWatcher);
 };
@@ -647,7 +646,10 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
 void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(reader);
-  auto it = readers_.find(reader);
+  auto it = std::find_if(readers_.begin(), readers_.end(),
+                         [reader](const std::unique_ptr<SocketReader>& ptr) {
+                           return ptr.get() == reader;
+                         });
   readers_.erase(it);
 }
 

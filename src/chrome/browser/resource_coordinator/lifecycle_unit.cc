@@ -17,8 +17,12 @@ LifecycleUnit::SortKey::SortKey(float score, base::TimeTicks last_focused_time)
 LifecycleUnit::SortKey::SortKey(const SortKey& other) = default;
 
 bool LifecycleUnit::SortKey::operator<(const SortKey& other) const {
-  if (score != other.score)
-    return score < other.score;
+  if (score.has_value()) {
+    DCHECK(other.score.has_value());
+    if (score.value() != other.score.value())
+      return score.value() < other.score.value();
+  }
+
   return last_focused_time < other.last_focused_time;
 }
 

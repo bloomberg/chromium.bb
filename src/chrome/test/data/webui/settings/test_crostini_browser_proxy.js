@@ -9,23 +9,24 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestCrostiniInstallerView',
       'requestRemoveCrostini',
       'getCrostiniSharedPathsDisplayText',
-      'getCrostiniSharedUsbDevices',
-      'setCrostiniUsbDeviceShared',
       'removeCrostiniSharedPath',
       'exportCrostiniContainer',
       'importCrostiniContainer',
     ]);
-    this.sharedUsbDevices = [];
+    this.enabled = false;
+    this.sharedPaths = ['path1', 'path2'];
   }
 
   /** @override */
   requestCrostiniInstallerView() {
     this.methodCalled('requestCrostiniInstallerView');
+    this.enabled = true;
   }
 
   /** override */
   requestRemoveCrostini() {
     this.methodCalled('requestRemoveCrostini');
+    this.enabled = false;
   }
 
   /** override */
@@ -34,22 +35,10 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     return Promise.resolve(paths.map(path => path + '-displayText'));
   }
 
-  /** @override */
-  getCrostiniSharedUsbDevices() {
-    this.methodCalled('getCrostiniSharedUsbDevices');
-    return Promise.resolve(this.sharedUsbDevices);
-  }
-
-  /** @override */
-  setCrostiniUsbDeviceShared(guid, shared) {
-    this.methodCalled('setCrostiniUsbDeviceShared', [guid, shared]);
-  }
-
   /** override */
-  removeCrostiniSharedPath(vmName, path) {
-    this.methodCalled('removeCrostiniSharedPath', [vmName, path]);
+  removeCrostiniSharedPath(path) {
+    this.sharedPaths = this.sharedPaths.filter(p => p !== path);
   }
-
   /** @override */
   requestCrostiniInstallerStatus() {
     cr.webUIListenerCallback('crostini-installer-status-changed', false);

@@ -13,6 +13,7 @@
 #include "core/fpdfapi/page/cpdf_clippath.h"
 #include "core/fpdfapi/page/cpdf_countedobject.h"
 #include "core/fpdfapi/page/cpdf_graphicstates.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/render/cpdf_imageloader.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fxcrt/retain_ptr.h"
@@ -26,7 +27,6 @@ class CPDF_Color;
 class CPDF_Dictionary;
 class CPDF_Document;
 class CPDF_Stream;
-class CPDF_StreamAcc;
 
 struct DIB_COMP_DATA {
   float m_DecodeMin;

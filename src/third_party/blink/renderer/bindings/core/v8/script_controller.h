@@ -68,6 +68,12 @@ class CORE_EXPORT ScriptController final
     kDoNotExecuteScriptWhenScriptsDisabled
   };
 
+  static ScriptController* Create(
+      LocalFrame& frame,
+      LocalWindowProxyManager& window_proxy_manager) {
+    return MakeGarbageCollected<ScriptController>(frame, window_proxy_manager);
+  }
+
   ScriptController(LocalFrame& frame,
                    LocalWindowProxyManager& window_proxy_manager)
       : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}

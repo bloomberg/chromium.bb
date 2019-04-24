@@ -77,6 +77,10 @@ static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
   return MiddlePanningCursor();
 }
 
+AutoscrollController* AutoscrollController::Create(Page& page) {
+  return MakeGarbageCollected<AutoscrollController>(page);
+}
+
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
 void AutoscrollController::Trace(blink::Visitor* visitor) {
@@ -155,7 +159,7 @@ void AutoscrollController::UpdateAutoscrollLayoutObject() {
 }
 
 void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
-                                             const FloatPoint& event_position,
+                                             const IntPoint& event_position,
                                              TimeTicks event_time) {
   if (!drop_target_node || !drop_target_node->GetLayoutObject()) {
     StopAutoscroll();
@@ -185,14 +189,13 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     return;
   }
 
-  LayoutSize offset = scrollable->CalculateAutoscrollDirection(event_position);
+  IntSize offset = scrollable->CalculateAutoscrollDirection(event_position);
   if (offset.IsZero()) {
     StopAutoscroll();
     return;
   }
 
-  drag_and_drop_autoscroll_reference_position_ =
-      LayoutPoint(event_position) + offset;
+  drag_and_drop_autoscroll_reference_position_ = event_position + offset;
 
   if (autoscroll_type_ == kNoAutoscroll) {
     autoscroll_type_ = kAutoscrollForDragAndDrop;
@@ -314,10 +317,10 @@ void AutoscrollController::Animate() {
 
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
-  LayoutSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
+  IntSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
       event_handler.LastKnownMousePositionInRootFrame());
-  LayoutPoint selection_point =
-      LayoutPoint(event_handler.LastKnownMousePositionInRootFrame()) + offset;
+  IntPoint selection_point =
+      event_handler.LastKnownMousePositionInRootFrame() + offset;
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();

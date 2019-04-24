@@ -29,7 +29,7 @@ class ContentDecryptionModuleResult
   virtual void CompleteWithKeyStatus(
       WebEncryptedMediaKeyInformation::KeyStatus) = 0;
   virtual void CompleteWithError(WebContentDecryptionModuleException,
-                                 uint32_t system_code,
+                                 unsigned long system_code,
                                  const WebString&) = 0;
 
   WebContentDecryptionModuleResult Result() {

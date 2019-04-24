@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/passwords/ios_password_infobar_controller.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
@@ -19,11 +20,12 @@
 
   auto* delegate = static_cast<IOSChromePasswordManagerInfoBarDelegate*>(
       self.infoBarDelegate);
-  NSString* message = delegate->GetDetailsMessageText();
-  if (message.length)
+  base::string16 message = delegate->GetDetailsMessageText();
+  if (message.empty())
     return;
 
-  [view addFooterLabel:message];
+  [view addFooterLabel:base::SysUTF16ToNSString(
+                           delegate->GetDetailsMessageText())];
 }
 
 @end

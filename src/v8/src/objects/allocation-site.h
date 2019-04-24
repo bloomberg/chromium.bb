@@ -82,7 +82,7 @@ class AllocationSite : public Struct {
 
   inline void IncrementMementoCreateCount();
 
-  AllocationType GetAllocationType() const;
+  PretenureFlag GetPretenureMode() const;
 
   void ResetPretenureDecision();
 

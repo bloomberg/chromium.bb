@@ -65,6 +65,7 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 
 DelayedCookieMonster::DelayedCookieMonster()
     : cookie_monster_(new CookieMonster(nullptr /* store */,
+                                        nullptr /* channel_id_service */,
                                         nullptr /* netlog */)),
       did_run_(false),
       result_(
@@ -106,11 +107,11 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
 void DelayedCookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
-    const CookieOptions& options,
+    bool modify_http_only,
     SetCookiesCallback callback) {
   did_run_ = false;
   cookie_monster_->SetCanonicalCookieAsync(
-      std::move(cookie), std::move(source_scheme), options,
+      std::move(cookie), std::move(source_scheme), modify_http_only,
       base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);
@@ -193,12 +194,6 @@ CookieChangeDispatcher& DelayedCookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
 }
 
-void DelayedCookieMonster::SetCookieableSchemes(
-    const std::vector<std::string>& schemes,
-    SetCookieableSchemesCallback callback) {
-  ADD_FAILURE();
-}
-
 bool DelayedCookieMonster::IsEphemeral() {
   return true;
 }
@@ -229,18 +224,17 @@ std::string CookieURLHelper::Format(const std::string& format_string) const {
 //
 FlushablePersistentStore::FlushablePersistentStore() : flush_count_(0) {}
 
-void FlushablePersistentStore::Load(LoadedCallback loaded_callback,
+void FlushablePersistentStore::Load(const LoadedCallback& loaded_callback,
                                     const NetLogWithSource& /* net_log */) {
   std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(loaded_callback), std::move(out_cookies)));
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(out_cookies)));
 }
 
 void FlushablePersistentStore::LoadCookiesForKey(
     const std::string& key,
-    LoadedCallback loaded_callback) {
-  Load(std::move(loaded_callback), NetLogWithSource());
+    const LoadedCallback& loaded_callback) {
+  Load(loaded_callback, NetLogWithSource());
 }
 
 void FlushablePersistentStore::AddCookie(const CanonicalCookie&) {}
@@ -251,7 +245,7 @@ void FlushablePersistentStore::DeleteCookie(const CanonicalCookie&) {}
 
 void FlushablePersistentStore::SetForceKeepSessionState() {}
 
-void FlushablePersistentStore::SetBeforeCommitCallback(
+void FlushablePersistentStore::SetBeforeFlushCallback(
     base::RepeatingClosure callback) {}
 
 void FlushablePersistentStore::Flush(base::OnceClosure callback) {

@@ -77,6 +77,10 @@ class CheckAlertDialogBuilder(unittest.TestCase):
     mock_input = MockInputApi()
     mock_input.files = [
       MockFile(
+          'chrome/android/java/src/org/chromium/chrome/browser/permissions/'
+              'PermissionDialogView.java',
+          ['new AlertDialog.Builder()']),
+      MockFile(
           'chrome/android/java/src/org/chromium/chrome/browser/payments/'
               'AndroidPaymentApp.java',
           ['new AlertDialog.Builder()']),

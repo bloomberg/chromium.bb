@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
+
 namespace background_fetch {
 
 // Marks Background Fetch registrations for deletion from the database. This is
@@ -60,6 +61,7 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
 };
 
 }  // namespace background_fetch
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MARK_REGISTRATION_FOR_DELETION_TASK_H_

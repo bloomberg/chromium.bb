@@ -38,16 +38,17 @@ class Socket;
 
 namespace extensions {
 
+using CompletionCallback = base::Callback<void(int)>;
 using SetNoDelayCallback = base::OnceCallback<void(bool)>;
 using SetKeepAliveCallback = base::OnceCallback<void(bool)>;
 using ReadCompletionCallback = base::OnceCallback<
     void(int, scoped_refptr<net::IOBuffer> io_buffer, bool socket_destroying)>;
 using RecvFromCompletionCallback =
-    base::OnceCallback<void(int,
-                            scoped_refptr<net::IOBuffer> io_buffer,
-                            bool socket_destroying,
-                            const std::string&,
-                            uint16_t)>;
+    base::Callback<void(int,
+                        scoped_refptr<net::IOBuffer> io_buffer,
+                        bool socket_destroying,
+                        const std::string&,
+                        uint16_t)>;
 using ListenCallback =
     base::OnceCallback<void(int, const std::string& error_msg)>;
 
@@ -95,7 +96,7 @@ class Socket : public ApiResource {
   virtual void Disconnect(bool socket_destroying) = 0;
   virtual void Bind(const std::string& address,
                     uint16_t port,
-                    net::CompletionOnceCallback callback) = 0;
+                    const CompletionCallback& callback) = 0;
 
   // The |callback| will be called with the number of bytes read into the
   // buffer, or a negative number if an error occurred.
@@ -105,13 +106,14 @@ class Socket : public ApiResource {
   // error occurred.
   void Write(scoped_refptr<net::IOBuffer> io_buffer,
              int byte_count,
-             net::CompletionOnceCallback callback);
+             const CompletionCallback& callback);
 
-  virtual void RecvFrom(int count, RecvFromCompletionCallback callback) = 0;
+  virtual void RecvFrom(int count,
+                        const RecvFromCompletionCallback& callback) = 0;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                       int byte_count,
                       const net::IPEndPoint& address,
-                      net::CompletionOnceCallback callback) = 0;
+                      const CompletionCallback& callback) = 0;
 
   virtual void SetKeepAlive(bool enable,
                             int delay,
@@ -145,7 +147,7 @@ class Socket : public ApiResource {
   void WriteData();
   virtual int WriteImpl(net::IOBuffer* io_buffer,
                         int io_buffer_size,
-                        net::CompletionOnceCallback callback) = 0;
+                        const net::CompletionCallback& callback) = 0;
 
   std::string hostname_;
   bool is_connected_;
@@ -157,12 +159,12 @@ class Socket : public ApiResource {
   struct WriteRequest {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                  int byte_count,
-                 net::CompletionOnceCallback callback);
-    WriteRequest(WriteRequest&& other);
+                 const CompletionCallback& callback);
+    WriteRequest(const WriteRequest& other);
     ~WriteRequest();
     scoped_refptr<net::IOBuffer> io_buffer;
     int byte_count;
-    net::CompletionOnceCallback callback;
+    CompletionCallback callback;
     int bytes_written;
   };
 

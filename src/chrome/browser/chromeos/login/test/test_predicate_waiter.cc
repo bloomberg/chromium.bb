@@ -34,8 +34,6 @@ void TestPredicateWaiter::CheckPredicate() {
   if (is_fulfilled_.Run()) {
     run_loop_.Quit();
     timer_.Stop();
-  } else {
-    timer_.Reset();
   }
 }
 

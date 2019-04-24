@@ -15,12 +15,11 @@ ServiceWorkerScriptCachedMetadataHandler::
     ServiceWorkerScriptCachedMetadataHandler(
         WorkerGlobalScope* worker_global_scope,
         const KURL& script_url,
-        std::unique_ptr<Vector<uint8_t>> meta_data)
+        const Vector<uint8_t>* meta_data)
     : worker_global_scope_(worker_global_scope), script_url_(script_url) {
-  if (meta_data) {
-    cached_metadata_ =
-        CachedMetadata::CreateFromSerializedData(std::move(*meta_data));
-  }
+  if (meta_data)
+    cached_metadata_ = CachedMetadata::CreateFromSerializedData(
+        meta_data->data(), meta_data->size());
 }
 
 ServiceWorkerScriptCachedMetadataHandler::

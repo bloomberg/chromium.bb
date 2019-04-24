@@ -155,22 +155,6 @@ TEST_F(CommandBufferValidationTest, BeginComputePassBeforeEndPreviousPass) {
     }
 }
 
-// Test that beginning a compute pass before ending the previous pass causes an error.
-TEST_F(CommandBufferValidationTest, CallsAfterAFailedFinish) {
-    // A buffer that can't be used in CopyBufferToBuffer
-    dawn::BufferDescriptor bufferDesc;
-    bufferDesc.size = 16;
-    bufferDesc.usage = dawn::BufferUsageBit::Uniform;
-    dawn::Buffer buffer = device.CreateBuffer(&bufferDesc);
-
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToBuffer(buffer, 0, buffer, 0, 0);
-    ASSERT_DEVICE_ERROR(encoder.Finish());
-
-    // TODO(cwallez@chromium.org): Currently this does nothing, should it be a device error?
-    encoder.CopyBufferToBuffer(buffer, 0, buffer, 0, 0);
-}
-
 // Test that using a single buffer in multiple read usages in the same pass is allowed.
 TEST_F(CommandBufferValidationTest, BufferWithMultipleReadUsage) {
     // Create a buffer used as both vertex and index buffer.
@@ -180,7 +164,7 @@ TEST_F(CommandBufferValidationTest, BufferWithMultipleReadUsage) {
     dawn::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
     // Use the buffer as both index and vertex in the same pass
-    uint64_t zero = 0;
+    uint32_t zero = 0;
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     DummyRenderPass dummyRenderPass(device);
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
@@ -209,7 +193,7 @@ TEST_F(CommandBufferValidationTest, BufferWithReadAndWriteUsage) {
     DummyRenderPass dummyRenderPass(device);
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
     pass.SetIndexBuffer(buffer, 0);
-    pass.SetBindGroup(0, bg, 0, nullptr);
+    pass.SetBindGroup(0, bg);
     pass.EndPass();
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }
@@ -226,7 +210,7 @@ TEST_F(CommandBufferValidationTest, TextureWithReadAndWriteUsage) {
     textureDescriptor.sampleCount = 1;
     textureDescriptor.mipLevelCount = 1;
     dawn::Texture texture = device.CreateTexture(&textureDescriptor);
-    dawn::TextureView view = texture.CreateDefaultView();
+    dawn::TextureView view = texture.CreateDefaultTextureView();
 
     // Create the bind group to use the texture as sampled
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(device, {{
@@ -240,7 +224,7 @@ TEST_F(CommandBufferValidationTest, TextureWithReadAndWriteUsage) {
     // Use the texture as both sampeld and output attachment in the same pass
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
-    pass.SetBindGroup(0, bg, 0, nullptr);
+    pass.SetBindGroup(0, bg);
     pass.EndPass();
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }

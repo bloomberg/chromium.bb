@@ -74,7 +74,7 @@ void ReferenceFilterOperation::RemoveClient(SVGResourceClient& client) {
 bool ReferenceFilterOperation::operator==(const FilterOperation& o) const {
   if (!IsSameType(o))
     return false;
-  const auto& other = To<ReferenceFilterOperation>(o);
+  const ReferenceFilterOperation& other = ToReferenceFilterOperation(o);
   return url_ == other.url_ && resource_ == other.resource_;
 }
 
@@ -84,7 +84,7 @@ FilterOperation* BasicColorMatrixFilterOperation::Blend(
   double from_amount;
   if (from) {
     SECURITY_DCHECK(from->IsSameType(*this));
-    from_amount = To<BasicColorMatrixFilterOperation>(from)->Amount();
+    from_amount = ToBasicColorMatrixFilterOperation(from)->Amount();
   } else {
     switch (type_) {
       case GRAYSCALE:
@@ -115,7 +115,7 @@ FilterOperation* BasicColorMatrixFilterOperation::Blend(
     default:
       NOTREACHED();
   }
-  return MakeGarbageCollected<BasicColorMatrixFilterOperation>(result, type_);
+  return BasicColorMatrixFilterOperation::Create(result, type_);
 }
 
 FilterOperation* BasicComponentTransferFilterOperation::Blend(
@@ -124,7 +124,7 @@ FilterOperation* BasicComponentTransferFilterOperation::Blend(
   double from_amount;
   if (from) {
     SECURITY_DCHECK(from->IsSameType(*this));
-    from_amount = To<BasicComponentTransferFilterOperation>(from)->Amount();
+    from_amount = ToBasicComponentTransferFilterOperation(from)->Amount();
   } else {
     switch (type_) {
       case OPACITY:
@@ -154,8 +154,7 @@ FilterOperation* BasicComponentTransferFilterOperation::Blend(
     default:
       NOTREACHED();
   }
-  return MakeGarbageCollected<BasicComponentTransferFilterOperation>(result,
-                                                                     type_);
+  return BasicComponentTransferFilterOperation::Create(result, type_);
 }
 
 FloatRect BlurFilterOperation::MapRect(const FloatRect& rect) const {
@@ -168,11 +167,11 @@ FilterOperation* BlurFilterOperation::Blend(const FilterOperation* from,
                                             double progress) const {
   Length::Type length_type = std_deviation_.GetType();
   if (!from)
-    return MakeGarbageCollected<BlurFilterOperation>(std_deviation_.Blend(
+    return BlurFilterOperation::Create(std_deviation_.Blend(
         Length(length_type), progress, kValueRangeNonNegative));
 
-  const auto* from_op = To<BlurFilterOperation>(from);
-  return MakeGarbageCollected<BlurFilterOperation>(std_deviation_.Blend(
+  const BlurFilterOperation* from_op = ToBlurFilterOperation(from);
+  return BlurFilterOperation::Create(std_deviation_.Blend(
       from_op->std_deviation_, progress, kValueRangeNonNegative));
 }
 
@@ -189,7 +188,7 @@ FilterOperation* DropShadowFilterOperation::Blend(const FilterOperation* from,
                                 Color::kTransparent));
   }
 
-  const auto& from_op = To<DropShadowFilterOperation>(*from);
+  const auto& from_op = ToDropShadowFilterOperation(*from);
   return Create(shadow_.Blend(from_op.shadow_, progress, Color::kTransparent));
 }
 

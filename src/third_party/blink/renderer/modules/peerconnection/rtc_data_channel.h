@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace blink {
@@ -55,6 +56,11 @@ class MODULES_EXPORT RTCDataChannel final
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
 
  public:
+  static RTCDataChannel* Create(
+      ExecutionContext*,
+      scoped_refptr<webrtc::DataChannelInterface> channel,
+      WebRTCPeerConnectionHandler* peer_connection_handler);
+
   RTCDataChannel(ExecutionContext*,
                  scoped_refptr<webrtc::DataChannelInterface> channel,
                  WebRTCPeerConnectionHandler* peer_connection_handler);
@@ -70,7 +76,7 @@ class MODULES_EXPORT RTCDataChannel final
   uint16_t maxRetransmits() const;
   String protocol() const;
   bool negotiated() const;
-  uint16_t id(bool& is_null) const;
+  uint16_t id() const;
   String readyState() const;
   unsigned bufferedAmount() const;
 
@@ -133,13 +139,13 @@ class MODULES_EXPORT RTCDataChannel final
 
     // webrtc::DataChannelObserver implementation, called from signaling thread.
     void OnStateChange() override;
-    void OnBufferedAmountChange(uint64_t sent_data_size) override;
+    void OnBufferedAmountChange(uint64_t previous_amount) override;
     void OnMessage(const webrtc::DataBuffer& buffer) override;
 
    private:
     // webrtc::DataChannelObserver implementation on the main thread.
     void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
-    void OnBufferedAmountChangeImpl(unsigned sent_data_size);
+    void OnBufferedAmountDecreaseImpl(unsigned previous_amount);
     void OnMessageImpl(std::unique_ptr<webrtc::DataBuffer> buffer);
 
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -148,7 +154,7 @@ class MODULES_EXPORT RTCDataChannel final
   };
 
   void OnStateChange(webrtc::DataChannelInterface::DataState state);
-  void OnBufferedAmountChange(unsigned previous_amount);
+  void OnBufferedAmountDecrease(unsigned previous_amount);
   void OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer);
 
   void Dispose();
@@ -172,7 +178,6 @@ class MODULES_EXPORT RTCDataChannel final
   FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 
   unsigned buffered_amount_low_threshold_;
-  unsigned buffered_amount_;
   bool stopped_;
   scoped_refptr<Observer> observer_;
   SEQUENCE_CHECKER(sequence_checker_);

@@ -7,10 +7,12 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/system/accessibility/autoclick_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -45,6 +47,16 @@ base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
 }
 
+bool AutoclickTrayContainsPoint(const gfx::Point& point) {
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    AutoclickTray* autoclick_tray =
+        Shelf::ForWindow(window)->GetStatusAreaWidget()->autoclick_tray();
+    if (autoclick_tray && autoclick_tray->ContainsPointInScreen(point))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // static.
@@ -53,7 +65,17 @@ base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
 }
 
 AutoclickController::AutoclickController()
-    : delay_(GetDefaultAutoclickDelay()),
+    : enabled_(false),
+      event_type_(kDefaultAutoclickEventType),
+      revert_to_left_click_(true),
+      movement_threshold_(kDefaultAutoclickMovementThreshold),
+      tap_down_target_(nullptr),
+      delay_(GetDefaultAutoclickDelay()),
+      mouse_event_flags_(ui::EF_NONE),
+      anchor_location_(-kDefaultAutoclickMovementThreshold,
+                       -kDefaultAutoclickMovementThreshold),
+      gesture_anchor_location_(-kDefaultAutoclickMovementThreshold,
+                               -kDefaultAutoclickMovementThreshold),
       autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()),
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
@@ -63,11 +85,6 @@ AutoclickController::AutoclickController()
 }
 
 AutoclickController::~AutoclickController() {
-  // Clean up UI.
-  menu_bubble_controller_ = nullptr;
-  CancelAutoclickAction();
-
-  Shell::Get()->RemovePreTargetHandler(this);
   SetTapDownTarget(nullptr);
   Shell::GetPrimaryRootWindow()
       ->GetHost()
@@ -95,22 +112,10 @@ void AutoclickController::SetEnabled(bool enabled) {
     return;
   enabled_ = enabled;
 
-  if (enabled_) {
+  if (enabled_)
     Shell::Get()->AddPreTargetHandler(this);
-
-    // Only create the bubble controller when needed. Most users will not enable
-    // automatic clicks, so there's no need to use these unless the feature
-    // is on.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalAccessibilityAutoclick)) {
-      menu_bubble_controller_ =
-          std::make_unique<AutoclickMenuBubbleController>();
-      menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
-    }
-  } else {
+  else
     Shell::Get()->RemovePreTargetHandler(this);
-    menu_bubble_controller_ = nullptr;
-  }
 
   CancelAutoclickAction();
 }
@@ -131,8 +136,6 @@ void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
 
 void AutoclickController::SetAutoclickEventType(
     mojom::AutoclickEventType type) {
-  if (menu_bubble_controller_)
-    menu_bubble_controller_->SetEventType(type);
   if (event_type_ == type)
     return;
   CancelAutoclickAction();
@@ -142,13 +145,6 @@ void AutoclickController::SetAutoclickEventType(
 void AutoclickController::SetMovementThreshold(int movement_threshold) {
   movement_threshold_ = movement_threshold;
   UpdateRingSize();
-}
-
-void AutoclickController::SetMenuPosition(
-    mojom::AutoclickMenuPosition menu_position) {
-  menu_position_ = menu_position;
-  if (menu_bubble_controller_)
-    menu_bubble_controller_->SetPosition(menu_position_);
 }
 
 void AutoclickController::CreateAutoclickRingWidget(
@@ -186,28 +182,25 @@ void AutoclickController::DoAutoclickAction() {
   aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
-  // But if the thing that would be acted upon is an autoclick menu button, do a
-  // fake click instead of whatever other action type we would have done. This
-  // ensures that no matter the autoclick setting, users can always change to
-  // another autoclick setting. By using a fake click we avoid closing dialogs
-  // and menus, allowing autoclick users to interact with those items.
-  if (!DragInProgress() && AutoclickMenuContainsPoint(anchor_location_)) {
-    menu_bubble_controller_->ClickOnBubble(anchor_location_,
-                                           mouse_event_flags_);
-    // Reset UI.
-    CancelAutoclickAction();
-    return;
-  }
-
-  // Set the in-progress event type locally so that if the event type is updated
-  // in the middle of this event being executed it doesn't change execution.
-  mojom::AutoclickEventType in_progress_event_type = event_type_;
-  RecordUserAction(in_progress_event_type);
-
   gfx::Point location_in_pixels(anchor_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
+
+  // Set the in-progress event type locally so that if the event type is updated
+  // in the middle of this event being executed it doesn't change execution.
+  mojom::AutoclickEventType in_progress_event_type = event_type_;
+
+  // But if the thing that would be acted upon is the tray button, do a left
+  // click instead of whatever other action type we would have done. This
+  // ensures that no matter the autoclick setting, users can always change to
+  // another autoclick setting.
+  if (event_type_ != mojom::AutoclickEventType::kLeftClick &&
+      !DragInProgress() && AutoclickTrayContainsPoint(anchor_location_)) {
+    // TODO: Check if the keyboard is up too, so we know if it's blocked.
+    in_progress_event_type = mojom::AutoclickEventType::kLeftClick;
+  }
+  RecordUserAction(in_progress_event_type);
 
   bool drag_start =
       in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&
@@ -275,13 +268,15 @@ void AutoclickController::DoAutoclickAction() {
 void AutoclickController::StartAutoclickGesture() {
   if (event_type_ == mojom::AutoclickEventType::kNoAction) {
     // If we are set to "no action" and the gesture wouldn't occur over
-    // the autoclick menu, cancel and return early rather than starting the
+    // the autoclick tray, cancel and return early rather than starting the
     // gesture.
-    if (!AutoclickMenuContainsPoint(gesture_anchor_location_)) {
+    if (!AutoclickTrayContainsPoint(gesture_anchor_location_)) {
       CancelAutoclickAction();
       return;
     }
-    // Otherwise, go ahead and start the gesture.
+    // Otherwise, go ahead and start the gesture. When it competes, if the
+    // cursor is still over the tray, it will be changed to a left-click just
+    // this once.
   }
   // The anchor is always the point in the screen where the timer starts.
   anchor_location_ = gesture_anchor_location_;
@@ -347,21 +342,13 @@ void AutoclickController::UpdateRingSize() {
           switches::kEnableExperimentalAccessibilityAutoclick)) {
     return;
   }
-  // In V2, size doesn't need two inputs.
-  // TODO(katie): Re-write this function to take one parameter when fully
-  // upgrading to V2.
-  autoclick_ring_handler_->SetSize(movement_threshold_, movement_threshold_);
+  autoclick_ring_handler_->SetSize(movement_threshold_,
+                                   movement_threshold_ + 10);
 }
 
 bool AutoclickController::DragInProgress() const {
   return event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
          drag_event_rewriter_->IsEnabled();
-}
-
-bool AutoclickController::AutoclickMenuContainsPoint(
-    const gfx::Point& point) const {
-  return menu_bubble_controller_ &&
-         menu_bubble_controller_->ContainsPointInScreen(point);
 }
 
 void AutoclickController::RecordUserAction(
@@ -460,12 +447,6 @@ void AutoclickController::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AutoclickController::OnScrollEvent(ui::ScrollEvent* event) {
-  // A single tap can create a scroll event, so ignore scroll starts and
-  // cancels but cancel autoclicks when scrolls actually occur.
-  if (event->type() == ui::EventType::ET_SCROLL_FLING_START ||
-      event->type() == ui::EventType::ET_SCROLL_FLING_CANCEL)
-    return;
-
   CancelAutoclickAction();
 }
 

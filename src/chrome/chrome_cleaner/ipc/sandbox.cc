@@ -27,7 +27,6 @@
 #include "chrome/chrome_cleaner/os/inheritable_event.h"
 #include "chrome/chrome_cleaner/os/initializer.h"
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
-#include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -122,6 +121,12 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
     LOG_IF(ERROR, sandbox_result != sandbox::SBOX_ALL_OK)
         << "Failed to give the target process access to the product directory";
   }
+
+  // Also let it write to stdout and stderr. (If they point to the Windows
+  // console, these calls will silently fail. But this will let output from the
+  // child be captured on the bots or in the msys terminal.)
+  policy->SetStdoutHandle(::GetStdHandle(STD_OUTPUT_HANDLE));
+  policy->SetStderrHandle(::GetStdHandle(STD_ERROR_HANDLE));
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
   policy->SetLockdownDefaultDacl();
@@ -186,8 +191,6 @@ SandboxType SandboxProcessType() {
 }
 
 ResultCode SpawnSandbox(SandboxSetupHooks* setup_hooks, SandboxType type) {
-  DCHECK_NE(SandboxType::kNonSandboxed, type);
-
   base::CommandLine sandbox_command_line(
       PreFetchedPaths::GetInstance()->GetExecutablePath());
 
@@ -267,16 +270,16 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
   // Spawn the sandbox target process.
   PROCESS_INFORMATION temp_process_info = {0};
   DWORD last_win_error = 0;
-  sandbox::ResultCode last_sbox_warning = sandbox::SBOX_ALL_OK;
+  sandbox::ResultCode last_result_code = sandbox::SBOX_ALL_OK;
   LOG(INFO) << "Starting sandbox process with command line arguments: "
             << command_line.GetArgumentsString();
   sandbox::ResultCode sandbox_result = sandbox_broker_services->SpawnTarget(
       command_line.GetProgram().value().c_str(),
-      command_line.GetCommandLineString().c_str(), policy, &last_sbox_warning,
+      command_line.GetCommandLineString().c_str(), policy, &last_result_code,
       &last_win_error, &temp_process_info);
   if (sandbox_result != sandbox::SBOX_ALL_OK) {
     LOG(DFATAL) << "Failed to spawn sandbox target: " << sandbox_result
-                << " , last sandbox warning : " << last_sbox_warning
+                << " , last sandbox result : " << last_result_code
                 << " , last windows error: " << last_win_error;
     return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
   }
@@ -401,9 +404,8 @@ ResultCode RunSandboxTarget(const base::CommandLine& command_line,
 ResultCode GetResultCodeForSandboxConnectionError(SandboxType sandbox_type) {
   ResultCode result_code = RESULT_CODE_INVALID;
   switch (sandbox_type) {
-    case SandboxType::kEngine:
-      result_code =
-          GetEngineDisconnectionErrorCode(Settings::GetInstance()->engine());
+    case SandboxType::kEset:
+      result_code = RESULT_CODE_ESET_SANDBOX_DISCONNECTED_TOO_SOON;
       break;
     case SandboxType::kParser:
       result_code = RESULT_CODE_PARSER_SANDBOX_DISCONNECTED_TOO_SOON;

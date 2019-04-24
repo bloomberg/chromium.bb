@@ -32,6 +32,14 @@ namespace blink {
 
 class RemoveNodePreservingChildrenCommand final : public CompositeEditCommand {
  public:
+  static RemoveNodePreservingChildrenCommand* Create(
+      Node* node,
+      ShouldAssumeContentIsAlwaysEditable
+          should_assume_content_is_always_editable) {
+    return MakeGarbageCollected<RemoveNodePreservingChildrenCommand>(
+        node, should_assume_content_is_always_editable);
+  }
+
   RemoveNodePreservingChildrenCommand(Node*,
                                       ShouldAssumeContentIsAlwaysEditable);
 

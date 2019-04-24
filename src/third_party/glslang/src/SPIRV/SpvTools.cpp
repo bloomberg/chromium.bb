@@ -191,9 +191,7 @@ void SpirvToolsLegalize(const glslang::TIntermediate&, std::vector<unsigned int>
         optimizer.RegisterPass(spvtools::CreateRedundantLineInfoElimPass());
     }
 
-    spvtools::OptimizerOptions spvOptOptions;
-    spvOptOptions.set_run_validator(false); // The validator may run as a seperate step later on
-    optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
+    optimizer.Run(spirv.data(), spirv.size(), &spirv);
 }
 
 }; // end namespace glslang

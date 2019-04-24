@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -48,10 +47,6 @@ HTMLInputElement* NextInputElement(const HTMLInputElement& element,
 
 InputType* RadioInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<RadioInputType>(element);
-}
-
-void RadioInputType::CountUsage() {
-  CountUsageIfVisible(WebFeature::kInputTypeRadio);
 }
 
 const AtomicString& RadioInputType::FormControlType() const {
@@ -114,7 +109,7 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
                      : (key == "ArrowDown" || key == "ArrowRight");
 
   // Force layout for isFocusable() in findNextFocusableRadioButtonInGroup().
-  document.UpdateStyleAndLayout();
+  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // We can only stay within the form's children if the form hasn't been demoted
   // to a leaf because of malformed HTML.
@@ -142,20 +137,13 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
 }
 
 void RadioInputType::HandleKeyupEvent(KeyboardEvent& event) {
+  if (event.key() != " ")
+    return;
   // If an unselected radio is tabbed into (because the entire group has nothing
   // checked, or because of some explicit .focus() call), then allow space to
   // check it.
   if (GetElement().checked())
     return;
-
-  // Use Space key simulated click by default.
-  // Use Enter key simulated click when Spatial Navigation enabled.
-  if (event.key() == " " ||
-      (IsSpatialNavigationEnabled(GetElement().GetDocument().GetFrame()) &&
-       event.key() == "Enter")) {
-    DispatchSimulatedClickIfActive(event);
-  }
-
   DispatchSimulatedClickIfActive(event);
 }
 

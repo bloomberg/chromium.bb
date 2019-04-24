@@ -4,10 +4,7 @@
 
 #include <stddef.h>
 
-#include <utility>
-
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -59,21 +56,15 @@ namespace {
 // receives a mouse-release event.
 class ExitLoopOnRelease : public View {
  public:
-  explicit ExitLoopOnRelease(base::OnceClosure quit_closure)
-      : quit_closure_(std::move(quit_closure)) {
-    DCHECK(quit_closure_);
-  }
-
-  ~ExitLoopOnRelease() override = default;
+  ExitLoopOnRelease() {}
+  ~ExitLoopOnRelease() override {}
 
  private:
   // View:
   void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
-    std::move(quit_closure_).Run();
+    base::RunLoop::QuitCurrentDeprecated();
   }
-
-  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);
 };
@@ -81,8 +72,8 @@ class ExitLoopOnRelease : public View {
 // A view that does a capture on ui::ET_GESTURE_TAP_DOWN events.
 class GestureCaptureView : public View {
  public:
-  GestureCaptureView() = default;
-  ~GestureCaptureView() override = default;
+  GestureCaptureView() {}
+  ~GestureCaptureView() override {}
 
  private:
   // View:
@@ -99,8 +90,13 @@ class GestureCaptureView : public View {
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
-  MouseView() = default;
-  ~MouseView() override = default;
+  MouseView()
+      : View(),
+        entered_(0),
+        exited_(0),
+        pressed_(0) {
+  }
+  ~MouseView() override {}
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
     pressed_++;
@@ -128,10 +124,10 @@ class MouseView : public View {
   int pressed() const { return pressed_; }
 
  private:
-  int entered_ = 0;
-  int exited_ = 0;
+  int entered_;
+  int exited_;
 
-  int pressed_ = 0;
+  int pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseView);
 };
@@ -140,12 +136,8 @@ class MouseView : public View {
 // initiates a nested message-loop when it receives a mouse-press event.
 class NestedLoopCaptureView : public View {
  public:
-  explicit NestedLoopCaptureView(Widget* widget)
-      : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
-        widget_(widget) {}
-  ~NestedLoopCaptureView() override = default;
-
-  base::OnceClosure GetQuitClosure() { return run_loop_.QuitClosure(); }
+  explicit NestedLoopCaptureView(Widget* widget) : widget_(widget) {}
+  ~NestedLoopCaptureView() override {}
 
  private:
   // View:
@@ -155,11 +147,9 @@ class NestedLoopCaptureView : public View {
     widget_->SetCapture(widget_->GetContentsView());
     EXPECT_TRUE(widget_->HasCapture());
 
-    run_loop_.Run();
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
     return true;
   }
-
-  base::RunLoop run_loop_;
 
   Widget* widget_;
 
@@ -243,9 +233,9 @@ void ShowInactiveSync(Widget* widget) {
 // Wait until |callback| returns |expected_value|, but no longer than 1 second.
 class PropertyWaiter {
  public:
-  PropertyWaiter(base::RepeatingCallback<bool(void)> callback,
+  PropertyWaiter(const base::Callback<bool(void)>& callback,
                  bool expected_value)
-      : callback_(std::move(callback)), expected_value_(expected_value) {}
+      : callback_(callback), expected_value_(expected_value) {}
 
   bool Wait() {
     if (callback_.Run() == expected_value_) {
@@ -269,7 +259,7 @@ class PropertyWaiter {
   }
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1);
-  base::RepeatingCallback<bool(void)> callback_;
+  base::Callback<bool(void)> callback_;
   const bool expected_value_;
   bool success_ = false;
   base::TimeTicks start_time_;
@@ -344,10 +334,10 @@ TEST_F(DesktopWidgetTestInteractive,
   aura::Window* root_window1 = GetRootWindow(widget1);
   focusable_view1->RequestFocus();
 
-  EXPECT_TRUE(root_window1 != nullptr);
+  EXPECT_TRUE(root_window1 != NULL);
   wm::ActivationClient* activation_client1 =
       wm::GetActivationClient(root_window1);
-  EXPECT_TRUE(activation_client1 != nullptr);
+  EXPECT_TRUE(activation_client1 != NULL);
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1->GetNativeView());
 
   // Create widget 2 and expect the active window to be its window.
@@ -361,7 +351,7 @@ TEST_F(DesktopWidgetTestInteractive,
 
   wm::ActivationClient* activation_client2 =
       wm::GetActivationClient(root_window2);
-  EXPECT_TRUE(activation_client2 != nullptr);
+  EXPECT_TRUE(activation_client2 != NULL);
   EXPECT_EQ(activation_client2->GetActiveWindow(), widget2->GetNativeView());
   EXPECT_EQ(activation_client1->GetActiveWindow(),
             reinterpret_cast<aura::Window*>(NULL));
@@ -380,7 +370,7 @@ TEST_F(DesktopWidgetTestInteractive,
 
 class TouchEventHandler : public ui::EventHandler {
  public:
-  explicit TouchEventHandler(Widget* widget) : widget_(widget) {
+  TouchEventHandler(Widget* widget) : widget_(widget) {
     widget_->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(this);
   }
 
@@ -452,7 +442,7 @@ TEST_F(WidgetTestInteractive, CaptureAutoReset) {
   toplevel->SetContentsView(container);
 
   EXPECT_FALSE(toplevel->HasCapture());
-  toplevel->SetCapture(nullptr);
+  toplevel->SetCapture(NULL);
   EXPECT_TRUE(toplevel->HasCapture());
 
   // By default, mouse release removes capture.
@@ -465,7 +455,7 @@ TEST_F(WidgetTestInteractive, CaptureAutoReset) {
 
   // Now a mouse release shouldn't remove capture.
   toplevel->set_auto_release_capture(false);
-  toplevel->SetCapture(nullptr);
+  toplevel->SetCapture(NULL);
   EXPECT_TRUE(toplevel->HasCapture());
   toplevel->OnMouseEvent(&release);
   EXPECT_TRUE(toplevel->HasCapture());
@@ -544,10 +534,10 @@ TEST_F(WidgetTestInteractive, DisableCaptureWidgetFromMousePress) {
   Widget* first = CreateTopLevelFramelessPlatformWidget();
   Widget* second = CreateTopLevelFramelessPlatformWidget();
 
-  NestedLoopCaptureView* container = new NestedLoopCaptureView(second);
+  View* container = new NestedLoopCaptureView(second);
   first->SetContentsView(container);
 
-  second->SetContentsView(new ExitLoopOnRelease(container->GetQuitClosure()));
+  second->SetContentsView(new ExitLoopOnRelease());
 
   first->SetSize(gfx::Size(100, 100));
   first->Show();
@@ -634,15 +624,12 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
 // Tests mouse move outside of the window into the "resize controller" and back
 // will still generate an OnMouseEntered and OnMouseExited event..
 TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
-  Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
+  Widget* toplevel = CreateTopLevelPlatformWidget();
 
   toplevel->SetBounds(gfx::Rect(0, 0, 100, 100));
 
   MouseView* view = new MouseView();
   view->SetBounds(90, 90, 10, 10);
-  // |view| needs to be a particular size. Reset the LayoutManager so that
-  // it doesn't get resized.
-  toplevel->GetRootView()->SetLayoutManager(nullptr);
   toplevel->GetRootView()->AddChildView(view);
 
   toplevel->Show();
@@ -705,7 +692,7 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   ShowSync(widget2);
   EXPECT_TRUE(widget2->IsActive());
   EXPECT_FALSE(widget1->IsActive());
-  EXPECT_EQ(nullptr, widget1->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(NULL, widget1->GetFocusManager()->GetFocusedView());
   view2a->RequestFocus();
   EXPECT_EQ(view2a, widget2->GetFocusManager()->GetFocusedView());
   view2b->RequestFocus();
@@ -715,13 +702,13 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   EXPECT_TRUE(widget1->IsActive());
   EXPECT_EQ(view1, widget1->GetFocusManager()->GetFocusedView());
   EXPECT_FALSE(widget2->IsActive());
-  EXPECT_EQ(nullptr, widget2->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(NULL, widget2->GetFocusManager()->GetFocusedView());
 
   ActivateSync(widget2);
   EXPECT_TRUE(widget2->IsActive());
   EXPECT_EQ(view2b, widget2->GetFocusManager()->GetFocusedView());
   EXPECT_FALSE(widget1->IsActive());
-  EXPECT_EQ(nullptr, widget1->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(NULL, widget1->GetFocusManager()->GetFocusedView());
 
   widget1->CloseNow();
   widget2->CloseNow();
@@ -814,9 +801,9 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   EXPECT_TRUE(::IsWindowEnabled(hwnd));
   EXPECT_EQ(hwnd, ::GetActiveWindow());
 
-  for (View* view : widget->GetContentsView()->children()) {
-    SCOPED_TRACE(base::StringPrintf(
-        "Child view %d", widget->GetContentsView()->GetIndexOf(view)));
+  for (int i = 0; i < widget->GetContentsView()->child_count(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Child view %d", i));
+    View* view = widget->GetContentsView()->child_at(i);
 
     view->RequestFocus();
     EXPECT_EQ(view, widget->GetFocusManager()->GetFocusedView());
@@ -847,9 +834,10 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
 // window caption by sending fake WM_NCACTIVATE messages.
 class WidgetActivationTest : public Widget {
  public:
-  WidgetActivationTest() = default;
+  WidgetActivationTest()
+      : active_(false) {}
 
-  ~WidgetActivationTest() override = default;
+  ~WidgetActivationTest() override {}
 
   bool OnNativeWidgetActivationChanged(bool active) override {
     active_ = active;
@@ -859,7 +847,7 @@ class WidgetActivationTest : public Widget {
   bool active() const { return active_; }
 
  private:
-  bool active_ = false;
+  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetActivationTest);
 };
@@ -1014,7 +1002,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
 class ModalDialogDelegate : public DialogDelegateView {
  public:
   explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  ~ModalDialogDelegate() override = default;
+  ~ModalDialogDelegate() override {}
 
   // WidgetDelegate overrides.
   ui::ModalType GetModalType() const override { return type_; }
@@ -1061,7 +1049,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate(modal_type);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, nullptr, top_level_widget.GetNativeView());
+      dialog_delegate, NULL, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
 
   // Note the dialog widget doesn't need a ShowSync. Since it is modal, it gains
@@ -1127,7 +1115,7 @@ TEST_F(DesktopWidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
             focus_listener.focus_changes().back());
 
   EXPECT_FALSE(top_level_widget.HasCapture());
-  top_level_widget.SetCapture(nullptr);
+  top_level_widget.SetCapture(NULL);
   EXPECT_TRUE(top_level_widget.HasCapture());
 
   // Create a modal dialog.
@@ -1135,7 +1123,7 @@ TEST_F(DesktopWidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
       new ModalDialogDelegate(ui::MODAL_TYPE_SYSTEM);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, nullptr, top_level_widget.GetNativeView());
+      dialog_delegate, NULL, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   ShowSync(modal_dialog_widget);
 
@@ -1418,14 +1406,12 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAfterMinimize) {
   ASSERT_FALSE(widget->IsMinimized());
 
   PropertyWaiter minimize_waiter(
-      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
-      true);
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
   widget->Minimize();
   EXPECT_TRUE(minimize_waiter.Wait());
 
   PropertyWaiter restore_waiter(
-      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
-      false);
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
   widget->Restore();
   EXPECT_TRUE(restore_waiter.Wait());
 
@@ -1541,7 +1527,7 @@ namespace {
 // OnMouseCaptureLost has been invoked for a widget.
 class CaptureLostState {
  public:
-  CaptureLostState() = default;
+  CaptureLostState() : got_capture_lost_(false) {}
 
   bool GetAndClearGotCaptureLost() {
     bool value = got_capture_lost_;
@@ -1552,7 +1538,7 @@ class CaptureLostState {
   void OnMouseCaptureLost() { got_capture_lost_ = true; }
 
  private:
-  bool got_capture_lost_ = false;
+  bool got_capture_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureLostState);
 };
@@ -1767,7 +1753,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   EXPECT_EQ(1, mouse_view1->EnteredCalls());
   EXPECT_EQ(0, mouse_view1->ExitedCalls());
 
-  widget2.SetCapture(nullptr);
+  widget2.SetCapture(NULL);
   EXPECT_EQ(0, mouse_view1->EnteredCalls());
   // Grabbing native capture on Windows generates a ui::ET_MOUSE_EXITED event
   // in addition to the one generated by Chrome.
@@ -1779,8 +1765,8 @@ namespace {
 // Widget observer which grabs capture when the widget is activated.
 class CaptureOnActivationObserver : public WidgetObserver {
  public:
-  CaptureOnActivationObserver() = default;
-  ~CaptureOnActivationObserver() override = default;
+  CaptureOnActivationObserver() : activation_observed_(false) {}
+  ~CaptureOnActivationObserver() override {}
 
   // WidgetObserver:
   void OnWidgetActivationChanged(Widget* widget, bool active) override {
@@ -1793,7 +1779,7 @@ class CaptureOnActivationObserver : public WidgetObserver {
   bool activation_observed() const { return activation_observed_; }
 
  private:
-  bool activation_observed_ = false;
+  bool activation_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureOnActivationObserver);
 };
@@ -1842,8 +1828,8 @@ namespace {
 // Used to verify OnMouseEvent() has been invoked.
 class MouseEventTrackingWidget : public Widget {
  public:
-  MouseEventTrackingWidget() = default;
-  ~MouseEventTrackingWidget() override = default;
+  MouseEventTrackingWidget() : got_mouse_event_(false) {}
+  ~MouseEventTrackingWidget() override {}
 
   bool GetAndClearGotMouseEvent() {
     bool value = got_mouse_event_;
@@ -1858,7 +1844,7 @@ class MouseEventTrackingWidget : public Widget {
   }
 
  private:
-  bool got_mouse_event_ = false;
+  bool got_mouse_event_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEventTrackingWidget);
 };
@@ -1907,7 +1893,7 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
 
 class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
  public:
-  WidgetInputMethodInteractiveTest() = default;
+  WidgetInputMethodInteractiveTest() {}
 
   // testing::Test:
   void SetUp() override {

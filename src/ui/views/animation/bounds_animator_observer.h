@@ -20,7 +20,7 @@ class VIEWS_EXPORT BoundsAnimatorObserver {
   virtual void OnBoundsAnimatorDone(BoundsAnimator* animator) = 0;
 
  protected:
-  virtual ~BoundsAnimatorObserver() = default;
+  virtual ~BoundsAnimatorObserver() {}
 };
 
 }  // namespace views

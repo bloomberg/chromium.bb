@@ -4,20 +4,15 @@
 
 #include "ios/web/navigation/navigation_manager_util.h"
 
-#import <WebKit/WebKit.h>
-
 #include "base/memory/ptr_util.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
-#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/fake_navigation_manager_delegate.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,29 +27,23 @@ namespace web {
 class NavigationManagerUtilTest : public PlatformTest,
                                   public ::testing::WithParamInterface<bool> {
  protected:
-  NavigationManagerUtilTest() {
+  NavigationManagerUtilTest()
+      : controller_([[CRWSessionController alloc]
+            initWithBrowserState:&browser_state_]) {
     bool test_legacy_navigation_manager = GetParam();
     if (test_legacy_navigation_manager) {
-      controller_ =
-          [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
-      manager_ = std::make_unique<LegacyNavigationManagerImpl>();
+      manager_.reset(new LegacyNavigationManagerImpl);
       manager_->SetBrowserState(&browser_state_);
+      manager_->SetDelegate(&delegate_);
       manager_->SetSessionController(controller_);
     } else {
-      manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
-      manager_->SetBrowserState(&browser_state_);
-      WKWebView* mock_web_view = OCMClassMock([WKWebView class]);
-      mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
-      OCMStub([mock_web_view backForwardList]).andReturn(mock_wk_list_);
-      delegate_.SetWebViewNavigationProxy(mock_web_view);
+      DCHECK(false) << "Not yet implemented.";
     }
-    manager_->SetDelegate(&delegate_);
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
   web::FakeNavigationManagerDelegate delegate_;
-  CRWSessionController* controller_ = nil;
-  CRWFakeBackForwardList* mock_wk_list_ = nil;
+  CRWSessionController* controller_;
 
  private:
   TestBrowserState browser_state_;
@@ -81,7 +70,6 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Commit that pending item.
-  [mock_wk_list_ setCurrentURL:@"http://chromium.org"];
   manager_->CommitPendingItem();
   EXPECT_EQ(item, GetCommittedItemWithUniqueID(manager_.get(), unique_id));
   EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), context.get()));
@@ -100,7 +88,7 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Add transient item.
-  manager_->AddTransientItem(GURL("http://chromium.org"));
+  [controller_ addTransientItemWithURL:GURL("http://chromium.org")];
   item = manager_->GetTransientItem();
   unique_id = item->GetUniqueID();
   context->SetNavigationItemUniqueID(unique_id);
@@ -119,7 +107,6 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
 INSTANTIATE_TEST_SUITE_P(
     ProgrammaticNavigationManagerUtilTest,
     NavigationManagerUtilTest,
-    ::testing::Values(/*test_legacy_navigation_manager=*/true,
-                      /*test_legacy_navigation_manager=*/false));
+    ::testing::Values(true /* test_legacy_navigation_manager */));
 
 }  // namespace web

@@ -138,9 +138,15 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
-  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(*client);
+  WebFrameWidgetBase* widget = WebFrameWidgetImpl::Create(*client);
   widget->BindLocalRoot(*local_root);
   return widget;
+}
+
+WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
+  // Pass the WebFrameWidgetImpl's self-reference from SelfKeepAlive to the
+  // caller.
+  return MakeGarbageCollected<WebFrameWidgetImpl>(client);
 }
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
@@ -207,32 +213,21 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
   // updates are throttled in the root's LocalFrameView, but for OOPIFs that
   // doesn't happen. Need to investigate if OOPIFs can be throttled during
   // load.
-  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted()) {
-    // FIXME: This is wrong. The LocalFrameView is responsible sending a
-    // resizeEvent as part of layout. Layout is also responsible for sending
-    // invalidations to the embedder. This method and all callers may be wrong.
-    // -- eseidel.
-    if (LocalRootImpl()->GetFrameView()) {
-      // Enqueues the resize event.
-      LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
-    }
+  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted())
+    SendResizeEventAndRepaint();
+}
 
-    // TODO(danakj): |layer_tree_view_| is used as a proxy to tell if we're
-    // using compositing, and we should just set that explicitly... or read it
-    // from the WebView.
-    if (layer_tree_view_) {
-      // Pass the limits even though this is for subframes, as the limits will
-      // be needed in setting the raster scale. We set this value when setting
-      // up the compositor, but need to update it when the limits of the
-      // WebViewImpl have changed.
-      // TODO(wjmaclean): This is updating when the size of the *child frame*
-      // have changed which are completely independent of the WebView, and in an
-      // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleFactorAndLimits(1.f,
-                                            View()->MinimumPageScaleFactor(),
-                                            View()->MaximumPageScaleFactor());
-    }
+void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
+  // FIXME: This is wrong. The LocalFrameView is responsible sending a
+  // resizeEvent as part of layout. Layout is also responsible for sending
+  // invalidations to the embedder. This method and all callers may be wrong. --
+  // eseidel.
+  if (LocalRootImpl()->GetFrameView()) {
+    // Enqueues the resize event.
+    LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
   }
+
+  UpdateLayerTreeViewport();
 }
 
 void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {
@@ -308,51 +303,15 @@ void WebFrameWidgetImpl::DidBeginFrame() {
 }
 
 void WebFrameWidgetImpl::BeginRafAlignedInput() {
-  if (LocalRootImpl()) {
-    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
-  }
+  raf_aligned_input_start_time_ = CurrentTimeTicks();
 }
 
 void WebFrameWidgetImpl::EndRafAlignedInput() {
   if (LocalRootImpl()) {
-    DCHECK(raf_aligned_input_start_time_);
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
+        raf_aligned_input_start_time_, CurrentTimeTicks());
   }
-  raf_aligned_input_start_time_.reset();
-}
-
-void WebFrameWidgetImpl::BeginUpdateLayers() {
-  if (LocalRootImpl())
-    update_layers_start_time_.emplace(CurrentTimeTicks());
-}
-
-void WebFrameWidgetImpl::EndUpdateLayers() {
-  if (LocalRootImpl()) {
-    DCHECK(update_layers_start_time_);
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), CurrentTimeTicks());
-  }
-  update_layers_start_time_.reset();
-}
-
-void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
-  if (LocalRootImpl()) {
-    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
-  }
-}
-
-void WebFrameWidgetImpl::EndCommitCompositorFrame() {
-  if (LocalRootImpl()) {
-    // Some tests call this without ever beginning a frame, so don't check for
-    // timing data.
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
-  }
-  commit_compositor_frame_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::RecordStartOfFrameMetrics() {
@@ -384,6 +343,27 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update, reason);
+}
+
+void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
+                                      const WebRect& rect) {
+  // Out-of-process iframes require compositing.
+  NOTREACHED();
+}
+
+void WebFrameWidgetImpl::UpdateLayerTreeViewport() {
+  if (!GetPage() || !layer_tree_view_)
+    return;
+
+  // Pass the limits even though this is for subframes, as the limits will be
+  // needed in setting the raster scale.
+  layer_tree_view_->SetPageScaleFactorAndLimits(
+      1, View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
+}
+
+void WebFrameWidgetImpl::CompositeAndReadbackAsync(
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 void WebFrameWidgetImpl::ThemeChanged() {
@@ -434,9 +414,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   if (LocalRootImpl()) {
     if (WebDevToolsAgentImpl* devtools = LocalRootImpl()->DevToolsAgentImpl()) {
-      auto result = devtools->HandleInputEvent(input_event);
-      if (result != WebInputEventResult::kNotHandled)
-        return result;
+      if (devtools->HandleInputEvent(input_event))
+        return WebInputEventResult::kHandledSuppressed;
     }
   }
 
@@ -520,11 +499,6 @@ void WebFrameWidgetImpl::SetCursorVisibilityState(bool is_visible) {
   GetPage()->SetIsCursorVisible(is_visible);
 }
 
-void WebFrameWidgetImpl::OnFallbackCursorModeToggled(bool is_on) {
-  // TODO(crbug.com/944575) Should support oopif.
-  NOTREACHED();
-}
-
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =
@@ -600,9 +574,10 @@ void WebFrameWidgetImpl::SetFocus(bool enable) {
       // Finish an ongoing composition to delete the composition node.
       if (focused_frame->GetInputMethodController().HasComposition()) {
         // TODO(editing-dev): The use of
-        // UpdateStyleAndLayout needs to be audited.
+        // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
         // See http://crbug.com/590369 for more details.
-        focused_frame->GetDocument()->UpdateStyleAndLayout();
+        focused_frame->GetDocument()
+            ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
         focused_frame->GetInputMethodController().FinishComposingText(
             InputMethodController::kKeepSelection);
@@ -995,6 +970,14 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
 
   GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
+
+  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
+  // This is okay because it is only necessarily to set the trigger to false
+  // for certain cases that affect the top-level frame, but it would be better
+  // to be consistent with the top-level frame. Ideally the logic should
+  // be moved from WebViewImpl into WebFrameWidget and used for all local
+  // frame roots. https://crbug.com/712794
+  layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
@@ -1007,6 +990,7 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
   TRACE_EVENT0("blink",
                "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
   Client()->SetRootLayer(root_layer_);
+  UpdateLayerTreeViewport();
   is_accelerated_compositing_active_ = true;
 }
 
@@ -1020,7 +1004,21 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
 
 void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
-  SetRootLayer(layer ? layer->CcLayer() : nullptr);
+  root_layer_ = layer ? layer->CcLayer() : nullptr;
+
+  SetIsAcceleratedCompositingActive(!!layer);
+
+  // TODO(danakj): Is this called after Close?? (With a null layer?)
+  if (!layer_tree_view_)
+    return;
+
+  // WebFrameWidgetImpl is used for child frames, which always have a
+  // transparent background color.
+  Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
+
+  // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
+  // if it's not null..
+  Client()->SetRootLayer(root_layer_);
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
@@ -1035,18 +1033,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
   Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  // Pass the limits even though this is for subframes, as the limits will
-  // be needed in setting the raster scale.
-  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
-                                        View()->MaximumPageScaleFactor());
-
-  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
-  // This is okay because it is only necessarily to set the trigger to false
-  // for certain cases that affect the top-level frame, but it would be better
-  // to be consistent with the top-level frame. Ideally the logic should
-  // be moved from WebViewImpl into WebFrameWidget and used for all local
-  // frame roots. https://crbug.com/712794
-  Client()->SetAllowGpuRasterization(true);
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..

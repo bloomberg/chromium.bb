@@ -41,6 +41,21 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
+// Creates a pipe. Returns true on success, otherwise false.
+// On success, |read_fd| will be set to the fd of the read side, and
+// |write_fd| will be set to the one of write side.
+bool CreatePipe(base::ScopedFD* read_fd, base::ScopedFD* write_fd) {
+  int fds[2];
+  if (pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) {
+    PLOG(ERROR) << "pipe2()";
+    return false;
+  }
+
+  read_fd->reset(fds[0]);
+  write_fd->reset(fds[1]);
+  return true;
+}
+
 // Waits until |raw_socket_fd| is readable.  We signal |raw_cancel_fd| when we
 // want to cancel the blocking wait and stop serving connections on
 // |raw_socket_fd|.  To notify such a situation, |raw_cancel_fd| is also passed
@@ -108,7 +123,7 @@ bool CameraHalDispatcherImpl::StartThreads() {
 }
 
 bool CameraHalDispatcherImpl::Start(
-    MojoMjpegDecodeAcceleratorFactoryCB jda_factory,
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
     MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
   DCHECK(!IsStarted());
   if (!StartThreads()) {
@@ -197,7 +212,7 @@ void CameraHalDispatcherImpl::RegisterClient(
 }
 
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   jda_factory_.Run(std::move(jda_request));
 }
 
@@ -279,9 +294,9 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
   DCHECK(socket_fd.is_valid());
 
   base::ScopedFD cancel_fd;
-  if (!base::CreatePipe(&cancel_fd, &cancel_pipe_, true)) {
-    PLOG(ERROR) << "Failed to create cancel pipe";
+  if (!CreatePipe(&cancel_fd, &cancel_pipe_)) {
     started->Signal();
+    LOG(ERROR) << "Failed to create cancel pipe";
     return;
   }
 
@@ -367,10 +382,12 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
 void CameraHalDispatcherImpl::OnCameraHalClientConnectionError(
     CameraClientObserver* client_observer) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  auto it = client_observers_.find(client_observer);
-  if (it != client_observers_.end()) {
-    client_observers_.erase(it);
-    VLOG(1) << "Camera HAL client connection lost";
+  for (auto& it : client_observers_) {
+    if (it.get() == client_observer) {
+      client_observers_.erase(it);
+      VLOG(1) << "Camera HAL client connection lost";
+      break;
+    }
   }
 }
 

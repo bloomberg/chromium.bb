@@ -19,8 +19,8 @@ class V8_EXPORT_PRIVATE MoveOptimizer final {
   void Run();
 
  private:
-  using MoveOpVector = ZoneVector<MoveOperands*>;
-  using Instructions = ZoneVector<Instruction*>;
+  typedef ZoneVector<MoveOperands*> MoveOpVector;
+  typedef ZoneVector<Instruction*> Instructions;
 
   InstructionSequence* code() const { return code_; }
   Zone* local_zone() const { return local_zone_; }

@@ -11,8 +11,7 @@ namespace blink {
 
 class StyleAdjusterTest : public RenderingTest {
  public:
-  StyleAdjusterTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  StyleAdjusterTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 };
 
 TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {

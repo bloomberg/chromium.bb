@@ -162,7 +162,7 @@ protected:
                                 colors.get(),
                                 positions.get(),
                                 colorCount,
-                                SkTileMode::kClamp,
+                                SkShader::kClamp_TileMode,
                                 0,
                                 nullptr);
 

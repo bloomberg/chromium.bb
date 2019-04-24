@@ -15,9 +15,6 @@ namespace blink {
 
 class CSSValue;
 class StyleResolverState;
-class CSSParserContext;
-class CSSParserLocalContext;
-class CSSParserTokenRange;
 
 class Longhand : public CSSProperty {
  public:
@@ -38,15 +35,13 @@ class Longhand : public CSSProperty {
     NOTREACHED();
     return Color();
   }
+  bool IsLonghand() const override { return true; }
   virtual const CSSValue* InitialValue() const {
     return CSSInitialValue::Create();
   }
 
  protected:
-  constexpr Longhand(CSSPropertyID id,
-                     uint16_t flags,
-                     char repetition_separator)
-      : CSSProperty(id, flags | kLonghand, repetition_separator) {}
+  constexpr Longhand() : CSSProperty() {}
 };
 
 template <>

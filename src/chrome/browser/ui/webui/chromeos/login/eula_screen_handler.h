@@ -48,7 +48,6 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   // JS messages handlers.
   void HandleOnLearnMore();
   void HandleOnInstallationSettingsPopupOpened();
-  void HandleUsageStatsEnabled(bool enabled);
 
   void UpdateLocalizedValues(::login::SecureModuleUsed secure_module_used);
 

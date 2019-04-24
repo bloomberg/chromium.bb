@@ -185,14 +185,8 @@ public class BluetoothChooserDialog
         // Emphasize the origin.
         Profile profile = Profile.getLastUsedProfile();
         SpannableString origin = new SpannableString(mOrigin);
-
-        assert mActivity instanceof ChromeBaseAppCompatActivity;
-        final boolean useDarkColors = !((ChromeBaseAppCompatActivity) mActivity)
-                                               .getNightModeStateProvider()
-                                               .isInNightMode();
-
-        OmniboxUrlEmphasizer.emphasizeUrl(origin, mActivity.getResources(), profile, mSecurityLevel,
-                false, useDarkColors, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(
+                origin, mActivity.getResources(), profile, mSecurityLevel, false, true, true);
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =
                 new SpannableString(mActivity.getString(R.string.bluetooth_dialog_title, mOrigin));

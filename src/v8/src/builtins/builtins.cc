@@ -311,8 +311,8 @@ Handle<ByteArray> Builtins::GenerateOffHeapTrampolineRelocInfo(
   // generated instruction stream.
   CodeDesc desc = generator.Generate(kNullAddress);
 
-  Handle<ByteArray> reloc_info = isolate->factory()->NewByteArray(
-      desc.reloc_size, AllocationType::kReadOnly);
+  Handle<ByteArray> reloc_info =
+      isolate->factory()->NewByteArray(desc.reloc_size, TENURED_READ_ONLY);
   Code::CopyRelocInfoToByteArray(*reloc_info, desc);
 
   return reloc_info;

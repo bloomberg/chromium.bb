@@ -5,23 +5,22 @@
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include "base/mac/scoped_typeref.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
 class HyphenationCF final : public Hyphenation {
  public:
-  HyphenationCF(base::ScopedCFTypeRef<CFLocaleRef>& locale_cf)
-      : locale_cf_(locale_cf) {
+  HyphenationCF(RetainPtr<CFLocaleRef>& locale_cf) : locale_cf_(locale_cf) {
     DCHECK(locale_cf_);
   }
 
   wtf_size_t LastHyphenLocation(const StringView& text,
                                 wtf_size_t before_index) const override {
     CFIndex result = CFStringGetHyphenationLocationBeforeIndex(
-        text.ToString().Impl()->CreateCFString(), before_index,
-        CFRangeMake(0, text.length()), 0, locale_cf_, 0);
+        text.ToString().Impl()->CreateCFString().Get(), before_index,
+        CFRangeMake(0, text.length()), 0, locale_cf_.Get(), 0);
     return result == kCFNotFound ? 0 : result;
   }
 
@@ -48,16 +47,15 @@ class HyphenationCF final : public Hyphenation {
   }
 
  private:
-  base::ScopedCFTypeRef<CFLocaleRef> locale_cf_;
+  RetainPtr<CFLocaleRef> locale_cf_;
 };
 
 scoped_refptr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
-  base::ScopedCFTypeRef<CFStringRef> locale_cf_string(
-      locale.Impl()->CreateCFString());
-  base::ScopedCFTypeRef<CFLocaleRef> locale_cf(
-      CFLocaleCreate(kCFAllocatorDefault, locale_cf_string));
-  if (!CFStringIsHyphenationAvailableForLocale(locale_cf))
+  RetainPtr<CFStringRef> locale_cf_string = locale.Impl()->CreateCFString();
+  RetainPtr<CFLocaleRef> locale_cf =
+      AdoptCF(CFLocaleCreate(kCFAllocatorDefault, locale_cf_string.Get()));
+  if (!CFStringIsHyphenationAvailableForLocale(locale_cf.Get()))
     return nullptr;
   return base::AdoptRef(new HyphenationCF(locale_cf));
 }

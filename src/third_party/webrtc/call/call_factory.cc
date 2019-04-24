@@ -25,7 +25,7 @@ namespace webrtc {
 namespace {
 bool ParseConfigParam(std::string exp_name, int* field) {
   std::string group = field_trial::FindFullName(exp_name);
-  if (group.empty())
+  if (group == "")
     return false;
 
   return (sscanf(group.c_str(), "%d", field) == 1);

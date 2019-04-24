@@ -167,7 +167,7 @@ void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithId(
 void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithWarning(
     const std::string& warning) {
   if (!warning.empty()) {
-    WriteToConsole(blink::mojom::ConsoleMessageLevel::kWarning, warning);
+    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, warning);
   }
   Respond(NoArguments());
 }

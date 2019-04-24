@@ -45,6 +45,8 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
 
  public:
+  static DragCaret* Create();
+
   DragCaret();
   virtual ~DragCaret();
 
@@ -62,7 +64,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   bool IsContentRichlyEditable() const;
 
   bool HasCaret() const { return position_.IsNotNull(); }
-  const PositionWithAffinity& CaretPosition() const { return position_; }
+  const PositionWithAffinity& CaretPosition() { return position_; }
   void SetCaretPosition(const PositionWithAffinity&);
   void Clear() { SetCaretPosition(PositionWithAffinity()); }
 

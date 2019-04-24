@@ -10,8 +10,6 @@
 **********************************************************************
 */
 
-#include <utility>
-
 #include "unicode/utypes.h"
 
 #if  !UCONFIG_NO_TRANSLITERATION && !UCONFIG_NO_BREAK_ITERATION
@@ -81,8 +79,8 @@ void BreakTransliterator::handleTransliterate(Replaceable& text, UTransPosition&
         {
             Mutex m;
             BreakTransliterator *nonConstThis = const_cast<BreakTransliterator *>(this);
-            boundaries = std::move(nonConstThis->cachedBoundaries);
-            bi = std::move(nonConstThis->cachedBI);
+            boundaries.moveFrom(nonConstThis->cachedBoundaries);
+            bi.moveFrom(nonConstThis->cachedBI);
         }
         if (bi.isNull()) {
             bi.adoptInstead(BreakIterator::createWordInstance(Locale::getEnglish(), status));
@@ -147,10 +145,10 @@ void BreakTransliterator::handleTransliterate(Replaceable& text, UTransPosition&
             Mutex m;
             BreakTransliterator *nonConstThis = const_cast<BreakTransliterator *>(this);
             if (nonConstThis->cachedBI.isNull()) {
-                nonConstThis->cachedBI = std::move(bi);
+                nonConstThis->cachedBI.moveFrom(bi);
             }
             if (nonConstThis->cachedBoundaries.isNull()) {
-                nonConstThis->cachedBoundaries = std::move(boundaries);
+                nonConstThis->cachedBoundaries.moveFrom(boundaries);
             }
         }
 

@@ -53,14 +53,14 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     SetPreferredSize(
         gfx::Size(text_width_ + kHorizontalMarginAroundText,
                   font_list.GetHeight() + kVerticalMarginAroundText));
-    auto label = std::make_unique<views::Label>();
+    views::Label* label = new views::Label();
     label->SetText(text_);
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     label->SetFontList(font_list);
     label->SetEnabledColor(kTextColor);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetSubpixelRenderingEnabled(false);
-    AddChildView(std::move(label));
+    AddChildView(label);
     SetLayoutManager(std::make_unique<views::FillLayout>());
   }
 

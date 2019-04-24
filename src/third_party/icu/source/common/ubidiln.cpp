@@ -517,7 +517,7 @@ reorderLine(UBiDi *pBiDi, UBiDiLevel minLevel, UBiDiLevel maxLevel) {
 
 /* compute the runs array --------------------------------------------------- */
 
-static int32_t getRunFromLogicalIndex(UBiDi *pBiDi, int32_t logicalIndex) {
+static int32_t getRunFromLogicalIndex(UBiDi *pBiDi, int32_t logicalIndex, UErrorCode *pErrorCode) {
     Run *runs=pBiDi->runs;
     int32_t runCount=pBiDi->runCount, visualStart=0, i, length, logicalStart;
 
@@ -530,7 +530,9 @@ static int32_t getRunFromLogicalIndex(UBiDi *pBiDi, int32_t logicalIndex) {
         visualStart+=length;
     }
     /* we should never get here */
-    UPRV_UNREACHABLE;
+    U_ASSERT(FALSE);
+    *pErrorCode = U_INVALID_STATE_ERROR;
+    return 0;
 }
 
 /*
@@ -545,7 +547,7 @@ static int32_t getRunFromLogicalIndex(UBiDi *pBiDi, int32_t logicalIndex) {
  * negative number of BiDi control characters within this run.
  */
 U_CFUNC UBool
-ubidi_getRuns(UBiDi *pBiDi, UErrorCode*) {
+ubidi_getRuns(UBiDi *pBiDi, UErrorCode *pErrorCode) {
     /*
      * This method returns immediately if the runs are already set. This
      * includes the case of length==0 (handled in setPara)..
@@ -686,7 +688,7 @@ ubidi_getRuns(UBiDi *pBiDi, UErrorCode*) {
                       *limit=start+pBiDi->insertPoints.size;
         int32_t runIndex;
         for(point=start; point<limit; point++) {
-            runIndex=getRunFromLogicalIndex(pBiDi, point->pos);
+            runIndex=getRunFromLogicalIndex(pBiDi, point->pos, pErrorCode);
             pBiDi->runs[runIndex].insertRemove|=point->flag;
         }
     }
@@ -697,7 +699,7 @@ ubidi_getRuns(UBiDi *pBiDi, UErrorCode*) {
         const UChar *start=pBiDi->text, *limit=start+pBiDi->length, *pu;
         for(pu=start; pu<limit; pu++) {
             if(IS_BIDI_CONTROL_CHAR(*pu)) {
-                runIndex=getRunFromLogicalIndex(pBiDi, (int32_t)(pu-start));
+                runIndex=getRunFromLogicalIndex(pBiDi, (int32_t)(pu-start), pErrorCode);
                 pBiDi->runs[runIndex].insertRemove--;
             }
         }

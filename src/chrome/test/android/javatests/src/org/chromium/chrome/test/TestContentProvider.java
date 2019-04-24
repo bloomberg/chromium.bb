@@ -58,7 +58,9 @@ public class TestContentProvider extends ContentProvider {
     private static final String RESET_RESOURCE_REQUEST_COUNTS = "reset_resource_request_counts";
     private static final String SET_DATA_PATH = "set_data_path";
     private static final String TAG = "TestContentProvider";
-    private static final int EXPECTED_COLUMN_INDEX = 0;
+    private enum ColumnIndex {
+        RESOURCE_REQUEST_COUNT_COLUMN,
+    }
     private Map<String, Integer> mResourceRequestCount;
     private String mDataFilePath;
 
@@ -87,7 +89,7 @@ public class TestContentProvider extends ContentProvider {
         final Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         try {
             cursor.moveToFirst();
-            return cursor.getInt(EXPECTED_COLUMN_INDEX);
+            return cursor.getInt(ColumnIndex.RESOURCE_REQUEST_COUNT_COLUMN.ordinal());
         } finally {
             cursor.close();
         }
@@ -157,7 +159,7 @@ public class TestContentProvider extends ContentProvider {
 
         @Override
         public boolean isNull(int columnIndex) {
-            return columnIndex != EXPECTED_COLUMN_INDEX;
+            return columnIndex != ColumnIndex.RESOURCE_REQUEST_COUNT_COLUMN.ordinal();
         }
 
         @Override
@@ -167,8 +169,10 @@ public class TestContentProvider extends ContentProvider {
 
         @Override
         public int getType(int columnIndex) {
-            return columnIndex == EXPECTED_COLUMN_INDEX ? Cursor.FIELD_TYPE_INTEGER
-                                                        : Cursor.FIELD_TYPE_NULL;
+            if (columnIndex == ColumnIndex.RESOURCE_REQUEST_COUNT_COLUMN.ordinal()) {
+                return Cursor.FIELD_TYPE_INTEGER;
+            }
+            return Cursor.FIELD_TYPE_NULL;
         }
 
         private void unsupported() {
@@ -189,7 +193,10 @@ public class TestContentProvider extends ContentProvider {
 
         @Override
         public int getInt(int columnIndex) {
-            return columnIndex == EXPECTED_COLUMN_INDEX ? mResourceRequestCount : -1;
+            if (columnIndex == ColumnIndex.RESOURCE_REQUEST_COUNT_COLUMN.ordinal()) {
+                return mResourceRequestCount;
+            }
+            return -1;
         }
 
         @Override

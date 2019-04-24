@@ -27,7 +27,7 @@ class KeyedService;
 class KEYED_SERVICE_EXPORT KeyedServiceFactory
     : public KeyedServiceBaseFactory {
  protected:
-  KeyedServiceFactory(const char* name, DependencyManager* manager, Type type);
+  KeyedServiceFactory(const char* name, DependencyManager* manager);
   ~KeyedServiceFactory() override;
 
   // A callback that supplies the instance of a KeyedService for a given
@@ -46,13 +46,16 @@ class KEYED_SERVICE_EXPORT KeyedServiceFactory
   // created KeyedService. Since the factory will be used immediately, it may
   // not be empty.
   KeyedService* SetTestingFactoryAndUse(void* context,
+                                        void* side_parameter,
                                         TestingFactory testing_factory);
 
   // Common implementation that maps |context| to some service object. Deals
   // with incognito contexts per subclass instructions with GetContextToUse()
   // method on the base.  If |create| is true, the service will be created
-  // using BuildServiceInstanceFor() if it doesn't already exist.
+  // using BuildServiceInstanceFor() if it doesn't already exist. Subclasses
+  // could pass |side_parameters| object if needed to create a service object.
   KeyedService* GetServiceForContext(void* context,
+                                     void* side_parameter,
                                      bool create);
 
   // Maps |context| to |service| with debug checks to prevent duplication and
@@ -66,7 +69,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceFactory
   // |side_parameter| could be nullptr or some object required to create a
   // service instance.
   virtual std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      void* context) const = 0;
+      void* context,
+      void* side_parameter) const = 0;
 
   // Returns whether the |context| is off-the-record or not.
   virtual bool IsOffTheRecord(void* context) const = 0;

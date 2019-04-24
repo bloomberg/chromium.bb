@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
-#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -120,7 +119,7 @@ void HTMLObjectElement::ParseAttribute(
     if (GetLayoutObject() && IsImageType()) {
       SetNeedsPluginUpdate(true);
       if (!image_loader_)
-        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
+        image_loader_ = HTMLImageLoader::Create(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
       ReloadPluginOnAttributeChange(name);
@@ -338,15 +337,8 @@ const AtomicString HTMLObjectElement::ImageSourceURL() const {
 }
 
 void HTMLObjectElement::ReattachFallbackContent() {
-  if (!GetDocument().InStyleRecalc()) {
-    // TODO(futhark): Currently needs kSubtreeStyleChange because a style recalc
-    // for the object element does not detect the changed need for descendant
-    // style when we have a change in HTMLObjectElement::ChildrenCanHaveStyle().
-    SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kUseFallback));
-    SetForceReattachLayoutTree();
-  }
+  if (!GetDocument().InStyleRecalc())
+    LazyReattachIfAttached();
 }
 
 void HTMLObjectElement::RenderFallbackContent(Frame* frame) {
@@ -373,6 +365,9 @@ void HTMLObjectElement::RenderFallbackContent(Frame* frame) {
   }
 
   use_fallback_content_ = true;
+
+  // TODO(schenney): crbug.com/572908 Style gets recalculated which is
+  // suboptimal.
   ReattachFallbackContent();
 }
 

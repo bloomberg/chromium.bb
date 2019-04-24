@@ -29,7 +29,6 @@ class TestWebSocketImpl : public network::WebSocket {
       int process_id,
       int frame_id,
       url::Origin origin,
-      uint32_t options,
       base::TimeDelta delay)
       : network::WebSocket(std::move(delegate),
                            std::move(request),
@@ -39,7 +38,6 @@ class TestWebSocketImpl : public network::WebSocket {
                            process_id,
                            frame_id,
                            std::move(origin),
-                           options,
                            delay) {}
 
   base::TimeDelta delay() const { return delay_; }
@@ -76,7 +74,6 @@ class TestWebSocketManager : public WebSocketManager {
 
   void DoCreateWebSocket(network::mojom::WebSocketRequest request) {
     WebSocketManager::DoCreateWebSocket(MSG_ROUTING_NONE, url::Origin(),
-                                        network::mojom::kWebSocketOptionNone,
                                         std::move(request));
   }
 
@@ -88,12 +85,11 @@ class TestWebSocketManager : public WebSocketManager {
       int process_id,
       int frame_id,
       url::Origin origin,
-      uint32_t options,
       base::TimeDelta delay) override {
     auto impl = std::make_unique<TestWebSocketImpl>(
         std::move(delegate), std::move(request),
         std::move(pending_connection_tracker), process_id, frame_id,
-        std::move(origin), options, delay);
+        std::move(origin), delay);
     // We keep a vector of sockets here to track their creation order.
     sockets_.push_back(impl.get());
     return impl;

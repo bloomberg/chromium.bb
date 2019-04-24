@@ -120,6 +120,7 @@ class CourierRenderer : public Renderer {
   void OnVideoNaturalSizeChange(std::unique_ptr<pb::RpcMessage> message);
   void OnVideoOpacityChange(std::unique_ptr<pb::RpcMessage> message);
   void OnStatisticsUpdate(std::unique_ptr<pb::RpcMessage> message);
+  void OnDurationChange(std::unique_ptr<pb::RpcMessage> message);
 
   // Called when |current_media_time_| is updated.
   void OnMediaTimeUpdated();

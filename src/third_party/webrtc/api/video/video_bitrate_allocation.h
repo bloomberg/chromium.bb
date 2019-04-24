@@ -19,7 +19,6 @@
 
 #include "absl/types/optional.h"
 #include "api/video/video_codec_constants.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -28,7 +27,7 @@ namespace webrtc {
 // layers are dependent or not, it is up to the user to aggregate.
 // For each index, the bitrate can also both set and unset. This is used with a
 // set bps = 0 to signal an explicit "turn off" signal.
-class RTC_EXPORT VideoBitrateAllocation {
+class VideoBitrateAllocation {
  public:
   static constexpr uint32_t kMaxBitrateBps =
       std::numeric_limits<uint32_t>::max();

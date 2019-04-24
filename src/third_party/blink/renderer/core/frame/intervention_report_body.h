@@ -14,8 +14,10 @@ class CORE_EXPORT InterventionReportBody : public MessageReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  InterventionReportBody(const String& id, const String& message)
-      : MessageReportBody(message), id_(id) {}
+  InterventionReportBody(const String& id,
+                         const String& message,
+                         std::unique_ptr<SourceLocation> location)
+      : MessageReportBody(message, std::move(location)), id_(id) {}
 
   ~InterventionReportBody() override = default;
 

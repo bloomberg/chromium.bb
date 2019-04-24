@@ -183,7 +183,7 @@ pt{
         MF{"São Martinho"}
         MG{"Madagascar"}
         MH{"Ilhas Marshall"}
-        MK{"Macedônia do Norte"}
+        MK{"Macedônia (ARIM)"}
         ML{"Mali"}
         MM{"Mianmar (Birmânia)"}
         MN{"Mongólia"}
@@ -287,8 +287,6 @@ pt{
         VU{"Vanuatu"}
         WF{"Wallis e Futuna"}
         WS{"Samoa"}
-        XA{"Pseudossotaques"}
-        XB{"Pseudobidi"}
         XK{"Kosovo"}
         YE{"Iêmen"}
         YT{"Mayotte"}
@@ -309,5 +307,5 @@ pt{
         CZ{"República Tcheca"}
         TL{"República Democrática de Timor-Leste"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.43.65"}
 }

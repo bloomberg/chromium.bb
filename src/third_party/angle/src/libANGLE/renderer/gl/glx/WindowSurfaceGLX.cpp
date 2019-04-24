@@ -127,7 +127,7 @@ egl::Error WindowSurfaceGLX::initialize(const egl::Display *display)
     return egl::NoError();
 }
 
-egl::Error WindowSurfaceGLX::makeCurrent(const gl::Context *context)
+egl::Error WindowSurfaceGLX::makeCurrent()
 {
     return egl::NoError();
 }

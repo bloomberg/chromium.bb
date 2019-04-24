@@ -25,29 +25,22 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kCrostiniBackup;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUsbSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kCrostiniUsbAllowUnsupported;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2Enrollment;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDiscoverApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDriveFs;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kEnableFileManagerFeedbackPanel;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableMessagesWebPush;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMyFilesVolume;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableSupervisionTransitionScreens;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFsNosymfollow;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kImeInputLogicFst;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kImeInputLogic;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeServiceConnectable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSplitSettings;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kUpdatedCellularActivationUi;
+extern const base::Feature kVideoPlayerNativeControls;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseMessagesGoogleComDomain;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -56,10 +49,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPredictionMlService;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kVideoPlayerNativeControls;
-
-// Keep alphabetized.
 
 }  // namespace features
 

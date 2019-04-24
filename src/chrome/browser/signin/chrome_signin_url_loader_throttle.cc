@@ -113,16 +113,6 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
     headers_->RemoveHeader(name);
   }
 
-  base::SupportsUserData::Data* GetUserData(const void* key) const override {
-    return throttle_->GetUserData(key);
-  }
-
-  void SetUserData(
-      const void* key,
-      std::unique_ptr<base::SupportsUserData::Data> data) override {
-    throttle_->SetUserData(key, std::move(data));
-  }
-
  private:
   URLLoaderThrottle* const throttle_;
   net::HttpResponseHeaders* headers_;

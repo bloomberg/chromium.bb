@@ -20,7 +20,6 @@ TestInstallFinalizer::~TestInstallFinalizer() = default;
 
 void TestInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
-    const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
   AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   if (next_app_id_.has_value()) {
@@ -36,13 +35,9 @@ void TestInstallFinalizer::FinalizeInstall(
 
   // Store a copy for inspecting in tests.
   web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
-  finalized_policy_install_ = false;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
-
-  if (options.policy_installed)
-    finalized_policy_install_ = true;
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {

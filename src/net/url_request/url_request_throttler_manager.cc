@@ -38,7 +38,7 @@ URLRequestThrottlerManager::~URLRequestThrottlerManager() {
   // entries, detach the entries' back-pointer to the manager.
   auto i = url_entries_.begin();
   while (i != url_entries_.end()) {
-    if (i->second.get() != nullptr) {
+    if (i->second.get() != NULL) {
       i->second->DetachManager();
     }
     ++i;
@@ -66,11 +66,11 @@ scoped_refptr<URLRequestThrottlerEntryInterface>
   // aggressively (i.e. this resets the error count when the entry's URL
   // hasn't been requested in long enough).
   if (entry.get() && entry->IsEntryOutdated()) {
-    entry = nullptr;
+    entry = NULL;
   }
 
   // Create the entry if needed.
-  if (entry.get() == nullptr) {
+  if (entry.get() == NULL) {
     entry = new URLRequestThrottlerEntry(this, url_id);
 
     // We only disable back-off throttling on an entry that we have

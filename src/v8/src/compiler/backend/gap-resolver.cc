@@ -93,23 +93,20 @@ void GapResolver::Resolve(ParallelMove* moves) {
   // detect simple non-overlapping moves, and collect FP move representations if
   // aliasing is non-simple.
   int fp_reps = 0;
-  size_t nmoves = moves->size();
-  for (size_t i = 0; i < nmoves;) {
-    MoveOperands* move = (*moves)[i];
+  for (auto it = moves->begin(); it != moves->end();) {
+    MoveOperands* move = *it;
     if (move->IsRedundant()) {
-      nmoves--;
-      if (i < nmoves) (*moves)[i] = (*moves)[nmoves];
+      it = moves->erase(it);
       continue;
     }
-    i++;
     source_kinds.Add(GetKind(move->source()));
     destination_kinds.Add(GetKind(move->destination()));
     if (!kSimpleFPAliasing && move->destination().IsFPRegister()) {
       fp_reps |= RepresentationBit(
           LocationOperand::cast(move->destination()).representation());
     }
+    ++it;
   }
-  if (nmoves != moves->size()) moves->resize(nmoves);
 
   if ((source_kinds & destination_kinds).empty() || moves->size() < 2) {
     // Fast path for non-conflicting parallel moves.

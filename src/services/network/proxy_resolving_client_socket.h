@@ -20,7 +20,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
@@ -28,7 +27,7 @@
 #include "url/gurl.h"
 
 namespace net {
-struct CommonConnectJobParams;
+class ClientSocketHandle;
 class HttpAuthController;
 class HttpResponseInfo;
 class HttpNetworkSession;
@@ -39,9 +38,12 @@ namespace network {
 // This class represents a net::StreamSocket implementation that does proxy
 // resolution for the provided url before establishing a connection. If there is
 // a proxy configured, a connection will be established to the proxy.
+//
+// TODO(xunjieli): https://crbug.com/721401. This class should be private (i.e.
+// moved out of services/network/public/cpp). The functionalities will be
+// exposed only through a mojo interface.
 class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
-    : public net::StreamSocket,
-      public net::ConnectJob::Delegate {
+    : public net::StreamSocket {
  public:
   // Constructs a new ProxyResolvingClientSocket. |url|'s host and port specify
   // where a connection will be established to. The full URL will be only used
@@ -50,14 +52,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   // (i.e. reference fragment) will be sanitized by
   // net::ProxyResolutionService::ResolveProxyHelper() before the url is
   // disclosed to the proxy. If |use_tls|, this will try to do a tls connect
-  // instead of a regular tcp connect. |network_session| and
-  // |common_connect_job_params| must outlive |this|.
-  ProxyResolvingClientSocket(
-      net::HttpNetworkSession* network_session,
-      const net::CommonConnectJobParams* common_connect_job_params,
-      const net::SSLConfig& ssl_config,
-      const GURL& url,
-      bool use_tls);
+  // instead of a regular tcp connect. |network_session| must outlive |this|.
+  ProxyResolvingClientSocket(net::HttpNetworkSession* network_session,
+                             const net::SSLConfig& ssl_config,
+                             const GURL& url,
+                             bool use_tls);
   ~ProxyResolvingClientSocket() override;
 
   // net::StreamSocket implementation.
@@ -116,20 +115,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   int DoInitConnection();
   int DoInitConnectionComplete(int result);
 
-  // net::ConnectJob::Delegate implementation:
-  void OnConnectJobComplete(int result, net::ConnectJob* job) override;
-  void OnNeedsProxyAuth(const net::HttpResponseInfo& response,
-                        net::HttpAuthController* auth_controller,
-                        base::OnceClosure restart_with_auth_callback,
-                        net::ConnectJob* job) override;
+  void OnProxyAuth(const net::HttpResponseInfo& response,
+                   net::HttpAuthController* auth_controller,
+                   base::OnceClosure restart_with_auth_callback);
+
+  void CloseSocket(bool close_connection);
 
   int ReconsiderProxyAfterError(int error);
 
   net::HttpNetworkSession* network_session_;
 
-  const net::CommonConnectJobParams* common_connect_job_params_;
-  std::unique_ptr<net::ConnectJob> connect_job_;
-  std::unique_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::ClientSocketHandle> socket_handle_;
 
   const net::SSLConfig ssl_config_;
   std::unique_ptr<net::ProxyResolutionService::Request> proxy_resolve_request_;

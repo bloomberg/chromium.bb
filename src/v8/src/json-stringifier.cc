@@ -11,7 +11,6 @@
 #include "src/objects/heap-number-inl.h"
 #include "src/objects/js-array-inl.h"
 #include "src/objects/oddball-inl.h"
-#include "src/objects/ordered-hash-table.h"
 #include "src/objects/smi.h"
 #include "src/string-builder-inl.h"
 #include "src/utils.h"
@@ -761,10 +760,7 @@ JsonStringifier::Result JsonStringifier::SerializeJSObject(
 
   if (property_list_.is_null() &&
       !object->map()->IsCustomElementsReceiverMap() &&
-      object->HasFastProperties() &&
-      (object->elements() == ReadOnlyRoots(isolate_).empty_fixed_array() ||
-       object->elements() ==
-           ReadOnlyRoots(isolate_).empty_slow_element_dictionary())) {
+      object->HasFastProperties() && object->elements()->length() == 0) {
     DCHECK(!object->IsJSGlobalProxy());
     DCHECK(!object->HasIndexedInterceptor());
     DCHECK(!object->HasNamedInterceptor());

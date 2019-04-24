@@ -9,12 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "content/child/service_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/buildflags.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace media {
 class MediaGpuChannelManager;
@@ -22,8 +22,8 @@ class MediaGpuChannelManager;
 
 namespace content {
 
-// Helper for handling incoming RunService requests on GpuChildThread.
-class GpuServiceFactory {
+// Customization of ServiceFactory for the GPU process.
+class GpuServiceFactory : public ServiceFactory {
  public:
   GpuServiceFactory(
       const gpu::GpuPreferences& gpu_preferences,
@@ -31,11 +31,12 @@ class GpuServiceFactory {
       const gpu::GpuFeatureInfo& gpu_feature_info,
       base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
       media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
-  ~GpuServiceFactory();
+  ~GpuServiceFactory() override;
 
-  void RunService(
+  // ServiceFactory overrides:
+  bool HandleServiceRequest(
       const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+      service_manager::mojom::ServiceRequest request) override;
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)

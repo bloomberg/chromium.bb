@@ -15,10 +15,6 @@ YieldingDisplayLockBudget::YieldingDisplayLockBudget(
     : DisplayLockBudget(context) {}
 
 bool YieldingDisplayLockBudget::ShouldPerformPhase(Phase phase) const {
-  // Always perform at least one more phase.
-  if (phase <= next_phase_from_start_of_lifecycle_)
-    return true;
-
   // We should perform any phase earlier than the one we already completed.
   if (last_completed_phase_ && phase <= *last_completed_phase_)
     return true;
@@ -30,13 +26,6 @@ bool YieldingDisplayLockBudget::ShouldPerformPhase(Phase phase) const {
 void YieldingDisplayLockBudget::DidPerformPhase(Phase phase) {
   if (!last_completed_phase_ || phase > *last_completed_phase_)
     last_completed_phase_ = phase;
-
-  // Mark the next phase as dirty so that we can reach it if we need to.
-  for (auto phase = static_cast<unsigned>(*last_completed_phase_) + 1;
-       phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
-    if (MarkAncestorsDirtyForPhaseIfNeeded(static_cast<Phase>(phase)))
-      break;
-  }
 }
 
 void YieldingDisplayLockBudget::WillStartLifecycleUpdate() {
@@ -47,7 +36,7 @@ void YieldingDisplayLockBudget::WillStartLifecycleUpdate() {
   // Figure out the next phase we would run. If we had completed a phase before,
   // then we should try to complete the next one, otherwise we'll start with the
   // first phase.
-  next_phase_from_start_of_lifecycle_ =
+  Phase next_phase =
       last_completed_phase_
           ? static_cast<Phase>(
                 std::min(static_cast<unsigned>(*last_completed_phase_) + 1,
@@ -55,7 +44,7 @@ void YieldingDisplayLockBudget::WillStartLifecycleUpdate() {
           : Phase::kFirst;
 
   // Mark the next phase we're scheduled to run.
-  for (auto phase = static_cast<unsigned>(next_phase_from_start_of_lifecycle_);
+  for (auto phase = static_cast<unsigned>(next_phase);
        phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
     if (MarkAncestorsDirtyForPhaseIfNeeded(static_cast<Phase>(phase)))
       break;

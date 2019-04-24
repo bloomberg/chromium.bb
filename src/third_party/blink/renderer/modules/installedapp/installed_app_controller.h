@@ -9,11 +9,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
-#include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installedapp/related_application.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -22,9 +21,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-using AppInstalledCallbacks =
-    WebCallbacks<const WebVector<WebRelatedApplication>&, void>;
 
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollectedFinalized<InstalledAppController>,
@@ -52,12 +48,6 @@ class MODULES_EXPORT InstalledAppController final
 
   // Inherited from ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) override;
-
-  // Callback for the result of
-  // WebRelatedAppsFetcher::getManifestRelatedApplications. Calls
-  // filterByInstalledApps upon receiving the list of related applications.
-  void OnGetRelatedAppsCallback(std::unique_ptr<AppInstalledCallbacks>,
-                                const WebVector<WebRelatedApplication>&);
 
   // Takes a set of related applications and filters them by those which belong
   // to the current underlying platform, and are actually installed and related

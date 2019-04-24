@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "CommandLineFlags.h"
+#include "SkCommandLineFlags.h"
 #include "SkFontMgr.h"
 #include "SkOTTable_name.h"
 #include "SkTypeface.h"
@@ -216,7 +216,7 @@ static void test_systemfonts(skiatest::Reporter* reporter, bool verbose) {
 
 } // namespace
 
-static DEFINE_bool(verboseFontNames, false, "verbose FontNames test.");
+DEFINE_bool(verboseFontNames, false, "verbose FontNames test.");
 
 DEF_TEST(FontNames, reporter) {
     test_synthetic(reporter, FLAGS_verboseFontNames);

@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/macros.h"
@@ -58,15 +57,12 @@ class ASH_EXPORT LoginDataDispatcher {
     virtual void OnFingerprintAuthResult(const AccountId& account_id,
                                          bool successful);
 
-    // Called when auth should be enabled for |user|. By default, auth should be
-    // enabled.
-    virtual void OnAuthEnabledForUser(const AccountId& user);
-
-    // Called when auth should be disabled for |user|. By default, auth should
-    // be enabled.
-    virtual void OnAuthDisabledForUser(
+    // Called when auth should be enabled or disabled for |user|. By default,
+    // auth should be enabled.
+    virtual void OnAuthEnabledForUserChanged(
         const AccountId& user,
-        const ash::mojom::AuthDisabledDataPtr& auth_disabled_data);
+        bool enabled,
+        const base::Optional<base::Time>& auth_reenabled_time);
 
     // Called when the given user can click their pod to unlock.
     virtual void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
@@ -143,9 +139,9 @@ class ASH_EXPORT LoginDataDispatcher {
                            mojom::FingerprintState state);
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful);
-  void EnableAuthForUser(const AccountId& account_id);
-  void DisableAuthForUser(const AccountId& account_id,
-                          ash::mojom::AuthDisabledDataPtr auth_disabled_data);
+  void SetAuthEnabledForUser(const AccountId& account_id,
+                             bool is_enabled,
+                             base::Optional<base::Time> auth_reenabled_time);
   void SetTapToUnlockEnabledForUser(const AccountId& user, bool enabled);
   void SetForceOnlineSignInForUser(const AccountId& user);
   void SetLockScreenNoteState(mojom::TrayActionState state);

@@ -28,7 +28,7 @@
 #include "SkRefCnt.h"
 #include "SkStrokeRec.h"
 #include "Test.h"
-#include "effects/generated/GrConstColorProcessor.h"
+#include "effects/GrConstColorProcessor.h"
 
 #include <utility>
 
@@ -99,7 +99,8 @@ static void run_test(GrContext* ctx, skiatest::Reporter* reporter) {
         rtc->drawPath(GrNoClip(), std::move(paint), GrAA::kNo,
                       SkMatrix::I(), invPath, style);
 
-        rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo());
+        rtc->prepareForExternalIO(SkSurface::BackendSurfaceAccess::kNoAccess,
+                                  SkSurface::kNone_FlushFlags, 0, nullptr);
     }
 
     {

@@ -16,7 +16,7 @@
 namespace v8 {
 namespace tracing {
 
-class V8_EXPORT_PRIVATE TracedValue : public ConvertableToTraceFormat {
+class TracedValue : public ConvertableToTraceFormat {
  public:
   ~TracedValue() override;
 
@@ -32,13 +32,6 @@ class V8_EXPORT_PRIVATE TracedValue : public ConvertableToTraceFormat {
   void SetString(const char* name, const char* value);
   void SetString(const char* name, const std::string& value) {
     SetString(name, value.c_str());
-  }
-  void SetString(const char* name, std::unique_ptr<char[]> value) {
-    SetString(name, value.get());
-  }
-  void SetValue(const char* name, TracedValue* value);
-  void SetValue(const char* name, std::unique_ptr<TracedValue> value) {
-    SetValue(name, value.get());
   }
   void BeginDictionary(const char* name);
   void BeginArray(const char* name);

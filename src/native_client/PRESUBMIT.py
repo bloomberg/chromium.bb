@@ -5,8 +5,6 @@
 # Documentation on PRESUBMIT.py can be found at:
 # http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
 
-from __future__ import print_function
-
 import os
 import subprocess
 import sys
@@ -62,7 +60,7 @@ def CheckGitBranch():
       warning += 'git branch -u origin/master'
       return warning
     return None
-  print('Warning: presubmit check could not determine local git branch')
+  print 'Warning: presubmit check could not determine local git branch'
   return None
 
 

@@ -11,8 +11,8 @@ cr.define('system_dialog_browsertest', function() {
 
   const suiteName = 'SystemDialogBrowserTest';
   suite(suiteName, function() {
-    /** @type {?PrintPreviewSidebarElement} */
-    let sidebar = null;
+    /** @type {?PrintPreviewAppElement} */
+    let page = null;
 
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
@@ -40,20 +40,17 @@ cr.define('system_dialog_browsertest', function() {
       const pluginProxy = new print_preview.PDFPluginStub();
       print_preview_new.PluginProxy.setInstance(pluginProxy);
 
-      const page = document.createElement('print-preview-app');
+      page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
       pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
-      sidebar = page.$$('print-preview-sidebar');
+      linkContainer = page.$$('print-preview-link-container');
       return Promise
           .all([
-            test_util.waitForRender(page),
-            print_preview.Model.whenReady(),
             nativeLayer.whenCalled('getInitialSettings'),
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
           .then(function() {
-            linkContainer = sidebar.$$('print-preview-link-container');
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function() {
@@ -80,44 +77,39 @@ cr.define('system_dialog_browsertest', function() {
       assertFalse(linkContainer.disabled);
       assertFalse(link.hidden);
 
-      const moreSettingsElement = sidebar.$$('print-preview-more-settings');
+      const moreSettingsElement = page.$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
-      const scalingSettings = sidebar.$$('print-preview-scaling-settings');
+      const scalingSettings = page.$$('print-preview-scaling-settings');
       assertFalse(scalingSettings.hidden);
       nativeLayer.resetResolver('getPreview');
-      let previewCalls = 0;
 
       // Set scaling settings to custom.
-      return print_preview_test_utils
-          .selectOption(
-              scalingSettings, scalingSettings.ScalingValue.CUSTOM.toString())
-          .then(() => {
-            previewCalls = nativeLayer.getCallCount('getPreview');
+      scalingSettings.$$('.md-select').value =
+          scalingSettings.ScalingValue.CUSTOM;
+      scalingSettings.$$('.md-select').dispatchEvent(new CustomEvent('change'));
 
-            // Set an invalid input.
-            const scalingSettingsInput =
-                scalingSettings.$$('print-preview-number-settings-section')
-                    .$.userValue.inputElement;
-            scalingSettingsInput.value = '0';
-            scalingSettingsInput.dispatchEvent(
-                new CustomEvent('input', {composed: true, bubbles: true}));
+      // Set an invalid input.
+      const scalingSettingsInput =
+          scalingSettings.$$('print-preview-number-settings-section')
+              .$.userValue.inputElement;
+      scalingSettingsInput.value = '0';
+      scalingSettingsInput.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
 
-            return test_util.eventToPromise('input-change', scalingSettings);
-          })
+      // No new preview
+      nativeLayer.whenCalled('getPreview').then(function() {
+        assertTrue(false);
+      });
+
+      return test_util.eventToPromise('input-change', scalingSettings)
           .then(() => {
             // Expect disabled print button
-            const parentElement =
-                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                sidebar.$$('print-preview-button-strip') :
-                sidebar.$$('print-preview-header');
-            const printButton = parentElement.$$('.action-button');
+            const header = page.$$('print-preview-header');
+            const printButton = header.$$('.action-button');
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
-            assertTrue(link.querySelector('cr-icon-button').disabled);
-
-            // No new preview
-            assertEquals(previewCalls, nativeLayer.getCallCount('getPreview'));
+            assertTrue(link.querySelector('button').disabled);
           });
     });
   });

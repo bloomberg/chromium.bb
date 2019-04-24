@@ -55,6 +55,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
+  struct CreateRequest;
   class EstablishRequest;
 
   BrowserGpuChannelHostFactory();

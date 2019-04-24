@@ -61,8 +61,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
 
-  static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
-                                                     LineDirectionMode);
+  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
+                                                      LineDirectionMode);
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
@@ -130,11 +130,9 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       const LayoutBox& child) const;
   LayoutUnit CrossAxisExtent() const;
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
-  LayoutUnit ComputeMainAxisExtentForChild(
-      const LayoutBox& child,
-      SizeType,
-      const Length& size,
-      LayoutUnit border_scrollbar_padding) const;
+  LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
+                                           SizeType,
+                                           const Length& size) const;
 
   LayoutUnit ContentInsetBottom() const;
   LayoutUnit ContentInsetRight() const;
@@ -153,10 +151,9 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void SetFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
   LayoutUnit ComputeInnerFlexBaseSizeForChild(
       LayoutBox& child,
-      LayoutUnit main_axis_border_scrollbar_padding,
+      LayoutUnit main_axis_border_and_padding,
       ChildLayoutType = kLayoutIfNeeded);
   void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
-  void ResetAlignmentForChild(LayoutBox& child, LayoutUnit);
   bool MainAxisLengthIsDefinite(const LayoutBox& child,
                                 const Length& flex_basis,
                                 bool add_to_cb = true) const;
@@ -173,16 +170,13 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
   bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
                                     LayoutUnit available_alignment_space);
-  void RepositionLogicalHeightDependentFlexItems(
-      FlexLayoutAlgorithm& algorithm);
+  void RepositionLogicalHeightDependentFlexItems(Vector<FlexLine>&);
   LayoutUnit ClientLogicalBottomAfterRepositioning();
 
   LayoutUnit ComputeChildMarginValue(const Length& margin);
   void PrepareOrderIteratorAndMargins();
-  MinMaxSize ComputeMinAndMaxSizesForChild(
-      const FlexLayoutAlgorithm& algorithm,
-      const LayoutBox& child,
-      LayoutUnit border_scrollbar_padding) const;
+  MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
+                                           const LayoutBox& child) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;
@@ -202,7 +196,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void LayoutColumnReverse(FlexItemVectorView&,
                            LayoutUnit cross_axis_offset,
                            LayoutUnit available_free_space);
-  void AlignFlexLines(FlexLayoutAlgorithm&);
+  void AlignFlexLines(Vector<FlexLine>&);
   void AlignChildren(Vector<FlexLine>&);
   void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
