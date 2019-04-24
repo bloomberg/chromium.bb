@@ -71,8 +71,7 @@ Compositor::Compositor(
     bool enable_pixel_canvas,
     ui::ExternalBeginFrameClient* external_begin_frame_client,
     bool force_software_compositor,
-    const char* trace_environment_name,
-    bool automatically_allocate_surface_ids)
+    const char* trace_environment_name)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
@@ -113,9 +112,6 @@ Compositor::Compositor(
 
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
-
-  settings.automatically_allocate_surface_ids =
-      automatically_allocate_surface_ids;
 
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(

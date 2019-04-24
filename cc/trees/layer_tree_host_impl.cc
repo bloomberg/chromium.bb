@@ -5928,9 +5928,6 @@ uint32_t LayerTreeHostImpl::GenerateChildSurfaceSequenceNumberSync() {
 }
 
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {
-  if (!settings_.automatically_allocate_surface_ids)
-    return;
-
   child_local_surface_id_allocator_.GenerateId();
   client_->DidGenerateLocalSurfaceIdAllocationOnImplThread(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
