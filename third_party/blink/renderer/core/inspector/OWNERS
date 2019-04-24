@@ -7,6 +7,7 @@ pfeldman@chromium.org
 # ensure backwards compatibility and committment to maintain.
 per-file browser_protocol.pdl=set noparent
 per-file browser_protocol.pdl=dgozman@chromium.org
+per-file browser_protocol.pdl=caseq@chromium.org
 per-file browser_protocol.pdl=pfeldman@chromium.org
 
 # COMPONENT: Platform>DevTools
