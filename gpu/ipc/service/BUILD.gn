@@ -83,6 +83,8 @@ jumbo_component("service") {
     sources += [
       "child_window_win.cc",
       "child_window_win.h",
+      "dc_layer_tree.cc",
+      "dc_layer_tree.h",
       "direct_composition_child_surface_win.cc",
       "direct_composition_child_surface_win.h",
       "direct_composition_surface_win.cc",
@@ -90,6 +92,8 @@ jumbo_component("service") {
       "gpu_memory_buffer_factory_dxgi.cc",
       "gpu_memory_buffer_factory_dxgi.h",
       "image_transport_surface_win.cc",
+      "swap_chain_presenter.cc",
+      "swap_chain_presenter.h",
     ]
     libs += [
       "dxgi.lib",

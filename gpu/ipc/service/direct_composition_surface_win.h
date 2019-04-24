@@ -11,12 +11,8 @@
 #include <wrl/client.h>
 
 #include "base/memory/weak_ptr.h"
-#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/child_window_win.h"
-#include "gpu/ipc/service/gpu_ipc_service_export.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
@@ -24,7 +20,6 @@ class GLSurfacePresentationHelper;
 }
 
 namespace gpu {
-
 class DCLayerTree;
 class DirectCompositionChildSurfaceWin;
 
@@ -46,6 +41,21 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // surface and layers should be used.  Overridden with
   // --enable-direct-composition-layers and --disable-direct-composition-layers.
   static bool AreOverlaysSupported();
+
+  // After this is called, hardware overlay support is disabled during the
+  // current GPU process' lifetime.
+  static void DisableOverlays();
+
+  // Returns true if scaled hardware overlays are supported.
+  static bool AreScaledOverlaysSupported();
+
+  // Returns preferred overlay format set when detecting hardware overlay
+  // support.
+  static OverlayFormat GetOverlayFormatUsed();
+  static DXGI_FORMAT GetOverlayDxgiFormatUsed();
+
+  // Returns monitor size.
+  static gfx::Size GetOverlayMonitorSize();
 
   // Returns a list of supported overlay formats for GPUInfo.  This does not
   // depend on finch features or command line flags.
