@@ -509,6 +509,33 @@ void WithTargetThread(ProfileFunction profile_function) {
   WithTargetThread(&scenario, profile_function);
 }
 
+Frames SampleScenario(UnwindScenario* scenario, ModuleCache* module_cache) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_profile = 1;
+
+  Profile profile;
+  WithTargetThread(scenario, [&](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache,
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  });
+
+  CHECK_EQ(1u, profile.frame_sets.size());
+  return profile.frame_sets[0];
+}
+
 struct TestProfilerInfo {
   TestProfilerInfo(PlatformThreadId thread_id,
                    const SamplingParams& params,
@@ -758,33 +785,8 @@ class StackSamplingProfilerTest : public testing::Test {
 #define MAYBE_Basic DISABLED_Basic
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
-
-  Profile profile;
-  WithTargetThread(&scenario, [&](PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED);
-    StackSamplingProfiler profiler(
-        target_thread_id, params,
-        std::make_unique<TestProfileBuilder>(
-            module_cache(),
-            BindLambdaForTesting(
-                [&profile, &sampling_thread_completed](Profile result_profile) {
-                  profile = std::move(result_profile);
-                  sampling_thread_completed.Signal();
-                })));
-    profiler.Start();
-    sampling_thread_completed.Wait();
-  });
-
-  // Check that the size of the frame sets are correct.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  const Frames& frames = SampleScenario(&scenario, module_cache());
 
   // Check that all the modules are valid.
   for (const auto& frame : frames)
@@ -805,34 +807,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
 #define MAYBE_Alloca DISABLED_Alloca
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
   UnwindScenario scenario(BindRepeating(&CallWithAlloca));
-
-  Profile profile;
-  WithTargetThread(
-      &scenario, [&](PlatformThreadId target_thread_id) {
-        WaitableEvent sampling_thread_completed(
-            WaitableEvent::ResetPolicy::MANUAL,
-            WaitableEvent::InitialState::NOT_SIGNALED);
-        StackSamplingProfiler profiler(
-            target_thread_id, params,
-            std::make_unique<TestProfileBuilder>(
-                module_cache(),
-                BindLambdaForTesting([&profile, &sampling_thread_completed](
-                                         Profile result_profile) {
-                  profile = std::move(result_profile);
-                  sampling_thread_completed.Signal();
-                })));
-        profiler.Start();
-        sampling_thread_completed.Wait();
-      });
-
-  // Look up the frames.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  const Frames& frames = SampleScenario(&scenario, module_cache());
 
   // The stack should contain a full unwind.
   ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
@@ -849,36 +825,10 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
-  Profile profile;
-
   ScopedNativeLibrary other_library(LoadOtherLibrary());
   UnwindScenario scenario(
       BindRepeating(&CallThroughOtherLibrary, Unretained(other_library.get())));
-
-  WithTargetThread(&scenario, [&, this](PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED);
-    StackSamplingProfiler profiler(
-        target_thread_id, params,
-        std::make_unique<TestProfileBuilder>(
-            module_cache(),
-            BindLambdaForTesting(
-                [&profile, &sampling_thread_completed](Profile result_profile) {
-                  profile = std::move(result_profile);
-                  sampling_thread_completed.Signal();
-                })));
-    profiler.Start();
-    sampling_thread_completed.Wait();
-  });
-
-  // Look up the frames.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
+  const Frames& frames = SampleScenario(&scenario, module_cache());
 
   // The stack should contain a full unwind.
   ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
