@@ -285,7 +285,11 @@ InterceptedRequest::~InterceptedRequest() {
 void InterceptedRequest::Restart() {
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       GetIoThreadClient();
-  DCHECK(io_thread_client);
+
+  if (!io_thread_client) {
+    SendErrorAndCompleteImmediately(net::ERR_ABORTED);
+    return;
+  }
 
   if (ShouldBlockURL(request_.url, io_thread_client.get())) {
     SendErrorAndCompleteImmediately(net::ERR_ACCESS_DENIED);
