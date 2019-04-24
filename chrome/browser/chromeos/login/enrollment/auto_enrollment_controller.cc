@@ -461,6 +461,11 @@ void AutoEnrollmentController::SetAutoEnrollmentClientFactoryForTesting(
   testing_auto_enrollment_client_factory_ = auto_enrollment_client_factory;
 }
 
+void AutoEnrollmentController::FireSafeguardTimerForTesting() {
+  DCHECK(safeguard_timer_.IsRunning());
+  safeguard_timer_.FireNow();
+}
+
 AutoEnrollmentController::InitialEnrollmentRequirement
 AutoEnrollmentController::GetInitialEnrollmentRequirement() {
   system::StatisticsProvider* provider =

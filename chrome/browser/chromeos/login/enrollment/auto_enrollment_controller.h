@@ -143,6 +143,8 @@ class AutoEnrollmentController {
   void SetAutoEnrollmentClientFactoryForTesting(
       policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory);
 
+  void FireSafeguardTimerForTesting();
+
  private:
   class SystemClockSyncWaiter;
 

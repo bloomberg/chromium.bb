@@ -387,6 +387,7 @@ class WizardController : public BaseScreenDelegate {
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 
+  friend class AutoEnrollmentLocalPolicyServer;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerDeviceStateTest;
   friend class WizardControllerFlowTest;

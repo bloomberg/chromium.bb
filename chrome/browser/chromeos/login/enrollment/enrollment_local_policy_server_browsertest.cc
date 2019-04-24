@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
@@ -26,6 +27,8 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -129,8 +132,60 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
         ->GetStateKeysBroker();
   }
 
+  void FireSafeguardTimer() {
+    WizardController::default_controller()
+        ->GetAutoEnrollmentController()
+        ->FireSafeguardTimerForTesting();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentLocalPolicyServer);
+};
+
+class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
+ public:
+  AutoEnrollmentWithStatistics() : AutoEnrollmentLocalPolicyServer() {
+    // AutoEnrollmentController assumes that VPD is in valid state if
+    // "serial_number" or "Product_S/N" could be read from it.
+    fake_statistics_provider_.SetMachineStatistic("serial_number", "111111");
+  }
+
+  ~AutoEnrollmentWithStatistics() override = default;
+
+ protected:
+  void SetFRERequiredKey(const std::string& value) {
+    fake_statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey,
+                                                  value);
+  }
+
+  void SetActivateDate(const std::string& value) {
+    fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
+                                                  value);
+  }
+
+  void SetVPDCorrupted() {
+    fake_statistics_provider_.ClearMachineStatistic("serial_number");
+  }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentWithStatistics);
+};
+
+class AutoEnrollmentNoStateKeys : public AutoEnrollmentWithStatistics {
+ public:
+  AutoEnrollmentNoStateKeys() = default;
+  ~AutoEnrollmentNoStateKeys() override = default;
+
+  // AutoEnrollmentWithStatistics:
+  void SetUpInProcessBrowserTestFixture() override {
+    AutoEnrollmentWithStatistics::SetUpInProcessBrowserTestFixture();
+    SessionManagerClient::InitializeFakeInMemory();
+    FakeSessionManagerClient::Get()->set_force_state_keys_missing(true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentNoStateKeys);
 };
 
 // Simple manual enrollment.
@@ -466,6 +521,83 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
+}
+
+// FRE explicitly required in VPD, but the state keys are missing.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FREExplicitlyRequired) {
+  SetFRERequiredKey("1");
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK).Wait();
+
+  // Chrome waits for state keys to be available, force a timeout.
+  FireSafeguardTimer();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
+  test::OobeJS().ExpectHasNoClass("allow-guest-signin", {"error-message"});
+}
+
+// FRE not explicitly required and the state keys are missing. Should proceed to
+// normal signin.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FRENotRequired) {
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
+
+// FRE explicitly not required in VPD, so it should not even contact the policy
+// server.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, FREExplicitlyNotRequired) {
+  SetFRERequiredKey("0");
+
+  // Should be ignored.
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
+      state_keys_broker(),
+      enterprise_management::DeviceStateRetrievalResponse::
+          RESTORE_MODE_REENROLLMENT_ENFORCED,
+      kTestDomain));
+
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
+
+// FRE is not required when VPD is valid and activate date is not there.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, MachineNotActivated) {
+  // Should be ignored.
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
+      state_keys_broker(),
+      enterprise_management::DeviceStateRetrievalResponse::
+          RESTORE_MODE_REENROLLMENT_ENFORCED,
+      kTestDomain));
+
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+}
+
+// FRE is required when VPD is valid and activate date is there.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, MachineActivated) {
+  SetActivateDate("1970-01");
+
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
+      state_keys_broker(),
+      enterprise_management::DeviceStateRetrievalResponse::
+          RESTORE_MODE_REENROLLMENT_ENFORCED,
+      kTestDomain));
+
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+}
+
+// FRE is required when VPD in invalid state.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, CorruptedVPD) {
+  SetVPDCorrupted();
+
+  EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
+      state_keys_broker(),
+      enterprise_management::DeviceStateRetrievalResponse::
+          RESTORE_MODE_REENROLLMENT_ENFORCED,
+      kTestDomain));
+
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
 }
 
 }  // namespace chromeos

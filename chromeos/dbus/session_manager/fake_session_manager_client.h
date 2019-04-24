@@ -230,6 +230,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   void set_low_disk(bool low_disk) { low_disk_ = low_disk; }
 
+  void set_force_state_keys_missing(bool force_state_keys_missing) {
+    force_state_keys_missing_ = force_state_keys_missing;
+  }
+
   const std::string& container_instance_id() const {
     return container_instance_id_;
   }
@@ -263,6 +267,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   int start_tpm_firmware_update_call_count_ = 0;
   std::string last_tpm_firmware_update_mode_;
   bool screen_is_locked_ = false;
+  bool force_state_keys_missing_ = false;
 
   bool arc_available_ = false;
   base::TimeTicks arc_start_time_;
