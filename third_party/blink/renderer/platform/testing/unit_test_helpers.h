@@ -83,11 +83,11 @@ class LineReader {
   DISALLOW_NEW();
 
  public:
-  LineReader(const std::string& text);
-  bool GetNextLine(std::string* line);
+  LineReader(const String& text);
+  bool GetNextLine(String* line);
 
  private:
-  std::string text_;
+  String text_;
   size_t index_;
 };
 
