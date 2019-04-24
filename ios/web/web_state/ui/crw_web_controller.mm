@@ -212,6 +212,19 @@ GURL URLEscapedForHistory(const GURL& url) {
   return net::GURLWithNSURL(net::NSURLWithGURL(url));
 }
 
+// Returns true if workaround for loading restricted URLs should be applied.
+// TODO(crbug.com/954332): Remove this workaround when
+// https://bugs.webkit.org/show_bug.cgi?id=196930 is fixed.
+bool RequiresContentFilterBlockingWorkaround() {
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    return false;
+
+  if (@available(iOS 12.2, *))
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
 #pragma mark -
@@ -2171,6 +2184,22 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   NSURLRequest* request =
       [NSURLRequest requestWithURL:net::NSURLWithGURL(placeholderURL)];
   WKNavigation* navigation = [self.webView loadRequest:request];
+
+  NSError* error = originalContext ? originalContext->GetError() : nil;
+  if (RequiresContentFilterBlockingWorkaround() &&
+      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
+    GURL currentWKItemURL =
+        net::GURLWithNSURL(self.webView.backForwardList.currentItem.URL);
+    if (currentWKItemURL.SchemeIs(url::kAboutScheme)) {
+      // WKWebView will pass nil WKNavigation objects to WKNavigationDelegate
+      // callback for this navigation. TODO(crbug.com/954332): Remove the
+      // workaround when https://bugs.webkit.org/show_bug.cgi?id=196930 is
+      // fixed.
+      navigation = nil;
+    }
+  }
+
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
   std::unique_ptr<web::NavigationContextImpl> navigationContext;
@@ -5264,13 +5293,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
+    ui::PageTransition transition = navigationContext->GetPageTransition();
     if (error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
       DCHECK(provisionalLoad);
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        // If URL is blocked due to Restriction, do not take any further action
-        // as WKWebView will show a built-in error.
+        // If URL is blocked due to Restriction, do not take any further
+        // action as WKWebView will show a built-in error.
+        if (!RequiresContentFilterBlockingWorkaround()) {
+          return;
+        } else if (!PageTransitionIsNewNavigation(transition)) {
+          if (transition & ui::PAGE_TRANSITION_RELOAD) {
+            self.webStateImpl->SetIsLoading(false);
+          }
+          return;
+        }
       } else if (web::features::StorePendingItemInContext()) {
-        ui::PageTransition transition = navigationContext->GetPageTransition();
         if (transition & ui::PAGE_TRANSITION_RELOAD &&
             !(transition & ui::PAGE_TRANSITION_FORWARD_BACK)) {
           // There is no pending item for reload (see crbug.com/676129). So
