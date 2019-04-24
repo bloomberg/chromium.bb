@@ -31,12 +31,15 @@
 
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -275,14 +278,27 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
                                               ScrollCallback on_finish) {
   CancelScrollAnimation();
 
+  ScrollCallback callback = std::move(on_finish);
+  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+    callback = ScrollCallback(base::BindOnce(
+        [](ScrollCallback original_callback,
+           WeakPersistent<ScrollableArea> area) {
+          if (area)
+            area->MarkHoverStateDirty();
+          if (original_callback)
+            std::move(original_callback).Run();
+        },
+        std::move(callback), WrapWeakPersistent(this)));
+  }
+
   if (scroll_behavior == kScrollBehaviorSmooth) {
     GetProgrammaticScrollAnimator().AnimateToOffset(offset, is_sequenced_scroll,
-                                                    std::move(on_finish));
+                                                    std::move(callback));
   } else {
     GetProgrammaticScrollAnimator().ScrollToOffsetWithoutAnimation(
         offset, is_sequenced_scroll);
-    if (on_finish)
-      std::move(on_finish).Run();
+    if (callback)
+      std::move(callback).Run();
   }
 }
 
@@ -755,6 +771,10 @@ CompositorElementId ScrollableArea::GetScrollbarElementId(
           : CompositorElementIdNamespace::kVerticalScrollbar;
   return CompositorElementIdFromUniqueObjectId(
       scrollable_element_id.GetInternalValue(), element_id_namespace);
+}
+
+void ScrollableArea::MarkHoverStateDirty() {
+  GetLayoutBox()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
 }
 
 void ScrollableArea::Trace(blink::Visitor* visitor) {

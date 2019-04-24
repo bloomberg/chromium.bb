@@ -405,6 +405,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollbarTheme& GetPageScrollbarTheme() const = 0;
 
+  virtual void MarkHoverStateDirty();
+
   float ScrollStep(ScrollGranularity, ScrollbarOrientation) const;
 
  protected:

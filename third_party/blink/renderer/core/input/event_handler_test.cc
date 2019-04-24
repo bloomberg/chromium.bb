@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1441,6 +1442,78 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+}
+
+// Test that the hover is updated at the next begin frame after the smooth JS
+// scroll ends.
+TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 500));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body, html {
+        margin: 0;
+        height: 500vh;
+      }
+      div {
+        height: 500px;
+        width: 100%;
+      }
+    </style>
+    <body>
+    <div class="hoverme" id="hoverarea">hover over me</div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  WebMouseEvent mouse_move_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(100, 100),
+      WebFloatPoint(100, 100), WebPointerProperties::Button::kNoButton, 0,
+      WebInputEvent::Modifiers::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+  WebView().MainFrameWidget()->SetFocus(true);
+  WebView().SetIsActive(true);
+
+  Element* element = GetDocument().getElementById("hoverarea");
+  EXPECT_TRUE(element->IsHovered());
+
+  // Find the scrollable area and set scroll offset.
+  ScrollableArea* scrollable_area =
+      GetDocument().GetLayoutView()->GetScrollableArea();
+  bool finished = false;
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 1000), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollableArea::ScrollCallback(
+          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+  Compositor().BeginFrame();
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(0, frame_view->LayoutViewport()->GetScrollOffset().Height());
+  ASSERT_FALSE(finished);
+  // Scrolling is in progress but the hover is not updated yet.
+  Compositor().BeginFrame();
+  // Start scroll animation, but it is not finished.
+  Compositor().BeginFrame();
+  ASSERT_GT(frame_view->LayoutViewport()->GetScrollOffset().Height(), 0);
+  ASSERT_FALSE(finished);
+
+  // Mark hover state dirty but the hover state does not change after the
+  // animation finishes.
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(1000, frame_view->LayoutViewport()->GetScrollOffset().Height());
+  ASSERT_TRUE(finished);
+  EXPECT_TRUE(element->IsHovered());
+
+  // Hover state is updated after the begin frame.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(element->IsHovered());
 }
 
 TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
