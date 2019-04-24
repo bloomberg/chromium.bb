@@ -34,10 +34,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
   ~PlatformNativeWorkerPoolWin() override;
 
  private:
-  class ScopedCallbackMayRunLongObserver;
-
   // Callback that gets run by |pool_|.
-  static void CALLBACK RunNextSequence(PTP_CALLBACK_INSTANCE callback_instance,
+  static void CALLBACK RunNextSequence(PTP_CALLBACK_INSTANCE,
                                        void* scheduler_worker_pool_windows_impl,
                                        PTP_WORK);
 
