@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -121,6 +122,12 @@ ClientConfig CreateConfigForServer(const net::EmbeddedTestServer& server) {
 
 }  // namespace
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
+#endif
+
 class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -163,6 +170,10 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     EnableDataSaver(true);
     // Make sure initial config has been loaded.
     WaitForConfig();
+  }
+
+  bool IsNetworkServiceEnabled() const {
+    return base::FeatureList::IsEnabled(network::features::kNetworkService);
   }
 
  protected:
@@ -977,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyResourceTypeBrowsertest,
 
 class DataReductionProxyWarmupURLBrowsertest
     : public ::testing::WithParamInterface<
-          std::tuple<ProxyServer_ProxyScheme, bool>>,
+          std::tuple<ProxyServer_ProxyScheme, bool, bool>>,
       public DataReductionProxyBrowsertestBase {
  public:
   DataReductionProxyWarmupURLBrowsertest()
@@ -987,6 +998,10 @@ class DataReductionProxyWarmupURLBrowsertest
         secondary_server_(GetTestServerType()) {}
 
   void SetUpOnMainThread() override {
+    if (!std::get<2>(GetParam())) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDataReductionProxyDisableProxyFailedWarmup);
+    }
     primary_server_loop_ = std::make_unique<base::RunLoop>();
     primary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
@@ -1054,30 +1069,66 @@ class DataReductionProxyWarmupURLBrowsertest
   std::unique_ptr<net::test_server::HttpResponse> WaitForWarmupRequest(
       base::RunLoop* run_loop,
       const net::test_server::HttpRequest& request) {
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     if (base::StartsWith(request.relative_url, "/e2e_probe",
                          base::CompareCase::SENSITIVE)) {
       run_loop->Quit();
+      response->set_content("content");
+      response->AddCustomHeader("via", via_header_);
+    } else if (base::StartsWith(request.relative_url, "/echoheader",
+                                base::CompareCase::SENSITIVE)) {
+      const auto chrome_proxy_header = request.headers.find("chrome-proxy");
+      if (chrome_proxy_header != request.headers.end()) {
+        response->set_content(chrome_proxy_header->second);
+        response->AddCustomHeader("chrome-proxy", "ofcl=1000");
+      }
     }
-    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_content("content");
-    response->AddCustomHeader("via", via_header_);
     return response;
   }
 
   const std::string via_header_;
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest,
-                       WarmupURLsFetchedForEachProxy) {
+IN_PROC_BROWSER_TEST_P(
+    DataReductionProxyWarmupURLBrowsertest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(WarmupURLsFetchedForEachProxy)) {
+  if (!IsNetworkServiceEnabled())
+    return;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  bool is_warmup_fetch_successful = std::get<1>(GetParam());
+  bool disallow_proxy_failed_warmup_feature_enabled = std::get<2>(GetParam());
   primary_server_loop_->Run();
 
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   RetryForHistogramUntilCountReached(&histogram_tester_, GetHistogramName(), 1);
 
   histogram_tester_.ExpectUniqueSample(GetHistogramName(),
-                                       std::get<1>(GetParam()), 1);
+                                       is_warmup_fetch_successful, 1);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate to some URL to see if the proxy is only used when warmup URL fetch
+  // was successful.
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
+  std::string body = GetBody();
+  if (is_warmup_fetch_successful) {
+    EXPECT_THAT(body, HasSubstr(kSessionKey));
+  } else {
+    if (disallow_proxy_failed_warmup_feature_enabled) {
+      EXPECT_THAT(body, kDummyBody);
+    } else {
+      // When the feature is disabled, the proxy is still being used
+      EXPECT_THAT(body, HasSubstr(kSessionKey));
+    }
+  }
 }
 
 // First parameter indicate proxy scheme for proxies that are being tested.
@@ -1086,9 +1137,13 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest,
 INSTANTIATE_TEST_SUITE_P(
     ,
     DataReductionProxyWarmupURLBrowsertest,
-    ::testing::Combine(testing::Values(ProxyServer_ProxyScheme_HTTP,
-                                       ProxyServer_ProxyScheme_HTTPS),
-                       ::testing::Bool()));
+    ::testing::Combine(
+        testing::Values(ProxyServer_ProxyScheme_HTTP,
+                        ProxyServer_ProxyScheme_HTTPS),
+        ::testing::Bool(),  // is_warmup_fetch_successful
+        ::testing::Bool()   // kDataReductionProxyDisallowProxyFailedWarmup
+                            // active
+        ));
 
 // Threadsafe log for recording a sequence of events as newline separated text.
 class EventLog {
