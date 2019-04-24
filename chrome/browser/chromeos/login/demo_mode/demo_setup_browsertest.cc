@@ -71,7 +71,7 @@ enum class JSExecution { kSync, kAsync };
 enum class OobeButton { kBack, kNext, kText };
 
 // Dialogs that are a part of Demo Mode setup screens.
-enum class DemoSetupDialog { kNetwork, kEula, kProgress, kError };
+enum class DemoSetupDialog { kNetwork, kEula, kArcTos, kProgress, kError };
 
 // Returns the tag of the given |button| type.
 std::string ButtonToTag(OobeButton button) {
@@ -94,6 +94,8 @@ std::string DialogToStringId(DemoSetupDialog dialog) {
       return "networkDialog";
     case DemoSetupDialog::kEula:
       return "eulaDialog";
+    case DemoSetupDialog::kArcTos:
+      return "arc-tos-dialog";
     case DemoSetupDialog::kProgress:
       return "demoSetupProgressDialog";
     case DemoSetupDialog::kError:
@@ -169,14 +171,28 @@ class DemoSetupTest : public LoginManagerTest {
     return !test::OobeJS().GetBool(kIsConfirmationDialogHiddenQuery);
   }
 
+  // TODO(michaelpg): Replace this with IsScreenDialogElementVisible, which is
+  // more robust because it checks whether the element is actually rendered.
+  // Do this after a branch in case it introduces flakiness.
   bool IsScreenDialogElementShown(OobeScreen screen,
                                   DemoSetupDialog dialog,
                                   const std::string& element_selector) {
     const std::string element = base::StrCat(
-        {ScreenToContentQuery(screen), ".$.", DialogToStringId(dialog),
-         ".querySelector('", element_selector, "')"});
+        {ScreenToContentQuery(screen), ".$['", DialogToStringId(dialog),
+         "'].querySelector('", element_selector, "')"});
     const std::string query =
         base::StrCat({"!!", element, " && !", element, ".hidden"});
+    return test::OobeJS().GetBool(query);
+  }
+
+  bool IsScreenDialogElementVisible(OobeScreen screen,
+                                    DemoSetupDialog dialog,
+                                    const std::string& element_selector) {
+    const std::string element = base::StrCat(
+        {ScreenToContentQuery(screen), ".$['", DialogToStringId(dialog),
+         "'].querySelector('", element_selector, "')"});
+    const std::string query =
+        base::StrCat({"!!", element, " && ", element, ".offsetHeight > 0"});
     return test::OobeJS().GetBool(query);
   }
 
@@ -184,8 +200,8 @@ class DemoSetupTest : public LoginManagerTest {
                                     DemoSetupDialog dialog,
                                     const std::string& element_selector) {
     const std::string element = base::StrCat(
-        {ScreenToContentQuery(screen), ".$.", DialogToStringId(dialog),
-         ".querySelector('", element_selector, "')"});
+        {ScreenToContentQuery(screen), ".$['", DialogToStringId(dialog),
+         "'].querySelector('", element_selector, "')"});
     const std::string query =
         base::StrCat({"!!", element, " && !", element, ".disabled"});
     return test::OobeJS().GetBool(query);
@@ -210,8 +226,8 @@ class DemoSetupTest : public LoginManagerTest {
   bool IsErrorMessageShown(int error_message_id, int recovery_message_id) {
     const std::string element_selector =
         base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
-                      ".$.", DialogToStringId(DemoSetupDialog::kError),
-                      ".querySelector('div[slot=subtitle]')"});
+                      ".$['", DialogToStringId(DemoSetupDialog::kError),
+                      "'].querySelector('div[slot=subtitle]')"});
     const std::string query = base::StrCat(
         {"!!", element_selector, " && ", element_selector, ".innerHTML == '",
          l10n_util::GetStringUTF8(error_message_id), " ",
@@ -297,8 +313,8 @@ class DemoSetupTest : public LoginManagerTest {
                                            const std::string& button_selector,
                                            JSExecution execution) {
     const std::string query = base::StrCat(
-        {ScreenToContentQuery(screen), ".$.", DialogToStringId(dialog),
-         ".querySelector('", button_selector, "').click();"});
+        {ScreenToContentQuery(screen), ".$['", DialogToStringId(dialog),
+         "'].querySelector('", button_selector, "').click();"});
     switch (execution) {
       case JSExecution::kAsync:
         test::ExecuteOobeJSAsync(query);
@@ -345,8 +361,8 @@ class DemoSetupTest : public LoginManagerTest {
 
   void WaitForScreenDialog(OobeScreen screen, DemoSetupDialog dialog) {
     const std::string query =
-        base::StrCat({"!", ScreenToContentQuery(screen), ".$.",
-                      DialogToStringId(dialog), ".hidden"});
+        base::StrCat({"!", ScreenToContentQuery(screen), ".$['",
+                      DialogToStringId(dialog), "'].hidden"});
     WaitForJsCondition(query);
   }
 
@@ -540,6 +556,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
 
   SetPlayStoreTermsForTesting();
+
+  EXPECT_TRUE(IsScreenDialogElementVisible(
+      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, DemoSetupDialog::kArcTos,
+      "#arc-tos-metrics-demo-apps"));
+
   ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
                               "#arc-tos-next-button", JSExecution::kSync);
   ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
@@ -893,6 +914,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
 
   SetPlayStoreTermsForTesting();
+
+  EXPECT_TRUE(IsScreenDialogElementVisible(
+      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, DemoSetupDialog::kArcTos,
+      "#arc-tos-metrics-demo-apps"));
+
   ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
                               "#arc-tos-next-button", JSExecution::kSync);
   ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,

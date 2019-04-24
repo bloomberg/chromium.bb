@@ -2870,6 +2870,9 @@
   <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED_CHILD" desc="Message in the Arc Terms OOBE dialog in case metrics disabled on the device, and a child account is in use.">
     Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_DEMO_APPS" desc="Addendum to the metrics disclaimer in the Arc Terms OOBE dialog during Demo Mode setup explaining that demo apps have their own policies for data collection.">
+    Note that Android, Play, and associated apps are governed by their own data collection and use policies.
+  </message>
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
     Use location. Allow apps and services with location permission to use your device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
