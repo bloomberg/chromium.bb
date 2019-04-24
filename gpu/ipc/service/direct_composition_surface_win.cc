@@ -1744,9 +1744,12 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                              hr);
 
     if (FAILED(hr)) {
+      // Disable overlay support so dc_layer_overlay will stop sending down
+      // overlay frames here and uses GL Composition instead.
+      g_supports_overlays = false;
       DLOG(ERROR) << "Failed to create BGRA swap chain of size "
                   << swap_chain_size.ToString() << " with error 0x" << std::hex
-                  << hr;
+                  << hr << ". Disable overlay swap chains";
       return false;
     }
   }
