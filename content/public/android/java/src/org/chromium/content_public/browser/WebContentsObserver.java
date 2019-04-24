@@ -182,6 +182,18 @@ public abstract class WebContentsObserver {
     public void didReloadLoFiImages() {}
 
     /**
+     * This method is invoked when a RenderWidgetHost for a WebContents gains focus.
+     */
+    public void onWebContentsFocused() {}
+
+    /**
+     * This method is invoked when a RenderWidgetHost for a WebContents loses focus. This may
+     * be immediately followed by onWebContentsFocused if focus was moving between two
+     * RenderWidgetHosts within the same WebContents.
+     */
+    public void onWebContentsLostFocus() {}
+
+    /**
      * Stop observing the web contents and clean up associated references.
      */
     public void destroy() {

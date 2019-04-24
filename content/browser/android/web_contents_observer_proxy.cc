@@ -274,4 +274,14 @@ void WebContentsObserverProxy::DidReloadLoFiImages() {
   Java_WebContentsObserverProxy_didReloadLoFiImages(env, java_observer_);
 }
 
+void WebContentsObserverProxy::OnWebContentsFocused(RenderWidgetHost*) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_onWebContentsFocused(env, java_observer_);
+}
+
+void WebContentsObserverProxy::OnWebContentsLostFocus(RenderWidgetHost*) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_onWebContentsLostFocus(env, java_observer_);
+}
+
 }  // namespace content

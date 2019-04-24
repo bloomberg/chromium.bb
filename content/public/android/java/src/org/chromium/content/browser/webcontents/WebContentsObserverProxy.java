@@ -253,6 +253,22 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void onWebContentsFocused() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().onWebContentsFocused();
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void onWebContentsLostFocus() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().onWebContentsLostFocus();
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void destroy() {
         // Super destruction semantics (removing the observer from the
         // Java-based WebContents) are quite different, so we explicitly avoid
