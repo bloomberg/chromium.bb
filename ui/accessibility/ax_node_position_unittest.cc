@@ -1556,29 +1556,25 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
-
-  test_position = text_position->CreateNextCharacterPosition(
-      AXBoundaryBehavior::CrossBoundary);
-  EXPECT_NE(nullptr, test_position);
-  EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
-  EXPECT_EQ(6, test_position->text_offset());
-
   test_position = test_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(line_break_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(1, test_position->text_offset());
 
-  // The line break doesn't reach its max length (1) to distinguish between the
-  // "before" and "after" positions
+  test_position = test_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopAtAnchorBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(line_break_.id, test_position->anchor_id());
+  EXPECT_EQ(1, test_position->text_offset());
   test_position = test_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(1, test_position->text_offset());
 
   text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, check_box_.id, 0 /* text_offset */,
@@ -1596,7 +1592,7 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(1, test_position->text_offset());
 
   text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, text_field_.id, 0 /* text_offset */,
@@ -1693,9 +1689,7 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
   test_position = text_position->CreatePreviousCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
-  EXPECT_TRUE(test_position->IsTextPosition());
-  EXPECT_EQ(check_box_.id, test_position->anchor_id());
-  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_TRUE(test_position->IsNullPosition());
 
   text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, text_field_.id, 1 /* text_offset */,
@@ -1710,6 +1704,45 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
   EXPECT_EQ(0, test_position->text_offset());
   // Affinity should have been reset to downstream.
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest, ReciprocalCreateNextAndPreviousCharacterPosition) {
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 0 /* child_index */);
+  TestPositionType text_position = tree_position->AsTextPosition();
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+
+  size_t next_character_moves = 0;
+  while (!text_position->IsNullPosition()) {
+    TestPositionType moved_position =
+        text_position->CreateNextCharacterPosition(
+            AXBoundaryBehavior::CrossBoundary);
+    ASSERT_NE(nullptr, moved_position);
+
+    text_position = std::move(moved_position);
+    ++next_character_moves;
+  }
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, root_.child_ids.size() /* child_index */);
+  text_position = tree_position->AsTextPosition();
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+
+  size_t previous_character_moves = 0;
+  while (!text_position->IsNullPosition()) {
+    TestPositionType moved_position =
+        text_position->CreatePreviousCharacterPosition(
+            AXBoundaryBehavior::CrossBoundary);
+    ASSERT_NE(nullptr, moved_position);
+
+    text_position = std::move(moved_position);
+    ++previous_character_moves;
+  }
+
+  EXPECT_EQ(next_character_moves, previous_character_moves);
+  EXPECT_EQ(strlen(TEXT_VALUE), next_character_moves - 1);
 }
 
 TEST_F(AXPositionTest, CreateNextAndPreviousWordStartPositionWithNullPosition) {

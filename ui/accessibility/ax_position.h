@@ -682,69 +682,81 @@ class AXPosition {
 
   AXPositionInstance CreateNextCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    bool was_tree_position = IsTreePosition();
+    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+        << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
+
+    if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
+        AtEndOfAnchor())
+      return Clone();
+
+    const bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsTextPosition();
+
+    // Being at the end of a text anchor could mean:
+    //   - We're in the position between this anchor's end and the next text
+    //   anchor's start. Normalize it to the next anchor's start so we can reach
+    //   the next character by simply increasing its offset.
+    //   - We're at an empty anchor. Skip it, such anchor is "invisible" to the
+    //   text representation and the next character could be ahead.
+    //   - We're at the end of the last anchor and there is no next character,
+    //   let CreateNextTextAnchorPosition return a null position.
+    while (text_position->AtEndOfAnchor())
+      text_position = text_position->CreateNextTextAnchorPosition();
+
+    // Either we couldn't get this position as a text position or we reached the
+    // last anchor and there is no next character position to create.
     if (text_position->IsNullPosition())
       return text_position;
 
-    const int max_position = text_position->MaxTextOffset();
-
-    // Note that |BoundaryBehavior::StopIfAlreadyAtBoundary| doesn't make
-    // sense for character boundaries.
-    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-    if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
-        (text_position->text_offset_) >= max_position) {
-      return Clone();
-    }
-
-    if (!text_position->AtEndOfLine() &&
-        (text_position->text_offset_ + 1) <= max_position) {
-      text_position->text_offset_ += 1;
-      // Even if our affinity was upstream, moving to the next character should
-      // inevitably reset it to downstream.
-      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
-    } else {
-      // Moving to the end of the current anchor first is essential. Otherwise
-      // |CreateNextAnchorPosition| might return our deepest left-most child
-      // because we are using pre-order traversal.
-      text_position = text_position->CreatePositionAtEndOfAnchor();
-      text_position = text_position->CreateNextTextAnchorPosition();
-    }
+    ++text_position->text_offset_;
+    DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
+    // Even if the position's affinity was upstream, moving to the next
+    // character should inevitably reset it to downstream.
+    text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
 
     if (was_tree_position)
-      text_position = text_position->AsTreePosition();
+      return text_position->AsTreePosition();
     return text_position;
   }
 
   AXPositionInstance CreatePreviousCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    // Note that |BoundaryBehavior::StopIfAlreadyAtBoundary| doesn't make
-    // sense for character boundaries.
-    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
+        << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
+
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
-        AtStartOfAnchor()) {
+        AtStartOfAnchor())
       return Clone();
+
+    const bool was_tree_position = IsTreePosition();
+    AXPositionInstance text_position = AsTextPosition();
+
+    // Being at the start of a text anchor could mean:
+    //   - We're in the position between this anchor's start and the previous
+    //   text anchor's end. Normalize it to the previous anchor's end so we can
+    //   reach the previous character by simply decreasing its offset.
+    //   - We're at an empty anchor. Skip it, such anchor is "invisible" to the
+    //   text representation and the previous character could be behind.
+    //   - We're at the start of the first anchor and there is no previous
+    //   character, let CreatePreviousTextAnchorPosition return a null position.
+    while (text_position->AtStartOfAnchor()) {
+      text_position = text_position->CreatePreviousTextAnchorPosition();
+      text_position = text_position->CreatePositionAtEndOfAnchor();
     }
 
-    bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsTextPosition();
+    // Either we couldn't get this position as a text position or we reached the
+    // first anchor and there is no previous character position to create.
     if (text_position->IsNullPosition())
       return text_position;
 
-    if (text_position->text_offset_ > 0) {
-      text_position->text_offset_ -= 1;
-      // Even if the new position is at the beginning of the line, the affinity
-      // is defaulted to downstream for simplicity.
-      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
-    } else {
-      text_position = text_position->CreatePreviousTextAnchorPosition();
-      text_position = text_position->CreatePositionAtEndOfAnchor();
-      if (!text_position->AtStartOfAnchor())
-        --text_position->text_offset_;
-    }
+    --text_position->text_offset_;
+    DCHECK_GE(text_position->text_offset_, 0);
+    // Even if the moved position is at the beginning of the line, the
+    // affinity is defaulted to downstream for simplicity.
+    text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
 
     if (was_tree_position)
-      text_position = text_position->AsTreePosition();
+      return text_position->AsTreePosition();
     return text_position;
   }
 
