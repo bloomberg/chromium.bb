@@ -12,20 +12,19 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;
 
 namespace blink {
 
+class ImageBitmap;
 class WebMediaStreamTrack;
 
-// TODO(crbug.com/945851): Avoid referencing to WebCallbacks, and reference to
-// CallbackPromiseAdapter directly.
-using WebImageCaptureGrabFrameCallbacks = WebCallbacks<sk_sp<SkImage>, void>;
+using ImageCaptureGrabFrameCallbacks =
+    CallbackPromiseAdapter<ImageBitmap, void>;
 
 // This class grabs Video Frames from a given Media Stream Video Track, binding
 // a method of an ephemeral SingleShotFrameHandler every time grabFrame() is
@@ -34,22 +33,19 @@ using WebImageCaptureGrabFrameCallbacks = WebCallbacks<sk_sp<SkImage>, void>;
 // OnSkBitmap(). This class is single threaded throughout.
 class ImageCaptureFrameGrabber final : public MediaStreamVideoSink {
  public:
-  using SkImageDeliverCB = WTF::CrossThreadFunction<void(sk_sp<SkImage>)>;
-
   ImageCaptureFrameGrabber();
   ~ImageCaptureFrameGrabber() override;
 
   void GrabFrame(WebMediaStreamTrack* track,
-                 std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks,
+                 std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // Internal class to receive, convert and forward one frame.
   class SingleShotFrameHandler;
 
-  void OnSkImage(
-      ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> callbacks,
-      sk_sp<SkImage> image);
+  void OnSkImage(ScopedWebCallbacks<ImageCaptureGrabFrameCallbacks> callbacks,
+                 sk_sp<SkImage> image);
 
   // Flag to indicate that there is a frame grabbing in progress.
   bool frame_grab_in_progress_;

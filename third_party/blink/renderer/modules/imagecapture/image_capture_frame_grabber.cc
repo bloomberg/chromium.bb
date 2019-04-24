@@ -9,10 +9,11 @@
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -22,7 +23,7 @@ namespace blink {
 
 namespace {
 
-void OnError(std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks) {
+void OnError(std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks) {
   callbacks->OnError();
 }
 
@@ -51,6 +52,7 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
 
   // Receives a |frame| and converts its pixels into a SkImage via an internal
   // PaintSurface and SkPixmap. Alpha channel, if any, is copied.
+  using SkImageDeliverCB = WTF::CrossThreadFunction<void(sk_sp<SkImage>)>;
   void OnVideoFrameOnIOThread(
       SkImageDeliverCB callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -134,7 +136,7 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 
 void ImageCaptureFrameGrabber::GrabFrame(
     WebMediaStreamTrack* track,
-    std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks,
+    std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!!callbacks);
@@ -170,7 +172,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
 }
 
 void ImageCaptureFrameGrabber::OnSkImage(
-    ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> callbacks,
+    ScopedWebCallbacks<ImageCaptureGrabFrameCallbacks> callbacks,
     sk_sp<SkImage> image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
