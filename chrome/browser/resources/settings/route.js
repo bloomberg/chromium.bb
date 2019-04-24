@@ -63,6 +63,7 @@
  *   PEOPLE: (undefined|!settings.Route),
  *   PLUGIN_VM: (undefined|!settings.Route),
  *   PLUGIN_VM_DETAILS: (undefined|!settings.Route),
+ *   PLUGIN_VM_SHARED_PATHS: (undefined|!settings.Route),
  *   POINTERS: (undefined|!settings.Route),
  *   POWER: (undefined|!settings.Route),
  *   PRINTING: (undefined|!settings.Route),
@@ -292,6 +293,8 @@ cr.define('settings', function() {
         loadTimeData.getBoolean('showPluginVm')) {
       r.PLUGIN_VM = r.BASIC.createSection('/pluginVm', 'pluginVm');
       r.PLUGIN_VM_DETAILS = r.PLUGIN_VM.createChild('/pluginVm/details');
+      r.PLUGIN_VM_SHARED_PATHS =
+          r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
     }
     // </if>
 

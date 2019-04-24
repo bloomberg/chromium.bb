@@ -10,8 +10,6 @@
 Polymer({
   is: 'settings-plugin-vm-page',
 
-  behaviors: [PrefsBehavior],
-
   properties: {
     /** Preferences state. */
     prefs: {
@@ -25,7 +23,10 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.PLUGIN_VM_DETAILS) {
-          map.set(settings.routes.PLUGIN_VM_DETAILS.path, '#pluginVmRow');
+          map.set(settings.routes.PLUGIN_VM_DETAILS.path, '#plugin-vm');
+        }
+        if (settings.routes.PLUGIN_VM_SHARED_PATHS) {
+          map.set(settings.routes.PLUGIN_VM_SHARED_PATHS.path, '#plugin-vm');
         }
         return map;
       },

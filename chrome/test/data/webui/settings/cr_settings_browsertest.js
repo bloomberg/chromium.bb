@@ -2278,6 +2278,30 @@ TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the Plugin VM page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPluginVmPageTest() {}
+
+CrSettingsPluginVmPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/plugin_vm_page/plugin_vm_page.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '../test_browser_proxy.js',
+    'plugin_vm_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPluginVmPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the Google Play Store (ARC) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}

@@ -510,7 +510,7 @@
       Remove
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS" desc="Label for managing shared folders in Crostini.">
-      Manage shared files &amp; folders
+      Manage shared folders
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_HEADING" desc="Label for list of shared folders.">
       Shared folders
@@ -568,6 +568,21 @@
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS" desc="The text associated with the primary section setting for Plugin VM." translateable="false">
       Give access to printers
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS" desc="Label for managing shared folders in Crostini.">
+      Manage shared folders
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_LIST_HEADING" desc="Label for list of shared folders.">
+      Shared folders
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_ADD" desc="Instructions for how to add shared folders in Plugin VM.">
+      To share, right-click on a folder in Files app, then select "Share with Plugin VM".
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE" desc="Instructions for removing shared folders in Crostini.">
+      Removing folders from here will stop sharing but will not delete files.
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a crostini shared folder.">
+      Remove sharing
     </message>
 
     <!-- Android Apps Page -->

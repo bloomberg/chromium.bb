@@ -106,6 +106,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
@@ -398,6 +399,10 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   }
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
+  if (plugin_vm::IsPluginVmEnabled(profile)) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::PluginVmHandler>(profile));
+  }
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   web_ui->AddMessageHandler(
