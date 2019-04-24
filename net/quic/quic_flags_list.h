@@ -210,6 +210,13 @@ QUIC_FLAG(
 // allocated.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
 
+// When true, remove packets from inflight where they're declared lost,
+// rather than in MarkForRetransmission.  Also no longer marks handshake
+// packets as no longer inflight when they're retransmitted.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_loss_removes_from_inflight,
+          false)
+
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 
@@ -247,20 +254,20 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 
 // If true, use one loss algorithm per encryption level.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, true)
 
 // When true, QuicFramer will use AppendIetfConnectionIdsNew instead of
 // AppendIetfConnectionId.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_new_append_connection_id,
-          false)
+          true)
 
 // If true, QuicStreamSequencerBuffer will switch to a new
 // QuicIntervalSet::AddOptimizedForAppend method in OnStreamData().
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_faster_interval_add_in_sequence_buffer,
-    false)
+    true)
 
 // If true, GFE time wait list will send termination packets based on current
 // packet's encryption level.
@@ -270,22 +277,22 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_termination_packets, true)
 // from QuicConnection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_ack_bundling_mode,
-          false)
+          true)
 
 // If both this flag and gfe2_reloadable_flag_quic_deprecate_ack_bundling_mode
 // are true, QuicReceivedPacketManager decides when to send ACKs.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_rpm_decides_when_to_send_acks,
-          false)
+          true)
 
 // In QUIC, do not close connection if received an in-order ACK with decreased
 // largest_acked.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, true)
 
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_validate_packet_number_post_decryption,
-    false)
+    true)
 
 // If this flag and quic_rpm_decides_when_to_send_acks is true, use uber
 // received packet manager instead of the single received packet manager.
