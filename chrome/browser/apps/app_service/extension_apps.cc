@@ -376,7 +376,7 @@ void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
                     : apps::mojom::OptionalBool::kFalse;
     app->show_in_launcher = show;
     app->show_in_search = show;
-    app->show_in_management = ShouldShowInAppManagement(extension);
+    app->show_in_management = show;
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
@@ -400,21 +400,6 @@ bool ExtensionApps::ShouldShow(const extensions::Extension* extension,
   return registry->enabled_extensions().Contains(app_id) ||
          registry->disabled_extensions().Contains(app_id) ||
          registry->terminated_extensions().Contains(app_id);
-}
-
-// static
-apps::mojom::OptionalBool ExtensionApps::ShouldShowInAppManagement(
-    const extensions::Extension* extension) {
-  // Component extensions should not show up in App Management as they
-  // are only extensions as an implementation detail of Chrome, and have
-  // no meaningful settings.
-  if (extensions::Manifest::IsComponentLocation(extension->location()) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          extensions::switches::kShowComponentExtensionOptions)) {
-    return apps::mojom::OptionalBool::kFalse;
-  } else {
-    return apps::mojom::OptionalBool::kTrue;
-  }
 }
 
 void ExtensionApps::PopulatePermissions(

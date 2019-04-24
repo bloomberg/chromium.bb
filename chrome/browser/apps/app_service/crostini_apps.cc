@@ -210,7 +210,9 @@ apps::mojom::AppPtr CrostiniApps::Convert(
                                         : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
   app->show_in_search = show;
-  app->show_in_management = show;
+  // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
+  // Management.
+  app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }

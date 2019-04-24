@@ -94,8 +94,6 @@ class ExtensionApps : public apps::mojom::Publisher,
                               Profile* profile);
   static bool ShouldShow(const extensions::Extension* extension,
                          Profile* profile);
-  static apps::mojom::OptionalBool ShouldShowInAppManagement(
-      const extensions::Extension* extension);
 
   void PopulatePermissions(const extensions::Extension* extension,
                            std::vector<mojom::PermissionPtr>* target);
