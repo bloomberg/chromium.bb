@@ -28,7 +28,6 @@
 #include "av1/encoder/corner_match.h"
 #include "av1/encoder/ransac.h"
 
-#define MAX_CORNERS 4096
 #define MIN_INLIER_PROB 0.1
 
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
@@ -257,8 +256,7 @@ static INLINE RansacFunc get_ransac_type(TransformationType type) {
   }
 }
 
-static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
-                                        int bit_depth) {
+unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
   uint8_t *buf_8bit = frm->y_buffer_8bit;
@@ -276,30 +274,22 @@ static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
 }
 
 static int compute_global_motion_feature_based(
-    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
-    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
-    int num_motions) {
+    TransformationType type, unsigned char *frm_buffer, int frm_width,
+    int frm_height, int frm_stride, int *frm_corners, int num_frm_corners,
+    YV12_BUFFER_CONFIG *ref, int bit_depth, int *num_inliers_by_motion,
+    double *params_by_motion, int num_motions) {
   int i;
-  int num_frm_corners, num_ref_corners;
+  int num_ref_corners;
   int num_correspondences;
   int *correspondences;
-  int frm_corners[2 * MAX_CORNERS], ref_corners[2 * MAX_CORNERS];
-  unsigned char *frm_buffer = frm->y_buffer;
+  int ref_corners[2 * MAX_CORNERS];
   unsigned char *ref_buffer = ref->y_buffer;
   RansacFunc ransac = get_ransac_type(type);
 
-  if (frm->flags & YV12_FLAG_HIGHBITDEPTH) {
-    // The frame buffer is 16-bit, so we need to convert to 8 bits for the
-    // following code. We cache the result until the frame is released.
-    frm_buffer = downconvert_frame(frm, bit_depth);
-  }
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
     ref_buffer = downconvert_frame(ref, bit_depth);
   }
 
-  // compute interest points in images using FAST features
-  num_frm_corners = fast_corner_detect(frm_buffer, frm->y_width, frm->y_height,
-                                       frm->y_stride, frm_corners, MAX_CORNERS);
   num_ref_corners = fast_corner_detect(ref_buffer, ref->y_width, ref->y_height,
                                        ref->y_stride, ref_corners, MAX_CORNERS);
 
@@ -308,8 +298,8 @@ static int compute_global_motion_feature_based(
       (int *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
   num_correspondences = determine_correspondence(
       frm_buffer, (int *)frm_corners, num_frm_corners, ref_buffer,
-      (int *)ref_corners, num_ref_corners, frm->y_width, frm->y_height,
-      frm->y_stride, ref->y_stride, correspondences);
+      (int *)ref_corners, num_ref_corners, frm_width, frm_height, frm_stride,
+      ref->y_stride, correspondences);
 
   ransac(correspondences, num_correspondences, num_inliers_by_motion,
          params_by_motion, num_motions);
@@ -777,20 +767,16 @@ static void compute_flow_field(ImagePyramid *frm_pyr, ImagePyramid *ref_pyr,
 }
 
 static int compute_global_motion_disflow_based(
-    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
-    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
-    int num_motions) {
-  unsigned char *frm_buffer = frm->y_buffer;
+    TransformationType type, unsigned char *frm_buffer, int frm_width,
+    int frm_height, int frm_stride, int *frm_corners, int num_frm_corners,
+    YV12_BUFFER_CONFIG *ref, int bit_depth, int *num_inliers_by_motion,
+    double *params_by_motion, int num_motions) {
   unsigned char *ref_buffer = ref->y_buffer;
-  const int frm_width = frm->y_width;
-  const int frm_height = frm->y_height;
   const int ref_width = ref->y_width;
   const int ref_height = ref->y_height;
   const int pad_size = AOMMAX(PATCH_SIZE, MIN_PAD);
-  int num_frm_corners;
   int num_correspondences;
   double *correspondences;
-  int frm_corners[2 * MAX_CORNERS];
   RansacFuncDouble ransac = get_ransac_double_prec_type(type);
   assert(frm_width == ref_width);
   assert(frm_height == ref_height);
@@ -800,11 +786,6 @@ static int compute_global_motion_disflow_based(
       frm_width < frm_height ? get_msb(frm_width) : get_msb(frm_height);
   const int n_levels = AOMMIN(msb, N_LEVELS);
 
-  if (frm->flags & YV12_FLAG_HIGHBITDEPTH) {
-    // The frame buffer is 16-bit, so we need to convert to 8 bits for the
-    // following code. We cache the result until the frame is released.
-    frm_buffer = downconvert_frame(frm, bit_depth);
-  }
   if (ref->flags & YV12_FLAG_HIGHBITDEPTH) {
     ref_buffer = downconvert_frame(ref, bit_depth);
   }
@@ -819,8 +800,8 @@ static int compute_global_motion_disflow_based(
   int compute_gradient = 1;
   ImagePyramid *frm_pyr =
       alloc_pyramid(frm_width, frm_height, pad_size, compute_gradient);
-  compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm->y_stride,
-                        n_levels, pad_size, compute_gradient, frm_pyr);
+  compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm_stride, n_levels,
+                        pad_size, compute_gradient, frm_pyr);
   // Allocate ref image pyramids
   compute_gradient = 0;
   ImagePyramid *ref_pyr =
@@ -840,9 +821,6 @@ static int compute_global_motion_disflow_based(
 
   compute_flow_field(frm_pyr, ref_pyr, flow_u, flow_v);
 
-  // compute interest points in images using FAST features
-  num_frm_corners = fast_corner_detect(frm_buffer, frm_width, frm_height,
-                                       frm->y_stride, frm_corners, MAX_CORNERS);
   // find correspondences between the two images using the flow field
   correspondences = aom_malloc(num_frm_corners * 4 * sizeof(*correspondences));
   num_correspondences = determine_disflow_correspondence(
@@ -870,20 +848,25 @@ static int compute_global_motion_disflow_based(
   return 0;
 }
 
-int av1_compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
-                              YV12_BUFFER_CONFIG *ref, int bit_depth,
+int av1_compute_global_motion(TransformationType type,
+                              unsigned char *frm_buffer, int frm_width,
+                              int frm_height, int frm_stride, int *frm_corners,
+                              int num_frm_corners, YV12_BUFFER_CONFIG *ref,
+                              int bit_depth,
                               GlobalMotionEstimationType gm_estimation_type,
                               int *num_inliers_by_motion,
                               double *params_by_motion, int num_motions) {
   switch (gm_estimation_type) {
     case GLOBAL_MOTION_FEATURE_BASED:
-      return compute_global_motion_feature_based(type, frm, ref, bit_depth,
-                                                 num_inliers_by_motion,
-                                                 params_by_motion, num_motions);
+      return compute_global_motion_feature_based(
+          type, frm_buffer, frm_width, frm_height, frm_stride, frm_corners,
+          num_frm_corners, ref, bit_depth, num_inliers_by_motion,
+          params_by_motion, num_motions);
     case GLOBAL_MOTION_DISFLOW_BASED:
-      return compute_global_motion_disflow_based(type, frm, ref, bit_depth,
-                                                 num_inliers_by_motion,
-                                                 params_by_motion, num_motions);
+      return compute_global_motion_disflow_based(
+          type, frm_buffer, frm_width, frm_height, frm_stride, frm_corners,
+          num_frm_corners, ref, bit_depth, num_inliers_by_motion,
+          params_by_motion, num_motions);
     default: assert(0 && "Unknown global motion estimation type");
   }
   return 0;

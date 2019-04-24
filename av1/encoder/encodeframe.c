@@ -47,6 +47,7 @@
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
+#include "av1/encoder/corner_detect.h"
 #include "av1/encoder/global_motion.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
@@ -5005,7 +5006,19 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     };
     // clang-format on
     int num_refs_using_gm = 0;
-
+    int num_frm_corners;
+    int frm_corners[2 * MAX_CORNERS];
+    unsigned char *frm_buffer = cpi->source->y_buffer;
+    if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
+      // The frame buffer is 16-bit, so we need to convert to 8 bits for the
+      // following code. We cache the result until the frame is released.
+      frm_buffer =
+          downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
+    }
+    // compute interest points using FAST features
+    num_frm_corners = fast_corner_detect(
+        frm_buffer, cpi->source->y_width, cpi->source->y_height,
+        cpi->source->y_stride, frm_corners, MAX_CORNERS);
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
       ref_buf[frame] = NULL;
       RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
@@ -5056,10 +5069,12 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                    (MAX_PARAMDIM - 1) * sizeof(*params_by_motion));
           }
 
-          av1_compute_global_motion(model, cpi->source, ref_buf[frame],
-                                    cpi->common.seq_params.bit_depth,
-                                    gm_estimation_type, inliers_by_motion,
-                                    params_by_motion, RANSAC_NUM_MOTIONS);
+          av1_compute_global_motion(
+              model, frm_buffer, cpi->source->y_width, cpi->source->y_height,
+              cpi->source->y_stride, frm_corners, num_frm_corners,
+              ref_buf[frame], cpi->common.seq_params.bit_depth,
+              gm_estimation_type, inliers_by_motion, params_by_motion,
+              RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             if (inliers_by_motion[i] == 0) continue;
