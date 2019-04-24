@@ -46,9 +46,13 @@ enum OverviewAnimationType {
   // arrow keys.
   OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW,
   OVERVIEW_ANIMATION_SELECTION_WINDOW,
-  // Used to animate the overview items header visibility.
+  // Used to fade in and out each overview item's app icon, title, and close
+  // button, except when a window gets snapped (see the next value).
   OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN,
   OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT,
+  // Used to fade in the close icons for items remaining in overview on one side
+  // of the screen when a window gets snapped on the other side.
+  OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP,
 };
 
 }  // namespace ash

@@ -261,7 +261,8 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   if (overview_session) {
     GetOverviewSession()->OnWindowDragEnded(
         dragged_window_, gfx::PointF(location_in_screen),
-        ShouldDropWindowIntoOverview(snap_position, location_in_screen));
+        ShouldDropWindowIntoOverview(snap_position, location_in_screen),
+        snap_position != SplitViewController::NONE);
   }
   split_view_controller_->OnWindowDragEnded(dragged_window_, snap_position,
                                             location_in_screen);

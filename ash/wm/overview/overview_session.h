@@ -181,7 +181,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                              IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::PointF& location_in_screen,
-                         bool should_drop_window_into_overview);
+                         bool should_drop_window_into_overview,
+                         bool snap);
 
   // Positions all overview items except those in |ignored_items|.
   void PositionWindows(bool animate,
@@ -189,6 +190,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Returns true if |window| is currently showing in overview.
   bool IsWindowInOverview(const aura::Window* window);
+
+  // Returns the overview item for |window|.
+  OverviewItem* GetOverviewItemForWindow(const aura::Window* window);
 
   // Set the window grid that's displaying in |root_window| not animate when
   // exiting overview mode, i.e., all window items in the grid will not animate

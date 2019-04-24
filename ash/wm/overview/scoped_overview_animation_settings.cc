@@ -56,6 +56,14 @@ constexpr base::TimeDelta kOverviewTitleFade =
 constexpr base::TimeDelta kOverviewTitleFadeInDelay =
     base::TimeDelta::FromMilliseconds(83);
 
+// Duration of the show animation of close icons when a window is snapped.
+constexpr base::TimeDelta kOverviewCloseIconFadeInOnSnap =
+    base::TimeDelta::FromMilliseconds(300);
+
+// Delay before the show animation of close icons when a window is snapped.
+constexpr base::TimeDelta kOverviewCloseIconFadeInOnSnapDelay =
+    base::TimeDelta::FromMilliseconds(750);
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -86,6 +94,8 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
       return kOverviewTitleFade;
+    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
+      return kOverviewCloseIconFadeInOnSnap;
   };
   NOTREACHED();
   return base::TimeDelta();
@@ -155,6 +165,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
+    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER:
@@ -263,6 +274,13 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      break;
+    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+      animator->SchedulePauseForProperties(kOverviewCloseIconFadeInOnSnapDelay,
+                                           ui::LayerAnimationElement::OPACITY);
       break;
   }
   animation_settings_->SetTransitionDuration(

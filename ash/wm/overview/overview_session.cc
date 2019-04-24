@@ -509,10 +509,11 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
-  window_drag_controller_->CompleteDrag(location_in_screen);
-
+  const bool snap =
+      window_drag_controller_->CompleteDrag(location_in_screen) ==
+      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(snap);
 }
 
 void OverviewSession::StartSplitViewDragMode(
@@ -529,9 +530,12 @@ void OverviewSession::Fling(OverviewItem* item,
   if (!window_drag_controller_ || item != window_drag_controller_->item())
     return;
 
-  window_drag_controller_->Fling(location_in_screen, velocity_x, velocity_y);
+  const bool snap =
+      window_drag_controller_->Fling(location_in_screen, velocity_x,
+                                     velocity_y) ==
+      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(snap);
 }
 
 void OverviewSession::ActivateDraggedWindow() {
@@ -541,7 +545,7 @@ void OverviewSession::ActivateDraggedWindow() {
 void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(/*snap=*/false);
 }
 
 void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
@@ -566,13 +570,14 @@ void OverviewSession::OnWindowDragContinued(
 }
 void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
                                         const gfx::PointF& location_in_screen,
-                                        bool should_drop_window_into_overview) {
+                                        bool should_drop_window_into_overview,
+                                        bool snap) {
   OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
   target_grid->OnWindowDragEnded(dragged_window, location_in_screen,
-                                 should_drop_window_into_overview);
+                                 should_drop_window_into_overview, snap);
 }
 
 void OverviewSession::PositionWindows(
@@ -588,6 +593,17 @@ bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
       return true;
   }
   return false;
+}
+
+OverviewItem* OverviewSession::GetOverviewItemForWindow(
+    const aura::Window* window) {
+  for (const std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    if (item)
+      return item;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void OverviewSession::SetWindowListNotAnimatedWhenExiting(

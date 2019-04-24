@@ -120,7 +120,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // when a drag is started, and reshows it when a drag is finished.
   // Additionally hides the title and window icon if |item| is this.
   void OnSelectorItemDragStarted(OverviewItem* item);
-  void OnSelectorItemDragEnded();
+  void OnSelectorItemDragEnded(bool snap);
 
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;

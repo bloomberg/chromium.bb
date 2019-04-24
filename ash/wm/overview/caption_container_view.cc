@@ -205,6 +205,16 @@ void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   AnimateLayerOpacity(close_button_->layer(), close_button_visible);
 }
 
+void CaptionContainerView::FadeInCloseIconAfterSnap() {
+  DCHECK(close_button_->layer());
+  current_header_visibility_ = HeaderVisibility::kVisible;
+  close_button_->layer()->SetOpacity(0.f);
+  ScopedOverviewAnimationSettings settings(
+      OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP,
+      close_button_->layer()->GetAnimator());
+  close_button_->layer()->SetOpacity(1.f);
+}
+
 void CaptionContainerView::SetBackdropVisibility(bool visible) {
   if (!backdrop_view_ && !visible)
     return;

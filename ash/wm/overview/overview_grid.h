@@ -147,7 +147,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Called when any OverviewItem on any OverviewGrid has started/ended being
   // dragged.
   void OnSelectorItemDragStarted(OverviewItem* item);
-  void OnSelectorItemDragEnded();
+  void OnSelectorItemDragEnded(bool snap);
 
   // Called when a window (either it's browser window or an app window)
   // start/continue/end being dragged in tablet mode.
@@ -157,7 +157,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                              IndicatorState indicator_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::PointF& location_in_screen,
-                         bool should_drop_window_into_overview);
+                         bool should_drop_window_into_overview,
+                         bool snap);
 
   // Returns true if |window| is the placeholder window from the drop target.
   bool IsDropTargetWindow(aura::Window* window) const;

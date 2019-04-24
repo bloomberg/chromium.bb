@@ -445,18 +445,26 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   }
 }
 
-void OverviewItem::OnSelectorItemDragEnded() {
-  // Re-show mask and shadow for the dragged overview item after drag ends.
+void OverviewItem::OnSelectorItemDragEnded(bool snap) {
+  // Stop caching render surface after overview window dragging.
+  window_surface_cache_observers_.reset();
+
   if (is_being_dragged_) {
     is_being_dragged_ = false;
+    // Do nothing further with the dragged overview item if it is being snapped.
+    if (snap)
+      return;
+    // Re-show mask and shadow for the dragged overview item after drag ends.
     UpdateMaskAndShadow();
   }
 
-  caption_container_view_->SetHeaderVisibility(
-      CaptionContainerView::HeaderVisibility::kVisible);
-
-  // Stop caching render surface after overview window dragging.
-  window_surface_cache_observers_.reset();
+  // Update the header.
+  if (snap) {
+    caption_container_view_->FadeInCloseIconAfterSnap();
+  } else {
+    caption_container_view_->SetHeaderVisibility(
+        CaptionContainerView::HeaderVisibility::kVisible);
+  }
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode

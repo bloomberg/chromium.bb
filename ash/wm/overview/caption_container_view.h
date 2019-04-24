@@ -65,7 +65,17 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   CaptionContainerView(EventDelegate* event_delegate, aura::Window* window);
   ~CaptionContainerView() override;
 
+  // Fades in and out the app icon, title, and close button, choosing an
+  // overview animation type based on whether fading in or fading out. When a
+  // window gets snapped, use |FadeInCloseIconAfterSnap| instead.
   void SetHeaderVisibility(HeaderVisibility visibility);
+
+  // Fade in the close icon with a special overview animation type (specifically
+  // |OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP|) for when a
+  // dragged window gets snapped. This function may be called before or after
+  // the window is snapped. It is called before the snap in case of dragging
+  // from the top, but after the snap in case of dragging from overview.
+  void FadeInCloseIconAfterSnap();
 
   // Sets the visiblity of |backdrop_view_|. Creates it if it is null.
   void SetBackdropVisibility(bool visible);

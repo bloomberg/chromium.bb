@@ -34,17 +34,27 @@ class ASH_EXPORT OverviewWindowDragController {
     kDragToClose,  // On drag complete, the window will be closed, if it meets
                    // requirements.
   };
+  enum class DragResult {
+    kNeverDisambiguated,     // The drag ended without ever being disambiguated
+                             // between drag-to-snap and drag-to-close.
+    kSuccessfulDragToSnap,   // The drag resulted in snapping the window.
+    kCanceledDragToSnap,     // The drag was considered as drag-to-snap, but did
+                             // not result in snapping the window.
+    kSuccessfulDragToClose,  // The drag resulted in closing the window.
+    kCanceledDragToClose,  // The drag was considered as drag-to-close, but did
+                           // not result in closing the window.
+  };
 
   explicit OverviewWindowDragController(OverviewSession* overview_session);
   ~OverviewWindowDragController();
 
   void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void Drag(const gfx::PointF& location_in_screen);
-  void CompleteDrag(const gfx::PointF& location_in_screen);
+  DragResult CompleteDrag(const gfx::PointF& location_in_screen);
   void StartSplitViewDragMode(const gfx::PointF& location_in_screen);
-  void Fling(const gfx::PointF& location_in_screen,
-             float velocity_x,
-             float velocity_y);
+  DragResult Fling(const gfx::PointF& location_in_screen,
+                   float velocity_x,
+                   float velocity_y);
   void ActivateDraggedWindow();
   void ResetGesture();
 

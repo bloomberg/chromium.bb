@@ -712,9 +712,9 @@ void OverviewGrid::OnSelectorItemDragStarted(OverviewItem* item) {
     overview_mode_item->OnSelectorItemDragStarted(item);
 }
 
-void OverviewGrid::OnSelectorItemDragEnded() {
+void OverviewGrid::OnSelectorItemDragEnded(bool snap) {
   for (auto& overview_mode_item : window_list_)
-    overview_mode_item->OnSelectorItemDragEnded();
+    overview_mode_item->OnSelectorItemDragEnded(snap);
 }
 
 void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
@@ -791,7 +791,8 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
 
 void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
                                      const gfx::PointF& location_in_screen,
-                                     bool should_drop_window_into_overview) {
+                                     bool should_drop_window_into_overview,
+                                     bool snap) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
   DCHECK(drop_target_widget_.get());
 
@@ -810,7 +811,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   RemoveDropTarget();
 
   // Called to reset caption and title visibility after dragging.
-  OnSelectorItemDragEnded();
+  OnSelectorItemDragEnded(snap);
 
   // After drag ends, if the dragged window needs to merge into another window
   // |target_window|, and we may need to update |minimized_widget_| that holds
