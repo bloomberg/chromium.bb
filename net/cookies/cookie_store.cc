@@ -31,19 +31,8 @@ void CookieStore::GetAllCookiesForURLAsync(const GURL& url,
   GetCookieListWithOptionsAsync(url, options, std::move(callback));
 }
 
-void CookieStore::SetChannelIDServiceID(int id) {
-  DCHECK_EQ(-1, channel_id_service_id_);
-  channel_id_service_id_ = id;
-}
-
-int CookieStore::GetChannelIDServiceID() {
-  return channel_id_service_id_;
-}
-
 void CookieStore::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {}
-
-CookieStore::CookieStore() : channel_id_service_id_(-1) {}
 
 }  // namespace net

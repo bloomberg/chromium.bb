@@ -145,20 +145,9 @@ class NET_EXPORT CookieStore {
   virtual void SetCookieableSchemes(const std::vector<std::string>& schemes,
                                     SetCookieableSchemesCallback callback) = 0;
 
-  // Returns true if this cookie store is ephemeral, and false if it is backed
-  // by some sort of persistence layer.
-  // TODO(nharper): Remove this method once crbug.com/548423 has been closed.
-  virtual bool IsEphemeral() = 0;
-  void SetChannelIDServiceID(int id);
-  int GetChannelIDServiceID();
-
   // Reports the estimate of dynamically allocated memory in bytes.
   virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                                const std::string& parent_absolute_name) const;
-
- protected:
-  CookieStore();
-  int channel_id_service_id_;
 };
 
 }  // namespace net

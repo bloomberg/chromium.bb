@@ -29,7 +29,6 @@ class PrefService;
 namespace net {
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
 class CookieStore;
 class CTVerifier;
 class HostResolver;
@@ -99,8 +98,6 @@ class IOSIOThread : public web::WebThreadDelegate {
     std::unique_ptr<net::NetworkDelegate> system_network_delegate;
     std::unique_ptr<net::HostResolver> host_resolver;
     std::unique_ptr<net::CertVerifier> cert_verifier;
-    // The ChannelIDService must outlive the HttpTransactionFactory.
-    std::unique_ptr<net::ChannelIDService> system_channel_id_service;
     // This TransportSecurityState doesn't load or save any state. It's only
     // used to enforce pinning for system requests and will only use built-in
     // pins.

@@ -533,10 +533,6 @@ CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
 }
 
-bool CookieMonster::IsEphemeral() {
-  return store_.get() == nullptr;
-}
-
 void CookieMonster::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {

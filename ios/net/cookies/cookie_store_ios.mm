@@ -646,10 +646,6 @@ void CookieStoreIOS::SetCookieableSchemes(
   std::move(callback).Run(false);
 }
 
-bool CookieStoreIOS::IsEphemeral() {
-  return cookie_monster_->IsEphemeral();
-}
-
 std::unique_ptr<CookieChangeSubscription> CookieStoreIOS::AddCallbackForCookie(
     const GURL& gurl,
     const std::string& name,

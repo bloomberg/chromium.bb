@@ -199,10 +199,6 @@ void DelayedCookieMonster::SetCookieableSchemes(
   ADD_FAILURE();
 }
 
-bool DelayedCookieMonster::IsEphemeral() {
-  return true;
-}
-
 //
 // CookieURLHelper
 //
