@@ -29,6 +29,7 @@ arm_internal_release_boards = frozenset([
     'capri',
     'capri-zfpga',
     'cheza',
+    'cheza64',
     'cobblepot',
     'daisy',
     'daisy_skate',

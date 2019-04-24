@@ -1285,6 +1285,24 @@
   cheza-tot-chrome-pfq-informational-tryjob
   cheza-tot-chromium-pfq-informational-tryjob
   cheza-unittest-stress
+  cheza64-chrome-pfq-tryjob
+  cheza64-chromium-pfq-tryjob
+  cheza64-compile-only-pre-cq
+  cheza64-full-tryjob
+  cheza64-llvm-next-toolchain-tryjob
+  cheza64-llvm-toolchain-tryjob
+  cheza64-no-vmtest-pre-cq
+  cheza64-paladin-tryjob
+  cheza64-payloads-tryjob
+  cheza64-postsubmit-tryjob
+  cheza64-pre-cq
+  cheza64-release-afdo-generate-tryjob
+  cheza64-release-afdo-tryjob
+  cheza64-release-afdo-use-tryjob
+  cheza64-release-tryjob
+  cheza64-tot-chrome-pfq-informational-tryjob
+  cheza64-tot-chromium-pfq-informational-tryjob
+  cheza64-unittest-stress
   chromeos-infra-go-pre-cq
   chromeos-infra-go-tryjob
   chromeos-infra-puppet-pre-cq
