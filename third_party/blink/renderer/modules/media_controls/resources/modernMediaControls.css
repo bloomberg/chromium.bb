@@ -187,7 +187,7 @@ audio::-internal-media-controls-download-button,
 video::-internal-media-controls-download-button,
 video::-internal-media-controls-picture-in-picture-button {
   -webkit-appearance: -internal-media-control;
-  background-size: 24px;
+  background-size: 20px;
   background-repeat: no-repeat;
   background-position: center center;
 
