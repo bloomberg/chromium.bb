@@ -180,7 +180,7 @@ Polymer({
       direction *= -1;  // Reverse direction if RTL.
     }
 
-    const buttons = this.root.querySelectorAll('.ntp-background-grid-button');
+    const buttons = this.root.querySelectorAll('.option');
     const targetIndex = Array.prototype.indexOf.call(buttons, element);
 
     const oldFocus = buttons[targetIndex];
