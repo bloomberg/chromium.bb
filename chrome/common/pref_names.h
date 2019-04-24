@@ -292,6 +292,9 @@ extern const char kNetworkFileSharesPreconfiguredShares[];
 extern const char kMostRecentlyUsedNetworkFileShareURL[];
 extern const char kParentAccessCodeConfig[];
 extern const char kDeviceWallpaperImageFilePath[];
+extern const char kKerberosRememberPasswordEnabled[];
+extern const char kKerberosAddAccountsAllowed[];
+extern const char kKerberosAccounts[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
@@ -699,6 +702,10 @@ extern const char kAuthNegotiateDelegateByKdcPolicy[];
 #if defined(OS_POSIX)
 extern const char kNtlmV2Enabled[];
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_CHROMEOS)
+extern const char kKerberosEnabled[];
+#endif
 
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

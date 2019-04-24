@@ -193,7 +193,6 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
   return true;
 }
 
-
 // StringMappingListPolicyHandler implementation -----------------------------
 
 StringMappingListPolicyHandler::MappingEntry::MappingEntry(
@@ -261,8 +260,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
         output->Append(std::move(mapped_value));
     } else {
       if (errors) {
-        errors->AddError(policy_name(),
-                         entry - list_value->begin(),
+        errors->AddError(policy_name(), entry - list_value->begin(),
                          IDS_POLICY_OUT_OF_RANGE_ERROR);
       }
     }
@@ -307,7 +305,6 @@ void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetInteger(pref_path_, value_in_range);
 }
 
-
 // IntPercentageToDoublePolicyHandler implementation ---------------------------
 
 IntPercentageToDoublePolicyHandler::IntPercentageToDoublePolicyHandler(
@@ -332,7 +329,6 @@ void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
     prefs->SetDouble(pref_path_, static_cast<double>(percentage) / 100.);
 }
 
-
 // SimplePolicyHandler implementation ------------------------------------------
 
 SimplePolicyHandler::SimplePolicyHandler(const char* policy_name,
@@ -351,7 +347,6 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (value)
     prefs->SetValue(pref_path_, value->Clone());
 }
-
 
 // SchemaValidatingPolicyHandler implementation --------------------------------
 
@@ -584,6 +579,8 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   std::string error_path;
   const Schema json_string_schema =
       IsListSchema() ? schema_.GetItems() : schema_;
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   bool validated = json_string_schema.Validate(*parsed_value, SCHEMA_STRICT,
                                                &error_path, &schema_error);
   if (errors && !schema_error.empty())

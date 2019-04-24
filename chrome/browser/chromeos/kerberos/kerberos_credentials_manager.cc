@@ -12,11 +12,13 @@
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
@@ -265,6 +267,21 @@ KerberosCredentialsManager::KerberosCredentialsManager(Profile* profile)
 }
 
 KerberosCredentialsManager::~KerberosCredentialsManager() = default;
+
+// static
+void KerberosCredentialsManager::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kKerberosRememberPasswordEnabled, true);
+  registry->RegisterBooleanPref(prefs::kKerberosAddAccountsAllowed, true);
+  registry->RegisterDictionaryPref(prefs::kKerberosAccounts);
+}
+
+void KerberosCredentialsManager::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  // Kerberos enabled is used by SystemNetworkContextManager, which reads prefs
+  // off of local state.
+  registry->RegisterBooleanPref(prefs::kKerberosEnabled, false);
+}
 
 void KerberosCredentialsManager::AddAccountAndAuthenticate(
     std::string principal_name,

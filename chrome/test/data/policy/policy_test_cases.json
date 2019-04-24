@@ -977,6 +977,55 @@
     ]
   },
 
+  "KerberosEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "KerberosEnabled": true },
+    "pref_mappings": [
+      { "pref": "kerberos.enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "KerberosRememberPasswordEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "KerberosRememberPasswordEnabled": false },
+    "pref_mappings": [
+      { "pref": "kerberos.remember_password_enabled" }
+    ]
+  },
+
+  "KerberosAddAccountsAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "KerberosAddAccountsAllowed": false },
+    "pref_mappings": [
+      { "pref": "kerberos.add_accounts_allowed" }
+    ]
+  },
+
+  "KerberosAccounts": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "KerberosAccounts": [
+        {
+          "principal": "user1@realm",
+          "password": "password1"
+        },
+        {
+          "principal": "user2@realm",
+          "remember_password": true,
+          "krb5conf": [
+            "line1",
+            "line2"
+          ]
+        }
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "kerberos.accounts" }
+    ]
+  },
+
   "PromptForDownloadLocation": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PromptForDownloadLocation": false },

@@ -920,6 +920,14 @@ const char kMostRecentlyUsedNetworkFileShareURL[] =
 const char kDeviceWallpaperImageFilePath[] =
     "policy.device_wallpaper_image_file_path";
 
+// Boolean whether Kerberos daemon supports remembering passwords.
+const char kKerberosRememberPasswordEnabled[] =
+    "kerberos.remember_password_enabled";
+// Boolean whether users may add new Kerberos accounts.
+const char kKerberosAddAccountsAllowed[] = "kerberos.add_accounts_allowed";
+// Dictionary specifying a pre-set list of Kerberos accounts.
+const char kKerberosAccounts[] = "kerberos.accounts";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -1727,6 +1735,11 @@ const char kAuthNegotiateDelegateByKdcPolicy[] =
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_CHROMEOS)
+// Boolean whether Kerberos functionality is enabled.
+const char kKerberosEnabled[] = "kerberos.enabled";
+#endif
 
 // Boolean that specifies whether to enable revocation checking (best effort)
 // by default.

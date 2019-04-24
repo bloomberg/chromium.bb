@@ -402,6 +402,18 @@
       ],
     },
     {
+      'name': 'Kerberos',
+      'type': 'group',
+      'caption': '''Kerberos''',
+      'desc': '''Policies related to Kerberos authentication.''',
+      'policies': [
+        'KerberosEnabled',
+        'KerberosRememberPasswordEnabled',
+        'KerberosAddAccountsAllowed',
+        'KerberosAccounts',
+      ],
+    },
+    {
       'name': 'Extensions',
       'type': 'group',
       'caption': '''Extensions''',
@@ -15426,7 +15438,7 @@
       },
       'example_value': 'sometoken',
       'id': 543,
-      'caption': '''Provide users with Quick Fix Build.''',
+      'caption': '''Provide users with Quick Fix Build''',
       'desc': '''This policy controls whether or not the device should be updated to a Quick Fix Build.
 
       If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
@@ -15446,7 +15458,7 @@
       },
       'example_value': True,
       'id': 545,
-      'caption': '''Enables a page for in-session change of password for SAML users.''',
+      'caption': '''Enables a page for in-session change of password for SAML users''',
       'desc': '''Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lockscreen password are kept in-sync.
 
       This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
@@ -15727,6 +15739,143 @@
       'caption': '''Set custom schedule to check for updates''',
       'desc': '''Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.'''
     },
+    {
+      'name': 'KerberosEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 557,
+      'caption': '''Enable Kerberos functionality''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether the Kerberos functionality is enabled. Kerberos is an authentication protocol that can be used to authenticate to web apps and file shares.
+
+          If this policy is enabled, Kerberos functionality is enabled. Kerberos accounts can be added either through the 'Configure Kerberos accounts' policy or through the Kerberos Accounts settings in the People settings page.
+
+          If this policy disabled or not set, the Kerberos Accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, all stored passwords are deleted.''',
+    },
+    {
+      'name': 'KerberosRememberPasswordEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 558,
+      'caption': '''Enable 'Remember password' feature''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether the 'Remember password' feature is enabled in the Kerberos authentication dialog. Passwords are stored encryped on disk, only accessible to the Kerberos system daemon and during a user session.
+
+          If this policy is enabled or not set, users can decide whether Kerberos passwords are remembered, so that they do not have to be entered again. Kerberos tickets are automatically fetched unless additional authentication is required (two-factor authentication).
+
+          If this policy is disabled, passwords are never remembered and all previously stored passwords are removed. Users have to enter their password every time they need to authenticate with the Kerberos system. Depending on server settings, this usually happens between every 8 hours to several months.''',
+    },
+    {
+      'name': 'KerberosAddAccountsAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': True,
+      'id': 559,
+      'caption': '''Users can add Kerberos accounts''',
+      'tags': ['website-sharing'],
+      'desc': '''Controls whether users may add Kerberos accounts.
+
+          If this policy is enabled or not set, users may add Kerberos accounts via the Kerberos Accounts settings in the People settings page. Users have full control over accounts they added and may modify or remove them.
+
+          If this policy is disabled, users may not add Kerberos accounts. Accounts can only be added via the 'Configure Kerberos accounts' policy. This is an effective way to lock down accounts.''',
+    },
+    {
+      'name': 'KerberosAccounts',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'principal': {
+              'description': '''User principal 'user@realm'. The placeholder ${{LOGIN_ID}} is replaced by the username 'user'. The placeholder ${{LOGIN_EMAIL}} is replaced by the full principal 'user@realm'.''',
+              'type': 'string',
+            },
+            'password': {
+              'description': '''Kerberos password. The placeholder ${{PASSWORD}} is replaced by the login password.''',
+              'type': 'string',
+            },
+            'remember_password': {
+              'description': '''Whether to remember the Kerberos password. Ignored if the password is specified.''',
+              'type': 'boolean',
+            },
+            'krb5conf': {
+              'description': '''Kerberos configuration (one line per array item), see https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.''',
+              'type': 'array',
+              'items': {
+                'type': 'string',
+              },
+            },
+          },
+        },
+      },
+      'supported_on': ['chrome_os:75-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': [
+        {
+          "principal":"${{LOGIN_EMAIL}}",
+          "password":"${{PASSWORD}}"
+        },
+        {
+          "principal":"user1@REALM.COM",
+          "remember_password": True
+        },
+        {
+          "principal":"user2@REALM.COM",
+          "password":"p4zzw0rd!",
+          "krb5conf":[
+            "[libdefaults]",
+            "  default_tgs_enctypes = aes256-cts-hmac-sha1-96",
+            "  default_tkt_enctypes = aes256-cts-hmac-sha1-96",
+            "  permitted_enctypes = aes256-cts-hmac-sha1-96",
+            "  default_realm = REALM.COM",
+            "",
+            "[realms]",
+            "  REALM.COM = {",
+            "    kdc = us-west.realm.com",
+            "    master_kdc = us-west.realm.com",
+            "    kpasswd_server = us-west.realm.com",
+            "  }"
+          ]
+        }
+      ],
+      'id': 560,
+      'caption': '''Configure Kerberos accounts''',
+      'tags': ['website-sharing'],
+      'desc': '''Adds prefilled Kerberos accounts. If the Kerberos credentials match the login credentials, an account can be configured to reuse the login credentials by specifying '${{LOGIN_EMAIL}}' and '${{PASSWORD}}' for principal and password, respectively, so that the Kerberos ticket can be retrieved automatically unless two-factor authentication is configured. Users cannot modify accounts added via this policy.
+
+          If this policy is enabled, the list of accounts defined by the policy is added to the Kerberos Accounts settings.
+
+          If this policy is disabled or not set, no accounts are added to the Kerberos Accounts settings and all accounts previously added with this policy are removed. Users may still add accounts manually if the 'Users can add Kerberos accounts' policy is enabled.''',
+    },
   ],
 
   'messages': {
@@ -15892,5 +16041,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  556
+  'highest_id_currently_used':  560
 }

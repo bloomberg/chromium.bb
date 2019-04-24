@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace chromeos {
@@ -24,6 +25,12 @@ class KerberosCredentialsManager {
 
   explicit KerberosCredentialsManager(Profile* profile);
   ~KerberosCredentialsManager();
+
+  // Registers prefs stored in the user profile.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Registers prefs stored in local state.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Adds an account for the given |principal_name| and authenticates it using
   // the given |password|. Sets |principal_name| as active principal on success.

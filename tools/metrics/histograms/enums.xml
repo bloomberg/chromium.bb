@@ -16630,6 +16630,10 @@ Called by update_net_error_codes.py.-->
   <int value="554" label="PolicyListMultipleSourceMergeList"/>
   <int value="555" label="SamlPasswordExpirationAdvanceWarningDays"/>
   <int value="556" label="DeviceScheduledUpdateCheck"/>
+  <int value="557" label="KerberosEnabled"/>
+  <int value="558" label="KerberosRememberPasswordEnabled"/>
+  <int value="559" label="KerberosAddAccountsAllowed"/>
+  <int value="560" label="KerberosAccounts"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
