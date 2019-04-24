@@ -146,6 +146,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // Tracks field when current password was generated.
 @property(nonatomic, copy) NSString* passwordGeneratedIdentifier;
 
+// Tracks current potential generated password until accepted or rejected.
+@property(nonatomic, copy) NSString* generatedPotentialPassword;
+
 @end
 
 @interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
@@ -737,14 +740,19 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
                                                   0, nullptr);
 
-  NSString* title = GetNSStringF(IDS_IOS_SUGGESTED_PASSWORD, generatedPassword);
-  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
+  self.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(updateGeneratePasswordStrings:)
+             name:UIContentSizeCategoryDidChangeNotification
+           object:nil];
 
   // TODO(crbug.com/886583): add eg tests
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                           title:title
-                         message:message
+                           title:@""
+                         message:@""
                             rect:self.baseViewController.view.frame
                             view:self.baseViewController.view];
   self.actionSheetCoordinator.popoverArrowDirection = 0;
@@ -752,16 +760,20 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       IsIPadIdiom() ? UIAlertControllerStyleAlert
                     : UIAlertControllerStyleActionSheet;
 
-  NSString* nsPassword = SysUTF16ToNSString(generatedPassword);
+  // Set attributed text.
+  [self updateGeneratePasswordStrings:self];
 
   __weak PasswordController* weakSelf = self;
+
   [self.actionSheetCoordinator
       addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
                   [weakSelf
                       injectGeneratedPasswordForFormName:formName
-                                       generatedPassword:nsPassword
+                                       generatedPassword:
+                                           weakSelf.generatedPotentialPassword
                                        completionHandler:completionHandler];
+                  [weakSelf generatePasswordPopupDismissed];
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -769,10 +781,49 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                          action:^{
                                            if (completionHandler)
                                              completionHandler(NO);
+                                           [weakSelf
+                                               generatePasswordPopupDismissed];
                                          }
                                           style:UIAlertActionStyleCancel];
 
+  // Set 'suggest' as preferred action, as per UX.
+  self.actionSheetCoordinator.alertController.preferredAction =
+      self.actionSheetCoordinator.alertController.actions[0];
+
   [self.actionSheetCoordinator start];
+}
+
+- (void)generatePasswordPopupDismissed {
+  [self.actionSheetCoordinator stop];
+  self.actionSheetCoordinator = nil;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  self.generatedPotentialPassword = nil;
+}
+
+- (void)updateGeneratePasswordStrings:(id)sender {
+  NSString* title = [NSString
+      stringWithFormat:@"%@\n%@\n ", GetNSString(IDS_IOS_SUGGESTED_PASSWORD),
+                       self.generatedPotentialPassword];
+  self.actionSheetCoordinator.attributedTitle =
+      [[NSMutableAttributedString alloc]
+          initWithString:title
+              attributes:@{
+                NSFontAttributeName :
+                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+              }];
+
+  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
+  self.actionSheetCoordinator.attributedMessage =
+      [[NSMutableAttributedString alloc]
+          initWithString:message
+              attributes:@{
+                NSFontAttributeName :
+                    [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+              }];
+
+  // TODO(crbug.com/886583): find a way to make action sheet coordinator
+  // responsible for font size changes.
+  [self.actionSheetCoordinator updateAttributedText];
 }
 
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName

@@ -93,4 +93,15 @@ enum class AnchorMode {
   return alert;
 }
 
+- (void)updateAttributedText {
+  // Use setValue to access unexposed attributed strings for title and message.
+  if (self.attributedTitle) {
+    [self.alertController setValue:_attributedTitle forKey:@"attributedTitle"];
+  }
+  if (self.attributedMessage) {
+    [self.alertController setValue:_attributedMessage
+                            forKey:@"attributedMessage"];
+  }
+}
+
 @end
