@@ -14,6 +14,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
@@ -178,9 +179,10 @@ class NET_EXPORT CertVerifier {
   virtual void SetConfig(const Config& config) = 0;
 
   // Creates a CertVerifier implementation that verifies certificates using
-  // the preferred underlying cryptographic libraries, using the specified
-  // configuration.
-  static std::unique_ptr<CertVerifier> CreateDefault();
+  // the preferred underlying cryptographic libraries.  |cert_net_fetcher| may
+  // not be used, depending on the platform.
+  static std::unique_ptr<CertVerifier> CreateDefault(
+      scoped_refptr<CertNetFetcher> cert_net_fetcher);
 };
 
 // Overloads for comparing two configurations. Note, comparison is shallow -

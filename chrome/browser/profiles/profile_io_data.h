@@ -60,6 +60,7 @@ class InfoMap;
 }
 
 namespace net {
+class CertNetFetcherImpl;
 class CertVerifier;
 class ChannelIDService;
 class ClientCertStore;
@@ -550,6 +551,10 @@ class ProfileIOData {
   // When the network service is disabled, this owns |system_request_context|.
   mutable network::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
+  // When the network service is disabled, this holds the CertNetFetcher used
+  // by the profile's CertVerifier. May be nullptr if CertNetFetcher is not
+  // used by the current platform.
+  mutable scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher_;
 
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;

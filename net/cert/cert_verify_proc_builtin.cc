@@ -258,7 +258,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
 class CertVerifyProcBuiltin : public CertVerifyProc {
  public:
-  CertVerifyProcBuiltin();
+  explicit CertVerifyProcBuiltin(scoped_refptr<CertNetFetcher> net_fetcher);
 
   bool SupportsAdditionalTrustAnchors() const override;
 
@@ -273,9 +273,13 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
                      CertVerifyResult* verify_result) override;
+
+  scoped_refptr<CertNetFetcher> net_fetcher_;
 };
 
-CertVerifyProcBuiltin::CertVerifyProcBuiltin() = default;
+CertVerifyProcBuiltin::CertVerifyProcBuiltin(
+    scoped_refptr<CertNetFetcher> net_fetcher)
+    : net_fetcher_(std::move(net_fetcher)) {}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -594,7 +598,6 @@ int CertVerifyProcBuiltin::VerifyInternal(
   }
 
   // Get the global dependencies.
-  CertNetFetcher* net_fetcher = GetGlobalCertNetFetcher();
   const EVRootCAMetadata* ev_metadata = EVRootCAMetadata::GetInstance();
 
   // This boolean tracks whether online revocation checking was performed for
@@ -631,7 +634,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
     TryBuildPath(target, &intermediates, ssl_trust_store.get(),
                  verification_time, cur_attempt.verification_type,
                  cur_attempt.digest_policy, flags, ocsp_response, crl_set,
-                 net_fetcher, ev_metadata, &result,
+                 net_fetcher_.get(), ev_metadata, &result,
                  &checked_revocation_for_some_path);
 
     if (result.HasValidPath())
@@ -665,8 +668,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
 }  // namespace
 
-scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin() {
-  return scoped_refptr<CertVerifyProc>(new CertVerifyProcBuiltin());
+scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
+    scoped_refptr<CertNetFetcher> net_fetcher) {
+  return base::MakeRefCounted<CertVerifyProcBuiltin>(std::move(net_fetcher));
 }
 
 }  // namespace net

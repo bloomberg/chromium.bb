@@ -67,6 +67,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/base/url_util.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
@@ -76,6 +77,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/disk_cache/disk_cache.h"
@@ -155,11 +157,6 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/network_error_logging_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-
-#if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
-#include "net/cert/cert_net_fetcher.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
-#endif
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
@@ -10880,20 +10877,19 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   void SetUp() override {
+    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherImpl>();
+    cert_verifier_ = CertVerifier::CreateDefault(cert_net_fetcher_);
+    context_.set_cert_verifier(cert_verifier_.get());
     context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
     context_.Init();
 
+    cert_net_fetcher_->SetURLRequestContext(&context_);
     context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
 
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     CHECK_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
-
-#if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
-    SetGlobalCertNetFetcherForTesting(
-        base::MakeRefCounted<CertNetFetcherImpl>(&context_));
-#endif
 
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(&context_);
@@ -10939,10 +10935,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   ~HTTPSOCSPTest() override {
-#if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
-    ShutdownGlobalCertNetFetcher();
-#endif
-
+    cert_net_fetcher_->Shutdown();
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
@@ -10960,6 +10953,8 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
   std::unique_ptr<ScopedTestRoot> test_root_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
+  scoped_refptr<CertNetFetcherImpl> cert_net_fetcher_;
+  std::unique_ptr<CertVerifier> cert_verifier_;
   TestURLRequestContext context_;
   std::unique_ptr<ScopedTestEVPolicy> ev_test_policy_;
 };

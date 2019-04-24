@@ -246,7 +246,8 @@ void IOSIOThread::Init() {
   globals_->system_network_delegate = CreateSystemNetworkDelegate();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
-  globals_->cert_verifier = net::CertVerifier::CreateDefault();
+  globals_->cert_verifier =
+      net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 

@@ -49,7 +49,7 @@ std::unique_ptr<net::CertVerifier>
 WebTestURLRequestContextGetter::GetCertVerifier() {
   return network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
       *base::CommandLine::ForCurrentProcess(), switches::kRunWebTests,
-      net::CertVerifier::CreateDefault());
+      net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
 }
 
 std::unique_ptr<net::ProxyConfigService>

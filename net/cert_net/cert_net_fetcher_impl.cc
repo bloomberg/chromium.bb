@@ -735,13 +735,18 @@ class CertNetFetcherRequestImpl : public CertNetFetcher::Request {
 
 }  // namespace
 
-CertNetFetcherImpl::CertNetFetcherImpl(URLRequestContext* context)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()), context_(context) {}
+CertNetFetcherImpl::CertNetFetcherImpl()
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 CertNetFetcherImpl::~CertNetFetcherImpl() {
   // The fetcher must be shutdown (at which point |context_| will be set to
   // null) before destruction.
   DCHECK(!context_);
+}
+
+void CertNetFetcherImpl::SetURLRequestContext(URLRequestContext* context) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  context_ = context;
 }
 
 void CertNetFetcherImpl::Shutdown() {

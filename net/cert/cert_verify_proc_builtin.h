@@ -10,12 +10,14 @@
 
 namespace net {
 
+class CertNetFetcher;
 class CertVerifyProc;
 
 // TODO(crbug.com/649017): This is not how other cert_verify_proc_*.h are
 // implemented -- they expose the type in the header. Use a consistent style
 // here too.
-NET_EXPORT scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin();
+NET_EXPORT scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
+    scoped_refptr<CertNetFetcher> net_fetcher);
 
 }  // namespace net
 

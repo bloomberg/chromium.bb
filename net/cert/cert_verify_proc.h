@@ -17,6 +17,7 @@
 
 namespace net {
 
+class CertNetFetcher;
 class CertVerifyResult;
 class CRLSet;
 class X509Certificate;
@@ -53,8 +54,10 @@ class NET_EXPORT CertVerifyProc
     VERIFY_DISABLE_SYMANTEC_ENFORCEMENT = 1 << 3,
   };
 
-  // Creates and returns the default CertVerifyProc.
-  static scoped_refptr<CertVerifyProc> CreateDefault();
+  // Creates and returns the default CertVerifyProc. |cert_net_fetcher| may not
+  // be used, depending on the implementation.
+  static scoped_refptr<CertVerifyProc> CreateDefault(
+      scoped_refptr<CertNetFetcher> cert_net_fetcher);
 
   // Verifies the certificate against the given hostname as an SSL server
   // certificate. Returns OK if successful or an error code upon failure.

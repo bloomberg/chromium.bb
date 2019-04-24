@@ -72,14 +72,16 @@ bool CertVerifier::RequestParams::operator<(
   return key_ < other.key_;
 }
 
-std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
+// static
+std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
   return std::unique_ptr<CertVerifier>();
 #else
   return std::make_unique<CachingCertVerifier>(
       std::make_unique<MultiThreadedCertVerifier>(
-          CertVerifyProc::CreateDefault()));
+          CertVerifyProc::CreateDefault(std::move(cert_net_fetcher))));
 #endif
 }
 

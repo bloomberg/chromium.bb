@@ -23,6 +23,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -448,11 +449,12 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 }  // namespace
 
 // static
-scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
+scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if defined(USE_NSS_CERTS)
   return new CertVerifyProcNSS();
 #elif defined(OS_ANDROID)
-  return new CertVerifyProcAndroid();
+  return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
 #elif defined(OS_IOS)
   return new CertVerifyProcIOS();
 #elif defined(OS_MACOSX)
@@ -460,7 +462,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
 #elif defined(OS_WIN)
   return new CertVerifyProcWin();
 #elif defined(OS_FUCHSIA)
-  return CreateCertVerifyProcBuiltin();
+  return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
 #else
 #error Unsupported platform
 #endif

@@ -181,7 +181,8 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
   }
 
   if (!base::ContainsKey(extension_to_verifier_, extension_id)) {
-    extension_to_verifier_[extension_id] = net::CertVerifier::CreateDefault();
+    extension_to_verifier_[extension_id] =
+        net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   }
   net::CertVerifier* verifier = extension_to_verifier_[extension_id].get();
 

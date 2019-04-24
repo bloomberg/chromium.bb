@@ -143,11 +143,9 @@ class CertVerifyProcAndroidTestWithAIAFetching : public testing::Test {
  public:
   void SetUp() override {
     fetcher_ = base::MakeRefCounted<MockCertNetFetcher>();
-    SetGlobalCertNetFetcherForTesting(fetcher_);
   }
 
   void TearDown() override {
-    ShutdownGlobalCertNetFetcher();
     // Ensure that mock expectations are checked, since the CertNetFetcher is
     // global and leaky.
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(fetcher_.get()));
@@ -178,7 +176,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
        NoFetchIfProperIntermediatesSupplied) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> leaf;
   ASSERT_TRUE(
       CreateCertificateChainFromFiles({"target_one_aia.pem", "i.pem"}, &leaf));
@@ -193,7 +191,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 TEST_F(CertVerifyProcAndroidTestWithAIAFetching, NoAIAURL) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_no_aia.pem", &cert));
   CertVerifyResult verify_result;
@@ -209,7 +207,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, NoAIAURL) {
 TEST_F(CertVerifyProcAndroidTestWithAIAFetching, OneFileAndOneHTTPURL) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_file_and_http_aia.pem", &cert));
   scoped_refptr<X509Certificate> intermediate;
@@ -239,7 +237,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
        UnsuccessfulVerificationWithLeafOnly) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_one_aia.pem", &cert));
   const scoped_refptr<X509Certificate> bad_intermediate =
@@ -262,7 +260,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
        UnsuccessfulVerificationWithLeafOnlyAndErrorOnFetch) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_one_aia.pem", &cert));
 
@@ -282,7 +280,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
        UnsuccessfulVerificationWithLeafOnlyAndUnparseableFetch) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_one_aia.pem", &cert));
 
@@ -302,7 +300,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 TEST_F(CertVerifyProcAndroidTestWithAIAFetching, TwoHTTPURLs) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_two_aia.pem", &cert));
   scoped_refptr<X509Certificate> intermediate;
@@ -337,7 +335,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
   // then the intermediate i2.pem would not require an AIA fetch. With the test
   // root untrusted, i2.pem does not verify and so it will trigger an AIA fetch.
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_one_aia.pem", &cert));
   scoped_refptr<X509Certificate> intermediate;
@@ -368,7 +366,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 TEST_F(CertVerifyProcAndroidTestWithAIAFetching, MaxAIAFetches) {
   ASSERT_TRUE(SetUpTestRoot());
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> cert;
   ASSERT_TRUE(ReadTestCert("target_six_aia.pem", &cert));
 
@@ -393,7 +391,7 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, FetchForSuppliedIntermediate) {
   // then the intermediate i.pem would not require an AIA fetch. With the test
   // root untrusted, i.pem does not verify and so it will trigger an AIA fetch.
   scoped_refptr<CertVerifyProcAndroid> proc =
-      base::MakeRefCounted<CertVerifyProcAndroid>();
+      base::MakeRefCounted<CertVerifyProcAndroid>(fetcher_);
   scoped_refptr<X509Certificate> leaf;
   ASSERT_TRUE(
       CreateCertificateChainFromFiles({"target_one_aia.pem", "i.pem"}, &leaf));

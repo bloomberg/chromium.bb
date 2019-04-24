@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
@@ -88,7 +89,8 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // certificate should not yet be trusted.
   int flags = 0;
   CertVerifyResult bad_verify_result;
-  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  scoped_refptr<CertVerifyProc> verify_proc(
+      CertVerifyProc::CreateDefault(/*cert_net_fetcher=*/nullptr));
   int bad_status =
       verify_proc->Verify(test_cert.get(), "127.0.0.1", std::string(), flags,
                           net::CRLSet::BuiltinCRLSet().get(), CertificateList(),

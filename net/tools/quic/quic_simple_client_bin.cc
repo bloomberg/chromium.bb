@@ -289,7 +289,8 @@ int main(int argc, char* argv[]) {
   }
 
   // For secure QUIC we need to verify the cert chain.
-  std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
+  std::unique_ptr<CertVerifier> cert_verifier(
+      CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
   std::unique_ptr<TransportSecurityState> transport_security_state(
       new TransportSecurityState);
   std::unique_ptr<MultiLogCTVerifier> ct_verifier(new MultiLogCTVerifier());

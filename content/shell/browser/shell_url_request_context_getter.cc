@@ -134,7 +134,7 @@ std::unique_ptr<net::CertVerifier>
 ShellURLRequestContextGetter::GetCertVerifier() {
   if (g_cert_verifier_for_testing)
     return std::make_unique<WrappedCertVerifierForTesting>();
-  return net::CertVerifier::CreateDefault();
+  return net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
 }
 
 std::unique_ptr<net::ProxyConfigService>

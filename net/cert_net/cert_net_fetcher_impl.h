@@ -28,7 +28,13 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   class RequestCore;
   struct RequestParams;
 
-  explicit CertNetFetcherImpl(URLRequestContext* context);
+  // Creates the CertNetFetcherImpl. SetURLRequestContext must be called before
+  // the fetcher can be used.
+  CertNetFetcherImpl();
+
+  // Set the URLRequestContext this fetcher should use.
+  // |context_| must stay valid until Shutdown() is called.
+  void SetURLRequestContext(URLRequestContext* context);
 
   // CertNetFetcher impl:
   void Shutdown() override;

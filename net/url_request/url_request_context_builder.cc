@@ -511,7 +511,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   } else if (shared_cert_verifier_) {
     context->set_cert_verifier(shared_cert_verifier_);
   } else {
-    storage->set_cert_verifier(CertVerifier::CreateDefault());
+    // TODO(mattm): Should URLRequestContextBuilder create a CertNetFetcherImpl?
+    storage->set_cert_verifier(
+        CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
   }
 
   if (ct_verifier_) {

@@ -42,6 +42,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -130,12 +131,6 @@
 #if defined(USE_NSS_CERTS)
 #include "net/cert_net/nss_ocsp.h"
 #endif  // defined(USE_NSS_CERTS)
-
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-#include "net/cert/cert_net_fetcher.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -616,12 +611,9 @@ NetworkContext::~NetworkContext() {
 #if defined(USE_NSS_CERTS)
     net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
-
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-    net::ShutdownGlobalCertNetFetcher();
-#endif
   }
+  if (cert_net_fetcher_)
+    cert_net_fetcher_->Shutdown();
 
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->Shutdown();
@@ -2075,11 +2067,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #if defined(USE_NSS_CERTS)
     net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
 #endif
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-    net::SetGlobalCertNetFetcher(base::MakeRefCounted<net::CertNetFetcherImpl>(
-        result.url_request_context.get()));
-#endif
   }
 
   cookie_manager_ = std::make_unique<CookieManager>(
@@ -2135,6 +2122,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+    cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
+#endif
 #if defined(OS_CHROMEOS)
     if (params_->username_hash.empty()) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
@@ -2166,12 +2157,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
                             ->config_client_request),
               std::move(params_->trial_comparison_cert_verifier_params
                             ->report_client),
-              net::CertVerifyProc::CreateDefault(),
-              net::CreateCertVerifyProcBuiltin()));
+              net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
+              net::CreateCertVerifyProcBuiltin(cert_net_fetcher_)));
     }
 #endif
     if (!cert_verifier)
-      cert_verifier = net::CertVerifier::CreateDefault();
+      cert_verifier = net::CertVerifier::CreateDefault(cert_net_fetcher_);
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
@@ -2191,6 +2182,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   // |network_service_| may be nullptr in tests.
   auto result = ApplyContextParamsToBuilder(&builder);
+
+  if (cert_net_fetcher_)
+    cert_net_fetcher_->SetURLRequestContext(result.url_request_context.get());
 
   return result;
 }

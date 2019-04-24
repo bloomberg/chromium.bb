@@ -529,7 +529,6 @@ component("net") {
       "cert/caching_cert_verifier.cc",
       "cert/caching_cert_verifier.h",
       "cert/cert_database_mac.cc",
-      "cert/cert_net_fetcher.cc",
       "cert/cert_net_fetcher.h",
       "cert/cert_verify_proc.cc",
       "cert/cert_verify_proc.h",

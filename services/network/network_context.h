@@ -53,6 +53,7 @@ class UnguessableToken;
 }  // namespace base
 
 namespace net {
+class CertNetFetcherImpl;
 class CertVerifier;
 class HostPortPair;
 class ReportSender;
@@ -545,6 +546,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // certificates.
   std::unique_ptr<network::NSSTempCertsCacheChromeOS> nss_temp_certs_cache_;
 #endif
+
+  // CertNetFetcher used by the context's CertVerifier. May be nullptr if
+  // CertNetFetcher is not used by the current platform.
+  scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher_;
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;

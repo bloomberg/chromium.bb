@@ -80,6 +80,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
@@ -570,6 +571,9 @@ ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO))
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (cert_net_fetcher_)
+    cert_net_fetcher_->Shutdown();
+
   // Pull the contents of the request context maps onto the stack for sanity
   // checking of values in a minidump. http://crbug.com/260425
   size_t num_app_contexts = app_request_context_map_.size();
@@ -962,6 +966,10 @@ void ProfileIOData::Init(
       builder->SetCertVerifier(
           std::make_unique<WrappedCertVerifierForProfileIODataTesting>());
     } else {
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+      cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
+#endif
       std::unique_ptr<net::CertVerifier> cert_verifier;
 #if defined(OS_CHROMEOS)
       crypto::ScopedPK11Slot public_slot =
@@ -988,14 +996,14 @@ void ProfileIOData::Init(
                 trial_params->initial_allowed,
                 std::move(trial_params->config_client_request),
                 std::move(trial_params->report_client),
-                net::CertVerifyProc::CreateDefault(),
-                net::CreateCertVerifyProcBuiltin()));
+                net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
+                net::CreateCertVerifyProcBuiltin(cert_net_fetcher_)));
       }
 #endif
       if (!cert_verifier) {
         cert_verifier = std::make_unique<net::CachingCertVerifier>(
             std::make_unique<net::MultiThreadedCertVerifier>(
-                net::CertVerifyProc::CreateDefault()));
+                net::CertVerifyProc::CreateDefault(cert_net_fetcher_)));
       }
       const base::CommandLine& command_line =
           *base::CommandLine::ForCurrentProcess();
@@ -1026,6 +1034,9 @@ void ProfileIOData::Init(
             std::move(profile_params_->main_network_context_request),
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
+
+    if (cert_net_fetcher_)
+      cert_net_fetcher_->SetURLRequestContext(main_request_context_);
   }
 
   OnMainRequestContextCreated(profile_params_.get());

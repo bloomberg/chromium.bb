@@ -693,12 +693,16 @@ class CertBuilder {
 class CertVerifyProcInternalTest
     : public testing::TestWithParam<CertVerifyProcType> {
  protected:
-  void SetUp() override {
+  void SetUp() override { SetUpWithCertNetFetcher(nullptr); }
+
+  // CertNetFetcher may be initialized by subclasses that want to use net
+  // fetching by calling SetUpWithCertNetFetcher instead of SetUp.
+  void SetUpWithCertNetFetcher(scoped_refptr<CertNetFetcher> cert_net_fetcher) {
     CertVerifyProcType type = verify_proc_type();
     if (type == CERT_VERIFY_PROC_BUILTIN) {
-      verify_proc_ = CreateCertVerifyProcBuiltin();
+      verify_proc_ = CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
     } else if (type == GetDefaultCertVerifyProcType()) {
-      verify_proc_ = CertVerifyProc::CreateDefault();
+      verify_proc_ = CertVerifyProc::CreateDefault(std::move(cert_net_fetcher));
     } else {
       ADD_FAILURE() << "Unhandled CertVerifyProcType";
     }
@@ -2521,8 +2525,6 @@ class CertVerifyProcInternalWithNetFetchingTest
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT) {}
 
   void SetUp() override {
-    CertVerifyProcInternalTest::SetUp();
-
     // Create a network thread to be used for network fetches, and wait for
     // initialization to complete on that thread.
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
@@ -2533,9 +2535,13 @@ class CertVerifyProcInternalWithNetFetchingTest
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&SetUpOnNetworkThread, &context_,
-                                  &initialization_complete_event));
+        FROM_HERE,
+        base::BindOnce(&SetUpOnNetworkThread, &context_, &cert_net_fetcher_,
+                       &initialization_complete_event));
     initialization_complete_event.Wait();
+    EXPECT_TRUE(cert_net_fetcher_);
+
+    CertVerifyProcInternalTest::SetUpWithCertNetFetcher(cert_net_fetcher_);
 
     EXPECT_FALSE(test_server_.Started());
 
@@ -2554,7 +2560,8 @@ class CertVerifyProcInternalWithNetFetchingTest
   void TearDown() override {
     // Do cleanup on network thread.
     network_thread_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&ShutdownOnNetworkThread, &context_));
+        FROM_HERE, base::BindOnce(&ShutdownOnNetworkThread, &context_,
+                                  &cert_net_fetcher_));
     network_thread_->Stop();
     network_thread_.reset();
 
@@ -2657,6 +2664,7 @@ class CertVerifyProcInternalWithNetFetchingTest
 
   static void SetUpOnNetworkThread(
       std::unique_ptr<URLRequestContext>* context,
+      scoped_refptr<CertNetFetcherImpl>* cert_net_fetcher,
       base::WaitableEvent* initialization_complete_event) {
     URLRequestContextBuilder url_request_context_builder;
     url_request_context_builder.set_user_agent("cert_verify_proc_unittest/0.1");
@@ -2667,17 +2675,19 @@ class CertVerifyProcInternalWithNetFetchingTest
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(context->get());
 #endif
-    SetGlobalCertNetFetcherForTesting(
-        base::MakeRefCounted<CertNetFetcherImpl>(context->get()));
+    *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+    (*cert_net_fetcher)->SetURLRequestContext(context->get());
     initialization_complete_event->Signal();
   }
 
   static void ShutdownOnNetworkThread(
-      std::unique_ptr<URLRequestContext>* context) {
+      std::unique_ptr<URLRequestContext>* context,
+      scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher) {
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
-    ShutdownGlobalCertNetFetcher();
+    (*cert_net_fetcher)->Shutdown();
+    cert_net_fetcher->reset();
     context->reset();
   }
 
@@ -2688,6 +2698,7 @@ class CertVerifyProcInternalWithNetFetchingTest
   // Owned by this thread, but initialized, used, and shutdown on the network
   // thread.
   std::unique_ptr<URLRequestContext> context_;
+  scoped_refptr<CertNetFetcherImpl> cert_net_fetcher_;
 
   EmbeddedTestServer test_server_;
 

@@ -17,6 +17,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
@@ -89,7 +90,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
 
   bool SupportsAdditionalTrustAnchors() {
     scoped_refptr<net::CertVerifyProc> proc =
-        net::CertVerifyProc::CreateDefault();
+        net::CertVerifyProc::CreateDefault(/*cert_net_fetcher=*/nullptr);
     return proc->SupportsAdditionalTrustAnchors();
   }
 

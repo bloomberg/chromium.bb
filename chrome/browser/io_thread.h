@@ -45,6 +45,7 @@ class EventRouterForwarder;
 }
 
 namespace net {
+class CertNetFetcherImpl;
 class CertVerifier;
 class HostResolver;
 class NetworkQualityEstimator;
@@ -107,6 +108,10 @@ class IOThread : public content::BrowserThreadDelegate {
     // content::NetworkContext class that owns |system_request_context|.
     std::unique_ptr<network::mojom::NetworkContext> system_network_context;
     net::URLRequestContext* system_request_context;
+    // When the network service is disabled, this holds the CertNetFetcher used
+    // by the |system_request_context|'s CertVerifier. May be nullptr if
+    // CertNetFetcher is not used by the current platform.
+    scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;

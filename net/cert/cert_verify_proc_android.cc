@@ -340,7 +340,9 @@ void GetChainDEREncodedBytes(X509Certificate* cert,
 
 }  // namespace
 
-CertVerifyProcAndroid::CertVerifyProcAndroid() {}
+CertVerifyProcAndroid::CertVerifyProcAndroid(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher)
+    : cert_net_fetcher_(std::move(cert_net_fetcher)) {}
 
 CertVerifyProcAndroid::~CertVerifyProcAndroid() {}
 
@@ -358,8 +360,8 @@ int CertVerifyProcAndroid::VerifyInternal(
     CertVerifyResult* verify_result) {
   std::vector<std::string> cert_bytes;
   GetChainDEREncodedBytes(cert, &cert_bytes);
-  if (!VerifyFromAndroidTrustManager(
-          cert_bytes, hostname, GetGlobalCertNetFetcher(), verify_result)) {
+  if (!VerifyFromAndroidTrustManager(cert_bytes, hostname, cert_net_fetcher_,
+                                     verify_result)) {
     NOTREACHED();
     return ERR_FAILED;
   }
