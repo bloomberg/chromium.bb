@@ -48,8 +48,6 @@
 #if defined(ANDROID) && !defined(__LP64__)
 #include <errno.h> /* for EINVAL */
 
-extern void *__mmap2(void *, size_t, int, int, int, size_t);
-
 static inline void *drm_mmap(void *addr, size_t length, int prot, int flags,
                              int fd, loff_t offset)
 {
@@ -59,7 +57,7 @@ static inline void *drm_mmap(void *addr, size_t length, int prot, int flags,
       return MAP_FAILED;
    }
 
-   return __mmap2(addr, length, prot, flags, fd, (size_t) (offset >> 12));
+   return mmap64(addr, length, prot, flags, fd, offset);
 }
 
 #  define drm_munmap(addr, length) \
