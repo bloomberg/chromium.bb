@@ -439,9 +439,12 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
   auto access = current_render_pass_id_ == 0
                     ? SkSurface::BackendSurfaceAccess::kPresent
                     : SkSurface::BackendSurfaceAccess::kNoAccess;
-  auto result = sk_current_surface_->flush(access, SkSurface::kNone_FlushFlags,
-                                           pending_semaphores_.size(),
-                                           pending_semaphores_.data());
+  GrFlushInfo flush_info = {
+      .fFlags = kNone_GrFlushFlags,
+      .fNumSemaphores = pending_semaphores_.size(),
+      .fSignalSemaphores = pending_semaphores_.data(),
+  };
+  auto result = sk_current_surface_->flush(access, flush_info);
   DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
   pending_semaphores_.clear();
   sk_current_surface_ = nullptr;
