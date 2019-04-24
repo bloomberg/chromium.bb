@@ -355,7 +355,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   void SetUpOnMainThread() override {
     https_server_.StartAcceptingConnections();
 
-    login_manager_.LoginAndWaitForSessionStart(
+    login_manager_.LoginAndWaitForActiveSession(
         LoginManagerMixin::CreateDefaultUserContext(test_account_id_));
 
     assistant_settings_ = std::make_unique<FakeAssistantSettings>();

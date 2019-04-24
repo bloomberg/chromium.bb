@@ -77,19 +77,20 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
- protected:
   // Callback that can be used to check free disk space.
   using FreeDiskSpaceFetcher = base::RepeatingCallback<int64_t()>;
 
   // Testing only: Sets the free disk space fetcher.
   void SetFreeDiskSpaceFetcherForTesting(
       FreeDiskSpaceFetcher free_disk_space_fetcher);
+
   // Testing only: Sets the tick clock used to measure elapsed time during
   // migration.
-  // This doesn't toke the ownership of the clock. |tick_clock| must outlive the
+  // This doesn't take the ownership of the clock. |tick_clock| must outlive the
   // EncryptionMigrationScreenHandler instance.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
+ protected:
   virtual device::mojom::WakeLock* GetWakeLock();
 
  private:

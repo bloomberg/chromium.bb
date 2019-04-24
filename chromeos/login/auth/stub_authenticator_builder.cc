@@ -21,15 +21,25 @@ scoped_refptr<Authenticator> StubAuthenticatorBuilder::Create(
     authenticator->old_password_ = old_password_;
   if (data_recovery_notifier_)
     authenticator->data_recovery_notifier_ = data_recovery_notifier_;
+  authenticator->has_incomplete_encryption_migration_ =
+      has_incomplete_encryption_migration_;
   return authenticator;
 }
 
 void StubAuthenticatorBuilder::SetUpPasswordChange(
     const std::string& old_password,
     const StubAuthenticator::DataRecoveryNotifier& notifier) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
   auth_action_ = StubAuthenticator::AuthAction::kPasswordChange;
   old_password_ = old_password;
   data_recovery_notifier_ = notifier;
+}
+
+void StubAuthenticatorBuilder::SetUpOldEncryption(
+    bool has_incomplete_migration) {
+  DCHECK_EQ(auth_action_, StubAuthenticator::AuthAction::kAuthSuccess);
+  auth_action_ = StubAuthenticator::AuthAction::kOldEncryption;
+  has_incomplete_encryption_migration_ = has_incomplete_migration;
 }
 
 }  // namespace chromeos

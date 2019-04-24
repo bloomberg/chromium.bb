@@ -35,6 +35,12 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) StubAuthenticatorBuilder {
       const std::string& old_password,
       const StubAuthenticator::DataRecoveryNotifier& notifier);
 
+  // Sets up the stub Authenticator to report that user's cryptohome was
+  // encrypted using old encryption method, and should be migrated accordingly.
+  // |has_incomplete_migration| - whether a migration was attempted but did not
+  //     complete.
+  void SetUpOldEncryption(bool has_incomplete_migration);
+
  private:
   const UserContext expected_user_context_;
 
@@ -47,6 +53,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) StubAuthenticatorBuilder {
   // For kPasswordChange action, the callback to be called to report user data
   // recovery result.
   StubAuthenticator::DataRecoveryNotifier data_recovery_notifier_;
+
+  // For kOldEncryption action - whether an incomplete migration
+  // attempt exists.
+  bool has_incomplete_encryption_migration_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StubAuthenticatorBuilder);
 };

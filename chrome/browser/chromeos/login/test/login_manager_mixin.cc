@@ -150,15 +150,25 @@ void LoginManagerMixin::SetUpOnMainThread() {
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 }
 
-bool LoginManagerMixin::LoginAndWaitForSessionStart(
-    const UserContext& user_context) {
+void LoginManagerMixin::AttemptLoginUsingAuthenticator(
+    const UserContext& user_context,
+    std::unique_ptr<StubAuthenticatorBuilder> authenticator_builder) {
   test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
-      .InjectAuthenticatorBuilder(
-          std::make_unique<StubAuthenticatorBuilder>(user_context));
-
+      .InjectAuthenticatorBuilder(std::move(authenticator_builder));
   ExistingUserController::current_controller()->Login(user_context,
                                                       SigninSpecifics());
+}
+
+void LoginManagerMixin::WaitForActiveSession() {
   SessionStateWaiter(session_manager::SessionState::ACTIVE).Wait();
+}
+
+bool LoginManagerMixin::LoginAndWaitForActiveSession(
+    const UserContext& user_context) {
+  AttemptLoginUsingAuthenticator(
+      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  WaitForActiveSession();
+
   user_manager::User* active_user =
       user_manager::UserManager::Get()->GetActiveUser();
   return active_user &&

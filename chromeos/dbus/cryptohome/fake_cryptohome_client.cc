@@ -693,10 +693,12 @@ void FakeCryptohomeClient::MigrateToDircrypto(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
   dircrypto_migration_progress_ = 0;
-  dircrypto_migration_progress_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
-      this, &FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated);
+  if (run_default_dircrypto_migration_) {
+    dircrypto_migration_progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
+        this, &FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated);
+  }
 }
 
 void FakeCryptohomeClient::RemoveFirmwareManagementParametersFromTpm(

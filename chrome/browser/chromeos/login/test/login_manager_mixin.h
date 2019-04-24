@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOGIN_MANAGER_MIXIN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOGIN_MANAGER_MIXIN_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -13,6 +14,7 @@
 
 namespace chromeos {
 
+class StubAuthenticatorBuilder;
 class UserContext;
 
 // Mixin browser tests can use for setting up test login manager environment.
@@ -36,10 +38,26 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
       content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
 
+  // Starts login attempt for a user, using the stub authenticator provided by
+  // |authenticator_builder|.
+  // Note that this will not wait for the login attempt to finish.
+  void AttemptLoginUsingAuthenticator(
+      const UserContext& user_context,
+      std::unique_ptr<StubAuthenticatorBuilder> authenticator_builder);
+
+  // Waits for the session state to change to ACTIVE. Returns immediately if the
+  // session is already active.
+  void WaitForActiveSession();
+
   // Logs in a user and waits for the session to become active.
+  // This is equivalent to:
+  // 1.  calling AttemptLoginUsingAuthenticator with the default stub
+  //     authenticator (that succeeds if the provided user credentials match the
+  //     credentials expected by the authenticator)
+  // 2.  calling WaitForActiveSession().
   // Currently works for the primary user only.
   // Returns whether the newly logged in user is active when the method exits.
-  bool LoginAndWaitForSessionStart(const UserContext& user_context);
+  bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
  private:
   const std::vector<AccountId> initial_users_;

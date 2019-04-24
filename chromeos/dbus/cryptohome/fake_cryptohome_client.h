@@ -258,6 +258,14 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     needs_dircrypto_migration_ = needs_migration;
   }
 
+  // Sets whether dircrypto migration update should be run automatically.
+  // If set to false, the client will not send any dircrypto migration progress
+  // updates on its own - a test that sets this will have to call
+  // NotifyDircryptoMigrationProgress() for the progress to update.
+  void set_run_default_dircrypto_migration(bool value) {
+    run_default_dircrypto_migration_ = value;
+  }
+
   // Sets the CryptohomeError value to return.
   void set_cryptohome_error(cryptohome::CryptohomeErrorCode error) {
     cryptohome_error_ = error;
@@ -416,6 +424,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   uint64_t dircrypto_migration_progress_;
 
   bool needs_dircrypto_migration_ = false;
+  bool run_default_dircrypto_migration_ = true;
   std::string tpm_attestation_enrollment_id_ignore_cache_ =
       "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
   std::string tpm_attestation_enrollment_id_ =
