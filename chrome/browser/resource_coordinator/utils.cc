@@ -51,14 +51,4 @@ TabLifecycleUnitSource* GetTabLifecycleUnitSource() {
   return source;
 }
 
-PageSignalReceiver* GetPageSignalReceiver() {
-  // This might get called during the destruction of the browser process, at
-  // which point there's no PageSignalReceiver anymore.
-  if (!g_browser_process)
-    return nullptr;
-  auto* page_signal_receiver =
-      g_browser_process->resource_coordinator_parts()->page_signal_receiver();
-  return page_signal_receiver;
-}
-
 }  // namespace resource_coordinator

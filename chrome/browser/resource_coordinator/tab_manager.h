@@ -46,7 +46,6 @@ class WebContents;
 namespace resource_coordinator {
 
 class BackgroundTabNavigationThrottle;
-class PageSignalReceiver;
 
 #if defined(OS_CHROMEOS)
 class TabManagerDelegate;
@@ -80,9 +79,7 @@ class TabManager : public LifecycleUnitObserver,
 
   using TabDiscardDoneCB = base::ScopedClosureRunner;
 
-  // |page_signal_receiver| might be null.
-  TabManager(PageSignalReceiver* page_signal_receiver,
-             TabLoadTracker* tab_load_tracker);
+  explicit TabManager(TabLoadTracker* tab_load_tracker);
   ~TabManager() override;
 
   // Start the Tab Manager.
