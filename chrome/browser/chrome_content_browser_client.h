@@ -202,7 +202,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::CommandLine* command_line) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
-  const gfx::ImageSkia* GetDefaultFavicon() override;
+  gfx::ImageSkia GetDefaultFavicon() override;
   bool IsDataSaverEnabled(content::BrowserContext* context) override;
   void UpdateRendererPreferencesForWorker(
       content::BrowserContext* browser_context,

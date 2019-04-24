@@ -24,11 +24,10 @@ void InternalAppIconLoader::FetchImage(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return;
 
-  std::unique_ptr<gfx::ImageSkia> image_skia =
-      std::make_unique<gfx::ImageSkia>(app_list::GetIconForResourceId(
-          app_list::GetIconResourceIdByAppId(app_id), icon_size_in_dip()));
-  image_skia->EnsureRepsForSupportedScales();
-  icon_map_[app_id] = std::move(image_skia);
+  gfx::ImageSkia image_skia(app_list::GetIconForResourceId(
+      app_list::GetIconResourceIdByAppId(app_id), icon_size_in_dip()));
+  image_skia.EnsureRepsForSupportedScales();
+  icon_map_[app_id] = image_skia;
   UpdateImage(app_id);
 }
 
@@ -41,5 +40,5 @@ void InternalAppIconLoader::UpdateImage(const std::string& app_id) {
   if (it == icon_map_.end())
     return;
 
-  delegate()->OnAppImageUpdated(app_id, *(it->second));
+  delegate()->OnAppImageUpdated(app_id, it->second);
 }

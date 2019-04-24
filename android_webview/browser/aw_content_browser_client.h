@@ -81,7 +81,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                       int child_process_id) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
-  const gfx::ImageSkia* GetDefaultFavicon() override;
+  gfx::ImageSkia GetDefaultFavicon() override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;

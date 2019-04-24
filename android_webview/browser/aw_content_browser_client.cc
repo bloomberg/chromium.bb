@@ -492,10 +492,10 @@ std::string AwContentBrowserClient::GetAcceptLangs(
   return GetAcceptLangsImpl();
 }
 
-const gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {
+gfx::ImageSkia AwContentBrowserClient::GetDefaultFavicon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(boliu): Bundle our own default favicon?
-  return rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  return rb.GetImageNamed(IDR_DEFAULT_FAVICON).AsImageSkia();
 }
 
 bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,

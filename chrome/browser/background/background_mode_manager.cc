@@ -140,7 +140,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
   if (HasBackgroundClient()) {
     // Add a menu item for each application (extension).
     for (const auto& application : *applications_) {
-      const gfx::ImageSkia* icon = applications_->GetIcon(application.get());
+      gfx::ImageSkia icon = applications_->GetIcon(application.get());
       const std::string& name = application->name();
       int command_id = command_id_handler_vector_->size();
       // Check that the command ID is within the dynamic range.
@@ -149,8 +149,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
           &BackgroundModeManager::LaunchBackgroundApplication, profile_,
           base::RetainedRef(application)));
       menu->AddItem(command_id, base::UTF8ToUTF16(name));
-      if (icon)
-        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
+      if (!icon.isNull())
+        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(icon));
 
       // Component extensions with background that do not have an options page
       // will cause this menu item to go to the extensions page with an

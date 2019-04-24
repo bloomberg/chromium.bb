@@ -326,7 +326,7 @@ class UserImageManagerTest : public LoginManagerTest,
 
   PrefService* local_state_;
 
-  std::unique_ptr<gfx::ImageSkia> decoded_image_;
+  gfx::ImageSkia decoded_image_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -442,13 +442,13 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const std::unique_ptr<gfx::ImageSkia> saved_image =
+  const gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(custom_image.width(), saved_image->width());
-  EXPECT_EQ(custom_image.height(), saved_image->height());
+  EXPECT_EQ(custom_image.width(), saved_image.width());
+  EXPECT_EQ(custom_image.height(), saved_image.height());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImageFromFile) {
@@ -464,9 +464,9 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   const base::FilePath custom_image_path =
       test_data_dir_.Append(test::kUserAvatarImage1RelativePath);
-  const std::unique_ptr<gfx::ImageSkia> custom_image =
+  const gfx::ImageSkia custom_image =
       test::ImageLoader(custom_image_path).Load();
-  ASSERT_TRUE(custom_image);
+  ASSERT_FALSE(custom_image.isNull());
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
@@ -476,43 +476,43 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*custom_image, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(custom_image, user->GetImage()));
   ExpectUserImageInfo(test_account_id1_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const std::unique_ptr<gfx::ImageSkia> saved_image =
+  const gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(custom_image->width(), saved_image->width());
-  EXPECT_EQ(custom_image->height(), saved_image->height());
+  EXPECT_EQ(custom_image.width(), saved_image.width());
+  EXPECT_EQ(custom_image.height(), saved_image.height());
 
   // Replace the user image with a PNG file with transparent pixels.
   const base::FilePath transparent_image_path =
       test_data_dir_.Append(test::kUserAvatarImage3RelativePath);
-  const std::unique_ptr<gfx::ImageSkia> transparent_image =
+  const gfx::ImageSkia transparent_image =
       test::ImageLoader(transparent_image_path).Load();
-  ASSERT_TRUE(transparent_image);
+  ASSERT_FALSE(transparent_image.isNull());
   // This image should have transparent pixels (i.e. not opaque).
-  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*transparent_image->bitmap()));
+  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*transparent_image.bitmap()));
 
   run_loop_.reset(new base::RunLoop);
   user_image_manager->SaveUserImageFromFile(transparent_image_path);
   run_loop_->Run();
 
-  EXPECT_TRUE(test::AreImagesEqual(*transparent_image, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(transparent_image, user->GetImage()));
   ExpectUserImageInfo(test_account_id1_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(test_account_id1_, "png"));
 
-  const std::unique_ptr<gfx::ImageSkia> new_saved_image =
+  const gfx::ImageSkia new_saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "png")).Load();
-  ASSERT_TRUE(new_saved_image);
+  ASSERT_FALSE(new_saved_image.isNull());
 
   // The saved image should have transparent pixels (i.e. not opaque).
-  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*new_saved_image->bitmap()));
+  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*new_saved_image.bitmap()));
 
   base::ScopedAllowBlockingForTesting allow_io;
   // The old user image file in JPEG should be deleted. Only the PNG version
@@ -555,13 +555,13 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   ExpectUserImageInfo(test_account_id1_, user_manager::User::USER_IMAGE_PROFILE,
                       GetUserImagePath(test_account_id1_, "jpg"));
 
-  const std::unique_ptr<gfx::ImageSkia> saved_image =
+  const gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(profile_image.width(), saved_image->width());
-  EXPECT_EQ(profile_image.height(), saved_image->height());
+  EXPECT_EQ(profile_image.width(), saved_image.width());
+  EXPECT_EQ(profile_image.height(), saved_image.height());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
@@ -653,7 +653,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     policy_image_ = test::ImageLoader(test_data_dir_.Append(
                                           test::kUserAvatarImage2RelativePath))
                         .Load();
-    ASSERT_TRUE(policy_image_);
+    ASSERT_FALSE(policy_image_.isNull());
   }
 
   // policy::CloudPolicyStore::Observer overrides:
@@ -690,7 +690,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
-  std::unique_ptr<gfx::ImageSkia> policy_image_;
+  gfx::ImageSkia policy_image_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerPolicyTest);
@@ -729,18 +729,18 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(policy_image_, user->GetImage()));
   ExpectUserImageInfo(enterprise_account_id_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  std::unique_ptr<gfx::ImageSkia> saved_image =
+  gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image_->width(), saved_image->width());
-  EXPECT_EQ(policy_image_->height(), saved_image->height());
+  EXPECT_EQ(policy_image_.width(), saved_image.width());
+  EXPECT_EQ(policy_image_.height(), saved_image.height());
 
   // Clear policy. Verify that the user image switches to a random default
   // image.
@@ -836,18 +836,18 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(policy_image_, user->GetImage()));
   ExpectUserImageInfo(enterprise_account_id_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  std::unique_ptr<gfx::ImageSkia> saved_image =
+  gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image_->width(), saved_image->width());
-  EXPECT_EQ(policy_image_->height(), saved_image->height());
+  EXPECT_EQ(policy_image_.width(), saved_image.width());
+  EXPECT_EQ(policy_image_.height(), saved_image.height());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
@@ -883,18 +883,18 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(policy_image_, user->GetImage()));
   ExpectUserImageInfo(enterprise_account_id_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
-  std::unique_ptr<gfx::ImageSkia> saved_image =
+  gfx::ImageSkia saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image_->width(), saved_image->width());
-  EXPECT_EQ(policy_image_->height(), saved_image->height());
+  EXPECT_EQ(policy_image_.width(), saved_image.width());
+  EXPECT_EQ(policy_image_.height(), saved_image.height());
 
   // Choose a different user image. Verify that the user image does not change
   // as policy takes precedence.
@@ -905,18 +905,18 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
+  EXPECT_TRUE(test::AreImagesEqual(policy_image_, user->GetImage()));
   ExpectUserImageInfo(enterprise_account_id_,
                       user_manager::User::USER_IMAGE_EXTERNAL,
                       GetUserImagePath(enterprise_account_id_, "jpg"));
 
   saved_image =
       test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image_->width(), saved_image->width());
-  EXPECT_EQ(policy_image_->height(), saved_image->height());
+  EXPECT_EQ(policy_image_.width(), saved_image.width());
+  EXPECT_EQ(policy_image_.height(), saved_image.height());
 }
 
 }  // namespace chromeos

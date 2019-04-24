@@ -62,6 +62,7 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
@@ -89,10 +90,6 @@ class WebUsbService;
 
 namespace device {
 class LocationProvider;
-}
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace media {
@@ -519,8 +516,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // (Not called GetAcceptLanguages so it doesn't clash with win32).
   virtual std::string GetAcceptLangs(BrowserContext* context);
 
-  // Returns the default favicon.  The callee doesn't own the given bitmap.
-  virtual const gfx::ImageSkia* GetDefaultFavicon();
+  // Returns the default favicon.
+  virtual gfx::ImageSkia GetDefaultFavicon();
 
   // Returns the fully qualified path to the log file name, or an empty path.
   // This function is used by the sandbox to allow write access to the log.

@@ -2293,9 +2293,9 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(
   return profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages);
 }
 
-const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
+gfx::ImageSkia ChromeContentBrowserClient::GetDefaultFavicon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
+  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).AsImageSkia();
 }
 
 bool ChromeContentBrowserClient::IsDataSaverEnabled(

@@ -1514,11 +1514,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   run_loop_->Run();
   user_manager::UserManager::Get()->RemoveObserver(this);
 
-  std::unique_ptr<gfx::ImageSkia> policy_image =
+  gfx::ImageSkia policy_image =
       chromeos::test::ImageLoader(
           test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath))
           .Load();
-  ASSERT_TRUE(policy_image);
+  ASSERT_FALSE(policy_image.isNull());
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id_1_);
@@ -1531,7 +1531,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(chromeos::test::AreImagesEqual(*policy_image, user->GetImage()));
+  EXPECT_TRUE(chromeos::test::AreImagesEqual(policy_image, user->GetImage()));
   const base::DictionaryValue* images_pref =
       g_browser_process->local_state()->GetDictionary("user_image_info");
   ASSERT_TRUE(images_pref);
@@ -1545,13 +1545,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, image_index);
   EXPECT_EQ(saved_image_path.value(), image_path);
 
-  std::unique_ptr<gfx::ImageSkia> saved_image =
+  gfx::ImageSkia saved_image =
       chromeos::test::ImageLoader(saved_image_path).Load();
-  ASSERT_TRUE(saved_image);
+  ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
-  EXPECT_EQ(policy_image->width(), saved_image->width());
-  EXPECT_EQ(policy_image->height(), saved_image->height());
+  EXPECT_EQ(policy_image.width(), saved_image.width());
+  EXPECT_EQ(policy_image.height(), saved_image.height());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
