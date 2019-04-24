@@ -462,6 +462,55 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
       1);
 }
 
+// Test that enabling the holdback disables the proxy.
+class DataReductionProxyWithHoldbackBrowsertest
+    : public ::testing::WithParamInterface<bool>,
+      public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDataReductionProxyEnabledWithNetworkService,
+           data_reduction_proxy::features::kDataReductionProxyHoldback},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDataReductionProxyEnabledWithNetworkService}, {});
+    }
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
+                       UpdateConfig) {
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+
+  if (GetParam()) {
+    EXPECT_NE(GetBody(), kPrimaryResponse);
+  } else {
+    EXPECT_EQ(GetBody(), kPrimaryResponse);
+  }
+}
+
+// Parameter is true if the data reduction proxy holdback should be enabled.
+INSTANTIATE_TEST_SUITE_P(,
+                         DataReductionProxyWithHoldbackBrowsertest,
+                         ::testing::Values(false, true));
+
 class DataReductionProxyBrowsertestWithNetworkService
     : public DataReductionProxyBrowsertest {
  public:
@@ -851,7 +900,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       DISABLED_ProxyBlockedOnAuthError) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProxyBlockedOnAuthError)) {
+  if (!IsNetworkServiceEnabled())
+    return;
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -870,7 +921,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 // Tests that if using data reduction proxy results in redirect loop, then
 // the proxy is bypassed, and the request is fetched directly.
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       DISABLED_RedirectCycle) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(RedirectCycle)) {
+  if (!IsNetworkServiceEnabled())
+    return;
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
