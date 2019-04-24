@@ -117,6 +117,15 @@ TEST_F(ViewElementTest, SetPropertiesFromString) {
   props = element()->GetCustomProperties();
   EXPECT_EQ(props[index].first, kTestProperty);
   EXPECT_EQ(props[index].second, "true");
+
+  // Test setting empty string for property value has no effect.
+  element()->SetPropertiesFromString("Enabled:");
+  props = element()->GetCustomProperties();
+  EXPECT_EQ(props[index].first, kTestProperty);
+  EXPECT_EQ(props[index].second, "true");
+
+  // Ensure setting pure whitespace doesn't crash.
+  ASSERT_NO_FATAL_FAILURE(element()->SetPropertiesFromString("   \n  "));
 }
 
 TEST_F(ViewElementTest, GetVisible) {

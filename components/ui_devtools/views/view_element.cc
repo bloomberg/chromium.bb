@@ -95,7 +95,9 @@ bool ViewElement::SetPropertiesFromString(const std::string& text) {
   std::vector<std::string> tokens = base::SplitString(
       text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  DCHECK_EQ(tokens.size() % 2, 0UL);
+  if (tokens.size() == 0UL)
+    return false;
+
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
     const std::string& property_name = tokens.at(i);
     const std::string& property_value = base::ToLowerASCII(tokens.at(i + 1));
