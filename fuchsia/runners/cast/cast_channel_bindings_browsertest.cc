@@ -55,8 +55,8 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
     callback();
   }
 
-  void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
-                OnOpenedCallback receive_next_channel_cb) override {
+  void Open(fidl::InterfaceHandle<fuchsia::web::MessagePort> channel,
+            OpenCallback receive_next_channel_cb) override {
     connected_channel_ = channel.Bind();
     receive_next_channel_cb_ = std::move(receive_next_channel_cb);
 
@@ -89,14 +89,15 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
 
   std::string ReadStringFromChannel() {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message(
+    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> message(
         run_loop.QuitClosure());
     connected_channel_->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
     std::string data;
-    CHECK(cr_fuchsia::StringFromMemBuffer(message->data, &data));
+    CHECK(message->has_data());
+    CHECK(cr_fuchsia::StringFromMemBuffer(message->data(), &data));
     return data;
   }
 
@@ -121,7 +122,7 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
   cr_fuchsia::TestNavigationListener navigation_listener_;
 
   // The connected Cast Channel.
-  chromium::web::MessagePortPtr connected_channel_;
+  fuchsia::web::MessagePortPtr connected_channel_;
 
   // A pending on-connect callback, to be invoked once a Cast Channel is
   // received.
@@ -129,7 +130,7 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
 
  private:
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
-  OnOpenedCallback receive_next_channel_cb_;
+  OpenCallback receive_next_channel_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelBindingsTest);
 };
@@ -191,16 +192,17 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
 
     // Send a message to the channel.
     {
-      chromium::web::WebMessage message;
-      message.data = cr_fuchsia::MemBufferFromString("hello");
+      fuchsia::web::WebMessage message;
+      message.set_data(cr_fuchsia::MemBufferFromString("hello"));
 
       base::RunLoop run_loop;
-      cr_fuchsia::ResultReceiver<bool> post_result(run_loop.QuitClosure());
+      cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
+          post_result(run_loop.QuitClosure());
       connected_channel_->PostMessage(
           std::move(message),
           cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
       run_loop.Run();
-      EXPECT_EQ(true, *post_result);
+      EXPECT_TRUE(post_result->is_response());
     }
 
     EXPECT_EQ("ack hello", ReadStringFromChannel());

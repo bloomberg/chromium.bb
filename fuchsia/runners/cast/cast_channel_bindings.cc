@@ -16,7 +16,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/engine/legacy_message_port_bridge.h"
 #include "fuchsia/runners/cast/cast_platform_bindings_ids.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 
@@ -103,11 +102,8 @@ void CastChannelBindings::SendChannelToConsumer(
     fuchsia::web::MessagePortPtr channel) {
   if (consumer_ready_for_port_) {
     consumer_ready_for_port_ = false;
-    chromium::web::MessagePortPtr chromium_message_port;
-    new cr_fuchsia::LegacyMessagePortBridge(chromium_message_port.NewRequest(),
-                                            std::move(channel));
-    channel_consumer_->OnOpened(
-        std::move(chromium_message_port),
+    channel_consumer_->Open(
+        std::move(channel),
         fit::bind_member(this, &CastChannelBindings::OnConsumerReadyForPort));
   } else {
     connected_channel_queue_.push_front(std::move(channel));

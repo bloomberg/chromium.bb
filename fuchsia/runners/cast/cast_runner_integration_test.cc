@@ -44,7 +44,7 @@ class FakeCastChannel : public chromium::cast::CastChannel {
       : binding_(directory, this) {}
 
   // Returns null if the Cast channel is not open.
-  const chromium::web::MessagePortPtr& port() const { return port_; }
+  const fuchsia::web::MessagePortPtr& port() const { return port_; }
 
   void set_on_opened(base::OnceClosure on_opened) {
     on_opened_ = std::move(on_opened);
@@ -52,8 +52,8 @@ class FakeCastChannel : public chromium::cast::CastChannel {
 
  protected:
   // chromium::cast::CastChannel implementation.
-  void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
-                OnOpenedCallback callback_ignored) override {
+  void Open(fidl::InterfaceHandle<fuchsia::web::MessagePort> channel,
+            OpenCallback callback_ignored) override {
     port_ = channel.Bind();
 
     if (on_opened_)
@@ -66,7 +66,7 @@ class FakeCastChannel : public chromium::cast::CastChannel {
       binding_;
 
   // Null until the Cast app connects to the Cast channel.
-  chromium::web::MessagePortPtr port_;
+  fuchsia::web::MessagePortPtr port_;
 
   // Invoked when the contect opens a new Cast channel, if set.
   base::OnceClosure on_opened_;
@@ -334,14 +334,15 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
   auto expected_list = {"this", "is", "a", "test"};
   for (const std::string& expected : expected_list) {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message(
+    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> message(
         run_loop.QuitClosure());
     component_state_->cast_channel()->port()->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
     std::string data;
-    ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(message->data, &data));
+    ASSERT_TRUE(message->has_data());
+    ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(message->data(), &data));
     EXPECT_EQ(data, expected);
   }
 

@@ -11,10 +11,10 @@ using fuchsia.web;
 protocol CastChannel {
   /// Receives an opened Cast |channel| from the Cast application.
   /// Open() must not be called again until the preceding call has returned.
-  [Transitional="Transitional method to migrate the fuchsia.web API."]
   Open(fuchsia.web.MessagePort channel) -> ();
 
   // TODO(crbug.com/946732): Remove this once callers have migrated to Open().
+  [Transitional="Deprecated method to migrate the fuchsia.web API."]
   OnOpened(chromium.web.MessagePort channel) -> ();
 };
 
