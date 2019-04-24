@@ -382,25 +382,4 @@ bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
   return true;
 }
 
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kAlways,
-                   network::mojom::ReferrerPolicy::kAlways);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kDefault,
-                   network::mojom::ReferrerPolicy::kDefault);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-                   network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kNever,
-                   network::mojom::ReferrerPolicy::kNever);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kOrigin,
-                   network::mojom::ReferrerPolicy::kOrigin);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
-                   network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kSameOrigin,
-                   network::mojom::ReferrerPolicy::kSameOrigin);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::kStrictOrigin,
-                   network::mojom::ReferrerPolicy::kStrictOrigin);
-STATIC_ASSERT_ENUM(network::mojom::ReferrerPolicy::
-                       kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-                   network::mojom::ReferrerPolicy::
-                       kNoReferrerWhenDowngradeOriginWhenCrossOrigin);
-
 }  // namespace blink
