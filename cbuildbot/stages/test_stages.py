@@ -643,6 +643,7 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
     * whether FORTIFY is enabled, etc.
   """
 
+  option_name = 'tests'
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
