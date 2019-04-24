@@ -10547,7 +10547,7 @@ interface XR : EventTarget
     getter ondevicechange
     method constructor
     method requestSession
-    method supportsSessionMode
+    method supportsSession
     setter ondevicechange
 interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag

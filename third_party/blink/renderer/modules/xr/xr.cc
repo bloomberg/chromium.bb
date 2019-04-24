@@ -156,8 +156,8 @@ void XR::AddEnvironmentProviderErrorHandler(
   environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
-ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
-                                      const String& mode) {
+ScriptPromise XR::supportsSession(ScriptState* script_state,
+                                  const String& mode) {
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
@@ -194,14 +194,14 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
       // The pending queries will be resolved once the device is returned.
       EnsureDevice();
     } else {
-      DispatchSupportsSessionMode(query);
+      DispatchSupportsSession(query);
     }
   }
 
   return promise;
 }
 
-void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
+void XR::DispatchSupportsSession(PendingSessionQuery* query) {
   if (!device_) {
     // If we don't have a device by the time we reach this call it indicates
     // that there's no WebXR hardware. Reject as not supported.
@@ -389,7 +389,7 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
 void XR::DispatchPendingSessionCalls() {
   // Process any calls that were waiting for the device query to be returned.
   for (auto& query : pending_mode_queries_) {
-    DispatchSupportsSessionMode(query);
+    DispatchSupportsSession(query);
   }
   pending_mode_queries_.clear();
 

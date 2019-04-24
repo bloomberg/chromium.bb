@@ -38,7 +38,7 @@ class XR final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
-  ScriptPromise supportsSessionMode(ScriptState*, const String&);
+  ScriptPromise supportsSession(ScriptState*, const String&);
   ScriptPromise requestSession(ScriptState*, const String&);
 
   XRFrameProvider* frameProvider();
@@ -99,7 +99,7 @@ class XR final : public EventTargetWithInlineData,
   void OnRequestSessionReturned(PendingSessionQuery*,
                                 device::mojom::blink::XRSessionPtr);
 
-  void DispatchSupportsSessionMode(PendingSessionQuery*);
+  void DispatchSupportsSession(PendingSessionQuery*);
   void OnSupportsSessionReturned(PendingSessionQuery*, bool supports_session);
 
   void EnsureDevice();
