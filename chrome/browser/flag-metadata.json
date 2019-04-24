@@ -1307,6 +1307,11 @@
     "expiry_milestone": 76
   },
   {
+     "name": "enable-nacl",
+     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
+     "expiry_milestone": 87
+  },
+  {
     "name": "enable-native-controls",
     "owners": [ "chrome-media-ux@google.com" ],
     "expiry_milestone": 75

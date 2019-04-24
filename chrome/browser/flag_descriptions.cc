@@ -3490,6 +3490,13 @@ const char kXRSandboxDescription[] =
 
 #endif  // ENABLE_VR
 
+#if BUILDFLAG(ENABLE_NACL)
+const char kNaclName[] = "Native Client";
+const char kNaclDescription[] =
+    "Support Native Client for all web applications, even those that were not "
+    "installed from the Chrome Web Store.";
+#endif  // ENABLE_NACL
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
