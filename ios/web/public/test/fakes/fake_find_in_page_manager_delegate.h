@@ -39,6 +39,9 @@ class FakeFindInPageManagerDelegate : public FindInPageManagerDelegate {
   // Returns the current State.
   const State* state() const { return delegate_state_.get(); }
 
+  // Resets the State.
+  void Reset() { delegate_state_.reset(); }
+
  private:
   std::unique_ptr<State> delegate_state_;
   DISALLOW_COPY_AND_ASSIGN(FakeFindInPageManagerDelegate);

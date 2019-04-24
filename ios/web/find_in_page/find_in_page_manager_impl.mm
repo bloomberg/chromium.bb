@@ -209,9 +209,12 @@ void FindInPageManagerImpl::WebFrameDidBecomeAvailable(WebState* web_state,
 
 void FindInPageManagerImpl::WebFrameWillBecomeUnavailable(WebState* web_state,
                                                           WebFrame* web_frame) {
+  bool frame_has_matches =
+      last_find_request_.frame_match_count[web_frame->GetFrameId()] > 0;
   last_find_request_.RemoveFrame(web_frame);
 
-  if (delegate_ && last_find_request_.query) {
+  // Only notify the delegate if the match count has changed.
+  if (delegate_ && last_find_request_.query && frame_has_matches) {
     delegate_->DidHighlightMatches(web_state_,
                                    last_find_request_.GetTotalMatchCount(),
                                    last_find_request_.query);

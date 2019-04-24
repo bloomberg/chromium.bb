@@ -591,6 +591,29 @@ TEST_F(FindInPageManagerImplTest, FindInPageUpdateMatchCountAfterFrameRemoved) {
   }));
 }
 
+// Tests that DidHighlightMatches is not called when a frame with no matches is
+// removed from the page.
+TEST_F(FindInPageManagerImplTest, FindDidNotResponseAfterFrameDisappears) {
+  const char kZeroMatchesFrameId[] = "frame_with_zero_matches";
+  auto frame_with_zero_matches = CreateMainWebFrameWithJsResultForFind(
+      std::make_unique<base::Value>(0.0), kZeroMatchesFrameId);
+  auto frame_with_two_matches = CreateChildWebFrameWithJsResultForFind(
+      std::make_unique<base::Value>(2.0), kTwoMatchesFrameId);
+  test_web_state_->AddWebFrame(std::move(frame_with_zero_matches));
+  test_web_state_->AddWebFrame(std::move(frame_with_two_matches));
+
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fake_delegate_.state();
+  }));
+
+  fake_delegate_.Reset();
+  test_web_state_->RemoveWebFrame(kZeroMatchesFrameId);
+
+  EXPECT_FALSE(fake_delegate_.state());
+}
+
 // Tests that Find in Page SetContentIsHTML() returns true if the web state's
 // content is HTML and returns false if the web state's content is not HTML.
 TEST_F(FindInPageManagerImplTest, FindInPageCanSearchContent) {
