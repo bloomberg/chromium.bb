@@ -12,13 +12,19 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
+#include "content/public/browser/render_process_host.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace {
 
 void BindProcessNode(
-    content::RenderProcessHost* render_process_host,
+    int render_process_host_id,
     resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(render_process_host_id);
+  if (!render_process_host)
+    return;
+
   performance_manager::RenderProcessUserData* user_data =
       performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_process_host);
@@ -47,8 +53,7 @@ void ChromeContentBrowserClientPerformanceManagerPart::
         blink::AssociatedInterfaceRegistry* associated_registry,
         content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
-      base::BindRepeating(&BindProcessNode,
-                          base::Unretained(render_process_host)),
+      base::BindRepeating(&BindProcessNode, render_process_host->GetID()),
       base::SequencedTaskRunnerHandle::Get());
 
   // Ideally this would strictly be a "CreateForRenderProcess", but when a
