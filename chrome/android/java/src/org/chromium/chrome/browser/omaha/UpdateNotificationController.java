@@ -4,17 +4,17 @@
 package org.chromium.chrome.browser.omaha;
 
 import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationInterval;
+import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationTextBody;
+import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationTitle;
 import static org.chromium.chrome.browser.omaha.UpdateConfigs.isUpdateNotificationEnabled;
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.INLINE_UPDATE_AVAILABLE;
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.UPDATE_AVAILABLE;
 
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -112,23 +112,18 @@ public class UpdateNotificationController implements Destroyable {
     private void scheduleUpdateNotification() {
         if (!shouldPushNotification()) return;
 
-        Resources resources = ContextUtils.getApplicationContext().getResources();
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(false,
-                                ChannelDefinitions.ChannelId.BROWSER, null,
+                        .createChromeNotificationBuilder(true, ChannelDefinitions.ChannelId.UPDATES,
+                                null,
                                 new NotificationMetadata(
-                                        NotificationUmaTracker.SystemNotificationType
-                                                .BROWSER_ACTIONS,
+                                        NotificationUmaTracker.SystemNotificationType.UPDATES,
                                         UPDATE_NOTIFICATION_TAG /* notificationTag */,
-                                        NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS))
+                                        NotificationConstants.NOTIFICATION_ID_UPDATE))
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setAutoCancel(true)
-                        .setContentTitle(resources.getString(R.string.update_notification_title));
-
-        Notification.BigTextStyle style = new Notification.BigTextStyle();
-        style.bigText(resources.getString(R.string.update_notification_text_body));
-        builder.setStyle(style);
+                        .setContentTitle(getUpdateNotificationTitle())
+                        .setContentText(getUpdateNotificationTextBody());
 
         builder.setContentIntent(createContentIntent(mUpdateStatus));
         NotificationManagerProxy notificationManager = new NotificationManagerProxyImpl(mActivity);

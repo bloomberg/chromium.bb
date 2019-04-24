@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import android.content.res.Resources;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +12,8 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
@@ -56,6 +59,8 @@ public class UpdateConfigs {
     private static final String UPDATE_NOTIFICATION_INTERVAL_PARAM_NAME =
             "update_notification_interval_days";
     private static final String UPDATE_NOTIFICATION_STATE_PARAM_NAME = "update_notification_state";
+    private static final String UPDATE_NOTIFICATION_EXPERIMENTAL_PARAM_NAME =
+            "update_notification_experimental_context";
 
     private static final long DEFAULT_UPDATE_NOTIFICATION_INTERVAL = 21 * DateUtils.DAY_IN_MILLIS;
 
@@ -214,6 +219,47 @@ public class UpdateConfigs {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_NOTIFICATION_STATE_PARAM_NAME, false);
     }
+
+    /**
+     * @return A title of update notification.
+     */
+    public static String getUpdateNotificationTitle() {
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+        String configuration = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_NOTIFICATION_EXPERIMENTAL_PARAM_NAME);
+        switch (configuration) {
+            case "experimental_update_chrome":
+                return resources.getString(
+                        R.string.update_notification_title_experimental_update_chrome);
+            case "experimental_translate_the_web":
+                return resources.getString(
+                        R.string.update_notification_title_experimental_translate_the_web);
+            case "default": // Intentional fallthrough.
+            default:
+                return resources.getString(R.string.update_notification_title_default);
+        }
+    }
+
+    /**
+     * @return A text body of update notification.
+     */
+    public static String getUpdateNotificationTextBody() {
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+        String configuration = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_NOTIFICATION_EXPERIMENTAL_PARAM_NAME);
+        switch (configuration) {
+            case "experimental_update_chrome":
+                return resources.getString(
+                        R.string.update_notification_text_body_experimental_update_chrome);
+            case "experimental_translate_the_web":
+                return resources.getString(
+                        R.string.update_notification_text_body_experimental_translate_the_web);
+            case "default": // Intentional fallthrough.
+            default:
+                return resources.getString(R.string.update_notification_text_body_default);
+        }
+    }
+
     /**
      * Gets a String VariationsAssociatedData parameter. Also checks for a command-line switch
      * with the same name, for easy local testing.
