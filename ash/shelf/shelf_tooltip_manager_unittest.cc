@@ -14,7 +14,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "base/run_loop.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -225,10 +225,12 @@ TEST_F(ShelfTooltipManagerTest, ShelfTooltipDoesNotAffectPipWindow) {
 
   auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
   auto tooltip_bounds = GetTooltip()->GetWindowBoundsInScreen();
-  tooltip_bounds.Intersect(PipPositioner::GetMovementArea(display));
+  tooltip_bounds.Intersect(CollisionDetectionUtils::GetMovementArea(display));
   EXPECT_FALSE(tooltip_bounds.IsEmpty());
   EXPECT_EQ(tooltip_bounds,
-            PipPositioner::GetRestingPosition(display, tooltip_bounds));
+            CollisionDetectionUtils::GetRestingPosition(
+                display, tooltip_bounds,
+                CollisionDetectionUtils::RelativePriority::kPictureInPicture));
 }
 
 }  // namespace ash

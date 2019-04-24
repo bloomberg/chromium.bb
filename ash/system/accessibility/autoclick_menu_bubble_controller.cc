@@ -10,6 +10,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/work_area_insets.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_utils.h"
@@ -102,6 +103,9 @@ void AutoclickMenuBubbleController::ShowBubble(
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
+  CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
+      bubble_widget_->GetNativeWindow(),
+      CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
   bubble_view_->InitializeAndShowBubble();
 
   if (app_list_features::IsBackgroundBlurEnabled()) {
