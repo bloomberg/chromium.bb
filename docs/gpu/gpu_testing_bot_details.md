@@ -615,15 +615,16 @@ reliably green before rolling out the driver update. To do this:
 1.  Watch the new machine for a day or two to make sure it's stable.
 1.  When it is, update [bot_config.py] (Google internal) to *add* a mapping
     between the new driver version and the "stable" version. For example:
-<pre>
-  _TARGETED_DRIVER_VERSIONS = {
-    # NVIDIA Quadro P400, Ubuntu Stable version
-    '10de:1cb3-384.90': 'nvidia-quadro-p400-ubuntu-stable',
-    # NVIDIA Quadro P400, new Ubuntu Stable version
-    '10de:1cb3-410.78': 'nvidia-quadro-p400-ubuntu-stable',
-    # ...
-  }
-</pre>
+    ```
+    _TARGETED_DRIVER_VERSIONS = {
+      # NVIDIA Quadro P400, Ubuntu Stable version
+      '10de:1cb3-384.90': 'nvidia-quadro-p400-ubuntu-stable',
+      # NVIDIA Quadro P400, new Ubuntu Stable version
+      '10de:1cb3-410.78': 'nvidia-quadro-p400-ubuntu-stable',
+      # ...
+    }
+    ```
+    
     The new driver version should match the one just added for the
     experimental bot. Get this CL reviewed and landed.
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
@@ -631,7 +632,7 @@ reliably green before rolling out the driver update. To do this:
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the old driver version from [bot_config.pyl], leaving the "stable"
+1.  Remove the old driver version from [bot_config.py], leaving the "stable"
     driver version pointing at the newly upgraded version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
