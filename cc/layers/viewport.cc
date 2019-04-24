@@ -287,6 +287,9 @@ gfx::ScrollOffset Viewport::MaxTotalScrollOffset() const {
 gfx::ScrollOffset Viewport::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
 
+  if (!InnerScrollNode())
+    return offset;
+
   offset += scroll_tree().current_scroll_offset(InnerScrollNode()->element_id);
 
   if (auto* outer_node = OuterScrollNode())

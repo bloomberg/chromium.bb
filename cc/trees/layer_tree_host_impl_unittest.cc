@@ -7918,6 +7918,18 @@ TEST_F(LayerTreeHostImplTest, SetRootScrollOffsetUserScrollable) {
   }
 }
 
+// The SetSynchronousInputHandlerRootScrollOffset API can be called while there
+// is no inner viewport set. This test passes if we don't crash.
+TEST_F(LayerTreeHostImplTest, SetRootScrollOffsetNoViewportCrash) {
+  host_impl_->active_tree()->ClearViewportLayers();
+  host_impl_->active_tree()->DidBecomeActive();
+
+  auto* inner_scroll = host_impl_->active_tree()->InnerViewportScrollLayer();
+  ASSERT_FALSE(inner_scroll);
+  gfx::ScrollOffset scroll_offset(25.f, 30.f);
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+}
+
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   InputHandlerScrollResult scroll_result;
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
