@@ -35,7 +35,6 @@ class IOSSendTabToSelfInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
-  bool Accept() override;
   bool Cancel() override;
 
   // The entry that was share to this device. Must outlive this instance.

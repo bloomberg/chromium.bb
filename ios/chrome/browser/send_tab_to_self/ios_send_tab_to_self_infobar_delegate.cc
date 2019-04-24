@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/infobars/core/infobar.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
+#include "components/send_tab_to_self/send_tab_to_self_metrics.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -27,6 +28,7 @@ IOSSendTabToSelfInfoBarDelegate::IOSSendTabToSelfInfoBarDelegate(
     const SendTabToSelfEntry* entry) {
   DCHECK(entry);
   entry_ = entry;
+  RecordNotificationHistogram(SendTabToSelfNotification::kShown);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -64,19 +66,13 @@ GURL IOSSendTabToSelfInfoBarDelegate::GetLinkURL() const {
 
 bool IOSSendTabToSelfInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   infobar()->owner()->OpenURL(GetLinkURL(), disposition);
   return true;
 }
 
-bool IOSSendTabToSelfInfoBarDelegate::Accept() {
-  // TODO(crbug.com/944602): Implement.
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool IOSSendTabToSelfInfoBarDelegate::Cancel() {
-  // TODO(crbug.com/944602): Implement.
-  NOTIMPLEMENTED();
+  RecordNotificationHistogram(SendTabToSelfNotification::kDismissed);
   return true;
 }
 
