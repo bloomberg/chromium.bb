@@ -1,0 +1,170 @@
+# -*- coding: utf-8 -*-
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+"""Deps analysis service."""
+
+from __future__ import print_function
+
+import fileinput
+import os
+
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
+from chromite.lib import git
+from chromite.lib import osutils
+from chromite.lib import portage_util
+from chromite.scripts import cros_extract_deps
+
+
+def NormalizeSourcePaths(source_paths):
+  """Return the "normalized" form of a list of source paths.
+
+  Normalizing includes sorting the source paths in alphabetical order and remove
+  paths that are sub-path of others in the source paths.
+  """
+  for i, p in enumerate(source_paths):
+    source_paths[i] = os.path.abspath(p)
+
+  source_paths.sort()
+
+  results = []
+
+  for i, path in enumerate(source_paths):
+    is_subpath_of_other = False
+    for j, other in enumerate(source_paths):
+      if j != i and osutils.IsSubPath(path, other):
+        is_subpath_of_other = True
+    if not is_subpath_of_other:
+      results.append(path)
+
+  return results
+
+
+def GenerateSourcePathMapping(packages, board):
+  """Returns a map from each package to the source paths it depends on.
+
+  A source path is considered dependency of a package if modifying files in that
+  path might change the content of the resulting package.
+
+  Notes:
+    1) This method errs on the side of returning unneeded dependent paths.
+       i.e: for a given package X, some of its dependency source paths may
+       contain files which doesn't affect the content of X.
+
+       On the other hands, any missing dependency source paths for package X is
+       considered a bug.
+    2) This only outputs the direct dependency source paths for a given package
+       and does not takes include the dependency source paths of dependency
+       packages.
+       e.g: if package A depends on B (DEPEND=B), then results of computing
+       dependency source paths of A doesn't include dependency source paths
+       of B.
+
+  Args:
+    packages: The list of packages CPV names (str)
+    board (str): The name of the board if packages are dependency of board. If
+      the packages are board agnostic, then this should be None.
+
+  Returns:
+    Map from each package to the source path (relative to the repo checkout
+      root, i.e: ~/trunk/ in your cros_sdk) it depends on.
+  """
+
+  # For every package, there are 3 sources of direct dependencies source paths:
+  # 1) The directory of the ebuild file.
+  # 2) The cros workon source dirs (for cros_workon package)
+  # 3) The paths to all eclasses files the ebuild inherits from (if any).
+  results = {}
+
+  packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
+      packages, sysroot=cros_build_lib.GetSysroot(board),
+      error_code_ok=False)
+
+  # 1) Add the directory of ebuild files.
+  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+    results[package] = [
+        os.path.relpath(os.path.dirname(ebuild_path),
+                        constants.CHROOT_SOURCE_ROOT)]
+
+  # 2) The cros workon source paths
+  buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
+  manifest = git.ManifestCheckout.Cached(buildroot)
+  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+    is_workon, _, is_blacklisted, _ = portage_util.EBuild.Classify(ebuild_path)
+    if (not is_workon or
+        # Blacklisted ebuild is pinned to a specific git sha1, so change in
+        # that repo matter to the ebuild.
+        is_blacklisted):
+      continue
+    ebuild = portage_util.EBuild(ebuild_path)
+    workon_subtrees = ebuild.GetSourceInfo(buildroot, manifest).subtrees
+    for path in workon_subtrees:
+      results[package].append(
+          os.path.relpath(path, constants.CHROOT_SOURCE_ROOT))
+
+  # 3) The eclasses which ebuilds inherits from.
+  # For now, we just include all the whole eclass directory.
+  # TODO(crbug.com/917174): for each package, expand the enalysis to output
+  # only the path to eclass files which the packakge depends on.
+  _ECLASS_DIRS = [os.path.join(constants.CHROMIUMOS_OVERLAY_DIR, 'eclass')]
+  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+    use_inherit = False
+    for line in fileinput.input(ebuild_path):
+      if line.startswith('inherit '):
+        use_inherit = True
+    if use_inherit:
+      results[package].extend(_ECLASS_DIRS)
+
+  for p in results:
+    results[p] = NormalizeSourcePaths(results[p])
+
+  return results
+
+
+def GetBuildDependency(board):
+  """Return the build dependency and package -> source path map for |board|.
+
+  Args:
+    board (str): The name of the board whose artifacts are being created.
+
+  Returns:
+    JSON build dependencies report for the given board which includes:
+      - Package level deps graph from portage
+      - Map from each package to the source path
+      (relative to the repo checkout root, i.e: ~/trunk/ in your cros_sdk) it
+      depends on
+  """
+  results = {}
+  results['target_board'] = board
+  results['package_deps'] = {}
+  results['source_path_mapping'] = {}
+
+  board_specific_packages = ['virtual/target-os', 'virtual/target-os-dev',
+                             'virtual/target-os-test']
+  # Since we don’t have a clear mapping from autotests to git repos
+  # and/or portage packages, we assume every board run all autotests.
+  board_specific_packages += ['chromeos-base/autotest-all']
+
+  non_board_specific_packages = ['virtual/target-sdk', 'chromeos-base/chromite']
+
+  board_specific_deps = cros_extract_deps.ExtractDeps(
+      sysroot=cros_build_lib.GetSysroot(board),
+      package_list=board_specific_packages)
+
+  non_board_specific_deps = cros_extract_deps.ExtractDeps(
+      sysroot=cros_build_lib.GetSysroot(None),
+      package_list=non_board_specific_packages)
+
+  results['package_deps'].update(board_specific_deps)
+  results['package_deps'].update(non_board_specific_deps)
+
+  results['source_path_mapping'].update(
+      GenerateSourcePathMapping(board_specific_deps.keys(), board))
+
+  results['source_path_mapping'].update(
+      GenerateSourcePathMapping(non_board_specific_deps.keys(), board=None))
+
+  return results
