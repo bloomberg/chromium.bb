@@ -62,8 +62,6 @@ SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
   SetCalcMode(kCalcModePaced);
 }
 
-DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
-
 SVGAnimateMotionElement::~SVGAnimateMotionElement() = default;
 
 bool SVGAnimateMotionElement::HasValidTarget() {

@@ -65,23 +65,6 @@ void FEImage::Trace(blink::Visitor* visitor) {
   FilterEffect::Trace(visitor);
 }
 
-FEImage* FEImage::CreateWithImage(
-    Filter* filter,
-    scoped_refptr<Image> image,
-    SVGPreserveAspectRatio* preserve_aspect_ratio) {
-  return MakeGarbageCollected<FEImage>(filter, std::move(image),
-                                       preserve_aspect_ratio);
-}
-
-FEImage* FEImage::CreateWithIRIReference(
-    Filter* filter,
-    TreeScope& tree_scope,
-    const String& href,
-    SVGPreserveAspectRatio* preserve_aspect_ratio) {
-  return MakeGarbageCollected<FEImage>(filter, tree_scope, href,
-                                       preserve_aspect_ratio);
-}
-
 static FloatRect GetLayoutObjectRepaintRect(LayoutObject* layout_object) {
   return layout_object->LocalToSVGParentTransform().MapRect(
       layout_object->VisualRectInLocalSVGCoordinates());

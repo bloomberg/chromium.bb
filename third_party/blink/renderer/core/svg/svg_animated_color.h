@@ -43,10 +43,6 @@ class SVGAnimationElement;
 // are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
  public:
-  static SVGColorProperty* Create(const String& color_string) {
-    return MakeGarbageCollected<SVGColorProperty>(color_string);
-  }
-
   explicit SVGColorProperty(const String&);
 
   SVGPropertyBase* CloneForAnimation(const String&) const override;

@@ -66,8 +66,6 @@ void SVGEllipseElement::Trace(blink::Visitor* visitor) {
   SVGGeometryElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGEllipseElement)
-
 Path SVGEllipseElement::AsPath() const {
   Path path;
 

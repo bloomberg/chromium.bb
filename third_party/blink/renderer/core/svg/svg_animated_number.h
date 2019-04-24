@@ -48,20 +48,6 @@ class SVGAnimatedNumber : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumber);
 
  public:
-  static SVGAnimatedNumber* Create(SVGElement* context_element,
-                                   const QualifiedName& attribute_name,
-                                   float initial_number) {
-    SVGNumber* initial_value = SVGNumber::Create(initial_number);
-    return MakeGarbageCollected<SVGAnimatedNumber>(
-        context_element, attribute_name, initial_value);
-  }
-  static SVGAnimatedNumber* Create(SVGElement* context_element,
-                                   const QualifiedName& attribute_name,
-                                   SVGNumber* initial_value) {
-    return MakeGarbageCollected<SVGAnimatedNumber>(
-        context_element, attribute_name, initial_value);
-  }
-
   SVGAnimatedNumber(SVGElement* context_element,
                     const QualifiedName& attribute_name,
                     float initial_number)

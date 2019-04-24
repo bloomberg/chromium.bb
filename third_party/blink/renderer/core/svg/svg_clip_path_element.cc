@@ -41,8 +41,6 @@ void SVGClipPathElement::Trace(blink::Visitor* visitor) {
   SVGGraphicsElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGClipPathElement)
-
 void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kClipPathUnitsAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);

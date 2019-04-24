@@ -49,11 +49,6 @@ namespace blink {
 
 class RepeatEvent final : public Event {
  public:
-  static RepeatEvent* Create(const AtomicString& type, int repeat) {
-    return MakeGarbageCollected<RepeatEvent>(type, Bubbles::kNo,
-                                             Cancelable::kNo, repeat);
-  }
-
   RepeatEvent(const AtomicString& type, int repeat)
       : RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat) {}
   RepeatEvent(const AtomicString& type,

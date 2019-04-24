@@ -172,10 +172,6 @@ class PatternAttributes final {
 class PatternAttributesWrapper
     : public GarbageCollected<PatternAttributesWrapper> {
  public:
-  static PatternAttributesWrapper* Create() {
-    return MakeGarbageCollected<PatternAttributesWrapper>();
-  }
-
   PatternAttributesWrapper() = default;
 
   PatternAttributes& Attributes() { return attributes_; }

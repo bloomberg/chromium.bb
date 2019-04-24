@@ -29,8 +29,6 @@ class SVGDefsElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGDefsElement);
-
   explicit SVGDefsElement(Document&);
 
   bool SupportsFocus() const override { return false; }

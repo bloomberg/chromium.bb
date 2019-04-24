@@ -111,11 +111,6 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tag_name,
       to_property_value_type_(kRegularPropertyValue),
       attribute_type_(kAttributeTypeAuto) {}
 
-SVGAnimateElement* SVGAnimateElement::Create(Document& document) {
-  return MakeGarbageCollected<SVGAnimateElement>(svg_names::kAnimateTag,
-                                                 document);
-}
-
 SVGAnimateElement::~SVGAnimateElement() = default;
 
 bool SVGAnimateElement::IsSVGAnimationAttributeSettingJavaScriptURL(

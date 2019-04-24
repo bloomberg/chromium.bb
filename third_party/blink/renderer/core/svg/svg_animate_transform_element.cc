@@ -33,8 +33,6 @@ SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
     : SVGAnimateElement(svg_names::kAnimateTransformTag, document),
       transform_type_(SVGTransformType::kUnknown) {}
 
-DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
-
 bool SVGAnimateTransformElement::HasValidTarget() {
   if (!SVGAnimateElement::HasValidTarget())
     return false;

@@ -44,12 +44,6 @@ class SVGAnimatedString : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedString);
 
  public:
-  static SVGAnimatedString* Create(SVGElement* context_element,
-                                   const QualifiedName& attribute_name) {
-    return MakeGarbageCollected<SVGAnimatedString>(context_element,
-                                                   attribute_name);
-  }
-
   SVGAnimatedString(SVGElement* context_element,
                     const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGString>(context_element,

@@ -65,8 +65,6 @@ void SVGAElement::Trace(blink::Visitor* visitor) {
   SVGURIReference::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGAElement)
-
 String SVGAElement::title() const {
   // If the xlink:title is set (non-empty string), use it.
   const AtomicString& title = FastGetAttribute(xlink_names::kTitleAttr);

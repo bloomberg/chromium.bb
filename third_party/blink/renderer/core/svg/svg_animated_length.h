@@ -44,16 +44,6 @@ class SVGAnimatedLength : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedLength);
 
  public:
-  static SVGAnimatedLength* Create(
-      SVGElement* context_element,
-      const QualifiedName& attribute_name,
-      SVGLengthMode mode,
-      SVGLength::Initial initial_value,
-      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
-    return MakeGarbageCollected<SVGAnimatedLength>(
-        context_element, attribute_name, mode, initial_value, css_property_id);
-  }
-
   SVGAnimatedLength(SVGElement* context_element,
                     const QualifiedName& attribute_name,
                     SVGLengthMode mode,

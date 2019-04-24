@@ -48,20 +48,6 @@ class SVGAnimatedInteger : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedInteger);
 
  public:
-  static SVGAnimatedInteger* Create(SVGElement* context_element,
-                                    const QualifiedName& attribute_name,
-                                    int initial) {
-    SVGInteger* initial_value = SVGInteger::Create(initial);
-    return MakeGarbageCollected<SVGAnimatedInteger>(
-        context_element, attribute_name, initial_value);
-  }
-  static SVGAnimatedInteger* Create(SVGElement* context_element,
-                                    const QualifiedName& attribute_name,
-                                    SVGInteger* initial_value) {
-    return MakeGarbageCollected<SVGAnimatedInteger>(
-        context_element, attribute_name, initial_value);
-  }
-
   SVGAnimatedInteger(SVGElement* context_element,
                      const QualifiedName& attribute_name,
                      int initial)

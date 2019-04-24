@@ -58,8 +58,6 @@ void SVGCircleElement::Trace(blink::Visitor* visitor) {
   SVGGeometryElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGCircleElement)
-
 Path SVGCircleElement::AsPath() const {
   Path path;
 

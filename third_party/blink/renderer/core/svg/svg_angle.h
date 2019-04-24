@@ -43,10 +43,6 @@ DECLARE_SVG_ENUM_MAP(SVGMarkerOrientType);
 class SVGMarkerOrientEnumeration final
     : public SVGEnumeration<SVGMarkerOrientType> {
  public:
-  static SVGMarkerOrientEnumeration* Create(SVGAngle* angle) {
-    return MakeGarbageCollected<SVGMarkerOrientEnumeration>(angle);
-  }
-
   SVGMarkerOrientEnumeration(SVGAngle*);
   ~SVGMarkerOrientEnumeration() override;
 
@@ -80,8 +76,6 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
     kSvgAngletypeGrad = 4,
     kSvgAngletypeTurn = 5
   };
-
-  static SVGAngle* Create() { return MakeGarbageCollected<SVGAngle>(); }
 
   SVGAngle();
   SVGAngle(SVGAngleType, float, SVGMarkerOrientType);

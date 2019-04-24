@@ -34,7 +34,6 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGAElement);
   SVGAnimatedString* svgTarget() { return svg_target_.Get(); }
 
   explicit SVGAElement(Document&);
