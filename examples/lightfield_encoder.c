@@ -272,6 +272,16 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   v_blocks = (lf_height + lf_blocksize - 1) / lf_blocksize;
 
   reference_image_num = u_blocks * v_blocks;
+  // Set the max gf group length so the references are guarenteed to be in
+  // a different gf group than any of the regular frames. This avoid using
+  // both vbr and constant quality mode in a single group. The number of
+  // references now cannot surpass 17 because of the enforced MAX_GF_INTERVAL of
+  // 16. If it is necessary to exceed this reference frame limit, one will have
+  // to do some additional handling to ensure references are in separate gf
+  // groups from the regular frames.
+  if (aom_codec_control(&codec, AV1E_SET_MAX_GF_INTERVAL,
+                        reference_image_num - 1))
+    die_codec(&codec, "Failed to set max gf interval");
   aom_img_fmt_t ref_fmt = AOM_IMG_FMT_I420;
   if (!CONFIG_LOWBITDEPTH) ref_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
   // Allocate memory with the border so that it can be used as a reference.
