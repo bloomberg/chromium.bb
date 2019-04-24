@@ -796,13 +796,13 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     return nullptr;
   }
 
-  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
+  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
     resolution_type =
         ResolveConflict(*update, entity, entity_changes, storage_key_to_clear);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
-                              ConflictResolution::TYPE_SIZE);
+                              ConflictResolution::kTypeSize);
   } else {
     // Handle simple create/delete/update.
     base::Optional<EntityChange::ChangeType> change_type;
@@ -852,54 +852,51 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   return entity;
 }
 
-ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
+ConflictResolution ClientTagBasedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntity* entity,
     EntityChangeList* changes,
     std::string* storage_key_to_clear) {
   const EntityData& remote_data = *update.entity;
 
-  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
-  std::unique_ptr<EntityData> new_data;
+  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
 
   // Determine the type of resolution.
   if (entity->MatchesData(remote_data)) {
     // The changes are identical so there isn't a real conflict.
-    resolution_type = ConflictResolution::CHANGES_MATCH;
+    resolution_type = ConflictResolution::kChangesMatch;
   } else if (entity->metadata().is_deleted()) {
     // Local tombstone vs remote update (non-deletion). Should be undeleted.
-    resolution_type = ConflictResolution::USE_REMOTE;
+    resolution_type = ConflictResolution::kUseRemote;
   } else if (entity->MatchesOwnBaseData()) {
     // If there is no real local change, then the entity must be unsynced due to
     // a pending local re-encryption request. In this case, the remote data
     // should win.
-    resolution_type = ConflictResolution::IGNORE_LOCAL_ENCRYPTION;
+    resolution_type = ConflictResolution::kIgnoreLocalEncryption;
   } else if (entity->MatchesBaseData(remote_data)) {
     // The remote data isn't actually changing from the last remote data that
     // was seen, so it must have been a re-encryption and can be ignored.
-    resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
+    resolution_type = ConflictResolution::kIgnoreRemoteEncryption;
   } else {
     // There's a real data conflict here; let the bridge resolve it.
-    ConflictResolution resolution =
+    resolution_type =
         bridge_->ResolveConflict(entity->storage_key(), remote_data);
-    resolution_type = resolution.type();
-    new_data = resolution.ExtractData();
   }
 
   // Apply the resolution.
   switch (resolution_type) {
-    case ConflictResolution::CHANGES_MATCH:
+    case ConflictResolution::kChangesMatch:
       // Record the update and squash the pending commit.
       entity->RecordForcedUpdate(update);
       break;
-    case ConflictResolution::USE_LOCAL:
-    case ConflictResolution::IGNORE_REMOTE_ENCRYPTION:
+    case ConflictResolution::kUseLocal:
+    case ConflictResolution::kIgnoreRemoteEncryption:
       // Record that we received the update from the server but leave the
       // pending commit intact.
       entity->RecordIgnoredUpdate(update);
       break;
-    case ConflictResolution::USE_REMOTE:
-    case ConflictResolution::IGNORE_LOCAL_ENCRYPTION:
+    case ConflictResolution::kUseRemote:
+    case ConflictResolution::kIgnoreLocalEncryption:
       // Update client data to match server.
       if (update.entity->is_deleted()) {
         DCHECK(!entity->metadata().is_deleted());
@@ -920,21 +917,11 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
       // Squash the pending commit.
       entity->RecordForcedUpdate(update);
       break;
-    case ConflictResolution::USE_NEW:
-      DCHECK(!entity->metadata().is_deleted());
-      // Record that we received the update.
-      entity->RecordIgnoredUpdate(update);
-      // Make a new pending commit to update the server.
-      entity->MakeLocalChange(std::move(new_data));
-      // Update the client with the new entity.
-      changes->push_back(EntityChange::CreateUpdate(
-          entity->storage_key(), entity->commit_data().Clone()));
-      break;
-    case ConflictResolution::TYPE_SIZE:
+    case ConflictResolution::kUseNewDEPRECATED:
+    case ConflictResolution::kTypeSize:
       NOTREACHED();
       break;
   }
-  DCHECK(!new_data);
 
   return resolution_type;
 }

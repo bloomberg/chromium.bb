@@ -1346,7 +1346,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   InitializeToReadyState();
   // WriteAndAck entity to get id from the server.
   WriteItemAndAck(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
 
   // Change value locally and at the same time simulate conflicting update from
   // server.
@@ -1375,7 +1375,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   // The update from the server should be mostly ignored because local wins, but
   // the server ID should be updated.
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3));
   OnCommitDataLoaded();
   // In this test setup, the processor's nudge for commit immediately pulls
@@ -1480,7 +1480,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteVersion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
 
   // Updated client data and metadata; no new commit request.
@@ -1495,7 +1495,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteDeletion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   worker()->TombstoneFromServer(kHash1);
 
   // Updated client data and metadata; no new commit request.
@@ -1503,23 +1503,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, db()->metadata_count());
   EXPECT_EQ(2U, db()->data_change_count());
   EXPECT_EQ(2U, db()->metadata_change_count());
-}
-
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldResolveConflictToNewVersion) {
-  InitializeToReadyState();
-  bridge()->WriteItem(kKey1, kValue1);
-  bridge()->SetConflictResolution(
-      ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
-
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
-  EXPECT_EQ(2U, db()->data_change_count());
-  EXPECT_EQ(kValue3, db()->GetValue(kKey1));
-  EXPECT_EQ(2U, db()->metadata_change_count());
-  EXPECT_EQ(1, db()->GetMetadata(kKey1).server_version());
-  worker()->VerifyPendingCommits({{kHash1}, {kHash1}});
-  worker()->VerifyNthPendingCommit(1, {kHash1},
-                                   {GenerateSpecifics(kKey1, kValue3)});
 }
 
 // Test proper handling of disconnect and reconnect.
@@ -1710,7 +1693,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReencryptUpdatesWithNewKey) {
   worker()->VerifyPendingCommits({{kHash1, kHash2}, {kHash4}});
 }
 
-// Test that re-encrypting enqueues the right data for USE_LOCAL conflicts.
+// Test that re-encrypting enqueues the right data for kUseLocal conflicts.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToLocalDuringReencryption) {
   InitializeToReadyState();
@@ -1722,7 +1705,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue2);
   worker()->VerifyPendingCommits({{kHash1}, {kHash1}});
 
-  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  bridge()->SetConflictResolution(ConflictResolution::kUseLocal);
   // Unencrypted update needs to be re-commited with key k1.
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3), 1, "");
   OnCommitDataLoaded();
@@ -1733,14 +1716,14 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(kValue2, db()->GetValue(kKey1));
 }
 
-// Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
+// Test that re-encrypting enqueues the right data for kUseRemote conflicts.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteDuringReencryption) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
   bridge()->WriteItem(kKey1, kValue1);
 
-  bridge()->SetConflictResolution(ConflictResolution::UseRemote());
+  bridge()->SetConflictResolution(ConflictResolution::kUseRemote);
   // Unencrypted update needs to be re-commited with key k1.
   EntitySpecifics specifics = GenerateSpecifics(kKey1, kValue2);
   worker()->UpdateFromServer(kHash1, specifics, 1, "");
@@ -1750,25 +1733,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->VerifyNthPendingCommit(1, {kHash1}, {specifics});
   EXPECT_EQ(kValue2, db()->GetValue(kKey1));
-}
-
-// Test that re-encrypting enqueues the right data for USE_NEW conflicts.
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldResolveConflictToNewDuringReencryption) {
-  InitializeToReadyState();
-  worker()->UpdateWithEncryptionKey("k1");
-  bridge()->WriteItem(kKey1, kValue1);
-
-  bridge()->SetConflictResolution(
-      ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
-  // Unencrypted update needs to be re-commited with key k1.
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2), 1, "");
-
-  // Ensure the re-commit has the correct value.
-  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
-  worker()->VerifyNthPendingCommit(1, {kHash1},
-                                   {GenerateSpecifics(kKey1, kValue3)});
-  EXPECT_EQ(kValue3, db()->GetValue(kKey1));
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

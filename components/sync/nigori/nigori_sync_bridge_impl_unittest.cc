@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "components/sync/base/fake_encryptor.h"
+#include "components/sync/model/entity_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

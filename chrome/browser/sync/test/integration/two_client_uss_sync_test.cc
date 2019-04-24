@@ -43,7 +43,6 @@ const char kKey4[] = "key4";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
-const char kValue4[] = "value4";
 const char* kPassphrase = "12345";
 
 // A ChromeSyncClient that provides a ModelTypeControllerDelegate for
@@ -339,10 +338,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(SetupSync());
   TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
   TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
-  model0->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue4)));
-  model1->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue4)));
+  model0->SetConflictResolution(ConflictResolution::kUseRemote);
+  model1->SetConflictResolution(ConflictResolution::kUseRemote);
 
   // Write initial value and wait for it to sync to the other client.
   model0->WriteItem(kKey1, kValue1);
@@ -363,14 +360,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 2).Wait());
 
   // Trigger sync cycle on client 0 by delivering network change notification.
-  // Wait for it to resolve conflicting value to kResolutionValue by the custom
-  // conflict resolution logic in TestModelTypeSyncBridge.
+  // Wait for it to resolve conflicting value using the remote value coming from
+  // the server.
   net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-  ASSERT_TRUE(DataChecker(model0, kKey1, kValue4).Wait());
-
-  // Wait for client 1 to settle on resolved value.
-  ASSERT_TRUE(DataChecker(model1, kKey1, kValue4).Wait());
+  ASSERT_TRUE(DataChecker(model0, kKey1, kValue3).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {

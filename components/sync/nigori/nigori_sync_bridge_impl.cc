@@ -205,7 +205,7 @@ ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
     const EntityData& remote_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
-  return ConflictResolution::UseLocal();
+  return ConflictResolution::kUseLocal;
 }
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {

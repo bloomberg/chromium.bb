@@ -843,7 +843,7 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   EXPECT_THAT(tracker.GetEntityForSyncId(kId), IsNull());
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::CHANGES_MATCH, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -933,7 +933,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::CHANGES_MATCH, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -987,7 +987,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::USE_LOCAL, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kUseLocal, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1051,7 +1051,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::USE_REMOTE, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kUseRemote, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1101,7 +1101,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::CHANGES_MATCH, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1158,7 +1158,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::USE_REMOTE, /*count=*/1);
+      /*sample=*/syncer::ConflictResolution::kUseRemote, /*count=*/1);
 }
 
 }  // namespace

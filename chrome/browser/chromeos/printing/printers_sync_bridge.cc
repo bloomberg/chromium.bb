@@ -289,7 +289,7 @@ ConflictResolution PrintersSyncBridge::ResolveConflict(
   // If the local printer doesn't exist, it must have been deleted. In this
   // case, use the remote one.
   if (iter == all_data_.end()) {
-    return ConflictResolution::UseRemote();
+    return ConflictResolution::kUseRemote;
   }
   const sync_pb::PrinterSpecifics& local_printer = *iter->second;
 
@@ -297,10 +297,10 @@ ConflictResolution PrintersSyncBridge::ResolveConflict(
       remote_data.specifics.printer();
 
   if (local_printer.updated_timestamp() > remote_printer.updated_timestamp()) {
-    return ConflictResolution::UseLocal();
+    return ConflictResolution::kUseLocal;
   }
 
-  return ConflictResolution::UseRemote();
+  return ConflictResolution::kUseRemote;
 }
 
 void PrintersSyncBridge::AddPrinter(

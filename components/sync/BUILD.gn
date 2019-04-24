@@ -227,7 +227,6 @@ jumbo_static_library("rest_of_sync") {
     "model/blocking_model_type_store.h",
     "model/change_processor.cc",
     "model/change_processor.h",
-    "model/conflict_resolution.cc",
     "model/conflict_resolution.h",
     "model/data_batch.h",
     "model/data_type_activation_request.cc",

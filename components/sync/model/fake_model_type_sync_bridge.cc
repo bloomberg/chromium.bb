@@ -361,8 +361,7 @@ bool FakeModelTypeSyncBridge::SupportsGetStorageKey() const {
 ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
     const std::string& storage_key,
     const EntityData& remote_data) const {
-  DCHECK(conflict_resolution_);
-  return std::move(*conflict_resolution_);
+  return conflict_resolution_;
 }
 
 void FakeModelTypeSyncBridge::ApplyStopSyncChanges(
@@ -373,8 +372,7 @@ void FakeModelTypeSyncBridge::ApplyStopSyncChanges(
 
 void FakeModelTypeSyncBridge::SetConflictResolution(
     ConflictResolution resolution) {
-  conflict_resolution_ =
-      std::make_unique<ConflictResolution>(std::move(resolution));
+  conflict_resolution_ = resolution;
 }
 
 void FakeModelTypeSyncBridge::ErrorOnNextCall() {

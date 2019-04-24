@@ -140,10 +140,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                  std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution::Type ResolveConflict(const UpdateResponseData& update,
-                                           ProcessorEntity* entity,
-                                           EntityChangeList* changes,
-                                           std::string* storage_key_to_clear);
+  ConflictResolution ResolveConflict(const UpdateResponseData& update,
+                                     ProcessorEntity* entity,
+                                     EntityChangeList* changes,
+                                     std::string* storage_key_to_clear);
 
   // Recommit all entities for encryption except those in |already_updated|.
   void RecommitAllForEncryption(
