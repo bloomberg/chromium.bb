@@ -1,0 +1,25 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The messages in this file comprise the DBus/Proto interface for
+// the new set of Cryptohome interface after the refactor, and the
+// associated messages that's used by those interfaces.
+// All input parameter to a call is named with a "Request" suffix,
+// and all output parameter to a call is named with a "Reply" suffix.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package user_data_auth;
+
+import "key.proto";
+
+///////////////////////////////////////////////////////////////////////////////
+// Messages that's used by the actual request/reply goes below
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// Actual request/reply goes below
+///////////////////////////////////////////////////////////////////////////////

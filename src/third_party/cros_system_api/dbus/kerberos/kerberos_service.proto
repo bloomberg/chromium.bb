@@ -1,0 +1,101 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package kerberos;
+
+// D-Bus call error codes. These values are written to logs. New enum values can
+// be added, but existing enums must never be renumbered or deleted and reused.
+enum ErrorType {
+  // Everything is A-OK!
+  ERROR_NONE = 0;
+  // Unspecified error.
+  ERROR_UNKNOWN = 1;
+  // Unspecified D-Bus error.
+  ERROR_DBUS_FAILURE = 2;
+  // General network problem.
+  ERROR_NETWORK_PROBLEM = 3;
+  // KRB5 error that has no equivalent in this enum. See logs for original code.
+  ERROR_UNKNOWN_KRB5_ERROR = 4;
+  // Auth failed, of bad principal while getting Kerberos credentials.
+  ERROR_BAD_PRINCIPAL = 5;
+  // Auth failed, bad password while getting Kerberos credentials.
+  ERROR_BAD_PASSWORD = 6;
+  // Auth failed, password expired while getting Kerberos credentials.
+  ERROR_PASSWORD_EXPIRED = 7;
+  // Auth failed to change password, password was rejected.
+  ERROR_PASSWORD_REJECTED = 8;
+  // Kerberos credentials cache not found.
+  ERROR_NO_CREDENTIALS_CACHE_FOUND = 9;
+  // Kerberos ticket expired while renewing credentials.
+  ERROR_KERBEROS_TICKET_EXPIRED = 10;
+  // KDC does not support the encryption enforced in krb5.conf.
+  ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE = 11;
+  // Kinit or smbclient failed to contact Key Distribution Center.
+  ERROR_CONTACTING_KDC_FAILED = 12;
+  // Parsing a request message failed.
+  ERROR_PARSE_REQUEST_FAILED = 13;
+  // Some local IO operation failed.
+  ERROR_LOCAL_IO = 14;
+  // Requested principal name not known to the account manager.
+  ERROR_UNKNOWN_PRINCIPAL_NAME = 15;
+  // Adding account failed since the principal name is already known.
+  ERROR_DUPLICATE_PRINCIPAL_NAME = 16;
+  // Should be the last. Increase when adding new enum values.
+  ERROR_COUNT = 17;
+}
+
+// Message sent to Chrome by authpolicyd as a response to a successful
+// GetUserKerberosFiles call.
+message KerberosFiles {
+  // Kerberos credential cache.
+  optional bytes krb5cc = 1;
+  // Kerberos configuration file.
+  optional bytes krb5conf = 2;
+}
+
+message AddAccountRequest {
+  // Principal name of the account to add (user@REALM.COM).
+  optional string principal_name = 1;
+}
+
+message AddAccountResponse {
+  // Response status.
+  optional ErrorType error = 1;
+}
+
+message RemoveAccountRequest {
+  // Principal name of the account to remove (user@REALM.COM).
+  optional string principal_name = 1;
+}
+
+message RemoveAccountResponse {
+  // Response status.
+  optional ErrorType error = 1;
+}
+
+message AcquireKerberosTgtRequest {
+  // Principal name of the account to acquire a ticket for (user@REALM.COM).
+  optional string principal_name = 1;
+}
+
+message AcquireKerberosTgtResponse {
+  // Response status.
+  optional ErrorType error = 1;
+}
+
+message GetKerberosFilesRequest {
+  // Principal name of the account to get files from (user@REALM.COM).
+  optional string principal_name = 1;
+}
+
+message GetKerberosFilesResponse {
+  // Response status.
+  optional ErrorType error = 1;
+  // Retrieved Kerberos files.
+  optional KerberosFiles files = 2;
+}

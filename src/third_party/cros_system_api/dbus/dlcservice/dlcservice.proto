@@ -1,0 +1,39 @@
+// Copyright 2018 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package dlcservice;
+
+// This contains info Update Engine needs to update a DLC (Downloadable
+// Content) module.
+// https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice
+message DlcModuleInfo {
+  // ID of the DLC module.
+  // This has to be set.
+  // dlc_id is used to contruct the DLC module install path and Omaha App ID.
+  // Omaha App ID is used to query update from Omaha server. Omaha responds
+  // with payload that corresponds to the App ID based on a preset rule.
+  // Omaha respponds with error if the provided App ID does not exist on
+  // Omaha.
+  string dlc_id = 1;
+}
+
+// This is the message returned from DLC Service via GetInstalled D-Bus API.
+//
+// The general flow is as follows:
+// 1. Update Engine queries DLC Service via GetInstalled D-Bus API (restricted
+//    to be accessible by update_engine only).
+// 2. Dlc Service parses stateful partition for a list of installed DLC
+//    modules.
+// 3. Dlc Service constructs DlcModuleList based on installed DLC modules and
+//    returns the message to Update Engine via GetInstalled D-Bus API.
+// 4. Update Engine receives the DlcModuleList message and resumes update
+//    operation.
+message DlcModuleList {
+  // A list of the installed DLC modules.
+  repeated DlcModuleInfo dlc_module_infos = 1;
+}
