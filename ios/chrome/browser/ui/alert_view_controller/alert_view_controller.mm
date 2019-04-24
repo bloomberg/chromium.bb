@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 
+#import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,12 +38,21 @@ constexpr CGFloat kMessageInsetTop = 4;
 constexpr CGFloat kMessageInsetLeading = 20;
 constexpr CGFloat kMessageInsetBottom = 20;
 constexpr CGFloat kMessageInsetTrailing = 20;
+constexpr CGFloat kButtonInsetTop = 20;
+constexpr CGFloat kButtonInsetLeading = 20;
+constexpr CGFloat kButtonInsetBottom = 20;
+constexpr CGFloat kButtonInsetTrailing = 20;
+
+// Colors for the action buttons.
+constexpr int kButtonTextDefaultColor = 0x0579ff;
+constexpr int kButtonTextDestructiveColor = 0xdf322f;
 
 }  // namespace
 
 @interface AlertAction ()
 
 @property(nonatomic, readwrite) NSString* title;
+@property(nonatomic, readwrite) UIAlertActionStyle style;
 
 // The unique identifier for the actions created.
 @property(nonatomic) NSInteger uniqueIdentifier;
@@ -54,12 +65,14 @@ constexpr CGFloat kMessageInsetTrailing = 20;
 @implementation AlertAction
 
 + (instancetype)actionWithTitle:(NSString*)title
+                          style:(UIAlertActionStyle)style
                         handler:(void (^)(AlertAction* action))handler {
   AlertAction* action = [[AlertAction alloc] init];
   static NSInteger actionIdentifier = 0;
   action.uniqueIdentifier = ++actionIdentifier;
   action.title = title;
   action.handler = handler;
+  action.style = style;
   return action;
 }
 
@@ -102,6 +115,7 @@ constexpr CGFloat kMessageInsetTrailing = 20;
       [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
 
   self.contentView = [[UIView alloc] init];
+  self.contentView.clipsToBounds = YES;
   self.contentView.backgroundColor = [UIColor whiteColor];
   self.contentView.layer.cornerRadius = kCornerRadius;
   self.contentView.layer.shadowOffset =
@@ -194,23 +208,53 @@ constexpr CGFloat kMessageInsetTrailing = 20;
 
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
   for (AlertAction* action in self.actions) {
-    UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+    GrayHighlightButton* button = [[GrayHighlightButton alloc] init];
+    UIFont* font = nil;
+    UIColor* textColor = nil;
+    if (action.style == UIAlertActionStyleDefault) {
+      font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+      textColor = UIColorFromRGB(kButtonTextDefaultColor);
+    } else if (action.style == UIAlertActionStyleCancel) {
+      font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+      textColor = UIColorFromRGB(kButtonTextDefaultColor);
+    } else {  // Style is UIAlertActionStyleDestructive
+      font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+      textColor = UIColorFromRGB(kButtonTextDestructiveColor);
+    }
+    [button.titleLabel setFont:font];
+    [button setTitleColor:textColor forState:UIControlStateNormal];
     [button setTitle:action.title forState:UIControlStateNormal];
+
     button.contentHorizontalAlignment =
         UIControlContentHorizontalAlignmentCenter;
     [button addTarget:self
                   action:@selector(didSelectActionForButton:)
         forControlEvents:UIControlEventTouchUpInside];
     button.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:button];
+    button.contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading,
+                         kButtonInsetBottom, kButtonInsetTrailing);
 
-    [NSLayoutConstraint activateConstraints:@[
-      [button.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor],
-      [button.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
-    ]];
-    [stackView addArrangedSubview:button];
+    UIView* hairline = [[UIView alloc] init];
+    hairline.backgroundColor = [UIColor lightGrayColor];
+    hairline.translatesAutoresizingMaskIntoConstraints = NO;
+
+    UIView* buttonContainer = [[UIView alloc] init];
+    [buttonContainer addSubview:button];
+    [buttonContainer addSubview:hairline];
+    buttonContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    [stackView addArrangedSubview:buttonContainer];
+
+    CGFloat pixelHeight = 1.0 / [UIScreen mainScreen].scale;
+    [hairline.heightAnchor constraintEqualToConstant:pixelHeight].active = YES;
+    AddSameConstraintsToSides(
+        hairline, buttonContainer,
+        (LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading));
+
+    AddSameConstraints(button, buttonContainer);
+    AddSameConstraintsToSides(buttonContainer, self.contentView,
+                              LayoutSides::kTrailing | LayoutSides::kLeading);
+
     button.tag = action.uniqueIdentifier;
     self.buttonAlertActionsDictionary[@(action.uniqueIdentifier)] = action;
   }

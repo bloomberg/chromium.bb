@@ -12,6 +12,7 @@
 
 @interface SCAlertCoordinator ()
 @property(nonatomic, strong) UIViewController* containerViewController;
+@property(nonatomic, strong) UISwitch* blockAlertSwitch;
 @end
 
 @implementation SCAlertCoordinator
@@ -50,17 +51,31 @@
                  action:@selector(showHTTPAuth)
        forControlEvents:UIControlEventTouchUpInside];
 
-  UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    alertButton, promptButton, confirmButton, authButton
+  UILabel* blockAlertsLabel = [[UILabel alloc] init];
+  blockAlertsLabel.text = @"Show \"Block Alerts Button\"";
+
+  self.blockAlertSwitch = [[UISwitch alloc] init];
+
+  UIStackView* switchStack = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ self.blockAlertSwitch, blockAlertsLabel ]];
+  switchStack.axis = UILayoutConstraintAxisHorizontal;
+  switchStack.spacing = 16;
+  switchStack.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UIStackView* verticalStack = [[UIStackView alloc] initWithArrangedSubviews:@[
+    alertButton, promptButton, confirmButton, authButton, switchStack
   ]];
-  stack.axis = UILayoutConstraintAxisVertical;
-  stack.spacing = 30;
-  stack.translatesAutoresizingMaskIntoConstraints = NO;
-  [containerView addSubview:stack];
+  verticalStack.axis = UILayoutConstraintAxisVertical;
+  verticalStack.spacing = 30;
+  verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
+  verticalStack.distribution = UIStackViewDistributionFillEqually;
+  [containerView addSubview:verticalStack];
 
   [NSLayoutConstraint activateConstraints:@[
-    [stack.centerXAnchor constraintEqualToAnchor:containerView.centerXAnchor],
-    [stack.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
+    [verticalStack.centerXAnchor
+        constraintEqualToAnchor:containerView.centerXAnchor],
+    [verticalStack.centerYAnchor
+        constraintEqualToAnchor:containerView.centerYAnchor],
   ]];
   [self.baseViewController pushViewController:self.containerViewController
                                      animated:YES];
@@ -73,6 +88,7 @@
   __weak __typeof(self) weakSelf = self;
   AlertAction* action =
       [AlertAction actionWithTitle:@"OK"
+                             style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -92,6 +108,7 @@
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
+                             style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -100,6 +117,7 @@
   [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
+                             style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -116,6 +134,7 @@
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
+                             style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -124,6 +143,7 @@
   [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
+                             style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -148,6 +168,7 @@
   __weak __typeof(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"Sign In"
+                             style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -156,6 +177,7 @@
   [alert addAction:OKAction];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
+                             style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
                              [weakSelf.containerViewController
                                  dismissViewControllerAnimated:YES
@@ -166,6 +188,18 @@
 }
 
 - (void)presentAlertViewController:(AlertViewController*)alertViewController {
+  if (self.blockAlertSwitch.isOn) {
+    __weak __typeof(self) weakSelf = self;
+    AlertAction* blockAction =
+        [AlertAction actionWithTitle:@"Block Dialogs"
+                               style:UIAlertActionStyleDestructive
+                             handler:^(AlertAction* action) {
+                               [weakSelf.containerViewController
+                                   dismissViewControllerAnimated:YES
+                                                      completion:nil];
+                             }];
+    [alertViewController addAction:blockAction];
+  }
   alertViewController.modalTransitionStyle =
       UIModalTransitionStyleCrossDissolve;
   alertViewController.modalPresentationStyle =

@@ -15,8 +15,12 @@
 // The title for this action.
 @property(nonatomic, readonly) NSString* title;
 
+// The style for this action. Matches UIAlertAction style.
+@property(nonatomic, readonly) UIAlertActionStyle style;
+
 // Initializes an action with |title| and |handler|.
 + (instancetype)actionWithTitle:(NSString*)title
+                          style:(UIAlertActionStyle)style
                         handler:(void (^)(AlertAction* action))handler;
 
 @end
