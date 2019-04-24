@@ -27,6 +27,7 @@
 #include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
+#include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chromeos/services/cellular_setup/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
@@ -171,6 +172,7 @@ GetChromePackagedServiceManifests() {
       GetAshPrefConnectorManifest(),
       GetCupsIppParserManifest(),
       chromeos::cellular_setup::GetManifest(),
+      chromeos::printing::GetCupsProxyManifest(),
       chromeos::ime::GetManifest(),
       chromeos::secure_channel::GetManifest(),
       ui::GetAXHostManifest(),

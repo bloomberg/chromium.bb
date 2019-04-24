@@ -405,6 +405,8 @@
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/services/cups_proxy/cups_proxy_service.h"
+#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -598,6 +600,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
+// TODO(crbug.com/948800): Doesn't match BUILD.gn of use_cups && is_chromeos.
 #include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
 #endif
 
@@ -4030,6 +4033,12 @@ void ChromeContentBrowserClient::HandleServiceRequest(
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(
+            std::move(request)));
+  }
+
+  if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<chromeos::printing::CupsProxyService>(
             std::move(request)));
   }
 

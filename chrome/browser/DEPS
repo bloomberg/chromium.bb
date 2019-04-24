@@ -10,6 +10,7 @@ include_rules = [
   "+chrome/notification_helper/notification_helper_constants.h",
   "+chrome/services/app_service/public/mojom",
   "+chrome/services/cups_ipp_parser/public",
+  "+chrome/services/cups_proxy",
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
