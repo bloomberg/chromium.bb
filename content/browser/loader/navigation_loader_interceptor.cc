@@ -4,7 +4,7 @@
 
 #include "content/browser/loader/navigation_loader_interceptor.h"
 
-#include "content/common/navigation_subresource_loader_params.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 
 namespace content {
 

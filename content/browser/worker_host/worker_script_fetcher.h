@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "content/common/navigation_subresource_loader_params.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
