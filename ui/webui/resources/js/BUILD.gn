@@ -56,7 +56,6 @@ js_library("dark_mode") {
   deps = [
     ":cr",
   ]
-  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("event_tracker") {

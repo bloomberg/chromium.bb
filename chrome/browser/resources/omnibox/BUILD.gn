@@ -29,4 +29,5 @@ js_library("omnibox_output") {
   deps = [
     "//ui/webui/resources/js:util",
   ]
+  externs_list = [ "$externs_path/pending.js" ]
 }
