@@ -464,5 +464,33 @@ TEST_F(NGLayoutResultCachingTest, MissPushedByFloats2) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitDifferentRareData) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Same absolute fixed constraints.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .container { position: relative; width: 100px; height: 100px; }
+      .abs { position: absolute; width: 100px; height: 100px; top: 0; left: 0; }
+    </style>
+    <div class="container">
+      <div id="test" class="abs"></div>
+    </div>
+    <div class="container" style="width: 200px; height: 200px;">
+      <div id="src" class="abs"></div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
+
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result =
+      test->CachedLayoutResult(space, nullptr);
+
+  EXPECT_NE(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

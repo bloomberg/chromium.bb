@@ -70,10 +70,9 @@ class CORE_EXPORT NGConstraintSpace final {
     kAnonymous = 1 << 8,
     kUseFirstLineStyle = 1 << 9,
     kForceClearance = 1 << 10,
-    kHasRareData = 1 << 11,
 
     // Size of bitfield used to store the flags.
-    kNumberOfConstraintSpaceFlags = 12
+    kNumberOfConstraintSpaceFlags = 11
   };
 
   // To ensure that the bfc_offset_, rare_data_ union doesn't get polluted,
@@ -550,12 +549,11 @@ class CORE_EXPORT NGConstraintSpace final {
     DISALLOW_NEW();
 
    public:
-    // We explicitly define a default constructor to ensure the kHasRareData
-    // bitfield doesn't accidently get set.
     Bitfields() : Bitfields(WritingMode::kHorizontalTb) {}
 
     explicit Bitfields(WritingMode writing_mode)
-        : table_cell_child_layout_phase(static_cast<unsigned>(
+        : has_rare_data(false),
+          table_cell_child_layout_phase(static_cast<unsigned>(
               NGTableCellChildLayoutPhase::kNotTableCellChild)),
           adjoining_floats(static_cast<unsigned>(kFloatTypeNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
@@ -573,6 +571,7 @@ class CORE_EXPORT NGConstraintSpace final {
              baseline_requests == other.baseline_requests;
     }
 
+    unsigned has_rare_data : 1;
     unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
     unsigned adjoining_floats : 2;               // NGFloatTypes
     unsigned writing_mode : 3;
@@ -589,12 +588,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return bitfields_.flags & static_cast<unsigned>(mask);
   }
 
-  inline bool HasRareData() const { return HasFlag(kHasRareData); }
+  inline bool HasRareData() const { return bitfields_.has_rare_data; }
 
   RareData* EnsureRareData() {
     if (!HasRareData()) {
       rare_data_ = new RareData(bfc_offset_);
-      bitfields_.flags |= kHasRareData;
+      bitfields_.has_rare_data = true;
     }
 
     return rare_data_;
@@ -603,7 +602,7 @@ class CORE_EXPORT NGConstraintSpace final {
   NGLogicalSize available_size_;
 
   // To save a little space, we union these two fields. rare_data_ is valid if
-  // the kHasRareData bitfield is set, otherwise bfc_offset_ is valid.
+  // the |has_rare_data| bit is set, otherwise bfc_offset_ is valid.
   union {
     NGBfcOffset bfc_offset_;
     RareData* rare_data_;
