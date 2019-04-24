@@ -31,6 +31,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace chromeos {
 
 class AudioDevicesPrefHandler;
@@ -98,6 +102,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(
+      service_manager::Connector* connector,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
   // Sets the global instance for testing.
@@ -278,6 +283,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
  protected:
   explicit CrasAudioHandler(
+      service_manager::Connector* connector,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
   ~CrasAudioHandler() override;
 
@@ -428,6 +434,9 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // among the current |audio_devices_|.
   bool GetActiveDeviceFromUserPref(bool is_input, AudioDevice* device);
 
+  // Pauses all active streams.
+  void PauseAllStreams();
+
   // Handles either input or output device changes, specified by |is_input|.
   void HandleAudioDeviceChange(bool is_input,
                                const AudioDevicePriorityQueue& devices_pq,
@@ -497,6 +506,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
+
+  service_manager::Connector* const connector_;
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver>::Unchecked observers_;

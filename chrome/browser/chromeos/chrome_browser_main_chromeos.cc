@@ -641,6 +641,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   system_token_certdb_initializer_->Initialize();
 
   CrasAudioHandler::Initialize(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(

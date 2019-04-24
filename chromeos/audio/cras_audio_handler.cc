@@ -21,6 +21,9 @@
 #include "base/system/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using std::max;
 using std::min;
@@ -95,8 +98,9 @@ void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
 
 // static
 void CrasAudioHandler::Initialize(
+    service_manager::Connector* connector,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler) {
-  g_cras_audio_handler = new CrasAudioHandler(audio_pref_handler);
+  g_cras_audio_handler = new CrasAudioHandler(connector, audio_pref_handler);
 }
 
 // static
@@ -104,7 +108,8 @@ void CrasAudioHandler::InitializeForTesting() {
   // Make sure CrasAudioClient has been initialized.
   if (!CrasAudioClient::Get())
     CrasAudioClient::InitializeFake();
-  CrasAudioHandler::Initialize(new AudioDevicesPrefHandlerStub());
+  CrasAudioHandler::Initialize(/*connector=*/nullptr,
+                               new AudioDevicesPrefHandlerStub());
 }
 
 // static
@@ -633,8 +638,9 @@ void CrasAudioHandler::SetActiveHDMIOutoutRediscoveringIfNecessary(
 }
 
 CrasAudioHandler::CrasAudioHandler(
+    service_manager::Connector* connector,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
-    : audio_pref_handler_(audio_pref_handler) {
+    : connector_(connector), audio_pref_handler_(audio_pref_handler) {
   DCHECK(audio_pref_handler);
   DCHECK(CrasAudioClient::Get());
   CrasAudioClient::Get()->AddObserver(this);
@@ -1154,6 +1160,17 @@ bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
   return found_active_device;
 }
 
+void CrasAudioHandler::PauseAllStreams() {
+  if (!connector_) {
+    LOG(ERROR) << "Failed to get connector";
+    return;
+  }
+  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
+  connector_->BindInterface(media_session::mojom::kServiceName,
+                            mojo::MakeRequest(&controller_manager_ptr));
+  controller_manager_ptr->SuspendAllSessions();
+}
+
 void CrasAudioHandler::HandleNonHotplugNodesChange(
     bool is_input,
     const AudioDevicePriorityQueue& hotplug_nodes,
@@ -1175,8 +1192,14 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
       }
 
       if (active_device_removed) {
+        // Pauses active streams when the active output device is
+        // removed.
+        if (!is_input)
+          PauseAllStreams();
+
         // Unplugged the current active device.
         SwitchToTopPriorityDevice(is_input);
+
         return;
       }
     }
