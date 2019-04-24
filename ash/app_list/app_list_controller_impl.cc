@@ -841,6 +841,13 @@ void AppListControllerImpl::OpenSearchResult(
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
                              last_raw_query_.size());
+    if (IsTabletMode()) {
+      UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInTablet,
+                               last_raw_query_.size());
+    } else {
+      UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLengthInClamshell,
+                               last_raw_query_.size());
+    }
 
     if (result->distance_from_origin() >= 0) {
       UMA_HISTOGRAM_COUNTS_100(app_list::kSearchResultDistanceFromOrigin,
