@@ -7,6 +7,8 @@
 
 // The type of download rename dialog that should by shown by Android.
 // A Java counterpart will be generated for this enum.
+// Please treat this list as append only and keep it in sync with
+// Android.Download.Rename.Result in enums.xml.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum class RenameResult {
   SUCCESS = 0,                // Rename filename successfully

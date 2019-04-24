@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.download.home.rename;
 
 import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordRenameAction;
+import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordRenameResult;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
@@ -162,6 +163,7 @@ public class RenameDialogManager {
                                 : RenameDialogState.RENAME_DIALOG_COMMIT_ERROR,
                         DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
             }
+            recordRenameResult(result);
         });
     }
 
