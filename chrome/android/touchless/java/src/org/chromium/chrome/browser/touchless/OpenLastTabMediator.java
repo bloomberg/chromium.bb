@@ -8,6 +8,7 @@ import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 import static android.text.format.DateUtils.getRelativeTimeSpanString;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -31,6 +32,8 @@ import java.util.List;
  */
 // TODO(crbug.com/948858): Add unit tests for this behavior.
 class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
+    private static final String FIRST_LAUNCHED_KEY = "TOUCHLESS_WAS_FIRST_LAUNCHED";
+
     private final Context mContext;
     private final Profile mProfile;
     private final NativePageHost mNativePageHost;
@@ -54,6 +57,13 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
         mIconGenerator =
                 ViewUtils.createDefaultRoundedIconGenerator(mContext.getResources(), false);
         mIconBridge = new LargeIconBridge(mProfile);
+
+        // Check if this is a first launch of Chrome.
+        SharedPreferences prefs =
+                mNativePageHost.getActiveTab().getActivity().getPreferences(Context.MODE_PRIVATE);
+        boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
+        prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
+        mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
 
         // TODO(wylieb):Investigate adding an item limit to the API.
         // Query the history for everything (no API exists to only query for the most recent).
