@@ -35,6 +35,8 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
   bool DisabledClickOpensMenu() const override;
+  PageInteractionStatus GetPageInteractionStatus(
+      content::WebContents* web_contents) const override;
 
   // Instruct the controller to fake showing a popup.
   void ShowPopup(bool by_user);

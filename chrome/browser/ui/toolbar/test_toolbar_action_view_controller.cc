@@ -94,6 +94,12 @@ bool TestToolbarActionViewController::DisabledClickOpensMenu() const {
   return disabled_click_opens_menu_;
 }
 
+ToolbarActionViewController::PageInteractionStatus
+TestToolbarActionViewController::GetPageInteractionStatus(
+    content::WebContents* web_contents) const {
+  return PageInteractionStatus::kNone;
+}
+
 void TestToolbarActionViewController::ShowPopup(bool by_user) {
   popup_showing_ = true;
   delegate_->OnPopupShown(by_user);

@@ -70,6 +70,7 @@ class ExtensionsMenuView : public views::ButtonListener,
 
  private:
   void Repopulate();
+  std::unique_ptr<views::View> CreateExtensionButtonsContainer();
 
   Browser* const browser_;
   ToolbarActionsBar* const toolbar_actions_bar_;
