@@ -247,7 +247,7 @@ void GuardedPageAllocator::FreeSlotAndMetadata(
   DCHECK_LT(free_slots_.size(), state_.total_pages);
   free_slots_.push_back(slot);
 
-  DCHECK_LT(free_metadata_.size(), state_.total_pages);
+  DCHECK_LT(free_metadata_.size(), state_.num_metadata);
   free_metadata_.push_back(metadata_idx);
 
   DCHECK_GT(num_alloced_pages_, 0U);
