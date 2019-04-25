@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 #include <memory>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
@@ -143,7 +144,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }
 
-class GraphicsContextHighConstrastTest : public testing::Test {
+class GraphicsContextDarkModeTest : public testing::Test {
  protected:
   void SetUp() override {
     bitmap_.allocN32Pixels(4, 1);
@@ -181,7 +182,7 @@ class GraphicsContextHighConstrastTest : public testing::Test {
 #else
 #define MAYBE_NoDarkMode NoDarkMode
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoDarkMode) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_NoDarkMode) {
   DrawColorsToContext();
 
   EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
@@ -196,7 +197,7 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoDarkMode) {
 #else
 #define MAYBE_DarkModeOff DarkModeOff
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_DarkModeOff) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_DarkModeOff) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kOff;
   settings.grayscale = false;
@@ -219,7 +220,7 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_DarkModeOff) {
 #else
 #define MAYBE_SimpleInvertForTesting SimpleInvertForTesting
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_SimpleInvertForTesting) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_SimpleInvertForTesting) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kSimpleInvertForTesting;
   settings.grayscale = false;
@@ -241,7 +242,7 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_SimpleInvertForTesting) {
 #else
 #define MAYBE_InvertBrightness InvertBrightness
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertBrightness) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertBrightness) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertBrightness;
   settings.grayscale = false;
@@ -263,7 +264,7 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertBrightness) {
 #else
 #define MAYBE_InvertLightness InvertLightness
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightness) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightness) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
@@ -279,7 +280,7 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightness) {
 }
 
 // Invert lightness plus grayscale.
-TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
+TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusGrayscale) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = true;
@@ -300,7 +301,7 @@ TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
 #else
 #define MAYBE_InvertLightnessPlusContrast InvertLightnessPlusContrast
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightnessPlusContrast) {
+TEST_F(GraphicsContextDarkModeTest, MAYBE_InvertLightnessPlusContrast) {
   DarkModeSettings settings;
   settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
