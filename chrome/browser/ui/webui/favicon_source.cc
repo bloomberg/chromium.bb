@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -19,27 +20,42 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "url/gurl.h"
+
+namespace {
+favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
+  GURL history_url(chrome::kChromeUIHistoryURL);
+  if (url == history_url.Resolve("/syncedTabs"))
+    return favicon::FaviconRequestOrigin::HISTORY_SYNCED_TABS;
+  if (url == history_url)
+    return favicon::FaviconRequestOrigin::HISTORY;
+  return favicon::FaviconRequestOrigin::UNKNOWN;
+}
+}  // namespace
 
 FaviconSource::IconRequest::IconRequest()
-    : size_in_dip(gfx::kFaviconSize), device_scale_factor(1.0f) {
-}
+    : size_in_dip(gfx::kFaviconSize),
+      device_scale_factor(1.0f),
+      icon_request_origin(favicon::FaviconRequestOrigin::UNKNOWN) {}
 
 FaviconSource::IconRequest::IconRequest(
     const content::URLDataSource::GotDataCallback& cb,
     const GURL& path,
     int size,
-    float scale)
+    float scale,
+    favicon::FaviconRequestOrigin origin)
     : callback(cb),
       request_path(path),
       size_in_dip(size),
-      device_scale_factor(scale) {
-}
+      device_scale_factor(scale),
+      icon_request_origin(origin) {}
 
 FaviconSource::IconRequest::IconRequest(const IconRequest& other) = default;
 
@@ -84,15 +100,22 @@ void FaviconSource::StartDataRequest(
   int desired_size_in_pixel =
       std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
 
+  content::WebContents* web_contents = wc_getter.Run();
+  // web_contents->GetURL will not necessarily yield the original URL that
+  // started the request, but for collecting metrics for chrome://history and
+  // chrome://history/syncedTabs this will be ok.
+  favicon::FaviconRequestOrigin unsafe_request_origin =
+      web_contents ? ParseFaviconRequestOrigin(web_contents->GetURL())
+                   : favicon::FaviconRequestOrigin::UNKNOWN;
   if (parsed.is_icon_url) {
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
     favicon_service->GetRawFavicon(
         url, favicon_base::IconType::kFavicon, desired_size_in_pixel,
-        base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                   base::Unretained(this),
-                   IconRequest(callback, url, parsed.size_in_dip,
-                               parsed.device_scale_factor)),
+        base::Bind(
+            &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
+            IconRequest(callback, url, parsed.size_in_dip,
+                        parsed.device_scale_factor, unsafe_request_origin)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages if TopSites exists.
@@ -123,10 +146,10 @@ void FaviconSource::StartDataRequest(
     favicon_service->GetRawFaviconForPageURL(
         url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
         fallback_to_host,
-        base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                   base::Unretained(this),
-                   IconRequest(callback, url, parsed.size_in_dip,
-                               parsed.device_scale_factor)),
+        base::Bind(
+            &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
+            IconRequest(callback, url, parsed.size_in_dip,
+                        parsed.device_scale_factor, unsafe_request_origin)),
         &cancelable_task_tracker_);
   }
 }
@@ -184,16 +207,26 @@ void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
+    favicon::RecordFaviconRequestMetric(request.icon_request_origin,
+                                        favicon::FaviconAvailability::kLocal);
     // Forward the data along to the networking system.
     request.callback.Run(bitmap_result.bitmap_data.get());
-  } else if (!HandleMissingResource(request)) {
+  } else if (HandleMissingResource(request)) {
+    favicon::RecordFaviconRequestMetric(request.icon_request_origin,
+                                        favicon::FaviconAvailability::kSync);
+    // The response was already treated by HandleMissingResource.
+  } else {
+    favicon::RecordFaviconRequestMetric(
+        request.icon_request_origin,
+        favicon::FaviconAvailability::kNotAvailable);
     SendDefaultResponse(request);
   }
 }
 
 void FaviconSource::SendDefaultResponse(
     const content::URLDataSource::GotDataCallback& callback) {
-  SendDefaultResponse(IconRequest(callback, GURL(), 16, 1.0f));
+  SendDefaultResponse(IconRequest(callback, GURL(), 16, 1.0f,
+                                  favicon::FaviconRequestOrigin::UNKNOWN));
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
