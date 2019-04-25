@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Vælg kontakter</translation>
 <translation id="1922076542920281912">Aktivér også placering i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til din placering.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Opdateringer</translation>
 <translation id="19288952978244135">Åbn Chrome igen.</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Udklipsholder</translation>
 <translation id="2587052924345400782">Der findes en nyere version</translation>
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
-<translation id="2610239185026711824">Foreslå en adgangskode</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2613747923081026172">Opret gruppe</translation>
 <translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
-<translation id="2803478378562657435">Viser gemte adgangskoder og valgmuligheder for adgangskoder</translation>
 <translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="281504910091592009">Se og administrer gemte adgangskoder på din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Log ind, og aktivér synkronisering for at få vist dine bogmærker på alle dine enheder</translation>
@@ -414,7 +413,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4116038641877404294">Download sider for at bruge dem, når du er offline</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
-<translation id="4159800535322890630">Bloker websites fra at få adgang til dine sensorer</translation>
 <translation id="4165986682804962316">Indstillinger for websites</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> er brugt</translation>
@@ -481,7 +479,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4648718555153979859">Dine faner er grupperet sammen her</translation>
 <translation id="4650364565596261010">Systemstandard</translation>
-<translation id="4660011489602794167">Vis tastatur</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> blev føjet til din startskærm</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
@@ -622,7 +619,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5581519193887989363">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
-<translation id="5620299005957670886">Tillad, at websites kan få adgang til dine sensorer (anbefales)</translation>
 <translation id="5620928963363755975">Find dine filer og sider i Downloads via knappen Flere valgmuligheder</translation>
 <translation id="5626134646977739690">Navn:</translation>
 <translation id="5639724618331995626">Tillad alle websites</translation>
@@ -731,7 +727,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
 <translation id="6383961787135158834">Ryd websitelagerplads…</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
-<translation id="6393156038355142111">Foreslå en stærk adgangskode</translation>
 <translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
@@ -890,7 +885,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7482697587265222445">Fanen blev sendt til dine enheder</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Vis adgangskoder</translation>
 <translation id="7494974237137038751">databesparelse</translation>
 <translation id="7498271377022651285">Vent…</translation>
 <translation id="7514365320538308">Download</translation>
@@ -1029,7 +1023,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8503559462189395349">Chrome-adgangskoder</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="8504988642345501642">Se hurtige links til relaterede sider, når du ruller op. Webadresserne på de sider, du besøger, sendes til Google.</translation>
-<translation id="8507520749471379845">Tilgængelige adgangskoder</translation>
 <translation id="8514477925623180633">Eksportér adgangskoder, der er gemt med Chrome</translation>
 <translation id="8514577642972634246">Slå inkognitotilstand til</translation>
 <translation id="851751545965956758">Bloker websites fra at oprette forbindelse til enheder</translation>

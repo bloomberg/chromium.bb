@@ -3322,7 +3322,6 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 
           Ta zasada jest stosowana tylko wtedy, gdy włączono zasadę „DefaultSearchProviderEnabled”.</translation>
 <translation id="7302043767260300182">Opóźnienie blokady ekranu przy zasilaniu sieciowym</translation>
-<translation id="7305262223970835999">Włącz stronę umożliwiającą zmianę hasła w trakcie sesji dla użytkowników SAML.</translation>
 <translation id="7311458740754205918">Jeśli ta zasada ma wartość prawda lub nie jest skonfigurowana, na stronie Nowa karta mogą pojawiać się polecane treści wybrane na podstawie historii przeglądania, zainteresowań lub lokalizacji użytkownika.
 
       Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
@@ -4113,7 +4112,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Udostępnia użytkownikom kompilację Quick Fix.</translation>
 <translation id="8942616385591203339">Ta zasada określa, czy pytanie o synchronizację jest wyświetlane podczas pierwszego logowania. Jeśli nie ma potrzeby, by użytkownicy korzystali z pytania o synchronizację, należy wybrać wartość false.
       Jeśli wybierzesz wartość false, pytanie o synchronizację nie będzie wyświetlane.
       Jeśli wybierzesz wartość true lub pozostawisz to ustawienie nieskonfigurowane, pytanie o synchronizację będzie wyświetlane.</translation>

@@ -340,7 +340,6 @@
 <translation id="1525740877599838384">Usar solo redes Wi‑Fi para determinar la ubicación</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1529891865407786369">Fuente de alimentación</translation>
-<translation id="1529899284660134226">Gestionar carpetas y archivos compartidos</translation>
 <translation id="1530838837447122178">Abrir la configuración del ratón y del panel táctil</translation>
 <translation id="1531004739673299060">Ventana de la aplicación</translation>
 <translation id="1536754031901697553">Desconectando...</translation>
@@ -2696,7 +2695,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5293170712604732402">Restaura los valores predeterminados originales de la configuración</translation>
 <translation id="5297082477358294722">Se ha guardado la contraseña. Consulta y gestiona las contraseñas guardadas en tu <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
-<translation id="5299109548848736476">No realizar seguimiento</translation>
+<translation id="5299109548848736476">No hacer seguimiento</translation>
 <translation id="5300287940468717207">¿Quieres restablecer los permisos de los sitios web?</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301751748813680278">Iniciando sesión de invitado</translation>
@@ -3519,7 +3518,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6559023360691182159">{COUNT,plural, =0{Ninguna}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> y <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> y <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> y 1 aplicación más}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> y <ph name="EXTRA_APPS" /> aplicaciones más}}</translation>
 <translation id="6561726789132298588">intro</translation>
 <translation id="656293578423618167">La ruta o el nombre del archivo es demasiado largo. Especifica un nombre más corto o guarda el archivo en otra ubicación.</translation>
-<translation id="6564072216966459757">Eliminar las aplicaciones de Linux en <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">No se ha podido cargar el icono "<ph name="ICON" />" para la acción de la página.</translation>
 <translation id="6571979863037191371">Desconecta el teléfono del Chromebook. Dejarán de conectarse automáticamente.</translation>
 <translation id="6573998787994398565">El archivo <ph name="FILE_NAME" /> no se descarga habitualmente y puede ser peligroso. Tu cuenta está protegida por la Protección Avanzada.</translation>

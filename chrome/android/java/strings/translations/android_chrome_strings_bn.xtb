@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">পরিচিতিগুলি বেছে নিন</translation>
 <translation id="1922076542920281912">Chrome যাতে আপনার লোকেশন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে লোকেশন চালু করুন।</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">আপডেটগুলি</translation>
 <translation id="19288952978244135">Chrome আবার খুলুন।</translation>
 <translation id="1933845786846280168">নির্বাচিত ট্যাবগুলি</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> Chrome এর জন্য অনুমতি চালু করুন।</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">ক্লিপবোর্ড</translation>
 <translation id="2587052924345400782">নতুন ভার্সন উপলভ্য</translation>
 <translation id="2593272815202181319">মোনোস্পেস</translation>
-<translation id="2610239185026711824">পাসওয়ার্ড সাজেস্ট করুন</translation>
 <translation id="2612676031748830579">কার্ড নম্বর</translation>
 <translation id="2613747923081026172">গ্রুপ তৈরি করুন</translation>
 <translation id="2621115761605608342">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট মঞ্জুর করুন।</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> সেকেন্ড বাকি আছে</translation>
 <translation id="2779651927720337254">করা যায়নি</translation>
 <translation id="2781151931089541271">১ সেকেন্ড বাকি আছে</translation>
-<translation id="2803478378562657435">সেভ করা পাসওয়ার্ড এবং পাসওয়ার্ড বিকল্পগুলি দেখানো হচ্ছে</translation>
 <translation id="2810645512293415242">পৃষ্ঠায় সহজে ডেটা সংরক্ষণ করে এবং দ্রুত লোড করুন।</translation>
 <translation id="281504910091592009">আপনার <ph name="BEGIN_LINK" />Google অ্যাকাউন্ট<ph name="END_LINK" />-এ সেভ করা পাসওয়ার্ড দেখুন এবং পরিচালনা করুন</translation>
 <translation id="2818669890320396765">আপনার সমস্ত ডিভাইসে বুকমার্কগুলি পেতে সাইন-ইন করে সিঙ্ক বিকল্প চালু করুন</translation>
@@ -416,7 +415,6 @@
 <translation id="410351446219883937">স্বতঃচালানো</translation>
 <translation id="4116038641877404294">পৃষ্ঠাগুলি অফলাইনে ব্যবহার করতে সেগুলি ডাউনলোড করুন</translation>
 <translation id="4149994727733219643">ওয়েব পৃষ্ঠার জন্য সরলীকৃত ভিউ</translation>
-<translation id="4159800535322890630">আপনার সেন্সর অ্যাক্সেস করা থেকে সাইটগুলি ব্লক করুন</translation>
 <translation id="4165986682804962316">সাইটের সেটিংস</translation>
 <translation id="4170011742729630528">পরিষেবাটি উপলব্ধ নেই, পরে আবার চেষ্টা করুন৷</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ব্যবহার করা হয়েছে</translation>
@@ -483,7 +481,6 @@
 <translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="4648718555153979859">আপনার ট্যাবগুলিকে এখানে একসাথে গ্রুপ করা আছে</translation>
 <translation id="4650364565596261010">সিস্টেম ডিফল্ট</translation>
-<translation id="4660011489602794167">কীবোর্ড দেখান</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" />টি বুকমার্ক মোছা হয়েছে</translation>
 <translation id="4665282149850138822">আপনার হোম স্ক্রীনে <ph name="NAME" /> কে যোগ করা হয়েছে</translation>
 <translation id="4684427112815847243">সবকিছু সিঙ্ক করুন</translation>
@@ -624,7 +621,6 @@
 <translation id="5581519193887989363"><ph name="BEGIN_LINK1" />সেটিংসে<ph name="END_LINK1" /> কী সিঙ্ক করা হবে তা আপনি সবসময় বেছে নিতে পারেন।</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
-<translation id="5620299005957670886">আপনার সেন্সর অ্যাক্সেস করার জন্য সাইটগুলিকে অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="5620928963363755975">আরও বিকল্প বোতামের ডাউনলোড বিকল্প থেকে আপনার সমস্ত ফাইল ও পৃষ্ঠাগুলি খুঁজে পান</translation>
 <translation id="5626134646977739690">নাম:</translation>
 <translation id="5639724618331995626">সমস্ত সাইটকে অনুমতি দিন</translation>
@@ -733,7 +729,6 @@
 <translation id="6378173571450987352">বিবরণ: ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="6383961787135158834">সাইট স্টোরেজ মুছুন...</translation>
 <translation id="6388207532828177975">পরিষ্কার এবং আবার সেট করুন</translation>
-<translation id="6393156038355142111">শক্তিশালী পাসওয়ার্ড সাজেস্ট করুন</translation>
 <translation id="6393863479814692971">এই সাইটটির জন্য Chrome কে আপনার ক্যামেরা এবং মাইক্রোফোনে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6395288395575013217">লিঙ্ক</translation>
 <translation id="6404511346730675251">বুকমার্ক সম্পাদনা করুন</translation>
@@ -892,7 +887,6 @@
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="7482697587265222445">আপনার ডিভাইসে ট্যাব পাঠানো হয়েছে</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (আপডেট করা হয়েছে <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">পাসওয়ার্ড দেখান</translation>
 <translation id="7494974237137038751">সেভ করা ডেটা</translation>
 <translation id="7498271377022651285">দয়া করে অপেক্ষা করুন...</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
@@ -1031,7 +1025,6 @@
 <translation id="8503559462189395349">Chrome পাসওয়ার্ডগুলি</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
 <translation id="8504988642345501642">আপনি উপরের দিকে স্ক্রল করলে, প্রাসঙ্গিক পৃষ্ঠার কুইক লিঙ্কগুলি দেখানো হয়। আপনার দেখা পৃষ্ঠাগুলির ইউআরএল Google-এ পাঠানো হয়।</translation>
-<translation id="8507520749471379845">পাসওয়ার্ড উপলভ্য</translation>
 <translation id="8514477925623180633">Chrome এ সেভ করা পাসওয়ার্ড এক্সপোর্ট করুন</translation>
 <translation id="8514577642972634246">ছদ্মবেশী মোডে প্রবেশ করুন</translation>
 <translation id="851751545965956758">সাইটকে ডিভাইসের সাথে কানেক্ট করা থেকে ব্লক করুন</translation>

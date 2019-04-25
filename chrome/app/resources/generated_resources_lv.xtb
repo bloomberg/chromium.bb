@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Izmantot tikai Wi-Fi tīklu, lai noteiktu atrašanās vietu</translation>
 <translation id="1526560967942511387">Dokuments bez nosaukuma</translation>
 <translation id="1529891865407786369">Barošanas avots</translation>
-<translation id="1529899284660134226">Pārvaldīt kopīgotos failus un mapes</translation>
 <translation id="1530838837447122178">Atvērt peles un skārienpaliktņa ierīces iestatījumus</translation>
 <translation id="1531004739673299060">Lietojumprogrammas logs</translation>
 <translation id="1536754031901697553">Notiek atvienošana...</translation>
@@ -3548,7 +3547,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6559023360691182159">{COUNT,plural, =0{Neviena}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> un <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> un <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> un vēl 1 lietotne}zero{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> un vēl <ph name="EXTRA_APPS" /> lietotņu}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> un vēl <ph name="EXTRA_APPS" /> lietotne}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> un vēl <ph name="EXTRA_APPS" /> lietotnes}}</translation>
 <translation id="6561726789132298588">Ievadīt</translation>
 <translation id="656293578423618167">Faila ceļš vai nosaukums ir pārāk garš. Saglabājiet ar īsāku nosaukumu vai citā atrašanās vietā.</translation>
-<translation id="6564072216966459757">Noņemt Linux lietotnes ierīcē <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nevarēja ielādēt lapas darbības ikonu “<ph name="ICON" />”.</translation>
 <translation id="6571979863037191371">Atvienojiet tālruni no Chromebook datora. Tie vairs netiks automātiski savienoti.</translation>
 <translation id="6573998787994398565">Fails <ph name="FILE_NAME" /> parasti netiek lejupielādēts, un tas var būt bīstams. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>

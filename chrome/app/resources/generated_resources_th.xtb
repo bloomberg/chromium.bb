@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">ใช้ Wi-Fi เพื่อระบุตำแหน่งเท่านั้น</translation>
 <translation id="1526560967942511387">เอกสารที่ไม่ระบุชื่อ</translation>
 <translation id="1529891865407786369">แหล่งพลังงาน</translation>
-<translation id="1529899284660134226">จัดการไฟล์และโฟลเดอร์ที่แชร์</translation>
 <translation id="1530838837447122178">เปิดการตั้งค่าอุปกรณ์เมาส์และทัชแพด</translation>
 <translation id="1531004739673299060">หน้าต่างแอปพลิเคชัน</translation>
 <translation id="1536754031901697553">กำลังยกเลิกการเชื่อมต่อ...</translation>
@@ -612,7 +611,7 @@
 <translation id="1932026958134051332">ตัวเลือกการเข้าถึงด้วยสวิตช์</translation>
 <translation id="1932098463447129402">หลังจาก</translation>
 <translation id="1933809209549026293">โปรดเชื่อมต่อเมาส์หรือแป้นพิมพ์ หากคุณใช้อุปกรณ์บลูทูธ โปรดตรวจสอบว่าอุปกรณ์พร้อมที่จะจับคู่</translation>
-<translation id="1937774647013465102">นำเข้าสถาปัตยกรรมคอนเทนเนอร์ประเภท <ph name="ARCHITECTURE_CONTAINER" /> ด้วยอุปกรณ์นี้ ซึ่งเป็นประเภท <ph name="ARCHITECTURE_DEVICE" /> ไม่ได้ คุณลองคืนค่าคอนเทนเนอร์นี้ไปยังอุปกรณ์ประเภทอื่นได้ หรือคุณอาจเข้าถึงไฟล์ภายในอิมเมจของคอนเทนเนอร์นี้โดยเปิดในแอปไฟล์</translation>
+<translation id="1937774647013465102">นำเข้าสถาปัตยกรรมคอนเทนเนอร์ประเภท <ph name="ARCHITECTURE_CONTAINER" /> ด้วยอุปกรณ์นี้ ซึ่งเป็นประเภท <ph name="ARCHITECTURE_DEVICE" /> ไม่ได้ คุณลองคืนค่าคอนเทนเนอร์นี้ไปยังอุปกรณ์อื่นได้ หรือเข้าถึงไฟล์ภายในรูปภาพของคอนเทนเนอร์นี้โดยเปิดในแอป Files</translation>
 <translation id="1938351510777341717">แป้น Command ภายนอก</translation>
 <translation id="1940546824932169984">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1944921356641260203">พบการอัปเดต</translation>
@@ -994,7 +993,7 @@
 <translation id="2538361623464451692">ปิดใช้การซิงค์แล้ว</translation>
 <translation id="2540449034743108469">กด "เริ่มต้น" เพื่อฟังกิจกรรมส่วนขยาย</translation>
 <translation id="2541002089857695151">เพิ่มประสิทธิภาพการแคสต์เต็มหน้าจอไหม</translation>
-<translation id="2541706104884128042">ตั้งเวลานอนใหม่แล้ว</translation>
+<translation id="2541706104884128042">ตั้งเวลาเข้านอนใหม่แล้ว</translation>
 <translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
 <translation id="2549985041256363841">เริ่มบันทึก</translation>
 <translation id="2550212893339833758">หน่วยความจำสว็อป</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{ไม่มี}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> และ <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> และ <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> และอีก 1 แอป}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> และอีก <ph name="EXTRA_APPS" /> แอป}}</translation>
 <translation id="6561726789132298588">ป้อน</translation>
 <translation id="656293578423618167">เส้นทางหรือชื่อของไฟล์ยาวเกินไป โปรดบันทึกด้วยชื่อที่สั้นกว่านี้หรือบันทึกลงในตำแหน่งอื่น</translation>
-<translation id="6564072216966459757">นำแอป Linux สำหรับ <ph name="DEVICE_TYPE" /> ออก</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
 <translation id="6571979863037191371">ยกเลิกการเชื่อมต่อโทรศัพท์กับ Chromebook อุปกรณ์ทั้งสองจะไม่เชื่อมต่อกันโดยอัตโนมัติอีกต่อไป</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> ไม่ได้มีการดาวน์โหลดกันโดยทั่วไปและอาจเป็นอันตราย คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
@@ -3861,7 +3859,7 @@
 <translation id="706626672220389329">เกิดข้อผิดพลาดขณะต่อเชื่อมพื้นที่แชร์ ต่อเชื่อมพื้นที่แชร์ที่ระบุแล้ว</translation>
 <translation id="7066944511817949584">ไม่สามารถเชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7067725467529581407">ไม่ต้องแสดงการแจ้งเตือนนี้อีก</translation>
-<translation id="7069811530847688087"><ph name="WEBSITE" /> อาจต้องใช้คีย์ความปลอดภัยใหม่หรือประเภทอื่น</translation>
+<translation id="7069811530847688087"><ph name="WEBSITE" /> อาจต้องใช้คีย์ความปลอดภัยที่ใหม่กว่าหรือประเภทอื่น</translation>
 <translation id="7070484045139057854">ส่วนขยายนี้อ่านและเปลี่ยนข้อมูลเว็บไซต์ได้</translation>
 <translation id="7072010813301522126">ชื่อทางลัด</translation>
 <translation id="707392107419594760">เลือกแป้นพิมพ์:</translation>

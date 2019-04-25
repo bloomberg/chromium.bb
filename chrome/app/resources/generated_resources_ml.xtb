@@ -337,7 +337,6 @@
 <translation id="1525740877599838384">ലൊക്കേഷൻ നിർണ്ണയിക്കാൻ വൈഫൈ മാത്രം ഉപയോഗിക്കുക</translation>
 <translation id="1526560967942511387">പേരില്ലാത്ത പ്രമാണം</translation>
 <translation id="1529891865407786369">പവർ ഉറവിടം</translation>
-<translation id="1529899284660134226">പങ്കിട്ട ഫയലുകളും ഫോൾഡറുകളും മാനേജ് ചെയ്യുക</translation>
 <translation id="1530838837447122178">മൗസ്, ടച്ച്‌പാഡ് ഉപകരണ ക്രമീകരണം തുറക്കുക</translation>
 <translation id="1531004739673299060">അപ്ലിക്കേഷൻ വിൻഡോ</translation>
 <translation id="1536754031901697553">വിച്ഛേദിക്കുന്നു...</translation>
@@ -3521,7 +3520,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6559023360691182159">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="APP_1" />}=2{<ph name="APP_1" />, <ph name="APP_2" /> എന്നിവ}=3{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> എന്നിവ}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> എന്നിവയും മറ്റൊരു ആപ്പും}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> എന്നിവയും മറ്റ് <ph name="EXTRA_APPS" /> ആപ്പുകളും}}</translation>
 <translation id="6561726789132298588">എന്റർ</translation>
 <translation id="656293578423618167">ഫയലിന്റെ പാതയോ പേരോ ദൈർഘ്യമേറിയതാണ്.  ഹ്രസ്വമായ പേര് ഉപയോഗിച്ചോ മറ്റൊരു ലൊക്കേഷനിലേക്കോ സംരക്ഷിക്കുക.</translation>
-<translation id="6564072216966459757"><ph name="DEVICE_TYPE" /> എന്ന ഉപകരണത്തിനുള്ള Linux ആപ്പുകൾ നീക്കം ചെയ്യുക</translation>
 <translation id="6567688344210276845">പേജ് പ്രവർത്തനത്തിനായി ഐക്കൺ '<ph name="ICON" />' ലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="6571979863037191371">Chromebook-ൽ നിന്ന് നിങ്ങളുടെ ഫോൺ വിച്‌ഛേദിക്കുക. അവ ഇനി സ്വമേധയാ കണക്‌റ്റാവില്ല.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> സാധാരണ ഡൗൺലോഡ് ചെയ്യാറില്ലാത്തതിനാൽ അപകടകരമായേക്കാം. നിങ്ങൾക്ക് വിപുലമായ പരിരക്ഷയുടെ സംരക്ഷണമുണ്ട്.</translation>

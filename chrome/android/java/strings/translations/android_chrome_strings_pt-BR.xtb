@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Selecionar contatos</translation>
 <translation id="1922076542920281912">Para permitir que o Chrome acesse sua localização, ative-a nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Atualizações</translation>
 <translation id="19288952978244135">Reabra o Chrome.</translation>
 <translation id="1933845786846280168">Guia selecionada</translation>
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2587052924345400782">Versão mais recente disponível</translation>
 <translation id="2593272815202181319">Espaçamento uniforme</translation>
-<translation id="2610239185026711824">Sugerir senha</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
 <translation id="2613747923081026172">Criar grupo</translation>
 <translation id="2621115761605608342">Permitir JavaScript para um site específico.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2779651927720337254">falha</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
-<translation id="2803478378562657435">Mostrando as senhas salvas e as opções de senha</translation>
 <translation id="2810645512293415242">Página simplificada para economizar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Ver e gerenciar as senhas salvas na sua <ph name="BEGIN_LINK" />Conta do Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Para ter seus favoritos em todos os seus dispositivos, faça login e ative a sincronização</translation>
@@ -414,7 +413,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4116038641877404294">Faça o download de páginas e acesse off-line</translation>
 <translation id="4149994727733219643">Versão simplificada das páginas da Web</translation>
-<translation id="4159800535322890630">Impeça o acesso de sites aos seus sensores</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> usado(s)</translation>
@@ -482,7 +480,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4645575059429386691">Gerenciado pelos seus pais</translation>
 <translation id="4648718555153979859">Suas guias são agrupadas aqui</translation>
 <translation id="4650364565596261010">Padrão do sistema</translation>
-<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
@@ -623,7 +620,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5581519193887989363">Nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596627076506792578">Mais opções</translation>
-<translation id="5620299005957670886">Permita o acesso de sites aos seus sensores (recomendado)</translation>
 <translation id="5620928963363755975">Procure seus arquivos e páginas em Downloads, usando o botão Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
@@ -732,7 +728,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6378173571450987352">Detalhes: classificados pela quantidade de dados usados</translation>
 <translation id="6383961787135158834">Limpar armazenamento de site</translation>
 <translation id="6388207532828177975">Limpar e redefinir</translation>
-<translation id="6393156038355142111">Sugerir senha forte</translation>
 <translation id="6393863479814692971">O Chrome precisa de permissão para este site acessar sua câmera e seu microfone.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
@@ -891,7 +886,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7482697587265222445">Guia enviada aos seus dispositivos</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Mostrar senhas</translation>
 <translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7514365320538308">Fazer o download</translation>
@@ -1030,7 +1024,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8503559462189395349">Senhas do Chrome</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8504988642345501642">Quando você rola para cima, são exibidos links rápidos para páginas relacionadas. Os URLs das páginas visitadas são enviados ao Google.</translation>
-<translation id="8507520749471379845">Senhas disponíveis</translation>
 <translation id="8514477925623180633">Exportar senhas armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="851751545965956758">Impedir a conexão de sites a dispositivos</translation>

@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Contacten selecteren</translation>
 <translation id="1922076542920281912">Als je Chrome toegang wilt geven tot je locatie, moet je locatie ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Open Chrome opnieuw.</translation>
 <translation id="1933845786846280168">Geselecteerd tabblad</translation>
 <translation id="194341124344773587">Geef Chrome toestemming via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Klembord</translation>
 <translation id="2587052924345400782">Nieuwere versie beschikbaar</translation>
 <translation id="2593272815202181319">Monospace</translation>
-<translation id="2610239185026711824">Wachtwoord voorstellen</translation>
 <translation id="2612676031748830579">Kaartnummer</translation>
 <translation id="2613747923081026172">Groep maken</translation>
 <translation id="2621115761605608342">JavaScript toestaan voor een specfieke site.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> seconden resterend</translation>
 <translation id="2779651927720337254">mislukt</translation>
 <translation id="2781151931089541271">1 seconde resterend</translation>
-<translation id="2803478378562657435">Opgeslagen wachtwoorden en wachtwoordopties weergeven</translation>
 <translation id="2810645512293415242">Vereenvoudigde pagina om data te besparen en sneller te laden.</translation>
 <translation id="281504910091592009">Bekijk en beheer opgeslagen wachtwoorden in je <ph name="BEGIN_LINK" />Google-account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Log in en schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
@@ -414,7 +413,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="4116038641877404294">Download pagina's om ze offline te gebruiken</translation>
 <translation id="4149994727733219643">Vereenvoudigde weergave voor webpagina's</translation>
-<translation id="4159800535322890630">Toegang tot je sensoren blokkeren voor sites</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> gebruikt</translation>
@@ -481,7 +479,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
 <translation id="4648718555153979859">Je tabbladen zijn hier gegroepeerd</translation>
 <translation id="4650364565596261010">Systeemstandaard</translation>
-<translation id="4660011489602794167">Toetsenbord weergeven</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
@@ -622,7 +619,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5581519193887989363">Je kunt altijd in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> bepalen wat je wilt synchroniseren.</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
 <translation id="5596627076506792578">Meer opties</translation>
-<translation id="5620299005957670886">Sites toegang geven tot je sensoren (aanbevolen)</translation>
 <translation id="5620928963363755975">Vind je bestanden en pagina's in 'Downloads' via de knop 'Meer opties'</translation>
 <translation id="5626134646977739690">Naam:</translation>
 <translation id="5639724618331995626">Alle sites toestaan</translation>
@@ -731,7 +727,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6378173571450987352">Details: gesorteerd op hoeveelheid gebruikte data</translation>
 <translation id="6383961787135158834">Site-opslag wissen</translation>
 <translation id="6388207532828177975">Wissen en opnieuw instellen</translation>
-<translation id="6393156038355142111">Sterk wachtwoord voorstellen</translation>
 <translation id="6393863479814692971">Chrome heeft toegangsrechten voor je camera en microfoon nodig voor deze site.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
@@ -890,7 +885,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7482697587265222445">Tabblad is verzonden naar je apparaten</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Wachtwoorden weergeven</translation>
 <translation id="7494974237137038751">data bespaard</translation>
 <translation id="7498271377022651285">Een ogenblik geduld…</translation>
 <translation id="7514365320538308">Downloaden</translation>
@@ -1029,7 +1023,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8503559462189395349">Chrome-wachtwoorden</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8504988642345501642">Wanneer je omhoog scrollt, worden er snelle links naar gerelateerde pagina's weergegeven. De URL's van pagina's die je bezoekt, worden verzonden naar Google.</translation>
-<translation id="8507520749471379845">Wachtwoorden beschikbaar</translation>
 <translation id="8514477925623180633">Wachtwoorden exporteren die zijn opgeslagen in Chrome</translation>
 <translation id="8514577642972634246">Incognitomodus starten</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>

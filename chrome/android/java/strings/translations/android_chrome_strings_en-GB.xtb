@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Select contacts</translation>
 <translation id="1922076542920281912">To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Reopen Chrome.</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
 <translation id="194341124344773587">Turn on permission for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
-<translation id="2610239185026711824">Suggest password</translation>
 <translation id="2612676031748830579">Card number</translation>
 <translation id="2613747923081026172">Create group</translation>
 <translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
 <translation id="2781151931089541271">1 sec left</translation>
-<translation id="2803478378562657435">Showing saved passwords and password options</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
@@ -414,7 +413,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="410351446219883937">Auto-play</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
-<translation id="4159800535322890630">Block sites from accessing your sensors</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> used</translation>
@@ -481,7 +479,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4648718555153979859">Your tabs are grouped together here</translation>
 <translation id="4650364565596261010">System default</translation>
-<translation id="4660011489602794167">Show keyboard</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
 <translation id="4684427112815847243">Sync everything</translation>
@@ -622,7 +619,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
-<translation id="5620299005957670886">Allow sites to access your sensors (recommended)</translation>
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>
@@ -731,7 +727,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6378173571450987352">Details: Sorted by amount of data used</translation>
 <translation id="6383961787135158834">Clear site storage…</translation>
 <translation id="6388207532828177975">Clear &amp; reset</translation>
-<translation id="6393156038355142111">Suggest strong password</translation>
 <translation id="6393863479814692971">Chrome needs permission to access your camera and microphone for this site.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
@@ -890,7 +885,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7482697587265222445">Tab sent to your devices</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Show passwords</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7514365320538308">Download</translation>
@@ -1029,7 +1023,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8504988642345501642">When you scroll up, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
-<translation id="8507520749471379845">Passwords available</translation>
 <translation id="8514477925623180633">Export passwords stored with Chrome</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>

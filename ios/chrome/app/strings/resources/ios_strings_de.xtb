@@ -273,6 +273,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5228579091201413441">Synchronisierung aktivieren</translation>
 <translation id="5244474230056479698">Mit <ph name="EMAIL" /> synchronisieren</translation>
 <translation id="5245322853195994030">Synchronisierung abbrechen</translation>
+<translation id="5271549068863921519">Passwort speichern</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
@@ -359,7 +360,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
 <translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
-<translation id="6513773942555305766">Von Chrome vorgeschlagenes Passwort: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Für die letzte Stunde</translation>
 <translation id="6610002944194042868">Übersetzungsoptionen</translation>
 <translation id="6642362222295953972">Zu vorhandenem Tab wechseln</translation>
@@ -513,6 +513,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="9081058212938299310">Passwort für <ph name="USERNAME" /> aktualisieren?</translation>
 <translation id="9083392325882095631">1 Element</translation>
 <translation id="9083838294503912307">Aktivieren Sie die Synchronisierung, um geräteübergreifend zu synchronisieren und zu personalisieren.</translation>
+<translation id="9094033019050270033">Passwort aktualisieren</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9148126808321036104">Erneut anmelden</translation>
 <translation id="9157836665414082580">Dialogfelder unterdrücken</translation>

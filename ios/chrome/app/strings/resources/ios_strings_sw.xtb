@@ -273,6 +273,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5228579091201413441">Washa usawazishaji</translation>
 <translation id="5244474230056479698">Inasawazisha kwenye <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Ungependa kughairi usawazishaji</translation>
+<translation id="5271549068863921519">Hifadhi nenosiri</translation>
 <translation id="5300589172476337783">Onyesha</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="5327248766486351172">Jina</translation>
@@ -359,7 +360,6 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6464071786529933911">Fungua katika Kichupo Fiche Kipya</translation>
 <translation id="6476800141292307438">Inatafsiri ukurasa katika <ph name="LANGUAGE" />. Chaguo zinapatikana karibu na sehemu ya chini ya skrini.</translation>
 <translation id="6482629121755362506">Vifaa <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimefutwa</translation>
-<translation id="6513773942555305766">Nenosiri Linalopendekezwa na Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Saa Moja Iliyopita</translation>
 <translation id="6610002944194042868">Chaguo za Tafsiri</translation>
 <translation id="6642362222295953972">Badilisha utumie kichupo kilichopo</translation>
@@ -382,12 +382,14 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6914583639806229067">Tafuta Picha Uliyonakili</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
+<translation id="692898627499215142">Haikukamilisha kuweka usawazishaji wa mipangilio ya kwanza. Ili uanze Kusawazisha, washa swichi ya Usawazishaji.</translation>
 <translation id="6944369514868857500">Chagua Akaunti Nyingine</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6973630695168034713">Folda</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
 <translation id="7004499039102548441">Vichupo vya Hivi Punde</translation>
 <translation id="7006788746334555276">Mipangilio ya Maudhui</translation>
+<translation id="7015203776128479407">Haikukamilisha kuweka usawazishaji wa mipangilio ya kwanza. Umezima kipengele cha kusawazisha.</translation>
 <translation id="7029809446516969842">Manenosiri</translation>
 <translation id="7031882061095297553">Sawazisha kwenye</translation>
 <translation id="7053983685419859001">Zuia</translation>
@@ -399,6 +401,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7136892417564438900">Kamera haipatikani</translation>
 <translation id="7159472599653637159">Omba Tovuti ya Kifaa cha Mkononi</translation>
 <translation id="7167621057293532233">Aina za Data</translation>
+<translation id="7173114856073700355">Fungua Mipangilio</translation>
 <translation id="7189598951263744875">Shiriki...</translation>
 <translation id="7192050974311852563">Anza Kuleta Kumbukumbu</translation>
 <translation id="7203585745079012652">Itamke Majibu</translation>
@@ -475,6 +478,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="850600235656508448">Fungua katika dirisha fiche</translation>
 <translation id="8517375800490286174">Leseni za Programu Huria</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Vichupo <ph name="FIRST_VISIBLE_TAB" /> kupitia <ph name="LAST_VISIBLE_TAB" /> kati ya <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Mpya</translation>
 <translation id="8532105204136943229">Mwaka wa Muda wa Matumizi Kuisha</translation>
 <translation id="8534481786647257214">Chapisho la Google+ limekamilika.</translation>
 <translation id="8548878600947630424">Tafuta katika ukurasa...</translation>
@@ -509,6 +513,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="9081058212938299310">Ungependa kubadilisha nenosiri la <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">Kipengee 1</translation>
 <translation id="9083838294503912307">Ili usawazishe na uweke mapendeleo kwenye vifaa vyote, washa kipengele cha kusawazisha.</translation>
+<translation id="9094033019050270033">Sasisha nenosiri</translation>
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9148126808321036104">Ingia tena</translation>
 <translation id="9157836665414082580">Zima Vidirisha</translation>

@@ -120,6 +120,7 @@
 <translation id="1919950603503897840">Выбрать контакты</translation>
 <translation id="1922076542920281912">Чтобы Chrome получил доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Обновления</translation>
 <translation id="19288952978244135">Снова запустите браузер Chrome.</translation>
 <translation id="1933845786846280168">Выбранная вкладка</translation>
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -220,7 +221,6 @@
 <translation id="2586657967955657006">Буфер обмена</translation>
 <translation id="2587052924345400782">Доступна новая версия</translation>
 <translation id="2593272815202181319">Моноширинный</translation>
-<translation id="2610239185026711824">Сгенерировать пароль</translation>
 <translation id="2612676031748830579">Номер карты</translation>
 <translation id="2613747923081026172">Создать группу</translation>
 <translation id="2621115761605608342">Разрешить JavaScript для конкретного сайта.</translation>
@@ -243,7 +243,6 @@
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2779651927720337254">ошибка</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
-<translation id="2803478378562657435">На экране показаны сохраненные пароли и настройки паролей</translation>
 <translation id="2810645512293415242">Страница была открыта в упрощенном виде, чтобы уменьшить объем трафика и время загрузки.</translation>
 <translation id="281504910091592009">Просматривать сохраненные пароли и управлять ими можно на странице <ph name="BEGIN_LINK" />Аккаунт Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">Чтобы получить доступ к закладкам на всех устройствах, войдите в аккаунт и включите синхронизацию.</translation>
@@ -412,7 +411,6 @@
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
-<translation id="4159800535322890630">Запретить сайтам использовать датчики</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4179980317383591987">Использовано: <ph name="AMOUNT" /></translation>
@@ -479,7 +477,6 @@
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4648718555153979859">Вкладки сгруппированы здесь</translation>
 <translation id="4650364565596261010">По умолчанию</translation>
-<translation id="4660011489602794167">Показать клавиатуру</translation>
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
@@ -620,7 +617,6 @@
 <translation id="5581519193887989363">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
-<translation id="5620299005957670886">Разрешить сайтам использовать датчики (рекомендуется)</translation>
 <translation id="5620928963363755975">Чтобы найти скачанные файлы и веб-страницы, нажмите кнопку "Ещё" и выберите соответствующий пункт</translation>
 <translation id="5626134646977739690">Имя:</translation>
 <translation id="5639724618331995626">Разрешить доступ ко всем сайтам</translation>
@@ -728,7 +724,6 @@
 <translation id="6378173571450987352">Сортировка по объему использованного трафика</translation>
 <translation id="6383961787135158834">Удалить данные сайтов</translation>
 <translation id="6388207532828177975">Очистить и сбросить</translation>
-<translation id="6393156038355142111">Сгенерировать надежный пароль</translation>
 <translation id="6393863479814692971">Для этого сайта Chrome запрашивает разрешение на доступ к камере и микрофону.</translation>
 <translation id="6395288395575013217">ССЫЛКА</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
@@ -887,7 +882,6 @@
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7482697587265222445">Вкладка отправлена на другие устройства.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Показать пароли</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7514365320538308">Скачать</translation>
@@ -1024,7 +1018,6 @@
 <translation id="8503559462189395349">Пароли Chrome</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="8504988642345501642">URL посещенных вами страниц отправляются в Google, поэтому при прокручивании вы можете увидеть ссылки на похожие страницы.</translation>
-<translation id="8507520749471379845">Доступные варианты паролей</translation>
 <translation id="8514477925623180633">Экспорт паролей, сохраненных в Chrome</translation>
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>

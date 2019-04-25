@@ -340,7 +340,6 @@
 <translation id="1525740877599838384">Wi-Fi lang ang gamitin upang matukoy ang lokasyon</translation>
 <translation id="1526560967942511387">Walang pamagat na Dokumento</translation>
 <translation id="1529891865407786369">Pinagmumulan ng kuryente</translation>
-<translation id="1529899284660134226">Pamahalaan ang mga nakabahaging file at folder</translation>
 <translation id="1530838837447122178">Buksan ang mga setting ng mouse at touchpad device</translation>
 <translation id="1531004739673299060">Window ng Application</translation>
 <translation id="1536754031901697553">Nagdidiskonekta...</translation>
@@ -3522,7 +3521,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Wala}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> at <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" />, at <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, at 1 pang app}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, at <ph name="EXTRA_APPS" /> pang app}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, at <ph name="EXTRA_APPS" /> pang app}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Masyadong mahaba ang path o pangalan ng file.  Mangyaring i-save nang may mas maikling pangalan o sa isa pang lokasyon.</translation>
-<translation id="6564072216966459757">Alisin ang Mga Linux App para sa <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Maaaring hindi mai-load ang icon '<ph name="ICON" />' para sa pagkilos sa pahina.</translation>
 <translation id="6571979863037191371">Idiskonekta ang iyong telepono sa Chromebook mo. Hindi na awtomatikong makokonekta ang mga ito.</translation>
 <translation id="6573998787994398565">Ang <ph name="FILE_NAME" /> ay hindi karaniwang dina-download at puwedeng mapanganib. Pinoprotektahan ka ng Advanced na Proteksyon.</translation>

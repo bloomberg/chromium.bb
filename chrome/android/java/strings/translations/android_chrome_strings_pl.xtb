@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Wybierz kontakty</translation>
 <translation id="1922076542920281912">Aby zezwolić Chrome na dostęp do lokalizacji, musisz ją też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Aktualizacje</translation>
 <translation id="19288952978244135">Uruchom ponownie Chrome.</translation>
 <translation id="1933845786846280168">Wybrana karta</translation>
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2587052924345400782">Dostępna jest nowsza wersja</translation>
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
-<translation id="2610239185026711824">Zaproponuj hasło</translation>
 <translation id="2612676031748830579">Numer karty</translation>
 <translation id="2613747923081026172">Utwórz grupę</translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
-<translation id="2803478378562657435">Wyświetlam zapisane hasła i opcje haseł</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się i włącz synchronizację</translation>
@@ -414,7 +413,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
-<translation id="4159800535322890630">Blokuj witrynom dostęp do czujników</translation>
 <translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
@@ -481,7 +479,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4648718555153979859">Tutaj są zgrupowane Twoje karty</translation>
 <translation id="4650364565596261010">Ustawienie domyślne</translation>
-<translation id="4660011489602794167">Pokaż klawiaturę</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
@@ -622,7 +619,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5581519193887989363">W <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
-<translation id="5620299005957670886">Zezwalaj witrynom na dostęp do czujników (zalecane)</translation>
 <translation id="5620928963363755975">Znajdź pliki i strony w Pobranych plikach, używając przycisku Więcej opcji</translation>
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5639724618331995626">Pozwól na otwieranie wszystkich stron</translation>
@@ -731,7 +727,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6378173571450987352">Szczegóły: posortowane według wykorzystanych danych</translation>
 <translation id="6383961787135158834">Wyczyść dane witryn…</translation>
 <translation id="6388207532828177975">Wyczyść i zresetuj</translation>
-<translation id="6393156038355142111">Zaproponuj silne hasło</translation>
 <translation id="6393863479814692971">Chrome potrzebuje uprawnień dostępu do aparatu i mikrofonu na tej stronie.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
@@ -890,7 +885,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7482697587265222445">Karta została wysłana na Twoje urządzenia</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Pokazuj hasła</translation>
 <translation id="7494974237137038751">zaoszczędzonych danych</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -1029,7 +1023,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8503559462189395349">Hasła w Chrome</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8504988642345501642">Podczas przewijania w górę wyświetlaj szybkie linki do podobnych stron. Adresy URL odwiedzanych przez Ciebie stron są przesyłane do Google.</translation>
-<translation id="8507520749471379845">Dostępne są hasła</translation>
 <translation id="8514477925623180633">Eksportuj hasła zapisane w Chrome</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
 <translation id="851751545965956758">Nie zezwalaj stronom na łączenie się z urządzeniami</translation>

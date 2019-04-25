@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Selecionar contactos</translation>
 <translation id="1922076542920281912">Para permitir que o Chrome aceda à sua localização, ative também a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Atualizações</translation>
 <translation id="19288952978244135">Reabra o Chrome.</translation>
 <translation id="1933845786846280168">Separador selecionado</translation>
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2587052924345400782">Versão mais recente dispon.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
-<translation id="2610239185026711824">Sugerir palavra-passe</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
 <translation id="2613747923081026172">Criar grupo</translation>
 <translation id="2621115761605608342">Permitir JavaScript num site específico.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389">Faltam <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">falhou</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
-<translation id="2803478378562657435">A mostrar palavras-passe guardadas e opções de palavra-passe</translation>
 <translation id="2810645512293415242">Página simplificada para poupar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">Para obter os seus marcadores em todos os dispositivos, inicie sessão e ative a sincronização.</translation>
@@ -414,7 +413,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4116038641877404294">Transfira páginas para as utilizar offline.</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas Web</translation>
-<translation id="4159800535322890630">Impedir os sites de aceder aos sensores</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> utilizado(s)</translation>
@@ -481,7 +479,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4648718555153979859">Os separadores estão agrupados aqui.</translation>
 <translation id="4650364565596261010">Predefinição do sistema</translation>
-<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
@@ -622,7 +619,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5581519193887989363">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5596627076506792578">Mais opções</translation>
-<translation id="5620299005957670886">Permitir que os sites acedam aos sensores (recomendado)</translation>
 <translation id="5620928963363755975">Encontre os seus ficheiros e páginas nas Transferências através do botão Mais opções.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
@@ -731,7 +727,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
 <translation id="6383961787135158834">Limpar armazenamento do site...</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
-<translation id="6393156038355142111">Sugerir palavra-passe forte</translation>
 <translation id="6393863479814692971">O Chrome necessita de autorização de acesso à câmara e ao microfone para este site.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
@@ -890,7 +885,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7482697587265222445">Separador enviado para os dispositivos</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Mostrar palavras-passe</translation>
 <translation id="7494974237137038751">dados guardados</translation>
 <translation id="7498271377022651285">Aguarde…</translation>
 <translation id="7514365320538308">Transferir</translation>
@@ -1029,7 +1023,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8503559462189395349">Palavras-passe do Chrome</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8504988642345501642">Quando se desloca para cima, são apresentados links rápidos para páginas relacionadas. Os URLs das páginas que visita são enviados para a Google.</translation>
-<translation id="8507520749471379845">Palavras-passe disponíveis</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
 <translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>

@@ -273,6 +273,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5228579091201413441">Ativar sincronização</translation>
 <translation id="5244474230056479698">Sincronizado com <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
+<translation id="5271549068863921519">Salvar senha</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -359,7 +360,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6464071786529933911">Abrir em nova guia anônima</translation>
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
-<translation id="6513773942555305766">Senha sugerida pelo Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Da última hora</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6642362222295953972">Alternar para guia existente</translation>
@@ -513,6 +513,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="9081058212938299310">Atualizar senha para <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9083838294503912307">Para sincronizar e personalizar vários dispositivos, ative a sincronização.</translation>
+<translation id="9094033019050270033">Atualizar senha</translation>
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>
 <translation id="9157836665414082580">Bloquear caixas de diálogo</translation>

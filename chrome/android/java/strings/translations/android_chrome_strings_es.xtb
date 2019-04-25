@@ -59,7 +59,7 @@
 <translation id="1389974829397082527">Ningún marcador incluido</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Insertado en <ph name="WEBSITE_URL" /></translation>
-<translation id="1406000523432664303">No realizar seguimiento</translation>
+<translation id="1406000523432664303">No hacer seguimiento</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409426117486808224">Vista simplificada de las pestañas abiertas</translation>
 <translation id="1409879593029778104">No se ha descargado <ph name="FILE_NAME" /> porque este archivo ya existe.</translation>
@@ -120,6 +120,7 @@
 <translation id="1919950603503897840">Seleccionar contactos</translation>
 <translation id="1922076542920281912">Para que Chrome tenga acceso a tu ubicación, activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Actualizaciones</translation>
 <translation id="19288952978244135">Vuelve a abrir Chrome.</translation>
 <translation id="1933845786846280168">Pestaña seleccionada</translation>
 <translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
@@ -220,7 +221,6 @@
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2587052924345400782">Hay una nueva versión disponible</translation>
 <translation id="2593272815202181319">Monoespaciado</translation>
-<translation id="2610239185026711824">Sugerir contraseña</translation>
 <translation id="2612676031748830579">Número de la tarjeta</translation>
 <translation id="2613747923081026172">Crear grupo</translation>
 <translation id="2621115761605608342">Habilita JavaScript en un sitio web específico.</translation>
@@ -243,7 +243,6 @@
 <translation id="2777555524387840389">Quedan <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">ha fallado</translation>
 <translation id="2781151931089541271">Queda 1 segundo</translation>
-<translation id="2803478378562657435">Mostrando contraseñas guardadas y opciones de contraseña</translation>
 <translation id="2810645512293415242">Esta página se ha simplificado para ahorrar datos y poder cargarla más rápido.</translation>
 <translation id="281504910091592009">Consulta y gestiona las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Inicia sesión y activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
@@ -412,7 +411,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4116038641877404294">Descarga páginas para usarlas sin conexión</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas web</translation>
-<translation id="4159800535322890630">No permitir que los sitios web accedan a tus sensores</translation>
 <translation id="4165986682804962316">Configuración del sitio web</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4179980317383591987">Usados: <ph name="AMOUNT" /></translation>
@@ -479,7 +477,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4648718555153979859">Tus pestañas se agrupan aquí</translation>
 <translation id="4650364565596261010">Predeterminado del sistema</translation>
-<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822">Se ha añadido <ph name="NAME" /> a la pantalla de inicio</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
@@ -620,7 +617,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5581519193887989363">Siempre puedes seleccionar qué contenido quieres sincronizar desde <ph name="BEGIN_LINK1" />Ajustes<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
-<translation id="5620299005957670886">Permitir que los sitios web accedan a tus sensores (recomendado)</translation>
 <translation id="5620928963363755975">Encuentra tus archivos y páginas en la sección Descargas con el botón Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5639724618331995626">Permitir todos los sitios web</translation>
@@ -728,7 +724,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6378173571450987352">Detalles: ordenados por cantidad de datos usados</translation>
 <translation id="6383961787135158834">Borrar almacenamiento web…</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
-<translation id="6393156038355142111">Sugerir contraseña segura</translation>
 <translation id="6393863479814692971">Chrome necesita permiso para acceder a la cámara y al micrófono en este sitio web.</translation>
 <translation id="6395288395575013217">ENLACE</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
@@ -887,7 +882,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7482697587265222445">Se ha enviado la pestaña a tus dispositivos</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizada el <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Mostrar contraseñas</translation>
 <translation id="7494974237137038751">de datos ahorrados</translation>
 <translation id="7498271377022651285">Espera…</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -1024,7 +1018,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8503559462189395349">Contraseñas de Chrome</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8504988642345501642">Cuando te desplazas hacia arriba, se muestran enlaces rápidos a páginas relacionadas. Las URL de las páginas que visitas se envían a Google.</translation>
-<translation id="8507520749471379845">Contraseñas disponibles</translation>
 <translation id="8514477925623180633">Exportar contraseñas almacenadas en Chrome</translation>
 <translation id="8514577642972634246">Navegar en modo de incógnito</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>

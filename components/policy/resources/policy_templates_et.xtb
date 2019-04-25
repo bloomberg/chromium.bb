@@ -3436,7 +3436,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
           See reegel kehtib vaid siis, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="7302043767260300182">Ekraani lukustamise viiteaeg võrgutoite kasutamisel</translation>
-<translation id="7305262223970835999">Lubab lehe jaoks SAML-i kasutajate parooli seansisisese muutmise.</translation>
 <translation id="7311458740754205918">Kui selle väärtuseks määratakse Tõene või seda ei määrata, võidakse uuel vahelehel näidata sisu soovitusi kasutaja sirvimisajaloo, huvide või asukoha põhjal.
 
       Kui selle väärtuseks määratakse Väär, ei näidata uuel vahelehel automaatselt loodud sisu soovitusi.</translation>
@@ -4249,7 +4248,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Turvaliste kontekstide kohta saate lisateavet aadressilt
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Pakkuge kasutajatele võimalust kasutada kiirparanduse järku.</translation>
 <translation id="8942616385591203339">Reegel määrab, kas kasutajale võib esimesel sisselogimisel kuvada sünkroonimise nõusoleku. Kui kasutaja ei pea kunagi sünkroonimiseks nõusolekut andma, tuleb reegli väärtuseks määrata Väär.
       Kui reegel on seatud väärtusele Väär, ei kuvata sünkroonimise nõusolekut.
       Kui reegel on määramata või seatud väärtusele Tõene, võidakse kuvada sünkroonimise nõusolek.</translation>

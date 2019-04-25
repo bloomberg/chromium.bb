@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Wi-Fi のみを使用して現在地を特定する</translation>
 <translation id="1526560967942511387">無題のドキュメント</translation>
 <translation id="1529891865407786369">電源</translation>
-<translation id="1529899284660134226">共有のファイルとフォルダを管理する</translation>
 <translation id="1530838837447122178">マウスとタッチパッドのデバイス設定を開く</translation>
 <translation id="1531004739673299060">アプリケーション ウィンドウ</translation>
 <translation id="1536754031901697553">切断しています...</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{なし}=1{<ph name="APP_1" />}=2{<ph name="APP_1" />、<ph name="APP_2" />}=3{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />}=4{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />、他 1 個のアプリ}other{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />、他 <ph name="EXTRA_APPS" /> 個のアプリ}}</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">ファイルのパスまたは名前が長すぎます。名前を短くするか、別の場所に保存してください。</translation>
-<translation id="6564072216966459757"><ph name="DEVICE_TYPE" /> の Linux アプリを削除</translation>
 <translation id="6567688344210276845">ページ操作のアイコン「<ph name="ICON" />」を読み込むことができませんでした。</translation>
 <translation id="6571979863037191371">Chromebook からスマートフォンを切断します。以降、自動接続は行われなくなります。</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> は一般的にダウンロードされているファイルではなく、危害を及ぼす可能性があります。現在、高度な保護機能が適用されています。</translation>

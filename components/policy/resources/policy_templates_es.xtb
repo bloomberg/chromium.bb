@@ -4048,7 +4048,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Para obtener más información sobre contextos seguros, consulta la página
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Proporciona a los usuarios una versión Quick Fix.</translation>
 <translation id="8942616385591203339">Esta política controla si se muestra Sync Consent al usuario durante el primer inicio de sesión. Se le debería asignar el valor "False" si no es necesario mostrar Sync Consent al usuario en ningún caso.
       Si se le asigna el valor "False", Sync Consent no se mostrará.
       Si se le asigna el valor "True" o no se le asigna ningún valor, Sync Consent no se puede mostrar.</translation>

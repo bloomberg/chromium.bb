@@ -524,7 +524,7 @@
 <translation id="3761718714832595332">ซ่อนสถานะ</translation>
 <translation id="3765032636089507299">หน้า Google Safe Browsing อยู่ในระหว่างการปรับปรุง</translation>
 <translation id="3778403066972421603">คุณต้องการบันทึกบัตรนี้ลงในบัญชี Google และในอุปกรณ์นี้ไหม</translation>
-<translation id="3779973883630527594">บริษัท โรงเรียน หรือองค์กรที่จัดการบัญชีนี้:</translation>
+<translation id="3779973883630527594">บริษัท สถานศึกษา หรือองค์กรที่จัดการบัญชีนี้</translation>
 <translation id="3781428340399460090">ชมพูเจิดจ้า</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">หมดอายุ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -548,7 +548,6 @@
 <translation id="3949571496842715403">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยไม่ได้ระบุชื่อสำรองของหัวเรื่อง โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="3949601375789751990">ประวัติการท่องเว็บของคุณจะปรากฏที่นี่</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
-<translation id="3963721102035795474">โหมดนักอ่าน</translation>
 <translation id="3963837677003247395">ดำเนินการต่อด้วยตนเองไหม</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
@@ -617,7 +616,6 @@
 <translation id="4265872034478892965">อนุญาตโดยผู้ดูแลระบบ</translation>
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4277028893293644418">รีเซ็ตรหัสผ่าน</translation>
-<translation id="4280429058323657511">หมดอายุ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{บันทึกบัตรนี้ลงในบัญชี Google ของคุณแล้ว}other{บันทึกบัตรเหล่านี้ลงในบัญชี Google ของคุณแล้ว}}</translation>
 <translation id="42981349822642051">ขยาย</translation>
 <translation id="4302965934281694568">Chou3 (ซองจดหมาย)</translation>
@@ -695,7 +693,6 @@
 <translation id="4750917950439032686">ข้อมูลของคุณ (ตัวอย่างเช่น รหัสผ่านหรือหมายเลขบัตรเครดิต) จะเป็นส่วนตัวเมื่อส่งมายังเว็บไซต์นี้</translation>
 <translation id="4756388243121344051">&amp;ประวัติการเข้าชม</translation>
 <translation id="4758311279753947758">เพิ่มข้อมูลติดต่อ</translation>
-<translation id="4759118997339041434">ปิดใช้การป้อนการชำระเงินอัตโนมัติแล้ว</translation>
 <translation id="4764776831041365478">หน้าเว็บใน <ph name="URL" /> อาจหยุดให้บริการชั่วคราวหรืออาจถูกย้ายไปยังที่อยู่เว็บใหม่อย่างถาวร</translation>
 <translation id="4771973620359291008">มีข้อผิดพลาดที่ไม่ทราบเกิดขึ้น</translation>
 <translation id="4780900888022378816">อุปกรณ์ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /> และบัญชีของคุณจัดการโดย <ph name="ACCOUNT_DOMAIN" /></translation>
@@ -710,6 +707,7 @@
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4854362297993841467">วิธีการนำส่งสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
 <translation id="4858792381671956233">คุณถามผู้ปกครองแล้วว่าสามารถเข้าชมเว็บไซต์นี้ได้ไหม</translation>
+<translation id="4876188919622883022">มุมมองอย่างง่าย</translation>
 <translation id="4876305945144899064">ไม่มีชื่อผู้ใช้</translation>
 <translation id="4877422487531841831">การค้นหา <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">อัตโนมัติ (ค่าเริ่มต้น)</translation>
@@ -723,7 +721,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> บอกว่า</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
-<translation id="4945672369594656571">ควบคุมวิธีจัดการข้อมูลอุปกรณ์และบัญชีของคุณ Google ประมวลผลข้อมูลอุปกรณ์และบัญชีภายใต้คำแนะนำของผู้จัดการอุปกรณ์และบัญชีของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการอุปกรณ์และบัญชีระบุไว้เท่านั้น</translation>
+<translation id="4945672369594656571">ควบคุมวิธีจัดการข้อมูลอุปกรณ์และบัญชีของคุณ Google ประมวลผลข้อมูลอุปกรณ์และบัญชีของคุณภายใต้คำแนะนำของผู้จัดการฝ่ายดูแลลูกค้าและอุปกรณ์ของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการฝ่ายดูแลลูกค้าและอุปกรณ์ระบุไว้เท่านั้น</translation>
 <translation id="4950898438188848926">ปุ่มเปลี่ยนแท็บ โปรดกด Enter เพื่อเปลี่ยนไปยังแท็บที่เปิดอยู่ <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -913,7 +911,6 @@
 <translation id="5967592137238574583">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5975083100439434680">ย่อ</translation>
-<translation id="5977976211062815271">ในอุปกรณ์นี้</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">ไม่สามารถเปิดแอปการชำระเงิน</translation>
 <translation id="5988826871883769516">อุปกรณ์นี้จัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -1031,7 +1028,6 @@
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
 <translation id="671076103358959139">โทเค็นการลงทะเบียน:</translation>
 <translation id="6711464428925977395">พร็อกซีเซิร์ฟเวอร์ผิดปกติหรือที่อยู่ไม่ถูกต้อง</translation>
-<translation id="6723740634201835758">ในบัญชี Google</translation>
 <translation id="6738516213925468394">ข้อมูลของคุณเข้ารหัสลับไว้ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />เมื่อ <ph name="TIME" /> ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6744009308914054259">ระหว่างที่รอการเชื่อมต่อ คุณไปที่หน้า "ดาวน์โหลด" เพื่ออ่านบทความออฟไลน์ได้</translation>
@@ -1044,7 +1040,6 @@
 <translation id="679355240208270552">ไม่ใช้งานเนื่องจากมีการเปิดใช้การค้นหาเริ่มต้นตามนโยบาย</translation>
 <translation id="681021252041861472">ช่องที่ต้องกรอก</translation>
 <translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
-<translation id="6824266427216888781">ไม่สามารถโหลดข้อมูลภูมิภาค</translation>
 <translation id="6825578344716086703">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ลงนามด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม (เช่น SHA-1) ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แสดงอาจถูกปลอมแปลงขึ้น และเซิร์ฟเวอร์ดังกล่าวอาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6839929833149231406">พื้นที่</translation>
@@ -1166,7 +1161,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">จัดการรหัสผ่าน…</translation>
 <translation id="7419106976560586862">เส้นทางโปรไฟล์</translation>
-<translation id="7424427397225027541">ควบคุมวิธีจัดการข้อมูลบัญชีของคุณ Google ประมวลผลข้อมูลบัญชีภายใต้คำแนะนำของผู้จัดการบัญชีของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการบัญชีระบุไว้เท่านั้น</translation>
+<translation id="7424427397225027541">ควบคุมวิธีจัดการข้อมูลบัญชีของคุณ Google ประมวลผลข้อมูลบัญชีภายใต้คำแนะนำของผู้จัดการฝ่ายดูแลลูกค้าของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการฝ่ายดูแลลูกค้าระบุไว้เท่านั้น</translation>
 <translation id="7437289804838430631">เพิ่มข้อมูลติดต่อ</translation>
 <translation id="7440140511386898319">สำรวจขณะที่ออฟไลน์</translation>
 <translation id="7441627299479586546">หัวเรื่องนโยบายไม่ถูกต้อง</translation>

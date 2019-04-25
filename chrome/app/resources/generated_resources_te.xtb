@@ -340,7 +340,6 @@
 <translation id="1525740877599838384">స్థానాన్ని గుర్తించడానికి Wi-Fiని మాత్రమే ఉపయోగించు</translation>
 <translation id="1526560967942511387">శీర్షికలేని పత్రం</translation>
 <translation id="1529891865407786369">పవర్ సోర్స్</translation>
-<translation id="1529899284660134226">షేర్ చేసిన ఫైల్‌లు &amp; ఫోల్డర్‌లను నిర్వహించండి</translation>
 <translation id="1530838837447122178">మౌస్ మరియు టచ్‌ప్యాడ్ పరికర సెట్టింగ్‌లను తెరవండి</translation>
 <translation id="1531004739673299060">యాప్ విండో</translation>
 <translation id="1536754031901697553">డిస్‌కనెక్ట్ చేస్తోంది...</translation>
@@ -3521,7 +3520,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{ఏదీ వద్దు}=1{<ph name="APP_1" />}=2{<ph name="APP_1" />, <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, 1 ఇతర యాప్}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, <ph name="EXTRA_APPS" /> ఇతర యాప్‌లు}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">ఫైల్ పాత్ లేదా పేరు చాలా పొడవుగా ఉంది. దయచేసి చిన్న పేరుతో, లేదా మరొక స్థానానికి సేవ్ చేయండి.</translation>
-<translation id="6564072216966459757"><ph name="DEVICE_TYPE" /> కోసం Linux యాప్‌లను తీసివేయండి</translation>
 <translation id="6567688344210276845">పేజీ చర్య కోసం '<ph name="ICON" />' చిహ్నాన్ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="6571979863037191371">మీ Chromebook నుండి మీ ఫోన్‌ని డిస్‌కనెక్ట్ చేయండి. అవి ఇకపై ఆటోమేటిక్‌గా కనెక్ట్ కావు.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> సాధారణంగా డౌన్‌లోడ్ చేయబడదు, బహుశా ప్రమాదకరమైనది కావచ్చు. మీరు అధునాతన రక్షణ ద్వారా సంరక్షించబడ్డారు.</translation>

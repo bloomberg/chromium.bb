@@ -3320,7 +3320,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
            Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="7302043767260300182">Skærmlåsforsinkelse, når strømforsyning er tilsluttet</translation>
-<translation id="7305262223970835999">Aktiverer en side til ændring af adgangskode for SAML-brugere, mens en session er i gang.</translation>
 <translation id="7311458740754205918">Hvis denne politik er angivet som Sand eller ikke er angivet, viser siden Ny fane muligvis forslag til indhold baseret på brugerens browserhistorik, interesser eller placering.
 
       Hvis politikken er angivet som Falsk, vises automatisk genererede forslag til indhold ikke på siden Ny fane.</translation>
@@ -4096,7 +4095,6 @@ Denne politik er udfaset i M69 til fordel for OverrideSecurityRestrictionsOnInse
 
 Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Stil Quick Fix Build til rådighed for brugerne.</translation>
 <translation id="8942616385591203339">Denne politik styrer, hvorvidt samtykke til synkronisering kan vises til brugeren ved første login. Den bør angives som falsk, hvis brugeren aldrig behøver at bruge samtykke til synkronisering.
       Hvis den angives som falsk, vises samtykke til synkronisering ikke.
       Hvis den angives som sand eller slet ikke angives, vises samtykke til synkronisering.</translation>

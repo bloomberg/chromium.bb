@@ -541,7 +541,6 @@
 <translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書で SAN（サブジェクトの別名）が指定されていません。設定が不適切であるか、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
 <translation id="3950820424414687140">ログイン</translation>
-<translation id="3963721102035795474">リーダーモード</translation>
 <translation id="3963837677003247395">手動で続行しますか？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
 <translation id="397105322502079400">計算しています...</translation>
@@ -610,7 +609,6 @@
 <translation id="4265872034478892965">管理者によって許可</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4277028893293644418">パスワードを再設定</translation>
-<translation id="4280429058323657511">、有効期限: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{このカードを Google アカウントに保存しました}other{これらのカードを Google アカウントに保存しました}}</translation>
 <translation id="42981349822642051">展開</translation>
 <translation id="4302965934281694568">長3（封筒）</translation>
@@ -688,7 +686,6 @@
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
-<translation id="4759118997339041434">お支払い情報の自動入力は無効になっています</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
 <translation id="4780900888022378816">ご使用のデバイスは <ph name="ENROLLMENT_DOMAIN" /> で管理され、アカウントは <ph name="ACCOUNT_DOMAIN" /> で管理されています。</translation>
@@ -703,6 +700,7 @@
 <translation id="4850886885716139402">表示</translation>
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
 <translation id="4858792381671956233">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
+<translation id="4876188919622883022">簡易表示</translation>
 <translation id="4876305945144899064">ユーザー名が指定されていません</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> を検索</translation>
 <translation id="4879491255372875719">自動（デフォルト）</translation>
@@ -906,7 +904,6 @@
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
-<translation id="5977976211062815271">このデバイス</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">お支払いアプリを開けません</translation>
 <translation id="5988826871883769516">このデバイスは <ph name="ENROLLMENT_DOMAIN" /> で管理されています。</translation>
@@ -1024,7 +1021,6 @@
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
-<translation id="6723740634201835758">Google アカウント</translation>
 <translation id="6738516213925468394">データは <ph name="TIME" />に<ph name="BEGIN_LINK" />同期パスフレーズ<ph name="END_LINK" />で暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6744009308914054259">接続するまでの間、[ダウンロード] に移動してオフラインで記事を読むことができます。</translation>
@@ -1037,7 +1033,6 @@
 <translation id="679355240208270552">ポリシーによって既定の検索エンジンが有効になっていないため、無視されました。</translation>
 <translation id="681021252041861472">必須項目</translation>
 <translation id="6810899417690483278">カスタム ID</translation>
-<translation id="6824266427216888781">地域データを読み込めませんでした</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" /> にアクセスしようとしましたが、脆弱な署名アルゴリズム（SHA-1 など）を使用して署名された証明書がサーバーから提示されました。このセキュリティ認証情報は偽装されたものである可能性があり、アクセスしようとしたサーバーとは別のサーバーが応答している可能性があります（悪意のあるユーザーと通信している可能性があります）。</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6839929833149231406">地区</translation>

@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Asukoha määramine ainult WiFi-ühenduse kaudu</translation>
 <translation id="1526560967942511387">Pealkirjata dokument</translation>
 <translation id="1529891865407786369">Toiteallikas</translation>
-<translation id="1529899284660134226">Halda jagatud faile ja kaustu</translation>
 <translation id="1530838837447122178">Hiire ja puuteplaadi seadme seadete avamine</translation>
 <translation id="1531004739673299060">Rakenduse aken</translation>
 <translation id="1536754031901697553">Ühenduse katkestamine …</translation>
@@ -3548,7 +3547,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6559023360691182159">{COUNT,plural, =0{Puudub}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> ja <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> ja <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> ja veel 1 rakendus}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> ja veel <ph name="EXTRA_APPS" /> rakendust}}</translation>
 <translation id="6561726789132298588">sisestusklahv</translation>
 <translation id="656293578423618167">Faili tee või nimi on liiga pikk. Salvestage lühema nimega või muusse asukohta.</translation>
-<translation id="6564072216966459757">Eemalda Linuxi rakendused seadmest <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Lehe toimingu jaoks ei õnnestunud laadida ikooni <ph name="ICON" />.</translation>
 <translation id="6571979863037191371">Katkestage telefoni ja Chromebooki ühendus. Seadmed ei loo edaspidi automaatselt ühendust.</translation>
 <translation id="6573998787994398565">Faili <ph name="FILE_NAME" /> ei laadita tavaliselt alla ja see võib olla ohtlik. Teid kaitseb funktsioon Täiustatud kaitse.</translation>

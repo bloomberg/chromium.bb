@@ -273,6 +273,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5228579091201413441">Włącz synchronizację</translation>
 <translation id="5244474230056479698">Synchronizowanie z <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Anuluj synchronizację</translation>
+<translation id="5271549068863921519">Zapisz hasło</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
@@ -359,7 +360,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6464071786529933911">Otwórz w karcie incognito</translation>
 <translation id="6476800141292307438">Tłumaczę stronę na <ph name="LANGUAGE" />. Opcje znajdują się na dole ekranu.</translation>
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6513773942555305766">Hasło proponowane przez Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Ostatnia godzina</translation>
 <translation id="6610002944194042868">Opcje tłumaczenia</translation>
 <translation id="6642362222295953972">Przełącz na istniejącą kartę</translation>
@@ -513,6 +513,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="9081058212938299310">Zaktualizować hasło dla <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">Jeden element</translation>
 <translation id="9083838294503912307">Aby synchronizować i personalizować wszystkie swoje urządzenia, włącz synchronizację.</translation>
+<translation id="9094033019050270033">Aktualizuj hasło</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>
 <translation id="9157836665414082580">Ukryj okna dialogowe</translation>

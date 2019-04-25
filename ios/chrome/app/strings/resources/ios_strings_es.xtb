@@ -273,6 +273,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">¿Quieres cancelar la sincronización?</translation>
+<translation id="5271549068863921519">Guardar contraseña</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -359,7 +360,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6464071786529933911">Abrir en pestaña incógnito</translation>
 <translation id="6476800141292307438">La página se está traduciendo al <ph name="LANGUAGE" />. Encontrarás opciones disponibles cerca de la parte inferior de la pantalla.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
-<translation id="6513773942555305766">Contraseña sugerida de Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Hace una hora</translation>
 <translation id="6610002944194042868">Opciones del Traductor</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
@@ -509,6 +509,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9081058212938299310">¿Quieres actualizar la contraseña de <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9083838294503912307">Activa la sincronización para sincronizar y personalizar todos tus dispositivos.</translation>
+<translation id="9094033019050270033">Actualizar contraseña</translation>
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>

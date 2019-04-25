@@ -273,6 +273,7 @@
 <translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />에 동기화</translation>
 <translation id="5245322853195994030">동기화 취소</translation>
+<translation id="5271549068863921519">비밀번호 저장</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
@@ -359,7 +360,6 @@
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6476800141292307438">페이지를 <ph name="LANGUAGE" />로 번역합니다. 화면 하단에 옵션이 있습니다.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
-<translation id="6513773942555305766">Chrome 추천 비밀번호: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">지난 1시간</translation>
 <translation id="6610002944194042868">번역 옵션</translation>
 <translation id="6642362222295953972">기존 탭으로 전환</translation>
@@ -382,12 +382,14 @@
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6914583639806229067">복사한 이미지 검색</translation>
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
+<translation id="692898627499215142">초기 동기화 설정이 완료되지 않았습니다. 동기화를 시작하려면 동기화를 사용으로 전환하세요.</translation>
 <translation id="6944369514868857500">다른 계정 선택</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="7004499039102548441">최근 탭</translation>
 <translation id="7006788746334555276">콘텐츠 설정</translation>
+<translation id="7015203776128479407">초기 동기화 설정이 완료되지 않았습니다. 동기화가 사용 중지되었습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -399,6 +401,7 @@
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7167621057293532233">데이터 유형</translation>
+<translation id="7173114856073700355">설정 열기</translation>
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
@@ -475,6 +478,7 @@
 <translation id="850600235656508448">시크릿 모드에서 열기</translation>
 <translation id="8517375800490286174">오픈소스 라이선스</translation>
 <translation id="8524799873541103884">전체 <ph name="NUMBER_OF_OPEN_TABS" />개 탭 중 <ph name="FIRST_VISIBLE_TAB" />~<ph name="LAST_VISIBLE_TAB" />번째 탭이 <ph name="INCOGNITO" /> 탭입니다.</translation>
+<translation id="8529767659511976195">신규</translation>
 <translation id="8532105204136943229">만료 연도</translation>
 <translation id="8534481786647257214">Google+ 게시가 완료되었습니다.</translation>
 <translation id="8548878600947630424">페이지에서 찾기...</translation>
@@ -509,6 +513,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" />님의 비밀번호를 업데이트하시겠습니까?</translation>
 <translation id="9083392325882095631">항목 1개</translation>
 <translation id="9083838294503912307">모든 기기에서 동기화 및 맞춤설정하려면 동기화를 사용 설정하세요.</translation>
+<translation id="9094033019050270033">비밀번호 업데이트</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>

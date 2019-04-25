@@ -3395,7 +3395,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
           Toto pravidlo sa použije iba v prípade, že je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Oneskorenie uzamknutia obrazovky pri používaní napájacieho zdroja</translation>
-<translation id="7305262223970835999">Povolí stránku na zmenu hesla pre používateľov SAML v rámci relácie.</translation>
 <translation id="7311458740754205918">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, na stránke na novej karte sa môžu zobrazovať návrhy obsahu na základe používateľovej histórie prehliadania, záujmov alebo polohy.
 
       Ak toto pravidlo nastavíte na možnosť False, automaticky generované návrhy obsahu sa na stránke na novej karte nezobrazujú.</translation>
@@ -4191,7 +4190,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ďalšie informácie o zabezpečených kontextoch nájdete na adrese
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Poskytovať používateľom zostavu s rýchlou opravou.</translation>
 <translation id="8942616385591203339">Toto pravidlo riadi, či je možné používateľovi pri prvom prihlásení zobraziť súhlas so synchronizáciou. Ak používateľ nebude súhlas so synchronizáciou nikdy potrebovať, malo by byť nastavené na hodnotu false.
       Ak ho nastavíte na hodnotu false, súhlas so synchronizáciou sa nikdy nezobrazí.
       Ak ho nastavíte na hodnotu true alebo nenastavíte, súhlas so synchronizáciou je možné zobraziť.</translation>

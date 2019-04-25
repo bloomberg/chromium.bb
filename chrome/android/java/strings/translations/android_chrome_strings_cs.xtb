@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Vyberte kontakty</translation>
 <translation id="1922076542920281912">Chcete-li Chromu povolit přístup k vaší poloze, zapněte ji také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Aktualizace</translation>
 <translation id="19288952978244135">Znovu spusťte Chrome.</translation>
 <translation id="1933845786846280168">Vybraná karta</translation>
 <translation id="194341124344773587">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK" />Nastavení pro Android<ph name="END_LINK" />.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Schránka</translation>
 <translation id="2587052924345400782">Je dostupná novější verze</translation>
 <translation id="2593272815202181319">Neproporcionální</translation>
-<translation id="2610239185026711824">Navrhnout heslo</translation>
 <translation id="2612676031748830579">Číslo karty</translation>
 <translation id="2613747923081026172">Vytvořit skupinu</translation>
 <translation id="2621115761605608342">Povolit JavaScript pro konkrétní web.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389">Zbývá: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">nezdařilo se</translation>
 <translation id="2781151931089541271">Zbývá: 1 s</translation>
-<translation id="2803478378562657435">Zobrazování uložených hesel a možností hesel</translation>
 <translation id="2810645512293415242">Stránka byla zjednodušena s cílem ušetřit data a zrychlit načtení.</translation>
 <translation id="281504910091592009">Zobrazit a spravovat uložená hesla v <ph name="BEGIN_LINK" />účtu Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Chcete-li mít záložky ve všech zařízeních, přihlaste se a zapněte synchronizaci</translation>
@@ -414,7 +413,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="4116038641877404294">Stáhněte si stránky k použití offline</translation>
 <translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
-<translation id="4159800535322890630">Blokovat webům přístup k senzorům</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
 <translation id="4179980317383591987">Využito: <ph name="AMOUNT" /></translation>
@@ -481,7 +479,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
 <translation id="4648718555153979859">Zde jsou seskupeny vaše karty</translation>
 <translation id="4650364565596261010">Výchozí nastavení systému</translation>
-<translation id="4660011489602794167">Zobrazit klávesnici</translation>
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
 <translation id="4684427112815847243">Synchronizovat vše</translation>
@@ -622,7 +619,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5581519193887989363">Synchronizované položky můžete kdykoliv vybrat v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="5596627076506792578">Další možnosti</translation>
-<translation id="5620299005957670886">Povolovat webům přístup k senzorům (doporučeno)</translation>
 <translation id="5620928963363755975">Stažené soubory a stránky můžete najít pomocí tlačítka Další možnosti</translation>
 <translation id="5626134646977739690">Jméno:</translation>
 <translation id="5639724618331995626">Povolit všechny weby</translation>
@@ -731,7 +727,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6378173571450987352">Podrobnosti: Seřazeno podle množství využitých dat</translation>
 <translation id="6383961787135158834">Vymazat úložiště webů…</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
-<translation id="6393156038355142111">Navrhnout silné heslo</translation>
 <translation id="6393863479814692971">Chrome pro tento web potřebuje oprávnění k přístupu k fotoaparátu a mikrofonu.</translation>
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
@@ -890,7 +885,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="7482697587265222445">Karta byla odeslána do vašich zařízení</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Zobrazovat hesla</translation>
 <translation id="7494974237137038751">uspořená data</translation>
 <translation id="7498271377022651285">Čekejte prosím…</translation>
 <translation id="7514365320538308">Stáhnout</translation>
@@ -1029,7 +1023,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8503559462189395349">Hesla Chrome</translation>
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8504988642345501642">Při posunutí nahoru zobrazit rychlé odkazy na související stránky. Adresy URL navštívených stránek se odesílají do Googlu.</translation>
-<translation id="8507520749471379845">Jsou k dispozici hesla</translation>
 <translation id="8514477925623180633">Exportovat hesla uložená v Chromu</translation>
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="851751545965956758">Bránit webům v připojení k zařízením</translation>

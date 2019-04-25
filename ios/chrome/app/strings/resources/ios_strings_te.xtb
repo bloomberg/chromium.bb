@@ -273,6 +273,7 @@
 <translation id="5228579091201413441">సమకాలీకరణను ప్రారంభించండి</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />కి సమకాలీకరిస్తోంది</translation>
 <translation id="5245322853195994030">సింక్‌ను రద్దు చేయి</translation>
+<translation id="5271549068863921519">పాస్‌వర్డ్‌ను సేవ్ చేయి</translation>
 <translation id="5300589172476337783">చూపించు</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5327248766486351172">పేరు</translation>
@@ -359,7 +360,6 @@
 <translation id="6464071786529933911">కొత్త అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="6476800141292307438">పేజీని <ph name="LANGUAGE" />లోకి అనువదిస్తోంది. స్క్రీన్ దిగువ భాగానికి దగ్గర్లో ఎంపికలు అందుబాటులో ఉంటాయి.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తొలగించబడ్డాయి</translation>
-<translation id="6513773942555305766">Chrome సూచించిన పాస్‌వర్డ్: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">గడిచిన గంట</translation>
 <translation id="6610002944194042868">అనువాదం ఎంపికలు</translation>
 <translation id="6642362222295953972">ప్రస్తుత ట్యాబ్‌కు మారు</translation>
@@ -509,6 +509,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> పాస్‌వర్డ్‌ని అప్‌డేట్ చేయాలా?</translation>
 <translation id="9083392325882095631">1 అంశం</translation>
 <translation id="9083838294503912307">మీ అన్ని పరికరాలలోనూ సమకాలీకరణ మరియు వ్యక్తిగతీకరణ చేయడం కోసం, సమకాలీకరణను ఆన్ చేయండి.</translation>
+<translation id="9094033019050270033">పాస్‌వర్డ్‌ను అప్‌డేట్ చేయి</translation>
 <translation id="9100610230175265781">రహస్య పదబంధం అవసరం</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చేయండి</translation>
 <translation id="9157836665414082580">డైలాగ్‌లను కుదించు</translation>

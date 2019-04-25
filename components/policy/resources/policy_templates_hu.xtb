@@ -3344,7 +3344,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Az alkalmazás csak akkor veszi figyelembe ezt a házirendet, ha a „DefaultSearchProviderEnabled” házirend is engedélyezve van.</translation>
 <translation id="7302043767260300182">Képernyőzár késleltetése hálózati áramról való működés során</translation>
-<translation id="7305262223970835999">Lehetővé teszi az oldalak számára a munkameneten belüli jelszómódosítást SAML-felhasználók esetében.</translation>
 <translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
 
       Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
@@ -4136,7 +4135,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       További információ a biztonságos környezetekről:
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">A felhasználók számára Quick Fix Buildet biztosít.</translation>
 <translation id="8942616385591203339">Ez a házirend vezérli, hogy megjeleníthető-e szinkronizáláshoz való hozzájárulás a felhasználó számára az első bejelentkezés során. Értékét hamisra kell állítani, ha a felhasználónak sosincs szüksége a szinkronizáláshoz való hozzájáruláshoz.
       Ha a beállítás értéke hamis, a szinkronizáláshoz való hozzájárulás nem jelenik meg.
       Ha a beállítás értéke igaz, vagy ha a beállítás konfigurálatlanul marad, a szinkronizáláshoz való hozzájárulás megjeleníthető.</translation>

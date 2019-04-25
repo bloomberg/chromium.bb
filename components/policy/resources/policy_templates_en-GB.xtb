@@ -3421,7 +3421,6 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="7302043767260300182">Screen lock delay when running on AC power</translation>
-<translation id="7305262223970835999">Enables a page for in-session change of password for SAML users.</translation>
 <translation id="7311458740754205918">If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
@@ -4233,7 +4232,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       For more information on secure contexts, see
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Provide users with Quick Fix Build.</translation>
 <translation id="8942616385591203339">This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.
       If set to true or unset, Sync Consent can be displayed.</translation>

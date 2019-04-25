@@ -341,7 +341,6 @@
 <translation id="1525740877599838384">Користи само Wi-Fi за одређивање локације</translation>
 <translation id="1526560967942511387">Ненасловљени документ</translation>
 <translation id="1529891865407786369">Извор напајања</translation>
-<translation id="1529899284660134226">Управљајте дељеним датотекама и директоријумима</translation>
 <translation id="1530838837447122178">Отвори подешавања уређаја за миш и тачпед</translation>
 <translation id="1531004739673299060">Прозор за апликацију</translation>
 <translation id="1536754031901697553">Веза се прекида...</translation>
@@ -3546,7 +3545,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Ниједна}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> и <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> и <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и још 1 апликација}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и још <ph name="EXTRA_APPS" /> апликација}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и још <ph name="EXTRA_APPS" /> апликације}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и још <ph name="EXTRA_APPS" /> апликација}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Путања или назив датотеке су предугачки. Сачувајте са краћим називом или на другој локацији.</translation>
-<translation id="6564072216966459757">Уклоните Linux апликације за <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Није могуће учитати икону „<ph name="ICON" />“ за радњу странице.</translation>
 <translation id="6571979863037191371">Прекините везу телефона са Chromebook-ом. Они се више неће повезивати аутоматски.</translation>
 <translation id="6573998787994398565">Датотека <ph name="FILE_NAME" /> се обично не преузима и може да буде опасна. Штити вас напредна заштита.</translation>

@@ -52,6 +52,13 @@
 <translation id="1049138910114524876">Establece la configuración regional que se aplica en la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si se establece esta política, la pantalla de acceso mostrará siempre la configuración regional que indica su primer valor (la política se define como una lista para otras futuras configuraciones). Si no se establece esta política o se establece una lista vacía, la pantalla de acceso mostrará la configuración regional de la última sesión de usuario. Si el valor de esta política no corresponde a una configuración regional válida, la pantalla de acceso mostrará una configuración de resguardo (la actual es en-US).</translation>
+<translation id="1052499923181221200">Esta política no tendrá efecto a menos que SamlInSessionPasswordChangeEnabled sea verdadera.
+      Si esta política es verdadera y se establece como, por ejemplo, 14, los usuarios de SAML recibirán una notificación sobre el vencimiento de su contraseña 14 días antes de la fecha de caducidad.
+      Los usuarios podrán ocuparse de inmediato y cambiar la contraseña en la sesión, antes de que caduque.
+      Sin embargo, solo se mostrarán estas notificaciones si el proveedor de identidad de SAML envía la información de vencimiento de contraseña al dispositivo durante el proceso de acceso de SAML.
+      Si configuras esta política como cero, los usuarios no recibirán ninguna notificación de antemano. Solo se les avisará una vez que la contraseña haya caducado.
+
+      Si configuras esta política, el usuario no podrá cambiarla ni anularla.</translation>
 <translation id="1062011392452772310">Habilita la atestación remota para el dispositivo.</translation>
 <translation id="1062407476771304334">Reemplazar</translation>
 <translation id="1079801999187584280">No permitir el uso de las Herramientas para desarrolladores</translation>
@@ -212,6 +219,7 @@
       Si se habilita la política, el Asistente de Google podrá acceder a este contexto.
       Si se inhabilita la política, el Asistente de Google no podrá acceder a este contexto.
       Si no se configura, los usuarios podrán decidir la acción del Asistente de Google.</translation>
+<translation id="1376119291123231789">Habilitar el modo avanzado de carga de la batería</translation>
 <translation id="1383493480903114193">Esta política fuerza la ejecución del código de red en el proceso de navegación.
 
       Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
@@ -307,6 +315,18 @@
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1504431521196476721">Atestación remota</translation>
+<translation id="1507382822467487898">
+          Configura la dirección MAC (Control de acceso de medio) que se usará cuando un conector está enchufado al dispositivo.
+
+          Cuando un conector está enchufado a algunos modelos de dispositivos, se usa la dirección MAC designada para el conector del dispositivo a fin de identificar el dispositivo de forma predeterminada en Ethernet. Esta política permite que el administrador cambie la fuente de la dirección MAC mientras está enchufado el conector.
+
+          Si se selecciona "DeviceDockMacAddress" o no se configura la política, se usará la dirección MAC designada para el conector del dispositivo.
+
+          Si se selecciona "DeviceNicMacAddress", se usará la dirección MAC para el NIC (controlador de interfaz de red) del dispositivo.
+
+          Si se selecciona "DockNicMacAddress", se usará la dirección MAC para el NIC del conector.
+
+          El usuario no puede cambiar esta configuración.</translation>
 <translation id="1507957856411744193">Si esta política se establece como verdadera, <ph name="PRODUCT_NAME" /> se conectará a los dispositivos de transmisión en todas las direcciones IP, no solo en las direcciones privadas RFC1918/RFC4193.
 
           Si se establece como falsa, <ph name="PRODUCT_NAME" /> se conectará a los dispositivos de transmisión solo en las direcciones privadas RFC1918/RFC4193.
@@ -727,6 +747,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2327252517317514801">Definir los dominios con permiso para acceder a G Suite</translation>
+<translation id="2356878440219553005">Especifica la política para administrar la energía en el modo avanzado de carga de la batería.
+
+          Controla de forma dinámica la carga de la batería para reducir su desgaste debido al uso y aumentar su duración.
+
+          Si se selecciona el modo personalizado de carga de la batería, deben especificarse las políticas DeviceBatteryChargeCustomStartCharging y DeviceBatteryChargeCustomStopCharging.
+
+          Si se establece esta política, se aplicará el modo de carga de la batería (cuando lo admita el dispositivo).
+
+          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
+
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="237494535617297575">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
 <translation id="2411817661175306360">La advertencia de la protección de la contraseña está desactivada</translation>
@@ -762,6 +793,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta política se establece en Falso, no se puede omitir el acceso automático sin retraso (si está configurado).</translation>
 <translation id="2454228136871844693">Optimiza la estabilidad.</translation>
+<translation id="2463034609187171371">Permitir los paquetes de encriptación DHE en TLS</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
 <translation id="2482676533225429905">Mensajería nativa</translation>
@@ -933,6 +965,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2769952903507981510">Configura el nombre de dominio requerido para los hosts de acceso remoto.</translation>
 <translation id="2787173078141616821">Informar datos sobre el estado de Android</translation>
 <translation id="2799297758492717491">Permitir la reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
+<translation id="2801155097555584385">Establecer el porcentaje del nivel de la batería en el que debe comenzar la carga</translation>
 <translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
 
       Si esta política se configura en False, los usuarios no podrán jugar con el huevo de pascua del dinosaurio cuando el dispositivo se encuentre sin conexión. Si esta configuración se establece en True, los usuarios podrán jugar con el dinosaurio. Si esta política no se configura, los usuarios no podrán jugar con el huevo de pascua del dinosaurio en el Sistema operativo Chrome registrado, pero se les permitirá jugar en otras circunstancias.</translation>
@@ -1006,6 +1039,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si inhabilitas esta configuración o no estableces un valor, Vista previa de impresión usará la impresora que se usó de forma más reciente como la opción de destino predeterminada.
 
       Si habilitas esta configuración, Vista previa de impresión usará la impresora predeterminada del sistema operativo como la opción de destino predeterminada.</translation>
+<translation id="285627849510728211">Establecer la configuración para el modo avanzado de carga de la batería durante el día</translation>
 <translation id="2856674246949497058">Implementa la reversión y mantén la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Aplica la función Powerwash durante el proceso.</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2873651257716068683">Anula el tamaño predeterminado para la página de impresión. Si el tamaño de la página no está disponible, se ignorará esta política.</translation>
@@ -1138,12 +1172,26 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones del servicio para la cuenta local del dispositivo</translation>
 <translation id="3077183141551274418">Habilitar o inhabilitar los ciclos de vida de las pestañas</translation>
+<translation id="3079417254871857650">Especifica la acción que debe realizarse cuando se creó el directorio principal del usuario con la encriptación ecryptfs.
+
+      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
+
+      Si configuras esta política como "Migrate", los directorios principales con la encriptación ecryptfs se migrarán automáticamente a la encriptación ext4 cuando el usuario acceda, sin solicitarle permiso.
+
+      Si configuras esta política como "Wipe", los directorios principales con la encriptación ecryptfs se borrarán cuando el usuario acceda y, en su lugar, se crearán nuevos directorios principales con la encriptación ext4. Advertencia: Esta acción borra los datos locales del usuario.
+
+      Si configuras esta política como "MinimalMigrate", los directorios principales con la encriptación ecryptfs se borrarán cuando el usuario acceda y, en su lugar, se crearán nuevos directorios principales con la encriptación ext4. Sin embargo, se intentará preservar los tokens de acceso para que el usuario no tenga que volver a acceder. Advertencia: Esta acción borra los datos locales del usuario.
+
+      Si configuras esta política como una opción que ya no es compatible ("AskUser" o "AskForEcryptfsArcUsers"), se aplicará la opción "Migrate".
+
+      Esta política no se aplica a los usuarios de kioskos. Cuando no se configura esta política, el dispositivo se comporta como si se hubiese elegido "DisallowArc".</translation>
 <translation id="3086995894968271156">Configura Cast Receiver en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Te permite configurar una lista de patrones de URL con los sitios que pueden mostrar imágenes.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultImagesSetting" (si está configurada) o de otro tipo de configuración personal del usuario.
 
            Ten en cuenta que esta política estaba habilitada en Android por equivocación, pero esta funcionalidad nunca fue totalmente compatible en ese SO.</translation>
+<translation id="3091832372132789233">Cargar la batería para dispositivos que están principalmente conectados a una fuente de alimentación externa</translation>
 <translation id="3096595567015595053">Lista de complementos habilitados</translation>
 <translation id="3101501961102569744">Elegir cómo especificar la configuración del servidor proxy</translation>
 <translation id="3101709781009526431">Fecha y hora</translation>
@@ -1169,6 +1217,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si se inhabilita esta opción, <ph name="PRODUCT_NAME" /> solo usará hosts de mensajería nativa instalados en el nivel de sistema.
 
           Si no se configura esta política, <ph name="PRODUCT_NAME" /> permitirá el uso de hosts de mensajería nativa en el nivel de usuario.</translation>
+<translation id="3177802893484440532">Solicitar comprobaciones OCSP/CRL en línea para los anclajes de confianza locales</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Como las apps de Android no pueden acceder a las claves corporativas, esta política no tiene efecto en las apps.</translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
@@ -1178,6 +1227,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3220624000494482595">Si la Aplicación de kiosko es una app de Android, esta no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si esta política se establece como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se pueden instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="3240609035816615922">Política de acceso para la configuración de las impresoras</translation>
+<translation id="3240655340884151271">Dirección MAC para el NIC incorporado del dispositivo</translation>
 <translation id="3243309373265599239">Especifica el período de tiempo sin intervención del usuario luego del cual se atenúa la pantalla si se usa alimentación de CA.
 
            Si esta política se establece en un valor mayor que cero, se especifica el período de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
@@ -1197,6 +1247,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> funcione como proxy entre <ph name="CLOUD_PRINT_NAME" /> e impresoras anteriores conectadas a la computadora.
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y la computadora no podrá compartir las impresoras con <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3312206664202507568">Habilita una página en chrome://password-change que permite a los usuarios de SAML cambiar sus contraseñas de SAML durante la sesión, lo que asegura que se sincronicen la contraseña de SAML y la de bloqueo de pantalla del dispositivo.
+
+      Esta política también habilita las notificaciones para advertir a los usuarios de SAML de que sus contraseñas de SAML están a punto de caducar, para que puedan renovarlas de inmediato durante la sesión.
+      Sin embargo, solo se mostrarán estas notificaciones si el proveedor de identidad de SAML envía la información de vencimiento de contraseña al dispositivo durante el proceso de acceso de SAML.
+
+      Si configuras esta política, el usuario no podrá cambiarla ni anularla.</translation>
 <translation id="3322771899429619102">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenBlockedForUrls", se anulan estas excepciones.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
@@ -1283,6 +1339,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política no se establece o se establece en "False", las demoras de administración de energía y el límite de duración de la sesión se ejecutan tan pronto como comienza la sesión.</translation>
 <translation id="3478024346823118645">Eliminar los datos del usuario al salir</translation>
+<translation id="3480961938508521469">Cargar la batería por completo a un ritmo normal</translation>
 <translation id="348495353354674884">Habilitar el teclado virtual</translation>
 <translation id="3487623755010328395">
         Si se establece esta política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política de nube asociada para todos los perfiles.
@@ -1326,6 +1383,8 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="355118380775352753">Sitios web que se abren en un navegador alternativo</translation>
 <translation id="3554984410014457319">Permitir que el Asistente de Google escuche la frase de activación de voz</translation>
+<translation id="356579196325389849">Los usuarios pueden configurar un canal de versiones del Sistema operativo Chrome</translation>
+<translation id="3575011234198230041">Autenticación HTTP</translation>
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>
 <translation id="357917253161699596">Permitir que los usuarios administren los certificados de usuario</translation>
 <translation id="3583230441447348508">Especifica una lista de archivos compartidos de red configurados previamente.
@@ -1356,6 +1415,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
         La inscripción en la política de nube para el alcance de máquinas usa esta política en el escritorio. Se puede configurar mediante el registro o GPO en Windows, plist en Mac y el archivo de políticas JSON en Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies del IdP de SAML durante el acceso</translation>
+<translation id="3668151900457104753">Desinstalar extensiones en la lista negra</translation>
 <translation id="3701121231485832347">Controla la configuración específica de los dispositivos <ph name="PRODUCT_OS_NAME" /> administrados por <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pronto dejará de estar disponible el campo de una línea y desaparecerá. Empieza a usar el cuadro de texto de varias líneas que se encuentra a continuación).</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
@@ -1437,6 +1497,16 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se establece la política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
 <translation id="3824972131618513497">Controla la configuración relacionada con el reinicio y la administración de energía.</translation>
+<translation id="3826475866868158882">Se habilitaron los Servicios de ubicación de Google</translation>
+<translation id="3831054243924627613">Esta política controla el estado inicial de la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
+
+      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
+
+      Si esta política se establece como <ph name="BR_ENABLED" />, se habilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
+
+      Si esta política se establece como <ph name="BR_UNDER_USER_CONTROL" />, se le pedirá al usuario que elija si quiere usar la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos. Si el usuario la habilita, se cargan los datos de las apps de Android a los servidores de copia de seguridad de Android y se vuelven a restablecer cuando se reinstalan apps compatibles.
+
+      Ten en cuenta que esta política solo controla el estado de esta funcionalidad durante la configuración inicial. El usuario puede abrir la configuración de Android luego y activar o desactivar esta funcionalidad.</translation>
 <translation id="3831376478177535007">Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> permite que los certificados emitidos mediante las operaciones del PKI heredado de Symantec Corporation se consideren de confianza cuando reciben la validación correcta de un certificado de CA reconocido y se vinculan a este.
 
       Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo certificados de la infraestructura heredada de Symantec. Si una actualización del sistema operativo cambia la forma en la que este maneja dichos certificados, esta política ya no tendrá efecto. Además, se trata de una solución temporal para que las empresas tengan más tiempo para dejar de usar los certificados heredados de Symantec. Esta política se quitará el 1 de enero de 2019 o cerca de esta fecha.
@@ -1518,6 +1588,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si la política no se establece o se establece en false, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL a un archivo proxy .pac</translation>
+<translation id="3920892052017026701">Establece el porcentaje del nivel de la batería en el que debe comenzar la carga.
+
+          La batería comienza a cargarse cuando se agota el nivel personalizado para el comienzo de la carga.
+
+          El valor de DeviceBatteryChargeCustomStartCharging debe ser menor al de DeviceBatteryChargeCustomStopCharging.
+
+          Solo se usa esta política si se establece DeviceBatteryChargeMode como personalizada.
+
+          Si esta política no se configura o no se establece, se aplicará el modo de carga estándar para la batería.</translation>
 <translation id="3925377537407648234">Establecer la resolución de pantalla y el factor de escalas</translation>
 <translation id="3939893074578116847">Envía paquetes de red al servidor de administración para controlar el estado en
       línea, lo que permite que el servidor detecte si el dispositivo está sin
@@ -1647,6 +1726,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4150201353443180367">Pantalla</translation>
 <translation id="4157003184375321727">Informar la versión de firmware y SO.</translation>
 <translation id="4157594634940419685">Permitir el acceso a las impresoras de CUPS nativas</translation>
+<translation id="4160962198980004898">Fuente de la dirección MAC del dispositivo cuando está conectado</translation>
 <translation id="4163705126749612234">Configura los nombres de dominio de cliente obligatorios que se aplicarán en los clientes de acceso remoto y evita que los usuarios los cambien.
 
           Si se habilita esta configuración, solo los clientes de uno de los dominios especificados podrán conectarse al host.
@@ -1724,6 +1804,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Ten en cuenta que la política que contiene la ID de una app no implica que el usuario podrá habilitar la app para tomar notas en la pantalla bloqueada. Por ejemplo, en Chrome 61, la plataforma aplica otras restricciones al conjunto de apps disponibles.
 
       Si la política no se configura, la política no restringe el conjunto de apps que el usuario puede habilitar en la pantalla bloqueada.</translation>
+<translation id="4313767483634435271">Dirección MAC designada para el conector del dispositivo</translation>
 <translation id="4322842393287974810">Permitir que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de instalaciones de apps de Android</translation>
@@ -1755,6 +1836,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4360826270668210664">Si se configura esta política, el host de acceso remoto requerirá que los clientes que se autentiquen obtengan un token de autenticación de esta URL para conectarse. Esta política se debe usar junto con RemoteAccessHostTokenValidationUrl.
 
           Actualmente, esta función está inhabilitada en el lado del servidor.</translation>
+<translation id="4363057787588706121">Permitir la combinación de políticas de listas con diferentes fuentes</translation>
 <translation id="436581050240847513">Informar interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
@@ -1920,6 +2002,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4826326557828204741">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con batería</translation>
 <translation id="4832852360828533362">Informes de usuarios y dispositivos</translation>
 <translation id="4834526953114077364">Elimina los usuarios que más tiempo hace que no se utilizan y que no accedieron en los últimos tres meses hasta que se libere suficiente espacio.</translation>
+<translation id="4835622243021053389">Habilitar la autenticación NTLMv2</translation>
 <translation id="4858735034935305895">Permitir el modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de entrada permitidos en una sesión de usuario</translation>
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
@@ -2035,6 +2118,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambos sentidos. Cuando el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir estas URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Habilitar el inicio mediante CA (corriente alterna)</translation>
+<translation id="5131211790949066746">Permite combinar las políticas de listas de instalación para extensiones <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> y <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Si activas esta configuración, se combinarán los valores de la política de plataforma de máquina, la política de nube de máquina y la política de plataforma de usuario en una única lista, y se usarán en conjunto, en lugar de usar solo los valores del recurso con la prioridad más alta.
+
+      Si inhabilitas esta configuración o no se establece, solo se usarán las entradas de listas de la fuente con la prioridad más alta. El resto de las fuentes aparecerá en conflicto, pero se ignorará.</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
 <translation id="5142301680741828703">Siempre procesar los siguientes patrones de URL en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
@@ -2144,6 +2232,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
+<translation id="5306186200045823863">Habilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidad del modo incógnito</translation>
 <translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
@@ -2232,6 +2321,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si las reglas se contradicen, <ph name="PRODUCT_NAME" /> usa la regla más específica.</translation>
 <translation id="5475361623548884387">Habilitar la impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios con anuncios intrusivos</translation>
+<translation id="5483065054530244863">Permitir los certificados firmados con SHA-1 y emitidos por los anclajes de confianza locales</translation>
 <translation id="5483777239978559943">Esta política es obsoleta. Usa <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar la disponibilidad del complemento de Flash y <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar si debe usarse el visor de PDF integrado para abrir este tipo de archivos.
 
       Especifica una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME" />.
@@ -2347,6 +2437,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si habilitas o no estableces esta política, los usuarios podrán ver las contraseñas en texto claro en el administrador de contraseñas.</translation>
 <translation id="5620392548325769024">Habilitar la aparición de la página de bienvenida al iniciar el navegador por primera vez después de la actualización del SO</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
+<translation id="5643906875497889108">Controla los tipos de extensiones o apps que se pueden instalar y limita el acceso al tiempo de ejecución.
+
+          Esta configuración incluye en la lista blanca los tipos de extensiones o apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista con las siguientes strings: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, consulta la documentación de extensiones de <ph name="PRODUCT_NAME" />.
+
+          Ten en cuenta que esta política también afecta las extensiones y apps que se instalan de forma automática mediante la política ExtensionInstallForcelist.
+
+          Si se establece esta configuración, no se instalarán las extensiones y apps con un tipo que no se incluya en la lista.
+
+          Si no se establece, no se aplicarán restricciones a los tipos de extensiones y apps.
+
+          Antes de la versión 75, no se admitía el uso de ID de extensiones separados con varias comas, por lo que se omitían. Se aplicará el resto de las políticas.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5689430183304951538">Tamaño predeterminado de la página de impresión</translation>
 <translation id="5693469654327063861">Permitir la migración de datos</translation>
@@ -2386,6 +2487,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
+<translation id="5775235485119094648">Cargar la batería mientras está en un rango fijo</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
 <translation id="5781412041848781654">Especifica qué biblioteca de GSSAPI se usará para la autenticación HTTP. Se puede establecer simplemente un nombre de biblioteca o una ruta de acceso completa.
 
@@ -2447,6 +2549,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
+<translation id="5897913798715600338">Usar la tecnología de carga rápida para la batería</translation>
 <translation id="5898486742390981550">Cuando varios usuarios accedieron a sus cuentas, solo el usuario principal puede usar las apps de Android.</translation>
 <translation id="5900196529149231477">
       Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
@@ -2455,6 +2558,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se configura, se usará la configuración predeterminada del aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
 <translation id="5901427587865226597">Solo impresión doble</translation>
+<translation id="5905473632148429217">Habilitar las comprobaciones OCSP/CRL en línea</translation>
 <translation id="5906199912611534122">Permite habilitar o inhabilitar la velocidad moderada de la red.
       Esta acción se aplica a todos los usuarios y todas las interfaces en 
       el dispositivo. Si se establece, la velocidad moderada persiste hasta 
@@ -2462,6 +2566,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se establece como falsa, no se aplica la velocidad moderada.
       Si se establece como verdadera, el sistema se acelera para alcanzar las velocidades de carga y descarga (en kbits/s).</translation>
+<translation id="591088232153082363">Carga adaptable de la batería según el patrón de uso</translation>
 <translation id="5921713479449475707">Permitir descargas de actualizaciones automáticas a través de HTTP</translation>
 <translation id="5921888683953999946">Establece el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de acceso.
 
@@ -2483,6 +2588,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5950205771952201658">Dado que las comprobaciones de revocación en línea de fallos leves no proporcionan ventajas de seguridad efectivas, están inhabilitadas de forma predeterminada en la versión 19 y versiones posteriores de <ph name="PRODUCT_NAME" />. Al establecer el valor de esta política en true, se restaurará el comportamiento anterior y se realizarán comprobaciones OCSP/CRL en línea.
 
       Si esta política no se establece, o si se establece en false, <ph name="PRODUCT_NAME" /> no realizará comprobaciones de revocación en línea en la versión 19 de <ph name="PRODUCT_NAME" /> ni en versiones posteriores.</translation>
+<translation id="5961137303188584693">Dirección MAC para el NIC integrado del dispositivo</translation>
 <translation id="5966615072639944554">Extensiones que tienen permitido utilizar la API de atestación remota</translation>
 <translation id="5983708779415553259">Comportamiento predeterminado de los sitios que no forman parte de ningún paquete de contenido</translation>
 <translation id="5997543603646547632">Utilizar reloj con formato de 24 horas de forma predeterminada</translation>
@@ -2573,6 +2679,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6111936128861357925">Permitir juego del huevo de pascua del dinosaurio</translation>
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>
+<translation id="6136537398661737682">Esta política controla el estado inicial de los Servicios de ubicación de Google.
+
+      Si no se configura o se establece como <ph name="GLS_DISABLED" />, se inhabilitarán los Servicios de ubicación de Google de forma inicial.
+
+      Si se establece como <ph name="GLS_ENABLED" />, se habilitará esta configuración de forma inicial.
+
+      Si esta política se establece como <ph name="GLS_UNDER_USER_CONTROL" />, se le pedirá al usuario que elija si quiere usar esta configuración. Esto permitirá que las apps de Android usen los servicios para consultar la ubicación del dispositivo. También permitirá enviar datos de ubicación anónimos a Google.
+
+      Ten en cuenta que esta política solo controla el estado de los Servicios de ubicación de Google durante la configuración inicial. El usuario puede abrir la configuración de Android luego y activar o desactivar estos servicios.
+
+      Se ignorará esta política y los Servicios de ubicación de Google estarán siempre inhabilitados si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> se establece como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Usar siempre la detección amplia de la zona horaria</translation>
 <translation id="6145799962557135888">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar JavaScript. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
@@ -2646,9 +2763,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita, no se importan los datos del formulario de Autocompletar.
 
       Si no se configura, se le puede preguntar al usuario si desea importar los datos o la importación puede realizarse de forma automática.</translation>
+<translation id="6221175752766085998">Permitir los certificados emitidos por anclajes de confianza locales sin la extensión subjectAlternativeName</translation>
 <translation id="6224304369267200483">Las URL y los dominios permiten automáticamente la atestación directa de llaves de seguridad</translation>
 <translation id="6233173491898450179">Establecer el directorio de descarga</translation>
 <translation id="6244210204546589761">Direcciones URL que se abrirán al iniciar.</translation>
+<translation id="6255387031094435995">Permite que las políticas seleccionadas se combinen cuando provienen de diferentes fuentes, con los mismos alcances y niveles.
+
+        Si la lista incluye una política, en caso de que haya un conflicto entre dos fuentes con los mismos alcances y niveles, se fusionarán los valores en una nueva lista de políticas.
+
+        Si la lista incluye una política, en caso de que haya un conflicto entre dos fuentes y entre los alcances y niveles, se aplicará la política con la prioridad más alta.
+
+        Si la lista no incluye una política, en caso de que haya un conflicto entre dos fuentes, alcances o niveles, se aplicará la política con la prioridad más alta.</translation>
 <translation id="6258193603492867656">Especifica si el SPN de Kerberos generado debe incluir un puerto no estándar. Si se habilita esta configuración y se ingresa un puerto no estándar (es decir, un puerto que no sea 80 ni 443), se incluirá en el SPN de Kerberos generado. Si se inhabilita esta opción o si no se configura, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
 <translation id="6261643884958898336">Enviar la información de identificación de la máquina</translation>
 <translation id="6281043242780654992">Permite configurar las políticas de mensajería nativa. A menos que se incluyan en la lista blanca, los hosts de mensajería nativa incluidos en la lista negra estarán bloqueados.</translation>
@@ -2846,6 +2971,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6757438632136860443">Te permite establecer una lista de patrones de URL que especifican los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si se establece, o desde otro tipo de configuración personal del usuario.</translation>
+<translation id="6757613329154374267">Se habilitó la funcionalidad de copia de seguridad y restablecimiento</translation>
 <translation id="6762235610019366960">Permite controlar la presentación en pestaña completa de contenido educativo o promocional en <ph name="PRODUCT_NAME" />.
 
       Si no se configura o se habilita (se establece como verdadera), <ph name="PRODUCT_NAME" /> puede mostrar a los usuarios contenido sobre productos en pestaña completa.
@@ -2868,6 +2994,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       El string puede contener las variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} o ${MACHINE_NAME}, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
 
       Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
+<translation id="6833988859168635883">Página de inicio, página principal y página Nueva pestaña</translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="6837480141980366278">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
 
@@ -2979,6 +3106,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Cuando la pantalla está a punto de atenuarse, el modelo evalúa si debe posponerse la atenuación de la pantalla. Si es así, el modelo extenderá el tiempo que debe pasar hasta que la pantalla se atenúe. En este caso, se ajustan el apagado y el bloqueo de la pantalla, y el tiempo de inactividad para mantener las mismas distancias con respecto al tiempo de atenuación de la configuración original.
       Si se establece esta política como verdadera o no se establece, se habilitará el modelo de atenuación inteligente y se permitirá que extienda el tiempo de atenuación. Si se establece como falsa, el modelo no modificará la atenuación.</translation>
+<translation id="6967394885063085697">Habilita la política para administrar la energía en el modo avanzado de carga de la batería
+
+          El modo avanzado de carga permite que el usuario optimice el estado de la batería. En el modo avanzado de carga, el sistema usará un algoritmo estándar de carga y otras técnicas durante las horas en que no se utilice el dispositivo para optimizar el estado de la batería. Durante las horas de funcionamiento, se usa una carga rápida. La carga rápida permite que la batería se cargue más rápido; por lo tanto, se completará antes. Para cada día, se especifica el período en que el sistema tendrá más actividad mediante la hora de inicio y la duración.
+
+          Si se establece esta política como verdadera, y se configura DeviceAdvancedBatteryChargeModeDayConfig, el modo avanzado de carga de la batería siempre estará habilitado (cuando lo admita el dispositivo).
+
+          Si se establece esta política como falsa, el modo avanzado de carga de la batería estará siempre inhabilitado.
+
+          Si la estableces, los usuarios no podrán cambiarla ni anularla.
+
+          Si no se establece, se inhabilitará el modo avanzado de carga de la batería, y el usuario no podrá habilitarlo.</translation>
 <translation id="6972540544240464302">Selecciona la configuración del programador de tareas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
@@ -3044,6 +3182,17 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla.
 
       Si no estableces esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
+<translation id="7107148737865880402">Habilita la política de administración de la energía para el uso compartido de energía con USB.
+
+          Ciertos dispositivos tienen un puerto USB específico marcado con un ícono de rayo o de batería que se puede usar para cargar dispositivos como teléfonos móviles con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
+
+          En ese caso, el puerto USB siempre proporcionará energía.
+
+          Si esta política se establece como verdadera y el equipo está en suspensión, el puerto USB suministrará energía cuando el dispositivo esté conectado a un enchufe o cuando el nivel de la batería sea superior al 50%. De lo contrario, no se suministrará energía.
+
+          Si esta política se establece como verdadera y el equipo está apagado, el puerto USB suministrará energía cuando el dispositivo esté conectado a un enchufe. De lo contrario, no se suministrará energía.
+
+          Si no se establece esta política, se habilitará y el usuario no podrá cambiarla.</translation>
 <translation id="7115494316187648452">Determina si se inició un proceso de <ph name="PRODUCT_NAME" /> en el SO y mantiene su ejecución cuando se cierra la última ventana del navegador, lo que permite que las aplicaciones en segundo plano y la sesión de navegación actual se mantengan activas, incluidas las cookies de la sesión. El proceso en segundo plano muestra un ícono en la bandeja del sistema y siempre se puede cerrar desde allí.
 
       Si esta política se establece en True, se habilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
@@ -3094,6 +3243,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si se establece esta política como verdadera o no se establece, los bloqueos de activación de pantalla serán válidos para la administración de energía, a menos que se establezca AllowWakeLocks como falsa.
 
           Si se establece esta política como falsa, las solicitudes de bloqueos de activación pantalla se considerarán como del sistema.</translation>
+<translation id="7177857088692019405">Desbloqueo rápido</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsqueda predeterminado</translation>
@@ -3157,6 +3307,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7273823081800296768">Si esta opción está habilitada o no está configurada, los usuarios podrán sincronizar los clientes y los hosts en el momento de la conexión, lo que elimina la necesidad de ingresar siempre un PIN.
 
           Si no se habilita esta opción, esta función no estará disponible.</translation>
+<translation id="7274077256421167535">Habilitar el uso compartido de energía por USB</translation>
 <translation id="7275334191706090484">Favoritos administrados</translation>
 <translation id="7291084543582732020">Cuando se habilita esta configuración, los usuarios pueden usar Smart Lock si se satisfacen los requisitos de la función.
 
@@ -3292,6 +3443,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si esta política se establece en 0, se utilizará el tamaño de caché predeterminado y el usuario no podrá modificarlo.
 
       Si esta política no se establece, se utilizará el tamaño de caché predeterminado y el usuario podrá anular el valor con la marca "--disk-cache-size".</translation>
+<translation id="759389052790680884">Establece el porcentaje del nivel de la batería en el que se debe detener la carga.
+
+          Cuando se alcance este valor, se detendrá la carga de la batería.
+
+          El valor de DeviceBatteryChargeCustomStartCharging debe ser menor al de DeviceBatteryChargeCustomStopCharging.
+
+          Solo se usa esta política si se establece DeviceBatteryChargeMode como personalizada.
+
+          Si esta política no se configura o no se establece, se aplicará el modo de carga estándar para la batería.</translation>
 <translation id="759957074386651883">Configuración de Navegación segura</translation>
 <translation id="7604169113182304895">Las apps de Android pueden respetar esta lista de forma voluntaria, pero no puedes forzarlas a que lo hagan.</translation>
 <translation id="7612157962821894603">Marcas que se deben aplicar al iniciar <ph name="PRODUCT_NAME" /> en todo el sistema</translation>
@@ -3365,6 +3525,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7712109699186360774">Preguntar siempre que un sitio quiera acceder a la cámara o al micrófono</translation>
 <translation id="7713608076604149344">Restricciones de descarga</translation>
 <translation id="7715711044277116530">Indica el porcentaje en el que debe ajustarse la demora de inactividad de la pantalla en el modo de presentación.</translation>
+<translation id="7716781462866245042">Establece la configuración avanzada para el modo de carga de la batería durante el día.
+
+          Se usa esta política solo si se establece DeviceAdvancedBatteryChargeModeEnabled como verdadero.
+
+          Si no se configura o no se establece, el modo avanzado de carga de la batería estará siempre inhabilitado.
+
+          Nota: <ph name="CHARGE_START_TIME_FIELD_NAME" /> debe ser menor que <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="CHARGE_START_TIME_FIELD_NAME" /> y <ph name="CHARGE_END_TIME_FIELD_NAME" /> son 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Permite configurar las funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Esta política habilita el protocolo HTTP/0.9 en otros puertos además del puerto 80 para HTTP y el 443 para HTTPS.
 
@@ -3438,6 +3607,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>
 <translation id="7882857838942884046">Si inhabilitas Google Sync, Android Backup and Restore dejará de funcionar de manera adecuada.</translation>
 <translation id="7882890448959833986">Eliminar la advertencia de SO incompatible</translation>
+<translation id="7895553628261067384">Acceso remoto</translation>
 <translation id="7902255855035461275">Los patrones de esta lista se compararán con el origen
       de seguridad de la URL solicitante. Si se encuentra una coincidencia,
       se concede acceso a los dispositivos de captura de video sin solicitarlo.
@@ -3451,6 +3621,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
+<translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y envía que los usuarios las cambien.
+
+      Las opciones de configuración de la página principal del usuario solo estarán completamente bloqueadas si se selecciona la página principal como la página Nueva pestaña o si se establece como una dirección URL y se especifica la dirección URL de la página principal. Si no se establece la dirección URL de la página principal, el usuario aún podrá configurar la página principal como la página Nueva pestaña al especificar la opción "chrome://newtab".
+
+      Se ignora la política "URL que se abrirán al iniciar", a menos que se haya seleccionado "Abrir una lista de URL" en "Acción al iniciar".</translation>
 <translation id="7952958573604504839">Esta política ya no está disponible en M48 y se reemplazó por <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />. Se quitará en M54.
 
       Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
@@ -3589,6 +3764,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8176035528522326671">Permitir que el usuario de empresa sea solo usuario principal en la sesión de perfiles múltiples (comportamiento predeterminado para usuarios administrados por empresas)</translation>
 <translation id="8214600119442850823">Configura el administrador de contraseñas.</translation>
 <translation id="8217516105848565518">Esta política es obsoleta. Usa la política RemoteAccessHostDomainList en su lugar.</translation>
+<translation id="8244171102276095471">Habilitar los paquetes de encriptación RC4 en TLS</translation>
 <translation id="8244525275280476362">Demora de recuperación máxima después de invalidar una política</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME" /> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
@@ -3639,6 +3815,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8312129124898414409">Te permite establecer si los sitios web están autorizados a utilizar la generación de claves. La generación de claves puede permitirse o rechazarse para todos los sitios web. 
 
           Si esta política no se configura, se usará "BlockKeygen" y el usuario podrá cambiarla.</translation>
+<translation id="8320149248919453401">Modo de carga de la batería</translation>
 <translation id="8329984337216493753">Esta política solo se encuentra activa en el modo de venta.
 
       Cuando se especifica DeviceIdleLogoutTimeout, esta política definela duración del cuadro de advertencia con un cuenta regresiva que se mostrará al usuario antes de que este salga automáticamente del navegador.
@@ -3810,6 +3987,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no se establece, se usará el período predeterminado de 345,600,000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y 604,800,000 milisegundos (una semana) para <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">La advertencia de la protección de la contraseña se activa cuando se vuelve a usar la contraseña</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
+<translation id="8698286761337647563">La cantidad de días de anticipación para notificar a los usuarios de SAML cuando su contraseña está por caducar</translation>
 <translation id="8703488928438047864">Informar el estado de la placa</translation>
 <translation id="8703872185032220081">Establece la configuración diurna para el cambio de pico de consumo de energía.
 
@@ -3854,6 +4032,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccounts.google.com para que cambien sus contraseñas.
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
+<translation id="8800453707696044281">Establecer el porcentaje del nivel de la batería en el que se debe detener la carga</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
 <translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.
 
@@ -3947,7 +4126,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Para obtener más información sobre contextos seguros, consulta
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Proporcionarles a los usuarios una versión de corrección rápida</translation>
 <translation id="8942616385591203339">Esta política controla si se muestra el consentimiento de sincronización al usuario durante el primer acceso. Debe establecerse como falso si consideras que el usuario nunca necesitará este consentimiento.
       Si se establece como falso, no se mostrará el consentimiento.
       Si se establece como verdadero o no se establece, se puede mostrar el consentimiento.</translation>
@@ -3980,6 +4158,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo afecta a los usuarios autenticados mediante SAML.
 
       El valor de la política debe especificarse en segundos.</translation>
+<translation id="9018338365267278833">Esta política quitará las extensiones que aparecen en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o las que aparecen en <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tengan el modo de instalación configurado como bloqueado, y borrará definitivamente los datos de usuario locales.  Consulta la Política de Privacidad para extensiones o la política sobre retención de datos para entender qué es lo que puede ocurrir con los datos del usuario que no se almacenan de forma local.
+
+      Cuando se establece la política como habilitada, las extensiones que se incluyen en las listas mencionadas anteriormente (si ya se instalaron en una máquina) se quitarán por completo (incluidos los datos del usuario locales).
+
+      Cuando se establece la política como inhabilitada o no se configura, las extensiones que se incluyen en las listas mencionadas anteriormente (si ya se instalaron en una máquina y se enumeran en la lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) se inhabilitarán en la máquina y no se desinstalarán.</translation>
 <translation id="9027787254195333560">Esta política permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para configurarla, indica la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de avatar y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y no pesar más de 512 kB. Se debe poder acceder a la dirección URL sin autenticación previa.
 
       La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.

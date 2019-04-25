@@ -3346,7 +3346,6 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
           Tato zásada platí pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Prodleva uzamčení obrazovky při napájení ze sítě</translation>
-<translation id="7305262223970835999">Povoluje stránku pro změnu hesla během relace pro uživatele SAML.</translation>
 <translation id="7311458740754205918">Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, na stránce Nová karta se mohou zobrazovat návrhy obsahu na základě historie procházení, zájmů nebo polohy uživatele.
 
       Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
@@ -4121,7 +4120,6 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 
       Další informace o bezpečných kontextech najdete na stránce https://www.w3.org/TR/secure-contexts/.
       </translation>
-<translation id="8939595959513040470">Poskytnout uživatelům sestavení Quick Fix Build.</translation>
 <translation id="8942616385591203339">Tato zásada určuje, zda je možné uživateli při prvním přihlášení zobrazit žádost o souhlas se synchronizací. Pokud žádost o souhlas se synchronizací u uživatele není potřeba, měla by být nastavena na hodnotu false.
       Pokud je nastavena na hodnotu false, žádost o souhlas se synchronizací se nebude zobrazovat.
       Pokud je nastavena na hodnotu true nebo není nastavena, žádost o souhlas se synchronizací se může zobrazit.</translation>

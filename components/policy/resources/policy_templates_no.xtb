@@ -3982,7 +3982,6 @@ Denne regelen er avviklet i M69 til fordel for OverrideSecurityRestrictionsOnIns
 
 For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Gi brukere en hurtigfiks-delversjon.</translation>
 <translation id="8942616385591203339">Denne regelen bestemmer om samtykke for synkronisering skal vises til brukeren ved første pålogging. Den skal angis som «False» (usann) hvis samtykke for synkronisering ikke er nødvendig for denne brukeren.
       Hvis regelen er angitt som «False» (usann), vises ikke samtykke for synkronisering.
       Hvis regelen er angitt som «True» (sann) eller ikke er angitt, vises samtykke for synkronisering.</translation>

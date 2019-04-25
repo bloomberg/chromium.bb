@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Folosește numai rețeaua Wi-Fi pentru a detecta locația</translation>
 <translation id="1526560967942511387">Document fără titlu</translation>
 <translation id="1529891865407786369">Sursă de alimentare</translation>
-<translation id="1529899284660134226">Gestionează fișierele și dosarele utilizate în comun</translation>
 <translation id="1530838837447122178">Deschide setările dispozitivului privind mouse-ul și touchpadul</translation>
 <translation id="1531004739673299060">Fereastra aplicației</translation>
 <translation id="1536754031901697553">Se deconectează...</translation>
@@ -3548,7 +3547,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6559023360691182159">{COUNT,plural, =0{Niciuna}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> și <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> și <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> și încă o aplicație}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> și alte <ph name="EXTRA_APPS" /> aplicații}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> și alte <ph name="EXTRA_APPS" /> de aplicații}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Calea sau numele fișierului sunt prea lungi. Salvați utilizând un nume mai scurt sau într-o altă locație.</translation>
-<translation id="6564072216966459757">Elimină aplicațiile Linux pentru <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nu se poate încărca pictograma „<ph name="ICON" />” pentru acțiunea paginii.</translation>
 <translation id="6571979863037191371">Deconectează telefonul de la Chromebook. Ele nu se vor mai conecta automat.</translation>
 <translation id="6573998787994398565">Fișierul <ph name="FILE_NAME" /> nu este descărcat de obicei și poate fi periculos. Te apără Protecția avansată.</translation>

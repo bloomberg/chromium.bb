@@ -3330,7 +3330,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Ovo se pravilo primjenjuje samo ako je omogućeno pravilo 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Odgoda zaključavanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
-<translation id="7305262223970835999">Omogućuje stranicu za promjenu zaporke unutar sesije za korisnike SAML-a.</translation>
 <translation id="7311458740754205918">Ako se ovo pravilo postavi na istinito ili se ne postavi, web-stranica nove kartice može prikazivati preporuke sadržaja na temelju korisnikove povijesti pretraživanja, interesa ili lokacije.
 
       Ako se postavi na neistinito, automatski generirani prijedlozi sadržaja neće se prikazivati na web-stranici nove kartice.</translation>
@@ -4108,7 +4107,6 @@ za preglednike imaju isti raspored.
      Za više informacija o sigurnim kontekstima pogledajte
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Pruži korisnicima međuverziju za brzi popravak.</translation>
 <translation id="8942616385591203339">Ovo pravilo određuje može li se prilikom prve prijave korisniku prikazivati pristanak na sinkronizaciju. Treba ga postaviti na False ako pristanak na sinkronizaciju nikad nije potreban za korisnika.
       Ako se postavi na False, pristanak na sinkronizaciju neće se prikazivati.
       Ako se postavi na True ili se ne postavi, pristanak na sinkronizaciju može se prikazati.</translation>

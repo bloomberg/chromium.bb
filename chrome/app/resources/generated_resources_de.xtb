@@ -341,7 +341,6 @@
 <translation id="1525740877599838384">Zur Standortbestimmung nur WLAN nutzen</translation>
 <translation id="1526560967942511387">Unbenanntes Dokument</translation>
 <translation id="1529891865407786369">Stromquelle</translation>
-<translation id="1529899284660134226">Freigegebene Dateien und Ordner verwalten</translation>
 <translation id="1530838837447122178">Einstellungen für Maus- und Touchpadgeräte öffnen</translation>
 <translation id="1531004739673299060">Anwendungsfenster</translation>
 <translation id="1536754031901697553">Verbindung wird getrennt…</translation>
@@ -3543,7 +3542,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6559023360691182159">{COUNT,plural, =0{Keine}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> und <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> und <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> und 1 weitere App}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> und <ph name="EXTRA_APPS" /> weitere Apps}}</translation>
 <translation id="6561726789132298588">Eingabe</translation>
 <translation id="656293578423618167">Der Dateipfad oder Dateiname ist zu lang. Verwenden Sie bitte einen kürzeren Namen oder einen anderen Speicherort.</translation>
-<translation id="6564072216966459757">Linux-Apps für <ph name="DEVICE_TYPE" /> entfernen</translation>
 <translation id="6567688344210276845">Symbol "<ph name="ICON" />" konnte nicht für die Seitenaktion geladen werden.</translation>
 <translation id="6571979863037191371">Smartphone vom Chromebook trennen. Die Geräte werden nicht mehr automatisch miteinander verbunden.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> ist ein ungewöhnlicher Download und könnte schädlich sein. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>

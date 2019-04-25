@@ -273,6 +273,7 @@
 <translation id="5228579091201413441">સિંક ચાલુ કરો</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> પર સમન્વયિત કરી રહ્યાં છે</translation>
 <translation id="5245322853195994030">સિંક કરવાનું રદ કરો</translation>
+<translation id="5271549068863921519">પાસવર્ડ સાચવો</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5327248766486351172">નામ</translation>
@@ -359,7 +360,6 @@
 <translation id="6464071786529933911">નવા છુપા ટૅબમાં ખોલો</translation>
 <translation id="6476800141292307438">પેજનો અનુવાદ <ph name="LANGUAGE" />માં કરી રહ્યા છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ કાઢી નાખી</translation>
-<translation id="6513773942555305766">Chrome દ્વારા સૂચિત પાસવર્ડ: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">ગત કલાક</translation>
 <translation id="6610002944194042868">અનુવાદ માટેના વિકલ્પો</translation>
 <translation id="6642362222295953972">હાલના ટૅબ પર સ્વિચ કરો</translation>
@@ -513,6 +513,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> માટેનો પાસવર્ડ અપડેટ કરીએ?</translation>
 <translation id="9083392325882095631">1 આઇટમ</translation>
 <translation id="9083838294503912307">એકથી વધુ ડિવાઇસને સિંક અને વ્યક્તિગત કરવા માટે સિંક ચાલુ કરો.</translation>
+<translation id="9094033019050270033">પાસવર્ડ અપડેટ કરો</translation>
 <translation id="9100610230175265781">પાસફ્રેઝ આવશ્યક છે</translation>
 <translation id="9148126808321036104">ફરીથી સાઇન ઇન કરો </translation>
 <translation id="9157836665414082580">સંવાદો નાબૂદ કરો</translation>

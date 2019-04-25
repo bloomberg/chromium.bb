@@ -3435,7 +3435,6 @@
 
           Ši politika taikoma, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="7302043767260300182">Ekrano užrakto delsa, kai naudojama kintamosios srovės energija</translation>
-<translation id="7305262223970835999">Įgalinamas SAML naudotojų slaptažodžio keitimo per sesiją puslapis.</translation>
 <translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai pagal naudotojo naršymo istoriją, pomėgius ir vietovę.
 
       Jei ši politika nustatyta kaip „false“, automatiškai sugeneruoti turinio pasiūlymai naujo skirtuko puslapyje nerodomi.</translation>
@@ -4247,7 +4246,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Daugiau informacijos apie saugius kontekstus pateikiama adresu
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Suteikite naudotojams „Quick Fix Build“.</translation>
 <translation id="8942616385591203339">Pagal šią politiką valdoma, ar sutikimas sinchronizuoti gali būti rodomas naudotojui prisijungiant pirmą kartą. Ji turi būti nustatyta kaip „false“, jei naudotojui niekada nereikia sutikimo sinchronizuoti.
       Nustačius kaip „false“, sutikimas sinchronizuoti nebus pateikiamas.
       Nustačius kaip „true“ arba nenustačius, sutikimas sinchronizuoti gali būti pateikiamas.</translation>

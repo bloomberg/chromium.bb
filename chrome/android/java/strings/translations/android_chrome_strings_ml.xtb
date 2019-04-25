@@ -120,6 +120,7 @@
 <translation id="1919950603503897840">കോൺടാക്റ്റുകൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1922076542920281912">നിങ്ങളുടെ ലൊക്കേഷൻ ആക്‌സസ് ചെയ്യാൻ Chrome-നെ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ലൊക്കേഷനും ഓണാക്കുക.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">അപ്‌ഡേറ്റുചെയ്യുന്നു</translation>
 <translation id="19288952978244135">Chrome വീണ്ടും തുറക്കുക.</translation>
 <translation id="1933845786846280168">തിരഞ്ഞെടുത്ത ടാബ്</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> Chrome-നായി അനുമതി ഓണാക്കുക.</translation>
@@ -220,7 +221,6 @@
 <translation id="2586657967955657006">ക്ലിപ്പ്ബോർഡ്</translation>
 <translation id="2587052924345400782">ഏറ്റവും പുതിയ പതിപ്പ് ലഭ്യമാണ്</translation>
 <translation id="2593272815202181319">മോണോസ്പെ‌യ്‌സ്</translation>
-<translation id="2610239185026711824">പാസ്‌വേഡ് നിർദ്ദേശിക്കുക</translation>
 <translation id="2612676031748830579">കാർഡ് നമ്പർ</translation>
 <translation id="2613747923081026172">ഗ്രൂപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="2621115761605608342">ഒരു നിർദ്ദിഷ്‌ട സൈറ്റിന് വേണ്ടി JavaScript അനുവദിക്കുക.</translation>
@@ -243,7 +243,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
 <translation id="2779651927720337254">പരാജയപ്പെട്ടു</translation>
 <translation id="2781151931089541271">ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
-<translation id="2803478378562657435">സംരക്ഷിച്ച പാസ്‌വേഡുകളും പാസ്‌വേഡ് ഓപ്‌ഷനുകളും കാണിക്കുന്നു</translation>
 <translation id="2810645512293415242">ഡാറ്റ ലാഭിക്കുന്നതിനും വേഗത്തിൽ ലോഡുചെയ്യുന്നതിനുമായി ലളിതവൽക്കരിച്ചിരിക്കുന്ന പേജ്.</translation>
 <translation id="281504910091592009">നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google അക്കൗണ്ടിൽ<ph name="END_LINK" /> സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, മാനേജ് ചെയ്യുക</translation>
 <translation id="2818669890320396765">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത് സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
@@ -412,7 +411,6 @@
 <translation id="410351446219883937">സ്വയം പ്ലേചെയ്യൽ</translation>
 <translation id="4116038641877404294">ഓഫ്‌ലൈനായി ഉപയോഗിക്കാൻ പേജുകൾ ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="4149994727733219643">വെബ് പേജുകൾക്കായി ലളിതവൽക്കരിച്ച കാഴ്ച</translation>
-<translation id="4159800535322890630">നിങ്ങളുടെ സെൻസറുകൾ ആക്‌സസ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="4165986682804962316">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
 <translation id="4170011742729630528">സേവനം ലഭ്യമല്ല; പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ഉപയോഗിച്ചു</translation>
@@ -479,7 +477,6 @@
 <translation id="4645575059429386691">നിങ്ങളുടെ രക്ഷിതാവ് നിയന്ത്രിക്കുന്നു</translation>
 <translation id="4648718555153979859">നിങ്ങളുടെ ടാബുകൾ ഇവിടെ ഒന്നിച്ച് ഗ്രൂപ്പ് ചെയ്യപ്പെടും</translation>
 <translation id="4650364565596261010">സിസ്‌റ്റം ഡിഫോൾട്ട്</translation>
-<translation id="4660011489602794167">കീബോര്‍‌ഡ് കാണിക്കുക</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ബുക്ക്‌മാർക്കുകൾ ഇല്ലാതാക്കി</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> എന്നയാളെ നിങ്ങളുടെ ഹോം സ്‌ക്രീനിൽ ചേർത്തു</translation>
 <translation id="4684427112815847243">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
@@ -620,7 +617,6 @@
 <translation id="5581519193887989363">എന്തൊക്കെ സമന്വയിക്കണമെന്നത് <ph name="BEGIN_LINK1" />ക്രമീകരണത്തിൽ<ph name="END_LINK1" /> നിങ്ങൾക്ക് എപ്പോഴും തിരഞ്ഞെടുക്കാം.</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="5596627076506792578">കൂടുതൽ‍ ഓപ്‌ഷനുകൾ</translation>
-<translation id="5620299005957670886">നിങ്ങളുടെ സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശ ചെയ്‌തത്)</translation>
 <translation id="5620928963363755975">'കൂടുതൽ ഓപ്‌ഷനുകൾ' ബട്ടണിൽ നിന്നും, ഡൗൺലോഡുകളിൽ നിന്നും നിങ്ങളുടെ ഫയലുകളും ‌പേജുകളും കണ്ടെത്തുക</translation>
 <translation id="5626134646977739690">നാമം:</translation>
 <translation id="5639724618331995626">എല്ലാ സൈറ്റുകളെയും അനുവദിക്കുക</translation>
@@ -728,7 +724,6 @@
 <translation id="6378173571450987352">വിശദാംശങ്ങൾ: ഉപയോഗിച്ച ഡാറ്റയുടെ അളവനുസരിച്ച് അടുക്കിയത്</translation>
 <translation id="6383961787135158834">സൈറ്റ് സ്‌റ്റോറേജ് മായ്‌ക്കൂ…</translation>
 <translation id="6388207532828177975">മായ്‌ച്ച് റീസെറ്റുചെയ്യുക</translation>
-<translation id="6393156038355142111">ശക്തമായ പാസ്‌വേഡ് നിർദ്ദേശിക്കുക</translation>
 <translation id="6393863479814692971">Chrome-ന് ഈ സൈറ്റിനായി നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ആക്‌സസ് ചെയ്യാനുള്ള അനുമതി ആവശ്യമാണ്.</translation>
 <translation id="6395288395575013217">ലിങ്ക്</translation>
 <translation id="6404511346730675251">ബുക്ക്‌മാർക്ക് എഡിറ്റ് ചെയ്യുക</translation>
@@ -887,7 +882,6 @@
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
 <translation id="7482697587265222445">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ടാബ് അയച്ചു</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (അപ്‌ഡേറ്റുചെയ്‌തു, <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">പാസ്‌വേ‌ഡുകൾ കാണിക്കുക</translation>
 <translation id="7494974237137038751">ലാഭിച്ച ഡാറ്റ</translation>
 <translation id="7498271377022651285">കാത്തിരിക്കുക...</translation>
 <translation id="7514365320538308">ഡൗൺലോഡുചെയ്യുക</translation>
@@ -1024,7 +1018,6 @@
 <translation id="8503559462189395349">Chrome പാസ്‌വേഡുകൾ</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
 <translation id="8504988642345501642">നിങ്ങൾ മുകളിലേക്ക് സ്ക്രോൾ ചെയ്യുമ്പോൾ, ബന്ധപ്പെട്ട പേജുകളിലേക്കുള്ള ദ്രുത ലിങ്കുകൾ കാണിക്കുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ Google-ന് അയയ്ക്കും.</translation>
-<translation id="8507520749471379845">പാസ്‌വേഡുകള്‍ ലഭ്യമാണ്‌</translation>
 <translation id="8514477925623180633">Chrome ഉപയോഗിച്ച് സംഭരിച്ചിട്ടുള്ള പാസ്‍വേഡുകൾ എക്സ്പോർട്ട് ചെയ്യുക</translation>
 <translation id="8514577642972634246">ആൾമാറാട്ട മോഡ് നൽകുക</translation>
 <translation id="851751545965956758">ഉപകരണങ്ങളിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>

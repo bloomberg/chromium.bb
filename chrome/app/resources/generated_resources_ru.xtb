@@ -339,7 +339,6 @@
 <translation id="1525740877599838384">Использовать для определения местоположения только Wi-Fi</translation>
 <translation id="1526560967942511387">Документ без имени</translation>
 <translation id="1529891865407786369">Источник питания</translation>
-<translation id="1529899284660134226">Управлять доступом к файлам и папкам</translation>
 <translation id="1530838837447122178">Открыть настройки мыши и сенсорной панели</translation>
 <translation id="1531004739673299060">Окно программы</translation>
 <translation id="1536754031901697553">Отключение...</translation>
@@ -3522,7 +3521,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Нет}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> и <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> и <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и ещё 1 приложение}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и ещё <ph name="EXTRA_APPS" /> приложение}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и ещё <ph name="EXTRA_APPS" /> приложения}many{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и ещё <ph name="EXTRA_APPS" /> приложений}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> и ещё <ph name="EXTRA_APPS" /> приложения}}</translation>
 <translation id="6561726789132298588">Войти</translation>
 <translation id="656293578423618167">Слишком длинное название файла или путь к нему. Выберите другое название или каталог.</translation>
-<translation id="6564072216966459757">Удалить приложения Linux для <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Не удалось загрузить значок "<ph name="ICON" />" для действия страницы.</translation>
 <translation id="6571979863037191371">Телефон будет отключен от устройства Chromebook. Они больше не будут подключаться друг к другу автоматически.</translation>
 <translation id="6573998787994398565">Файл <ph name="FILE_NAME" /> скачивают редко. Возможно, он представляет опасность. Вы пользуетесь Дополнительной защитой.</translation>

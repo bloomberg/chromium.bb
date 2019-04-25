@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Alleen wifi gebruiken om de locatie te bepalen</translation>
 <translation id="1526560967942511387">Naamloos document</translation>
 <translation id="1529891865407786369">Voedingsbron</translation>
-<translation id="1529899284660134226">Gedeelde bestanden en mappen beheren</translation>
 <translation id="1530838837447122178">Muis- en touchpadinstellingen van apparaat openen</translation>
 <translation id="1531004739673299060">App-venster</translation>
 <translation id="1536754031901697553">Verbinding verbreken...</translation>
@@ -364,7 +363,7 @@
 <translation id="1564414980088536597">Deze afbeelding kan niet worden gebruikt. Kies een andere afbeelding.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="1567387640189251553">Er is een ander toetsenbord aangesloten sinds de laatste keer dat je je wachtwoord hebt ingevoerd. Mogelijk wordt geprobeerd om je toetsaanslagen te stelen.</translation>
-<translation id="1567750922576943685">Wanneer je je identiteit verifieert, blijven je persoonsgegevens beter beschermd</translation>
+<translation id="1567750922576943685">Wanneer je je identiteit verifieert, blijven je persoonlijke informatie beter beschermd</translation>
 <translation id="1567993339577891801">JavaScript-console</translation>
 <translation id="1568323446248056064">Weergave-instellingen van apparaat openen</translation>
 <translation id="1572266655485775982">Wifi inschakelen</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Geen}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> en <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> en <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> en 1 andere app}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> en <ph name="EXTRA_APPS" /> andere apps}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Het bestandspad of de bestandsnaam is te lang. Sla op met een kortere naam of op een andere locatie.</translation>
-<translation id="6564072216966459757">Linux-apps verwijderen voor <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Kan pictogram '<ph name="ICON" />' voor pagina-actie niet laden.</translation>
 <translation id="6571979863037191371">Koppel je telefoon los van je Chromebook. Ze maken niet meer automatisch verbinding.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> wordt niet vaak gedownload en kan gevaarlijk zijn. Je bent beschermd met Geavanceerde beveiliging.</translation>

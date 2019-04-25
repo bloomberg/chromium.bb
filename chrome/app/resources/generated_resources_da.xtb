@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Brug kun Wi-Fi til at fastslå placeringen</translation>
 <translation id="1526560967942511387">Unavngivet dokument</translation>
 <translation id="1529891865407786369">Strømkilde</translation>
-<translation id="1529899284660134226">Administrer delte filer og mapper</translation>
 <translation id="1530838837447122178">Åbn indstillingerne for mus og touchpad på enheden</translation>
 <translation id="1531004739673299060">Appvindue</translation>
 <translation id="1536754031901697553">Afbryder forbindelsen...</translation>
@@ -3547,7 +3546,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6559023360691182159">{COUNT,plural, =0{Ingen}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> og <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> og <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> og 1 anden app}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> og <ph name="EXTRA_APPS" /> anden app}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> og <ph name="EXTRA_APPS" /> andre apps}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Filstien eller -navnet er for langt. Gem med et kortere navn eller på en anden placering.</translation>
-<translation id="6564072216966459757">Fjern Linux-apps på <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Ikonet '<ph name="ICON" />' for sidehandling kunne ikke indlæses.</translation>
 <translation id="6571979863037191371">Afbryd forbindelsen mellem din telefon og din Chromebook. Der oprettes ikke længere automatisk forbindelse.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> downloades normalt ikke og kan være skadelig. Du beskyttes af Avanceret beskyttelse.</translation>

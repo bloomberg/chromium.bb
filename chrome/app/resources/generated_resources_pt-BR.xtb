@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Usar apenas o Wi-Fi para determinar a localização</translation>
 <translation id="1526560967942511387">Documento sem título</translation>
 <translation id="1529891865407786369">Fonte de energia</translation>
-<translation id="1529899284660134226">Gerenciar arquivos e pastas compartilhados</translation>
 <translation id="1530838837447122178">Abrir configurações do mouse e touchpad do dispositivo</translation>
 <translation id="1531004739673299060">Janela do aplicativo</translation>
 <translation id="1536754031901697553">Desconectando…</translation>
@@ -3550,7 +3549,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6559023360691182159">{COUNT,plural, =0{Nenhum}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> e <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> e <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> e mais um app}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> e <ph name="EXTRA_APPS" /> outro app}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> e <ph name="EXTRA_APPS" /> outros apps}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">O caminho ou nome do arquivo é muito longo. Salve com um nome mais curto ou em outro local.</translation>
-<translation id="6564072216966459757">Remover apps do Linux para o <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6571979863037191371">Desconecte o smartphone do Chromebook. Eles não serão mais conectados automaticamente.</translation>
 <translation id="6573998787994398565">O arquivo <ph name="FILE_NAME" /> não costuma ser transferido por download e pode ser perigoso. Você pode contar com o Proteção Avançada.</translation>

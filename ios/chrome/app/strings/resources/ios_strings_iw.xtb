@@ -273,6 +273,7 @@
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">ביטול הסנכרון</translation>
+<translation id="5271549068863921519">שמור סיסמה</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -359,7 +360,6 @@
 <translation id="6464071786529933911">פתיחה בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6476800141292307438">הדפדפן מתרגם את הדף ל<ph name="LANGUAGE" />. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
-<translation id="6513773942555305766">‏הצעה לסיסמה מ-Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
 <translation id="6610002944194042868">אפשרויות תרגום</translation>
 <translation id="6642362222295953972">מעבר אל כרטיסייה קיימת</translation>
@@ -382,12 +382,14 @@
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914583639806229067">חיפוש תמונה שהעתקת</translation>
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
+<translation id="692898627499215142">הגדרת הסנכרון הראשונית לא הושלמה. כדי להתחיל בסנכרון, יש להפעיל את לחצן החלפת המצב של הסנכרון.</translation>
 <translation id="6944369514868857500">בחירת חשבון אחר</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>
 <translation id="7006788746334555276">הגדרות תוכן</translation>
+<translation id="7015203776128479407">הגדרת הסנכרון הראשונית לא הושלמה. הסנכרון מושבת.</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7031882061095297553">סינכרון עם</translation>
 <translation id="7053983685419859001">חסימה</translation>
@@ -399,6 +401,7 @@
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7159472599653637159">בקש אתר שמותאם לנייד</translation>
 <translation id="7167621057293532233">סוגי נתונים</translation>
+<translation id="7173114856073700355">פתיחת הגדרות</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
@@ -475,6 +478,7 @@
 <translation id="850600235656508448">פתיחה במצב גלישה בסתר</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>
 <translation id="8524799873541103884">כרטיסיות <ph name="INCOGNITO" /> ‏<ph name="FIRST_VISIBLE_TAB" /> עד <ph name="LAST_VISIBLE_TAB" /> מתוך <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">חדש</translation>
 <translation id="8532105204136943229">שנת פקיעת התוקף</translation>
 <translation id="8534481786647257214">‏הפרסום ב-‏Google+‎ בוצע.</translation>
 <translation id="8548878600947630424">חיפוש בדף...</translation>
@@ -509,6 +513,7 @@
 <translation id="9081058212938299310">לעדכן את הסיסמה של <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">פריט אחד</translation>
 <translation id="9083838294503912307">כדי לסנכרן ולהתאים אישית את החוויה במכשירים שונים, צריך להפעיל את הסנכרון.</translation>
+<translation id="9094033019050270033">עדכן סיסמה</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>

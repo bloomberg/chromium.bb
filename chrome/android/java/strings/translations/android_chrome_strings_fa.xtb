@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">انتخاب مخاطبین</translation>
 <translation id="1922076542920281912">‏برای اینکه به Chrome امکان دهید به مکانتان دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم مکان را روشن کنید.</translation>
 <translation id="1923695749281512248">‎<ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />‎</translation>
+<translation id="1928696683969751773">به‌روزرسانی‌ها</translation>
 <translation id="19288952978244135">‏Chrome را دوباره باز کنید.</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
 <translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
-<translation id="2610239185026711824">پیشنهاد گذرواژه</translation>
 <translation id="2612676031748830579">شماره کارت</translation>
 <translation id="2613747923081026172">ایجاد گروه</translation>
 <translation id="2621115761605608342">جاوااسکریپت را برای سایتی خاص مجاز کنید.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2779651927720337254">انجام نشد</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
-<translation id="2803478378562657435">درحال نمایش گذرواژه‌های ذخیره‌شده و گزینه‌های گذرواژه</translation>
 <translation id="2810645512293415242">صفحه ساده‌شده برای ذخیره داده‌ها و بارگیری با سرعت بیشتر.</translation>
 <translation id="281504910091592009">‏در <ph name="BEGIN_LINK" />حساب Google<ph name="END_LINK" /> خود گذرواژه‌های ذخیره‌شده را مشاهده و مدیریت کنید</translation>
 <translation id="2818669890320396765">برای اینکه نشانک‌هایتان را در همه دستگاه‌ها داشته باشید، به سیستم وارد شوید و همگام‌سازی را روشن کنید</translation>
@@ -414,7 +413,6 @@
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4116038641877404294">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را بارگیری کنید</translation>
 <translation id="4149994727733219643">نمای ساده‌شده برای صفحه‌های وب</translation>
-<translation id="4159800535322890630">مسدود کردن دسترسی سایت‌ها به حسگرها</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> استفاده‌شده</translation>
@@ -481,7 +479,6 @@
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4648718555153979859">برگه‌هایتان اینجا باهم گروه‌بندی می‌شوند</translation>
 <translation id="4650364565596261010">پیش‌فرض سیستم</translation>
-<translation id="4660011489602794167">نمایش صفحه‌کلید</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
@@ -622,7 +619,6 @@
 <translation id="5581519193887989363">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> انتخاب کنید.</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
-<translation id="5620299005957670886">اجازه به سایت‌ها برای دسترسی به حسگرها (توصیه می‌شود)</translation>
 <translation id="5620928963363755975">با استفاده از دکمه «گزینه‌های بیشتر»، فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5639724618331995626">همه سایت‌ها مجاز هستند</translation>
@@ -731,7 +727,6 @@
 <translation id="6378173571450987352">جزئیات: مرتب‌شده براساس مقدار داده استفاده‌شده</translation>
 <translation id="6383961787135158834">پاک کردن فضای ذخیره‌سازی سایت…</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
-<translation id="6393156038355142111">پیشنهاد گذرواژه قوی</translation>
 <translation id="6393863479814692971">‏Chrome برای این سایت به مجوز دسترسی به دوربین و میکروفون نیاز دارد.</translation>
 <translation id="6395288395575013217">پیوند</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
@@ -890,7 +885,6 @@
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7482697587265222445">برگه به دستگاه‌هایتان ارسال شد</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">نمایش گذرواژه‌ها</translation>
 <translation id="7494974237137038751">داده صرفه‌جویی‌شده</translation>
 <translation id="7498271377022651285">لطفاً صبر کنید...</translation>
 <translation id="7514365320538308">بارگیری</translation>
@@ -1029,7 +1023,6 @@
 <translation id="8503559462189395349">‏گذرواژه‌های Chrome</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8504988642345501642">‏وقتی به بالا پیمایش می‌کنید، پیوندهای سریع به صفحه‌های مرتبط نمایش داده می‌شوند. نشانی وب صفحاتی که بازدید می‌کنید برای Google ارسال می‌شوند.</translation>
-<translation id="8507520749471379845">گذرواژه‌ها دردسترس است</translation>
 <translation id="8514477925623180633">‏صادر کردن گذرواژه‌های ذخیره‌شده در Chrome</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>

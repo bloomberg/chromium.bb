@@ -3344,7 +3344,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Această politică este respectată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="7302043767260300182">Interval până la blocarea ecranului la funcționarea pe c.a.</translation>
-<translation id="7305262223970835999">Permite modificarea parolei în timpul sesiunii pentru utilizatorii SAML.</translation>
 <translation id="7311458740754205918">Dacă politica este activată sau nu este configurată, este posibil ca pagina Filă nouă să afișeze sugestii privind conținutul pe baza istoricului de navigare, a intereselor și a locației utilizatorului.
 
       Dacă politica este dezactivată, sugestiile generate automat privind conținutul nu sunt afișate pe pagina Filă nouă.</translation>
@@ -4117,7 +4116,6 @@ Configurarea unei liste de adrese URL în această politică are același efect 
 
 Pentru mai multe informații despre contextele sigure, accesează https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Oferă utilizatorilor versiunea de Quick Fix.</translation>
 <translation id="8942616385591203339">Această politică gestionează dacă utilizatorul poate vedea Consimțământul de sincronizare la prima conectare. Ea trebuie setată la false dacă Consimțământul de sincronizare nu este niciodată necesar pentru utilizator.
       Dacă este setată la false, Consimțământul de sincronizare nu se va afișa.
       Dacă este setată la true sau nu este setată, Consimțământul de sincronizare se poate afișa.</translation>

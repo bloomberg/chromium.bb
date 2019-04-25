@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">Kontakte auswählen</translation>
 <translation id="1922076542920281912">Aktivieren Sie die Standortermittlung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome auf Ihren Standort zugreifen kann.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> von <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">Aktualisierungen</translation>
 <translation id="19288952978244135">Öffnen Sie Chrome noch einmal.</translation>
 <translation id="1933845786846280168">Ausgewählter Tab</translation>
 <translation id="194341124344773587">Berechtigung für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2587052924345400782">Neuere Version verfügbar</translation>
 <translation id="2593272815202181319">Monospace</translation>
-<translation id="2610239185026711824">Passwort vorschlagen</translation>
 <translation id="2612676031748830579">Kartennummer</translation>
 <translation id="2613747923081026172">Gruppe erstellen</translation>
 <translation id="2621115761605608342">JavaScript für eine bestimmte Website zulassen.</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
 <translation id="2779651927720337254">fehlgeschlagen</translation>
 <translation id="2781151931089541271">1 Sekunde übrig</translation>
-<translation id="2803478378562657435">Gespeicherte Passwörter und Passwortoptionen werden angezeigt</translation>
 <translation id="2810645512293415242">Vereinfachte Seite für einen geringeren Datenverbrauch und schnelleres Laden.</translation>
 <translation id="281504910091592009">Gespeicherte Passwörter in Ihrem <ph name="BEGIN_LINK" />Google-Konto<ph name="END_LINK" /> ansehen und verwalten</translation>
 <translation id="2818669890320396765">Melden Sie sich an und aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen</translation>
@@ -414,7 +413,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4116038641877404294">Seiten zur Offline-Ansicht herunterladen</translation>
 <translation id="4149994727733219643">Vereinfachte Ansicht für Webseiten</translation>
-<translation id="4159800535322890630">Verhindern, dass Websites auf meine Sensoren zugreifen</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> verwendet</translation>
@@ -481,7 +479,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4648718555153979859">Ihre Tabs werden hier in Gruppen zusammengefasst</translation>
 <translation id="4650364565596261010">Systemstandardeinstellung</translation>
-<translation id="4660011489602794167">Tastatur anzeigen</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
@@ -622,7 +619,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5581519193887989363">Sie können in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
-<translation id="5620299005957670886">Websites den Zugriff auf meine Sensoren erlauben (empfohlen)</translation>
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Alle Websites zulassen</translation>
@@ -731,7 +727,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6378173571450987352">Details: Nach der Menge der verwendeten Daten sortiert</translation>
 <translation id="6383961787135158834">Websitespeicher löschen...</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
-<translation id="6393156038355142111">Starkes Passwort vorschlagen</translation>
 <translation id="6393863479814692971">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
@@ -890,7 +885,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7482697587265222445">Tab an Ihre Geräte gesendet</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">Passwörter anzeigen</translation>
 <translation id="7494974237137038751">eingesparte Datenmenge</translation>
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7514365320538308">Herunterladen</translation>
@@ -1029,7 +1023,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8503559462189395349">Chrome-Passwörter</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="8504988642345501642">Wenn Sie nach oben scrollen, werden Quick Links zu ähnlichen Seiten angezeigt. Die URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
-<translation id="8507520749471379845">Passwörter verfügbar</translation>
 <translation id="8514477925623180633">In Chrome gespeicherte Passwörter exportieren</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>

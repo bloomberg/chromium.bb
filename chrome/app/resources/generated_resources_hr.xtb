@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Za utvrđivanje lokacije upotrebljava se samo Wi-Fi</translation>
 <translation id="1526560967942511387">Neimenovani dokument</translation>
 <translation id="1529891865407786369">Izvor napajanja</translation>
-<translation id="1529899284660134226">Upravljanje dijeljenim datotekama i mapama</translation>
 <translation id="1530838837447122178">Otvorite postavke miša i dodirne podloge na uređaju</translation>
 <translation id="1531004739673299060">Prozor aplikacije</translation>
 <translation id="1536754031901697553">Prekidanje veze...</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Ništa}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> i <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> i <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i još jedna aplikacija}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i još <ph name="EXTRA_APPS" /> aplikacija}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i još <ph name="EXTRA_APPS" /> aplikacije}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i još <ph name="EXTRA_APPS" /> aplikacija}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Putanja ili naziv datoteke predugački su. Spremite datoteku pod kraćim nazivom ili na neku drugu lokaciju.</translation>
-<translation id="6564072216966459757">Ukloni Linux aplikacije za <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nije uspjelo učitavanje ikone "<ph name="ICON" />" za radnju stranice.</translation>
 <translation id="6571979863037191371">Prekinite vezu telefona s Chromebookom. Više se neće povezivati automatski.</translation>
 <translation id="6573998787994398565">Datoteka <ph name="FILE_NAME" /> obično se ne preuzima i mogla bi biti opasna. Štiti vas Napredna zaštita.</translation>

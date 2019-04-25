@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Визначати місцезнаходження лише за допомогою Wi-Fi</translation>
 <translation id="1526560967942511387">Документ без імені</translation>
 <translation id="1529891865407786369">Джерело живлення</translation>
-<translation id="1529899284660134226">Керувати спільними файлами й папками</translation>
 <translation id="1530838837447122178">Відкрити налаштування миші та сенсорної панелі</translation>
 <translation id="1531004739673299060">додатка</translation>
 <translation id="1536754031901697553">Від’єднання…</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Немає}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> і <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> і <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> і ще 1 додаток}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> і ще <ph name="EXTRA_APPS" /> додаток}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> і ще <ph name="EXTRA_APPS" /> додатки}many{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> і ще <ph name="EXTRA_APPS" /> додатків}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> і ще <ph name="EXTRA_APPS" /> додатка}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Шлях файлу чи назва файлу задовгі. Збережіть з коротшою назвою чи в іншому місці.</translation>
-<translation id="6564072216966459757">Видалити додатки Linux для <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Не вдалося завантажити піктограму "<ph name="ICON" />" для роботи сторінки.</translation>
 <translation id="6571979863037191371">Відключити телефон від Chromebook. Вони більше не підключатимуться автоматично.</translation>
 <translation id="6573998787994398565">Файл <ph name="FILE_NAME" /> рідко завантажують. Він може бути небезпечним. Увімкнено Додатковий захист.</translation>

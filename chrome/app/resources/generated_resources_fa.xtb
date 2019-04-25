@@ -341,7 +341,6 @@
 <translation id="1525740877599838384">‏فقط از Wi-Fi برای تعیین مکان استفاده شود</translation>
 <translation id="1526560967942511387">سند بدون عنوان</translation>
 <translation id="1529891865407786369">منبع نیرو:</translation>
-<translation id="1529899284660134226">مدیریت فایل‌ها و پوشه‌های هم‌رسانی‌شده</translation>
 <translation id="1530838837447122178">باز کردن تنظیمات موشواره و صفحه لمسی دستگاه</translation>
 <translation id="1531004739673299060">پنجره برنامه</translation>
 <translation id="1536754031901697553">درحال قطع اتصال...</translation>
@@ -3544,7 +3543,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{هیچ‌کدام}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> و <ph name="APP_2" />}=3{<ph name="APP_1" />،‏ <ph name="APP_2" /> و <ph name="APP_3" />}=4{<ph name="APP_1" />،‏ <ph name="APP_2" />،‏ <ph name="APP_3" /> و ۱ برنامه دیگر}one{<ph name="APP_1" />،‏ <ph name="APP_2" />،‏ <ph name="APP_3" /> و <ph name="EXTRA_APPS" /> برنامه دیگر}other{<ph name="APP_1" />،‏ <ph name="APP_2" />،‏ <ph name="APP_3" /> و <ph name="EXTRA_APPS" /> برنامه دیگر}}</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">مسیر یا نام فایل خیلی طولانی است. لطفاً با یک نام کوتاه‌تر یا در محل دیگری ذخیره کنید.</translation>
-<translation id="6564072216966459757">‏برداشتن برنامه‌های Linux از <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">بارگیری نماد "<ph name="ICON" />" برای عملکرد صفحه ممکن نیست.</translation>
 <translation id="6571979863037191371">‏اتصال تلفن و Chromebook قطع می‌شود و دیگر به‌طور خودکار به هم وصل نمی‌شوند.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> معمولاً بارگیری نمی‌شود و ممکن است خطرناک باشد. ازطریق «محافظت پیشرفته» حفاظت می‌شوید.</translation>

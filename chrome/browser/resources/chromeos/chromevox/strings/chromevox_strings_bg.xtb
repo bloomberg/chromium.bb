@@ -213,6 +213,7 @@
 <translation id="2626530649491650971">с възможност за кликване</translation>
 <translation id="2628764385451019380">Няма предишен разгъващ се списък.</translation>
 <translation id="2637227747952042642">Математически израз</translation>
+<translation id="2638785836053527382">Изтеглянето на <ph name="FILE_NAME" /> бе възобновено</translation>
 <translation id="2639750663247012216">Модифициращ клавиш за ChromeVox</translation>
 <translation id="2644542693584024604">правописна грешка</translation>
 <translation id="2661530546602071611">Известие</translation>
@@ -252,6 +253,7 @@
 <translation id="287383510823843610">тъмнооранжево</translation>
 <translation id="2879867157561757640">Прекарайте три пръста надолу</translation>
 <translation id="288178314850623291">Използвайте команди за преход, за да преминете направо към конкретни типове елементи. За преход по заглавията напред натиснете „търсене“ + H, а за преход назад натиснете „търсене“ + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{минута}other{минути}}</translation>
 <translation id="2894654529758326923">Информация</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{лява фигурна скоба}other{# леви фигурни скоби}}</translation>
 <translation id="2911433807131383493">Отваряне на урока за ChromeVox</translation>
@@ -286,6 +288,7 @@
 <translation id="3084806535845658316">без ехо при въвеждане</translation>
 <translation id="3086746722712840547">забележка</translation>
 <translation id="308895241372589742">Няма следващ математически израз.</translation>
+<translation id="3090227230165225418">Съобщаване на известия за изтегляне</translation>
 <translation id="3090532668523289635">група</translation>
 <translation id="3093176084511590672">Следващият ориентир</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -438,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{дясна фигурна скоба}other{# десни фигурни скоби}}</translation>
 <translation id="4158704014418536539">Регистърът на буквите е от значение.</translation>
 <translation id="4159784952369912983">лилаво</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{секунда}other{секунди}}</translation>
 <translation id="4161663686871496107">Обратната връзка с говор от ChromeVox е в готовност</translation>
 <translation id="4173994908659439270">Няма следващо текстово поле, което може да се редактира.</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
@@ -618,6 +622,7 @@
 <translation id="5349770431644471053">Препратка</translation>
 <translation id="536031132345979795">Превъртане назад при непрекъснато четене</translation>
 <translation id="5368000168321181111">Звуковите сигнали са изключени</translation>
+<translation id="5368505757342402527">Изтеглянето на <ph name="FILE_NAME" /> е на етап <ph name="PROGRESS" />%. Оставащо време: около <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Няма следващ бутон.</translation>
 <translation id="5376407118396657359">За придвижване между клетките натиснете клавиша „търсене“ + Ctrl + Alt и клавишите със стрелки.</translation>
 <translation id="5382299583965267720">Няма следващо заглавие от първо ниво.</translation>
@@ -800,6 +805,7 @@
 <translation id="667999046851023355">Документ</translation>
 <translation id="6688209025607531203">Немодален сигнал</translation>
 <translation id="6689672606256159458">тъмно розово-оранжево</translation>
+<translation id="669617842401078250">Изтеглянето на <ph name="FILE_NAME" /> е на пауза</translation>
 <translation id="6696967141280706829">Предисловие</translation>
 <translation id="6697092096875747123">Предишният разгъващ се списък</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{удивителен знак}other{# удивителни знака}}</translation>
@@ -938,6 +944,7 @@
 <translation id="7641134354185483015">Няма предишно заглавие от трето ниво.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле</translation>
 <translation id="7663318257180412551">Заглавие от второ ниво</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{час}other{часа}}</translation>
 <translation id="7674576868851035240">Следващата връзка</translation>
 <translation id="7674768236845044097">маркиране</translation>
 <translation id="7684431668231950609">Поле за въвеждане на URL адрес</translation>
@@ -952,6 +959,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">Изтеглянето на <ph name="FILE_NAME" /> започна</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле за парола</translation>
 <translation id="7776293189010177726">Отваряне на менютата на ChromeVox</translation>
 <translation id="7800558923657349506">Епилог</translation>
@@ -1076,6 +1084,7 @@
 <translation id="8096975275316362544">бледо ментовозелено</translation>
 <translation id="8098587210054821856">шистовосиво</translation>
 <translation id="8110647606445335195">Няма отличителни белези на ARIA.</translation>
+<translation id="812886159861361726">Изтеглянето на <ph name="FILE_NAME" /> спря</translation>
 <translation id="8138880386467279117">Докосване</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
@@ -1145,6 +1154,7 @@
 <translation id="8743786158317878347">вход в структурирано съдържание, като например таблици</translation>
 <translation id="8747966237988593539">Подреден списък</translation>
 <translation id="8749988712346667988">сребристо</translation>
+<translation id="875769700429317857">Изтеглянето на <ph name="FILE_NAME" /> завърши</translation>
 <translation id="8759334257841767240">Няма следваща връзка.</translation>
 <translation id="8767968232364267681">Следващото заглавие от четвърто ниво</translation>
 <translation id="8770473310765924354">изход от структурирано съдържание, като например таблици</translation>

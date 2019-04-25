@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">اختيار جهات الاتصال</translation>
 <translation id="1922076542920281912">‏للسماح لمتصفِّح Chrome بالوصول إلى موقعك الجغرافي، يُرجى أيضًا تفعيل الموقع الجغرافي في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">التحديثات</translation>
 <translation id="19288952978244135">‏يُرجى إعادة فتح Chrome.</translation>
 <translation id="1933845786846280168">علامة تبويب محددة</translation>
 <translation id="194341124344773587">‏إتاحة الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">الحافظة</translation>
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
-<translation id="2610239185026711824">اقتراح كلمة مرور</translation>
 <translation id="2612676031748830579">رقم البطاقة</translation>
 <translation id="2613747923081026172">إنشاء مجموعة</translation>
 <translation id="2621115761605608342">السماح لموقع ويب معيّن بتشغيل جافا سكريبت</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389">عدد الثواني المتبقية: <ph name="SECONDS" /></translation>
 <translation id="2779651927720337254">تعذَّر التنزيل</translation>
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
-<translation id="2803478378562657435">عرض كلمات المرور المحفوظة وخيارات كلمة المرور</translation>
 <translation id="2810645512293415242">صفحة مبسَّطة لحفظ البيانات والاستمتاع بتحميل أسرع.</translation>
 <translation id="281504910091592009">‏بإمكانك عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />حسابك على Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -414,7 +413,6 @@
 <translation id="410351446219883937">التشغيل التلقائي</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
-<translation id="4159800535322890630">حظر مواقع الويب من الوصول إلى أجهزة الاستشعار</translation>
 <translation id="4165986682804962316">إعدادات المواقع</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4179980317383591987">تم استخدام <ph name="AMOUNT" /></translation>
@@ -481,7 +479,6 @@
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4648718555153979859">يتم جمع علامات التبويب معًا هنا</translation>
 <translation id="4650364565596261010">الإعداد التلقائي للنظام</translation>
-<translation id="4660011489602794167">عرض لوحة المفاتيح</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
@@ -622,7 +619,6 @@
 <translation id="5581519193887989363">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
-<translation id="5620299005957670886">السماح للمواقع بالوصول إلى أجهزة الاستشعار (مُوصى به)</translation>
 <translation id="5620928963363755975">العثور على الملفات والصفحات في التنزيلات من الزر "مزيد من الخيارات"</translation>
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5639724618331995626">السماح بجميع المواقع</translation>
@@ -731,7 +727,6 @@
 <translation id="6378173571450987352">التفاصيل: تم الترتيب بحسب مقدار البيانات المُستخدَمة</translation>
 <translation id="6383961787135158834">محو مساحة تخزين المواقع...</translation>
 <translation id="6388207532828177975">المحو وإعادة الضبط</translation>
-<translation id="6393156038355142111">اقتراح كلمة مرور قوية</translation>
 <translation id="6393863479814692971">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا والميكروفون لموقع الويب هذا.</translation>
 <translation id="6395288395575013217">رابط</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
@@ -890,7 +885,6 @@
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7482697587265222445">تم إرسال علامة التبويب إلى أجهزتك</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">عرض كلمات المرور</translation>
 <translation id="7494974237137038751">حجم البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -1029,7 +1023,6 @@
 <translation id="8503559462189395349">‏كلمات المرور في Chrome</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8504988642345501642">‏عند التمرير للأعلى، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="8507520749471379845">كلمات المرور متاحة</translation>
 <translation id="8514477925623180633">‏تصدير كلمات المرور المخزنة من خلال Chrome</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="851751545965956758">حظر مواقع الويب من الاتصال بأجهزة</translation>

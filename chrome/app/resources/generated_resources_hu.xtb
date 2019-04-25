@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Csak a Wi-Fi használata a tartózkodási hely megállapításához</translation>
 <translation id="1526560967942511387">Név nélküli dokumentum</translation>
 <translation id="1529891865407786369">Áramforrás</translation>
-<translation id="1529899284660134226">Megosztott fájlok és mappák kezelése</translation>
 <translation id="1530838837447122178">Az egér és az érintőpad beállításainak megnyitása</translation>
 <translation id="1531004739673299060">Alkalmazásablak</translation>
 <translation id="1536754031901697553">Kapcsolat bontása...</translation>
@@ -3550,7 +3549,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6559023360691182159">{COUNT,plural, =0{Nincs}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> és <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> és <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> és további 1 alkalmazás}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> és további <ph name="EXTRA_APPS" /> alkalmazás}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">A fájl elérési útja vagy neve túl hosszú. Kérjük, mentse rövidebb névvel, illetve másik helyre.</translation>
-<translation id="6564072216966459757">Linuxos alkalmazások eltávolítása innen: <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nem sikerült a(z) '<ph name="ICON" />' ikon betöltése az oldalművelethez.</translation>
 <translation id="6571979863037191371">Telefon leválasztása a Chromebookról. Ezt követően nem kapcsolódnak majd egymáshoz automatikusan.</translation>
 <translation id="6573998787994398565">A(z) <ph name="FILE_NAME" /> fájlt nem gyakran töltik le, és veszélyes lehet. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>

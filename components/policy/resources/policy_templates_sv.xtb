@@ -3440,7 +3440,6 @@
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7302043767260300182">Skärmlåsningstid när enheten är ansluten till elnätet</translation>
-<translation id="7305262223970835999">Aktiverar en sida där SAML-användare kan byta lösenord under sessionen.</translation>
 <translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
       Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
@@ -4252,7 +4251,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Mer information om säkra sammanhang finns på
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Ger användarna Quick Fix Build.</translation>
 <translation id="8942616385591203339">Den här principen styr om samtycke till synkronisering får visas för användaren vid den första inloggningen. Den ska ställas in på falskt om samtycke till synkronisering aldrig behövs för användaren.
       Om principen är inställd på falskt visas inget samtycke till synkronisering.
       Om principen är inställd på sant eller lämnas utan inställning kan samtycke till synkronisering visas.</translation>

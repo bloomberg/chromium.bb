@@ -549,7 +549,6 @@
 <translation id="3949571496842715403">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat ei määra laiendust Subject Alternative Names. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="3949601375789751990">Siin kuvatakse teie sirvimisajalugu</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
-<translation id="3963721102035795474">Lugejarežiim</translation>
 <translation id="3963837677003247395">Kas jätkata käsitsi?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ükski}=1{1 saidilt }other{# saidilt }}</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
@@ -618,7 +617,6 @@
 <translation id="4265872034478892965">Lubas administraator</translation>
 <translation id="4275830172053184480">Taaskäivitage seade</translation>
 <translation id="4277028893293644418">Lähtesta parool</translation>
-<translation id="4280429058323657511">, aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{See kaart salvestati teie Google'i kontole}other{Need kaardid salvestati teie Google'i kontole}}</translation>
 <translation id="42981349822642051">Laienda</translation>
 <translation id="4302965934281694568">Chou3 (ümbrik)</translation>
@@ -696,7 +694,6 @@
 <translation id="4750917950439032686">Teie teave (nt paroolid või krediitkaardi numbrid) on sellele saidile saates privaatne.</translation>
 <translation id="4756388243121344051">&amp;Ajalugu</translation>
 <translation id="4758311279753947758">Lisage kontaktteave</translation>
-<translation id="4759118997339041434">Makse automaatne täitmine on keelatud</translation>
 <translation id="4764776831041365478">Veebileht aadressil <ph name="URL" /> võib olla ajutiselt maas või jäädavalt uuele veebiaadressile teisaldatud.</translation>
 <translation id="4771973620359291008">Tekkis tundmatu viga.</translation>
 <translation id="4780900888022378816">Teie seadet haldab <ph name="ENROLLMENT_DOMAIN" /> ja teie kontot haldab <ph name="ACCOUNT_DOMAIN" />.</translation>
@@ -711,6 +708,7 @@
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="4854362297993841467">See kohaletoimetamisviis pole saadaval. Proovige mõnda teist kohaletoimetamisviisi.</translation>
 <translation id="4858792381671956233">Küsisite oma vanematelt, kas võite seda lehte külastada</translation>
+<translation id="4876188919622883022">Lihtsustatud vaade</translation>
 <translation id="4876305945144899064">Kasutajanimi puudub</translation>
 <translation id="4877422487531841831">Otsing <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automaatne (vaikimisi)</translation>
@@ -914,7 +912,6 @@
 <translation id="5967592137238574583">Kontaktteabe muutmine</translation>
 <translation id="5967867314010545767">Eemalda ajaloost</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
-<translation id="5977976211062815271">Selles seadmes</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Makserakendust ei saa avada</translation>
 <translation id="5988826871883769516">Teie seadet haldab rakendus <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1032,7 +1029,6 @@
 <translation id="6710594484020273272">&lt;Sisestage otsingutermin&gt;</translation>
 <translation id="671076103358959139">Registreerimismärk:</translation>
 <translation id="6711464428925977395">Puhverserveriga on midagi valesti või aadress on vale.</translation>
-<translation id="6723740634201835758">Teie Google’i kontol</translation>
 <translation id="6738516213925468394">Teie andmed krüpteeriti teie <ph name="BEGIN_LINK" />sünkroonimisparooliga<ph name="END_LINK" /> kuupäeval <ph name="TIME" />. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6744009308914054259">Ühenduse loomise ajal võite avada jaotise Allalaadimised ja lugeda võrguühenduseta artikleid.</translation>
@@ -1045,7 +1041,6 @@
 <translation id="679355240208270552">Seda eiratakse, kuna vaikeotsing ei ole reegliga lubatud.</translation>
 <translation id="681021252041861472">Kohustuslik väli</translation>
 <translation id="6810899417690483278">Kohandamise ID</translation>
-<translation id="6824266427216888781">Piirkondade andmete laadimine ebaõnnestus</translation>
 <translation id="6825578344716086703">Püüdsite jõuda domeenile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mis on allkirjastatud nõrga allkirjaalgoritmiga (nt SHA-1). See tähendab, et serveri esitatud turvamandaadid võivad olla võltsitud ja server ei pruugi olla see, mida eeldate (võimalik, et suhtlete ründajaga).</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
 <translation id="6839929833149231406">Ala</translation>

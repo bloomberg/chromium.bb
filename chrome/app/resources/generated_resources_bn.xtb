@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">লোকেশন নির্ধারণ করার জন্য ওয়াই-ফাই ব্যবহার করুন</translation>
 <translation id="1526560967942511387">শিরোনামহীন ডকুমেন্ট</translation>
 <translation id="1529891865407786369">বিদ্যুতের উৎস</translation>
-<translation id="1529899284660134226">শেয়ার করা ফাইল ও ফোল্ডার পরিচালনা করুন</translation>
 <translation id="1530838837447122178">মাউস এবং টাচপ্যাড ডিভাইস সেটিংস খুলুন</translation>
 <translation id="1531004739673299060">অ্যাপ্লিকেশান উইন্ডো</translation>
 <translation id="1536754031901697553">ডিসকানেক্ট করা হচ্ছে...</translation>
@@ -3546,7 +3545,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{একটিও নয়}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> এবং <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> এবং <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> এবং অন্য ১টি অ্যাপ}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> এবং অন্য <ph name="EXTRA_APPS" />টি অ্যাপ}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> এবং অন্য <ph name="EXTRA_APPS" />টি অ্যাপ}}</translation>
 <translation id="6561726789132298588">লিখুন</translation>
 <translation id="656293578423618167">ফাইল পাথ অথবা নাম অত্যন্ত বড়৷ দয়া করে একটি সংক্ষিপ্ত নামে বা অন্য কোনো স্থানে সংরক্ষণ করুন৷</translation>
-<translation id="6564072216966459757"><ph name="DEVICE_TYPE" /> থেকে Linux অ্যাপ সরান</translation>
 <translation id="6567688344210276845">পৃষ্ঠা ক্রিয়ার জন্য '<ph name="ICON" />' আইকন লোড করা যায়নি৷</translation>
 <translation id="6571979863037191371">Chromebook থেকে আপনার ফোন ডিসকানেক্ট করুন। তারা আর অটোমেটিক কানেক্ট হবে না।</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> সাধারণত ডাউনলোড করা হয় না এবং এটি বিপজ্জনক হতে পারে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>

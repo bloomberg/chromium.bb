@@ -3341,7 +3341,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="7302043767260300182">Atraso do bloqueio do ecrã quando o dispositivo está ligado à eletricidade</translation>
-<translation id="7305262223970835999">Ativa uma página de alteração da palavra-passe na sessão iniciada para os utilizadores SAML.</translation>
 <translation id="7311458740754205918">Se esta política for definida para verdadeira ou não for definida, a página Novo separador pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou na localização do utilizador.
 
       Se for definida para falsa, as sugestões de conteúdo geradas automaticamente não são mostradas na página Novo separador.</translation>
@@ -4133,7 +4132,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Para obter mais informações sobre contextos seguros, consulte
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Disponibilize a Compilação de correção rápida aos utilizadores.</translation>
 <translation id="8942616385591203339">Esta política controla se é possível mostrar o Consentimento de sincronização ao utilizador durante o primeiro início de sessão. Deve estar definida como falsa se o Consentimento de sincronização nunca for necessário para o utilizador.
       Se estiver definida como falsa, o Consentimento de sincronização não é apresentado.
       Se estiver definida como verdadeira ou se não estiver definida, é possível apresentar o Consentimento de sincronização.</translation>

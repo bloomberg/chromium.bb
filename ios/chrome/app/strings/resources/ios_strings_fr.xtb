@@ -273,6 +273,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5244474230056479698">Synchronisation avec <ph name="EMAIL" />…</translation>
 <translation id="5245322853195994030">Annuler la synchronisation</translation>
+<translation id="5271549068863921519">Enregistrer le mot de passe</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
@@ -359,7 +360,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6464071786529933911">Ouvrir nouvel onglet navigation privée</translation>
 <translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" />. Options disponibles au bas de l'écran.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés.</translation>
-<translation id="6513773942555305766">Mot de passe suggéré par Chrome : <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Dernière heure</translation>
 <translation id="6610002944194042868">Options de traduction</translation>
 <translation id="6642362222295953972">Passer à un onglet existant</translation>
@@ -382,12 +382,14 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6914583639806229067">Rechercher l'image copiée</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
+<translation id="692898627499215142">La configuration de la synchronisation initiale n'était pas terminée. Pour lancer la synchronisation, activez-la à l'aide du bouton associé.</translation>
 <translation id="6944369514868857500">Sélectionner un autre compte</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Onglets récents</translation>
 <translation id="7006788746334555276">Paramètres de contenu</translation>
+<translation id="7015203776128479407">La configuration de la synchronisation initiale n'était pas terminée. La synchronisation est désactivée.</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7053983685419859001">Bloquer</translation>
@@ -399,6 +401,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
+<translation id="7173114856073700355">Ouvrir les paramètres</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
@@ -475,6 +478,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="850600235656508448">Ouvrir en mode navigation privée</translation>
 <translation id="8517375800490286174">Licences Open Source</translation>
 <translation id="8524799873541103884">Onglets <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> à <ph name="LAST_VISIBLE_TAB" /> sur <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Nouveau</translation>
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>
@@ -509,6 +513,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9081058212938299310">Changer le mot de passe pour <ph name="USERNAME" /> ?</translation>
 <translation id="9083392325882095631">1 élément</translation>
 <translation id="9083838294503912307">Activez la synchronisation pour accéder à vos données et les personnaliser sur tous vos appareils.</translation>
+<translation id="9094033019050270033">Modifier le mot de passe</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>

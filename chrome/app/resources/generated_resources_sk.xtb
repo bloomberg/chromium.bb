@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Na zistenie polohy používať iba Wi-Fi</translation>
 <translation id="1526560967942511387">Dokument bez názvu</translation>
 <translation id="1529891865407786369">Zdroj napájania</translation>
-<translation id="1529899284660134226">Spravovať zdieľané súbory a priečinky</translation>
 <translation id="1530838837447122178">Otvoriť nastavenia myši a touchpadu</translation>
 <translation id="1531004739673299060">Okno aplikácie</translation>
 <translation id="1536754031901697553">Odpája sa...</translation>
@@ -3546,7 +3545,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Žiadna}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> a <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> a <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> a 1 ďalšia aplikácia}many{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, and <ph name="EXTRA_APPS" /> other apps}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> a <ph name="EXTRA_APPS" /> ďalších aplikácií}}</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Názov súboru alebo cesta má veľa znakov. Uložte súbor pod kratším názvom alebo inde.</translation>
-<translation id="6564072216966459757">Odstrániť linuxové aplikácie pre zariadenie <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nepodarilo sa načítať ikonu „<ph name="ICON" />“ akcie stránky.</translation>
 <translation id="6571979863037191371">Odpojte telefón od Chromebooku. Už sa nebude automaticky pripájať.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> nie je bežne sťahovaný súbor a môže byť nebezpečný. Bráni vás rozšírená ochrana.</translation>

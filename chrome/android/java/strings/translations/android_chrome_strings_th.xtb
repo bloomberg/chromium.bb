@@ -121,6 +121,7 @@
 <translation id="1919950603503897840">เลือกรายชื่อติดต่อ</translation>
 <translation id="1922076542920281912">หากต้องการให้ Chrome เข้าถึงตำแหน่งของคุณ ให้เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1928696683969751773">อัปเดต</translation>
 <translation id="19288952978244135">เปิด Chrome อีกครั้ง</translation>
 <translation id="1933845786846280168">แท็บที่เลือก</translation>
 <translation id="194341124344773587">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -222,7 +223,6 @@
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
 <translation id="2587052924345400782">มีเวอร์ชันใหม่กว่าให้ใช้งาน</translation>
 <translation id="2593272815202181319">Monospace</translation>
-<translation id="2610239185026711824">แนะนำรหัสผ่าน</translation>
 <translation id="2612676031748830579">หมายเลขบัตร</translation>
 <translation id="2613747923081026172">สร้างกลุ่ม</translation>
 <translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
@@ -245,7 +245,6 @@
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
 <translation id="2779651927720337254">ล้มเหลว</translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
-<translation id="2803478378562657435">กำลังแสดงรหัสผ่านที่บันทึกไว้และตัวเลือกรหัสผ่าน</translation>
 <translation id="2810645512293415242">ลดรายละเอียดหน้าเว็บเพื่อประหยัดเน็ตมือถือและโหลดได้เร็วขึ้น</translation>
 <translation id="281504910091592009">ดูและจัดการรหัสผ่านที่บันทึกไว้ใน<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -414,7 +413,6 @@
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="4116038641877404294">ดาวน์โหลดหน้าเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="4149994727733219643">มุมมองอย่างง่ายสำหรับหน้าเว็บ</translation>
-<translation id="4159800535322890630">บล็อกเว็บไซต์ไม่ให้เข้าถึงเซ็นเซอร์</translation>
 <translation id="4165986682804962316">การตั้งค่าเว็บไซต์</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4179980317383591987">ใช้ไปแล้ว <ph name="AMOUNT" /></translation>
@@ -481,7 +479,6 @@
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4648718555153979859">แท็บของคุณมีการจัดกลุ่มเข้าด้วยกันที่นี่</translation>
 <translation id="4650364565596261010">ค่าเริ่มต้นของระบบ</translation>
-<translation id="4660011489602794167">แสดงแป้นพิมพ์</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
@@ -622,7 +619,6 @@
 <translation id="5581519193887989363">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
-<translation id="5620299005957670886">อนุญาตให้เว็บไซต์เข้าถึงเซ็นเซอร์ (แนะนำ)</translation>
 <translation id="5620928963363755975">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลดจากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5639724618331995626">อนุญาตทุกไซต์</translation>
@@ -731,7 +727,6 @@
 <translation id="6378173571450987352">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
 <translation id="6383961787135158834">ล้างพื้นที่เก็บข้อมูลเว็บไซต์…</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
-<translation id="6393156038355142111">แนะนำรหัสผ่านที่รัดกุม</translation>
 <translation id="6393863479814692971">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนและกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="6395288395575013217">ลิงก์</translation>
 <translation id="6404511346730675251">แก้ไขบุ๊กมาร์ก</translation>
@@ -890,7 +885,6 @@
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="7482697587265222445">ส่งแท็บไปยังอุปกรณ์ของคุณแล้ว</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">แสดงรหัสผ่าน</translation>
 <translation id="7494974237137038751">อินเทอร์เน็ตที่ประหยัดได้</translation>
 <translation id="7498271377022651285">โปรดรอสักครู่…</translation>
 <translation id="7514365320538308">ดาวน์โหลด</translation>
@@ -1029,7 +1023,6 @@
 <translation id="8503559462189395349">รหัสผ่าน Chrome</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8504988642345501642">เมื่อคุณเลื่อนขึ้น คำแนะนำจะแสดงลิงก์ด่วนไปยังหน้าเว็บที่เกี่ยวข้อง ระบบจะส่ง URL ของหน้าที่คุณเข้าถึงไปยัง Google</translation>
-<translation id="8507520749471379845">รหัสผ่านที่มีอยู่</translation>
 <translation id="8514477925623180633">ส่งออกรหัสผ่านที่เก็บไว้ใน Chrome</translation>
 <translation id="8514577642972634246">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="851751545965956758">บล็อกเว็บไซต์ไม่ให้เชื่อมต่อกับอุปกรณ์</translation>

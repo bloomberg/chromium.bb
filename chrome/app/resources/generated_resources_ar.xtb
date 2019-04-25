@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">‏استخدام شبكة Wi-Fi فقط لتحديد الموقع الجغرافي</translation>
 <translation id="1526560967942511387">مستند بلا عنوان</translation>
 <translation id="1529891865407786369">مصدر الطاقة</translation>
-<translation id="1529899284660134226">إدارة المجلدات والملفات التي تمت مشاركتها</translation>
 <translation id="1530838837447122178">فتح إعدادات الجهاز للماوس ولوحة اللمس</translation>
 <translation id="1531004739673299060">نافذة التطبيق</translation>
 <translation id="1536754031901697553">جارٍ قطع الاتصال…</translation>
@@ -3544,7 +3543,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{ولا تطبيق}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> و<ph name="APP_2" />}=3{<ph name="APP_1" /> و<ph name="APP_2" /> و<ph name="APP_3" />}=4{<ph name="APP_1" /> و<ph name="APP_2" /> و<ph name="APP_3" /> وتطبيق واحد آخر}few{<ph name="APP_1" /> و<ph name="APP_2" /> و<ph name="APP_3" /> و<ph name="EXTRA_APPS" /> تطبيقات أخرى}many{<ph name="APP_1" /> و<ph name="APP_2" /> و<ph name="APP_3" /> و<ph name="EXTRA_APPS" /> تطبيقًا آخر}other{<ph name="APP_1" /> و<ph name="APP_2" /> و<ph name="APP_3" /> و<ph name="EXTRA_APPS" /> تطبيق آخر}}</translation>
 <translation id="6561726789132298588">إدخال</translation>
 <translation id="656293578423618167">اسم الملف أو مساره طويل جدًا. يُرجى الحفظ باستخدام اسم أقصر أو في مكان آخر.</translation>
-<translation id="6564072216966459757">‏إزالة تطبيقات Linux لجهاز <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">تعذر تحميل الرمز '<ph name="ICON" />' لإجراء المتصفح.</translation>
 <translation id="6571979863037191371">‏يمكنك إلغاء ربط هاتفك بجهاز Chromebook. لن يتم ربطهما تلقائيًا بعد الآن.</translation>
 <translation id="6573998787994398565">لا يتم تنزيل ملف <ph name="FILE_NAME" /> بشكل شائع وقد يكون ملفًا ضارًا. تتم حمايتك في إطار برنامج "الحماية المتقدمة".</translation>

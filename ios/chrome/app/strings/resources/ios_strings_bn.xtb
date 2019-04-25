@@ -273,6 +273,7 @@
 <translation id="5228579091201413441">সিঙ্ক সক্ষম করুন</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> এ সিঙ্ক হচ্ছে</translation>
 <translation id="5245322853195994030">সিঙ্ক বাতিল করুন</translation>
+<translation id="5271549068863921519">পাসওয়ার্ড সেভ করুন</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
@@ -360,7 +361,6 @@
 <translation id="6464071786529933911">নতুন ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="6476800141292307438">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষাতে অনুবাদ হচ্ছে। স্ক্রিনের নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম মোছা হয়েছে</translation>
-<translation id="6513773942555305766">Chrome-এর সাজেস্ট করা পাসওয়ার্ড: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">গত এক ঘণ্টা</translation>
 <translation id="6610002944194042868">অনুবাদের বিকল্প</translation>
 <translation id="6642362222295953972">আগে থেকে থাকা ট্যাবে পাল্টান</translation>
@@ -514,6 +514,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" />-এর পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9083838294503912307">সমগ্র ডিভাইস জুড়ে সিঙ্ক এবং নিজের মতো সাজিয়ে নিতে সিঙ্ক বিকল্পটি চালু করুন।</translation>
+<translation id="9094033019050270033">পাসওয়ার্ড আপডেট করুন</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>

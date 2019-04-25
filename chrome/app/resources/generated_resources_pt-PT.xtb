@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Utilizar apenas Wi-Fi para determinar a localização</translation>
 <translation id="1526560967942511387">Documento sem nome</translation>
 <translation id="1529891865407786369">Fonte de alimentação</translation>
-<translation id="1529899284660134226">Gerir pastas e ficheiros partilhados</translation>
 <translation id="1530838837447122178">Abrir definições do dispositivo do rato e do touchpad</translation>
 <translation id="1531004739673299060">Janela da aplicação</translation>
 <translation id="1536754031901697553">A desligar…</translation>
@@ -3549,7 +3548,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6559023360691182159">{COUNT,plural, =0{Nenhuma}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> e <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> e <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> e mais 1 aplicação}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> e mais <ph name="EXTRA_APPS" /> aplicações}}</translation>
 <translation id="6561726789132298588">introduzir</translation>
 <translation id="656293578423618167">O caminho ou nome do ficheiro é demasiado longo. Guarde com um nome mais curto ou noutra localização.</translation>
-<translation id="6564072216966459757">Remover aplicações do Linux para <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6571979863037191371">Desassocie o seu telemóvel do Chromebook. Deixarão de se ligar um ao outro automaticamente.</translation>
 <translation id="6573998787994398565">O ficheiro <ph name="FILE_NAME" /> não é habitualmente transferido e pode ser perigoso. Está protegido pela Proteção avançada.</translation>

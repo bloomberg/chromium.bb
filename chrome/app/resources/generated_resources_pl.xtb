@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Do określania lokalizacji używaj tylko Wi-Fi</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
 <translation id="1529891865407786369">Źródło zasilania</translation>
-<translation id="1529899284660134226">Zarządzaj udostępnionymi plikami i folderami</translation>
 <translation id="1530838837447122178">Otwórz ustawienia myszy i touchpada</translation>
 <translation id="1531004739673299060">Okno aplikacji</translation>
 <translation id="1536754031901697553">Rozłączam...</translation>
@@ -3548,7 +3547,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Brak}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> i <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> i <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i 1 inna aplikacja}few{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i <ph name="EXTRA_APPS" /> inne aplikacje}many{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i <ph name="EXTRA_APPS" /> innych aplikacji}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> i <ph name="EXTRA_APPS" /> innej aplikacji}}</translation>
 <translation id="6561726789132298588">wpisz</translation>
 <translation id="656293578423618167">Ścieżka do pliku lub jego nazwa jest zbyt długa. Zapisz pod krótszą nazwą lub w innej lokalizacji.</translation>
-<translation id="6564072216966459757">Usuń aplikacje Linuksa na urządzeniu <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Nie można wczytać ikony „<ph name="ICON" />” dla czynności wykonywanej na stronie.</translation>
 <translation id="6571979863037191371">Odłącz telefon od Chromebooka. Te urządzenia nie będą już łączyć się ze sobą automatycznie.</translation>
 <translation id="6573998787994398565">Plik <ph name="FILE_NAME" /> jest rzadko pobierany i może być niebezpieczny. O Twoje bezpieczeństwo dba Ochrona zaawansowana.</translation>

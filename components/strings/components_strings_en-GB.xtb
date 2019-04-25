@@ -541,7 +541,6 @@
 <translation id="3949571496842715403">This server could not prove that it is <ph name="DOMAIN" />; its security certificate does not specify Subject Alternative Names. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="3949601375789751990">Your browsing history appears here</translation>
 <translation id="3950820424414687140">Sign in</translation>
-<translation id="3963721102035795474">Reader Mode</translation>
 <translation id="3963837677003247395">Continue manually?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -610,7 +609,6 @@
 <translation id="4265872034478892965">Allowed by your administrator</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4277028893293644418">Reset password</translation>
-<translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{This card has been saved in your Google Account}other{These cards have been saved in your Google Account}}</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
@@ -688,7 +686,6 @@
 <translation id="4750917950439032686">Your information (for example, passwords or credit card numbers) is private when it is sent to this site.</translation>
 <translation id="4756388243121344051">&amp;History</translation>
 <translation id="4758311279753947758">Add contact info</translation>
-<translation id="4759118997339041434">Payment autofilling disabled</translation>
 <translation id="4764776831041365478">The web page at <ph name="URL" /> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4780900888022378816">Your device is managed by <ph name="ENROLLMENT_DOMAIN" /> and your account is managed by <ph name="ACCOUNT_DOMAIN" />.</translation>
@@ -703,6 +700,7 @@
 <translation id="4850886885716139402">View</translation>
 <translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
+<translation id="4876188919622883022">Simplified view</translation>
 <translation id="4876305945144899064">No username</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> search</translation>
 <translation id="4879491255372875719">Automatic (default)</translation>
@@ -906,7 +904,6 @@
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
 <translation id="5975083100439434680">Zoom out</translation>
-<translation id="5977976211062815271">On this device</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Can’t open payment app</translation>
 <translation id="5988826871883769516">Your device is managed by <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1024,7 +1021,6 @@
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="671076103358959139">Enrolment Token:</translation>
 <translation id="6711464428925977395">There is something wrong with the proxy server or the address is incorrect.</translation>
-<translation id="6723740634201835758">In your Google Account</translation>
 <translation id="6738516213925468394">Your data was encrypted with your <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /> on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
 <translation id="6744009308914054259">While waiting for a connection, you can visit Downloads to read offline articles.</translation>
@@ -1037,7 +1033,6 @@
 <translation id="679355240208270552">Ignored because default search is not enabled by policy.</translation>
 <translation id="681021252041861472">Required Field</translation>
 <translation id="6810899417690483278">Customisation ID</translation>
-<translation id="6824266427216888781">Failed loading regions data</translation>
 <translation id="6825578344716086703">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm (such as SHA-1). This means that the security credentials that the server presented could have been forged, and the server may not be the server that you expected (you may be communicating with an attacker).</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>

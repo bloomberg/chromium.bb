@@ -344,7 +344,6 @@
 <translation id="1525740877599838384">Fastställ platsen enbart utifrån Wi-Fi</translation>
 <translation id="1526560967942511387">Namnlöst dokument</translation>
 <translation id="1529891865407786369">Strömkälla</translation>
-<translation id="1529899284660134226">Hantera delade filer och mappar</translation>
 <translation id="1530838837447122178">Öppna enhetsinställningarna för mus och styrplatta</translation>
 <translation id="1531004739673299060">Appfönster</translation>
 <translation id="1536754031901697553">Kopplar från …</translation>
@@ -3547,7 +3546,6 @@
 <translation id="6559023360691182159">{COUNT,plural, =0{Inga}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> och <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> och <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> och 1 app till}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> och <ph name="EXTRA_APPS" /> appar till}}</translation>
 <translation id="6561726789132298588">retur</translation>
 <translation id="656293578423618167">För lång sökväg eller för långt filnamn. Spara med ett kortare namn eller på en annan plats.</translation>
-<translation id="6564072216966459757">Ta bort Linux-appar för <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Det gick inte att läsa in ikonen <ph name="ICON" /> för sidåtgärden.</translation>
 <translation id="6571979863037191371">Koppla från mobilen från Chromebook. De ansluts inte längre till varandra automatiskt.</translation>
 <translation id="6573998787994398565"><ph name="FILE_NAME" /> brukar inte laddas ned och kan vara skadlig. Du skyddas med Avancerat skydd.</translation>
