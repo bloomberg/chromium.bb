@@ -653,7 +653,7 @@ def _PostParseCheck(parser, options, site_config):
 
   # Ensure that all args are legitimate config targets.
   if options.build_config_name not in site_config:
-    cros_build_lib.Die('Unkonwn build config: "%s"' % options.build_config_name)
+    cros_build_lib.Die('Unknown build config: "%s"' % options.build_config_name)
 
   build_config = site_config[options.build_config_name]
   is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
