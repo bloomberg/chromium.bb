@@ -345,11 +345,11 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
 
   if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
     // Off-the-main-thread script fetch:
-    // Some params (e.g., referrer policy, CSP) passed to
+    // Some params (e.g., referrer policy, address space, CSP) passed to
     // GlobalScopeCreationParams are dummy values. They will be updated after
     // worker script fetch on the worker thread.
-    // TODO(nhiroki): Currently |address_space| and |origin_trial_tokens| are
-    // not updated after worker script fetch. Update them.
+    // TODO(nhiroki): Currently |origin_trial_tokens| is not updated after
+    // worker script fetch. Update them.
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_request_url_, script_type,
         OffMainThreadWorkerScriptFetchOption::kEnabled, name_,
@@ -357,7 +357,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         outside_settings_object->GetSecurityOrigin(),
         document->IsSecureContext(), outside_settings_object->GetHttpsState(),
-        CreateWorkerClients(), creation_address_space_,
+        CreateWorkerClients(), base::nullopt /* response_address_space */,
         nullptr /* origin_trial_tokens */, devtools_worker_token_,
         std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,

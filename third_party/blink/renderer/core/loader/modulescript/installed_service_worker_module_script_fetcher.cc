@@ -47,6 +47,9 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     // https://w3c.github.io/ServiceWorker/#ref-for-concept-request-redirect-mode
     global_scope_->Initialize(fetch_params.Url());
 
+    // TODO(nhiroki): Move this call into WorkerGlobalScope::Initialize().
+    global_scope_->SetAddressSpace(script_data->GetResponseAddressSpace());
+
     // TODO(nhiroki): Set ReferrerPolicy, CSP etc (https://crbug.com/937757).
   }
 

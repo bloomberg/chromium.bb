@@ -454,7 +454,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         starter_origin, starter_secure_context, starter_https_state,
-        worker_clients, worker_start_data_.address_space,
+        worker_clients, base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),

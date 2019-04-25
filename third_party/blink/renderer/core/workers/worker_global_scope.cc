@@ -458,15 +458,17 @@ WorkerGlobalScope::WorkerGlobalScope(
 
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
-  // Set the URL and referrer policy here for workers whose script is fetched
-  // on the main thread. For off-the-main-thread fetches, they are instead set
-  // after the script is fetched.
+  // Set the URL, referrer policy and address space here for workers whose
+  // script is fetched on the main thread. For off-the-main-thread fetches, they
+  // are instead set after the script is fetched.
   if (creation_params->off_main_thread_fetch_option ==
       OffMainThreadWorkerScriptFetchOption::kDisabled) {
     SetReferrerPolicy(creation_params->referrer_policy);
+    SetAddressSpace(*creation_params->response_address_space);
+  } else {
+    DCHECK(!creation_params->response_address_space);
   }
 
-  SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
   // TODO(sammc): Require a valid |creation_params->interface_provider| once all

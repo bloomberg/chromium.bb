@@ -118,14 +118,17 @@ class CORE_EXPORT DedicatedWorker final
  private:
   // Starts the worker.
   void Start();
-  void ContinueStart(const KURL& script_url,
-                     OffMainThreadWorkerScriptFetchOption,
-                     network::mojom::ReferrerPolicy,
-                     const String& source_code);
+  void ContinueStart(
+      const KURL& script_url,
+      OffMainThreadWorkerScriptFetchOption,
+      network::mojom::ReferrerPolicy,
+      base::Optional<mojom::IPAddressSpace> response_address_space,
+      const String& source_code);
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
       OffMainThreadWorkerScriptFetchOption,
-      network::mojom::ReferrerPolicy);
+      network::mojom::ReferrerPolicy,
+      base::Optional<mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   WorkerClients* CreateWorkerClients();
 

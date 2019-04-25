@@ -199,6 +199,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
   void RunClassicScript(const KURL& response_url,
                         network::mojom::ReferrerPolicy,
+                        mojom::IPAddressSpace response_address_space,
                         const Vector<CSPHeaderAndType>,
                         const String& source_code,
                         std::unique_ptr<Vector<uint8_t>> cached_meta_data,

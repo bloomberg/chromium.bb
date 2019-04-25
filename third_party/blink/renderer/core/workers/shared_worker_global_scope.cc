@@ -199,6 +199,9 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     SetReferrerPolicy(referrer_policy);
   }
 
+  // https://wicg.github.io/cors-rfc1918/#integration-html
+  SetAddressSpace(classic_script_loader->ResponseAddressSpace());
+
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
   DCHECK_EQ(GlobalScopeCSPApplyMode::kUseResponseCSP, GetCSPApplyMode());

@@ -233,7 +233,8 @@ void DedicatedWorker::Start() {
     // worker thread.
     ContinueStart(
         script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
-        network::mojom::ReferrerPolicy::kDefault, String() /* source_code */);
+        network::mojom::ReferrerPolicy::kDefault,
+        base::nullopt /* response_address_space */, String() /* source_code */);
     return;
   }
   if (options_->type() == "classic") {
@@ -310,7 +311,8 @@ void DedicatedWorker::OnScriptLoadStarted() {
   // worker thread.
   ContinueStart(
       script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
-      network::mojom::ReferrerPolicy::kDefault, String() /* source_code */);
+      network::mojom::ReferrerPolicy::kDefault,
+      base::nullopt /* response_address_space */, String() /* source_code */);
 }
 
 void DedicatedWorker::OnScriptLoadStartFailed() {
@@ -375,9 +377,10 @@ void DedicatedWorker::OnFinished() {
     DCHECK(script_request_url_ == script_response_url ||
            SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
                                                  script_response_url));
-    ContinueStart(script_response_url,
-                  OffMainThreadWorkerScriptFetchOption::kDisabled,
-                  referrer_policy, classic_script_loader_->SourceText());
+    ContinueStart(
+        script_response_url, OffMainThreadWorkerScriptFetchOption::kDisabled,
+        referrer_policy, classic_script_loader_->ResponseAddressSpace(),
+        classic_script_loader_->SourceText());
     probe::ScriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());
@@ -389,6 +392,7 @@ void DedicatedWorker::ContinueStart(
     const KURL& script_url,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     network::mojom::ReferrerPolicy referrer_policy,
+    base::Optional<mojom::IPAddressSpace> response_address_space,
     const String& source_code) {
   auto* outside_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
@@ -398,7 +402,7 @@ void DedicatedWorker::ContinueStart(
               .GetFetchClientSettingsObject());
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(script_url, off_main_thread_fetch_option,
-                                      referrer_policy),
+                                      referrer_policy, response_address_space),
       options_, script_url, *outside_settings_object, v8_stack_trace_id_,
       source_code);
 }
@@ -407,7 +411,8 @@ std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(
     const KURL& script_url,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
-    network::mojom::ReferrerPolicy referrer_policy) {
+    network::mojom::ReferrerPolicy referrer_policy,
+    base::Optional<mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
@@ -434,7 +439,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),
       GetExecutionContext()->GetHttpsState(), CreateWorkerClients(),
-      GetExecutionContext()->GetSecurityContext().AddressSpace(),
+      response_address_space,
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
       parent_devtools_token, std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,

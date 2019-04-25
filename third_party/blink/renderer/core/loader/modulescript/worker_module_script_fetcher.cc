@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -95,6 +96,24 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
           &referrer_policy);
       global_scope_->SetReferrerPolicy(referrer_policy);
     }
+
+    // Calculate an address space from worker script's response url according to
+    // the "CORS and RFC1918" spec:
+    // https://wicg.github.io/cors-rfc1918/#integration-html
+    //
+    // Currently this implementation is not fully consistent with the spec for
+    // historical reasons.
+    // TODO(https://crbug.com/955213): Make this consistent with the spec.
+    // TODO(https://crbug.com/955213): Move this function to a more appropriate
+    // place so that this is shareable out of worker code.
+    auto response_address_space = mojom::IPAddressSpace::kPublic;
+    if (network_utils::IsReservedIPAddress(
+            resource->GetResponse().RemoteIPAddress())) {
+      response_address_space = mojom::IPAddressSpace::kPrivate;
+    }
+    if (SecurityOrigin::Create(response_url)->IsLocalhost())
+      response_address_space = mojom::IPAddressSpace::kLocal;
+    global_scope_->SetAddressSpace(response_address_space);
 
     // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
     // on worker global scope and response. [CSP]" [spec text]

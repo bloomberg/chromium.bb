@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
@@ -62,7 +63,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       bool starter_secure_context,
       HttpsState starter_https_state,
       WorkerClients*,
-      mojom::IPAddressSpace,
+      base::Optional<mojom::IPAddressSpace>,
       const Vector<String>* origin_trial_tokens,
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
@@ -143,7 +144,10 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // supplies no extra 'clients', m_workerClients can be left as empty/null.
   CrossThreadPersistent<WorkerClients> worker_clients;
 
-  mojom::IPAddressSpace address_space;
+  // Worker script response's address space. This is valid only when the worker
+  // script is fetched on the main thread (i.e., when
+  // |off_main_thread_fetch_option| is kDisabled).
+  base::Optional<mojom::IPAddressSpace> response_address_space;
 
   base::UnguessableToken parent_devtools_token;
 

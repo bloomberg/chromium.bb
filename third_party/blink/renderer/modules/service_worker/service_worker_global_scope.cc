@@ -260,8 +260,9 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
       script_data->GetContentSecurityPolicyResponseHeaders());
 
   RunClassicScript(
-      script_url, referrer_policy, content_security_policy->Headers(),
-      script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
+      script_url, referrer_policy, script_data->GetResponseAddressSpace(),
+      content_security_policy->Headers(), script_data->TakeSourceText(),
+      script_data->TakeMetaData(), stack_id);
 }
 
 void ServiceWorkerGlobalScope::RunInstalledModuleScript(
@@ -401,6 +402,7 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
   // is set, and with the following callback steps given evaluationStatus:"
   RunClassicScript(
       classic_script_loader->ResponseURL(), referrer_policy,
+      classic_script_loader->ResponseAddressSpace(),
       classic_script_loader->GetContentSecurityPolicy()
           ? classic_script_loader->GetContentSecurityPolicy()->Headers()
           : Vector<CSPHeaderAndType>(),
@@ -425,6 +427,7 @@ void ServiceWorkerGlobalScope::Initialize(const KURL& response_url) {
 void ServiceWorkerGlobalScope::RunClassicScript(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
+    mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType> response_csp_headers,
     const String& source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
@@ -434,6 +437,9 @@ void ServiceWorkerGlobalScope::RunClassicScript(
   // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
   // script resource's referrer policy."
   SetReferrerPolicy(response_referrer_policy);
+
+  // https://wicg.github.io/cors-rfc1918/#integration-html
+  SetAddressSpace(response_address_space);
 
   // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
   // implementation.
