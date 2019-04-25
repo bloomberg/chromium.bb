@@ -84,7 +84,7 @@ class BluetoothGattCharacteristicClientImpl
 
   // BluetoothGattCharacteristicClient override.
   void ReadValue(const dbus::ObjectPath& object_path,
-                 const ValueCallback& callback,
+                 ValueCallback callback,
                  const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -105,7 +105,7 @@ class BluetoothGattCharacteristicClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnValueSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
@@ -113,7 +113,7 @@ class BluetoothGattCharacteristicClientImpl
   // BluetoothGattCharacteristicClient override.
   void WriteValue(const dbus::ObjectPath& object_path,
                   const std::vector<uint8_t>& value,
-                  const base::Closure& callback,
+                  base::OnceClosure callback,
                   const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -135,14 +135,14 @@ class BluetoothGattCharacteristicClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void PrepareWriteValue(const dbus::ObjectPath& object_path,
                          const std::vector<uint8_t>& value,
-                         const base::Closure& callback,
+                         base::OnceClosure callback,
                          const ErrorCallback& error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -163,7 +163,7 @@ class BluetoothGattCharacteristicClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattCharacteristicClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
@@ -276,14 +276,14 @@ class BluetoothGattCharacteristicClientImpl
   }
 
   // Called when a response for successful method call is received.
-  void OnSuccess(const base::Closure& callback, dbus::Response* response) {
+  void OnSuccess(base::OnceClosure callback, dbus::Response* response) {
     DCHECK(response);
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Called when a characteristic value response for a successful method call
   // is received.
-  void OnValueSuccess(const ValueCallback& callback, dbus::Response* response) {
+  void OnValueSuccess(ValueCallback callback, dbus::Response* response) {
     DCHECK(response);
     dbus::MessageReader reader(response);
 
@@ -298,7 +298,7 @@ class BluetoothGattCharacteristicClientImpl
     if (bytes)
       value.assign(bytes, bytes + length);
 
-    callback.Run(value);
+    std::move(callback).Run(value);
   }
 
   // Called when a response for a failed method call is received.

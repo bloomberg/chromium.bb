@@ -25,9 +25,9 @@ const int kHeartRateMeasurementNotificationIntervalMs = 2000;
 }  // namespace
 
 FakeBluetoothGattCharacteristicClient::DelayedCallback::DelayedCallback(
-    base::Closure callback,
+    base::OnceClosure callback,
     size_t delay)
-    : callback_(callback), delay_(delay) {}
+    : callback_(std::move(callback)), delay_(delay) {}
 
 FakeBluetoothGattCharacteristicClient::DelayedCallback::~DelayedCallback() =
     default;
@@ -135,7 +135,7 @@ FakeBluetoothGattCharacteristicClient::GetProperties(
 
 void FakeBluetoothGattCharacteristicClient::ReadValue(
     const dbus::ObjectPath& object_path,
-    const ValueCallback& callback,
+    ValueCallback callback,
     const ErrorCallback& error_callback) {
   if (!authenticated_) {
     error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
@@ -172,37 +172,38 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
     error_callback.Run(bluetooth_gatt_service::kErrorInProgress,
                        "Another read is currenty in progress");
     if (delayed->delay_ == 0) {
-      delayed->callback_.Run();
+      std::move(delayed->callback_).Run();
       action_extra_requests_.erase("ReadValue");
       delete delayed;
     }
     return;
   }
 
-  base::Closure completed_callback;
+  base::OnceClosure completed_callback;
   if (!IsHeartRateVisible()) {
     completed_callback =
         base::Bind(error_callback, kUnknownCharacteristicError, "");
   } else {
     std::vector<uint8_t> value = {0x06};  // Location is "foot".
-    completed_callback = base::Bind(
+    completed_callback = base::BindOnce(
         &FakeBluetoothGattCharacteristicClient::DelayedReadValueCallback,
-        weak_ptr_factory_.GetWeakPtr(), object_path, callback, value);
+        weak_ptr_factory_.GetWeakPtr(), object_path, std::move(callback),
+        value);
   }
 
   if (extra_requests_ > 0) {
     action_extra_requests_["ReadValue"] =
-        new DelayedCallback(completed_callback, extra_requests_);
+        new DelayedCallback(std::move(completed_callback), extra_requests_);
     return;
   }
 
-  completed_callback.Run();
+  std::move(completed_callback).Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::WriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   if (!authenticated_) {
     error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
@@ -240,13 +241,13 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
     error_callback.Run(bluetooth_gatt_service::kErrorInProgress,
                        "Another write is in progress");
     if (delayed->delay_ == 0) {
-      delayed->callback_.Run();
+      std::move(delayed->callback_).Run();
       action_extra_requests_.erase("WriteValue");
       delete delayed;
     }
     return;
   }
-  base::Closure completed_callback;
+  base::OnceClosure completed_callback;
   if (value.size() != 1) {
     completed_callback = base::Bind(
         error_callback, bluetooth_gatt_service::kErrorInvalidValueLength,
@@ -259,21 +260,21 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
     // TODO(jamuraa): make this happen when the callback happens
     calories_burned_ = 0;
     ScheduleHeartRateMeasurementValueChange();
-    completed_callback = callback;
+    completed_callback = std::move(callback);
   }
 
   if (extra_requests_ > 0) {
     action_extra_requests_["WriteValue"] =
-        new DelayedCallback(completed_callback, extra_requests_);
+        new DelayedCallback(std::move(completed_callback), extra_requests_);
     return;
   }
-  completed_callback.Run();
+  std::move(completed_callback).Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   if (!authenticated_) {
     error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
@@ -307,7 +308,7 @@ void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
   static_cast<FakeBluetoothDeviceClient*>(
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())
       ->AddPrepareWriteRequest(object_path, value);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::StartNotify(
@@ -469,7 +470,7 @@ void FakeBluetoothGattCharacteristicClient::SetExtraProcessing(
   extra_requests_ = requests;
   if (extra_requests_ == 0) {
     for (const auto& it : action_extra_requests_) {
-      it.second->callback_.Run();
+      std::move(it.second->callback_).Run();
       delete it.second;
     }
     action_extra_requests_.clear();
@@ -545,13 +546,13 @@ void FakeBluetoothGattCharacteristicClient::
 
 void FakeBluetoothGattCharacteristicClient::DelayedReadValueCallback(
     const dbus::ObjectPath& object_path,
-    const ValueCallback& callback,
+    ValueCallback callback,
     const std::vector<uint8_t>& value) {
   Properties* properties = GetProperties(object_path);
   DCHECK(properties);
 
   properties->value.ReplaceValue(value);
-  callback.Run(value);
+  std::move(callback).Run(value);
 }
 
 std::vector<uint8_t>

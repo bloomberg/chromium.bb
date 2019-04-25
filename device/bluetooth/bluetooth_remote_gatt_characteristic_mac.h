@@ -41,10 +41,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattService* GetService() const override;
   bool IsNotifying() const override;
-  void ReadRemoteCharacteristic(const ValueCallback& callback,
+  void ReadRemoteCharacteristic(ValueCallback callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
-                                 const base::Closure& callback,
+                                 base::OnceClosure callback,
                                  const ErrorCallback& error_callback) override;
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
@@ -124,7 +124,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // ReadRemoteCharacteristic request callbacks.
   std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
   // WriteRemoteCharacteristic request callbacks.
-  std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
+  std::pair<base::OnceClosure, ErrorCallback>
+      write_characteristic_value_callbacks_;
   // Stores callbacks for SubscribeToNotifications and
   // UnsubscribeFromNotifications requests.
   typedef std::pair<base::Closure, ErrorCallback> PendingNotifyCallbacks;

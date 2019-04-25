@@ -153,7 +153,7 @@ bool BluetoothRemoteGattCharacteristicBlueZ::IsNotifying() const {
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
+    ValueCallback callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic read request to characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
@@ -165,14 +165,14 @@ void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->ReadValue(
-          object_path(), callback,
+          object_path(), std::move(callback),
           base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnReadError,
                      weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic write request to characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
@@ -181,7 +181,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->WriteValue(
-          object_path(), value, callback,
+          object_path(), value, std::move(callback),
           base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
                      weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
@@ -189,7 +189,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
 #if defined(OS_CHROMEOS)
 void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic prepare write request to "
           << "characteristic: " << GetIdentifier()
@@ -199,7 +199,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->PrepareWriteValue(
-          object_path(), value, callback,
+          object_path(), value, std::move(callback),
           base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
                      weak_ptr_factory_.GetWeakPtr(), error_callback));
 }

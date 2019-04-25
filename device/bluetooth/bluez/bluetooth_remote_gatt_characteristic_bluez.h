@@ -54,15 +54,15 @@ class BluetoothRemoteGattCharacteristicBlueZ
   const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothRemoteGattService* GetService() const override;
   bool IsNotifying() const override;
-  void ReadRemoteCharacteristic(const ValueCallback& callback,
+  void ReadRemoteCharacteristic(ValueCallback callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
-                                 const base::Closure& callback,
+                                 base::OnceClosure callback,
                                  const ErrorCallback& error_callback) override;
 #if defined(OS_CHROMEOS)
   void PrepareWriteRemoteCharacteristic(
       const std::vector<uint8_t>& value,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const ErrorCallback& error_callback) override;
 #endif
 

@@ -417,8 +417,8 @@ BluetoothRemoteGattCharacteristic::ValueCallback
 BluetoothTestBase::GetReadValueCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::ReadValueCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::ReadValueCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback(

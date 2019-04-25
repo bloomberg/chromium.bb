@@ -44,7 +44,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
  public:
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
-  typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
+  using ValueCallback = base::OnceCallback<void(const std::vector<uint8_t>&)>;
 
   // The NotifySessionCallback is used to return sessions after they have
   // been successfully started.
@@ -134,7 +134,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // |callback| is called to return the read value on success and
   // |error_callback| is called for failures.
   virtual void ReadRemoteCharacteristic(
-      const ValueCallback& callback,
+      ValueCallback callback,
       const ErrorCallback& error_callback) = 0;
 
   // Sends a write request to a remote characteristic with the value |value|.
@@ -143,7 +143,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // that are locally hosted.
   virtual void WriteRemoteCharacteristic(
       const std::vector<uint8_t>& value,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const ErrorCallback& error_callback) = 0;
 
 #if defined(OS_CHROMEOS)
@@ -155,7 +155,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // BluetoothDevice::AbortWrite() to abort the change.
   virtual void PrepareWriteRemoteCharacteristic(
       const std::vector<uint8_t>& value,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const ErrorCallback& error_callback) = 0;
 #endif
 

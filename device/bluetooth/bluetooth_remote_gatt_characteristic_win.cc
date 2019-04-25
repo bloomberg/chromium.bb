@@ -136,7 +136,7 @@ bool BluetoothRemoteGattCharacteristicWin::IsNotifying() const {
 }
 
 void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
+    ValueCallback callback,
     const ErrorCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
@@ -152,7 +152,7 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
 
   characteristic_value_read_or_write_in_progress_ = true;
   read_characteristic_value_callbacks_ =
-      std::make_pair(callback, error_callback);
+      std::make_pair(std::move(callback), error_callback);
   task_manager_->PostReadGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(),
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
@@ -162,7 +162,7 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
@@ -179,7 +179,7 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
 
   characteristic_value_read_or_write_in_progress_ = true;
   write_characteristic_value_callbacks_ =
-      std::make_pair(callback, error_callback);
+      std::make_pair(std::move(callback), error_callback);
   task_manager_->PostWriteGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(), value,
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
@@ -332,7 +332,7 @@ void BluetoothRemoteGattCharacteristicWin::
     for (ULONG i = 0; i < value->DataSize; i++)
       characteristic_value_.push_back(value->Data[i]);
 
-    callbacks.first.Run(characteristic_value_);
+    std::move(callbacks.first).Run(characteristic_value_);
   }
 }
 
@@ -341,12 +341,12 @@ void BluetoothRemoteGattCharacteristicWin::
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   characteristic_value_read_or_write_in_progress_ = false;
 
-  std::pair<base::Closure, ErrorCallback> callbacks;
+  std::pair<base::OnceClosure, ErrorCallback> callbacks;
   callbacks.swap(write_characteristic_value_callbacks_);
   if (FAILED(hr)) {
     callbacks.second.Run(HRESULTToGattErrorCode(hr));
   } else {
-    callbacks.first.Run();
+    std::move(callbacks.first).Run();
   }
 }
 

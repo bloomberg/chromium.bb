@@ -147,7 +147,7 @@ BluetoothRemoteGattService* BluetoothRemoteGattCharacteristicWinrt::GetService()
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
+    ValueCallback callback,
     const ErrorCallback& error_callback) {
   if (!(GetProperties() & PROPERTY_READ)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -193,13 +193,13 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
     return;
   }
 
-  pending_read_callbacks_ =
-      std::make_unique<PendingReadCallbacks>(callback, error_callback);
+  pending_read_callbacks_ = std::make_unique<PendingReadCallbacks>(
+      std::move(callback), error_callback);
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   if (!(GetProperties() & PROPERTY_WRITE) &&
       !(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE)) {
@@ -275,8 +275,8 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     return;
   }
 
-  pending_write_callbacks_ =
-      std::make_unique<PendingWriteCallbacks>(callback, error_callback);
+  pending_write_callbacks_ = std::make_unique<PendingWriteCallbacks>(
+      std::move(callback), error_callback);
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
@@ -557,7 +557,7 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
   }
 
   value_.assign(data, data + length);
-  pending_read_callbacks->callback.Run(value_);
+  std::move(pending_read_callbacks->callback).Run(value_);
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::OnWriteValueWithResultAndOption(

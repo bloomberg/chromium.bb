@@ -60,16 +60,30 @@ class MockBluetoothGattCharacteristic
                void(const NotifySessionCallback&, const ErrorCallback&));
   MOCK_METHOD2(StopNotifySession,
                void(BluetoothGattNotifySession*, const base::Closure&));
-  MOCK_METHOD2(ReadRemoteCharacteristic,
-               void(const ValueCallback&, const ErrorCallback&));
-  MOCK_METHOD3(WriteRemoteCharacteristic,
+  void ReadRemoteCharacteristic(ValueCallback c,
+                                const ErrorCallback& ec) override {
+    ReadRemoteCharacteristic_(c, ec);
+  }
+  MOCK_METHOD2(ReadRemoteCharacteristic_,
+               void(ValueCallback&, const ErrorCallback&));
+  void WriteRemoteCharacteristic(const std::vector<uint8_t>& v,
+                                 base::OnceClosure c,
+                                 const ErrorCallback& ec) override {
+    WriteRemoteCharacteristic_(v, c, ec);
+  }
+  MOCK_METHOD3(WriteRemoteCharacteristic_,
                void(const std::vector<uint8_t>&,
-                    const base::Closure&,
+                    base::OnceClosure&,
                     const ErrorCallback&));
 #if defined(OS_CHROMEOS)
-  MOCK_METHOD3(PrepareWriteRemoteCharacteristic,
+  void PrepareWriteRemoteCharacteristic(const std::vector<uint8_t>& v,
+                                        base::OnceClosure c,
+                                        const ErrorCallback& ec) override {
+    PrepareWriteRemoteCharacteristic_(v, c, ec);
+  }
+  MOCK_METHOD3(PrepareWriteRemoteCharacteristic_,
                void(const std::vector<uint8_t>&,
-                    const base::Closure&,
+                    base::OnceClosure&,
                     const ErrorCallback&));
 #endif
   MOCK_METHOD1(WriteWithoutResponse, bool(base::span<const uint8_t>));

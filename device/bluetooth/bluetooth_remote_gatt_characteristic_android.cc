@@ -124,7 +124,7 @@ BluetoothRemoteGattCharacteristicAndroid::GetDescriptorsByUUID(
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
+    ValueCallback callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -144,13 +144,13 @@ void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
   }
 
   read_pending_ = true;
-  read_callback_ = callback;
+  read_callback_ = std::move(callback);
   read_error_callback_ = error_callback;
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -171,7 +171,7 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
   }
 
   write_pending_ = true;
-  write_callback_ = callback;
+  write_callback_ = std::move(callback);
   write_error_callback_ = error_callback;
 }
 
@@ -191,15 +191,14 @@ void BluetoothRemoteGattCharacteristicAndroid::OnRead(
   read_pending_ = false;
 
   // Clear callbacks before calling to avoid reentrancy issues.
-  ValueCallback read_callback = read_callback_;
+  ValueCallback read_callback = std::move(read_callback_);
   ErrorCallback read_error_callback = read_error_callback_;
-  read_callback_.Reset();
   read_error_callback_.Reset();
 
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !read_callback.is_null()) {
     base::android::JavaByteArrayToByteVector(env, value, &value_);
-    read_callback.Run(value_);
+    std::move(read_callback).Run(value_);
   } else if (!read_error_callback.is_null()) {
     read_error_callback.Run(
         BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
@@ -213,14 +212,13 @@ void BluetoothRemoteGattCharacteristicAndroid::OnWrite(
   write_pending_ = false;
 
   // Clear callbacks before calling to avoid reentrancy issues.
-  base::Closure write_callback = write_callback_;
+  base::OnceClosure write_callback = std::move(write_callback_);
   ErrorCallback write_error_callback = write_error_callback_;
-  write_callback_.Reset();
   write_error_callback_.Reset();
 
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !write_callback.is_null()) {
-    write_callback.Run();
+    std::move(write_callback).Run();
   } else if (!write_error_callback.is_null()) {
     write_error_callback.Run(
         BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));

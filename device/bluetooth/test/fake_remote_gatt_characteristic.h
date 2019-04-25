@@ -83,15 +83,15 @@ class FakeRemoteGattCharacteristic
   // device::BluetoothRemoteGattCharacteristic overrides:
   const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothRemoteGattService* GetService() const override;
-  void ReadRemoteCharacteristic(const ValueCallback& callback,
+  void ReadRemoteCharacteristic(ValueCallback callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
-                                 const base::Closure& callback,
+                                 base::OnceClosure callback,
                                  const ErrorCallback& error_callback) override;
 #if defined(OS_CHROMEOS)
   void PrepareWriteRemoteCharacteristic(
       const std::vector<uint8_t>& value,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const ErrorCallback& error_callback) override;
 #endif
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
@@ -117,9 +117,9 @@ class FakeRemoteGattCharacteristic
       const ErrorCallback& error_callback) override;
 
  private:
-  void DispatchReadResponse(const ValueCallback& callback,
+  void DispatchReadResponse(ValueCallback callback,
                             const ErrorCallback& error_callback);
-  void DispatchWriteResponse(const base::Closure& callback,
+  void DispatchWriteResponse(base::OnceClosure callback,
                              const ErrorCallback& error_callback,
                              const std::vector<uint8_t>& value);
   void DispatchSubscribeToNotificationsResponse(

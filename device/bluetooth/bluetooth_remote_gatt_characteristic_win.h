@@ -42,10 +42,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   Properties GetProperties() const override;
   Permissions GetPermissions() const override;
   bool IsNotifying() const override;
-  void ReadRemoteCharacteristic(const ValueCallback& callback,
+  void ReadRemoteCharacteristic(ValueCallback callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
-                                 const base::Closure& callback,
+                                 base::OnceClosure callback,
                                  const ErrorCallback& error_callback) override;
 
   // Update included descriptors.
@@ -112,7 +112,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
 
   // WriteRemoteCharacteristic request callbacks.
-  std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
+  std::pair<base::OnceClosure, ErrorCallback>
+      write_characteristic_value_callbacks_;
 
   bool characteristic_value_read_or_write_in_progress_;
 

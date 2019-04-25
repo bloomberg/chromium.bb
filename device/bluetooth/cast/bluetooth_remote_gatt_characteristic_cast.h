@@ -45,10 +45,10 @@ class BluetoothRemoteGattCharacteristicCast
   // BluetoothRemoteGattCharacteristic implementation:
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattService* GetService() const override;
-  void ReadRemoteCharacteristic(const ValueCallback& callback,
+  void ReadRemoteCharacteristic(ValueCallback callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
-                                 const base::Closure& callback,
+                                 base::OnceClosure callback,
                                  const ErrorCallback& error_callback) override;
 
   // Called by BluetoothAdapterCast to set the value when a new notification
@@ -70,7 +70,7 @@ class BluetoothRemoteGattCharacteristicCast
   // valid. In this case, |value_| is updated and |callback| is run with
   // |result|. If |success| is false, |result| is ignored and |error_callback|
   // is run.
-  void OnReadRemoteCharacteristic(const ValueCallback& callback,
+  void OnReadRemoteCharacteristic(ValueCallback callback,
                                   const ErrorCallback& error_callback,
                                   bool success,
                                   const std::vector<uint8_t>& result);
@@ -80,7 +80,7 @@ class BluetoothRemoteGattCharacteristicCast
   // WriteRemoteDescriptor(), and |success| is true if the write was successful.
   // If successful, |value_| will be updated.
   void OnWriteRemoteCharacteristic(const std::vector<uint8_t>& written_value,
-                                   const base::Closure& callback,
+                                   base::OnceClosure callback,
                                    const ErrorCallback& error_callback,
                                    bool success);
 
