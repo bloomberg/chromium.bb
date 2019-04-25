@@ -10,9 +10,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayout;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Space;
 import android.widget.TextView;
@@ -47,14 +48,11 @@ public class AssistantChoiceList extends GridLayout {
      */
     private class Item {
         final RadioButton mRadioButton;
-        final Callback<Boolean> mOnSelectedListener;
         final View mContent;
         final View mEditButton;
 
-        Item(@Nullable RadioButton radioButton, @Nullable Callback onSelectedListener, View content,
-                @Nullable View editButton) {
+        Item(@Nullable RadioButton radioButton, View content, @Nullable View editButton) {
             this.mRadioButton = radioButton;
-            this.mOnSelectedListener = onSelectedListener;
             this.mContent = content;
             this.mEditButton = editButton;
         }
@@ -72,23 +70,21 @@ public class AssistantChoiceList extends GridLayout {
     private final TextView mAddButtonLabel;
     private final int mRowSpacing;
     private final int mColumnSpacing;
-    private final int mAddButtonSpacing;
     private final List<Item> mItems = new ArrayList<>();
+
     private Runnable mAddButtonListener;
+    private Callback<View> mItemSelectedListener;
+    private Callback<View> mEditButtonListener;
 
     public AssistantChoiceList(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs, R.styleable.AssistantChoiceList, 0, 0);
-        mCanAddItems = a.getBoolean(R.styleable.AssistantChoiceList_can_add_items, true);
+        mCanAddItems = a.hasValue(R.styleable.AssistantChoiceList_add_button_text);
         String addButtonText =
-                a.hasValue(R.styleable.AssistantChoiceList_add_button_text) && mCanAddItems
-                ? a.getString(R.styleable.AssistantChoiceList_add_button_text)
-                : null;
+                mCanAddItems ? a.getString(R.styleable.AssistantChoiceList_add_button_text) : null;
         mRowSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_row_spacing, 0);
         mColumnSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_column_spacing, 0);
-        mAddButtonSpacing = context.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_choicelist_add_button_spacing);
         a.recycle();
 
         // One column for the radio buttons, one for the content, one for the edit buttons.
@@ -99,10 +95,8 @@ public class AssistantChoiceList extends GridLayout {
             mAddButtonLabel = createAddButtonLabel(addButtonText);
 
             addViewInternal(mAddButton, -1, createRadioButtonLayoutParams());
-            GridLayout.LayoutParams lp =
-                    new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(1, 2));
-            lp.setGravity(Gravity.FILL_HORIZONTAL | Gravity.CENTER_VERTICAL);
-            lp.width = 0;
+            GridLayout.LayoutParams lp = createContentLayoutParams();
+            lp.columnSpec = GridLayout.spec(UNDEFINED, 2);
             addViewInternal(mAddButtonLabel, -1, lp);
 
             // Set margin to 0 because list is currently empty.
@@ -122,117 +116,93 @@ public class AssistantChoiceList extends GridLayout {
     @Override
     public void addView(View view, int index, ViewGroup.LayoutParams lp) {
         assert index == -1;
-        addItem(view);
-    }
+        String editText = null;
+        if (lp instanceof AssistantChoiceList.LayoutParams) {
+            editText = ((LayoutParams) lp).mEditText;
+        }
 
-    public void addItem(View view) {
-        addItem(view, true);
-    }
-
-    public void addItem(View view, boolean hasEditButton) {
-        addItem(view, hasEditButton, null, null);
+        addItem(view, editText);
     }
 
     /**
      * Adds an item to the list. Additional widgets to select and edit the item are created as
      * necessary.
-     *
      * @param view The view to add to the list.
-     * @param hasEditButton Whether an edit button should be offered.
-     * @param itemSelectedListener Optional listener which is notified when the item is selected or
-     * deselected.
-     * @param itemEditedListener Optional listener which is notified when the item is edited.
+     * @param editButtonText The text of the edit button to display next to |view|. Can be null to
+     * indicate that no edit button should be provided.
      */
-    public void addItem(View view, boolean hasEditButton,
-            @Nullable Callback<Boolean> itemSelectedListener,
-            @Nullable Runnable itemEditedListener) {
+    public void addItem(View view, @Nullable String editButtonText) {
         RadioButton radioButton = new RadioButton(getContext());
         // Insert at end, before the `add' button (if any).
-        int viewIndex = mCanAddItems ? indexOfChild(mAddButton) : getChildCount();
-        addViewInternal(radioButton, viewIndex++, createRadioButtonLayoutParams());
-        addViewInternal(view, viewIndex++, createContentLayoutParams());
+        int index = mCanAddItems ? indexOfChild(mAddButton) : getChildCount();
+        addViewInternal(radioButton, index++, createRadioButtonLayoutParams());
+        addViewInternal(view, index++, createContentLayoutParams());
 
-        ChromeImageView editButton = null;
-        if (hasEditButton) {
-            editButton = new ChromeImageView(getContext());
-            editButton.setImageResource(org.chromium.chrome.R.drawable.ic_edit_24dp);
-            editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        TextView editButton = null;
+        if (editButtonText != null) {
+            editButton = (TextView) LayoutInflater.from(getContext())
+                                 .inflate(R.layout.autofill_assistant_button_hairline,
+                                         /*parent = */ null);
+            editButton.setText(editButtonText);
             editButton.setOnClickListener(unusedView -> {
-                if (itemEditedListener != null) {
-                    itemEditedListener.run();
+                if (mEditButtonListener != null) {
+                    mEditButtonListener.onResult(view);
                 }
             });
-            addViewInternal(editButton, viewIndex++, createEditButtonLayoutParams());
+            addViewInternal(editButton, index++, createEditButtonLayoutParams());
         } else {
             View spacer = new Space(getContext());
-            addViewInternal(spacer, viewIndex++, createEditButtonLayoutParams());
+            addViewInternal(spacer, index++, createEditButtonLayoutParams());
         }
 
-        Item item = new Item(radioButton, itemSelectedListener, view, editButton);
-        radioButton.setOnClickListener(unusedView -> { setCheckedItem(view); });
-        view.setOnClickListener(unusedView -> { setCheckedItem(view); });
+        Item item = new Item(radioButton, view, editButton);
+        radioButton.setOnClickListener(unusedView -> setCheckedItem(item));
+        // TODO(crbug.com/806868): Forward event to radiobutton to re-trigger animation.
+        view.setOnClickListener(unusedView -> setCheckedItem(item));
         mItems.add(item);
 
         // Need to adjust button margins after first item was inserted.
         if (mItems.size() == 1) {
-            updateAddButtonMargins(mAddButtonSpacing);
-        }
-    }
-
-    /**
-     * Removes all items from the list.
-     */
-    public void clearItems() {
-        for (int i = 0; i < mItems.size(); i++) {
-            Item item = mItems.get(i);
-            removeView(item.mContent);
-            removeView(item.mRadioButton);
-            if (item.mEditButton != null) {
-                removeView(item.mEditButton);
-            }
-        }
-        mItems.clear();
-        updateAddButtonMargins(0);
-    }
-
-    public View getItem(int index) {
-        if (index >= 0 && index < mItems.size()) {
-            return mItems.get(index).mContent;
-        }
-        return null;
-    }
-
-    public int getItemCount() {
-        return mItems.size();
-    }
-
-    /**
-     * Selects the specified item and de-selects all other items in the UI.
-     *
-     * @param content The content view to select, as specified in |addItem|. Can be null to indicate
-     * that all items should be de-selected.
-     */
-    public void setCheckedItem(@Nullable View content) {
-        for (int i = 0; i < mItems.size(); i++) {
-            Item item = mItems.get(i);
-            item.mRadioButton.setChecked(item.mContent == content);
-            if (item.mOnSelectedListener != null) {
-                item.mOnSelectedListener.onResult(item.mContent == content);
-            }
-        }
-    }
-
-    /**
-     * Allows to change the label of the 'add' button.
-     */
-    public void setAddButtonLabel(String label) {
-        if (mAddButtonLabel != null) {
-            mAddButtonLabel.setText(label);
+            updateAddButtonMargins(mRowSpacing);
         }
     }
 
     public void setOnAddButtonClickedListener(Runnable listener) {
         mAddButtonListener = listener;
+    }
+
+    public void setOnEditButtonClickedListener(Callback<View> listener) {
+        mEditButtonListener = listener;
+    }
+
+    public void setOnItemSelectedListener(Callback<View> listener) {
+        mItemSelectedListener = listener;
+    }
+
+    @Override
+    public LayoutParams generateLayoutParams(AttributeSet attrs) {
+        return new AssistantChoiceList.LayoutParams(getContext(), attrs);
+    }
+
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new AssistantChoiceList.LayoutParams();
+    }
+
+    @Override
+    protected LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
+        if (lp instanceof LayoutParams) {
+            return new LayoutParams((LayoutParams) lp);
+        } else if (lp instanceof GridLayout.LayoutParams) {
+            return new LayoutParams((GridLayout.LayoutParams) lp);
+        }
+        return new LayoutParams(lp);
+    }
+
+    // Override to allow type-checking of LayoutParams.
+    @Override
+    protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
+        return p instanceof AssistantChoiceList.LayoutParams;
     }
 
     /**
@@ -241,7 +211,6 @@ public class AssistantChoiceList extends GridLayout {
      * This method is used internally to add a view to the actual layout. A single call to |addView|
      * will result in multiple calls to |addViewInternal|, because additional widgets are
      * automatically generated (e.g., radio-buttons and edit-buttons).
-     *
      * @param view The view to add to the layout.
      * @param index The index at which to insert the view into the layout. Note that this - along
      * with the column width specified in |lp| - will determine the column in which the view will
@@ -296,14 +265,10 @@ public class AssistantChoiceList extends GridLayout {
     }
 
     private GridLayout.LayoutParams createEditButtonLayoutParams() {
-        int editButtonSize = getContext().getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_choicelist_edit_button_size);
         GridLayout.LayoutParams lp =
                 new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(2, 1));
-        lp.setGravity(Gravity.CENTER_VERTICAL | Gravity.FILL_VERTICAL);
+        lp.setGravity(Gravity.CENTER_VERTICAL);
         lp.setMarginStart(mColumnSpacing);
-        lp.width = editButtonSize;
-        lp.height = editButtonSize;
         lp.topMargin = mItems.isEmpty() ? 0 : mRowSpacing;
         return lp;
     }
@@ -326,5 +291,46 @@ public class AssistantChoiceList extends GridLayout {
         lp = (LayoutParams) mAddButtonLabel.getLayoutParams();
         lp.setMargins(lp.leftMargin, marginTop, lp.rightMargin, lp.bottomMargin);
         mAddButtonLabel.setLayoutParams(lp);
+    }
+
+    private void setCheckedItem(Item item) {
+        for (int i = 0; i < mItems.size(); i++) {
+            RadioButton radioButton = mItems.get(i).mRadioButton;
+            radioButton.setChecked(mItems.get(i) == item);
+        }
+
+        if (mItemSelectedListener != null) {
+            mItemSelectedListener.onResult(item.mContent);
+        }
+    }
+
+    /**
+     * Per-child layout information associated with AssistantChoiceList.
+     */
+    public static class LayoutParams extends GridLayout.LayoutParams {
+        /**
+         * Indicates whether an 'edit' button should be added for this item.
+         */
+        @ViewDebug.ExportedProperty(category = "layout")
+        public String mEditText;
+
+        public LayoutParams(Context c, AttributeSet attrs) {
+            super(c, attrs);
+            TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.AssistantChoiceList);
+            mEditText = a.getString(R.styleable.AssistantChoiceList_layout_edit_button_text);
+            a.recycle();
+        }
+
+        public LayoutParams(ViewGroup.LayoutParams p) {
+            super(p);
+        }
+
+        public LayoutParams(GridLayout.LayoutParams p) {
+            super(p);
+        }
+
+        private LayoutParams() {
+            super();
+        }
     }
 }
