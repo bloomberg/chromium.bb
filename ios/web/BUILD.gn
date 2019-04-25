@@ -584,8 +584,6 @@ source_set("ios_web_webui_unittests") {
   ]
 
   sources = [
-    "webui/crw_web_ui_manager_unittest.mm",
-    "webui/crw_web_ui_page_builder_unittest.mm",
     "webui/crw_web_ui_scheme_handler_unittest.mm",
     "webui/mojo_facade_unittest.mm",
     "webui/url_fetcher_block_adapter_unittest.mm",
@@ -649,19 +647,6 @@ test("ios_web_inttests") {
   assert_no_deps = ios_assert_no_deps
 }
 
-js_compile_bundle("web_ui_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.webUIBundle"
-
-  sources = [
-    "webui/resources/mojo_api.js",
-    "webui/resources/web_ui_base.js",
-    "webui/resources/web_ui_bind.js",
-    "webui/resources/web_ui_bundle.js",
-    "webui/resources/web_ui_send.js",
-  ]
-}
-
 js_compile_bundle("main_frame_web_bundle") {
   visibility = [ ":js_resources" ]
   closure_entry_point = "__crWeb.mainFrameWebBundle"
@@ -716,7 +701,6 @@ js_compile_checked("js_resources") {
     ":all_frames_web_bundle",
     ":main_frame_web_bundle",
     ":nav_bundle",
-    ":web_ui_bundle",
   ]
 
   sources = [

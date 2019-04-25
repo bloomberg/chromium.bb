@@ -110,7 +110,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
-#import "ios/web/webui/crw_web_ui_manager.h"
 #import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
@@ -364,9 +363,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
   // method is called; 3) |abortLoad| is called.
   base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
-
-  // CRWWebUIManager object for loading WebUI pages.
-  CRWWebUIManager* _webUIManager;
 
   // Updates SSLStatus for current navigation item.
   CRWSSLStatusUpdater* _SSLStatusUpdater;
@@ -1268,12 +1264,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if ([self shouldLoadURLInNativeView:currentURL]) {
     [self loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
               rendererInitiated];
-  } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-             isCurrentURLAppSpecific && self.webStateImpl->HasWebUI() &&
-             !web::features::WebUISchemeHandlingEnabled()) {
-    [self loadPlaceholderInWebViewForURL:currentURL
-                       rendererInitiated:rendererInitiated
-                              forContext:nullptr];
   } else {
     [self loadCurrentURLInWebView];
   }
@@ -1894,11 +1884,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (!IsWKInternalUrl(requestURL) && !placeholderNavigation) {
     self.webStateImpl->SetIsLoading(true);
-
-    // WKBasedNavigationManager triggers HTML load when placeholder navigation
-    // finishes.
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
-      [_webUIManager loadWebUIForURL:requestURL];
   }
 
   // WKWebView may have multiple pending items. Move pending item ownership from
@@ -1909,9 +1894,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // load of NativeContent is synchronous. No need to transfer the ownership
     // for WebUI navigations, because those navigation do not have access to
     // NavigationContext.
-    if (![_nativeProvider hasControllerForURL:context->GetUrl()] &&
-        !(_webUIManager &&
-          web::GetWebClient()->IsAppSpecificURL(context->GetUrl()))) {
+    if (![_nativeProvider hasControllerForURL:context->GetUrl()]) {
       if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
         context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
       }
@@ -2275,26 +2258,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              loadSuccess:(BOOL)loadSuccess
                  context:(nullable const web::NavigationContextImpl*)context {
   DCHECK(_loadPhase == web::PAGE_LOADED);
-  // Rather than creating a new WKBackForwardListItem when loading WebUI pages,
-  // WKWebView will cache the WebUI HTML in the previous WKBackForwardListItem
-  // since it's loaded via |-loadHTML:forURL:| instead of an NSURLRequest.  As a
-  // result, the WebUI's HTML and URL will be loaded when navigating to that
-  // WKBackForwardListItem, causing a mismatch between the visible content and
-  // the visible URL (WebUI page will be visible, but URL will be the previous
-  // page's URL).  To prevent this potential URL spoofing vulnerability, reset
-  // the previous NavigationItem's WKBackForwardListItem to force loading via
-  // NSURLRequest.
-  if (_webUIManager) {
-    web::NavigationItem* lastNavigationItem =
-        self.sessionController.previousItem;
-    if (lastNavigationItem) {
-      web::WKBackForwardListItemHolder* holder =
-          web::WKBackForwardListItemHolder::FromNavigationItem(
-              lastNavigationItem);
-      DCHECK(holder);
-      holder->set_back_forward_list_item(nil);
-    }
-  }
 
   [self restoreStateFromHistory];
 
@@ -3287,17 +3250,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // |CreateWebUI| will do nothing if |URL| is not a WebUI URL and then
   // |HasWebUI| will return false.
   self.webStateImpl->CreateWebUI(URL);
-  bool HasWebUIIOSControllerForURL = self.webStateImpl->HasWebUI();
-  if (HasWebUIIOSControllerForURL &&
-      !web::features::WebUISchemeHandlingEnabled()) {
-    _webUIManager =
-        [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl];
-  }
 }
 
 - (void)clearWebUI {
   self.webStateImpl->ClearWebUI();
-  _webUIManager = nil;
 }
 
 #pragma mark - Auth Challenge
@@ -3997,8 +3953,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                         completionHandler:
                             (void (^)(NSString* result))completionHandler {
   GURL origin(web::GURLOriginWithWKSecurityOrigin(frame.securityOrigin));
-  if (web::GetWebClient()->IsAppSpecificURL(origin) &&
-      (_webUIManager || web::features::WebUISchemeHandlingEnabled())) {
+  if (web::GetWebClient()->IsAppSpecificURL(origin)) {
     std::string mojoResponse =
         self.mojoFacade->HandleMojoMessage(base::SysNSStringToUTF8(prompt));
     completionHandler(base::SysUTF8ToNSString(mojoResponse));
@@ -4214,8 +4169,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
     allowLoad = [self shouldAllowAppSpecificURLNavigationAction:action
                                                      transition:transition];
-    if (web::features::WebUISchemeHandlingEnabled() && allowLoad &&
-        !self.webStateImpl->HasWebUI()) {
+    if (allowLoad && !self.webStateImpl->HasWebUI()) {
       [self createWebUIForURL:requestURL];
     }
   }
@@ -4954,9 +4908,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         item->SetURL(ExtractUrlFromPlaceholderUrl(webViewURL));
       }
 
+      // TODO(crbug.com/956035): This can probably be removed.
       if (web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
-          ![_nativeProvider hasControllerForURL:item->GetURL()] &&
-          !_webUIManager) {
+          ![_nativeProvider hasControllerForURL:item->GetURL()]) {
         // WebUIManager is normally created when initiating a new load (in
         // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
         // navigation, the WebUI manager would have not been created. Attempt
@@ -4977,13 +4931,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         [self didLoadNativeContentForNavigationItem:item
                                  placeholderContext:context
                                   rendererInitiated:rendererInitiated];
-      } else if (_webUIManager) {
-        [_webUIManager loadWebUIForURL:item->GetURL()];
-        // Pending item is stored in NavigationManager for WebUI navigations,
-        // because WebUIManager does not have access to NavigationContext.
-        if (web::features::StorePendingItemInContext() && context->GetItem()) {
-          self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
-        }
       } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
                  item->error_retry_state_machine().state() ==
                      web::ErrorRetryState::kNoNavigationError) {
@@ -5250,8 +5197,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   // If the session is being restored, allow the navigation.
-  if (web::features::WebUISchemeHandlingEnabled() &&
-      IsRestoreSessionUrl(_documentURL)) {
+  if (IsRestoreSessionUrl(_documentURL)) {
     return YES;
   }
 
@@ -5545,12 +5491,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Updates the WKBackForwardListItemHolder navigation item.
 - (void)updateCurrentBackForwardListItemHolder {
-  // WebUI pages (which are loaded via loadHTMLString:baseURL:) have no entry
-  // in the back/forward list, so the current item will still be the previous
-  // page, and should not be associated.
-  if (_webUIManager)
-    return;
-
   if (!self.currentNavItem) {
     // TODO(crbug.com/925304): Pending item (which stores the holder) should be
     // owned by NavigationContext object. Pending item should never be null.

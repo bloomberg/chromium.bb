@@ -135,13 +135,7 @@ void CreateRestoreSessionUrl(
   restored_titles.GetList().reserve(new_size);
   for (auto it = begin; it != end; ++it) {
     NavigationItem* item = (*it).get();
-    GURL original_url = item->GetURL();
-    GURL restored_url = original_url;
-    if (!web::features::WebUISchemeHandlingEnabled() &&
-        web::GetWebClient()->IsAppSpecificURL(original_url)) {
-      restored_url = CreatePlaceholderUrlForUrl(original_url);
-    }
-    restored_urls.GetList().push_back(base::Value(restored_url.spec()));
+    restored_urls.GetList().push_back(base::Value(item->GetURL().spec()));
     restored_titles.GetList().push_back(base::Value(item->GetTitle()));
   }
   base::Value session(base::Value::Type::DICTIONARY);

@@ -46,6 +46,9 @@ using base::test::ios::kWaitForPageLoadTimeout;
 namespace web {
 namespace {
 
+// Error when loading an app specific page.
+const char kUnsupportedUrlErrorPage[] = "NSURLErrorDomain error -1002.";
+
 // A text string from the test HTML page in the session storage returned  by
 // GetTestSessionStorage().
 const char kTestSessionStoragePageText[] = "pony";
@@ -650,13 +653,8 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
     return !web_state()->IsLoading();
   }));
   // Wait for the error loading.
-  std::string error;
-  if (features::WebUISchemeHandlingEnabled()) {
-    error = "NSURLErrorDomain error -1002.";
-  } else {
-    error = "unsupported URL";
-  }
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), error));
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(),
+                                                 kUnsupportedUrlErrorPage));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -679,13 +677,8 @@ TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return !web_state()->IsLoading();
   }));
-  std::string error;
-  if (features::WebUISchemeHandlingEnabled()) {
-    error = "NSURLErrorDomain error -1002.";
-  } else {
-    error = "unsupported URL";
-  }
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), error));
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(),
+                                                 kUnsupportedUrlErrorPage));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);

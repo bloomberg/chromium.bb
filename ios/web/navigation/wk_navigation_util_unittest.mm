@@ -90,15 +90,9 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
   std::string session_json =
       net::UnescapeURLComponent(restore_session_url.ref(), unescape_rules);
 
-  std::string testwebui_url =
-      web::features::WebUISchemeHandlingEnabled()
-          ? "testwebui://webui/"
-          : "about:blank?for=testwebui%3A%2F%2Fwebui%2F";
-
   EXPECT_EQ("session={\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
             "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
-            "\"" +
-                testwebui_url + "\"]}",
+            "\"testwebui://webui/\"]}",
             session_json);
 }
 
