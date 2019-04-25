@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
@@ -59,24 +60,24 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
     private ScrollView mOnboardingScrollView;
 
     AssistantBottomBarCoordinator(
-            Context context, AssistantModel model, BottomSheetController controller) {
+            Activity activity, AssistantModel model, BottomSheetController controller) {
         mModel = model;
         mBottomSheetController = controller;
-        mContent = new AssistantBottomSheetContent(context);
-        mPeekHeight = context.getResources().getDimensionPixelSize(
+        mContent = new AssistantBottomSheetContent(activity);
+        mPeekHeight = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_peek_height);
 
         // Instantiate child components.
         mHeaderCoordinator = new AssistantHeaderCoordinator(
-                context, mContent.mBottomBarView, model.getHeaderModel());
-        mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(context, model.getInfoBoxModel());
-        mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
+                activity, mContent.mBottomBarView, model.getHeaderModel());
+        mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
+        mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
         mPaymentRequestCoordinator =
-                new AssistantPaymentRequestCoordinator(context, model.getPaymentRequestModel());
+                new AssistantPaymentRequestCoordinator(activity, model.getPaymentRequestModel());
         mSuggestionsCoordinator =
-                new AssistantSuggestionsCarouselCoordinator(context, model.getSuggestionsModel());
+                new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
         mActionsCoordinator =
-                new AssistantActionsCarouselCoordinator(context, model.getActionsModel());
+                new AssistantActionsCarouselCoordinator(activity, model.getActionsModel());
 
         // Add child views to bottom bar container.
         mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
@@ -90,7 +91,7 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         // do not hide them because there is an incompatibility bug between the animateLayoutChanges
         // attribute set on mBottomBarView and the animations ran by the carousels
         // RecyclerView.
-        int childSpacing = context.getResources().getDimensionPixelSize(
+        int childSpacing = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
@@ -99,12 +100,11 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         setCarouselMarginTop(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel(),
                 childSpacing);
 
-        // We set the horizontal margins of the details and payment request. We don't set a padding
-        // to the container as we want the carousels children to be scrolled at the limit of the
-        // screen.
+        // We set the horizontal margins of the details and info box. We don't set a padding
+        // to the container and the payment request as we want the carousels children and PR
+        // sections to be full-width.
         setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
-        setHorizontalMargins(mPaymentRequestCoordinator.getView());
 
         // Set the toolbar background color to white only in the PEEK state, to make sure it does
         // not hide parts of the content view (which it overlaps).
@@ -117,7 +117,7 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
             @Override
             public void onSheetClosed(int reason) {
                 mContent.mToolbarView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                        context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
+                        activity.getResources(), org.chromium.chrome.R.color.modern_primary_color));
             }
 
             @Override
@@ -224,7 +224,8 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
     }
 
     private void setHorizontalMargins(View view) {
-        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
+        LinearLayout.MarginLayoutParams layoutParams =
+                (LinearLayout.MarginLayoutParams) view.getLayoutParams();
         int horizontalMargin = view.getContext().getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         layoutParams.setMarginStart(horizontalMargin);
