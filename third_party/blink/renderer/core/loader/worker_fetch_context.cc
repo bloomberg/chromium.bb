@@ -254,10 +254,6 @@ void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
     out_request.SetSiteForCookies(GetSiteForCookies());
 }
 
-SecurityContext& WorkerFetchContext::GetSecurityContext() const {
-  return global_scope_->GetSecurityContext();
-}
-
 WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
   auto* scope = DynamicTo<WorkerGlobalScope>(*global_scope_);
   return scope ? scope->GetWorkerSettings() : nullptr;

@@ -83,7 +83,6 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
 
-  SecurityContext& GetSecurityContext() const;
   WorkerSettings* GetWorkerSettings() const;
   WorkerContentSettingsClient* GetWorkerContentSettingsClient() const;
   WebWorkerFetchContext* GetWebWorkerFetchContext() const {

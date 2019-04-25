@@ -61,6 +61,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;
 
+  virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
+
  protected:
   BaseFetchContext() = default;
 
@@ -86,7 +88,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;
   virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
-  virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
   // TODO(yhirano): Remove this.
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;

@@ -149,13 +149,18 @@ const char* RequestContextName(mojom::RequestContextType context) {
   return "resource";
 }
 
-// TODO(nhiroki): Consider adding interfaces for Settings/WorkerSettings
-// to avoid using C++ template.
-template <typename SettingsType>
-bool IsWebSocketAllowedImpl(const BaseFetchContext& fetch_context,
-                            SecurityContext* security_context,
-                            SettingsType* settings,
-                            const KURL& url) {
+// Currently we have two slightly different versions, because
+// in frames SecurityContext is the source of CSP/InsecureRequestPolicy,
+// especially where FetchContext and SecurityContext come from different
+// frames (e.g. in nested frames), while in
+// workers we should totally rely on FetchContext's FetchClientSettingsObject
+// to avoid confusion around off-the-main-thread fetch.
+// TODO(hiroshige): Consider merging them once FetchClientSettingsObject
+// becomes the source of CSP/InsecureRequestPolicy also in frames.
+bool IsWebSocketAllowedInFrame(const BaseFetchContext& fetch_context,
+                               SecurityContext* security_context,
+                               Settings* settings,
+                               const KURL& url) {
   fetch_context.CountUsage(WebFeature::kMixedContentPresent);
   fetch_context.CountUsage(WebFeature::kMixedContentWebSocket);
   if (ContentSecurityPolicy* policy =
@@ -170,6 +175,30 @@ bool IsWebSocketAllowedImpl(const BaseFetchContext& fetch_context,
   bool strict_mode =
       security_context->GetInsecureRequestPolicy() & kBlockAllMixedContent ||
       settings->GetStrictMixedContentChecking();
+  if (strict_mode)
+    return false;
+  return settings && settings->GetAllowRunningOfInsecureContent();
+}
+
+bool IsWebSocketAllowedInWorker(const BaseFetchContext& fetch_context,
+                                WorkerSettings* settings,
+                                const KURL& url) {
+  fetch_context.CountUsage(WebFeature::kMixedContentPresent);
+  fetch_context.CountUsage(WebFeature::kMixedContentWebSocket);
+  if (const ContentSecurityPolicy* policy =
+          fetch_context.GetContentSecurityPolicy()) {
+    policy->ReportMixedContent(url,
+                               ResourceRequest::RedirectStatus::kNoRedirect);
+  }
+
+  // If we're in strict mode, we'll automagically fail everything, and
+  // intentionally skip the client checks in order to prevent degrading the
+  // site's security UI.
+  bool strict_mode = fetch_context.GetResourceFetcherProperties()
+                             .GetFetchClientSettingsObject()
+                             .GetInsecureRequestsPolicy() &
+                         kBlockAllMixedContent ||
+                     settings->GetStrictMixedContentChecking();
   if (strict_mode)
     return false;
   return settings && settings->GetAllowRunningOfInsecureContent();
@@ -485,7 +514,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     allowed = false;
   } else {
     bool strict_mode =
-        worker_fetch_context.GetSecurityContext().GetInsecureRequestPolicy() &
+        fetch_client_settings_object.GetInsecureRequestsPolicy() &
             kBlockAllMixedContent ||
         settings->GetStrictMixedContentChecking();
     bool should_ask_embedder =
@@ -550,8 +579,8 @@ bool MixedContentChecker::IsWebSocketAllowed(
   SecurityContext* security_context = mixed_frame->GetSecurityContext();
   const SecurityOrigin* security_origin = security_context->GetSecurityOrigin();
 
-  bool allowed = IsWebSocketAllowedImpl(frame_fetch_context, security_context,
-                                        settings, url);
+  bool allowed = IsWebSocketAllowedInFrame(frame_fetch_context,
+                                           security_context, settings, url);
   if (content_settings_client) {
     allowed = content_settings_client->AllowRunningInsecureContent(
         allowed, WebSecurityOrigin(security_origin), url);
@@ -580,13 +609,11 @@ bool MixedContentChecker::IsWebSocketAllowed(
   WorkerSettings* settings = worker_fetch_context.GetWorkerSettings();
   WorkerContentSettingsClient* content_settings_client =
       worker_fetch_context.GetWorkerContentSettingsClient();
-  SecurityContext* security_context =
-      &worker_fetch_context.GetSecurityContext();
   const SecurityOrigin* security_origin =
       fetch_client_settings_object.GetSecurityOrigin();
 
-  bool allowed = IsWebSocketAllowedImpl(worker_fetch_context, security_context,
-                                        settings, url);
+  bool allowed =
+      IsWebSocketAllowedInWorker(worker_fetch_context, settings, url);
   if (content_settings_client) {
     allowed = content_settings_client->AllowRunningInsecureContent(
         allowed, security_origin, url);
