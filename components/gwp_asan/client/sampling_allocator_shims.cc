@@ -340,4 +340,9 @@ void InstallAllocatorHooks(size_t max_allocated_pages,
 }
 
 }  // namespace internal
+
+bool IsGwpAsanAllocation(const void* ptr) {
+  return internal::gpa && internal::gpa->PointerIsMine(ptr);
+}
+
 }  // namespace gwp_asan
