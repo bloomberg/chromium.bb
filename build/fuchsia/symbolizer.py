@@ -9,13 +9,13 @@ import subprocess
 from common import SDK_ROOT
 
 
-def SymbolizerFilter(input_fd, build_ids_files):
-  """Symbolizes an output stream from a process.
+def RunSymbolizer(input_pipe, build_ids_files):
+  """Starts a symbolizer process.
 
-  input_fd: A file descriptor of the stream to be symbolized.
+  input_pipe: Input pipe to be symbolized.
   build_ids_file: Path to the ids.txt file which maps build IDs to
                   unstripped binaries on the filesystem.
-  Returns a generator that yields symbolized process output."""
+  Returns a Popen object for the started process."""
 
   llvm_symbolizer_path = os.path.join(SDK_ROOT, os.pardir, os.pardir,
                                       'llvm-build', 'Release+Asserts', 'bin',
@@ -28,11 +28,19 @@ def SymbolizerFilter(input_fd, build_ids_files):
     symbolizer_cmd.extend(['-ids', build_ids_file])
 
   logging.info('Running "%s".' % ' '.join(symbolizer_cmd))
-  symbolizer_proc = subprocess.Popen(
-      symbolizer_cmd,
-      stdout=subprocess.PIPE,
-      stdin=input_fd,
-      close_fds=True)
+  return subprocess.Popen(symbolizer_cmd, stdout=subprocess.PIPE,
+                          stdin=input_pipe, close_fds=True)
+
+
+def SymbolizerFilter(input_pipe, build_ids_files):
+  """Symbolizes an output stream from a process.
+
+  input_pipe: Input pipe to be symbolized.
+  build_ids_file: Path to the ids.txt file which maps build IDs to
+                  unstripped binaries on the filesystem.
+  Returns a generator that yields symbolized process output."""
+
+  symbolizer_proc = RunSymbolizer(input_pipe, build_ids_files)
 
   while True:
     line = symbolizer_proc.stdout.readline()
