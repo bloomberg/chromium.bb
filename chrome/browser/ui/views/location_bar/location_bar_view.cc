@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -227,6 +228,8 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kZoom);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsOmniboxInstall))
       params.types_enabled.push_back(PageActionIconType::kPwaInstall);
+    if (send_tab_to_self::IsSendingEnabled())
+      params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   params.icon_color = icon_color;
@@ -354,6 +357,10 @@ void LocationBarView::FocusLocation(bool select_all) {
     return;
 
   omnibox_view_->SelectAll(true);
+
+  // Update the visibility of send tab to self icon.
+  this->omnibox_page_action_icon_container_view()->UpdatePageActionIcon(
+      PageActionIconType::kSendTabToSelf);
 
   // Only exit Query in Omnibox mode on focus command if the location bar was
   // already focused to begin with, i.e. user presses Ctrl+L twice.

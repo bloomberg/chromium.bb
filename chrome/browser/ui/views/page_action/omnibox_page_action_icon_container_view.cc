@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/send_tab_to_self/share_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -59,6 +60,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         zoom_view_ = new ZoomView(params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
+      case PageActionIconType::kSendTabToSelf:
+        share_icon_view_ = new send_tab_to_self::ShareIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(share_icon_view_);
+        break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
         NOTREACHED();
@@ -97,6 +103,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
+    case PageActionIconType::kSendTabToSelf:
+      return share_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

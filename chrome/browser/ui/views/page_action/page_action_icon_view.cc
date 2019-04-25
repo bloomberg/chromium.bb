@@ -36,6 +36,12 @@ bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
   return false;
 }
 
+const OmniboxView* PageActionIconView::Delegate::GetOmniboxView() const {
+  // Should not reach here: should call subclass's implementation.
+  NOTREACHED();
+  return nullptr;
+}
+
 PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        int command_id,
                                        PageActionIconView::Delegate* delegate,

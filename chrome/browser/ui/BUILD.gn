@@ -2842,6 +2842,8 @@ jumbo_split_static_library("ui") {
       "views/sad_tab_view.h",
       "views/safe_browsing/password_reuse_modal_warning_dialog.cc",
       "views/safe_browsing/password_reuse_modal_warning_dialog.h",
+      "views/send_tab_to_self/share_icon_view.cc",
+      "views/send_tab_to_self/share_icon_view.h",
       "views/session_crashed_bubble_view.cc",
       "views/session_crashed_bubble_view.h",
       "views/simple_message_box_views.cc",

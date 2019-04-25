@@ -13,6 +13,7 @@ enum class PageActionIconType {
   kManagePasswords,
   kPwaInstall,
   kSaveCard,
+  kSendTabToSelf,
   kTranslate,
   kZoom,
 };

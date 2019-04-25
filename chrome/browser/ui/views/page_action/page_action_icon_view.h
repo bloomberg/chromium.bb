@@ -19,6 +19,7 @@
 #include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
+class OmniboxView;
 
 namespace content {
 class WebContents;
@@ -46,6 +47,8 @@ class PageActionIconView : public IconLabelBubbleView {
     // Delegate should override and return true when the user is editing the
     // location bar contents.
     virtual bool IsLocationBarUserInputInProgress() const;
+
+    virtual const OmniboxView* GetOmniboxView() const;
   };
 
   // Updates the color of the icon, this must be set before the icon is drawn.

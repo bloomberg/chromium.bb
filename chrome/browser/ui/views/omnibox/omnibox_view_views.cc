@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -1068,6 +1069,10 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
     SelectAllForUserGesture();
+    // Update the visibility of send tab to self icon.
+    if (location_bar_view_)
+      location_bar_view_->omnibox_page_action_icon_container_view()
+          ->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
   }
   select_all_on_mouse_release_ = false;
 
@@ -1091,8 +1096,13 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
   views::Textfield::OnGestureEvent(event);
 
-  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
+  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP) {
     SelectAllForUserGesture();
+    // Update the visibility of send tab to self icon.
+    if (location_bar_view_)
+      location_bar_view_->omnibox_page_action_icon_container_view()
+          ->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
+  }
 
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_CANCEL ||

@@ -49,6 +49,7 @@ void UpdateCreditCardIcon(PageActionIconType icon_type,
       case PageActionIconType::kFind:
       case PageActionIconType::kManagePasswords:
       case PageActionIconType::kPwaInstall:
+      case PageActionIconType::kSendTabToSelf:
       case PageActionIconType::kTranslate:
       case PageActionIconType::kZoom:
         NOTREACHED();

@@ -509,6 +509,10 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_MANAGE_PASSWORDS_FOR_PAGE:
       ManagePasswordsForPage(browser_);
       break;
+    case IDC_SEND_TAB_TO_SELF:
+      // TODO(crbug/950388): add implementation.
+      NOTIMPLEMENTED();
+      break;
 
     // Clipboard commands
     case IDC_CUT:
