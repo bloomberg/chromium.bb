@@ -54,8 +54,8 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
            "Percentage";
   }
 
-  void NextSampleIntervalForTest(TimeDelta delta) {
-    aggregator().NextSampleIntervalForTest(delta);
+  void FramesToNextEventForTest(unsigned delta) {
+    aggregator().FramesToNextEventForTest(delta);
   }
 
   base::TimeTicks Now() {
@@ -123,7 +123,7 @@ TEST_F(LocalFrameUkmAggregatorTest, FirstFrameIsRecorded) {
   // The initial interval is always zero, so we should see one set of metrics
   // for the initial frame, regardless of the initial interval.
   base::TimeTicks start_time = Now();
-  NextSampleIntervalForTest(TimeDelta::FromMilliseconds(100));
+  FramesToNextEventForTest(1);
   unsigned millisecond_for_step = 1;
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
@@ -158,15 +158,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   if (!base::TimeTicks::IsHighResolution())
     return;
 
-  // Keep track of our next sample points and current times.
-  TimeDelta elapsed_time;
-  unsigned next_event_time_ms = 0;
-
   // The records should be recorded in the first frame after every interval,
   // and no sooner.
 
-  // Set the first sample interval to 100.
-  NextSampleIntervalForTest(TimeDelta::FromMilliseconds(100));
+  // Set the first sample interval to 2.
+  FramesToNextEventForTest(2);
   unsigned millisecond_per_step = 50 / (LocalFrameUkmAggregator::kCount + 1);
   unsigned millisecond_per_frame =
       millisecond_per_step * (LocalFrameUkmAggregator::kCount + 1);
@@ -187,9 +183,6 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
                 expected_percentage);
 
-  elapsed_time += Now() - start_time;
-  next_event_time_ms = 100;
-
   // Another step does not get us past the sample interval.
   start_time = Now();
   aggregator().BeginMainFrame();
@@ -202,8 +195,6 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
 
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
                 expected_percentage);
-
-  elapsed_time += Now() - start_time;
 
   // Another step should tick us past the sample interval.
   // Note that the sample is a single frame, so even if we've taken
@@ -220,35 +211,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
                 expected_percentage);
 
-  elapsed_time += Now() - start_time;
-  next_event_time_ms += 100;
-
-  // Step some more frames until we are about to sample again
-  while (elapsed_time.InMilliseconds() + millisecond_per_frame <
-         next_event_time_ms) {
-    start_time = Now();
-    aggregator().BeginMainFrame();
-    for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
-      auto timer = aggregator().GetScopedTimer(i);
-      clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
-    }
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
-    aggregator().RecordEndOfFrameMetrics(start_time, Now());
-    elapsed_time += Now() - start_time;
-  }
-
-  // Should be no more samples.
-  VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
-
-  // If we record, then the next interval is still shorter than the last frame,
-  // we should sample again. Set a short sample period to generate 2 events
-  // for the next update. The calculation below ensures we get 2 events for
-  // the next interval, and no more.
-  int64_t remaining_time = next_event_time_ms - elapsed_time.InMilliseconds();
-  int64_t next_interval = (millisecond_per_frame - 1 - remaining_time) / 2;
-  NextSampleIntervalForTest(TimeDelta::FromMilliseconds(next_interval));
-
+  // Step one more frame so we don't sample again.
   start_time = Now();
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
@@ -257,11 +220,24 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   }
   clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
-  elapsed_time += Now() - start_time;
+
+  // Should be no more samples.
+  VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
+                expected_percentage);
+
+  // And one more step to generate one more sample
+  start_time = Now();
+  aggregator().BeginMainFrame();
+  for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
+    auto timer = aggregator().GetScopedTimer(i);
+    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  }
+  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // We should have 3 more events, once for the prior interval and 2 for the
   // new interval.
-  VerifyEntries(5u, millisecond_per_frame, millisecond_per_step,
+  VerifyEntries(3u, millisecond_per_frame, millisecond_per_step,
                 expected_percentage);
 }
 
