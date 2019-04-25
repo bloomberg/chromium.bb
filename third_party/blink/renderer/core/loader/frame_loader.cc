@@ -987,7 +987,10 @@ void FrameLoader::CommitNavigation(
   progress_tracker_->ProgressStarted();
   provisional_document_loader_ = provisional_document_loader;
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+  {
+    FrameNavigationDisabler navigation_disabler(*frame_);
+    Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+  }
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
   provisional_document_loader_->StartLoading();
