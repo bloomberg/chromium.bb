@@ -107,32 +107,30 @@ void AdjustDelaysForBacklightsForcedOff(
     delays->set_idle_warning_ms(warn_ms);
 }
 
-power_manager::PowerManagementPolicy::PeakShiftDayConfig::WeekDay
-GetProtoWeekDay(PowerPolicyController::WeekDay week_day) {
+power_manager::PowerManagementPolicy::WeekDay GetProtoWeekDay(
+    PowerPolicyController::WeekDay week_day) {
   switch (week_day) {
     case PowerPolicyController::WeekDay::WEEK_DAY_MONDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::MONDAY;
+      return power_manager::PowerManagementPolicy::MONDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_TUESDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::TUESDAY;
+      return power_manager::PowerManagementPolicy::TUESDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_WEDNESDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::
-          WEDNESDAY;
+      return power_manager::PowerManagementPolicy::WEDNESDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_THURSDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::THURSDAY;
+      return power_manager::PowerManagementPolicy::THURSDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_FRIDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::FRIDAY;
+      return power_manager::PowerManagementPolicy::FRIDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_SATURDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::SATURDAY;
+      return power_manager::PowerManagementPolicy::SATURDAY;
     case PowerPolicyController::WeekDay::WEEK_DAY_SUNDAY:
-      return power_manager::PowerManagementPolicy::PeakShiftDayConfig::SUNDAY;
+      return power_manager::PowerManagementPolicy::SUNDAY;
   }
 }
 
-std::unique_ptr<
-    power_manager::PowerManagementPolicy::PeakShiftDayConfig::DayTime>
-GetProtoDayTime(const PowerPolicyController::DayTime& day_time) {
-  auto proto = std::make_unique<
-      power_manager::PowerManagementPolicy::PeakShiftDayConfig::DayTime>();
+std::unique_ptr<power_manager::PowerManagementPolicy::DayTime> GetProtoDayTime(
+    const PowerPolicyController::DayTime& day_time) {
+  auto proto =
+      std::make_unique<power_manager::PowerManagementPolicy::DayTime>();
   proto->set_hour(day_time.hour);
   proto->set_minute(day_time.minute);
   return proto;

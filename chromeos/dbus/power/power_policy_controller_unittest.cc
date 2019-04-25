@@ -195,8 +195,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
 
   expected_policy.set_peak_shift_battery_percent_threshold(20);
   auto* proto_config = expected_policy.add_peak_shift_day_configs();
-  proto_config->set_day(
-      power_manager::PowerManagementPolicy::PeakShiftDayConfig::TUESDAY);
+  proto_config->set_day(power_manager::PowerManagementPolicy::TUESDAY);
   proto_config->mutable_start_time()->set_hour(10);
   proto_config->mutable_start_time()->set_minute(0);
   proto_config->mutable_end_time()->set_hour(20);
