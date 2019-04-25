@@ -652,6 +652,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void StopCommitTimeout();
   void RestartCommitTimeout();
 
+  // Helper function that computes the site URL for |common_params_.url|.
+  // Note: |site_url_| should only be updated with the result of this function.
+  GURL GetSiteForCommonParamsURL() const;
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;

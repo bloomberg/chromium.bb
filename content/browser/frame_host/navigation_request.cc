@@ -972,10 +972,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   starting_site_instance_ =
       frame_tree_node->current_frame_host()->GetSiteInstance();
 
-  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
-  // be correct for cross-BrowsingInstance redirects.
-  site_url_ = SiteInstanceImpl::GetSiteForURL(
-      starting_site_instance_->GetIsolationContext(), common_params_.url);
+  site_url_ = GetSiteForCommonParamsURL();
 
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
@@ -2139,10 +2136,7 @@ void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
 
 void NavigationRequest::UpdateSiteURL(
     RenderProcessHost* post_redirect_process) {
-  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
-  // be correct for cross-BrowsingInstance redirects.
-  GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
-      starting_site_instance_->GetIsolationContext(), common_params_.url);
+  GURL new_site_url = GetSiteForCommonParamsURL();
   int post_redirect_process_id = post_redirect_process
                                      ? post_redirect_process->GetID()
                                      : ChildProcessHost::kInvalidUniqueID;
@@ -2861,6 +2855,13 @@ void NavigationRequest::SetCommitTimeoutForTesting(
 std::unique_ptr<AppCacheNavigationHandle>
 NavigationRequest::TakeAppCacheHandle() {
   return std::move(appcache_handle_);
+}
+
+GURL NavigationRequest::GetSiteForCommonParamsURL() const {
+  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
+  // be correct for cross-BrowsingInstance redirects.
+  return SiteInstanceImpl::GetSiteForURL(
+      starting_site_instance_->GetIsolationContext(), common_params_.url);
 }
 
 }  // namespace content

@@ -60,9 +60,7 @@ bool BrowsingInstance::IsDefaultSiteInstance(
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
-
+  std::string site = GetSiteForURL(url).possibly_invalid_spec();
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
 
@@ -98,7 +96,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
     return;
   }
 
-  *site_url = SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
+  *site_url = GetSiteForURL(url);
   *lock_url =
       SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
 }
@@ -106,9 +104,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  std::string site = SiteInstanceImpl::GetSiteForURL(isolation_context_, url)
-                         .possibly_invalid_spec();
-
+  std::string site = GetSiteForURL(url).possibly_invalid_spec();
   auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end())
     return i->second;
@@ -185,6 +181,10 @@ BrowsingInstance::~BrowsingInstance() {
   DCHECK_EQ(0u, active_contents_count_);
   if (default_process_)
     default_process_->RemoveObserver(this);
+}
+
+GURL BrowsingInstance::GetSiteForURL(const GURL url) const {
+  return SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
 }
 
 }  // namespace content
