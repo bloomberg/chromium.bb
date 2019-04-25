@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -260,7 +259,7 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
     EXPECT_EQ(10.0, calculator_ui_->GetOutput());
     calculator_ui_.reset();
     calc_impl_.reset();
-    done_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&done_closure_));
+    done_runner_->PostTask(FROM_HERE, std::move(done_closure_));
   }
 
   base::Closure done_closure_;

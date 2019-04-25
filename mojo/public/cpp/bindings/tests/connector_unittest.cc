@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -34,7 +33,7 @@ class MessageAccumulator : public MessageReceiver {
   bool Accept(Message* message) override {
     queue_.Push(message);
     if (!closure_.is_null())
-      base::ResetAndReturn(&closure_).Run();
+      std::move(closure_).Run();
     return true;
   }
 

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -642,7 +641,7 @@ class PingProviderImpl : public AssociatedPingProvider {
         ping_services_.size() == expected_bindings_count_ &&
         !quit_waiting_.is_null()) {
       expected_bindings_count_ = 0;
-      base::ResetAndReturn(&quit_waiting_).Run();
+      std::move(quit_waiting_).Run();
     }
   }
 
