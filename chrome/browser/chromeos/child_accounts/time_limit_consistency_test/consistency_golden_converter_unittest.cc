@@ -196,9 +196,8 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithTimedOverride) {
 TEST_F(ConsistencyGoldenConverterTest, ConvertOutputWhenUnlocked) {
   usage_time_limit::State state;
   state.is_locked = false;
-  state.active_policy = usage_time_limit::ActivePolicies::kNoActivePolicy;
-  state.next_state_active_policy =
-      usage_time_limit::ActivePolicies::kNoActivePolicy;
+  state.active_policy = usage_time_limit::PolicyType::kNoPolicy;
+  state.next_state_active_policy = usage_time_limit::PolicyType::kNoPolicy;
   state.next_unlock_time = base::Time::FromJavaTime(kTestTimestamp);
 
   ConsistencyGoldenOutput actual_output =
@@ -215,9 +214,8 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertOutputWhenUnlocked) {
 TEST_F(ConsistencyGoldenConverterTest, ConvertOutputWhenLockedByBedtime) {
   usage_time_limit::State state;
   state.is_locked = true;
-  state.active_policy = usage_time_limit::ActivePolicies::kFixedLimit;
-  state.next_state_active_policy =
-      usage_time_limit::ActivePolicies::kNoActivePolicy;
+  state.active_policy = usage_time_limit::PolicyType::kFixedLimit;
+  state.next_state_active_policy = usage_time_limit::PolicyType::kNoPolicy;
   state.next_unlock_time = base::Time::FromJavaTime(kTestTimestamp);
 
   ConsistencyGoldenOutput actual_output =
@@ -237,9 +235,8 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertOutputWhenLockedByUsageLimit) {
 
   usage_time_limit::State state;
   state.is_locked = true;
-  state.active_policy = usage_time_limit::ActivePolicies::kUsageLimit;
-  state.next_state_active_policy =
-      usage_time_limit::ActivePolicies::kNoActivePolicy;
+  state.active_policy = usage_time_limit::PolicyType::kUsageLimit;
+  state.next_state_active_policy = usage_time_limit::PolicyType::kNoPolicy;
   state.is_time_usage_limit_enabled = true;
   state.remaining_usage = base::TimeDelta::FromMilliseconds(remaining_millis);
   state.next_unlock_time = base::Time::FromJavaTime(kTestTimestamp);
@@ -268,7 +265,7 @@ TEST_F(ConsistencyGoldenConverterTest, GeneratePreviousStateUnlockUsageLimit) {
   EXPECT_TRUE(generated_state->is_locked);
   EXPECT_TRUE(generated_state->is_time_usage_limit_enabled);
   EXPECT_EQ(generated_state->active_policy,
-            usage_time_limit::ActivePolicies::kUsageLimit);
+            usage_time_limit::PolicyType::kUsageLimit);
   EXPECT_EQ(generated_state->remaining_usage, base::TimeDelta::FromMinutes(0));
   EXPECT_EQ(generated_state->time_usage_limit_started,
             base::Time::FromJavaTime(kTestTimestamp) -

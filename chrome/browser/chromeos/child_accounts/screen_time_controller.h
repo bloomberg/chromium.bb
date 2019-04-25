@@ -97,7 +97,7 @@ class ScreenTimeController
   //                  |visible| is true.
   // |next_unlock_time|: When user will be able to unlock the screen, only valid
   //                     when |visible| is true.
-  void OnScreenLockByPolicy(usage_time_limit::ActivePolicies active_policy,
+  void OnScreenLockByPolicy(usage_time_limit::PolicyType active_policy,
                             base::Time next_unlock_time);
 
   // Disables the time limits message in the lock screen.
@@ -105,7 +105,7 @@ class ScreenTimeController
 
   // Converts the active policy to its equivalent on the ash enum.
   base::Optional<ash::mojom::AuthDisabledReason> ConvertLockReason(
-      usage_time_limit::ActivePolicies active_policy);
+      usage_time_limit::PolicyType active_policy);
 
   // Called when the policy of time limits changes.
   void OnPolicyChanged();
@@ -128,6 +128,11 @@ class ScreenTimeController
   // Called when the usage time limit is |kUsageTimeLimitWarningTime| or less to
   // finish. It should call the method UsageTimeLimitWarning for each observer.
   void UsageTimeLimitWarning();
+
+  // Converts a usage_time_limit::PolicyType to its TimeLimitNotifier::LimitType
+  // equivalent.
+  base::Optional<TimeLimitNotifier::LimitType> ConvertPolicyType(
+      usage_time_limit::PolicyType policy_type);
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
@@ -163,6 +168,10 @@ class ScreenTimeController
   // |kUsageTimeLimitWarningTime| minutes or less before the device is locked by
   // usage limit.
   std::unique_ptr<base::OneShotTimer> usage_time_limit_warning_timer_;
+
+  // Contains the last time limit policy processed by this class. Used to
+  // generate notifications when the policy changes.
+  std::unique_ptr<base::DictionaryValue> last_policy_;
 
   // Used to set up timers when a time limit is approaching.
   TimeLimitNotifier time_limit_notifier_;
