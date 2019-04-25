@@ -18,8 +18,6 @@ using namespace html_names;
 HTMLPictureElement::HTMLPictureElement(Document& document)
     : HTMLElement(kPictureTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLPictureElement)
-
 void HTMLPictureElement::SourceOrMediaChanged() {
   for (HTMLImageElement* image_element =
            Traversal<HTMLImageElement>::FirstChild(*this);

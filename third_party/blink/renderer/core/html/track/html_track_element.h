@@ -42,8 +42,6 @@ class HTMLTrackElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLTrackElement);
 
  public:
-  DECLARE_NODE_FACTORY(HTMLTrackElement);
-
   explicit HTMLTrackElement(Document&);
 
   // Returns attributes that should be checked against Trusted Types

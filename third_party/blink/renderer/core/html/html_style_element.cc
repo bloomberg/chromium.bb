@@ -45,11 +45,6 @@ HTMLStyleElement::HTMLStyleElement(Document& document,
 
 HTMLStyleElement::~HTMLStyleElement() = default;
 
-HTMLStyleElement* HTMLStyleElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLStyleElement>(document, flags);
-}
-
 void HTMLStyleElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == kTitleAttr && sheet_ && IsInDocumentTree()) {

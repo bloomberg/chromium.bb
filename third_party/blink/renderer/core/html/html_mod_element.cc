@@ -32,8 +32,6 @@ HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
                                Document& document)
     : HTMLElement(tag_name, document) {}
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement)
-
 bool HTMLModElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == kCiteAttr ||
          HTMLElement::IsURLAttribute(attribute);

@@ -135,8 +135,6 @@ const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
 
 }  // anonymous namespace
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement)
-
 String HTMLElement::DebugNodeName() const {
   if (GetDocument().IsHTMLDocument()) {
     return TagQName().HasPrefix() ? Element::nodeName().UpperASCII()

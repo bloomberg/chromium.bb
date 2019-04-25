@@ -40,8 +40,6 @@ HTMLMapElement::HTMLMapElement(Document& document)
   UseCounter::Count(document, WebFeature::kMapElement);
 }
 
-DEFINE_NODE_FACTORY(HTMLMapElement)
-
 HTMLMapElement::~HTMLMapElement() = default;
 
 HTMLAreaElement* HTMLMapElement::AreaForPoint(

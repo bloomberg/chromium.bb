@@ -37,8 +37,6 @@ using namespace html_names;
 HTMLLIElement::HTMLLIElement(Document& document)
     : HTMLElement(kLiTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLLIElement)
-
 bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == kTypeAttr)
     return true;

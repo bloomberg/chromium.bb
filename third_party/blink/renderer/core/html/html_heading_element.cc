@@ -28,5 +28,4 @@ HTMLHeadingElement::HTMLHeadingElement(const QualifiedName& tag_name,
                                        Document& document)
     : HTMLElement(tag_name, document) {}
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLHeadingElement)
 }

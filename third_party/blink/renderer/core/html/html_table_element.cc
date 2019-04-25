@@ -67,8 +67,6 @@ HTMLTableElement::HTMLTableElement(Document& document)
 // CSSPropertyValueSet definition.
 HTMLTableElement::~HTMLTableElement() = default;
 
-DEFINE_NODE_FACTORY(HTMLTableElement)
-
 HTMLTableCaptionElement* HTMLTableElement::caption() const {
   return Traversal<HTMLTableCaptionElement>::FirstChild(*this);
 }

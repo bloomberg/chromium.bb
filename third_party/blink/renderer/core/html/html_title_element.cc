@@ -38,8 +38,6 @@ HTMLTitleElement::HTMLTitleElement(Document& document)
     : HTMLElement(kTitleTag, document),
       ignore_title_updates_when_children_change_(false) {}
 
-DEFINE_NODE_FACTORY(HTMLTitleElement)
-
 Node::InsertionNotificationRequest HTMLTitleElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);

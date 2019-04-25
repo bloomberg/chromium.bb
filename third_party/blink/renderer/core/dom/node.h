@@ -1087,10 +1087,6 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
   DEFINE_TYPE_CASTS(thisType, Node, node, Is##thisType(*node), \
                     Is##thisType(node))
 
-#define DECLARE_NODE_FACTORY(T) static T* Create(Document&)
-#define DEFINE_NODE_FACTORY(T) \
-  T* T::Create(Document& document) { return MakeGarbageCollected<T>(document); }
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);
 

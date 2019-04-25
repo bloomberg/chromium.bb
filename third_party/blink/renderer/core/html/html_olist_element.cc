@@ -42,8 +42,6 @@ HTMLOListElement::HTMLOListElement(Document& document)
       is_reversed_(false),
       should_recalculate_item_count_(false) {}
 
-DEFINE_NODE_FACTORY(HTMLOListElement)
-
 bool HTMLOListElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == kTypeAttr)

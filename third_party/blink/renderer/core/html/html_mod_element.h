@@ -32,8 +32,6 @@ class HTMLModElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
-
   HTMLModElement(const QualifiedName&, Document&);
 
  private:

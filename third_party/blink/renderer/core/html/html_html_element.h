@@ -33,8 +33,6 @@ class CORE_EXPORT HTMLHtmlElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLHtmlElement);
-
   explicit HTMLHtmlElement(Document&);
 
   void InsertedByParser();

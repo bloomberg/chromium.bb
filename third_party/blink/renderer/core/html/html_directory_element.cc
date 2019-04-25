@@ -31,6 +31,4 @@ using namespace html_names;
 HTMLDirectoryElement::HTMLDirectoryElement(Document& document)
     : HTMLElement(kDirTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLDirectoryElement)
-
 }  // namespace blink

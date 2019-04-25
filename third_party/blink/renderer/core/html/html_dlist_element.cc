@@ -31,6 +31,4 @@ using namespace html_names;
 HTMLDListElement::HTMLDListElement(Document& document)
     : HTMLElement(kDlTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLDListElement)
-
 }  // namespace blink

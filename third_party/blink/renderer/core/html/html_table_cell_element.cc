@@ -43,8 +43,6 @@ HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tag_name,
                                            Document& document)
     : HTMLTablePartElement(tag_name, document) {}
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)
-
 unsigned HTMLTableCellElement::colSpan() const {
   const AtomicString& col_span_value = FastGetAttribute(kColspanAttr);
   unsigned value = 0;

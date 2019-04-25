@@ -34,7 +34,6 @@ class CORE_EXPORT HTMLTableColElement final : public HTMLTablePartElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
 
   HTMLTableColElement(const QualifiedName& tag_name, Document&);
 

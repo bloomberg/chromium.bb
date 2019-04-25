@@ -40,8 +40,6 @@ using namespace html_names;
 HTMLWBRElement::HTMLWBRElement(Document& document)
     : HTMLElement(kWbrTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLWBRElement)
-
 LayoutObject* HTMLWBRElement::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout) {
   return new LayoutWordBreak(this);

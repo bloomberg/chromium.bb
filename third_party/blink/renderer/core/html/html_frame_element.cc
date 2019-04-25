@@ -37,8 +37,6 @@ HTMLFrameElement::HTMLFrameElement(Document& document)
       frame_border_(true),
       frame_border_set_(false) {}
 
-DEFINE_NODE_FACTORY(HTMLFrameElement)
-
 const AttrNameToTrustedType& HTMLFrameElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,

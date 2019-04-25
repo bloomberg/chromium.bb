@@ -36,7 +36,6 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
   HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
 

@@ -42,8 +42,6 @@ using namespace html_names;
 HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
     : HTMLElement(kNoembedTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLNoEmbedElement)
-
 bool HTMLNoEmbedElement::LayoutObjectIsNeeded(
     const ComputedStyle& style) const {
   if (GetDocument().GetFrame()->Loader().AllowPlugins(

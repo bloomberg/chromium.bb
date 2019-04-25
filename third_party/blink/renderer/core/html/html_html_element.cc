@@ -41,8 +41,6 @@ using namespace html_names;
 HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(kHTMLTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLHtmlElement)
-
 bool HTMLHtmlElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == kManifestAttr ||
          HTMLElement::IsURLAttribute(attribute);

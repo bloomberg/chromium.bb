@@ -1405,13 +1405,6 @@ inline bool IsAtShadowBoundary(const Element* element) {
   }                                                               \
   DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
-#define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
-  static T* Create(const QualifiedName&, Document&)
-#define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T)                     \
-  T* T::Create(const QualifiedName& tagName, Document& document) { \
-    return new T(tagName, document);                               \
-  }
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_

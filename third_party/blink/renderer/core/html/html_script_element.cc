@@ -51,11 +51,6 @@ HTMLScriptElement::HTMLScriptElement(Document& document,
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
-HTMLScriptElement* HTMLScriptElement::Create(Document& document,
-                                             const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLScriptElement>(document, flags);
-}
-
 const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,

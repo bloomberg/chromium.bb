@@ -38,8 +38,6 @@ namespace blink {
 
 using namespace html_names;
 
-DEFINE_NODE_FACTORY(HTMLContentElement)
-
 HTMLContentElement::HTMLContentElement(Document& document)
     : V0InsertionPoint(kContentTag, document),
       should_parse_select_(false),

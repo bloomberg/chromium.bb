@@ -41,8 +41,6 @@ class HTMLSourceElement final : public HTMLElement {
  public:
   class Listener;
 
-  DECLARE_NODE_FACTORY(HTMLSourceElement);
-
   explicit HTMLSourceElement(Document&);
   ~HTMLSourceElement() override;
 

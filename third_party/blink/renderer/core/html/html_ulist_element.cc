@@ -32,8 +32,6 @@ using namespace html_names;
 HTMLUListElement::HTMLUListElement(Document& document)
     : HTMLElement(kUlTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLUListElement)
-
 bool HTMLUListElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == kTypeAttr)

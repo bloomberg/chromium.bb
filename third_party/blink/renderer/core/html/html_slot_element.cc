@@ -58,10 +58,6 @@ namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
 }
 
-HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLSlotElement>(document);
-}
-
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
   HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);

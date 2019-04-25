@@ -42,8 +42,6 @@ using namespace html_names;
 HTMLFontElement::HTMLFontElement(Document& document)
     : HTMLElement(kFontTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLFontElement)
-
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#fonts-and-colors
 template <typename CharacterType>
 static bool ParseFontSize(const CharacterType* characters,

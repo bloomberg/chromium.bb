@@ -45,8 +45,6 @@ HTMLShadowElement::HTMLShadowElement(Document& document)
   UseCounter::Count(document, WebFeature::kHTMLShadowElement);
 }
 
-DEFINE_NODE_FACTORY(HTMLShadowElement)
-
 HTMLShadowElement::~HTMLShadowElement() = default;
 
 }  // namespace blink

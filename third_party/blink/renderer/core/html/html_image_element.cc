@@ -115,16 +115,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
   }
 }
 
-HTMLImageElement* HTMLImageElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLImageElement>(document);
-}
-
-HTMLImageElement* HTMLImageElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLImageElement>(document,
-                                                flags.IsCreatedByParser());
-}
-
 HTMLImageElement::~HTMLImageElement() = default;
 
 void HTMLImageElement::Trace(Visitor* visitor) {

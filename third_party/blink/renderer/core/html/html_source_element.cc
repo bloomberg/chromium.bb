@@ -68,8 +68,6 @@ HTMLSourceElement::HTMLSourceElement(Document& document)
   DVLOG(SOURCE_LOG_LEVEL) << "HTMLSourceElement - " << (void*)this;
 }
 
-DEFINE_NODE_FACTORY(HTMLSourceElement)
-
 HTMLSourceElement::~HTMLSourceElement() = default;
 
 const AttrNameToTrustedType& HTMLSourceElement::GetCheckedAttributeTypes()

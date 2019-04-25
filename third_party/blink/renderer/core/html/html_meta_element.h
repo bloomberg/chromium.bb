@@ -43,8 +43,6 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLMetaElement);
-
   static void GetViewportDescriptionFromContentAttribute(
       const String& content,
       ViewportDescription&,

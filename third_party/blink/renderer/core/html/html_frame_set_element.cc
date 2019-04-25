@@ -52,8 +52,6 @@ HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
   SetHasCustomStyleCallbacks();
 }
 
-DEFINE_NODE_FACTORY(HTMLFrameSetElement)
-
 bool HTMLFrameSetElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == kBordercolorAttr)

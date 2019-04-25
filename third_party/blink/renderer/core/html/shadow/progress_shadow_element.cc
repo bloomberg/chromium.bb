@@ -40,8 +40,6 @@ ProgressShadowElement::ProgressShadowElement(Document& document)
   SetHasCustomStyleCallbacks();
 }
 
-DEFINE_NODE_FACTORY(ProgressShadowElement)
-
 HTMLProgressElement* ProgressShadowElement::ProgressElement() const {
   return ToHTMLProgressElement(OwnerShadowHost());
 }

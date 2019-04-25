@@ -44,8 +44,6 @@ HTMLTemplateElement::HTMLTemplateElement(Document& document)
   UseCounter::Count(document, WebFeature::kHTMLTemplateElement);
 }
 
-DEFINE_NODE_FACTORY(HTMLTemplateElement)
-
 HTMLTemplateElement::~HTMLTemplateElement() = default;
 
 DocumentFragment* HTMLTemplateElement::content() const {

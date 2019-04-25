@@ -38,8 +38,6 @@ HTMLTableSectionElement::HTMLTableSectionElement(const QualifiedName& tag_name,
                                                  Document& document)
     : HTMLTablePartElement(tag_name, document) {}
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)
-
 const CSSPropertyValueSet*
 HTMLTableSectionElement::AdditionalPresentationAttributeStyle() {
   if (HTMLTableElement* table = FindParentTable())

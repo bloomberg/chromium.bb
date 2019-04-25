@@ -31,6 +31,4 @@ using namespace html_names;
 HTMLMenuElement::HTMLMenuElement(Document& document)
     : HTMLElement(kMenuTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLMenuElement)
-
 }  // namespace blink

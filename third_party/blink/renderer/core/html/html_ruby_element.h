@@ -13,8 +13,6 @@ namespace blink {
 // so HTMLElement's createLayoutObject doesn't need to know about it.
 class HTMLRubyElement final : public HTMLElement {
  public:
-  DECLARE_NODE_FACTORY(HTMLRubyElement);
-
   explicit HTMLRubyElement(Document&);
 
  private:

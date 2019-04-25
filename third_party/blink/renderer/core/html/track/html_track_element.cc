@@ -56,8 +56,6 @@ HTMLTrackElement::HTMLTrackElement(Document& document)
   DVLOG(TRACK_LOG_LEVEL) << "HTMLTrackElement - " << (void*)this;
 }
 
-DEFINE_NODE_FACTORY(HTMLTrackElement)
-
 HTMLTrackElement::~HTMLTrackElement() = default;
 
 const AttrNameToTrustedType& HTMLTrackElement::GetCheckedAttributeTypes()

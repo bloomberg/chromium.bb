@@ -51,7 +51,6 @@ class CORE_EXPORT HTMLElement : public Element {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
   HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
 

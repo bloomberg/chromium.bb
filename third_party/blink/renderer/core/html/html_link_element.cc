@@ -61,11 +61,6 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
       rel_list_(MakeGarbageCollected<RelList>(this)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
-HTMLLinkElement* HTMLLinkElement::Create(Document& document,
-                                         const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLLinkElement>(document, flags);
-}
-
 HTMLLinkElement::~HTMLLinkElement() = default;
 
 const AttrNameToTrustedType& HTMLLinkElement::GetCheckedAttributeTypes() const {

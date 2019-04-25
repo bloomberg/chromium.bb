@@ -42,8 +42,6 @@ using namespace html_names;
 HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
     : HTMLElement(kNoscriptTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLNoScriptElement)
-
 bool HTMLNoScriptElement::LayoutObjectIsNeeded(
     const ComputedStyle& style) const {
   if (GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))

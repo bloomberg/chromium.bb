@@ -41,8 +41,6 @@ HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
                                          Document& document)
     : HTMLTablePartElement(tag_name, document), span_(kDefaultColSpan) {}
 
-DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)
-
 bool HTMLTableColElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == kWidthAttr)

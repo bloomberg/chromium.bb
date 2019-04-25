@@ -38,8 +38,6 @@ class HTMLDialogElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLDialogElement);
-
   explicit HTMLDialogElement(Document&);
 
   void close(const String& return_value = String());

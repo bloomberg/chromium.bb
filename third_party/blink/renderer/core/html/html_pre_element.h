@@ -31,7 +31,6 @@ class HTMLPreElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement);
 
   HTMLPreElement(const QualifiedName&, Document&);
 

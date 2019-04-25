@@ -46,8 +46,6 @@ using namespace html_names;
 HTMLMetaElement::HTMLMetaElement(Document& document)
     : HTMLElement(kMetaTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLMetaElement)
-
 static bool IsInvalidSeparator(UChar c) {
   return c == ';';
 }

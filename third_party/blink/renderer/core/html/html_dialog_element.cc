@@ -103,8 +103,6 @@ HTMLDialogElement::HTMLDialogElement(Document& document)
   UseCounter::Count(document, WebFeature::kDialogElement);
 }
 
-DEFINE_NODE_FACTORY(HTMLDialogElement)
-
 void HTMLDialogElement::close(const String& return_value) {
   // https://html.spec.whatwg.org/C/#close-the-dialog
 

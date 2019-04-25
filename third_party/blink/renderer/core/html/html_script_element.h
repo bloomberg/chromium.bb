@@ -42,8 +42,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptElement);
 
  public:
-  static HTMLScriptElement* Create(Document&, const CreateElementFlags);
-
   HTMLScriptElement(Document&, const CreateElementFlags);
 
   // Returns attributes that should be checked against Trusted Types
