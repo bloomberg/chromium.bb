@@ -2017,8 +2017,8 @@
   },
   {
     "name": "force-enable-home-page-button",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "twellington", "chrome-android-app" ],
+    "expiry_milestone": 78
   },
   {
     "name": "force-enable-stylus-tools",
