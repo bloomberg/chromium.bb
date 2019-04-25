@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -481,6 +482,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // The display on which this shelf is shown.
   display::Display display_;
+
+  // Sets shelf opacity to 0 after all animations have completed.
+  std::unique_ptr<ui::ImplicitAnimationObserver> hide_animation_observer_;
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.

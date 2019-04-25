@@ -45,6 +45,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -134,6 +135,24 @@ wm::WorkspaceWindowState GetShelfWorkspaceWindowState(
 int GetShelfInset(ShelfVisibilityState visibility_state, int size) {
   return visibility_state == SHELF_VISIBLE ? size : 0;
 }
+
+// Sets the shelf opacity to 0 when the shelf is done hiding to avoid getting
+// rid of blur.
+class HideAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit HideAnimationObserver(ui::Layer* layer) : layer_(layer) {}
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsScheduled() override {}
+
+  void OnImplicitAnimationsCompleted() override { layer_->SetOpacity(0); }
+
+ private:
+  // Unowned.
+  ui::Layer* layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(HideAnimationObserver);
+};
 
 }  // namespace
 
@@ -862,6 +881,19 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   if (suspend_visibility_update_)
     return;
 
+  hide_animation_observer_.reset();
+  if (GetLayer(shelf_widget_)->opacity() != target_bounds.shelf_opacity) {
+    if (target_bounds.shelf_opacity == 0) {
+      // On hide, set the opacity after the animation completes.
+      hide_animation_observer_ =
+          std::make_unique<HideAnimationObserver>(GetLayer(shelf_widget_));
+    } else {
+      // On show, set the opacity before the animation begins to ensure the blur
+      // is shown while the shelf moves.
+      GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
+    }
+  }
+
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
@@ -869,6 +901,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         GetLayer(shelf_widget_)->GetAnimator());
     ui::ScopedLayerAnimationSettings status_animation_setter(
         GetLayer(status_widget)->GetAnimator());
+
+    if (hide_animation_observer_)
+      shelf_animation_setter.AddObserver(hide_animation_observer_.get());
+
     if (animate) {
       auto duration = base::TimeDelta::FromMilliseconds(kAnimationDurationMS);
       shelf_animation_setter.SetTransitionDuration(duration);
@@ -887,7 +923,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     if (observer)
       status_animation_setter.AddObserver(observer);
 
-    GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
     gfx::Rect shelf_bounds = target_bounds.shelf_bounds;
     ::wm::ConvertRectToScreen(shelf_widget_->GetNativeWindow()->parent(),
                               &shelf_bounds);
