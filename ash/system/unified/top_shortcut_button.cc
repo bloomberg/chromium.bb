@@ -17,6 +17,14 @@
 
 namespace ash {
 
+TopShortcutButton::TopShortcutButton(const gfx::VectorIcon& icon)
+    : TopShortcutButton(nullptr /* listener */, 0 /* accessible_name_id */) {
+  SetImage(views::Button::STATE_DISABLED,
+           gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
+                                 kUnifiedMenuIconColor));
+  SetEnabled(false);
+}
+
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      const gfx::VectorIcon& icon,
                                      int accessible_name_id)
@@ -33,7 +41,8 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      int accessible_name_id)
     : views::ImageButton(listener) {
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
-  SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+  if (accessible_name_id)
+    SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   set_ink_drop_base_color(kUnifiedMenuIconColor);

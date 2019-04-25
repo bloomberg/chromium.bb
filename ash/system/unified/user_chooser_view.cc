@@ -143,20 +143,16 @@ views::View* CreateUserAvatarView(int user_index) {
       Shell::Get()->session_controller()->GetUserSession(user_index);
   DCHECK(user_session);
 
-  auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
-  image_view->set_can_process_events_within_subtree(false);
   if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
-    gfx::ImageSkia icon =
-        gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
-    image_view->SetImage(icon, icon.size());
-    // make sure icon height stays same for guest icon
-    image_view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets((kTrayItemSize - icon.size().height()) / 2, 0)));
+    // In guest mode, the user avatar is just a disabled button pod.
+    return new TopShortcutButton(kSystemMenuGuestIcon);
   } else {
+    auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
+    image_view->set_can_process_events_within_subtree(false);
     image_view->SetImage(user_session->user_info->avatar->image,
                          gfx::Size(kTrayItemSize, kTrayItemSize));
+    return image_view;
   }
-  return image_view;
 }
 
 base::string16 GetUserItemAccessibleString(int user_index) {
