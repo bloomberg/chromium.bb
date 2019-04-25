@@ -77,10 +77,7 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
-  // If a password is overriden, we know that the preferred match account is
-  // correct, so should not provide the option to choose a different account.
-  return form_to_save()->GetBestMatches().size() > 1 &&
-         !form_to_save()->IsPasswordOverridden();
+  return form_to_save()->GetBestMatches().size() > 1;
 }
 
 NSArray* IOSChromeUpdatePasswordInfoBarDelegate::GetAccounts() const {
@@ -143,4 +140,8 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save());
   set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
   return true;
+}
+
+base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetLinkText() const {
+  return ShowMultipleAccounts() ? selected_account_ : base::string16();
 }
