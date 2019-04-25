@@ -350,9 +350,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<CloudExternalDataManager> external_data_manager(
-      new UserCloudExternalDataManager(base::Bind(&GetChromePolicyDetails),
-                                       backend_task_runner, external_data_dir,
-                                       store.get()));
+      new UserCloudExternalDataManager(
+          base::BindRepeating(&GetChromePolicyDetails), backend_task_runner,
+          external_data_dir, store.get()));
   if (force_immediate_load)
     store->LoadImmediately();
 
