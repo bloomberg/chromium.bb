@@ -74,7 +74,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
                                   const GURL& url,
-                                  ui::PageTransition transition) override;
+                                  ui::PageTransition transition);
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
   void SimulateFeaturePolicyHeader(
@@ -82,17 +82,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const std::vector<url::Origin>& whitelist) override;
   const std::vector<std::string>& GetConsoleMessages() override;
 
-  using ModificationCallback =
-      base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
-
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
                     const GURL& url);
-  void SendNavigateWithModificationCallback(
-      int nav_entry_id,
-      bool did_create_new_entry,
-      const GURL& url,
-      const ModificationCallback& callback);
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       bool was_within_same_document);
@@ -148,19 +140,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       bool is_signed_exchange_inner_response,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       base::Optional<net::SSLInfo> ssl_info);
-
-  // This method does the same as PrepareForCommit.
-  // PlzNavigate: Beyond doing the same as PrepareForCommit, this method will
-  // also simulate a server redirect to |redirect_url|. If the URL is empty the
-  // redirect step is ignored.
-  void PrepareForCommitWithServerRedirect(const GURL& redirect_url);
-
-  // If we are doing a cross-site navigation, this simulates the current
-  // RenderFrameHost notifying that BeforeUnload has executed so the pending
-  // RenderFrameHost is resumed and can navigate.
-  // PlzNavigate: This simulates a BeforeUnload ACK from the renderer, and the
-  // interaction with the IO thread up until the response is ready to commit.
-  void PrepareForCommitIfNecessary();
 
   // Used to simulate the commit of a navigation having been processed in the
   // renderer. If parameters required to commit are not provided, they will be
@@ -243,11 +222,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   bool did_create_new_entry,
                                   const GURL& url,
                                   ui::PageTransition transition,
-                                  int response_code,
-                                  const ModificationCallback& callback);
+                                  int response_code);
 
   void PrepareForCommitInternal(
-      const GURL& redirect_url,
       const net::IPEndPoint& remote_endpoint,
       bool was_fetched_via_cache,
       bool is_signed_exchange_inner_response,

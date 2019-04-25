@@ -231,8 +231,7 @@ void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {
   SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK, 200,
-                             ModificationCallback());
+                             ui::PAGE_TRANSITION_LINK, 200);
 }
 
 void TestRenderFrameHost::SendNavigateWithTransition(
@@ -241,16 +240,7 @@ void TestRenderFrameHost::SendNavigateWithTransition(
     const GURL& url,
     ui::PageTransition transition) {
   SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
-                             transition, 200, ModificationCallback());
-}
-
-void TestRenderFrameHost::SendNavigateWithModificationCallback(
-    int nav_entry_id,
-    bool did_create_new_entry,
-    const GURL& url,
-    const ModificationCallback& callback) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
-                             ui::PAGE_TRANSITION_LINK, 200, callback);
+                             transition, 200);
 }
 
 void TestRenderFrameHost::SendNavigateWithParameters(
@@ -258,8 +248,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition,
-    int response_code,
-    const ModificationCallback& callback) {
+    int response_code) {
   // This approach to determining whether a navigation is to be treated as
   // same document is not robust, as it will not handle pushState type
   // navigation. Do not use elsewhere!
@@ -274,9 +263,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 
   auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry, url,
                                      transition, response_code);
-
-  if (!callback.is_null())
-    callback.Run(params.get());
 
   SendNavigateWithParams(params.get(), was_within_same_document);
 }
@@ -361,7 +347,7 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 }
 
 void TestRenderFrameHost::PrepareForCommit() {
-  PrepareForCommitInternal(GURL(), net::IPEndPoint(),
+  PrepareForCommitInternal(net::IPEndPoint(),
                            /* was_fetched_via_cache=*/false,
                            /* is_signed_exchange_inner_response=*/false,
                            net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
@@ -374,22 +360,12 @@ void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
     bool is_signed_exchange_inner_response,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     base::Optional<net::SSLInfo> ssl_info) {
-  PrepareForCommitInternal(GURL(), remote_endpoint, was_fetched_via_cache,
+  PrepareForCommitInternal(remote_endpoint, was_fetched_via_cache,
                            is_signed_exchange_inner_response, connection_info,
                            ssl_info);
 }
 
-void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
-    const GURL& redirect_url) {
-  PrepareForCommitInternal(redirect_url, net::IPEndPoint(),
-                           /* was_fetched_via_cache=*/false,
-                           /* is_signed_exchange_inner_response=*/false,
-                           net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
-                           base::nullopt);
-}
-
 void TestRenderFrameHost::PrepareForCommitInternal(
-    const GURL& redirect_url,
     const net::IPEndPoint& remote_endpoint,
     bool was_fetched_via_cache,
     bool is_signed_exchange_inner_response,
@@ -425,10 +401,6 @@ void TestRenderFrameHost::PrepareForCommitInternal(
       static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
   CHECK(url_loader);
 
-  // If a non-empty |redirect_url| was provided, simulate a server redirect.
-  if (!redirect_url.is_empty())
-    url_loader->SimulateServerRedirect(redirect_url);
-
   // Simulate the network stack commit.
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
@@ -441,11 +413,6 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, nullptr);
-}
-
-void TestRenderFrameHost::PrepareForCommitIfNecessary() {
-  if (frame_tree_node()->navigation_request())
-    PrepareForCommit();
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(
