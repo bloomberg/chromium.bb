@@ -18,6 +18,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
+#include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
@@ -208,6 +209,9 @@ class WebRtcVideoDisplayPerfBrowserTest
     // connection(s) are up.
     content::WebContents* webrtc_internals_tab =
         OpenWebrtcInternalsTab(browser());
+    EXPECT_TRUE(content::ExecuteScript(
+        webrtc_internals_tab,
+        "currentGetStatsMethod = OPTION_GETSTATS_LEGACY"));
 
     content::WebContents* left_tab =
         OpenPageAndGetUserMediaInNewTabWithConstraints(
@@ -253,6 +257,7 @@ class WebRtcVideoDisplayPerfBrowserTest
         webrtc_internals_tab);
     webrtc_decode_latencies_ =
         ParseGoogMaxDecodeFromWebrtcInternalsTab(webrtc_internals_stats_json);
+    chrome::CloseWebContents(browser(), webrtc_internals_tab, false);
 
     std::string json_events;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
@@ -264,7 +269,6 @@ class WebRtcVideoDisplayPerfBrowserTest
     HangUp(right_tab);
     chrome::CloseWebContents(browser(), left_tab, false);
     chrome::CloseWebContents(browser(), right_tab, false);
-    chrome::CloseWebContents(browser(), webrtc_internals_tab, false);
 
     ASSERT_TRUE(CalculatePerfResults(analyzer.get(), process_id));
     PrintResults(video_codec);
