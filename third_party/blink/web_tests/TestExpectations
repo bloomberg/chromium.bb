@@ -279,6 +279,9 @@ crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Fail
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
+crbug.com/956354 http/tests/security/mixedContent/insecure-css-resources.html [ Pass Failure ]
+crbug.com/956354 virtual/outofblink-cors/http/tests/security/mixedContent/insecure-css-resources.html [ Pass Failure ]
+
 # Before we fully launch BlinkGenPropertyTrees, run visual/disable-blink-gen-property-trees/ on Linux.
 crbug.com/836884 [ Android ] virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/836884 [ Win ] virtual/disable-blink-gen-property-trees/ [ Skip ]
