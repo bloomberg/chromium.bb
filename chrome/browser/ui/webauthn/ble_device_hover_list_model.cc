@@ -77,6 +77,10 @@ base::string16 BleDeviceHoverListModel::GetItemText(int item_tag) const {
   return GetAuthenticator(item_tag)->authenticator_display_name();
 }
 
+base::string16 BleDeviceHoverListModel::GetDescriptionText(int item_tag) const {
+  return base::string16();
+}
+
 const gfx::VectorIcon& BleDeviceHoverListModel::GetItemIcon(
     int item_tag) const {
   return GetTransportVectorIcon(AuthenticatorTransport::kBluetoothLowEnergy);

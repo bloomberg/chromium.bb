@@ -30,6 +30,7 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
     int item_tag,
     const gfx::VectorIcon& vector_icon,
     base::string16 item_title,
+    base::string16 item_description,
     views::ButtonListener* listener,
     bool is_placeholder_item = false) {
   // TODO(hongjunchoi): Make HoverListView subclass of HoverButton and listen
@@ -59,7 +60,7 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
 
   auto hover_button = std::make_unique<HoverButton>(
       listener, std::move(item_image), std::move(item_title),
-      base::string16() /* subtitle */, std::move(chevron_image));
+      std::move(item_description), std::move(chevron_image));
   hover_button->set_tag(item_tag);
 
   // Because there is an icon on both sides, set a custom border that has only
@@ -110,7 +111,8 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
 
   for (const auto item_tag : model_->GetItemTags()) {
     AppendListItemView(model_->GetItemIcon(item_tag),
-                       model_->GetItemText(item_tag), item_tag);
+                       model_->GetItemText(item_tag),
+                       model_->GetDescriptionText(item_tag), item_tag);
   }
 
   if (tags_to_list_item_views_.empty() &&
@@ -133,9 +135,10 @@ HoverListView::~HoverListView() {
 
 void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
                                        base::string16 item_text,
+                                       base::string16 description_text,
                                        int item_tag) {
-  auto hover_button =
-      CreateHoverButtonForListItem(item_tag, icon, item_text, this);
+  auto hover_button = CreateHoverButtonForListItem(item_tag, icon, item_text,
+                                                   description_text, this);
 
   auto* list_item_view_ptr = hover_button.release();
   item_container_->AddChildView(list_item_view_ptr);
@@ -147,7 +150,8 @@ void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
 void HoverListView::CreateAndAppendPlaceholderItem() {
   auto placeholder_item = CreateHoverButtonForListItem(
       kPlaceHolderItemTag, model_->GetPlaceholderIcon(),
-      model_->GetPlaceholderText(), nullptr, true /* is_placeholder_item */);
+      model_->GetPlaceholderText(), base::string16(), nullptr,
+      true /* is_placeholder_item */);
   item_container_->AddChildView(placeholder_item.get());
   auto* separator = AddSeparatorAsChild(item_container_);
   placeholder_list_item_view_.emplace(
@@ -162,7 +166,8 @@ void HoverListView::AddListItemView(int item_tag) {
   }
 
   AppendListItemView(model_->GetItemIcon(item_tag),
-                     model_->GetItemText(item_tag), item_tag);
+                     model_->GetItemText(item_tag),
+                     model_->GetDescriptionText(item_tag), item_tag);
 
   // TODO(hongjunchoi): The enclosing dialog may also need to be resized,
   // similarly to what is done in
@@ -240,12 +245,24 @@ void HoverListView::ButtonPressed(views::Button* sender,
 }
 
 int HoverListView::GetPreferredViewHeight() const {
-  auto dummy_hover_button = CreateHoverButtonForListItem(
-      -1 /* tag */, gfx::kNoneIcon, base::string16(), nullptr /* listener */);
-  const auto separator_height = views::Separator().GetPreferredSize().height();
   // |item_container_| has one separator at the top and list items which
   // contain one separator and one hover button.
-  const auto list_item_height =
-      separator_height + dummy_hover_button->GetPreferredSize().height();
-  return separator_height + list_item_height * model_->GetPreferredItemCount();
+  const auto separator_height = views::Separator().GetPreferredSize().height();
+  int size = separator_height;
+  for (auto iter = tags_to_list_item_views_.begin();
+       iter != tags_to_list_item_views_.end(); ++iter) {
+    size +=
+        iter->second.item_view->GetPreferredSize().height() + separator_height;
+  }
+  int reserved_items =
+      model_->GetPreferredItemCount() - tags_to_list_item_views_.size();
+  if (reserved_items > 0) {
+    auto dummy_hover_button = CreateHoverButtonForListItem(
+        -1 /* tag */, gfx::kNoneIcon, base::string16(), base::string16(),
+        nullptr /* listener */);
+    const auto list_item_height =
+        separator_height + dummy_hover_button->GetPreferredSize().height();
+    size += list_item_height * reserved_items;
+  }
+  return size;
 }

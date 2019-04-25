@@ -40,6 +40,7 @@ class HoverListModel {
   virtual const gfx::VectorIcon& GetPlaceholderIcon() const = 0;
   virtual std::vector<int> GetItemTags() const = 0;
   virtual base::string16 GetItemText(int item_tag) const = 0;
+  virtual base::string16 GetDescriptionText(int item_tag) const = 0;
   virtual const gfx::VectorIcon& GetItemIcon(int item_tag) const = 0;
   virtual void OnListItemSelected(int item_tag) = 0;
   virtual size_t GetPreferredItemCount() const = 0;

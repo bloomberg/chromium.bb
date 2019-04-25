@@ -121,8 +121,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "account_select") {
       const std::vector<std::pair<std::string, std::string>> infos = {
           {"foo@example.com", "Test User 1"},
-          {"bar@example.com", "Test User 2"},
-          {"bat@example.com", "Test User 3"},
+          {"", "Test User 2"},
+          {"", ""},
+          {"bat@example.com", "Test User 4"},
       };
       std::vector<device::AuthenticatorGetAssertionResponse> responses;
 

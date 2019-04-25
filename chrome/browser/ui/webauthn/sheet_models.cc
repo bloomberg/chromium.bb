@@ -1040,24 +1040,6 @@ base::string16 AuthenticatorSelectAccountSheetModel::GetAcceptButtonLabel()
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
 }
 
-int AuthenticatorSelectAccountSheetModel::RowCount() {
-  return dialog_model()->responses().size();
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
-                                                             int column_id) {
-  const auto user = dialog_model()->responses()[row].user_entity();
-
-  if (column_id == IDS_WEBAUTHN_ACCOUNT_COLUMN) {
-    return base::UTF8ToUTF16(user->name.value_or(""));
-  } else {
-    return base::UTF8ToUTF16(user->display_name.value_or(""));
-  }
-}
-
-void AuthenticatorSelectAccountSheetModel::SetObserver(
-    ui::TableModelObserver* observer) {}
-
 // AttestationPermissionRequestSheetModel -------------------------------------
 
 AttestationPermissionRequestSheetModel::AttestationPermissionRequestSheetModel(

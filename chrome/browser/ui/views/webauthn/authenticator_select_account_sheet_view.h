@@ -9,32 +9,30 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
+#include "chrome/browser/ui/webauthn/account_hover_list_model.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
-#include "ui/views/controls/table/table_view_observer.h"
-
-namespace views {
-class TableView;
-}
 
 // Web Authentication request dialog sheet view for selecting between one or
 // more accounts.
 class AuthenticatorSelectAccountSheetView
     : public AuthenticatorRequestSheetView,
-      public views::TableViewObserver {
+      public AccountHoverListModel::Delegate {
  public:
   explicit AuthenticatorSelectAccountSheetView(
       std::unique_ptr<AuthenticatorSelectAccountSheetModel> model);
   ~AuthenticatorSelectAccountSheetView() override;
 
  private:
+  AuthenticatorSelectAccountSheetModel* model() {
+    return static_cast<AuthenticatorSelectAccountSheetModel*>(
+        AuthenticatorRequestSheetView::model());
+  }
+
   // AuthenticatorRequestSheetView:
   std::unique_ptr<views::View> BuildStepSpecificContent() override;
 
-  // views::TableViewObserver
-  void OnSelectionChanged() override;
-  void OnDoubleClick() override;
-
-  views::TableView* table_;
+  // AccountHoverListModel::Delegate:
+  void OnItemSelected(int index) override;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorSelectAccountSheetView);
 };

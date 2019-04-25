@@ -27,14 +27,17 @@ class Separator;
 class HoverButton;
 
 // View that shows a list of items. Each item is rendered as a HoverButton with
-// an icon, name, and chevron, like so:
+// an icon, name, optional description, and chevron, like so:
 //
 //  +----------------------------------+
 //  | ICON1 | Item 1 name          | > |
+//  |       | Item 1 description   | > |
 //  +----------------------------------+
 //  | ICON2 | Item 2 name          | > |
+//  |       | Item 2 description   | > |
 //  +----------------------------------+
 //  | ICON3 | Item 3 name          | > |
+//  |       | Item 3 description   | > |
 //  +----------------------------------+
 //
 class HoverListView : public views::View,
@@ -52,6 +55,7 @@ class HoverListView : public views::View,
 
   void AppendListItemView(const gfx::VectorIcon& icon,
                           base::string16 item_text,
+                          base::string16 item_description,
                           int item_tag);
   void CreateAndAppendPlaceholderItem();
   void AddListItemView(int item_tag);

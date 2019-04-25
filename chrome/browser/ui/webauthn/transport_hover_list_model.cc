@@ -42,6 +42,10 @@ base::string16 TransportHoverListModel::GetItemText(int item_tag) const {
       TransportSelectionContext::kTransportSelectionSheet);
 }
 
+base::string16 TransportHoverListModel::GetDescriptionText(int item_tag) const {
+  return base::string16();
+}
+
 const gfx::VectorIcon& TransportHoverListModel::GetItemIcon(
     int item_tag) const {
   return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));

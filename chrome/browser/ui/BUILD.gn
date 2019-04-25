@@ -2960,6 +2960,8 @@ jumbo_split_static_library("ui") {
       "views_mode_controller.h",
       "web_app_browser_controller.cc",
       "web_app_browser_controller.h",
+      "webauthn/account_hover_list_model.cc",
+      "webauthn/account_hover_list_model.h",
       "webauthn/authenticator_request_sheet_model.h",
       "webauthn/ble_device_hover_list_model.cc",
       "webauthn/ble_device_hover_list_model.h",
