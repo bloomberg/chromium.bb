@@ -50,7 +50,7 @@ class AudioDebugFileWriterTest
     : public testing::TestWithParam<AudioDebugFileWriterTestData> {
  public:
   explicit AudioDebugFileWriterTest(
-      base::test::ScopedTaskEnvironment::ExecutionMode execution_mode)
+      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode execution_mode)
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             execution_mode),
@@ -67,7 +67,8 @@ class AudioDebugFileWriterTest
   }
   AudioDebugFileWriterTest()
       : AudioDebugFileWriterTest(
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
+  }
 
  protected:
   virtual ~AudioDebugFileWriterTest() = default;
@@ -231,8 +232,8 @@ class AudioDebugFileWriterBehavioralTest : public AudioDebugFileWriterTest {};
 class AudioDebugFileWriterSingleThreadTest : public AudioDebugFileWriterTest {
  public:
   AudioDebugFileWriterSingleThreadTest()
-      : AudioDebugFileWriterTest(
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+      : AudioDebugFileWriterTest(base::test::ScopedTaskEnvironment::
+                                     ThreadPoolExecutionMode::QUEUED) {}
 };
 
 TEST_P(AudioDebugFileWriterTest, WaveRecordingTest) {
