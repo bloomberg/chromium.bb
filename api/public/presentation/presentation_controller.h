@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/public/presentation/presentation_connection.h"
 #include "api/public/protocol_connection.h"
@@ -175,6 +176,8 @@ class Controller final : public ServiceListener::Observer,
                       RequestDelegate* request_delegate,
                       std::unique_ptr<Connection>&& connection,
                       std::unique_ptr<ProtocolConnection>&& stream);
+
+  void TerminatePresentationById(const std::string& presentation_id);
 
   // Cancels compatible receiver monitoring for the given |urls|, |observer|
   // pair.

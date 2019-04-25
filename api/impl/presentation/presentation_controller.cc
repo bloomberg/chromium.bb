@@ -172,7 +172,9 @@ void Controller::MessageGroupStreams::OnMatchedResponse(
     msgs::PresentationTerminationResponse* response,
     uint64_t endpoint_id) {
   OSP_VLOG << "got presentation-termination-response for "
-           << request->request.presentation_id;
+           << request->request.presentation_id << " with result "
+           << static_cast<int>(response->result);
+  controller_->TerminatePresentationById(request->request.presentation_id);
 }
 
 void Controller::MessageGroupStreams::OnError(TerminationRequest* request,
@@ -519,6 +521,16 @@ void Controller::OpenConnection(
                              this, presentation_id, endpoint_id));
   }
   request_delegate->OnConnection(std::move(connection));
+}
+
+void Controller::TerminatePresentationById(const std::string& presentation_id) {
+  auto presentation_entry = presentations_.find(presentation_id);
+  if (presentation_entry != presentations_.end()) {
+    for (auto* connection : presentation_entry->second.connections) {
+      connection->OnTerminated();
+    }
+    presentations_.erase(presentation_entry);
+  }
 }
 
 void Controller::CancelReceiverWatch(const std::vector<std::string>& urls,

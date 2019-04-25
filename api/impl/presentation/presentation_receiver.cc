@@ -374,6 +374,7 @@ Error Receiver::OnPresentationStarted(const std::string& presentation_id,
   }
 
   response.result = msgs::PresentationStartResponse_result::kSuccess;
+  response.connection_id = connection->connection_id();
 
   Presentation& presentation = started_presentations_[presentation_id];
   presentation.endpoint_id = initiation_response.endpoint_id;

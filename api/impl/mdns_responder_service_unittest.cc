@@ -328,7 +328,7 @@ TEST_F(MdnsResponderServiceTest, BasicServicePublish) {
   ASSERT_TRUE(mdns_responder);
   ASSERT_TRUE(mdns_responder->running());
 
-  auto services = mdns_responder->registered_services();
+  const auto& services = mdns_responder->registered_services();
   ASSERT_EQ(1u, services.size());
   EXPECT_EQ(kTestServiceInstance, services[0].service_instance);
   EXPECT_EQ(kTestServiceName, services[0].service_name);
@@ -727,6 +727,60 @@ TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
   EXPECT_TRUE(mdns_responder->txt_queries_empty());
   EXPECT_TRUE(mdns_responder->a_queries_empty());
   EXPECT_TRUE(mdns_responder->aaaa_queries_empty());
+}
+
+TEST_F(MdnsResponderServiceTest, ResumeService) {
+  EXPECT_CALL(publisher_observer_, OnStarted());
+  service_publisher_->Start();
+
+  auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
+  ASSERT_TRUE(mdns_responder);
+  ASSERT_TRUE(mdns_responder->running());
+
+  EXPECT_EQ(2u, mdns_responder->registered_interfaces().size());
+  ASSERT_EQ(1u, mdns_responder->registered_services().size());
+
+  EXPECT_CALL(publisher_observer_, OnSuspended());
+  service_publisher_->Suspend();
+
+  EXPECT_TRUE(mdns_responder_factory_->last_mdns_responder());
+  EXPECT_EQ(0u, mdns_responder->registered_services().size());
+
+  EXPECT_CALL(publisher_observer_, OnStarted());
+  service_publisher_->Resume();
+
+  EXPECT_EQ(2u, mdns_responder->registered_interfaces().size());
+  ASSERT_EQ(1u, mdns_responder->registered_services().size());
+}
+
+TEST_F(MdnsResponderServiceTest, RestorePtrNotifiesObserver) {
+  EXPECT_CALL(observer_, OnStarted());
+  service_listener_->Start();
+
+  auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();
+
+  AddEventsForNewService(mdns_responder, kTestServiceInstance, kTestServiceName,
+                         kTestServiceProtocol, "gigliorononomicon", kTestPort,
+                         {"model=shifty", "id=asdf"}, IPAddress{192, 168, 3, 7},
+                         kDefaultSocket);
+
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
+  mdns_service_->HandleNewEvents({});
+
+  auto ptr_remove = MakePtrEvent(kTestServiceInstance, kTestServiceName,
+                                 kTestServiceProtocol, kDefaultSocket);
+  ptr_remove.header.response_type = mdns::QueryEventHeader::Type::kRemoved;
+  mdns_responder->AddPtrEvent(std::move(ptr_remove));
+
+  EXPECT_CALL(observer_, OnReceiverRemoved(_));
+  mdns_service_->HandleNewEvents({});
+
+  auto ptr_add = MakePtrEvent(kTestServiceInstance, kTestServiceName,
+                              kTestServiceProtocol, kDefaultSocket);
+  mdns_responder->AddPtrEvent(std::move(ptr_add));
+
+  EXPECT_CALL(observer_, OnReceiverAdded(_));
+  mdns_service_->HandleNewEvents({});
 }
 
 }  // namespace openscreen

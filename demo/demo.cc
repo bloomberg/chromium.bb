@@ -323,17 +323,18 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
 };
 
 struct CommandLineSplit {
-  absl::string_view command;
-  absl::string_view argument_tail;
+  std::string command;
+  std::string argument_tail;
 };
 
-CommandLineSplit SeparateCommandFromArguments(absl::string_view line) {
+CommandLineSplit SeparateCommandFromArguments(const std::string& line) {
   size_t split_index = line.find_first_of(' ');
-  absl::string_view command = line.substr(0, split_index);
-  absl::string_view argument_tail = split_index < line.size()
-                                        ? line.substr(split_index)
-                                        : absl::string_view();
-  return {command, argument_tail};
+  // NOTE: |split_index| can be std::string::npos because not all commands
+  // accept arguments.
+  std::string command = line.substr(0, split_index);
+  std::string argument_tail =
+      split_index < line.size() ? line.substr(split_index + 1) : std::string();
+  return {std::move(command), std::move(argument_tail)};
 }
 
 struct CommandWaitResult {
@@ -361,6 +362,7 @@ CommandWaitResult WaitForCommand(pollfd* pollfd) {
     }
 
     CommandWaitResult result;
+    result.done = false;
     result.command_line = SeparateCommandFromArguments(line);
     return result;
   }
@@ -398,6 +400,9 @@ void RunControllerPollLoop(presentation::Controller* controller) {
           static_cast<std::string>(argument_tail.substr(0, next_split));
       connect_request = controller->StartPresentation(
           url, service_id, &request_delegate, &connection_delegate);
+    } else if (command_result.command_line.command == "msg") {
+      request_delegate.connection->SendString(
+          command_result.command_line.argument_tail);
     } else if (command_result.command_line.command == "term") {
       request_delegate.connection->Terminate(
           presentation::TerminationReason::kControllerTerminateCalled);
@@ -444,8 +449,6 @@ void HandleReceiverCommand(absl::string_view command,
                            ReceiverDelegate& delegate,
                            NetworkServiceManager* manager) {
   if (command == "avail") {
-    // TODO(btolsch): This toggle only works sometimes.  This may be down to a
-    // missing good-bye message or improper client-side caching.
     ServicePublisher* publisher = manager->GetMdnsServicePublisher();
 
     if (publisher->state() == ServicePublisher::State::kSuspended) {
@@ -548,7 +551,7 @@ struct InputArgs {
 };
 
 InputArgs GetInputArgs(int argc, char** argv) {
-  InputArgs args;
+  InputArgs args = {};
 
   int c;
   while ((c = getopt(argc, argv, "v")) != -1) {

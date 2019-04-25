@@ -199,6 +199,7 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
       }));
   quic_bridge_.RunTasksUntilIdle();
   EXPECT_EQ(msgs::Result::kSuccess, response.result);
+  EXPECT_EQ(connection.connection_id(), response.connection_id);
 }
 
 // TODO(btolsch): Connect and reconnect.

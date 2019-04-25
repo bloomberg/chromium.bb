@@ -233,6 +233,9 @@ void MdnsResponderService::HandleMdnsEvents() {
 }
 
 void MdnsResponderService::StartListening() {
+  // TODO(btolsch): This needs the same |interface_index_whitelist_| logic as
+  // StartService, but this can also wait until the network-change TODO is
+  // addressed.
   if (bound_interfaces_.empty()) {
     mdns_responder_->Init();
     bound_interfaces_ = platform_->RegisterInterfaces({});
@@ -273,7 +276,12 @@ void MdnsResponderService::StopListening() {
 }
 
 void MdnsResponderService::StartService() {
-  if (!bound_interfaces_.empty()) {
+  // TODO(issue/45): This should really be a library-wide whitelist.
+  if (!bound_interfaces_.empty() && !interface_index_whitelist_.empty()) {
+    // TODO(btolsch): New interfaces won't be picked up on this path, but this
+    // also highlights a larger issue of the interface list being frozen while
+    // no state transitions are being made.  There should be another interface
+    // on MdnsPlatformService for getting network interface updates.
     std::vector<MdnsPlatformService::BoundInterface> deregistered_interfaces;
     for (auto it = bound_interfaces_.begin(); it != bound_interfaces_.end();) {
       if (std::find(interface_index_whitelist_.begin(),
@@ -288,8 +296,9 @@ void MdnsResponderService::StartService() {
       }
     }
     platform_->DeregisterInterfaces(deregistered_interfaces);
-  } else {
+  } else if (bound_interfaces_.empty()) {
     mdns_responder_->Init();
+    mdns_responder_->SetHostLabel(service_hostname_);
     bound_interfaces_ =
         platform_->RegisterInterfaces(interface_index_whitelist_);
     for (auto& interface : bound_interfaces_) {
@@ -297,7 +306,6 @@ void MdnsResponderService::StartService() {
                                          interface.subnet, interface.socket);
     }
   }
-  mdns_responder_->SetHostLabel(service_hostname_);
   ErrorOr<mdns::DomainName> domain_name =
       mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1);
   OSP_CHECK(domain_name) << "bad hostname configured: " << service_hostname_;
@@ -355,8 +363,11 @@ bool MdnsResponderService::HandlePtrEvent(
     case mdns::QueryEventHeader::Type::kAddedNoCache:
       break;
     case mdns::QueryEventHeader::Type::kAdded: {
-      if (entry != service_by_name_.end())
+      if (entry != service_by_name_.end()) {
+        entry->second->has_ptr_record = true;
+        modified_instance_names->emplace(instance_name);
         break;
+      }
       mdns_responder_->StartSrvQuery(socket, instance_name);
       mdns_responder_->StartTxtQuery(socket, instance_name);
       events_possible = true;
