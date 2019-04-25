@@ -51,10 +51,6 @@ Polymer({
     },
   },
 
-  hostAttributes: {
-    role: 'main',
-  },
-
   listeners: {
     'default-browser-change': 'onDefaultBrowserChange_',
   },
