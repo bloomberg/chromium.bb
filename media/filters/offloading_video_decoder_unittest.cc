@@ -53,7 +53,8 @@ class OffloadingVideoDecoderTest : public testing::Test {
  public:
   OffloadingVideoDecoderTest()
       : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                      QUEUED) {}
 
   void CreateWrapper(int offload_width, VideoCodec codec) {
     decoder_ = new testing::StrictMock<MockOffloadableVideoDecoder>();
