@@ -3949,6 +3949,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfBroadcastDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
 
+    {"cookies-without-same-site-must-be-secure",
+     flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,
+     flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

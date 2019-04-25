@@ -208,6 +208,9 @@ extern const char kContextualSuggestionsIPHReverseScrollDescription[];
 extern const char kContextualSuggestionsOptOutName[];
 extern const char kContextualSuggestionsOptOutDescription[];
 
+extern const char kCookiesWithoutSameSiteMustBeSecureName[];
+extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
+
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 

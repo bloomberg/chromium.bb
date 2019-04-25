@@ -285,6 +285,15 @@ const char kContextualSuggestionsOptOutName[] =
 const char kContextualSuggestionsOptOutDescription[] =
     "If enabled, allows the user to opt out of contextual suggestions.";
 
+extern const char kCookiesWithoutSameSiteMustBeSecureName[] =
+    "Cookies without SameSite must be secure";
+extern const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
+    "If enabled, cookies without SameSite restrictions must also be Secure. If "
+    "a cookie without SameSite restrictions is set without the Secure "
+    "attribute, it will be treated as Secure (if set from a secure URL), or "
+    "rejected (if set from an insecure URL). This flag only has an effect if "
+    "\"SameSite by default cookies\" is also enabled.";
+
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
     "Enable assisted credit card filling on certain sites.";
