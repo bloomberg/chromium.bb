@@ -9,8 +9,8 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -72,10 +72,8 @@ class WindowServiceDelegateImplTest : public AshTestBase {
     return GetWindowTreeTestHelper()->TransportIdForWindow(top_level_.get());
   }
 
-  wm::WmToplevelWindowEventHandler* event_handler() {
-    return Shell::Get()
-        ->toplevel_window_event_handler()
-        ->wm_toplevel_window_event_handler();
+  ToplevelWindowEventHandler* event_handler() {
+    return Shell::Get()->toplevel_window_event_handler();
   }
 
   std::vector<ws::Change>* GetWindowTreeClientChanges() {

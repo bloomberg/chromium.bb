@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/window_resizer.h"
-#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 

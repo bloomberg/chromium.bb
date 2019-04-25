@@ -243,13 +243,13 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
 }
 
 void TabletModeWindowDragDelegate::EndWindowDrag(
-    wm::WmToplevelWindowEventHandler::DragResult result,
+    ToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
   EndingWindowDrag(result, location_in_screen);
 
   dragged_window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
-  if (result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS &&
+  if (result == ToplevelWindowEventHandler::DragResult::SUCCESS &&
       CanSnapInSplitview(dragged_window_)) {
     snap_position = GetSnapPosition(location_in_screen);
   }
@@ -301,7 +301,7 @@ void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
         dragged_window_, /*reposition=*/true, /*animate=*/false);
   }
   StartFling(event);
-  EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
+  EndWindowDrag(ToplevelWindowEventHandler::DragResult::SUCCESS,
                 GetEventLocationInScreen(event));
 }
 

@@ -63,7 +63,7 @@ class TabletModeWindowDragDelegate {
                           const gfx::Rect& target_bounds = gfx::Rect());
 
   // Calls when a window ends dragging with its drag result |result|.
-  void EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
+  void EndWindowDrag(ToplevelWindowEventHandler::DragResult result,
                      const gfx::Point& location_in_screen);
 
   // Calls when a window ends dragging because of fling or swipe.
@@ -90,9 +90,8 @@ class TabletModeWindowDragDelegate {
   // before/during/after dragging.
   virtual void PrepareWindowDrag(const gfx::Point& location_in_screen) = 0;
   virtual void UpdateWindowDrag(const gfx::Point& location_in_screen) = 0;
-  virtual void EndingWindowDrag(
-      wm::WmToplevelWindowEventHandler::DragResult result,
-      const gfx::Point& location_in_screen) = 0;
+  virtual void EndingWindowDrag(ToplevelWindowEventHandler::DragResult result,
+                                const gfx::Point& location_in_screen) = 0;
   virtual void EndedWindowDrag(const gfx::Point& location_in_screen) = 0;
   // Calls when a fling event starts.
   virtual void StartFling(const ui::GestureEvent* event) = 0;

@@ -248,9 +248,9 @@ void TabletModeBrowserWindowDragDelegate::UpdateWindowDrag(
 }
 
 void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
-    wm::WmToplevelWindowEventHandler::DragResult result,
+    ToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
-  if (result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS)
+  if (result == ToplevelWindowEventHandler::DragResult::SUCCESS)
     wm::GetWindowState(dragged_window_)->OnCompleteDrag(location_in_screen);
   else
     wm::GetWindowState(dragged_window_)->OnRevertDrag(location_in_screen);

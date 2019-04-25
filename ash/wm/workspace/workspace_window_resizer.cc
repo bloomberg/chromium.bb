@@ -63,7 +63,7 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
   // TabletModeWindowDragDelegate:
   void PrepareWindowDrag(const gfx::Point& location_in_screen) override {}
   void UpdateWindowDrag(const gfx::Point& location_in_screen) override {}
-  void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
+  void EndingWindowDrag(ToplevelWindowEventHandler::DragResult result,
                         const gfx::Point& location_in_screen) override {}
   void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
   void StartFling(const ui::GestureEvent* event) override {}
@@ -89,7 +89,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
   AppType app_type =
       static_cast<AppType>(window->GetProperty(aura::client::kAppType));
   // App windows can be dragged from the client area (see
-  // WmToplevelWindowEventHandler).
+  // ToplevelWindowEventHandler).
   if (app_type != AppType::BROWSER && window_component == HTCLIENT) {
     DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     window_state->CreateDragDetails(point_in_parent, HTCLIENT,

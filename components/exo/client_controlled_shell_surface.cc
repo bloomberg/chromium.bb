@@ -22,12 +22,12 @@
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/drag_details.h"
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -479,7 +479,7 @@ void ClientControlledShellSurface::AttemptToStartDrag(
     wm::ConvertPointFromScreen(target->GetRootWindow(), &point_in_root);
     toplevel_handler->AttemptToStartDrag(
         target, point_in_root, component,
-        ash::wm::WmToplevelWindowEventHandler::EndClosure());
+        ash::ToplevelWindowEventHandler::EndClosure());
   }
 }
 

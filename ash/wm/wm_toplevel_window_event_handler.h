@@ -11,8 +11,10 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -25,22 +27,21 @@ class KeyEvent;
 class LocatedEvent;
 class MouseEvent;
 class GestureEvent;
-}
+}  // namespace ui
 
 namespace ash {
 namespace mojom {
 enum class WindowStateType;
 }
 
-namespace wm {
-
-// WmToplevelWindowEventHandler handles dragging and resizing of top level
-// windows. WmToplevelWindowEventHandler is forwarded events, such as from an
-// EventHandler.
-class ASH_EXPORT WmToplevelWindowEventHandler
+// ToplevelWindowEventHandler handles dragging and resizing of top level
+// windows.
+class ASH_EXPORT ToplevelWindowEventHandler
     : public WindowTreeHostManager::Observer,
       public aura::WindowObserver,
-      public display::DisplayObserver {
+      public display::DisplayObserver,
+      public ui::EventHandler,
+      public ::wm::WindowMoveClient {
  public:
   // Describes what triggered ending the drag.
   enum class DragResult {
@@ -54,22 +55,27 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   };
   using EndClosure = base::OnceCallback<void(DragResult)>;
 
-  WmToplevelWindowEventHandler();
-  ~WmToplevelWindowEventHandler() override;
+  ToplevelWindowEventHandler();
+  ~ToplevelWindowEventHandler() override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  void OnKeyEvent(ui::KeyEvent* event);
-  void OnMouseEvent(ui::MouseEvent* event, aura::Window* target);
-  void OnGestureEvent(ui::GestureEvent* event, aura::Window* target);
+  // Overridden from ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Attempts to start a drag if one is not already in progress. Returns true if
   // successful. |end_closure| is run when the drag completes, including if the
   // drag is not started. If |update_gesture_target| is true, the gesture
   // target is forcefully updated and gesture events are transferred to
-  // new target if any.
+  // new target if any. In general, prefer the first version.
+  bool AttemptToStartDrag(aura::Window* window,
+                          const gfx::Point& point_in_parent,
+                          int window_component,
+                          ToplevelWindowEventHandler::EndClosure end_closure);
   bool AttemptToStartDrag(aura::Window* window,
                           const gfx::Point& point_in_parent,
                           int window_component,
@@ -89,6 +95,13 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   const gfx::Point& event_location_in_gesture_target() {
     return event_location_in_gesture_target_;
   }
+
+  // Overridden from wm::WindowMoveClient:
+  ::wm::WindowMoveResult RunMoveLoop(
+      aura::Window* source,
+      const gfx::Vector2d& drag_offset,
+      ::wm::WindowMoveSource move_source) override;
+  void EndMoveLoop() override;
 
  private:
   class ScopedWindowResizer;
@@ -154,10 +167,14 @@ class ASH_EXPORT WmToplevelWindowEventHandler
 
   EndClosure end_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmToplevelWindowEventHandler);
+  // Are we running a nested run loop from RunMoveLoop().
+  bool in_move_loop_ = false;
+
+  base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandler);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WM_TOPLEVEL_WINDOW_EVENT_HANDLER_H_

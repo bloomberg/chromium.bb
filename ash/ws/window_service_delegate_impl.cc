@@ -14,9 +14,9 @@
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/top_level_window_factory.h"
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "ash/ws/ash_window_manager.h"
 #include "ash/ws/multi_user_window_manager_bridge.h"
 #include "base/bind.h"
@@ -39,12 +39,12 @@
 namespace ash {
 namespace {
 
-// Function supplied to WmToplevelWindowEventHandler::AttemptToStartDrag().
+// Function supplied to ToplevelWindowEventHandler::AttemptToStartDrag().
 // |end_closure| is the callback that was supplied to RunWindowMoveLoop().
 void OnMoveLoopCompleted(base::OnceCallback<void(bool success)> end_closure,
-                         wm::WmToplevelWindowEventHandler::DragResult result) {
+                         ToplevelWindowEventHandler::DragResult result) {
   std::move(end_closure)
-      .Run(result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS);
+      .Run(result == ToplevelWindowEventHandler::DragResult::SUCCESS);
 }
 
 // Returns true if there is a drag and drop in progress.
@@ -58,7 +58,6 @@ bool InDragLoop(aura::Window* window) {
 bool InWindowMoveLoop() {
   return Shell::Get()
       ->toplevel_window_event_handler()
-      ->wm_toplevel_window_event_handler()
       ->is_drag_in_progress();
 }
 
@@ -136,7 +135,6 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
 
   Shell::Get()
       ->toplevel_window_event_handler()
-      ->wm_toplevel_window_event_handler()
       ->AttemptToStartDrag(
           window, location_in_parent, window_component, aura_source,
           base::BindOnce(&OnMoveLoopCompleted, std::move(callback)),
@@ -146,7 +144,6 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
 void WindowServiceDelegateImpl::CancelWindowMoveLoop() {
   Shell::Get()
       ->toplevel_window_event_handler()
-      ->wm_toplevel_window_event_handler()
       ->RevertDrag();
 }
 

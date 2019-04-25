@@ -8,6 +8,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_metrics.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -64,17 +65,15 @@ void TabletModeWindowDragController::Drag(const gfx::Point& location_in_parent,
 }
 
 void TabletModeWindowDragController::CompleteDrag() {
-  drag_delegate_->EndWindowDrag(
-      wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
-      previous_location_in_screen_);
+  drag_delegate_->EndWindowDrag(ToplevelWindowEventHandler::DragResult::SUCCESS,
+                                previous_location_in_screen_);
   RecordWindowDragEndTypeHistogram(
       WindowDragEndEventType::kEndsWithNormalComplete);
 }
 
 void TabletModeWindowDragController::RevertDrag() {
-  drag_delegate_->EndWindowDrag(
-      wm::WmToplevelWindowEventHandler::DragResult::REVERT,
-      previous_location_in_screen_);
+  drag_delegate_->EndWindowDrag(ToplevelWindowEventHandler::DragResult::REVERT,
+                                previous_location_in_screen_);
   RecordWindowDragEndTypeHistogram(WindowDragEndEventType::kEndsWithRevert);
 }
 

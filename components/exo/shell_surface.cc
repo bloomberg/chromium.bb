@@ -8,9 +8,9 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -634,7 +634,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
     return;
   }
   auto end_drag = [](ShellSurface* shell_surface,
-                     ash::wm::WmToplevelWindowEventHandler::DragResult result) {
+                     ash::ToplevelWindowEventHandler::DragResult result) {
     shell_surface->EndDrag();
   };
 
