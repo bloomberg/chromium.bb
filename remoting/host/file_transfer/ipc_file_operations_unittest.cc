@@ -124,7 +124,7 @@ class IpcFileOperationsTest : public testing::Test {
 IpcFileOperationsTest::IpcFileOperationsTest()
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-          base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+          base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
       // Points DIR_USER_DESKTOP at a scoped temporary directory.
       scoped_path_override_(base::DIR_USER_DESKTOP),
       file_operations_(std::make_unique<IpcTestBridge>(
