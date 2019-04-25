@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_MAIN_VIEW_CONTROLLER_SWAPPING_H_
-#define IOS_CHROME_BROWSER_UI_MAIN_VIEW_CONTROLLER_SWAPPING_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_VIEW_CONTROLLER_SWAPPING_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_VIEW_CONTROLLER_SWAPPING_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,7 +13,7 @@
 
 // ViewControllerSwapping defines a set of methods that allow an object to
 // display TabSwitchers and view controllers that display tabs.
-@protocol ViewControllerSwapping<NSObject>
+@protocol ViewControllerSwapping <NSObject>
 
 // The view controller, if any, that is active.
 @property(nonatomic, readonly, strong) UIViewController* activeViewController;
@@ -37,4 +37,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_MAIN_VIEW_CONTROLLER_SWAPPING_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_VIEW_CONTROLLER_SWAPPING_H_

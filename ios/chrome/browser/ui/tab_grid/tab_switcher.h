@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_
-#define IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_SWITCHER_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_SWITCHER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -21,7 +21,7 @@ struct UrlLoadParams;
 // This delegate is used to drive the TabSwitcher dismissal and execute code
 // when the presentation and dismmiss animations finishes. The main controller
 // is a good example of the implementation of this delegate.
-@protocol TabSwitcherDelegate<NSObject>
+@protocol TabSwitcherDelegate <NSObject>
 
 // Informs the delegate the tab switcher should be dismissed with the given
 // active model.
@@ -38,7 +38,7 @@ struct UrlLoadParams;
 // This protocol describes the common interface between the two implementations
 // of the tab switcher. StackViewController for iPhone and TabSwitcherController
 // for iPad are examples of implementers of this protocol.
-@protocol TabSwitcher<NSObject>
+@protocol TabSwitcher <NSObject>
 
 // This delegate must be set on the tab switcher in order to drive the tab
 // switcher.
@@ -79,4 +79,4 @@ struct UrlLoadParams;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_SWITCHER_H_
