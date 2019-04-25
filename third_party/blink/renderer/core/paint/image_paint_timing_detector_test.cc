@@ -501,6 +501,27 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage) {
   EXPECT_EQ(CountVisibleBackgroundImageRecords(), 1u);
 }
 
+TEST_F(ImagePaintTimingDetectorTest,
+       BackgroundImageAndLayoutImageTrackedDifferently) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      img {
+        background-image: url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAb5JREFUOMulkr1KA0EQgGdvTwwnYmER0gQsrFKmSy+pLESw9Qm0F/ICNnba+h6iEOuAEWslKJKTOyJJvIT72d1xZuOFC0giOLA77O7Mt/PnNptN+I+49Xr9GhH3f3mb0v1ht9vtLAUYYw5ItkgDL3KyD8PhcLvdbl/WarXT3DjLMnAcR/f7/YfxeKwtgC5RKQVhGILWeg4hQ6hUKjWyucmhLFEUuWR3QYBWAZABQ9i5CCmXy16pVALP80BKaaG+70MQBLvzFMjRKKXh8j6FSYKF7ITdEWLa4/ktokN74wiqjSMpnVcbQZqmEJHz+ckeCPFjWKwULpyspAqhdXVXdcnZcPjsIgn+2BsVA8jVYuWlgJ3yBj0icgq2uoK+lg4t+ZvLomSKamSQ4AI5BcMADtMhyNoSgNIISUaFNtwlazcDcBc4gjjVwCWid2usCWroYEhnaqbzFJLUzAHIXRDChXCcQP8zhkSZ5eNLgHAUzwDcRu4CoIRn/wsGUQIIy4Vr9TH6SYFCNzw4nALn5627K4vIttOUOwfa5YnrDYzt/9OLv9I5l8kk5hZ3XLO20b7tbR7zHLy/BX8G0IeBEM7ZN1NGIaFUaKLgAAAAAElFTkSuQmCC);
+      }
+    </style>
+    <img id="target">
+      place-holder
+    </img>
+  )HTML");
+  SetImageAndPaint("target", 1, 1);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(CountVisibleBackgroundImageRecords(), 1u);
+  EXPECT_EQ(CountVisibleImageRecords(), 1u);
+  ImageRecord* record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_size, 1u);
+}
+
 TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
   SetBodyInnerHTML(R"HTML(
     <style>
