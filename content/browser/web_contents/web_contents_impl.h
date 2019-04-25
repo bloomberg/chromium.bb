@@ -74,8 +74,6 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
-struct ViewHostMsg_DateTimeDialogValue_Params;
-
 namespace service_manager {
 class InterfaceProvider;
 }
@@ -1251,11 +1249,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    const std::string& protocol,
                                    const GURL& url,
                                    bool user_gesture);
-#if defined(OS_ANDROID)
-  void OnOpenDateTimeDialog(
-      RenderViewHostImpl* source,
-      const ViewHostMsg_DateTimeDialogValue_Params& value);
-#endif
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,

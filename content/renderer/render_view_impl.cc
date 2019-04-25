@@ -2183,7 +2183,8 @@ bool RenderViewImpl::OpenDateTimeChooser(
     return false;
   date_time_picker_client_.reset(
       new RendererDateTimePicker(this, params, completion));
-  return date_time_picker_client_->Open();
+  date_time_picker_client_->Open();
+  return true;
 }
 
 void RenderViewImpl::DismissDateTimeDialog() {

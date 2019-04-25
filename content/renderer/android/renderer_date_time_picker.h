@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_ANDROID_RENDERER_DATE_TIME_PICKER_H_
 
 #include "base/macros.h"
+#include "content/common/date_time_picker.mojom.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/blink/public/web/web_date_time_chooser_params.h"
 
@@ -18,21 +19,25 @@ class RenderViewImpl;
 
 class RendererDateTimePicker : public RenderViewObserver {
  public:
-  RendererDateTimePicker(
-      RenderViewImpl* sender,
-      const blink::WebDateTimeChooserParams& params,
-      blink::WebDateTimeChooserCompletion* completion);
+  RendererDateTimePicker(RenderViewImpl* sender,
+                         const blink::WebDateTimeChooserParams& params,
+                         blink::WebDateTimeChooserCompletion* completion);
   ~RendererDateTimePicker() override;
 
-  bool Open();
+  void Open();
 
  private:
-  void OnReplaceDateTime(double value);
-  void OnCancel();
+  void ResponseHandler(bool success, double dialog_value);
+
+  void ReplaceDateTime(double value);
+  void Cancel();
 
   // RenderViewObserver
-  bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
+
+  mojom::DateTimePicker* GetDateTimePicker();
+
+  mojom::DateTimePickerPtr date_time_picker_;
 
   blink::WebDateTimeChooserParams chooser_params_;
   blink::WebDateTimeChooserCompletion* chooser_completion_;  // Not owned by us

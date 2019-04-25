@@ -7,8 +7,6 @@
 #include <stddef.h>
 
 #include "base/strings/string_util.h"
-#include "content/common/date_time_suggestion.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/blink/public/web/web_date_time_chooser_completion.h"
 #include "third_party/blink/public/web/web_date_time_chooser_params.h"
@@ -18,21 +16,25 @@
 
 using blink::WebString;
 
+namespace mojo {
+
+template <>
+struct TypeConverter<::content::mojom::DateTimeSuggestionPtr,
+                     ::blink::WebDateTimeSuggestion> {
+  static content::mojom::DateTimeSuggestionPtr Convert(
+      const blink::WebDateTimeSuggestion& input) {
+    content::mojom::DateTimeSuggestionPtr output =
+        content::mojom::DateTimeSuggestion::New();
+    output->value = input.value;
+    output->localized_value = input.localized_value.Ascii();
+    output->label = input.label.Ascii();
+    return output;
+  }
+};
+
+}  // namespace mojo
+
 namespace content {
-
-namespace {
-
-// Converts a |blink::WebDateTimeSuggestion| structure to |DateTimeSuggestion|.
-DateTimeSuggestion ToDateTimeSuggestion(
-    const blink::WebDateTimeSuggestion& suggestion) {
-  DateTimeSuggestion result;
-  result.value = suggestion.value;
-  result.localized_value = suggestion.localized_value.Utf16();
-  result.label = suggestion.label.Utf16();
-  return result;
-}
-
-}  // namespace
 
 static ui::TextInputType ToTextInputType(int type) {
   switch (type) {
@@ -66,44 +68,45 @@ RendererDateTimePicker::RendererDateTimePicker(
     blink::WebDateTimeChooserCompletion* completion)
     : RenderViewObserver(sender),
       chooser_params_(params),
-      chooser_completion_(completion) {
-}
+      chooser_completion_(completion) {}
 
-RendererDateTimePicker::~RendererDateTimePicker() {
-}
+RendererDateTimePicker::~RendererDateTimePicker() {}
 
-bool RendererDateTimePicker::Open() {
-  ViewHostMsg_DateTimeDialogValue_Params message;
-  message.dialog_type = ToTextInputType(chooser_params_.type);
-  message.dialog_value = chooser_params_.double_value;
-  message.minimum = chooser_params_.minimum;
-  message.maximum = chooser_params_.maximum;
-  message.step = chooser_params_.step;
+void RendererDateTimePicker::Open() {
+  mojom::DateTimeDialogValuePtr date_time_dialog_value =
+      mojom::DateTimeDialogValue::New();
+  date_time_dialog_value->dialog_type = ToTextInputType(chooser_params_.type);
+  date_time_dialog_value->dialog_value = chooser_params_.double_value;
+  date_time_dialog_value->minimum = chooser_params_.minimum;
+  date_time_dialog_value->maximum = chooser_params_.maximum;
+  date_time_dialog_value->step = chooser_params_.step;
   for (size_t i = 0; i < chooser_params_.suggestions.size(); i++) {
-    message.suggestions.push_back(
-        ToDateTimeSuggestion(chooser_params_.suggestions[i]));
+    date_time_dialog_value->suggestions.push_back(
+        mojo::ConvertTo<mojom::DateTimeSuggestionPtr>(
+            chooser_params_.suggestions[i]));
   }
-  return Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
+
+  auto response_callback = base::BindOnce(
+      &RendererDateTimePicker::ResponseHandler, base::Unretained(this));
+  GetDateTimePicker()->OpenDateTimeDialog(std::move(date_time_dialog_value),
+                                          std::move(response_callback));
 }
 
-bool RendererDateTimePicker::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RendererDateTimePicker, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReplaceDateTime, OnReplaceDateTime)
-    IPC_MESSAGE_HANDLER(ViewMsg_CancelDateTimeDialog, OnCancel)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void RendererDateTimePicker::ResponseHandler(bool success,
+                                             double dialog_value) {
+  if (success)
+    ReplaceDateTime(dialog_value);
+  else
+    Cancel();
 }
 
-void RendererDateTimePicker::OnReplaceDateTime(double value) {
+void RendererDateTimePicker::ReplaceDateTime(double value) {
   if (chooser_completion_)
     chooser_completion_->DidChooseValue(value);
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
 }
 
-void RendererDateTimePicker::OnCancel() {
+void RendererDateTimePicker::Cancel() {
   if (chooser_completion_)
     chooser_completion_->DidCancelChooser();
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
@@ -111,6 +114,14 @@ void RendererDateTimePicker::OnCancel() {
 
 void RendererDateTimePicker::OnDestruct() {
   delete this;
+}
+
+mojom::DateTimePicker* RendererDateTimePicker::GetDateTimePicker() {
+  if (!date_time_picker_) {
+    render_view()->GetMainRenderFrame()->GetRemoteInterfaces()->GetInterface(
+        &date_time_picker_);
+  }
+  return date_time_picker_.get();
 }
 
 }  // namespace content

@@ -864,9 +864,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
 #endif
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog, OnOpenDateTimeDialog)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -2105,7 +2102,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   manifest_manager_host_.reset(new ManifestManagerHost(this));
 
 #if defined(OS_ANDROID)
-  date_time_chooser_.reset(new DateTimeChooserAndroid());
+  date_time_chooser_.reset(new DateTimeChooserAndroid(this));
 #endif
 
   // BrowserPluginGuest::Init needs to be called after this WebContents has
@@ -4833,16 +4830,6 @@ void WebContentsImpl::OnUpdatePageImportanceSignals(
   // written to this one field.
   page_importance_signals_ = signals;
 }
-
-#if defined(OS_ANDROID)
-void WebContentsImpl::OnOpenDateTimeDialog(
-    RenderViewHostImpl* source,
-    const ViewHostMsg_DateTimeDialogValue_Params& value) {
-  date_time_chooser_->ShowDialog(
-      GetTopLevelNativeWindow(), source, value.dialog_type, value.dialog_value,
-      value.minimum, value.maximum, value.step, value.suggestions);
-}
-#endif
 
 void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,
                                              const std::string& json_string) {

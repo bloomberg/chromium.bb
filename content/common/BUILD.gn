@@ -92,7 +92,6 @@ source_set("common") {
     "cursors/webcursor_aurax11.cc",
     "cursors/webcursor_mac.mm",
     "cursors/webcursor_ozone.cc",
-    "date_time_suggestion.h",
     "dom_storage/dom_storage_map.cc",
     "dom_storage/dom_storage_map.h",
     "dom_storage/dom_storage_messages.h",
@@ -500,6 +499,10 @@ mojom("mojo_bindings") {
       "render_widget_host_ns_view.mojom",
       "sandbox_support_mac.mojom",
     ]
+  }
+
+  if (is_android) {
+    sources += [ "date_time_picker.mojom" ]
   }
 
   enabled_features = []
