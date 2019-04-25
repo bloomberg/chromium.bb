@@ -28,6 +28,9 @@ class OpenLastTabProperties {
     public static final PropertyModel.WritableBooleanPropertyKey OPEN_LAST_TAB_LOAD_SUCCESS =
             new PropertyModel.WritableBooleanPropertyKey();
 
+    public static final PropertyModel.WritableBooleanPropertyKey OPEN_LAST_TAB_FIRST_LAUNCH =
+            new PropertyModel.WritableBooleanPropertyKey();
+
     public static final PropertyModel.WritableObjectPropertyKey<Runnable> ON_FOCUS_CALLBACK =
             new PropertyModel.WritableObjectPropertyKey<>();
 
