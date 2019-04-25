@@ -101,19 +101,15 @@ class PageActionIconView : public IconLabelBubbleView {
   SkColor GetTextColor() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void OnThemeChanged() override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowSeparator() const final;
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  void NotifyClick(const ui::Event& event) override;
+  bool IsTriggerableEvent(const ui::Event& event) override;
+  bool ShouldUpdateInkDropOnClickCanceled() const override;
 
  protected:
   // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.
@@ -165,11 +161,6 @@ class PageActionIconView : public IconLabelBubbleView {
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
   bool active_ = false;
-
-  // This is used to check if the bookmark bubble was showing during the mouse
-  // pressed event. If this is true then the mouse released event is ignored to
-  // prevent the bubble from reshowing.
-  bool suppress_mouse_released_action_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

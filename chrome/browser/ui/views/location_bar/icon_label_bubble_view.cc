@@ -311,7 +311,7 @@ bool IconLabelBubbleView::ShouldUpdateInkDropOnClickCanceled() const {
 
 void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
   LabelButton::NotifyClick(event);
-  OnActivate(event);
+  ShowBubble(event);
 }
 
 void IconLabelBubbleView::OnFocus() {
@@ -410,10 +410,6 @@ int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
   if (ShouldShowSeparator())
     end_padding += kIconLabelBubbleSeparatorWidth;
   return end_padding;
-}
-
-bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
-  return ShowBubble(event);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {

@@ -202,10 +202,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // separator width.
   int GetEndPaddingWithSeparator() const;
 
-  // The view has been activated by a user gesture such as spacebar.
-  // Returns true if some handling was performed.
-  bool OnActivate(const ui::Event& event);
-
   // views::View:
   const char* GetClassName() const override;
 
