@@ -76,15 +76,6 @@ void ExtensionActionAPI::Observer::OnExtensionActionUpdated(
     content::BrowserContext* browser_context) {
 }
 
-void ExtensionActionAPI::Observer::OnExtensionActionVisibilityChanged(
-    const std::string& extension_id,
-    bool is_now_visible) {
-}
-
-void ExtensionActionAPI::Observer::OnPageActionsUpdated(
-    content::WebContents* web_contents) {
-}
-
 void ExtensionActionAPI::Observer::OnExtensionActionAPIShuttingDown() {
 }
 
@@ -171,8 +162,6 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
   GetExtensionPrefs()->UpdateExtensionPref(
       extension_id, kBrowserActionVisible,
       std::make_unique<base::Value>(visible));
-  for (auto& observer : observers_)
-    observer.OnExtensionActionVisibilityChanged(extension_id, visible);
 }
 
 bool ExtensionActionAPI::ShowExtensionActionPopup(
@@ -203,9 +192,6 @@ void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
                                       content::BrowserContext* context) {
   for (auto& observer : observers_)
     observer.OnExtensionActionUpdated(extension_action, web_contents, context);
-
-  if (extension_action->action_type() == ActionInfo::TYPE_PAGE)
-    NotifyPageActionsChanged(web_contents);
 }
 
 void ExtensionActionAPI::DispatchExtensionActionClicked(
@@ -285,16 +271,6 @@ void ExtensionActionAPI::DispatchEventToExtension(
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, std::move(event));
-}
-
-void ExtensionActionAPI::NotifyPageActionsChanged(
-    content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
-
-  for (auto& observer : observers_)
-    observer.OnPageActionsUpdated(web_contents);
 }
 
 void ExtensionActionAPI::Shutdown() {
