@@ -236,14 +236,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ExpireEntriesByAge(int32_t age_watermark_in_days,
                           MetadataChangeList* metadata_changes);
 
-  // If the number of |entities_| exceeds |max_number_of_items|, the
-  // processor removes metadata for the extra sync entities based on the LRU
-  // rule.
-  // This is used to limit the amount of data stored in sync, and this does not
-  // tell the bridge to delete the actual data.
-  void ExpireEntriesByItemLimit(int32_t max_number_of_items,
-                                MetadataChangeList* metadata_changes);
-
   // Removes |entity| and clears metadata for |entity| from
   // |metadata_change_list|.
   void RemoveEntity(ProcessorEntity* entity,

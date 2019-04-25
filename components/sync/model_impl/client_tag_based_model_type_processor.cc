@@ -29,25 +29,6 @@ namespace syncer {
 
 namespace {
 
-bool CompareProtoTimeStamp(const int64_t left, const int64_t right) {
-  return left > right;
-}
-
-// This function use quick select algorithm (std::nth_element) to find the |n|th
-// bigest number in the vector |time_stamps|.
-int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
-                                       size_t n) {
-  DCHECK(n);
-
-  if (n > time_stamps.size())
-    return 0;
-
-  std::nth_element(time_stamps.begin(), time_stamps.begin() + n - 1,
-                   time_stamps.end(), &CompareProtoTimeStamp);
-
-  return time_stamps[n - 1];
-}
-
 int CountNonTombstoneEntries(
     const std::map<std::string, std::unique_ptr<ProcessorEntity>>& entities) {
   int count = 0;
@@ -1365,13 +1346,6 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
     }
   }
 
-  if (new_gc_directive.has_max_number_of_items()) {
-    DCHECK(new_gc_directive.max_number_of_items());
-    ExpireEntriesByItemLimit(new_gc_directive.max_number_of_items(),
-                             metadata_changes.get());
-    has_expired_changes = true;
-  }
-
   if (has_expired_changes)
     bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
 }
@@ -1416,35 +1390,6 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
     if (!entity->IsUnsynced() &&
         ProtoTimeToTime(entity->metadata().modification_time()) <=
             to_be_expired) {
-      storage_key_to_be_deleted.push_back(entity->storage_key());
-    }
-  }
-
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
-}
-
-void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
-    int32_t max_number_of_items,
-    MetadataChangeList* metadata_changes) {
-  DCHECK(metadata_changes);
-
-  size_t limited_number = max_number_of_items;
-  if (limited_number >= entities_.size())
-    return;
-
-  std::vector<int64_t> all_proto_times;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    all_proto_times.push_back(entity->metadata().modification_time());
-  }
-  int64_t expired_proto_time = FindTheNthBigestProtoTimeStamp(
-      std::move(all_proto_times), limited_number);
-
-  std::vector<std::string> storage_key_to_be_deleted;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    if (!entity->IsUnsynced() &&
-        entity->metadata().modification_time() < expired_proto_time) {
       storage_key_to_be_deleted.push_back(entity->storage_key());
     }
   }
