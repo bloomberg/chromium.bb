@@ -8,25 +8,24 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "components/signin/core/browser/account_info.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
     identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
+    ProfileAttributesStorage* profile_attributes_storage,
     const base::FilePath& profile_path)
     : identity_manager_(identity_manager),
       signin_error_controller_(signin_error_controller),
+      profile_attributes_storage_(profile_attributes_storage),
       profile_path_(profile_path),
       identity_manager_observer_(this),
       signin_error_controller_observer_(this) {
-  // Some tests don't have a ProfileManager, disable this service.
-  if (!g_browser_process->profile_manager())
-    return;
-
+  DCHECK(identity_manager_);
+  DCHECK(signin_error_controller_);
+  DCHECK(profile_attributes_storage_);
   identity_manager_observer_.Add(identity_manager_);
   signin_error_controller_observer_.Add(signin_error_controller);
 
@@ -45,9 +44,8 @@ void SigninProfileAttributesUpdater::Shutdown() {
 
 void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
   ProfileAttributesEntry* entry;
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_path_, &entry)) {
+  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
+                                                                 &entry)) {
     return;
   }
 
@@ -65,9 +63,8 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
 
 void SigninProfileAttributesUpdater::OnErrorChanged() {
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_path_, &entry)) {
+  if (!profile_attributes_storage_->GetProfileAttributesWithPath(profile_path_,
+                                                                 &entry)) {
     return;
   }
 

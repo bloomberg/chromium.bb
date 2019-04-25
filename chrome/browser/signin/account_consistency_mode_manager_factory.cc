@@ -47,3 +47,8 @@ void AccountConsistencyModeManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   AccountConsistencyModeManager::RegisterProfilePrefs(registry);
 }
+
+bool AccountConsistencyModeManagerFactory::ServiceIsCreatedWithBrowserContext()
+    const {
+  return true;
+}
