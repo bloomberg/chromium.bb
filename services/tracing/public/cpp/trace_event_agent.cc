@@ -18,7 +18,7 @@
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -56,7 +56,8 @@ TraceEventAgent::TraceEventAgent()
         base::BindRepeating(&IsMetadataWhitelisted));
   }
 
-  ProducerClient::Get()->AddDataSource(TraceEventDataSource::GetInstance());
+  PerfettoTracedProcess::Get()->AddDataSource(
+      TraceEventDataSource::GetInstance());
 }
 
 TraceEventAgent::~TraceEventAgent() = default;
@@ -77,7 +78,7 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
   // call.
   static TraceEventMetadataSource* metadata_source = []() {
     static base::NoDestructor<TraceEventMetadataSource> instance;
-    ProducerClient::Get()->AddDataSource(instance.get());
+    PerfettoTracedProcess::Get()->AddDataSource(instance.get());
     return instance.get();
   }();
 

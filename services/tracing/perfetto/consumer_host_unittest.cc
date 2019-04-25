@@ -75,7 +75,7 @@ class ThreadedPerfettoService : public mojom::TracingSession {
 
     {
       base::RunLoop wait_for_destruction;
-      ProducerClient::GetTaskRunner()
+      PerfettoTracedProcess::GetTaskRunner()
           ->GetOrCreateTaskRunner()
           ->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                              wait_for_destruction.QuitClosure());
@@ -279,7 +279,7 @@ class TracingConsumerTest : public testing::Test,
                             public mojo::DataPipeDrainer::Client {
  public:
   void SetUp() override {
-    ProducerClient::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::ResetTaskRunnerForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();
 
     matching_packet_count_ = 0;

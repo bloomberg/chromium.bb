@@ -114,7 +114,7 @@ void TraceEventMetadataSource::GenerateMetadata(
 }
 
 void TraceEventMetadataSource::StartTracing(
-    ProducerClient* producer_client,
+    PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
   // TODO(eseckler): Once we support streaming of trace data, it would make
   // sense to emit the metadata on startup, so the UI can display it right away.
@@ -122,7 +122,7 @@ void TraceEventMetadataSource::StartTracing(
       data_source_config.chrome_config().privacy_filtering_enabled();
   chrome_config_ = data_source_config.chrome_config().trace_config();
   trace_writer_ =
-      producer_client->CreateTraceWriter(data_source_config.target_buffer());
+      producer->CreateTraceWriter(data_source_config.target_buffer());
 }
 
 void TraceEventMetadataSource::StopTracing(
@@ -223,7 +223,7 @@ void TraceEventDataSource::SetupStartupTracing() {
 }
 
 void TraceEventDataSource::StartTracing(
-    ProducerClient* producer_client,
+    PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
   privacy_filtering_enabled_ =
       data_source_config.chrome_config().privacy_filtering_enabled();
@@ -233,7 +233,7 @@ void TraceEventDataSource::StartTracing(
     base::AutoLock lock(lock_);
 
     DCHECK(!producer_client_);
-    producer_client_ = producer_client;
+    producer_client_ = producer;
     target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
@@ -249,7 +249,7 @@ void TraceEventDataSource::StartTracing(
     // BindStartupTraceWriterRegistry() causes deadlocks.
     AutoThreadLocalBoolean thread_is_in_trace_event(
         GetThreadIsInTraceEventTLS());
-    producer_client->BindStartupTraceWriterRegistry(
+    producer->BindStartupTraceWriterRegistry(
         std::move(unbound_writer_registry), data_source_config.target_buffer());
   } else {
     RegisterWithTraceLog();
@@ -259,7 +259,7 @@ void TraceEventDataSource::StartTracing(
       TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
-  ProducerClient::GetTaskRunner()->StartDeferredTasksDrainTimer();
+  PerfettoTracedProcess::GetTaskRunner()->StartDeferredTasksDrainTimer();
 }
 
 void TraceEventDataSource::StopTracing(
@@ -279,7 +279,7 @@ void TraceEventDataSource::StopTracing(
         // which end up not getting run until the next tracing session; worst
         // case is we lose some chunk commit messages and Perfetto will
         // scrape the chunks.
-        ProducerClient::GetTaskRunner()->StopDeferredTasksDrainTimer();
+        PerfettoTracedProcess::GetTaskRunner()->StopDeferredTasksDrainTimer();
         data_source->UnregisterFromTraceLog();
 
         if (data_source->stop_complete_callback_) {
@@ -514,7 +514,7 @@ void TraceEventDataSource::ReturnTraceWriter(
     // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
     // (which can happen as the TraceWriter destructor might make a Mojo call
     // and trigger it).
-    ProducerClient::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(trace_writer));
   }
 }

@@ -69,8 +69,10 @@ void ProducerHost::OnDisconnect() {
 
 void ProducerHost::OnTracingSetup() {
   if (is_in_process_) {
-    ProducerClient::Get()->set_in_process_shmem_arbiter(
-        producer_endpoint_->GetInProcessShmemArbiter());
+    PerfettoTracedProcess::Get()
+        ->producer_client()
+        ->set_in_process_shmem_arbiter(
+            producer_endpoint_->GetInProcessShmemArbiter());
     return;
   }
 

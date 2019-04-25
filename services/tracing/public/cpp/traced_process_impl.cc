@@ -102,7 +102,7 @@ void TracedProcessImpl::ConnectToTracingService(
     agent->Connect(agent_registry_.get());
   }
 
-  ProducerClient::Get()->Connect(
+  PerfettoTracedProcess::Get()->producer_client()->Connect(
       tracing::mojom::PerfettoServicePtr(std::move(request->perfetto_service)));
 }
 

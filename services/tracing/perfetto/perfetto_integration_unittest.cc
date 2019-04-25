@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <thread>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,7 +30,7 @@ class PerfettoIntegrationTest : public testing::Test {
   void SetUp() override {
     perfetto_service_ = std::make_unique<PerfettoService>();
     RunUntilIdle();
-    ProducerClient::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::ResetTaskRunnerForTesting();
   }
 
   void TearDown() override { perfetto_service_.reset(); }
@@ -75,6 +76,7 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
   auto producer = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName,
       perfetto_service()->GetService(), client.get());
+
   client_enabled_callback.Run();
 
   RunUntilIdle();
@@ -179,11 +181,14 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
   client_enabled_callback.Run();
 
   base::RunLoop wait_for_packet_write;
-  client->GetTaskRunner()->GetOrCreateTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&TestDataSource::WritePacketBigly,
-                     base::Unretained(client->data_source())),
-      wait_for_packet_write.QuitClosure());
+  PerfettoTracedProcess::Get()
+      ->GetTaskRunner()
+      ->GetOrCreateTaskRunner()
+      ->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(&TestDataSource::WritePacketBigly,
+                         base::Unretained(client->data_source())),
+          wait_for_packet_write.QuitClosure());
   wait_for_packet_write.Run();
 
   RunUntilIdle();
@@ -291,21 +296,26 @@ TEST_F(PerfettoIntegrationTest,
   base::RunLoop client2_enabled_callback;
   auto client1 = std::make_unique<MockProducerClient>(
       0 /* send_packet_count */, client1_enabled_callback.QuitClosure());
-  auto client2 = std::make_unique<MockProducerClient>(
-      0 /* send_packet_count */, client2_enabled_callback.QuitClosure());
-
   auto producer1 = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName,
       perfetto_service()->GetService(), client1.get());
+
+  // Start the trace here, this is because we need to send the EnableTracing
+  // call to client1, but constructing client2 will override the
+  // |producer_client_| pointer in PerfettoTracedProcess::Get() so we wait until
+  // client1 has been enabled before constructing the second producer client.
+  MockConsumer consumer(kPerfettoTestDataSourceName,
+                        perfetto_service()->GetService(), nullptr);
+
+  client1_enabled_callback.Run();
+
+  auto client2 = std::make_unique<MockProducerClient>(
+      0 /* send_packet_count */, client2_enabled_callback.QuitClosure());
 
   auto producer2 = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName,
       perfetto_service()->GetService(), client2.get());
 
-  MockConsumer consumer(kPerfettoTestDataSourceName,
-                        perfetto_service()->GetService(), nullptr);
-
-  client1_enabled_callback.Run();
   client2_enabled_callback.Run();
 
   EXPECT_TRUE(client1->shared_memory());

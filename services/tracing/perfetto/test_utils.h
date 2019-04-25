@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "services/tracing/perfetto/producer_host.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
 
@@ -18,7 +19,7 @@ namespace tracing {
 const char kPerfettoTestString[] = "d00df00d";
 const size_t kLargeMessageSize = 1 * 1024 * 1024;
 
-class TestDataSource : public ProducerClient::DataSourceBase {
+class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
  public:
   TestDataSource(const std::string& data_source_name, size_t send_packet_count);
   ~TestDataSource() override;
@@ -27,7 +28,7 @@ class TestDataSource : public ProducerClient::DataSourceBase {
 
   // DataSourceBase implementation
   void StartTracing(
-      ProducerClient* producer_client,
+      PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override;
   void StopTracing(
       base::OnceClosure stop_complete_callback = base::OnceClosure()) override;
@@ -36,7 +37,7 @@ class TestDataSource : public ProducerClient::DataSourceBase {
   const perfetto::DataSourceConfig& config() { return config_; }
 
  private:
-  ProducerClient* producer_client_ = nullptr;
+  PerfettoProducer* producer_ = nullptr;
   const size_t send_packet_count_;
   perfetto::DataSourceConfig config_;
 };
@@ -76,6 +77,7 @@ class MockProducerClient : public ProducerClient {
   size_t send_packet_count_;
   std::string all_client_commit_data_requests_;
   std::unique_ptr<TestDataSource> enabled_data_source_;
+  ProducerClient* old_producer_;
 };
 
 class MockConsumer : public perfetto::Consumer {

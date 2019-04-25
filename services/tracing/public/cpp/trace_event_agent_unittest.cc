@@ -83,7 +83,7 @@ class MockRecorder : public mojom::Recorder {
 
 class TraceEventAgentTest : public testing::Test {
  public:
-  void SetUp() override { ProducerClient::ResetTaskRunnerForTesting(); }
+  void SetUp() override { PerfettoTracedProcess::ResetTaskRunnerForTesting(); }
 
   void TearDown() override {
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
