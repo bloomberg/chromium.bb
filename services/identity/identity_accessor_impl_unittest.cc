@@ -44,7 +44,7 @@ class IdentityAccessorImplTest : public testing::Test {
 
   void OnReceivedPrimaryAccountInfo(
       base::RepeatingClosure quit_closure,
-      const base::Optional<AccountInfo>& account_info,
+      const base::Optional<CoreAccountInfo>& account_info,
       const AccountState& account_state) {
     primary_account_info_ = account_info;
     primary_account_state_ = account_state;
@@ -52,9 +52,9 @@ class IdentityAccessorImplTest : public testing::Test {
   }
 
   void OnPrimaryAccountAvailable(base::RepeatingClosure quit_closure,
-                                 AccountInfo* caller_account_info,
+                                 CoreAccountInfo* caller_account_info,
                                  AccountState* caller_account_state,
-                                 const AccountInfo& account_info,
+                                 const CoreAccountInfo& account_info,
                                  const AccountState& account_state) {
     *caller_account_info = account_info;
     *caller_account_state = account_state;
@@ -102,9 +102,9 @@ class IdentityAccessorImplTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environemnt_;
 
   mojom::IdentityAccessorPtr identity_accessor_;
-  base::Optional<AccountInfo> primary_account_info_;
+  base::Optional<CoreAccountInfo> primary_account_info_;
   AccountState primary_account_state_;
-  base::Optional<AccountInfo> account_info_from_gaia_id_;
+  base::Optional<CoreAccountInfo> account_info_from_gaia_id_;
   AccountState account_state_from_gaia_id_;
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;

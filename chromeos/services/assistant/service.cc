@@ -273,7 +273,7 @@ identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
 }
 
 void Service::GetPrimaryAccountInfoCallback(
-    const base::Optional<AccountInfo>& account_info,
+    const base::Optional<CoreAccountInfo>& account_info,
     const identity::AccountState& account_state) {
   if (!account_info.has_value() || !account_state.has_refresh_token ||
       account_info.value().gaia.empty()) {

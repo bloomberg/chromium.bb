@@ -212,15 +212,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // for example).
   CoreAccountInfo GetPrimaryAccountInfo() const;
 
-  // Provides access to the extended information of the user's primary account.
-  // Returns an empty struct if no such info is available, either because there
-  // is no primary account or because the extended information for the primary
-  // account has been removed (this happens when the refresh token is revoked,
-  // for example).
-  // TODO(crbug.com/926204): remove once all client have been converted to use
-  // GetPrimaryAccountInfo() instead.
-  AccountInfo GetPrimaryAccountInfoDeprecated() const;
-
   // Provides access to the account ID of the user's primary account. Note that
   // this may return a valid string even in cases where GetPrimaryAccountInfo()
   // returns an empty struct, as the extended information for the primary

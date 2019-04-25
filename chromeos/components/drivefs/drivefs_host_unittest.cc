@@ -219,7 +219,7 @@ class FakeIdentityService
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
-    AccountInfo account_info;
+    CoreAccountInfo account_info;
     account_info.email = account_id.GetUserEmail();
     account_info.gaia = account_id.GetGaiaId();
     account_info.account_id = account_id.GetAccountIdKey();

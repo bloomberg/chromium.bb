@@ -85,10 +85,6 @@ CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
   return signin_manager_->GetAuthenticatedAccountInfo();
 }
 
-AccountInfo IdentityManager::GetPrimaryAccountInfoDeprecated() const {
-  return signin_manager_->GetAuthenticatedAccountInfo();
-}
-
 const std::string& IdentityManager::GetPrimaryAccountId() const {
   return signin_manager_->GetAuthenticatedAccountId();
 }
