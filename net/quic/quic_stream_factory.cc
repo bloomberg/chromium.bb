@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -288,7 +287,7 @@ class QuicStreamFactory::CertVerifierJob {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.CertVerifierJob.CompleteTime",
                         base::TimeTicks::Now() - start_time_);
     if (!callback_.is_null())
-      base::ResetAndReturn(&callback_).Run(OK);
+      std::move(callback_).Run(OK);
   }
 
   const quic::QuicServerId& server_id() const { return server_id_; }
@@ -589,7 +588,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
       LogConnectionIpPooling(true);
       CloseStaleHostConnection();
       if (!callback_.is_null())
-        base::ResetAndReturn(&callback_).Run(OK);
+        std::move(callback_).Run(OK);
       return;
     } else if (io_state_ != STATE_HOST_VALIDATION) {
       // Case where host resolution returns successfully, but stale connection
@@ -623,7 +622,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
   }
 
   if (rv != ERR_IO_PENDING && !callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(rv);
+    std::move(callback_).Run(rv);
 }
 
 void QuicStreamFactory::Job::OnConnectComplete(int rv) {
@@ -634,7 +633,7 @@ void QuicStreamFactory::Job::OnConnectComplete(int rv) {
 
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING && !callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(rv);
+    std::move(callback_).Run(rv);
 }
 
 void QuicStreamFactory::Job::PopulateNetErrorDetails(
@@ -960,12 +959,12 @@ void QuicStreamRequest::SetSession(
 
 void QuicStreamRequest::OnConnectionFailedOnDefaultNetwork() {
   if (!failed_on_default_network_callback_.is_null())
-    base::ResetAndReturn(&failed_on_default_network_callback_).Run(OK);
+    std::move(failed_on_default_network_callback_).Run(OK);
 }
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
   factory_ = nullptr;
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 void QuicStreamRequest::ExpectOnHostResolution() {
@@ -976,7 +975,7 @@ void QuicStreamRequest::OnHostResolutionComplete(int rv) {
   DCHECK(expect_on_host_resolution_);
   expect_on_host_resolution_ = false;
   if (!host_resolution_callback_.is_null()) {
-    base::ResetAndReturn(&host_resolution_callback_).Run(rv);
+    std::move(host_resolution_callback_).Run(rv);
   }
 }
 

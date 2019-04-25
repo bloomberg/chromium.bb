@@ -4,8 +4,9 @@
 
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -32,7 +33,7 @@ void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   quic::WriteResult result(
       rv < 0 ? quic::WRITE_STATUS_ERROR : quic::WRITE_STATUS_OK, rv);
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
   }
   dispatcher_->OnCanWrite();
 }

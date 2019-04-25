@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -139,7 +138,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     ++on_data_read_count_;
     CHECK_GE(bytes_read, OK);
     data_received_.append(read_buf_->data(), bytes_read);
-    base::ResetAndReturn(&callback_).Run(bytes_read);
+    std::move(callback_).Run(bytes_read);
   }
 
   void OnDataSent() override {

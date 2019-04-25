@@ -886,7 +886,7 @@ void MockBlockingBackendFactory::FinishCreation() {
     if (!fail_)
       backend_->reset(new MockDiskCache());
     // Running the callback might delete |this|.
-    base::ResetAndReturn(&callback_).Run(Result());
+    std::move(callback_).Run(Result());
   }
 }
 

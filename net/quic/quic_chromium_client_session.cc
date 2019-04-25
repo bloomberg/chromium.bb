@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -521,7 +520,7 @@ void QuicChromiumClientSession::Handle::OnRendezvousResult(
   if (push_callback_) {
     DCHECK(push_handle_);
     push_handle_ = nullptr;
-    base::ResetAndReturn(&push_callback_).Run(rv);
+    std::move(push_callback_).Run(rv);
   }
 }
 
@@ -599,7 +598,7 @@ void QuicChromiumClientSession::StreamRequest::DoCallback(int rv) {
 
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 int QuicChromiumClientSession::StreamRequest::DoLoop(int rv) {
@@ -1479,7 +1478,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
     // following code needs to changed.
-    base::ResetAndReturn(&callback_).Run(OK);
+    std::move(callback_).Run(OK);
   }
   if (event == HANDSHAKE_CONFIRMED) {
     if (stream_factory_)
@@ -1706,7 +1705,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   quic::QuicSession::OnConnectionClosed(error, error_details, source);
 
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
+    std::move(callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
 
   for (auto& socket : sockets_) {
@@ -2374,7 +2373,7 @@ void QuicChromiumClientSession::CloseSessionOnError(
   base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
 
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(net_error);
+    std::move(callback_).Run(net_error);
   }
 
   CloseAllStreams(net_error);
@@ -2397,7 +2396,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
   base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
 
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(net_error);
+    std::move(callback_).Run(net_error);
   }
   CloseAllStreams(net_error);
   CloseAllHandles(net_error);

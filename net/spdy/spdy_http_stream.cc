@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -630,13 +629,13 @@ void SpdyHttpStream::DoRequestCallback(int rv) {
   CHECK(!request_callback_.is_null());
   // Since Run may result in being called back, reset request_callback_ in
   // advance.
-  base::ResetAndReturn(&request_callback_).Run(rv);
+  std::move(request_callback_).Run(rv);
 }
 
 void SpdyHttpStream::MaybeDoRequestCallback(int rv) {
   CHECK_NE(ERR_IO_PENDING, rv);
   if (request_callback_)
-    base::ResetAndReturn(&request_callback_).Run(rv);
+    std::move(request_callback_).Run(rv);
 }
 
 void SpdyHttpStream::MaybePostRequestCallback(int rv) {
@@ -653,7 +652,7 @@ void SpdyHttpStream::DoResponseCallback(int rv) {
 
   // Since Run may result in being called back, reset response_callback_ in
   // advance.
-  base::ResetAndReturn(&response_callback_).Run(rv);
+  std::move(response_callback_).Run(rv);
 }
 
 bool SpdyHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {

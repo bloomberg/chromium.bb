@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/memory/ptr_util.h"
@@ -174,7 +173,7 @@ class CertVerifierRequest : public base::LinkNode<CertVerifierRequest>,
     net_log_.EndEvent(NetLogEventType::CERT_VERIFIER_REQUEST);
     *verify_result_ = verify_result.result;
 
-    base::ResetAndReturn(&callback_).Run(verify_result.error);
+    std::move(callback_).Run(verify_result.error);
   }
 
   void OnJobCancelled() {

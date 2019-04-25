@@ -11,7 +11,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
@@ -684,7 +683,7 @@ void HttpNetworkTransaction::DoCallback(int rv) {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Since Run may result in Read being called, clear user_callback_ up front.
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 void HttpNetworkTransaction::OnIOComplete(int result) {

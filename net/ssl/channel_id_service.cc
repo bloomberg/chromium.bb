@@ -12,7 +12,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -195,7 +194,7 @@ void ChannelIDService::Request::Post(
   // Running the callback might delete |this| (e.g. the callback cleans up
   // resources created for the request), so we can't touch any of our
   // members afterwards. Reset callback_ first.
-  base::ResetAndReturn(&callback_).Run(error);
+  std::move(callback_).Run(error);
 }
 
 ChannelIDService::ChannelIDService(ChannelIDStore* channel_id_store)
