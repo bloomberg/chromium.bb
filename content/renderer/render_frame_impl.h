@@ -748,7 +748,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidStartProvisionalLoad(
       blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
-                              blink::WebHistoryCommitType commit_type) override;
+                              const blink::WebString& http_method) override;
   void DidCommitProvisionalLoad(
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type,
@@ -1222,8 +1222,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebDocumentLoader* document_loader,
       const blink::WebURLError& error,
       const base::Optional<std::string>& error_page_content,
-      bool replace_current_item,
-      bool inherit_document_state);
+      bool replace_current_item);
 
   base::Value GetJavaScriptExecutionResult(v8::Local<v8::Value> result);
 

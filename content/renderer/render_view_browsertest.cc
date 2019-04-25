@@ -1572,26 +1572,6 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   }
 }
 
-// Crashy, http://crbug.com/53247.
-TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
-  GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error(net::ERR_FILE_NOT_FOUND, GURL("http://foo"));
-  WebLocalFrame* web_frame = GetMainFrame();
-
-  // Start a load that will reach provisional state synchronously,
-  // but won't complete synchronously.
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
-  frame()->Navigate(common_params, CommitNavigationParams());
-
-  // An error occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      error, blink::kWebStandardCommit);
-  // Frame should exit view-source mode.
-  EXPECT_FALSE(web_frame->IsViewSourceModeEnabled());
-}
-
 TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->EnableViewSourceMode(true);
   WebURLError error(net::ERR_ABORTED, GURL("http://foo"));
@@ -1605,8 +1585,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   frame()->Navigate(common_params, CommitNavigationParams());
 
   // A cancellation occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      error, blink::kWebStandardCommit);
+  view()->GetMainRenderFrame()->DidFailProvisionalLoad(error, "GET");
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->IsViewSourceModeEnabled());
 }

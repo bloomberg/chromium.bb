@@ -34,6 +34,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
@@ -2327,6 +2328,29 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   run_loop2.Run();
 
   // Pass if this didn't crash.
+}
+
+// Verify that adding an <object> tag which resource is blocked by the network
+// stack does not result in terminating the renderer process.
+// See https://crbug.com/955777.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ObjectTagBlockedResource) {
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         "/page_with_object_fallback.html")));
+
+  GURL object_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(object_url,
+                                                   net::ERR_BLOCKED_BY_CLIENT);
+
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("setUrl($1, true);", object_url)));
+  observer.Wait();
+  EXPECT_EQ(rfh->GetLastCommittedOrigin().Serialize(),
+            EvalJs(shell()->web_contents(), "window.origin"));
 }
 
 }  // namespace content

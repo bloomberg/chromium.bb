@@ -1934,20 +1934,25 @@ WebViewImpl* WebLocalFrameImpl::ViewImpl() const {
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
-void WebLocalFrameImpl::DidFail(const ResourceError& error,
-                                bool was_provisional,
-                                WebHistoryCommitType web_commit_type) {
+void WebLocalFrameImpl::DidFailLoad(const ResourceError& error,
+                                    WebHistoryCommitType web_commit_type) {
   if (!Client())
     return;
   WebURLError web_error = error;
-
   if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
     plugin->DidFailLoading(error);
+  Client()->DidFailLoad(web_error, web_commit_type);
+}
 
-  if (was_provisional)
-    Client()->DidFailProvisionalLoad(web_error, web_commit_type);
-  else
-    Client()->DidFailLoad(web_error, web_commit_type);
+void WebLocalFrameImpl::DidFailProvisionalLoad(
+    const ResourceError& error,
+    const AtomicString& http_method) {
+  if (!Client())
+    return;
+  WebURLError web_error = error;
+  if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
+    plugin->DidFailLoading(error);
+  Client()->DidFailProvisionalLoad(web_error, http_method);
 }
 
 void WebLocalFrameImpl::DidFinish() {
@@ -2123,13 +2128,18 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   if (!GetFrame()->Owner() || !GetFrame()->Owner()->CanRenderFallbackContent())
     return NoFallbackContent;
 
-  // GetProvisionalDocumentLoader() can be null if a navigation started and
+  DocumentLoader* document_loader =
+      GetFrame()->Loader().GetProvisionalDocumentLoader();
+  // |document_loader| can be null if a navigation started and
   // completed (e.g. about:blank) while waiting for the navigation that wants
   // to show fallback content.
-  if (!GetFrame()->Loader().GetProvisionalDocumentLoader())
+  if (!document_loader)
     return NoLoadInProgress;
 
-  GetFrame()->Loader().GetProvisionalDocumentLoader()->LoadFailed(error);
+  // Don't send failure notification to the client, it already knows.
+  document_loader->SetSentDidFinishLoad();
+  GetFrame()->Owner()->RenderFallbackContent(GetFrame());
+  GetFrame()->Loader().DetachProvisionalDocumentLoader(document_loader);
   return FallbackRendered;
 }
 

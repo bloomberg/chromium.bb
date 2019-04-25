@@ -403,10 +403,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // A new provisional load has been started.
   virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader) {}
 
-  // The provisional load failed. The WebHistoryCommitType is the commit type
-  // that would have been used had the load succeeded.
+  // The provisional load failed, which used |http_method| to load the main
+  // resource.
   virtual void DidFailProvisionalLoad(const WebURLError&,
-                                      WebHistoryCommitType) {}
+                                      const WebString& http_method) {}
 
   // The provisional datasource is now committed.  The first part of the
   // response body has been received, and the encoding of the response

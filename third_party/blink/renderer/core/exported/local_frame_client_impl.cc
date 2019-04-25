@@ -474,14 +474,14 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
-    WebHistoryCommitType commit_type) {
-  web_frame_->DidFail(error, true, commit_type);
+    const AtomicString& http_method) {
+  web_frame_->DidFailProvisionalLoad(error, http_method);
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {
-  web_frame_->DidFail(error, false, commit_type);
+  web_frame_->DidFailLoad(error, commit_type);
 }
 
 void LocalFrameClientImpl::DispatchDidFinishLoad() {

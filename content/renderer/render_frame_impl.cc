@@ -2880,9 +2880,9 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
   return success;
 }
 
-void RenderFrameImpl::DidFailProvisionalLoad(
-    const WebURLError& error,
-    blink::WebHistoryCommitType commit_type) {
+void RenderFrameImpl::DidFailProvisionalLoad(const WebURLError& error,
+                                             const WebString& http_method) {
+  DCHECK_EQ(net::ERR_ABORTED, error.reason());
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   // Note: It is important this notification occur before DidStopLoading so the
@@ -2891,30 +2891,8 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   //
   NotifyObserversOfFailedProvisionalLoad(error);
 
-  WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
-  if (!document_loader)
-    return;
-
   // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(document_loader->HttpMethod().Ascii(), error,
-                            frame_);
-
-  if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
-    return;
-
-  // If this is a failed back/forward/reload navigation, then we need to do a
-  // 'replace' load. This is necessary to avoid messing up session history.
-  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
-  // as session history is concerned.
-  bool replace_current_item = commit_type != blink::kWebStandardCommit;
-
-  // If we failed on a browser initiated request, then make sure that our error
-  // page load is regarded as the same browser initiated request.
-  bool inherit_document_state =
-      !NavigationState::FromDocumentLoader(document_loader)
-           ->IsContentInitiated();
-  LoadNavigationErrorPage(document_loader, error, base::nullopt,
-                          replace_current_item, inherit_document_state);
+  SendFailedProvisionalLoad(http_method.Ascii(), error, frame_);
 }
 
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
@@ -2927,8 +2905,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     WebDocumentLoader* document_loader,
     const WebURLError& error,
     const base::Optional<std::string>& error_page_content,
-    bool replace_current_item,
-    bool inherit_document_state) {
+    bool replace_current_item) {
   std::string error_html;
   if (error_page_content) {
     error_html = error_page_content.value();
@@ -2944,36 +2921,13 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   auto navigation_params = WebNavigationParams::CreateForErrorPage(
       document_loader, error_html, GURL(kUnreachableWebDataURL), error.url(),
       error.reason());
-  std::unique_ptr<DocumentState> document_state;
-
-  if (inherit_document_state) {
-    NavigationState* navigation_state =
-        NavigationState::FromDocumentLoader(document_loader);
-    // The error page load (not to confuse with a failed load of original page)
-    // was not initiated through BeginNavigation, therefore
-    // |was_initiated_in_this_frame| is false.
-    document_state = BuildDocumentStateFromParams(
-        navigation_state->common_params(), navigation_state->commit_params(),
-        base::TimeTicks(),  // Not used for failed navigation.
-        mojom::FrameNavigationControl::CommitNavigationCallback(),
-        mojom::NavigationClient::CommitNavigationCallback(), nullptr, nullptr,
-        ResourceDispatcher::MakeRequestID(),
-        false /* was_initiated_in_this_frame */);
-    FillMiscNavigationParams(navigation_state->common_params(),
-                             navigation_state->commit_params(),
-                             navigation_params.get());
-  } else {
-    document_state = BuildDocumentState();
-  }
-
   if (replace_current_item)
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
 
   // The load of the error page can result in this frame being removed.
-  frame_->CommitNavigation(std::move(navigation_params),
-                           std::move(document_state));
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
   // Do not access |this| or |frame_| without checking weak self.
 }
 
@@ -3094,8 +3048,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 void RenderFrameImpl::LoadErrorPage(int reason) {
   LoadNavigationErrorPage(frame_->GetDocumentLoader(),
                           WebURLError(reason, frame_->GetDocument().Url()),
-                          base::nullopt, true /* replace_current_item */,
-                          false /* inherit_document_state */);
+                          base::nullopt, true /* replace_current_item */);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -3681,6 +3634,22 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   // When that happens, don't load an error page.
   blink::WebNavigationControl::FallbackContentResult fallback_result =
       frame_->MaybeRenderFallbackContent(error);
+
+  if (commit_params.nav_entry_id == 0) {
+    // For renderer initiated navigations, we send out a
+    // DidFailProvisionalLoad() notification.
+    NotifyObserversOfFailedProvisionalLoad(error);
+
+    // Provisional document loader can be null in cases such as cross
+    // process failures, e.g. error pages.
+    if (frame_->GetProvisionalDocumentLoader()) {
+      // TODO(dgozman): why do we need to notify browser in response
+      // to it's own request?
+      SendFailedProvisionalLoad(navigation_params->http_method.Ascii(), error,
+                                frame_);
+    }
+  }
+
   if (fallback_result != blink::WebNavigationControl::NoFallbackContent) {
     if (fallback_result == blink::WebNavigationControl::NoLoadInProgress) {
       // If the frame wasn't loading but was fallback-eligible, the fallback
@@ -3714,21 +3683,6 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   std::unique_ptr<HistoryEntry> history_entry;
   if (commit_params.page_state.IsValid())
     history_entry = PageStateToHistoryEntry(commit_params.page_state);
-
-  if (commit_params.nav_entry_id == 0) {
-    // For renderer initiated navigations, we send out a
-    // DidFailProvisionalLoad() notification.
-    NotifyObserversOfFailedProvisionalLoad(error);
-
-    // Provisional document loader can be null in cases such as cross
-    // process failures, e.g. error pages.
-    if (frame_->GetProvisionalDocumentLoader()) {
-      // TODO(dgozman): why do we need to notify browser in response
-      // to it's own request?
-      SendFailedProvisionalLoad(navigation_params->http_method.Ascii(), error,
-                                frame_);
-    }
-  }
 
   std::string error_html;
   if (error_page_content.has_value()) {
@@ -4962,8 +4916,7 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     // delete |this|.
     LoadNavigationErrorPage(document_loader,
                             WebURLError(net::ERR_FAILED, unreachable_url),
-                            error_html, true /* replace_current_item */,
-                            false /* inherit_document_state */);
+                            error_html, true /* replace_current_item */);
     if (!weak_self)
       return;
     // Do not use |this| or |frame_| here without checking |weak_self|.

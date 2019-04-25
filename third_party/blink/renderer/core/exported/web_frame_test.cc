@@ -12302,8 +12302,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       TestWebFrameClient::DidStopLoading();
     }
 
-    void DidFailProvisionalLoad(const WebURLError&,
-                                WebHistoryCommitType) override {
+    void DidFailProvisionalLoad(const WebURLError&, const WebString&) override {
       EXPECT_TRUE(false) << "The load should not have failed.";
     }
 

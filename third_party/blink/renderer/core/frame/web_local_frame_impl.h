@@ -411,9 +411,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   // allows us to navigate by pressing Enter after closing the Find box.
   void SetFindEndstateFocusAndSelection();
 
-  void DidFail(const ResourceError&,
-               bool was_provisional,
-               WebHistoryCommitType);
+  void DidFailLoad(const ResourceError&, WebHistoryCommitType);
+  void DidFailProvisionalLoad(const ResourceError&,
+                              const AtomicString& http_method);
   void DidFinish();
 
   void SetClient(WebLocalFrameClient* client) { client_ = client; }
