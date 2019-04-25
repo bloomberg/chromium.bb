@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -209,3 +210,24 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
   return parameters->initial_retry_delay *
          pow(parameters->retry_delay_factor, num_attempts - 1);
 }
+
+std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
+BackgroundSyncControllerImpl::CreateBackgroundSyncEventKeepAlive() {
+#if !defined(OS_ANDROID)
+  return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
+#endif
+  return nullptr;
+}
+
+#if !defined(OS_ANDROID)
+BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
+    BackgroundSyncEventKeepAliveImpl() {
+  keepalive_ = std::unique_ptr<ScopedKeepAlive,
+                               content::BrowserThread::DeleteOnUIThread>(
+      new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_SYNC,
+                          KeepAliveRestartOption::DISABLED));
+}
+
+BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
+    ~BackgroundSyncEventKeepAliveImpl() = default;
+#endif

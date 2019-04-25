@@ -24,6 +24,14 @@ struct BackgroundSyncParameters;
 // embedder. Must only be used on the UI thread.
 class CONTENT_EXPORT BackgroundSyncController {
  public:
+  class BackgroundSyncEventKeepAlive {
+   public:
+    virtual ~BackgroundSyncEventKeepAlive() = default;
+
+   protected:
+    BackgroundSyncEventKeepAlive() = default;
+  };
+
   virtual ~BackgroundSyncController() {}
 
   // This function allows the controller to alter the parameters used by
@@ -61,6 +69,11 @@ class CONTENT_EXPORT BackgroundSyncController {
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
       BackgroundSyncParameters* parameters) const = 0;
+
+  // Keeps the browser alive to allow a one-shot Background Sync registration
+  // to finish firing one sync event.
+  virtual std::unique_ptr<BackgroundSyncEventKeepAlive>
+  CreateBackgroundSyncEventKeepAlive() = 0;
 };
 
 }  // namespace content

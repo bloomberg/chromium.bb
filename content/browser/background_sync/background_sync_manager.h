@@ -28,6 +28,7 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -63,6 +64,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusAndRegistrationsCallback = base::OnceCallback<void(
       BackgroundSyncStatus,
       std::vector<std::unique_ptr<BackgroundSyncRegistration>>)>;
+  using BackgroundSyncEventKeepAlive =
+      BackgroundSyncController::BackgroundSyncEventKeepAlive;
 
   static std::unique_ptr<BackgroundSyncManager> Create(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
@@ -122,7 +125,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Scans the list of available events and fires those that are
   // ready to fire. For those that can't yet be fired, wakeup alarms are set.
   // Once all of this is done, invokes |callback|.
-  void FireReadyEvents(base::OnceClosure callback);
+  void FireReadyEvents(
+      base::OnceClosure callback,
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive = nullptr);
 
   // Gets the soonest delta after which the browser should be woken up to send
   // a Background Sync event. If set to max, the browser won't be woken up.
@@ -247,6 +252,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
+  void ResolveRegistrationDidCreateKeepAlive(
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,
@@ -265,9 +272,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   // called by FireReadyEvents.
   void RunInBackgroundIfNecessary();
 
-  void FireReadyEventsImpl(base::OnceClosure callback);
+  void FireReadyEventsImpl(
+      base::OnceClosure callback,
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
   void FireReadyEventsDidFindRegistration(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
       base::OnceClosure event_fired_callback,
       base::OnceClosure event_completed_callback,
       blink::ServiceWorkerStatusCode service_worker_status,
@@ -278,10 +288,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   void EventComplete(
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
       base::OnceClosure callback,
       blink::ServiceWorkerStatusCode status_code);
   void EventCompleteImpl(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+      std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
       blink::ServiceWorkerStatusCode status_code,
       const url::Origin& origin,
       base::OnceClosure callback);

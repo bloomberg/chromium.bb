@@ -11,7 +11,10 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/background_sync/background_sync_metrics.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
@@ -45,6 +48,18 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   static const int kEngagementLevelLowPenalty = 3;
   static const int kEngagementLevelMinimalPenalty = 4;
 
+#if !defined(OS_ANDROID)
+  class BackgroundSyncEventKeepAliveImpl : public BackgroundSyncEventKeepAlive {
+   public:
+    ~BackgroundSyncEventKeepAliveImpl() override;
+    BackgroundSyncEventKeepAliveImpl();
+
+   private:
+    std::unique_ptr<ScopedKeepAlive, content::BrowserThread::DeleteOnUIThread>
+        keepalive_ = nullptr;
+  };
+#endif
+
   explicit BackgroundSyncControllerImpl(Profile* profile);
   ~BackgroundSyncControllerImpl() override;
 
@@ -65,6 +80,8 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       int num_attempts,
       blink::mojom::BackgroundSyncType sync_type,
       content::BackgroundSyncParameters* parameters) const override;
+  std::unique_ptr<BackgroundSyncEventKeepAlive>
+  CreateBackgroundSyncEventKeepAlive() override;
 
  private:
   // Gets the site engagement penalty for |url|, which is inversely proportional
