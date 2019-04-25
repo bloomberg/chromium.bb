@@ -140,7 +140,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                  std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution ResolveConflict(const UpdateResponseData& update,
+  ConflictResolution ResolveConflict(std::unique_ptr<UpdateResponseData> update,
                                      ProcessorEntity* entity,
                                      EntityChangeList* changes,
                                      std::string* storage_key_to_clear);

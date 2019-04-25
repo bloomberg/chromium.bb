@@ -796,11 +796,14 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     return nullptr;
   }
 
+  // Cache update encryption key name in case |update| will be moved away into
+  // ResolveConflict().
+  const std::string update_encryption_key_name = update->encryption_key_name;
   ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
-    resolution_type =
-        ResolveConflict(*update, entity, entity_changes, storage_key_to_clear);
+    resolution_type = ResolveConflict(std::move(update), entity, entity_changes,
+                                      storage_key_to_clear);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
                               ConflictResolution::kTypeSize);
   } else {
@@ -842,9 +845,9 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
 
   // If the received entity has out of date encryption, we schedule another
   // commit to fix it.
-  if (model_type_state_.encryption_key_name() != update->encryption_key_name) {
+  if (model_type_state_.encryption_key_name() != update_encryption_key_name) {
     DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
-             << update->encryption_key_name << " -> "
+             << update_encryption_key_name << " -> "
              << model_type_state_.encryption_key_name();
 
     entity->IncrementSequenceNumber(base::Time::Now());
@@ -853,11 +856,11 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
 }
 
 ConflictResolution ClientTagBasedModelTypeProcessor::ResolveConflict(
-    const UpdateResponseData& update,
+    std::unique_ptr<UpdateResponseData> update,
     ProcessorEntity* entity,
     EntityChangeList* changes,
     std::string* storage_key_to_clear) {
-  const EntityData& remote_data = *update.entity;
+  const EntityData& remote_data = *update->entity;
 
   ConflictResolution resolution_type = ConflictResolution::kTypeSize;
 
@@ -887,23 +890,27 @@ ConflictResolution ClientTagBasedModelTypeProcessor::ResolveConflict(
   switch (resolution_type) {
     case ConflictResolution::kChangesMatch:
       // Record the update and squash the pending commit.
-      entity->RecordForcedUpdate(update);
+      entity->RecordForcedUpdate(*update);
       break;
     case ConflictResolution::kUseLocal:
     case ConflictResolution::kIgnoreRemoteEncryption:
       // Record that we received the update from the server but leave the
       // pending commit intact.
-      entity->RecordIgnoredUpdate(update);
+      entity->RecordIgnoredUpdate(*update);
       break;
     case ConflictResolution::kUseRemote:
     case ConflictResolution::kIgnoreLocalEncryption:
       // Update client data to match server.
-      if (update.entity->is_deleted()) {
+      if (update->entity->is_deleted()) {
         DCHECK(!entity->metadata().is_deleted());
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
       } else if (!entity->metadata().is_deleted()) {
-        changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
-                                                      update.entity->Clone()));
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
+        changes->push_back(EntityChange::CreateUpdate(
+            entity->storage_key(), std::move(update->entity)));
       } else {
         // Remote undeletion. This could imply a new storage key for some
         // bridges, so we may need to wait until UpdateStorageKey() is called.
@@ -911,11 +918,11 @@ ConflictResolution ClientTagBasedModelTypeProcessor::ResolveConflict(
           *storage_key_to_clear = entity->storage_key();
           entity->ClearStorageKey();
         }
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
         changes->push_back(EntityChange::CreateAdd(entity->storage_key(),
-                                                   update.entity->Clone()));
+                                                   std::move(update->entity)));
       }
-      // Squash the pending commit.
-      entity->RecordForcedUpdate(update);
       break;
     case ConflictResolution::kUseNewDEPRECATED:
     case ConflictResolution::kTypeSize:
