@@ -48,4 +48,8 @@ message Crash {
   // deleted or a wild memory access occurs for a page that has no associated
   // metadata.
   optional bool missing_metadata = 9;
+
+  // Report an internal GWP-ASan error encountered in the crash handler while
+  // analyzing this crash.
+  optional string internal_error = 10;
 }

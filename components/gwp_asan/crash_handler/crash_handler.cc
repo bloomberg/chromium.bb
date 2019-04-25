@@ -82,7 +82,9 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
   auto result = CrashAnalyzer::GetExceptionInfo(snapshot, &proto);
   if (result != GwpAsanCrashAnalysisResult::kUnrelatedCrash)
     UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
-  if (result != GwpAsanCrashAnalysisResult::kGwpAsanCrash)
+
+  // The missing_metadata field is always set for all exceptions.
+  if (!proto.has_missing_metadata())
     return nullptr;
 
   if (proto.missing_metadata()) {
@@ -97,6 +99,9 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
     LOG(ERROR) << "Invalid address passed to free() is " << std::hex
                << proto.free_invalid_address() << std::dec;
   }
+
+  if (proto.has_internal_error())
+    LOG(ERROR) << "Experienced internal error: " << proto.internal_error();
 
   return std::make_unique<BufferExtensionStreamDataSource>(
       kGwpAsanMinidumpStreamType, proto);

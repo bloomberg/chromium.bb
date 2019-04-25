@@ -98,6 +98,7 @@ class CrashAnalyzer {
                                  const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
 
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, InternalError);
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
 };
 

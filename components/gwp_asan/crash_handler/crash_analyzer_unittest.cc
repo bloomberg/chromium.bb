@@ -77,5 +77,30 @@ TEST(CrashAnalyzerTest, StackTraceCollection) {
                 proto.deallocation().stack_trace_size() - (trace_len + 1)));
 }
 
+TEST(CrashAnalyzerTest, InternalError) {
+  GuardedPageAllocator gpa;
+  gpa.Init(1, 1, 1);
+
+  crashpad::ProcessMemoryNative memory;
+  ASSERT_TRUE(memory.Initialize(crashpad::test::GetSelfProcess()));
+
+  // Lets pretend a invalid free() occurred in the allocator region.
+  crashpad::test::TestExceptionSnapshot exception_snapshot;
+  gpa.state_.free_invalid_address =
+      reinterpret_cast<uintptr_t>(gpa.state_.first_page_addr);
+  // Out of bounds slot_to_metadata_idx, allocator was initialized with only a
+  // single entry slot/metadata entry.
+  gpa.slot_to_metadata_idx_[0] = 5;
+
+  gwp_asan::Crash proto;
+  auto result = CrashAnalyzer::AnalyzeCrashedAllocator(
+      memory, exception_snapshot, reinterpret_cast<uintptr_t>(&gpa), &proto);
+  EXPECT_EQ(result,
+            CrashAnalyzer::GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
+  EXPECT_TRUE(proto.has_internal_error());
+  ASSERT_TRUE(proto.has_missing_metadata());
+  EXPECT_TRUE(proto.missing_metadata());
+}
+
 }  // namespace internal
 }  // namespace gwp_asan

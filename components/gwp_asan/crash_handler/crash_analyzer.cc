@@ -114,7 +114,16 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   if (!exception_addr || !valid_state.PointerIsMine(exception_addr))
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
   // All errors that occur below happen for an exception known to be related to
-  // GWP-ASan.
+  // GWP-ASan so we fill out the protobuf on error as well and include an error
+  // string.
+
+  proto->set_region_start(valid_state.pages_base_addr);
+  proto->set_region_size(valid_state.pages_end_addr -
+                         valid_state.pages_base_addr);
+  if (valid_state.free_invalid_address)
+    proto->set_free_invalid_address(valid_state.free_invalid_address);
+  // We overwrite this later if it should be false.
+  proto->set_missing_metadata(true);
 
   // Read the allocator's entire metadata array.
   auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
@@ -123,7 +132,7 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
           valid_state.metadata_addr,
           sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
           metadata_arr.get())) {
-    DLOG(ERROR) << "Failed to read metadata from process.";
+    proto->set_internal_error("Failed to read metadata.");
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
   }
 
@@ -134,36 +143,30 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
           valid_state.slot_to_metadata_addr,
           sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
           slot_to_metadata.get())) {
-    DLOG(ERROR) << "Failed to read slot_to_metadata from process.";
+    proto->set_internal_error("Failed to read slot_to_metadata.");
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping;
   }
 
   AllocatorState::MetadataIdx metadata_idx;
-  auto ret =
-      valid_state.GetMetadataForAddress(exception_addr, metadata_arr.get(),
-                                        slot_to_metadata.get(), &metadata_idx);
-  if (ret == GetMetadataReturnType::kErrorBadSlot) {
-    DLOG(ERROR) << "Allocator computed a bad slot index!";
+  std::string error;
+  auto ret = valid_state.GetMetadataForAddress(
+      exception_addr, metadata_arr.get(), slot_to_metadata.get(), &metadata_idx,
+      &error);
+  if (!error.empty())
+    proto->set_internal_error(error);
+  if (ret == GetMetadataReturnType::kErrorBadSlot)
     return GwpAsanCrashAnalysisResult::kErrorBadSlot;
-  }
-  if (ret == GetMetadataReturnType::kErrorBadMetadataIndex) {
-    DLOG(ERROR) << "Allocator state held a bad metadata index!";
+  if (ret == GetMetadataReturnType::kErrorBadMetadataIndex)
     return GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex;
-  }
-  if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex) {
-    DLOG(ERROR) << "Metadata index was outdated!";
+  if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex)
     return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
-  }
 
-  bool missing_metadata =
-      (ret == GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
-  proto->set_missing_metadata(missing_metadata);
-
-  if (!missing_metadata) {
+  if (ret == GetMetadataReturnType::kGwpAsanCrash) {
     SlotMetadata& metadata = metadata_arr[metadata_idx];
     AllocatorState::ErrorType error =
         valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
                                  metadata.dealloc.trace_collected);
+    proto->set_missing_metadata(false);
     proto->set_error_type(static_cast<Crash_ErrorType>(error));
     proto->set_allocation_address(metadata.alloc_ptr);
     proto->set_allocation_size(metadata.alloc_size);
@@ -176,12 +179,6 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
       ReadAllocationInfo(metadata.stack_trace_pool, metadata.alloc.trace_len,
                          metadata.dealloc, proto->mutable_deallocation());
   }
-
-  proto->set_region_start(valid_state.pages_base_addr);
-  proto->set_region_size(valid_state.pages_end_addr -
-                         valid_state.pages_base_addr);
-  if (valid_state.free_invalid_address)
-    proto->set_free_invalid_address(valid_state.free_invalid_address);
 
   return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
 }
