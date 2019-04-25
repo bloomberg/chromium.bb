@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/main/browser_coordinator.h"
+#import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 
 #include <memory>
 

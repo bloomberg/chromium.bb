@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_MAIN_BROWSER_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_MAIN_BROWSER_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_VIEW_BROWSER_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_VIEW_BROWSER_COORDINATOR_H_
 
 #include "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
@@ -50,4 +50,4 @@ class AppUrlLoadingService;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_MAIN_BROWSER_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_VIEW_BROWSER_COORDINATOR_H_

@@ -5,8 +5,6 @@
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "browser_coordinator.h",
-    "browser_coordinator.mm",
     "browser_interface_provider.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
