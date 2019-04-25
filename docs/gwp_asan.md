@@ -17,9 +17,15 @@ The allocator saves stack traces on every allocation and deallocation to
 preserve debug context if that allocation results in a memory error.
 
 The allocator implements a quarantine mechanism by allocating virtual memory for
-more allocations than the total number of allocations it can return. The
-difference forms a rudimentary quarantine as not all allocations can be taken at
-a given time.
+more allocations than the total number of physical pages it can return at any
+given time. The difference forms a rudimentary quarantine.
+
+Because pages are re-used for allocations, it's possible that a long-lived
+use-after-free will cause a crash long after the original allocation has been
+replaced. In order to decrease the likelihood of incorrect stack traces being
+reported, we allocate a lot of virtual memory but don't store metadata for every
+allocation. That way though we may not be able to report the metadata for an old
+allocation, we will not report incorrect stack traces.
 
 Allocations are sampled to the GuardedPageAllocator using an [allocator shim.](/base/allocator/README.md)
 
@@ -44,17 +50,23 @@ validate the allocator internals before reasoning about them.
 ## Status
 
 GWP-ASan is currently only implemented for the system allocator (e.g. not
-PartitionAlloc) on Windows. It is not currently enabled by default, but can be
-enabled using the following command-line switches (with adjustable parameters):
+PartitionAlloc/Oilpan/v8) on Windows and macOS. It is currently enabled by
+default. The allocator parameters can be manually modified by using the
+following invocation:
 
 ```shell
 chrome --enable-features="GwpAsanMalloc<Study" \
        --force-fieldtrials=Study/Group1 \
-       --force-fieldtrial-params=Study.Group1:MaxAllocations/32/TotalPages/128/AllocationSamplingFrequency/1000/ProcessSamplingProbability/1.0
+       --force-fieldtrial-params=Study.Group1:MaxAllocations/128/MaxMetadata/255/TotalPages/4096/AllocationSamplingFrequency/1000/ProcessSamplingProbability/1.0
 ```
 
+GWP-ASan is tuned more aggressively in canary/dev (to increase the likelihood we
+catch newly introduced bugs) and for the browser process (because of its
+importance and sheer number of allocations.)
+
 A [hotlist of bugs discovered by by GWP-ASan](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Hotlist%3DGWP-ASan)
-exists, though the bugs are filed without external visibility by default.
+exists, though GWP-ASan crashes are filed without external visibility by
+default.
 
 ## Testing
 
@@ -62,4 +74,4 @@ There is [not yet](https://crbug.com/910751) a way to intentionally trigger a
 GWP-ASan exception.
 
 There is [not yet](https://crbug.com/910749) a way to inspect GWP-ASan data in
-the minidump (crash report).
+a minidump (crash report) without access to Google's crash service.
