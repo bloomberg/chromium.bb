@@ -214,19 +214,6 @@ class UrlRequestTest : public ::testing::TestWithParam<
     EXPECT_FALSE(response_info.was_cached);
   }
 
-  void CheckResponseInfoHeader(
-      const TestUrlRequestCallback::UrlResponseInfo& response_info,
-      const std::string& header_name,
-      const std::string& header_value) {
-    for (const auto& header : response_info.all_headers) {
-      if (header.first == header_name) {
-        EXPECT_EQ(header.second, header_value);
-        return;
-      }
-    }
-    NOTREACHED();
-  }
-
   void ExpectResponseInfoEquals(
       const TestUrlRequestCallback::UrlResponseInfo& expected,
       const TestUrlRequestCallback::UrlResponseInfo& actual) {
