@@ -143,6 +143,9 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
                                   bool is_list_empty,
                                   int column_id);
 
+  // WebContentsObserver:
+  void DidChangeVisibleSecurityState() override;
+
 #if defined(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
@@ -174,6 +177,9 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // The button that opens the "Cookies" dialog.
   HoverButton* cookie_button_;
+
+  // The button that opens the "Certificate" dialog.
+  HoverButton* certificate_button_;
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_;

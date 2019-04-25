@@ -29,8 +29,13 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,6 +43,12 @@
 #include "ui/events/event_constants.h"
 
 namespace {
+
+const auto kPageInfoNotSecureTitle =
+    base::ASCIIToUTF16("Your connection to this site is not secure");
+const auto kPageInfoMixedTitle =
+    base::ASCIIToUTF16("Your connection to this site is not fully secure");
+const auto kPageInfoSecureTitle = base::ASCIIToUTF16("Connection is secure");
 
 class ClickEvent : public ui::Event {
  public:
@@ -254,6 +265,20 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     return ui_test_utils::GetTestUrl(
         base::FilePath(base::FilePath::kCurrentDirectory),
         base::FilePath(FILE_PATH_LITERAL("iframe_blank.html")));
+  }
+
+  void ExecuteJavaScriptForTests(const std::string& js) {
+    base::RunLoop run_loop;
+    browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetMainFrame()
+        ->ExecuteJavaScriptForTests(
+            base::ASCIIToUTF16(js),
+            base::BindOnce([](const base::Closure& quit_callback,
+                              base::Value result) { quit_callback.Run(); },
+                           run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
  private:
@@ -600,4 +625,25 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   // happened.
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());
+}
+
+// Ensure that changes to security state are reflected in open PageInfo bubble.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       UpdatesOnSecurityStateChange) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server.GetURL("/delayed_mixed_content.html"));
+  OpenPageInfoBubble(browser());
+
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubble();
+
+  EXPECT_EQ(page_info->GetWindowTitle(), kPageInfoSecureTitle);
+
+  ExecuteJavaScriptForTests("load_mixed();");
+  EXPECT_EQ(page_info->GetWindowTitle(), kPageInfoMixedTitle);
 }

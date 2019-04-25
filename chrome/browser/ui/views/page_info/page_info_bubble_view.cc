@@ -21,6 +21,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/page_info.h"
@@ -287,6 +288,11 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
 }
 
 void BubbleHeaderView::AddResetDecisionsLabel() {
+  if (!reset_decisions_label_container_->children().empty()) {
+    // Ensure all old content is removed from the container before re-adding it.
+    reset_decisions_label_container_->RemoveAllChildViews(true);
+  }
+
   std::vector<base::string16> subst;
   subst.push_back(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INVALID_CERTIFICATE_DESCRIPTION));
@@ -320,6 +326,11 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 }
 
 void BubbleHeaderView::AddPasswordReuseButtons() {
+  if (!password_reuse_button_container_->children().empty()) {
+    // Ensure all old content is removed from the container before re-adding it.
+    password_reuse_button_container_->RemoveAllChildViews(true /* delete */);
+  }
+
   change_password_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       button_listener_,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON));
@@ -464,6 +475,7 @@ PageInfoBubbleView::PageInfoBubbleView(
       header_(nullptr),
       site_settings_view_(nullptr),
       cookie_button_(nullptr),
+      certificate_button_(nullptr),
       page_feature_info_view_(nullptr),
       weak_factory_(this) {
   // Capture the default bubble margin, and move it to the Layout classes. This
@@ -805,11 +817,23 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     const base::string16 secondary_text = l10n_util::GetStringUTF16(
         valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                        : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
-    std::unique_ptr<HoverButton> certificate_button = CreateMoreInfoButton(
-        this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
-        VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip);
-    certificate_button->set_auto_compute_tooltip(false);
-    site_settings_view_->AddChildView(certificate_button.release());
+
+    // If the certificate button has been added previously, remove the old one
+    // before recreating it. Re-adding it bumps it to the bottom of the
+    // container, but its unlikely that the user will notice, since other things
+    // are changing too.
+    if (certificate_button_) {
+      site_settings_view_->RemoveChildView(certificate_button_);
+      auto to_delete = std::make_unique<HoverButton*>(certificate_button_);
+    }
+
+    certificate_button_ =
+        CreateMoreInfoButton(
+            this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
+            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip)
+            .release();
+    certificate_button_->set_auto_compute_tooltip(false);
+    site_settings_view_->AddChildView(certificate_button_);
   }
 
   if (identity_info.show_change_password_buttons) {
@@ -902,6 +926,19 @@ void PageInfoBubbleView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
       views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
       views::GridLayout::kFixedSize, 0);
   permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
+}
+
+void PageInfoBubbleView::DidChangeVisibleSecurityState() {
+  content::WebContents* contents = web_contents();
+  if (!contents)
+    return;
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  DCHECK(helper);
+
+  presenter_->UpdateSecurityState(helper->GetSecurityLevel(),
+                                  *helper->GetVisibleSecurityState());
 }
 
 #if defined(FULL_SAFE_BROWSING)

@@ -335,7 +335,7 @@ PageInfo::PageInfo(
 #endif
       show_change_password_buttons_(false),
       did_perform_action_(false) {
-  Init(url, security_level, visible_security_state);
+  ComputeUIInputs(url, security_level, visible_security_state);
 
   PresentSitePermissions();
   PresentSiteIdentity();
@@ -385,6 +385,13 @@ PageInfo::~PageInfo() {
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
   }
+}
+
+void PageInfo::UpdateSecurityState(
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state) {
+  ComputeUIInputs(site_url_, security_level, visible_security_state);
+  PresentSiteIdentity();
 }
 
 void PageInfo::RecordPageInfoAction(PageInfoAction action) {
@@ -570,7 +577,7 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
 #endif
 }
 
-void PageInfo::Init(
+void PageInfo::ComputeUIInputs(
     const GURL& url,
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state) {
@@ -620,12 +627,21 @@ void PageInfo::Init(
     GetSiteIdentityByMaliciousContentStatus(
         visible_security_state.malicious_content_status, &site_identity_status_,
         &site_identity_details_);
+#if defined(FULL_SAFE_BROWSING)
+    bool old_show_change_pw_buttons = show_change_password_buttons_;
+#endif
     show_change_password_buttons_ =
         (visible_security_state.malicious_content_status ==
              security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE ||
          visible_security_state.malicious_content_status ==
              security_state::
                  MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
+#if defined(FULL_SAFE_BROWSING)
+    // Only record password reuse when adding the button, not on updates.
+    if (show_change_password_buttons_ && !old_show_change_pw_buttons) {
+      RecordPasswordReuseEvent();
+    }
+#endif
   } else if (certificate_ &&
              (!net::IsCertStatusError(visible_security_state.cert_status) ||
               net::IsCertStatusMinorError(
@@ -951,25 +967,6 @@ void PageInfo::PresentSiteIdentity() {
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   info.show_change_password_buttons = show_change_password_buttons_;
   ui_->SetIdentityInfo(info);
-#if defined(FULL_SAFE_BROWSING)
-  if (password_protection_service_ && show_change_password_buttons_) {
-    if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
-      safe_browsing::LogWarningAction(
-          safe_browsing::WarningUIType::PAGE_INFO,
-          safe_browsing::WarningAction::SHOWN,
-          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              SIGN_IN_PASSWORD,
-          password_protection_service_->GetSyncAccountType());
-    } else {
-      safe_browsing::LogWarningAction(
-          safe_browsing::WarningUIType::PAGE_INFO,
-          safe_browsing::WarningAction::SHOWN,
-          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
-              ENTERPRISE_PASSWORD,
-          password_protection_service_->GetSyncAccountType());
-    }
-  }
-#endif
 }
 
 void PageInfo::PresentPageFeatureInfo() {
@@ -979,6 +976,30 @@ void PageInfo::PresentPageFeatureInfo() {
 
   ui_->SetPageFeatureInfo(info);
 }
+
+#if defined(FULL_SAFE_BROWSING)
+void PageInfo::RecordPasswordReuseEvent() {
+  if (!password_protection_service_) {
+    return;
+  }
+
+  if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
+    safe_browsing::LogWarningAction(
+        safe_browsing::WarningUIType::PAGE_INFO,
+        safe_browsing::WarningAction::SHOWN,
+        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+            SIGN_IN_PASSWORD,
+        password_protection_service_->GetSyncAccountType());
+  } else {
+    safe_browsing::LogWarningAction(
+        safe_browsing::WarningUIType::PAGE_INFO,
+        safe_browsing::WarningAction::SHOWN,
+        safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+            ENTERPRISE_PASSWORD,
+        password_protection_service_->GetSyncAccountType());
+  }
+}
+#endif
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;
