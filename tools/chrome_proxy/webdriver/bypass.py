@@ -6,7 +6,6 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
-from decorators import ChromeVersionBeforeM
 
 
 class Bypass(IntegrationTest):
@@ -144,43 +143,6 @@ class Bypass(IntegrationTest):
       histogram = t.GetHistogram('DataReductionProxy.ProxySchemeUsed')
       self.assertEqual(histogram['buckets'][0]['low'], 2)
       self.assertEqual(histogram['buckets'][0]['high'], 3)
-
-  # Verify that when Chrome receives a 4xx response through a Data Reduction
-  # Proxy that doesn't set a proper via header, Chrome bypasses all proxies and
-  # retries the request over direct.
-  @ChromeVersionBeforeM(67)
-  def testMissingViaHeader4xxBypass(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-
-      # Set the primary Data Reduction Proxy to be the test server, which does
-      # not add any Via headers.
-      test_driver.AddChromeArg('--data-reduction-proxy-http-proxies='
-                               'https://chromeproxy-test.appspot.com;'
-                               'http://compress.googlezip.net')
-
-      # Load a page that will come back with a 4xx response code and without the
-      # proper via header. Chrome should bypass all proxies and retry the
-      # request.
-      test_driver.LoadURL(
-          'http://chromeproxy-test.appspot.com/default?respStatus=414')
-      responses = test_driver.GetHTTPResponses()
-      self.assertNotEqual(0, len(responses))
-      for response in responses:
-        self.assertNotHasChromeProxyViaHeader(response)
-        self.assertEqual(u'http/1.1', response.protocol)
-
-      # Check that the BlockTypePrimary histogram has at least one entry in the
-      # MissingViaHeader4xx category (which is enum value 4), to make sure that
-      # the bypass was caused by the missing via header logic and not something
-      # else. The favicon for this URL may also be fetched, but will return a
-      # 404.
-      histogram = test_driver.GetHistogram(
-          "DataReductionProxy.BlockTypePrimary")
-      self.assertNotEqual(0, histogram['count'])
-      self.assertEqual(1, len(histogram['buckets']))
-      self.assertEqual(5, histogram['buckets'][0]['high'])
-      self.assertEqual(4, histogram['buckets'][0]['low'])
 
   # Verify that the Data Reduction Proxy understands the "exp" directive.
   def testExpDirectiveBypass(self):

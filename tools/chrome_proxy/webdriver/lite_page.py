@@ -73,84 +73,6 @@ class LitePage(IntegrationTest):
 
       self.assertPreviewShownViaHistogram(test_driver, 'LitePage')
 
-  # Checks that a Lite Page is served and the force_lite_page experiment
-  # directive is provided when always-on.
-  # Note: this test is only on M-60+ which supports exp=force_lite_page
-  @ChromeVersionEqualOrAfterM(60)
-  @ChromeVersionBeforeM(65)
-  def testLitePageForcedExperiment(self):
-    # If it was attempted to run with another experiment, skip this test.
-    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
-        in common.ParseFlags().browser_args):
-      self.skipTest('This test cannot be run with other experiments.')
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
-      test_driver.AddChromeArg('--enable-data-reduction-proxy-lite-page')
-
-      # Force ECT to be 4G to confirm that we get Lite Page even for fast
-      # conneciton.
-      test_driver.AddChromeArg('--force-fieldtrial-params='
-                               'NetworkQualityEstimator.Enabled:'
-                               'force_effective_connection_type/4G')
-      test_driver.AddChromeArg('--force-fieldtrials='
-                               'NetworkQualityEstimator/Enabled/')
-
-      test_driver.LoadURL('http://check.googlezip.net/test.html')
-
-      lite_page_responses = 0
-      for response in test_driver.GetHTTPResponses():
-        # Verify client sends force directive on every request for session.
-        self.assertIn('exp=force_lite_page',
-          response.request_headers['chrome-proxy'])
-        self.assertEqual('4G', response.request_headers['chrome-proxy-ect'])
-        # Skip CSI requests when validating Lite Page headers. CSI requests
-        # aren't expected to have LoFi headers.
-        if '/csi?' in response.url:
-          continue
-        if response.url.startswith('data:'):
-          continue
-        if (self.checkLitePageResponse(response)):
-          lite_page_responses = lite_page_responses + 1
-
-      # Verify that a Lite Page response for the main frame was seen.
-      self.assertEqual(1, lite_page_responses)
-
-  # Checks that a Lite Page is not served for the Cellular-Only option but
-  # not on cellular connection.
-  @ChromeVersionEqualOrAfterM(61)
-  @ChromeVersionBeforeM(65)
-  def testLitePageNotAcceptedForCellularOnlyFlag(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=cellular-only')
-      test_driver.AddChromeArg('--enable-data-reduction-proxy-lite-page')
-
-      test_driver.LoadURL('http://check.googlezip.net/test.html')
-
-      non_lite_page_responses = 0
-      for response in test_driver.GetHTTPResponses():
-        if response.url.endswith('html'):
-          self.assertNotIn('chrome-proxy-accept-transform',
-                           response.request_headers)
-          self.assertNotIn('chrome-proxy-content-transform',
-                           response.response_headers)
-          non_lite_page_responses = non_lite_page_responses + 1
-          # Note that the client will still send exp=force_lite_page (if not
-          # using the exp paramter to specify other experiments).
-          if common.ParseFlags().browser_args:
-            if ('--data-reduction-proxy-experiment'
-                not in common.ParseFlags().browser_args):
-              # Verify force directive present.
-              self.assertIn('exp=force_lite_page',
-                response.request_headers['chrome-proxy'])
-
-      # Verify that a main frame without Lite Page was seen.
-      self.assertEqual(1, non_lite_page_responses)
-
   # Checks that a Nano Lite Page does not have an error when scrolling to the
   # bottom of the page and is able to load all resources. Nano pages don't
   # request additional resources when scrolling. This test is only run on
@@ -243,45 +165,6 @@ class LitePage(IntegrationTest):
       self.assertEqual(
         {'count': 1, 'high': 1, 'low': 0},
         histogram['buckets'][0])
-
-  # Lo-Fi fallback is not supported without the
-  # DataReductionProxyDecidesTransform feature. Check that no Lo-Fi response
-  # is received if a Lite Page is not served.
-  @ChromeVersionBeforeM(62)
-  def testLitePageNoFallback(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--force-fieldtrials='
-                               'DataCompressionProxyLoFi/Enabled_Preview/')
-      test_driver.AddChromeArg('--force-fieldtrial-params='
-                               'DataCompressionProxyLoFi.Enabled_Preview:'
-                               'effective_connection_type/4G')
-      test_driver.AddChromeArg('--force-net-effective-connection-type=2g')
-
-      test_driver.LoadURL('http://check.googlezip.net/lite-page-fallback')
-
-      lite_page_requests = 0
-      lo_fi_responses = 0
-      for response in test_driver.GetHTTPResponses():
-        if not response.request_headers:
-          continue
-
-        if ('chrome-proxy-accept-transform' in response.request_headers):
-          cpat_request = response.request_headers[
-                           'chrome-proxy-accept-transform']
-          if ('lite-page' in cpat_request):
-            lite_page_requests = lite_page_requests + 1
-            self.assertFalse(self.checkLitePageResponse(response))
-
-        if not response.url.endswith('png'):
-          continue
-
-        # Lo-Fi fallback is not currently supported via the client. Check that
-        # no Lo-Fi response is received.
-        self.checkLoFiResponse(response, False)
-
-      # Verify that a Lite Page was requested.
-      self.assertEqual(1, lite_page_requests)
 
   # Verifies Lo-Fi fallback via the page-policies server directive.
   # Note: this test is for the CPAT protocol change in M-61.
