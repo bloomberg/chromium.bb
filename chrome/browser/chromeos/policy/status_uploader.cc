@@ -53,7 +53,6 @@ StatusUploader::StatusUploader(
   // Track whether any media capture devices are in use - this changes what
   // type of information we are allowed to upload.
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-
   // Listen for changes to the upload delay, and start sending updates to the
   // server.
   upload_frequency_observer_ =
@@ -126,7 +125,6 @@ void StatusUploader::RefreshUploadFrequency() {
     upload_frequency_ = base::TimeDelta::FromMilliseconds(
         std::max(kMinUploadDelayMs, frequency));
   }
-
   // Schedule a new upload with the new frequency - only do this if we've
   // already performed the initial upload, because we want the initial upload
   // to happen in a minute after startup and not get cancelled by settings
@@ -216,6 +214,7 @@ void StatusUploader::OnStatusReceived(StatusCollectorParams callback_params) {
 
   SYSLOG(INFO) << "Starting status upload: has_device_status = "
                << has_device_status;
+
   client_->UploadDeviceStatus(callback_params.device_status.get(),
                               callback_params.session_status.get(),
                               callback_params.child_status.get(),

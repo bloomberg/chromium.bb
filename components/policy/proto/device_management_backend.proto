@@ -871,6 +871,15 @@ message PowerStatus {
   repeated BatteryInfo batteries = 2;
 }
 
+// LifeTime estimation for eMMC devices
+message DiskLifetimeEstimation {
+  // Lifetime estimations for SLC and MLC areas of eMMC.
+  // Values range from 00h to 0Bh -- indicating the percentage of device
+  // lifetime used.
+  optional int32 slc = 1;
+  optional int32 mlc = 2;
+}
+
 // Status of the single storage device
 message DiskInfo {
   optional string serial = 1;
@@ -878,7 +887,7 @@ message DiskInfo {
   optional string model = 3;
   // Size in bytes
   optional int64 size = 4;
-  // SSD / eMMC / HDD
+  // SSD / MMC / HDD
   optional string type = 5;
   optional string health = 6;
   // volume_id for volumes on this disk.
@@ -888,6 +897,7 @@ message DiskInfo {
 // Status of the storage subsystem.
 message StorageStatus {
   repeated DiskInfo disks = 1;
+  optional DiskLifetimeEstimation lifetime_estimation = 2;
 }
 
 // Sampling for single temperature measurements

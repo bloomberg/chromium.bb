@@ -95,7 +95,8 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
           policy::DeviceStatusCollector::CPUStatisticsFetcher(),
           policy::DeviceStatusCollector::CPUTempFetcher(),
           policy::DeviceStatusCollector::AndroidStatusFetcher(),
-          policy::DeviceStatusCollector::TpmStatusFetcher(), day_reset_time_,
+          policy::DeviceStatusCollector::TpmStatusFetcher(),
+          policy::DeviceStatusCollector::EMMCLifetimeFetcher(), day_reset_time_,
           false /* is_enterprise_reporting */),
       base::ThreadTaskRunnerHandle::Get(), kStatusUploadFrequency);
 }
