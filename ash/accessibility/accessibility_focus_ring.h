@@ -89,6 +89,7 @@ struct ASH_EXPORT AccessibilityFocusRing {
       int margin);
 
   gfx::Rect GetBounds() const;
+  static void ClipToBounds(gfx::Rect* rect, const gfx::Rect& bounds);
   static gfx::Rect GetScreenBoundsForRect(const gfx::Rect& rect);
   static void set_screen_bounds_for_testing(const gfx::Rect& bounds) {
     screen_bounds_for_testing_ = bounds;

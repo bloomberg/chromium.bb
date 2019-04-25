@@ -54,11 +54,56 @@ class AccessibilityFocusRingGroupTest : public AshTestBase {
   TestableAccessibilityFocusRingGroup group_;
 };
 
+TEST_F(AccessibilityFocusRingGroupTest, ClipToBounds) {
+  // Test the ClipToBounds function, which takes an offscreen rect and preserves
+  // the dimensions that are within bounds, and snaps the dimensions that are
+  // out of bounds to the edges. This lets the code to create points work
+  // properly, while ensuring all sides of the focus ring are visible.
+  int length = 100;
+  gfx::Rect screen(0, 0, 1000, 1000);
+
+  gfx::Rect offTop(100, -1000, length, length);
+  gfx::Rect expected(100, 0, length, 0);
+  AccessibilityFocusRing::ClipToBounds(&offTop, screen);
+  ASSERT_EQ(expected, offTop);
+
+  gfx::Rect offBottom(100, 5000, length, length);
+  expected = gfx::Rect(100, 1000, length, 0);
+  AccessibilityFocusRing::ClipToBounds(&offBottom, screen);
+  ASSERT_EQ(expected, offBottom);
+
+  gfx::Rect offLeft(-1000, 100, length, length);
+  expected = gfx::Rect(0, 100, 0, length);
+  AccessibilityFocusRing::ClipToBounds(&offLeft, screen);
+  ASSERT_EQ(expected, offLeft);
+
+  gfx::Rect offRight(5000, 100, length, length);
+  expected = gfx::Rect(1000, 100, 0, length);
+  AccessibilityFocusRing::ClipToBounds(&offRight, screen);
+  ASSERT_EQ(expected, offRight);
+
+  gfx::Rect offCorner(-1000, -1000, length, length);
+  expected = gfx::Rect(0, 0, 0, 0);
+  AccessibilityFocusRing::ClipToBounds(&offCorner, screen);
+  ASSERT_EQ(expected, offCorner);
+}
+
 TEST_F(AccessibilityFocusRingGroupTest, RectsToRingsSimpleBoundsCheck) {
   // Easy sanity check. Given a single rectangle, make sure we get back
   // a focus ring with the same bounds.
   std::vector<gfx::Rect> rects;
   rects.push_back(gfx::Rect(10, 30, 70, 150));
+  std::vector<AccessibilityFocusRing> rings;
+  group_.RectsToRings(rects, &rings);
+  ASSERT_EQ(1U, rings.size());
+  ASSERT_EQ(AddMargin(rects[0]), rings[0].GetBounds());
+}
+
+TEST_F(AccessibilityFocusRingGroupTest, RectsToRingsTinyRect) {
+  // A single, very small rect can lead to error conditions.
+  // Test that it displays as expected.
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect(100, 100, group_.GetMargin(), group_.GetMargin()));
   std::vector<AccessibilityFocusRing> rings;
   group_.RectsToRings(rects, &rings);
   ASSERT_EQ(1U, rings.size());
