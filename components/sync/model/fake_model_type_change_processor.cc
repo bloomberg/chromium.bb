@@ -72,6 +72,10 @@ std::string FakeModelTypeChangeProcessor::TrackedAccountId() {
   return "";
 }
 
+std::string FakeModelTypeChangeProcessor::TrackedCacheGuid() {
+  return "";
+}
+
 void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
   error_ = error;
 }

@@ -229,12 +229,13 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void OnSyncStarting(
       const std::string& authenticated_account_id = "SomeAccountId",
+      const std::string& cache_guid = "TestCacheGuid",
       StorageOption storage_option = STORAGE_ON_DISK) {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
         base::Unretained(this));
-    request.cache_guid = "TestCacheGuid";
+    request.cache_guid = cache_guid;
     request.authenticated_account_id = authenticated_account_id;
     request.storage_option = storage_option;
     request.configuration_start_time = base::Time::Now();
@@ -401,6 +402,32 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // If sync gets started, the account should still be tracked.
   OnSyncStarting("PersistedAccountId");
   EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldExposeNewlyTrackedCacheGuid) {
+  ModelReadyToSync();
+  ASSERT_EQ("", type_processor()->TrackedCacheGuid());
+  OnSyncStarting("SomeAccountId", "TestCacheGuid");
+  worker()->UpdateFromServer();
+  EXPECT_EQ("TestCacheGuid", type_processor()->TrackedCacheGuid());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldExposePreviouslyTrackedCacheGuid) {
+  std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_cache_guid("PersistedCacheGuid");
+  metadata_batch->SetModelTypeState(model_type_state);
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // Even prior to starting sync, the cache guid should be set.
+  EXPECT_EQ("PersistedCacheGuid", type_processor()->TrackedCacheGuid());
+
+  // If sync gets started, the cache guid should still be set.
+  OnSyncStarting("SomeAccountId", "PersistedCacheGuid");
+  EXPECT_EQ("PersistedCacheGuid", type_processor()->TrackedCacheGuid());
 }
 
 // Test that an initial sync handles local and remote items properly.
@@ -1799,7 +1826,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", STORAGE_IN_MEMORY);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_IN_MEMORY);
 
   UpdateResponseDataList updates;
   updates.push_back(worker()->GenerateUpdateData(
@@ -1819,7 +1846,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldNotReportEphemeralConfigurationTimeForPersistentStorage) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", STORAGE_ON_DISK);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_ON_DISK);
 
   base::HistogramTester histogram_tester;
 
@@ -1885,7 +1912,7 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
 TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTimeOnlyForFirstFullUpdate) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", STORAGE_IN_MEMORY);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_IN_MEMORY);
 
   UpdateResponseDataList updates1;
   updates1.push_back(worker()->GenerateUpdateData(
