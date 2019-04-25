@@ -522,6 +522,40 @@ std::string NetworkState::GetErrorState() const {
   return last_error();
 }
 
+network_config::mojom::ActivationStateType
+NetworkState::GetMojoActivationState() const {
+  using network_config::mojom::ActivationStateType;
+  if (activation_state_.empty())
+    return ActivationStateType::kUnknown;
+  if (activation_state_ == shill::kActivationStateActivated)
+    return ActivationStateType::kActivated;
+  if (activation_state_ == shill::kActivationStateActivating)
+    return ActivationStateType::kActivating;
+  if (activation_state_ == shill::kActivationStateNotActivated)
+    return ActivationStateType::kNotActivated;
+  if (activation_state_ == shill::kActivationStatePartiallyActivated)
+    return ActivationStateType::kPartiallyActivated;
+  NET_LOG(ERROR) << "Unexpected shill activation state: " << activation_state_;
+  return ActivationStateType::kUnknown;
+}
+
+network_config::mojom::SecurityType NetworkState::GetMojoSecurity() const {
+  using network_config::mojom::SecurityType;
+  if (security_class_.empty() || security_class_ == shill::kSecurityNone)
+    return SecurityType::kNone;
+  if (IsDynamicWep())
+    return SecurityType::kWep8021x;
+
+  if (security_class_ == shill::kSecurityWep)
+    return SecurityType::kWepPsk;
+  if (security_class_ == shill::kSecurityPsk)
+    return SecurityType::kWpaPsk;
+  if (security_class_ == shill::kSecurity8021x)
+    return SecurityType::kWpaEap;
+  NET_LOG(ERROR) << "Unsupported shill security class: " << security_class_;
+  return SecurityType::kNone;
+}
+
 // static
 bool NetworkState::StateIsConnected(const std::string& connection_state) {
   return (connection_state == shill::kStateReady ||
