@@ -80,17 +80,6 @@ bool AutofillProfileDataTypeController::StartModels() {
 
   autofill::PersonalDataManager* personal_data = pdm_provider_.Run();
 
-  // Make sure PDM has the sync service. This is needed because in the account
-  // wallet data mode, PDM uses the service to determine whether to use the
-  // account or local database for server cards, and the association depends on
-  // the data in PDM being loaded (see next comment).
-  // TODO(crbug.com/913947): Merge this call and the one in autofill_manager to
-  // one single call in a more general place.
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableAccountWalletStorage)) {
-    personal_data->OnSyncServiceInitialized(sync_service());
-  }
-
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
   // association, the local ids in the mappings would wind up colliding.

@@ -211,13 +211,8 @@ AutofillProfile CreateUniqueAutofillProfile() {
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  auto* pdm = autofill::PersonalDataManagerFactory::GetForProfile(
+  return autofill::PersonalDataManagerFactory::GetForProfile(
       test()->GetProfile(index));
-  // Hook the sync service up to the personal data manager.
-  // This is normally done by autofill_manager, which we don't
-  // have in our tests.
-  pdm->OnSyncServiceInitialized(test()->GetSyncService(index));
-  return pdm;
 }
 
 void AddKeys(int profile, const std::set<AutofillKey>& keys) {

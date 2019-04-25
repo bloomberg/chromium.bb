@@ -6305,47 +6305,6 @@ TEST_F(AutofillManagerTest,
                                     HasSubstr("Autofill.FormEvents.Address"))));
 }
 
-// Tests that a call to the PDM's SyncServiceInitialized happens if in incognito
-// mode even if the sync service is null.
-TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_NotOffTheRecord) {
-  // Setup the test PDM.
-  TestPersonalDataManager test_pdm;
-  ASSERT_FALSE(test_pdm.sync_service_initialized());
-
-  // Set the client to return a null sync service (default).
-  TestAutofillClient client;
-
-  // Create a new AutofillManager.
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, &test_pdm,
-                              autocomplete_history_manager_.get()));
-
-  // Make sure the PDM's sync service was initialized.
-  EXPECT_TRUE(test_pdm.sync_service_initialized());
-}
-
-// Tests that no call to the PDM's SyncServiceInitialized happens in incognito
-// mode.
-TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_OffTheRecord) {
-  // Setup the test PDM.
-  TestPersonalDataManager test_pdm;
-  ASSERT_FALSE(test_pdm.sync_service_initialized());
-
-  // Set the client to return a null sync service (default).
-  TestAutofillClient client;
-
-  // Set the driver to return that the user is off the record.
-  TestAutofillDriver driver;
-  driver.SetIsIncognito(true);
-
-  // Create a new AutofillManager.
-  autofill_manager_.reset(new TestAutofillManager(
-      &driver, &client, &test_pdm, autocomplete_history_manager_.get()));
-
-  // Make sure the PDM's sync service was not initialized.
-  EXPECT_FALSE(test_pdm.sync_service_initialized());
-}
-
 // Test param indicates if there is an active screen reader.
 class OnFocusOnFormFieldTest : public AutofillManagerTest,
                                public testing::WithParamInterface<bool> {

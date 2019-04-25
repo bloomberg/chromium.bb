@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -104,6 +105,12 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   auto profile_sync_service =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
   profile_sync_service->Initialize();
+
+  // Hook PSS into PersonalDataManager (a circular dependency).
+  autofill::PersonalDataManager* pdm =
+      WebViewPersonalDataManagerFactory::GetForBrowserState(browser_state);
+  pdm->OnSyncServiceInitialized(profile_sync_service.get());
+
   return profile_sync_service;
 }
 
