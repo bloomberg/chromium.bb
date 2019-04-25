@@ -460,7 +460,10 @@ android_library("chrome_java") {
     proguard_configs += [ "//chrome/android/features/ar/proguard_async.flags" ]
   }
   if (async_vr) {
-    proguard_configs += [ "//chrome/android/features/vr/proguard_async.flags" ]
+    proguard_configs += [
+      "//chrome/android/features/vr/proguard_async.flags",
+      "//chrome/android/features/vr/proguard_async_manual.flags",
+    ]
   }
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]

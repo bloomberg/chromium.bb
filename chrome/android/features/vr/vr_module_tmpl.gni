@@ -72,5 +72,11 @@ template("vr_module_tmpl") {
 
     package_name = "vr"
     package_name_to_id_mapping = resource_packages_id_mapping
+
+    # If VR is set as async DFM, generate list of dependencies on base for keep
+    # rule generation.
+    if (async_vr) {
+      enable_class_deps_output = "vrConstantPoolDeps.txt"
+    }
   }
 }
