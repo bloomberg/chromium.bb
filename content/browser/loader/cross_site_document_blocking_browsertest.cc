@@ -319,6 +319,10 @@ class RequestInterceptor {
     request_initiator_to_inject_ = request_initiator;
   }
 
+  void InjectFetchMode(network::mojom::FetchRequestMode fetch_mode) {
+    fetch_mode_to_inject_ = fetch_mode;
+  }
+
  private:
   void ReadBody(base::OnceClosure completion_callback) {
     char buffer[128];
@@ -375,6 +379,8 @@ class RequestInterceptor {
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
       params->url_request.request_initiator = request_initiator_to_inject_;
+    if (fetch_mode_to_inject_.has_value())
+      params->url_request.fetch_request_mode = fetch_mode_to_inject_.value();
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -441,6 +447,7 @@ class RequestInterceptor {
   URLLoaderInterceptor interceptor_;
 
   base::Optional<url::Origin> request_initiator_to_inject_;
+  base::Optional<network::mojom::FetchRequestMode> fetch_mode_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -997,10 +1004,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   if (!AreAllSitesIsolatedForTesting())
     return;
 
-  // Prepare to intercept the network request at the IPC layer.
-  // in a way, that injects |spoofed_initiator| (simulating a compromised
-  // renderer that pretends to be making the request on behalf of another
-  // origin).
+  // Prepare to intercept the network request at the IPC layer in a way, that
+  // injects |spoofed_initiator| (simulating a compromised renderer that
+  // pretends to be making the request on behalf of another origin).
   //
   // Note that RequestInterceptor has to be constructed before the
   // RenderFrameHostImpl is created.
@@ -1038,6 +1044,64 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       document.body.appendChild(img); )";
   EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
   EXPECT_EQ("APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR",
+            bad_message_observer.WaitForBadMessage());
+}
+
+// Tests that renderer will be terminated if it asks AppCache to initiate a
+// cross-origin request with network::mojom::FetchRequestMode::kNavigate.
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       AppCache_NoNavigationsEnforcement) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Verification of |request_initiator| is only done in the NetworkService code
+  // path.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // No kills are expected unless the fetch requesting process is locked to a
+  // specific site URL.  Therefore, the test should be skipped unless the full
+  // Site Isolation is enabled.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  // Prepare to intercept the network request at the IPC layer in a way, that
+  // injects a spoofed fetch mode (simulating a compromised renderer that
+  // attempts to bypass CORB by using a fetch mode other than no-cors).
+  //
+  // Note that RequestInterceptor has to be constructed before the
+  // RenderFrameHostImpl is created.
+  GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(cross_site_url);
+  interceptor.InjectFetchMode(network::mojom::FetchRequestMode::kNavigate);
+
+  // Load the main page twice. The second navigation should have AppCache
+  // initialized for the page.
+  GURL main_url = embedded_test_server()->GetURL(
+      "/appcache/simple_page_with_manifest.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Trigger an AppCache request with an incorrect |request_initiator| and
+  // verify that this will terminate the renderer process.
+  //
+  // Note that during the test, no renderer processes will be actually
+  // terminated, because the malicious/invalid message originates from within
+  // the test process (i.e. from URLLoaderInterceptor::Interceptor's
+  // CreateLoaderAndStart method which forwards the
+  // InjectFetchMode-modified request into
+  // AppCacheSubresourceURLFactory).  This necessitates testing via
+  // mojo::test::BadMessageObserver rather than via RenderProcessHostWatcher or
+  // RenderProcessHostKillWaiter.
+  mojo::test::BadMessageObserver bad_message_observer;
+  const char kScriptTemplate[] = R"(
+      var img = document.createElement('img');
+      img.src = $1;
+      document.body.appendChild(img); )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
+  EXPECT_EQ("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE",
             bad_message_observer.WaitForBadMessage());
 }
 

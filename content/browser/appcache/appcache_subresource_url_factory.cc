@@ -366,6 +366,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check
   // is a temporary solution to avoid crashes when this method is run after the
@@ -394,6 +395,14 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
           "APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
       return;
     }
+  }
+
+  // Subresource requests from renderer processes should not be allowed to use
+  // network::mojom::FetchRequestMode::kNavigate.
+  if (request.fetch_request_mode ==
+      network::mojom::FetchRequestMode::kNavigate) {
+    mojo::ReportBadMessage("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE");
+    return;
   }
 
   new SubresourceLoader(std::move(url_loader_request), routing_id, request_id,
