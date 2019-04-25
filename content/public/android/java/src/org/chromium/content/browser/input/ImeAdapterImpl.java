@@ -766,12 +766,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         return true;
     }
 
-    /**
-     * Advances the focus to next input field in the current form.
-     *
-     * @param focusType indicates whether to advance forward or backward direction.
-     */
-    private void advanceFocusInForm(int focusType) {
+    @Override
+    public void advanceFocusInForm(int focusType) {
         if (mNativeImeAdapterAndroid == 0) return;
         nativeAdvanceFocusInForm(mNativeImeAdapterAndroid, focusType);
     }
