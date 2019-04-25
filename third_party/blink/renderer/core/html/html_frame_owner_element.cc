@@ -530,11 +530,12 @@ void HTMLFrameOwnerElement::OnViewportIntersectionChanged(
   // should be used for both local and remote frames.
   if (!content_frame_ || !content_frame_->IsLocalFrame())
     return;
+  if (embedded_content_view_ && !embedded_content_view_->IsLocalFrameView())
+    return;
   bool visible = entries.back()->intersectionRatio() > 0;
   blink::mojom::FrameVisibility frame_visibility =
       blink::mojom::FrameVisibility::kNotRendered;
   if (embedded_content_view_) {
-    DCHECK(embedded_content_view_->IsLocalFrameView());
     if (embedded_content_view_->IsAttached()) {
       frame_visibility =
           visible ? blink::mojom::FrameVisibility::kRenderedInViewport
