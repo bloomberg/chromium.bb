@@ -88,7 +88,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   MutableProfileOAuth2TokenServiceDelegateTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC),
         access_token_success_count_(0),
         access_token_failure_count_(0),
         access_token_failure_(GoogleServiceAuthError::NONE),
