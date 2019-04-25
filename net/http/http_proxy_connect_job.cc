@@ -580,6 +580,13 @@ int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
   if (result == ERR_HTTP_1_1_REQUIRED)
     return ERR_PROXY_HTTP_1_1_REQUIRED;
 
+  // In TLS 1.2 with False Start or TLS 1.3, alerts from the server rejecting
+  // our client certificate are received at the first Read(), not Connect(), so
+  // the error mapping in DoSSLConnectComplete does not apply. Repeat the
+  // mapping here.
+  if (result == ERR_BAD_SSL_CLIENT_AUTH_CERT)
+    return ERR_PROXY_CONNECTION_FAILED;
+
   return result;
 }
 
@@ -629,6 +636,13 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
   if (result < 0) {
+    // See the comment in DoHttpProxyConnectComplete(). HTTP/2 proxies will
+    // typically also fail here, as a result of SpdyProxyClientSocket::Connect()
+    // below, but the error may surface out of SpdyStreamRequest if there were
+    // enough requests in parallel that stream creation became asynchronous.
+    if (result == ERR_BAD_SSL_CLIENT_AUTH_CERT)
+      result = ERR_PROXY_CONNECTION_FAILED;
+
     spdy_stream_request_.reset();
     return result;
   }

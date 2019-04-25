@@ -1540,18 +1540,40 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
 }
 
 int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
+  // Most client auth errors here come from the origin server, but they may come
+  // from the proxy if the request is not tunneled (i.e. the origin is HTTP, so
+  // there is no HTTPS connection) and the proxy does not report a bad client
+  // certificate until after the TLS handshake completes. The latter occurs in
+  // TLS 1.3 or TLS 1.2 with False Start (disabled for proxies). The error will
+  // then surface out of Read() rather than Connect() and ultimately surfaced
+  // out of DoReadHeadersComplete().
+  //
+  // See https://crbug.com/828965.
+  bool is_server;
+  SSLConfig* ssl_config;
+  HostPortPair host_port_pair;
+  if (UsingHttpProxyWithoutTunnel()) {
+    is_server = false;
+    ssl_config = &proxy_ssl_config_;
+    host_port_pair = proxy_info_.proxy_server().host_port_pair();
+  } else {
+    is_server = true;
+    ssl_config = &server_ssl_config_;
+    host_port_pair = HostPortPair::FromURL(request_->url);
+  }
+
   // Client certificate errors from the proxy are handled in the
-  // HttpStreamFactory and below. See discussion in https://crbug.com/828965.
-  if (server_ssl_config_.send_client_cert &&
+  // HttpStreamFactory and below.
+  if (ssl_config->send_client_cert &&
       (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
-    session_->ssl_client_auth_cache()->Remove(
-        HostPortPair::FromURL(request_->url));
+    DCHECK((is_server && IsSecureRequest()) || proxy_info_.is_https());
+    session_->ssl_client_auth_cache()->Remove(host_port_pair);
 
     // The private key handle may have gone stale due to, e.g., the user
     // unplugging their smartcard. Operating systems do not provide reliable
     // notifications for this, so if the signature failed and the private key
     // came from SSLClientAuthCache, retry to ask the user for a new one.
-    if (error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
+    if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
         server_ssl_client_cert_was_cached_ && !HasExceededMaxRetries()) {
       server_ssl_client_cert_was_cached_ = false;
       server_ssl_config_.send_client_cert = false;

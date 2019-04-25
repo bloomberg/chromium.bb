@@ -134,6 +134,8 @@ using net::test::IsOk;
 
 using base::ASCIIToUTF16;
 
+using testing::AnyOf;
+
 //-----------------------------------------------------------------------------
 
 namespace net {
@@ -15278,42 +15280,17 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
 //  3) The HTTPS proxy requests a client certificate.
 //  4) The client supplies an invalid/unacceptable certificate for the
 //     proxy.
-// The test is repeated twice, first for connecting to an HTTPS endpoint,
-// then for connecting to an HTTP endpoint.
 TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
       "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
-  scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
+  auto cert_request = base::MakeRefCounted<SSLCertRequestInfo>();
   cert_request->host_and_port = HostPortPair("proxy", 70);
 
-  // See ClientAuthCertCache_Direct_NoFalseStart for the explanation of
-  // [ssl_]data[1-3]. Rather than represending the endpoint
-  // (www.example.com:443), they represent failures with the HTTPS proxy
-  // (proxy:70).
-  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
-  ssl_data1.cert_request_info = cert_request.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1;
-  session_deps_.socket_factory->AddSocketDataProvider(&data1);
-
-  SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  ssl_data2.cert_request_info = cert_request.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2;
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
-
-  // TODO(wtc): find out why this unit test doesn't need [ssl_]data3.
-#if 0
-  SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  ssl_data3.cert_request_info = cert_request.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
-  StaticSocketDataProvider data3;
-  session_deps_.socket_factory->AddSocketDataProvider(&data3);
-#endif
-
+  // Repeat the test for connecting to an HTTPS endpoint, then for connecting to
+  // an HTTP endpoint.
   HttpRequestInfo requests[2];
   requests[0].url = GURL("https://www.example.com/");
   requests[0].method = "GET";
@@ -15321,60 +15298,127 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   requests[0].traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
+  // HTTPS requests are tunneled.
+  MockWrite https_writes[] = {
+      MockWrite("CONNECT www.example.com:443 HTTP/1.1\r\n"
+                "Host: www.example.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+
   requests[1].url = GURL("http://www.example.com/");
   requests[1].method = "GET";
   requests[1].load_flags = LOAD_NORMAL;
   requests[1].traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  for (size_t i = 0; i < base::size(requests); ++i) {
-    session_deps_.socket_factory->ResetNextMockIndexes();
-    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  // HTTP requests are not.
+  MockWrite http_writes[] = {
+      MockWrite("GET http://www.example.com/ HTTP/1.1\r\n"
+                "Host: www.example.com\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
 
-    // Begin the SSL handshake with the proxy.
-    TestCompletionCallback callback;
-    int rv = trans.Start(&requests[i], callback.callback(), NetLogWithSource());
-    ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  // When the server rejects the client certificate, it will close the
+  // connection. In TLS 1.2, this is signaled out of Connect(). In TLS 1.3 (or
+  // TLS 1.2 with False Start), the error is returned out of the first Read().
+  for (bool reject_in_connect : {true, false}) {
+    SCOPED_TRACE(reject_in_connect);
+    // Client certificate errors are typically signaled with
+    // ERR_BAD_SSL_CLIENT_AUTH_CERT, but sometimes the server gives an arbitrary
+    // protocol error.
+    for (Error reject_error :
+         {ERR_SSL_PROTOCOL_ERROR, ERR_BAD_SSL_CLIENT_AUTH_CERT}) {
+      SCOPED_TRACE(reject_error);
+      // Tunneled and non-tunneled requests are handled differently. Test both.
+      for (const HttpRequestInfo& request : requests) {
+        SCOPED_TRACE(request.url);
 
-    // Complete the SSL handshake, which should abort due to requiring a
-    // client certificate.
-    rv = callback.WaitForResult();
-    ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+        session_deps_.socket_factory =
+            std::make_unique<MockClientSocketFactory>();
 
-    // Indicate that no certificate should be supplied. From the perspective
-    // of SSLClientCertCache, NULL is just as meaningful as a real
-    // certificate, so this is the same as supply a
-    // legitimate-but-unacceptable certificate.
-    rv = trans.RestartWithCertificate(nullptr, nullptr, callback.callback());
-    ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+        // See ClientAuthCertCache_Direct_NoFalseStart for the explanation of
+        // [ssl_]data[1-2]. [ssl_]data3 is not needed because we do not retry
+        // for proxies. Rather than represending the endpoint
+        // (www.example.com:443), they represent failures with the HTTPS proxy
+        // (proxy:70).
+        SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+        ssl_data1.cert_request_info = cert_request.get();
+        session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
+        StaticSocketDataProvider data1;
+        session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
-    // Ensure the certificate was added to the client auth cache before
-    // allowing the connection to continue restarting.
-    scoped_refptr<X509Certificate> client_cert;
-    scoped_refptr<SSLPrivateKey> client_private_key;
-    ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("proxy", 70), &client_cert, &client_private_key));
-    ASSERT_FALSE(client_cert);
-    // Ensure the certificate was NOT cached for the endpoint. This only
-    // applies to HTTPS requests, but is fine to check for HTTP requests.
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("www.example.com", 443), &client_cert,
-        &client_private_key));
+        base::Optional<SSLSocketDataProvider> ssl_data2;
+        base::Optional<StaticSocketDataProvider> data2;
+        MockRead error_in_read[] = {MockRead(ASYNC, reject_error)};
+        if (reject_in_connect) {
+          ssl_data2.emplace(ASYNC, reject_error);
+          // There are no reads or writes.
+          data2.emplace();
+        } else {
+          ssl_data2.emplace(ASYNC, OK);
+          // We will get one Write() in before observing the error in Read().
+          if (request.url.SchemeIsCryptographic()) {
+            data2.emplace(error_in_read, https_writes);
+          } else {
+            data2.emplace(error_in_read, http_writes);
+          }
+        }
+        ssl_data2->cert_request_info = cert_request.get();
 
-    // Restart the handshake. This will consume ssl_data2, which fails, and
-    // then consume ssl_data3, which should also fail. The result code is
-    // checked against what ssl_data3 should return.
-    rv = callback.WaitForResult();
-    ASSERT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
+        session_deps_.socket_factory->AddSSLSocketDataProvider(
+            &ssl_data2.value());
+        session_deps_.socket_factory->AddSocketDataProvider(&data2.value());
 
-    // Now that the new handshake has failed, ensure that the client
-    // certificate was removed from the client auth cache.
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("proxy", 70), &client_cert, &client_private_key));
-    ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
-        HostPortPair("www.example.com", 443), &client_cert,
-        &client_private_key));
+        std::unique_ptr<HttpNetworkSession> session =
+            CreateSession(&session_deps_);
+        HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+        // Begin the SSL handshake with the proxy.
+        TestCompletionCallback callback;
+        int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+        ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+        // Complete the SSL handshake, which should abort due to requiring a
+        // client certificate.
+        rv = callback.WaitForResult();
+        ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+        // Indicate that no certificate should be supplied. From the
+        // perspective of SSLClientCertCache, NULL is just as meaningful as a
+        // real certificate, so this is the same as supply a
+        // legitimate-but-unacceptable certificate.
+        rv =
+            trans.RestartWithCertificate(nullptr, nullptr, callback.callback());
+        ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+        // Ensure the certificate was added to the client auth cache before
+        // allowing the connection to continue restarting.
+        scoped_refptr<X509Certificate> client_cert;
+        scoped_refptr<SSLPrivateKey> client_private_key;
+        ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+            HostPortPair("proxy", 70), &client_cert, &client_private_key));
+        ASSERT_FALSE(client_cert);
+        // Ensure the certificate was NOT cached for the endpoint. This only
+        // applies to HTTPS requests, but is fine to check for HTTP requests.
+        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+            HostPortPair("www.example.com", 443), &client_cert,
+            &client_private_key));
+
+        // Restart the handshake. This will consume ssl_data2. The result code
+        // is checked against what ssl_data2 should return.
+        rv = callback.WaitForResult();
+        ASSERT_THAT(rv, AnyOf(IsError(ERR_PROXY_CONNECTION_FAILED),
+                              IsError(reject_error)));
+
+        // Now that the new handshake has failed, ensure that the client
+        // certificate was removed from the client auth cache.
+        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+            HostPortPair("proxy", 70), &client_cert, &client_private_key));
+        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+            HostPortPair("www.example.com", 443), &client_cert,
+            &client_private_key));
+      }
+    }
   }
 }
 

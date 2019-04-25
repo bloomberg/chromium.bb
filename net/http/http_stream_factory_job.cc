@@ -1239,14 +1239,21 @@ void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,
   }
 
   if (proxy_info_.is_https() && ssl_config->send_client_cert) {
-    // When connecting through an HTTPS proxy, disable TLS False Start so
-    // that client authentication errors can be distinguished between those
-    // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and
-    // those originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
+    // When connecting through an HTTPS proxy, disable TLS False Start so that
+    // client authentication errors can be distinguished between those
+    // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and those
+    // originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
     // ERR_BAD_SSL_CLIENT_AUTH_CERT).
+    //
+    // We now handle this fine for SSLClientAuthCache updates, though not
+    // ReconsiderProxyAfterError() below. In case of issues there, and general
+    // False Start compatibility risk, we continue to disable False Start. (If
+    // it becomes a problem, the risk of removing this is likely low.)
     //
     // This assumes the proxy will only request certificates on the initial
     // handshake; renegotiation on the proxy connection is unsupported.
+    //
+    // See https://crbug.com/828965.
     ssl_config->false_start_enabled = false;
   }
 }
