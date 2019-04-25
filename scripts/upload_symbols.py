@@ -350,11 +350,11 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
   # Make sure we don't leak secret keys by accident.
   if resp.status_code > 399:
     resp.url = resp.url.replace(urllib2.quote(api_key), 'XX-HIDDEN-XX')
-    logging.error('Url: %s, Status: %s, response: "%s", in: %s',
-                  resp.url, resp.status_code, resp.text, resp.elapsed)
-    resp.raise_for_status()
-  if resp.content:
+    logging.warning('Url: %s, Status: %s, response: "%s", in: %s',
+                    resp.url, resp.status_code, resp.text, resp.elapsed)
+  elif resp.content:
     return resp.json()
+
   return {}
 
 
@@ -438,8 +438,7 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
-          return isinstance(exception, (requests.exceptions.HTTPError,
-                                        requests.exceptions.RequestException,
+          return isinstance(exception, (requests.exceptions.RequestException,
                                         urllib2.URLError,
                                         httplib.HTTPException, socket.error))
 
