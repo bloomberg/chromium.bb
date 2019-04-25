@@ -352,6 +352,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int no_action_count = 0;
   int disabled_for_permissions_count = 0;
   int non_webstore_ntp_override_count = 0;
+  int ntp_override_count = 0;
   int incognito_allowed_count = 0;
   int incognito_not_allowed_count = 0;
   int file_access_allowed_count = 0;
@@ -427,11 +428,13 @@ void InstalledLoader::RecordExtensionsMetrics() {
     if (Manifest::IsComponentLocation(location))
       continue;
 
-    // Histogram for non-webstore extensions overriding new tab page should
-    // include unpacked extensions.
-    if (!extension->from_webstore() &&
-        URLOverrides::GetChromeURLOverrides(extension).count("newtab")) {
-      ++non_webstore_ntp_override_count;
+    // Histogram for extensions overriding the new tab page should include
+    // unpacked extensions.
+    if (URLOverrides::GetChromeURLOverrides(extension).count("newtab")) {
+      ++ntp_override_count;
+      if (!extension->from_webstore()) {
+        ++non_webstore_ntp_override_count;
+      }
     }
 
     // Don't count unpacked extensions anymore, either.
@@ -647,8 +650,11 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            no_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
                            disabled_for_permissions_count);
+  // TODO(kelvinjiang): Remove this histogram if it's not used anymore.
   UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",
                            non_webstore_ntp_override_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.NewTabPageOverrides",
+                           ntp_override_count);
   if (incognito_allowed_count + incognito_not_allowed_count > 0) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoAllowed",
                              incognito_allowed_count);
