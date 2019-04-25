@@ -506,57 +506,6 @@ TEST_P(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_P(BindingSetTest, PreDispatchHandler) {
-  PingImpl impl;
-
-  BindingSet<PingService, int> bindings;
-  PingServicePtr ping_a, ping_b;
-  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
-  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
-
-  {
-    bindings.set_pre_dispatch_handler(base::Bind([] (const int& context) {
-      EXPECT_EQ(1, context);
-    }));
-    base::RunLoop loop;
-    ping_a->Ping(loop.QuitClosure());
-    loop.Run();
-  }
-
-  {
-    bindings.set_pre_dispatch_handler(base::Bind([] (const int& context) {
-      EXPECT_EQ(2, context);
-    }));
-    base::RunLoop loop;
-    ping_b->Ping(loop.QuitClosure());
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-    bindings.set_pre_dispatch_handler(
-        base::Bind([](base::RunLoop* loop, const int& context) {
-          EXPECT_EQ(1, context);
-          loop->Quit();
-        }, &loop));
-    ping_a.reset();
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-    bindings.set_pre_dispatch_handler(
-        base::Bind([](base::RunLoop* loop, const int& context) {
-          EXPECT_EQ(2, context);
-          loop->Quit();
-        }, &loop));
-    ping_b.reset();
-    loop.Run();
-  }
-
-  EXPECT_TRUE(bindings.empty());
-}
-
 TEST_P(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
   AssociatedPingProviderPtr master_ptr;
   PingProviderImpl master_impl;

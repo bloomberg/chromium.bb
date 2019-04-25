@@ -31,6 +31,8 @@ class WebContentsBindingSetTestBinder : public WebContentsBindingSet::Binder {
     BindRequest(render_frame_host,
                 mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
   }
+
+  void CloseAllBindings() override {}
 };
 
 }  // namespace content
