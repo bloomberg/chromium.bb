@@ -1888,8 +1888,14 @@ void AutofillMetrics::LogWalletSyncTransportCardsOptIn(bool is_opted_in) {
 }
 
 void AutofillMetrics::LogCardUploadEnabledMetric(
-    CardUploadEnabledMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadEnabled", metric);
+    CardUploadEnabledMetric metric_value,
+    AutofillSyncSigninState sync_state) {
+  const std::string parent_metric = std::string("Autofill.CardUploadEnabled");
+  base::UmaHistogramEnumeration(parent_metric, metric_value);
+
+  const std::string child_metric =
+      parent_metric + GetMetricsSyncStateSuffix(sync_state);
+  base::UmaHistogramEnumeration(child_metric, metric_value);
 }
 
 // static

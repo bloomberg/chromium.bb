@@ -35,25 +35,29 @@ namespace autofill {
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
-                               const std::string& user_email) {
+                               const std::string& user_email,
+                               const AutofillSyncSigninState sync_state) {
   if (!sync_service) {
     // If credit card sync is not active, we're not offering to upload cards.
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL);
+        AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL,
+        sync_state);
     return false;
   }
 
   if (sync_service->GetAuthError().IsPersistentError()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::
-            SYNC_SERVICE_PERSISTENT_AUTH_ERROR);
+            SYNC_SERVICE_PERSISTENT_AUTH_ERROR,
+        sync_state);
     return false;
   }
 
   if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::
-            SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE);
+            SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE,
+        sync_state);
     return false;
   }
 
@@ -63,7 +67,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
       // active, because we upload potential billing addresses with the card.
       AutofillMetrics::LogCardUploadEnabledMetric(
           AutofillMetrics::CardUploadEnabledMetric::
-              SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE);
+              SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE,
+          sync_state);
       return false;
     }
   } else {
@@ -77,7 +82,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
       // the upload prompt.
       AutofillMetrics::LogCardUploadEnabledMetric(
           AutofillMetrics::CardUploadEnabledMetric::
-              ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED);
+              ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED,
+          sync_state);
       return false;
     }
   }
@@ -89,7 +95,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::
-            USING_SECONDARY_SYNC_PASSPHRASE);
+            USING_SECONDARY_SYNC_PASSPHRASE,
+        sync_state);
     return false;
   }
 
@@ -97,22 +104,23 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // won't receive the cards back from Google Payments.
   if (sync_service->IsLocalSyncEnabled()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED);
+        AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED,
+        sync_state);
     return false;
   }
 
   // Check Payments integration user setting.
   if (!prefs::IsPaymentsIntegrationEnabled(pref_service)) {
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::
-            PAYMENTS_INTEGRATION_DISABLED);
+        AutofillMetrics::CardUploadEnabledMetric::PAYMENTS_INTEGRATION_DISABLED,
+        sync_state);
     return false;
   }
 
   // Check that the user is logged into a supported domain.
   if (user_email.empty()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY);
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY, sync_state);
     return false;
   }
 
@@ -128,18 +136,21 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         domain == "google.com" || domain == "chromium.org" ||
         domain == "example.com")) {
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED);
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED,
+        sync_state);
     return false;
   }
 
   if (!base::FeatureList::IsEnabled(features::kAutofillUpstream)) {
     AutofillMetrics::LogCardUploadEnabledMetric(
-        AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED);
+        AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED,
+        sync_state);
     return false;
   }
 
   AutofillMetrics::LogCardUploadEnabledMetric(
-      AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED);
+      AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED,
+      sync_state);
   return true;
 }
 
@@ -159,7 +170,8 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   if (!is_test_mode &&
       !IsCreditCardUploadEnabled(
           pref_service, sync_service,
-          personal_data_manager->GetAccountInfoForPaymentsServer().email)) {
+          personal_data_manager->GetAccountInfoForPaymentsServer().email,
+          personal_data_manager->GetSyncSigninState())) {
     return false;
   }
 

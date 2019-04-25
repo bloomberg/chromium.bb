@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/sync_utils.h"
 
 class PrefService;
 
@@ -25,7 +26,8 @@ class PersonalDataManager;
 // be a member of a supported domain.
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
-                               const std::string& user_email);
+                               const std::string& user_email,
+                               const AutofillSyncSigninState sync_state);
 
 // Returns true if autofill local card migration flow is enabled.
 bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
