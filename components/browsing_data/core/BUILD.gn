@@ -74,7 +74,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/sync",
-    "//components/sync:test_support_driver",
+    "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/version_info:version_info",
     "//net:test_support",

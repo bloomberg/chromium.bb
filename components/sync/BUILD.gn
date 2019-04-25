@@ -8,6 +8,29 @@ import("//build/config/jumbo.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
+group("sync") {
+  public_deps = [
+    ":rest_of_sync",
+    "//components/sync/driver",
+  ]
+}
+
+# Note: This target intentionally doesn't include test_support_fake_server -
+# targets that need the fake server should depend on it explicitly. It also
+# doesn't include test_support_device_info or test_support_user_events, which
+# should be moved out of components/sync entirely.
+group("test_support") {
+  testonly = true
+  public_deps = [
+    ":sync",
+    ":test_support_engine",
+    ":test_support_model",
+    "//components/sync/base:test_support",
+    "//components/sync/driver:test_support",
+    "//components/sync/js:test_support",
+  ]
+}
+
 # TODO(crbug.com/947443): This target should be split up into "engine", "model",
 # "syncable" etc, but currently they all depend on each other.
 jumbo_static_library("rest_of_sync") {
@@ -409,13 +432,6 @@ jumbo_static_library("rest_of_sync") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-group("sync") {
-  public_deps = [
-    ":rest_of_sync",
-    "//components/sync/driver",
-  ]
-}
-
 static_library("test_support_user_events") {
   testonly = true
   sources = [
@@ -424,7 +440,7 @@ static_library("test_support_user_events") {
   ]
 
   public_deps = [
-    ":test_support_base",
+    "//components/sync/base:test_support",
   ]
 
   deps = [
@@ -432,60 +448,6 @@ static_library("test_support_user_events") {
     ":test_support_model",
     "//components/sync/user_events",
   ]
-}
-
-static_library("test_support_base") {
-  testonly = true
-  sources = [
-    "base/fake_encryptor.cc",
-    "base/fake_encryptor.h",
-    "base/mock_unrecoverable_error_handler.cc",
-    "base/mock_unrecoverable_error_handler.h",
-    "base/model_type_test_util.cc",
-    "base/model_type_test_util.h",
-    "base/test_unrecoverable_error_handler.cc",
-    "base/test_unrecoverable_error_handler.h",
-    "test/callback_counter.h",
-    "test/mock_invalidation.cc",
-    "test/mock_invalidation.h",
-    "test/mock_invalidation_tracker.cc",
-    "test/mock_invalidation_tracker.h",
-    "test/test_matchers.h",
-    "test/trackable_mock_invalidation.cc",
-    "test/trackable_mock_invalidation.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//components/sync/base",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  deps = [
-    # For test_matchers.h, which should probably be split up.
-    ":rest_of_sync",
-  ]
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
-static_library("test_support_js") {
-  testonly = true
-  sources = [
-    "js/js_test_util.cc",
-    "js/js_test_util.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//components/sync/base",
-    "//components/sync/js",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support_engine") {
@@ -551,7 +513,7 @@ static_library("test_support_engine") {
   ]
 
   public_deps = [
-    ":test_support_base",
+    "//components/sync/base:test_support",
   ]
 
   deps = [
@@ -596,68 +558,11 @@ static_library("test_support_model") {
   ]
 
   public_deps = [
-    ":test_support_base",
+    "//components/sync/base:test_support",
   ]
 
   deps = [
     ":sync",
-  ]
-}
-
-static_library("test_support_driver") {
-  testonly = true
-  sources = [
-    "driver/async_directory_type_controller_mock.cc",
-    "driver/async_directory_type_controller_mock.h",
-    "driver/data_type_controller_mock.cc",
-    "driver/data_type_controller_mock.h",
-    "driver/data_type_manager_mock.cc",
-    "driver/data_type_manager_mock.h",
-    "driver/fake_data_type_controller.cc",
-    "driver/fake_data_type_controller.h",
-    "driver/fake_generic_change_processor.cc",
-    "driver/fake_generic_change_processor.h",
-    "driver/fake_sync_service.cc",
-    "driver/fake_sync_service.h",
-    "driver/frontend_data_type_controller_mock.cc",
-    "driver/frontend_data_type_controller_mock.h",
-    "driver/mock_sync_service.cc",
-    "driver/mock_sync_service.h",
-    "driver/model_associator_mock.cc",
-    "driver/model_associator_mock.h",
-    "driver/profile_sync_service_bundle.cc",
-    "driver/profile_sync_service_bundle.h",
-    "driver/sync_api_component_factory_mock.cc",
-    "driver/sync_api_component_factory_mock.h",
-    "driver/sync_client_mock.cc",
-    "driver/sync_client_mock.h",
-    "driver/sync_user_settings_mock.cc",
-    "driver/sync_user_settings_mock.h",
-    "driver/test_profile_sync_service.cc",
-    "driver/test_profile_sync_service.h",
-    "driver/test_sync_service.cc",
-    "driver/test_sync_service.h",
-    "driver/test_sync_user_settings.cc",
-    "driver/test_sync_user_settings.h",
-  ]
-
-  public_deps = [
-    ":test_support_base",
-  ]
-
-  deps = [
-    ":sync",
-    ":test_support_engine",
-    ":test_support_model",
-    "//components/invalidation/impl:test_support",
-    "//components/pref_registry",
-    "//components/signin/core/browser:shared",
-    "//components/sync/driver",
-    "//components/sync_preferences:test_support",
-    "//components/version_info",
-    "//components/version_info:generate_version_info",
-    "//google_apis",
-    "//services/identity/public/cpp:test_support",
   ]
 }
 
@@ -786,10 +691,7 @@ source_set("unit_tests") {
 
   deps = [
     ":sync",
-    ":test_support_base",
-    ":test_support_driver",
     ":test_support_engine",
-    ":test_support_js",
     ":test_support_model",
     ":test_support_user_events",
     "//base",
@@ -798,8 +700,10 @@ source_set("unit_tests") {
     "//components/os_crypt:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser:internals_test_support",
+    "//components/sync/base:test_support",
     "//components/sync/device_info",
-    "//components/sync/driver",
+    "//components/sync/driver:test_support",
+    "//components/sync/js:test_support",
     "//components/sync/user_events",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",

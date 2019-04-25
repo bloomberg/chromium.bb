@@ -134,3 +134,60 @@ jumbo_static_library("driver") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "async_directory_type_controller_mock.cc",
+    "async_directory_type_controller_mock.h",
+    "data_type_controller_mock.cc",
+    "data_type_controller_mock.h",
+    "data_type_manager_mock.cc",
+    "data_type_manager_mock.h",
+    "fake_data_type_controller.cc",
+    "fake_data_type_controller.h",
+    "fake_generic_change_processor.cc",
+    "fake_generic_change_processor.h",
+    "fake_sync_service.cc",
+    "fake_sync_service.h",
+    "frontend_data_type_controller_mock.cc",
+    "frontend_data_type_controller_mock.h",
+    "mock_sync_service.cc",
+    "mock_sync_service.h",
+    "model_associator_mock.cc",
+    "model_associator_mock.h",
+    "profile_sync_service_bundle.cc",
+    "profile_sync_service_bundle.h",
+    "sync_api_component_factory_mock.cc",
+    "sync_api_component_factory_mock.h",
+    "sync_client_mock.cc",
+    "sync_client_mock.h",
+    "sync_user_settings_mock.cc",
+    "sync_user_settings_mock.h",
+    "test_profile_sync_service.cc",
+    "test_profile_sync_service.h",
+    "test_sync_service.cc",
+    "test_sync_service.h",
+    "test_sync_user_settings.cc",
+    "test_sync_user_settings.h",
+  ]
+
+  public_deps = [
+    "//components/sync/base:test_support",
+  ]
+
+  deps = [
+    "//components/invalidation/impl:test_support",
+    "//components/pref_registry",
+    "//components/signin/core/browser:shared",
+    "//components/sync",
+    "//components/sync:test_support_engine",
+    "//components/sync:test_support_model",
+    "//components/sync/driver",
+    "//components/sync_preferences:test_support",
+    "//components/version_info",
+    "//components/version_info:generate_version_info",
+    "//google_apis",
+    "//services/identity/public/cpp:test_support",
+  ]
+}

@@ -114,3 +114,39 @@ jumbo_static_library("base") {
     deps += [ "//chromeos/constants" ]
   }
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "../test/callback_counter.h",
+    "../test/mock_invalidation.cc",
+    "../test/mock_invalidation.h",
+    "../test/mock_invalidation_tracker.cc",
+    "../test/mock_invalidation_tracker.h",
+    "../test/test_matchers.h",
+    "../test/trackable_mock_invalidation.cc",
+    "../test/trackable_mock_invalidation.h",
+    "fake_encryptor.cc",
+    "fake_encryptor.h",
+    "mock_unrecoverable_error_handler.cc",
+    "mock_unrecoverable_error_handler.h",
+    "model_type_test_util.cc",
+    "model_type_test_util.h",
+    "test_unrecoverable_error_handler.cc",
+    "test_unrecoverable_error_handler.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/sync/base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  deps = [
+    # For test_matchers.h, which should probably be split up.
+    "//components/sync:rest_of_sync",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}

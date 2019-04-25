@@ -63,9 +63,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/history/core/browser",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
-    "//components/sync",
-    "//components/sync:test_support_driver",
-    "//components/sync:test_support_model",
+    "//components/sync:test_support",
     "//testing/gtest",
     "//url",
   ]

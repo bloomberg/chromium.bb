@@ -21,3 +21,21 @@ jumbo_static_library("js") {
     "//components/sync/base",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "js_test_util.cc",
+    "js_test_util.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/sync/base",
+    "//components/sync/js",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}

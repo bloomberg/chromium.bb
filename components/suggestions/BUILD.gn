@@ -51,8 +51,7 @@ source_set("unit_tests") {
   deps = [
     ":suggestions",
     "//base/test:test_support",
-    "//components/sync",
-    "//components/sync:test_support_driver",
+    "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//net:test_support",
     "//services/identity/public/cpp",
