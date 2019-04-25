@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/work_id_provider.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -235,9 +236,7 @@ ThreadProfiler::ThreadProfiler(
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get(),
-          &metrics::CallStackProfileBuilder::
-              GetStackSamplingProfilerMetadataRecorder()));
+          work_id_recorder_.get(), base::GetSampleMetadataRecorder()));
 
   startup_profiler_->Start();
 
@@ -283,9 +282,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
-          work_id_recorder_.get(),
-          &metrics::CallStackProfileBuilder::
-              GetStackSamplingProfilerMetadataRecorder(),
+          work_id_recorder_.get(), base::GetSampleMetadataRecorder(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));

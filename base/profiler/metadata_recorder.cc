@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/metadata_recorder.h"
+#include "base/profiler/metadata_recorder.h"
 
-namespace metrics {
-
-bool MetadataRecorder::Item::operator==(const Item& rhs) const {
-  return name_hash == rhs.name_hash && value == rhs.value;
-}
+namespace base {
 
 MetadataRecorder::ItemInternal::ItemInternal() = default;
 
@@ -99,4 +95,4 @@ size_t MetadataRecorder::GetItems(ItemArray* const items) const {
   return write_index;
 }
 
-}  // namespace metrics
+}  // namespace base

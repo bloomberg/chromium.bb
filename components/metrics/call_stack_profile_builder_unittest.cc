@@ -53,7 +53,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
   TestingCallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       const WorkIdRecorder* work_id_recorder = nullptr,
-      const MetadataRecorder* metadata_recorder = nullptr,
+      const base::MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~TestingCallStackProfileBuilder() override;
@@ -72,7 +72,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
-    const MetadataRecorder* metadata_recorder,
+    const base::MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
     : CallStackProfileBuilder(profile_params,
                               work_id_recorder,
@@ -405,7 +405,7 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
 }
 
 TEST(CallStackProfileBuilderTest, MetadataRecorder) {
-  MetadataRecorder metadata_recorder;
+  base::MetadataRecorder metadata_recorder;
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, nullptr, &metadata_recorder);
 

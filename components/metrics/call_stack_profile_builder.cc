@@ -49,7 +49,7 @@ uint64_t HashModuleFilename(const base::FilePath& filename) {
 CallStackProfileBuilder::CallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
-    const MetadataRecorder* metadata_recorder,
+    const base::MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
     : work_id_recorder_(work_id_recorder),
       metadata_recorder_(metadata_recorder),
@@ -138,7 +138,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
     stack_sample_proto->set_continued_work(is_continued_work_);
 
   for (size_t i = 0; i < metadata_item_count_; ++i) {
-    const MetadataRecorder::Item recorder_item = metadata_items_[i];
+    const base::MetadataRecorder::Item recorder_item = metadata_items_[i];
     int next_item_index = call_stack_profile->metadata_name_hash_size();
     auto result = metadata_hashes_cache_.emplace(recorder_item.name_hash,
                                                  next_item_index);
@@ -198,13 +198,6 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
     metrics::mojom::CallStackProfileCollectorPtr browser_interface) {
   g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
-}
-
-// static
-MetadataRecorder&
-CallStackProfileBuilder::GetStackSamplingProfilerMetadataRecorder() {
-  static base::NoDestructor<MetadataRecorder> instance;
-  return *instance;
 }
 
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(

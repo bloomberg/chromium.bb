@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/metadata_recorder.h"
+#include "base/profiler/metadata_recorder.h"
 
 #include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace base {
+
+bool operator==(const MetadataRecorder::Item& lhs,
+                const MetadataRecorder::Item& rhs) {
+  return lhs.name_hash == rhs.name_hash && lhs.value == rhs.value;
+}
 
 TEST(MetadataRecorderTest, GetItems_Empty) {
   MetadataRecorder recorder;
@@ -108,4 +113,4 @@ TEST(MetadataRecorderTest, Remove_DoesntExist) {
   ASSERT_EQ(20, items[0].value);
 }
 
-}  // namespace metrics
+}  // namespace base

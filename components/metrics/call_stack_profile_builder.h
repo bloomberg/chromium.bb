@@ -13,12 +13,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/profiler/metadata_recorder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
-#include "components/metrics/metadata_recorder.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
@@ -57,7 +57,7 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   explicit CallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       const WorkIdRecorder* work_id_recorder = nullptr,
-      const MetadataRecorder* metadata_recorder = nullptr,
+      const base::MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~CallStackProfileBuilder() override;
@@ -81,10 +81,6 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   static void SetParentProfileCollectorForChildProcess(
       metrics::mojom::CallStackProfileCollectorPtr browser_interface);
 
-  // Returns the process-global metadata recorder instance used for tracking
-  // sampling profiler metadata.
-  static MetadataRecorder& GetStackSamplingProfilerMetadataRecorder();
-
  protected:
   // Test seam.
   virtual void PassProfilesToMetricsProvider(SampledProfile sampled_profile);
@@ -103,7 +99,7 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   unsigned int last_work_id_ = std::numeric_limits<unsigned int>::max();
   bool is_continued_work_ = false;
   const WorkIdRecorder* const work_id_recorder_;
-  const MetadataRecorder* const metadata_recorder_;
+  const base::MetadataRecorder* const metadata_recorder_;
 
   // The SampledProfile protobuf message which contains the collected stack
   // samples.
@@ -125,7 +121,7 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   const base::TimeTicks profile_start_time_;
 
   // The data fetched from the MetadataRecorder for each sample.
-  MetadataRecorder::ItemArray metadata_items_;
+  base::MetadataRecorder::ItemArray metadata_items_;
   size_t metadata_item_count_ = 0;
 
   // Maps metadata hash to index in |metadata_name_hash| array.

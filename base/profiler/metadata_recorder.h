@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_METADATA_RECORDER_H_
-#define COMPONENTS_METRICS_METADATA_RECORDER_H_
+#ifndef BASE_PROFILER_METADATA_RECORDER_H_
+#define BASE_PROFILER_METADATA_RECORDER_H_
 
 #include <array>
 #include <atomic>
@@ -11,7 +11,7 @@
 
 #include "base/synchronization/lock.h"
 
-namespace metrics {
+namespace base {
 
 // MetadataRecorder provides a data structure to store metadata key/value pairs
 // to be associated with samples taken by the sampling profiler. Whatever
@@ -19,7 +19,7 @@ namespace metrics {
 // with the sample.
 //
 // Methods on this class are safe to call unsynchronized from arbitrary threads.
-class MetadataRecorder {
+class BASE_EXPORT MetadataRecorder {
  public:
   MetadataRecorder();
   virtual ~MetadataRecorder();
@@ -40,8 +40,6 @@ class MetadataRecorder {
     uint64_t name_hash;
     // The value of the metadata item.
     int64_t value;
-
-    bool operator==(const Item& rhs) const;
   };
 
   static const size_t MAX_METADATA_COUNT = 50;
@@ -102,6 +100,6 @@ class MetadataRecorder {
   base::Lock write_lock_;
 };
 
-}  // namespace metrics
+}  // namespace base
 
-#endif  // COMPONENTS_METRICS_METADATA_RECORDER_H_
+#endif  // BASE_PROFILER_METADATA_RECORDER_H_
