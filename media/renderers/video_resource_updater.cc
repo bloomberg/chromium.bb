@@ -61,14 +61,15 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     VideoPixelFormat format,
     GLuint target,
     int num_textures,
-    gfx::BufferFormat* buffer_format,
+    gfx::BufferFormat buffer_formats[VideoFrame::kMaxPlanes],
     bool use_stream_video_draw_quad) {
-  *buffer_format = gfx::BufferFormat::RGBA_8888;
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_UYVY:
+      DCHECK_EQ(num_textures, 1);
+      buffer_formats[0] = gfx::BufferFormat::RGBA_8888;
       switch (target) {
         case GL_TEXTURE_EXTERNAL_OES:
           if (use_stream_video_draw_quad)
@@ -85,16 +86,25 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       }
       break;
     case PIXEL_FORMAT_I420:
+      DCHECK(num_textures == 3);
+      buffer_formats[0] = gfx::BufferFormat::R_8;
+      buffer_formats[1] = gfx::BufferFormat::R_8;
+      buffer_formats[2] = gfx::BufferFormat::R_8;
       return VideoFrameResourceType::YUV;
     case PIXEL_FORMAT_NV12:
       DCHECK(target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_2D ||
              target == GL_TEXTURE_RECTANGLE_ARB)
           << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
-      // Single plane textures can be sampled as RGB.
-      if (num_textures > 1)
-        return VideoFrameResourceType::YUV;
+      DCHECK(num_textures <= 2);
 
-      *buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+      // Single plane textures can be sampled as RGB.
+      if (num_textures == 2) {
+        buffer_formats[0] = gfx::BufferFormat::R_8;
+        buffer_formats[1] = gfx::BufferFormat::RG_88;
+        return VideoFrameResourceType::YUV;
+      }
+
+      buffer_formats[0] = gfx::BufferFormat::YUV_420_BIPLANAR;
       return VideoFrameResourceType::RGB;
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
@@ -800,9 +810,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (copy_required)
     target = GL_TEXTURE_2D;
 
-  gfx::BufferFormat buffer_format;
+  gfx::BufferFormat buffer_formats[VideoFrame::kMaxPlanes];
   external_resources.type = ExternalResourceTypeForHardwarePlanes(
-      video_frame->format(), target, video_frame->NumTextures(), &buffer_format,
+      video_frame->format(), target, video_frame->NumTextures(), buffer_formats,
       use_stream_video_draw_quad_);
 
   if (external_resources.type == VideoFrameResourceType::NONE) {
@@ -840,7 +850,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       transfer_resource.read_lock_fences_enabled =
           video_frame->metadata()->IsTrue(
               VideoFrameMetadata::READ_LOCK_FENCES_ENABLED);
-      transfer_resource.format = viz::GetResourceFormat(buffer_format);
+      transfer_resource.format = viz::GetResourceFormat(buffer_formats[i]);
 
 #if defined(OS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
