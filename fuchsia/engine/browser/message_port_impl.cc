@@ -139,8 +139,8 @@ void MessagePortImpl::MaybeDeliverToClient() {
     return;
   }
 
-  base::ResetAndReturn (&pending_client_read_cb_)(
-      std::move(message_queue_.front()));
+  auto pending_client_read_cb = std::exchange(pending_client_read_cb_, nullptr);
+  pending_client_read_cb(std::move(message_queue_.front()));
   message_queue_.pop_front();
 }
 

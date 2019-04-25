@@ -22,9 +22,16 @@
 namespace base {
 
 // Prefer std::move() over ResetAndReturn().
-template <typename CallbackType>
-CallbackType ResetAndReturn(CallbackType* cb) {
-  CallbackType ret(std::move(*cb));
+template <typename Functor>
+OnceCallback<Functor> ResetAndReturn(OnceCallback<Functor>* cb) {
+  auto ret = std::move(*cb);
+  DCHECK(!*cb);
+  return ret;
+}
+
+template <typename Functor>
+RepeatingCallback<Functor> ResetAndReturn(RepeatingCallback<Functor>* cb) {
+  auto ret = std::move(*cb);
   DCHECK(!*cb);
   return ret;
 }
