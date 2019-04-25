@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -22,7 +22,7 @@
 #include "extensions/common/user_script.h"
 
 namespace base {
-class SharedMemory;
+class ReadOnlySharedMemoryRegion;
 }
 
 namespace content {
@@ -43,7 +43,7 @@ class UserScriptLoader : public content::NotificationObserver {
  public:
   using LoadScriptsCallback =
       base::OnceCallback<void(std::unique_ptr<UserScriptList>,
-                              std::unique_ptr<base::SharedMemory>)>;
+                              base::ReadOnlySharedMemoryRegion shared_memory)>;
   class Observer {
    public:
     virtual void OnScriptsLoaded(UserScriptLoader* loader) = 0;
@@ -87,10 +87,10 @@ class UserScriptLoader : public content::NotificationObserver {
   bool HasLoadedScripts(const HostID& host_id) const;
 
   // Returns true if we have any scripts ready.
-  bool initial_load_complete() const { return shared_memory_.get() != nullptr; }
+  bool initial_load_complete() const { return shared_memory_.IsValid(); }
 
   // Pickle user scripts and return pointer to the shared memory.
-  static std::unique_ptr<base::SharedMemory> Serialize(
+  static base::ReadOnlySharedMemoryRegion Serialize(
       const extensions::UserScriptList& scripts);
 
   // Adds or removes observers.
@@ -128,14 +128,14 @@ class UserScriptLoader : public content::NotificationObserver {
 
   // Called once we have finished loading the scripts on the file thread.
   void OnScriptsLoaded(std::unique_ptr<UserScriptList> user_scripts,
-                       std::unique_ptr<base::SharedMemory> shared_memory);
+                       base::ReadOnlySharedMemoryRegion shared_memory);
 
   // Sends the renderer process a new set of user scripts. If
   // |changed_hosts| is not empty, this signals that only the scripts from
   // those hosts should be updated. Otherwise, all hosts will be
   // updated.
   void SendUpdate(content::RenderProcessHost* process,
-                  base::SharedMemory* shared_memory,
+                  const base::ReadOnlySharedMemoryRegion& shared_memory,
                   const std::set<HostID>& changed_hosts);
 
   bool is_loading() const {
@@ -147,7 +147,7 @@ class UserScriptLoader : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   // Contains the scripts that were found the last time scripts were updated.
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::ReadOnlySharedMemoryRegion shared_memory_;
 
   // List of scripts that are currently loaded. This is null when a load is in
   // progress.

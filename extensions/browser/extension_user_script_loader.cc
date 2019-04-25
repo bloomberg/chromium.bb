@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/one_shot_event.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -193,7 +194,7 @@ void LoadScriptsOnFileTaskRunner(
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(user_scripts.get());
   LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
-  std::unique_ptr<base::SharedMemory> memory =
+  base::ReadOnlySharedMemoryRegion memory =
       UserScriptLoader::Serialize(*user_scripts);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
