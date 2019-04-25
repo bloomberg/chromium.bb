@@ -23,9 +23,9 @@
 #error VS 2017 Update 3.2 or higher is required
 #endif
 
-#if !defined(NTDDI_WIN10_RS2)
-// Windows 10 April 2018 SDK is required to build Chrome.
-#error April 2018 SDK (10.0.17134.0) or higher required.
+#if !defined(NTDDI_WIN10_RS5)
+// Windows 10 October 2018 SDK is required to build Chrome.
+#error October 2018 SDK (10.0.17763.0) or higher required.
 #endif
 
 namespace {
