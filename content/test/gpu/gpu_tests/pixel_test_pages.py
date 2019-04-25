@@ -812,7 +812,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=9,
+      revision=10,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -854,7 +854,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=7,
+      revision=8,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -1009,12 +1009,12 @@ def MacSpecificPages(base_name):
       'filter_effects.html',
       base_name + '_CSSFilterEffects',
       test_rect=[0, 0, 300, 300],
-      revision=10),
+      revision=11),
     PixelTestPage(
       'filter_effects.html',
       base_name + '_CSSFilterEffects_NoOverlays',
       test_rect=[0, 0, 300, 300],
-      revision=10,
+      revision=11,
       tolerance=10,
       browser_args=no_overlays_args),
 

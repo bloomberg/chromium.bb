@@ -472,9 +472,6 @@ void HTMLCanvasElement::FinalizeFrame() {
 void HTMLCanvasElement::DisableAcceleration(
     std::unique_ptr<Canvas2DLayerBridge>
         unaccelerated_bridge_used_for_testing) {
-  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    NOTREACHED();
-  }
   // Create and configure an unaccelerated Canvas2DLayerBridge.
   std::unique_ptr<Canvas2DLayerBridge> bridge;
   if (unaccelerated_bridge_used_for_testing)
@@ -1007,19 +1004,19 @@ void HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
 }
 
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
+  if (context_ && !Is2d())
+    return false;
+
+  // The following is necessary for handling the special case of canvases in
+  // the dev tools overlay, which run in a process that supports accelerated
+  // 2d canvas but in a special compositing context that does not.
+  if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
+    return false;
+
   // With this feature enabled we want to accelerate canvases whenever we can.
   // This does not include when the context_provider CANNOT accelerated
   // canvases.
   if (!base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    if (context_ && !Is2d())
-      return false;
-
-    // The following is necessary for handling the special case of canvases in
-    // the dev tools overlay, which run in a process that supports accelerated
-    // 2d canvas but in a special compositing context that does not.
-    if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
-      return false;
-
     base::CheckedNumeric<int> checked_canvas_pixel_count = Size().Width();
     checked_canvas_pixel_count *= Size().Height();
     if (!checked_canvas_pixel_count.IsValid())

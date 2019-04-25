@@ -317,6 +317,11 @@ CrElementsFingerprintProgressArcTest.prototype = {
       'cr_fingerprint_progress_arc.html',
 
   /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-pixel-output-in-tests',
+  }],
+
+  /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
     'cr_fingerprint_progress_arc_tests.js',
   ]),

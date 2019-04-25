@@ -124,9 +124,6 @@ void Canvas2DLayerBridge::ResetResourceProvider() {
 }
 
 bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
-  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    return true;
-  }
   bool accelerate;
   if (software_rendering_while_hidden_) {
     accelerate = false;

@@ -1109,10 +1109,9 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
   return 0;
 }
 
+// TODO(aaronhk) This is only used for the size heuristic. Delete this function
+// once always accelerate fully lands.
 void CanvasRenderingContext2D::DisableAcceleration() {
-  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    NOTREACHED();
-  }
   canvas()->DisableAcceleration();
 }
 

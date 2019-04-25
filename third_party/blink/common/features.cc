@@ -237,7 +237,7 @@ const base::Feature kDecodeLossyWebPImagesToYUV{
 
 // Use accelerated canvases whenever possible see https://crbug.com/909937
 const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at

@@ -10,6 +10,15 @@ class FileManagerJsTest : public FileManagerJsTestBase {
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/file_manager"))) {}
 };
 
+// Tests that draw to canvases and test pixels need pixel output turned on.
+class CanvasFileManagerJsTest : public FileManagerJsTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    FileManagerJsTest::SetUp();
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
   RunGeneratedTest("/foreground/js/ui/actions_submenu_unittest.html");
 }
@@ -150,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExifParser) {
   RunGeneratedTest("/foreground/js/metadata/exif_parser_unittest.html");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImageOrientation) {
+IN_PROC_BROWSER_TEST_F(CanvasFileManagerJsTest, ImageOrientation) {
   RunGeneratedTest("/foreground/js/metadata/image_orientation_unittest.html");
 }
 
