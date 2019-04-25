@@ -557,8 +557,8 @@ class OrderfileGenerator(object):
     preferred_device = None
     for device in devices:
       if device.build_version_sdk >= version_codes.NOUGAT:
-       preferred_device = device
-       break
+        preferred_device = device
+        break
 
     self._monochrome = preferred_device is not None
 
@@ -572,6 +572,8 @@ class OrderfileGenerator(object):
         self._BUILD_ROOT, self._options.arch + '_instrumented_out')
     self._uninstrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
+    self._no_orderfile_out_dir = os.path.join(
+        self._BUILD_ROOT, self._options.arch + '_no_orderfile_out')
 
     self._PrepareOrderfilePaths()
 
@@ -807,6 +809,149 @@ class OrderfileGenerator(object):
       self._orderfile_updater.UploadToCloudStorage(
           file_name, use_debug_location=False)
 
+  def _NativeCodeMemoryBenchmark(self, apk):
+    """Runs system_health.memory_mobile to assess native code memory footprint.
+
+    Args:
+      apk: (str) Path to the apk.
+
+    Returns:
+      results: ([int]) Values of native code memory footprint in bytes from the
+                       benchmark results.
+    """
+    self._step_recorder.BeginStep("Running orderfile.memory_mobile")
+    try:
+      out_dir = tempfile.mkdtemp()
+      self._profiler._RunCommand(['tools/perf/run_benchmark',
+                                  '--device={}'.format(
+                                      self._profiler._device.serial),
+                                  '--browser=exact',
+                                  '--output-format=chartjson',
+                                  '--output-dir={}'.format(out_dir),
+                                  '--reset-results',
+                                  '--browser-executable={}'.format(apk),
+                                  'orderfile.memory_mobile'])
+
+      out_file_path = os.path.join(out_dir, 'results-chart.json')
+      if not os.path.exists(out_file_path):
+        raise Exception('orderfile.memory_mobile results file not found!')
+
+      with open(out_file_path, 'r') as f:
+        json_results = json.load(f)
+
+      if not json_results:
+        raise Exception('orderfile.memory_mobile results file is empty')
+
+    finally:
+      shutil.rmtree(out_dir)
+
+    if not 'charts' in json_results:
+      raise Exception('charts can not be found in results!')
+
+    charts = json_results['charts']
+    results = dict()
+    for story in charts:
+      if not story.endswith("NativeCodeResidentMemory_avg"):
+        continue
+
+      results[story] = dict()
+      for substory in charts[story]:
+        if substory == 'summary':
+          continue
+        if not 'values' in charts[story][substory]:
+          raise Exception(
+              'Values can not be found in charts:%s:%s' % (story, substory))
+
+        results[story][substory] = charts[story][substory]['values']
+    return results
+
+  def _PerformanceBenchmark(self, apk):
+    """Runs Speedometer2.0 to assess performance.
+
+    Args:
+      apk: (str) Path to the apk.
+
+    Returns:
+      results: ([float]) Speedometer2.0 results samples in milliseconds.
+    """
+    self._step_recorder.BeginStep("Running Speedometer2.0.")
+    try:
+      out_dir = tempfile.mkdtemp()
+      self._profiler._RunCommand(['tools/perf/run_benchmark',
+                                  '--device={}'.format(
+                                      self._profiler._device.serial),
+                                  '--browser=exact',
+                                  '--output-format=chartjson',
+                                  '--output-dir={}'.format(out_dir),
+                                  '--reset-results',
+                                  '--browser-executable={}'.format(apk),
+                                  'speedometer2'])
+
+      out_file_path = os.path.join(out_dir, 'results-chart.json')
+      if not os.path.exists(out_file_path):
+        raise Exception('speedometer2 results file not found!')
+
+      with open(out_file_path, 'r') as f:
+        results = json.load(f)
+
+      if not results:
+        raise Exception('speedometer2 results file is empty.')
+
+    finally:
+      shutil.rmtree(out_dir)
+
+    keys = ['charts', 'Total', 'Speedometer2', 'values']
+    for key in keys:
+      if not key in results:
+        raise Exception('Unexpected results format, %s can not be found.' % key)
+      results = results[key]
+
+    return results
+
+  def RunBenchmark(self, out_directory, no_orderfile=False):
+    """Builds chrome apk and runs performance and memory benchmarks.
+
+    Builds a non-instrumented version of chrome.
+    Installs chrome apk on the device.
+    Runs Speedometer2.0 benchmark to assess performance.
+    Runs system_health.memory_mobile to evaluate memory footprint.
+
+    Args:
+      out_directory: (str) Path to out directory for this build.
+      no_orderfile: (bool) True if chrome to be built without orderfile.
+
+    Returns:
+      benchmark_results: (dict) Results extracted from benchmarks.
+    """
+    try:
+      _UnstashOutputDirectory(out_directory)
+      self._compiler = ClankCompiler(
+          out_directory, self._step_recorder,
+          self._options.arch, self._options.jobs, self._options.max_load,
+          self._options.use_goma, self._options.goma_dir,
+          self._options.system_health_orderfile, self._monochrome,
+          self._options.public, self._GetPathToOrderfile())
+
+      if no_orderfile:
+        orderfile_path = self._GetPathToOrderfile()
+        backup_orderfile = orderfile_path + '.backup'
+        shutil.move(orderfile_path, backup_orderfile)
+        open(orderfile_path, 'w').close()
+
+      # Build APK to be installed on the device.
+      self._compiler.CompileChromeApk(False, force_relink=True)
+      benchmark_results = dict()
+      benchmark_results['Speedometer2.0'] = self._PerformanceBenchmark(
+          self._compiler.chrome_apk)
+      benchmark_results['orderfile.memory_mobile'] = (
+          self._NativeCodeMemoryBenchmark(self._compiler.chrome_apk))
+    finally:
+      if no_orderfile and os.path.exists(backup_orderfile):
+        shutil.move(backup_orderfile, orderfile_path)
+      _StashOutputDirectory(out_directory)
+
+    return benchmark_results
+
   def Generate(self):
     """Generates and maybe upload an order."""
     profile_uploaded = False
@@ -885,6 +1030,12 @@ class OrderfileGenerator(object):
         _StashOutputDirectory(self._uninstrumented_out_dir)
       orderfile_uploaded = True
 
+    if self._options.benchmark:
+      self._output_data['orderfile_benchmark_results'] = self.RunBenchmark(
+          self._uninstrumented_out_dir)
+      self._output_data['no_orderfile_benchmark_results'] = self.RunBenchmark(
+          self._no_orderfile_out_dir, no_orderfile=True)
+
     if self._options.new_commit_flow:
       self._orderfile_updater._GitStash()
     else:
@@ -924,6 +1075,8 @@ class OrderfileGenerator(object):
 def CreateArgumentParser():
   """Creates and returns the argument parser."""
   parser = argparse.ArgumentParser()
+  parser.add_argument('--no-benchmark', action='store_false', dest='benchmark',
+                      default=True, help='Disables running benchmarks.')
   parser.add_argument(
       '--buildbot', action='store_true',
       help='If true, the script expects to be run on a buildbot')

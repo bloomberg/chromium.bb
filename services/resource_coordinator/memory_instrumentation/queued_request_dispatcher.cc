@@ -130,7 +130,14 @@ size_t ReportGlobalNativeCodeResidentMemoryKb(
   }
 
   const size_t kPageSize = base::GetPageSize();
-  return accessed_pages_set.size() * kPageSize / 1024;
+  const size_t native_resident_bytes = accessed_pages_set.size() * kPageSize;
+  // TODO(crbug.com/956464) replace adding |NativeCodeResidentMemory| to trace
+  // this way by adding it through |tracing_observer| in Finalize().
+  TRACE_EVENT_INSTANT1(base::trace_event::MemoryDumpManager::kTraceCategory,
+                       "ReportGlobalNativeCodeResidentMemoryKb",
+                       TRACE_EVENT_SCOPE_GLOBAL, "NativeCodeResidentMemory",
+                       native_resident_bytes);
+  return native_resident_bytes / 1024;
 }
 #endif  // #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
