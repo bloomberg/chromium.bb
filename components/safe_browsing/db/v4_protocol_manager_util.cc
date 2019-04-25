@@ -425,15 +425,6 @@ void V4ProtocolManagerUtil::GeneratePatternsToCheck(
 }
 
 // static
-FullHash V4ProtocolManagerUtil::GetFullHash(const GURL& url) {
-  std::string host;
-  std::string path;
-  CanonicalizeUrl(url, &host, &path, nullptr);
-
-  return crypto::SHA256HashString(host + path);
-}
-
-// static
 void V4ProtocolManagerUtil::CanonicalizeUrl(const GURL& url,
                                             std::string* canonicalized_hostname,
                                             std::string* canonicalized_path,
