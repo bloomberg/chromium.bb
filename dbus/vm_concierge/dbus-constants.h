@@ -29,9 +29,11 @@ const char kAttachUsbDeviceMethod[] = "AttachUsbDevice";
 const char kDetachUsbDeviceMethod[] = "DetachUsbDevice";
 const char kListUsbDeviceMethod[] = "ListUsbDevices";
 const char kStartPluginVmMethod[] = "StartPluginVm";
+const char kGetDnsSettingsMethod[] = "GetDnsSettings";
 
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 const char kDiskImageProgressSignal[] = "DiskImageProgress";
+const char kDnsSettingsChangedSignal[] = "DnsSettingsChanged";
 
 }  // namespace concierge
 }  // namespace vm_tools

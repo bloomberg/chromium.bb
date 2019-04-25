@@ -613,3 +613,13 @@ message ListUsbDeviceResponse {
   // List of USB device descriptors, one for each attached USB device.
   repeated UsbDeviceMessage usb_devices = 2;
 }
+
+// Response sent back by vm_concierge after it receives a GetDnsSettings call.
+// Also being broadcast via DnsSettingsChanged signal.
+message DnsSettings {
+  // List of DNS servers.
+  repeated string nameservers = 1;
+
+  // List of search domains.
+  repeated string search_domains = 2;
+};
