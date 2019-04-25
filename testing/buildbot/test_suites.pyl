@@ -2540,6 +2540,15 @@
     },
 
     'cronet_isolated_scripts': {
+      'cronet_sizes': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04'
+            },
+          ],
+        },
+      },
       'resource_sizes_cronet_sample_apk': {
         'merge': {
           'script': '//tools/perf/process_perf_results.py',

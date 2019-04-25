@@ -332,7 +332,7 @@ group("gn_all") {
 
     if (!is_component_build) {
       deps += [
-        "//components/cronet/android:cronet_package",
+        "//components/cronet/android:cronet_package_android",
         "//components/cronet/android:cronet_perf_test_apk",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",

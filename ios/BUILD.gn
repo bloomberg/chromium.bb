@@ -35,7 +35,7 @@ group("all") {
   testonly = true
   if (is_cronet_build) {
     deps = [
-      "//components/cronet/ios:cronet_package",
+      "//components/cronet/ios:cronet_package_ios",
     ]
   } else {
     assert(xcode_version_int >= 1000, "Xcode 10 is required.")

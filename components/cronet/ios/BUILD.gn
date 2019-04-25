@@ -369,7 +369,7 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     }
   }
 
-  group("cronet_package") {
+  group("cronet_package_ios") {
     deps = [
       ":cronet_dsym_archive",
       ":cronet_package_copy",

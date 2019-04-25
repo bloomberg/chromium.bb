@@ -11,7 +11,7 @@ import sizes_common
 
 
 def main_compile_targets(args):
-  json.dump(['cronet'], args.output)
+  json.dump(['cronet_package'], args.output)
 
 
 if __name__ == '__main__':

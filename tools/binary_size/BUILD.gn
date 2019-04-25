@@ -14,3 +14,8 @@ python_library("binary_size_trybot_py") {
     "//build/android/resource_sizes.py",
   ]
 }
+
+python_library("sizes_py") {
+  testonly = true
+  pydeps_file = "sizes.pydeps"
+}
