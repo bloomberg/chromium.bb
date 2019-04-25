@@ -25,6 +25,7 @@ struct WebRequestInfo;
 
 namespace declarative_net_request {
 class CompositeMatcher;
+struct RequestParams;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
 // be constructed on any sequence but must be accessed and destroyed from the
@@ -137,6 +138,16 @@ class RulesetManager {
 
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
+
+  base::Optional<Action> GetBlockOrCollapseAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+  base::Optional<Action> GetRedirectAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+  base::Optional<Action> GetRemoveHeadersAction(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.
