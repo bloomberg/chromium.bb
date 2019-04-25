@@ -420,6 +420,9 @@
   INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, category_group, name, \
                            TRACE_EVENT_FLAG_NONE, "value",                  \
                            static_cast<int>(value))
+#define TRACE_COUNTER_WITH_FLAG1(category_group, name, flag, value)         \
+  INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, category_group, name, \
+                           flag, "value", static_cast<int>(value))
 #define TRACE_COPY_COUNTER1(category_group, name, value)                    \
   INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_COUNTER, category_group, name, \
                            TRACE_EVENT_FLAG_COPY, "value",                  \

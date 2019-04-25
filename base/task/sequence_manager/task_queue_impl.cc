@@ -566,11 +566,13 @@ void TaskQueueImpl::TraceQueueSize() const {
     return;
 
   base::internal::AutoSchedulerLock lock(any_thread_lock_);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
-                 any_thread_.immediate_incoming_queue.size() +
-                     main_thread_only().immediate_work_queue->Size() +
-                     main_thread_only().delayed_work_queue->Size() +
-                     main_thread_only().delayed_incoming_queue.size());
+  TRACE_COUNTER_WITH_FLAG1(
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
+      TRACE_EVENT_FLAG_DISALLOW_POSTTASK,
+      any_thread_.immediate_incoming_queue.size() +
+          main_thread_only().immediate_work_queue->Size() +
+          main_thread_only().delayed_work_queue->Size() +
+          main_thread_only().delayed_incoming_queue.size());
 }
 
 void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {
