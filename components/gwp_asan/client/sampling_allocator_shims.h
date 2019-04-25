@@ -7,6 +7,7 @@
 
 #include <stddef.h>  // for size_t
 
+#include "build/build_config.h"
 #include "components/gwp_asan/client/export.h"
 
 namespace gwp_asan {
@@ -20,6 +21,11 @@ GWP_ASAN_EXPORT void InstallAllocatorHooks(size_t max_allocated_pages,
                                            size_t sampling_frequency);
 
 }  // namespace internal
+
+// Checks if the |ptr| is a GWP-ASan allocation. (This is exposed for use by
+// Zombies on macOS.)
+GWP_ASAN_EXPORT bool IsGwpAsanAllocation(const void* ptr);
+
 }  // namespace gwp_asan
 
 #endif  // COMPONENTS_GWP_ASAN_CLIENT_SAMPLING_ALLOCATOR_SHIMS_H_
