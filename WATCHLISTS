@@ -599,7 +599,9 @@
                   'net/nqe|'\
                   'optimization_guide|'\
                   'optimization_hints|'\
-                  'previews'
+                  'prerender|'\
+                  'previews|'\
+                  'services/network/resource_scheduler'
     },
     'browser_components': {
       'filepath': 'chrome/browser/autofill/' \
