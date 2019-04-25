@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -322,4 +323,32 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
   EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[0]);
+}
+
+TEST(SuggestionAnswerTest, LogAnswerUsed) {
+  {
+    base::HistogramTester histograms;
+    base::Optional<SuggestionAnswer> answer;
+    SuggestionAnswer::LogAnswerUsed(answer);
+    histograms.ExpectUniqueSample(SuggestionAnswer::kAnswerUsedUmaHistogramName,
+                                  0, 1);
+  }
+
+  {
+    base::HistogramTester histograms;
+    SuggestionAnswer answer;
+    answer.set_type(8);
+    SuggestionAnswer::LogAnswerUsed(answer);
+    histograms.ExpectUniqueSample(SuggestionAnswer::kAnswerUsedUmaHistogramName,
+                                  8, 1);
+  }
+
+  {
+    base::HistogramTester histograms;
+    SuggestionAnswer answer;
+    answer.set_type(5);
+    SuggestionAnswer::LogAnswerUsed(answer);
+    histograms.ExpectUniqueSample(SuggestionAnswer::kAnswerUsedUmaHistogramName,
+                                  5, 1);
+  }
 }

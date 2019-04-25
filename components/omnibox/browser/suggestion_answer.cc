@@ -364,10 +364,14 @@ void SuggestionAnswer::LogAnswerUsed(
   if (answer) {
     answer_type = static_cast<SuggestionAnswer::AnswerType>(answer->type());
   }
-  UMA_HISTOGRAM_ENUMERATION("Omnibox.SuggestionUsed.AnswerInSuggest",
-                            answer_type,
+  DCHECK_NE(-1, answer_type);  // just in case; |type_| is init'd to -1
+  UMA_HISTOGRAM_ENUMERATION(kAnswerUsedUmaHistogramName, answer_type,
                             SuggestionAnswer::ANSWER_TYPE_TOTAL_COUNT);
 }
+
+// static
+const char SuggestionAnswer::kAnswerUsedUmaHistogramName[] =
+    "Omnibox.SuggestionUsed.AnswerInSuggest";
 
 #ifdef OS_ANDROID
 namespace {
