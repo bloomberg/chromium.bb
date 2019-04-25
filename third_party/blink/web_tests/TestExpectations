@@ -3181,7 +3181,6 @@ crbug.com/626703 [ Retina ] external/wpt/websockets/Secure-Close-1000-verify-cod
 crbug.com/626703 [ Retina ] external/wpt/websockets/Secure-Send-binary-arraybufferview-uint8-offset-length.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/GUM-non-applicable-constraint.https.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/freeze-frames/external/wpt/lifecycle/freeze.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-audio-only.https.html [ Timeout ]
 crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout Pass Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Failure Timeout ]
@@ -5862,9 +5861,6 @@ crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Fai
 
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
-
-# Disabled until FreezeFramesOnVisiblity feature enabled by default.
-crbug.com/907125 external/wpt/lifecycle/child-display-none.tentative.html [ Skip ]
 
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming

@@ -618,6 +618,10 @@
       status: "experimental",
     },
     {
+      name: "FreezeFramesOnVisibility",
+      status: "experimental",
+    },
+    {
       name: "GamepadButtonAxisEvents",
       status: "experimental",
     },

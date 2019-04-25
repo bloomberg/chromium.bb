@@ -47,7 +47,6 @@ CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
-CONTENT_EXPORT extern const base::Feature kFreezeFramesOnVisibility;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;

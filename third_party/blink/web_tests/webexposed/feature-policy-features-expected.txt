@@ -9,6 +9,8 @@ document-domain
 document-write
 downloads-without-user-activation
 encrypted-media
+execution-while-not-rendered
+execution-while-out-of-viewport
 font-display-late-swap
 forms
 fullscreen

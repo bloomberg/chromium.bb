@@ -1052,11 +1052,6 @@
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
   },
   {
-    "prefix": "freeze-frames",
-    "base": "external/wpt/lifecycle",
-    "args": ["--enable-features=FreezeFramesOnVisibility"]
-  },
-  {
     "prefix": "insecure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
     "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]

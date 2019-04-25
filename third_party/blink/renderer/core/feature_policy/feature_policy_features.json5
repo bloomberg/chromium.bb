@@ -64,6 +64,16 @@
       feature_policy_name: "encrypted-media",
     },
     {
+      name: "ExecutionWhileOutOfViewport",
+      feature_policy_name: "execution-while-out-of-viewport",
+      depends_on: ["FreezeFramesOnVisibility"],
+    },
+    {
+      name: "ExecutionWhileNotRendered",
+      feature_policy_name: "execution-while-not-rendered",
+      depends_on: ["FreezeFramesOnVisibility"],
+    },
+    {
       name: "FontDisplay",
       feature_policy_name: "font-display-late-swap",
       depends_on: ["ExperimentalProductivityFeatures"],

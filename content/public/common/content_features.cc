@@ -163,10 +163,6 @@ const base::Feature kFontCacheScaling{"FontCacheScaling",
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables freezing frame support based on feature policies.
-const base::Feature kFreezeFramesOnVisibility{
-    "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Puts network quality estimate related Web APIs in the holdback mode. When the
 // holdback is enabled the related Web APIs return network quality estimate
 // set by the experiment (regardless of the actual quality).
