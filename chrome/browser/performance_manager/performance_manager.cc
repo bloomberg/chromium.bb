@@ -20,7 +20,6 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 #include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -257,12 +256,6 @@ void PerformanceManager::OnStartImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Register new |GraphObserver| implementations here.
-  auto page_signal_generator_impl = std::make_unique<PageSignalGeneratorImpl>();
-  interface_registry_.AddInterface(
-      base::BindRepeating(&PageSignalGeneratorImpl::BindToInterface,
-                          base::Unretained(page_signal_generator_impl.get())));
-  RegisterObserver(std::move(page_signal_generator_impl));
-
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   RegisterObserver(std::make_unique<FrozenFrameAggregator>());

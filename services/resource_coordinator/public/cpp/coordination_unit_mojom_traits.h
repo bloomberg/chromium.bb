@@ -7,9 +7,7 @@
 
 #include "base/component_export.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/resource_coordinator/public/cpp/page_navigation_identity.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/page_signal.mojom.h"
 
 namespace mojo {
 
@@ -37,27 +35,6 @@ struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM)
   static bool Read(
       resource_coordinator::mojom::CoordinationUnitIDDataView input,
       resource_coordinator::CoordinationUnitID* out);
-};
-
-template <>
-struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM)
-    StructTraits<resource_coordinator::mojom::PageNavigationIdentityDataView,
-                 resource_coordinator::PageNavigationIdentity> {
-  static const resource_coordinator::CoordinationUnitID& page_cu_id(
-      const resource_coordinator::PageNavigationIdentity& id) {
-    return id.page_cu_id;
-  }
-  static int64_t navigation_id(
-      const resource_coordinator::PageNavigationIdentity& id) {
-    return id.navigation_id;
-  }
-  static const std::string& url(
-      const resource_coordinator::PageNavigationIdentity& id) {
-    return id.url;
-  }
-  static bool Read(
-      resource_coordinator::mojom::PageNavigationIdentityDataView input,
-      resource_coordinator::PageNavigationIdentity* out);
 };
 
 }  // namespace mojo
