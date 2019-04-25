@@ -11,11 +11,14 @@
 @interface InfobarBadgeButton : ExtendedTouchTargetButton
 
 // Gives the badge a dark gray background if |selected| is YES. Removes the
-// background if |selected| is NO.
-- (void)setSelected:(BOOL)selected;
+// background if |selected| is NO. Will animate change if |animated| is YES.
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated;
 // Sets the badge color to blue if |active| is YES, light gray if |active| is
-// NO.
-- (void)setActive:(BOOL)active;
+// NO. Will animate change if |animated| is YES.
+- (void)setActive:(BOOL)active animated:(BOOL)animated;
+// Displays the badge button if |display| is YES, shows it if |display| is NO.
+// Will animate change if |animated| is YES.
+- (void)displayBadge:(BOOL)display animated:(BOOL)animated;
 
 @end
 

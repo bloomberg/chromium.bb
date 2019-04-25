@@ -17,8 +17,8 @@ const CGFloat kButtonAnimationDuration = 0.2;
 const CGFloat kButtonEdgeInset = 6;
 // Corner radius of button.
 const CGFloat kButtonCornerRadius = 15;
-// White alpha of the button background in a selected state.
-const CGFloat kSelectedWhiteAlpha = 0.80;
+// White value of the button background in a selected state.
+const CGFloat kSelectedWhiteValue = 0.80;
 // Tint color of the button in an active state.
 const CGFloat kActiveTintColor = 0x1A73E8;
 }  // namespace
@@ -45,21 +45,49 @@ const CGFloat kActiveTintColor = 0x1A73E8;
   [super willMoveToSuperview:newSuperview];
 }
 
-- (void)setSelected:(BOOL)selected {
-  [UIView animateWithDuration:kButtonAnimationDuration
-                   animations:^{
-                     self.backgroundColor =
-                         selected ? [UIColor colorWithWhite:kSelectedWhiteAlpha
-                                                      alpha:1.0]
-                                  : [UIColor clearColor];
-                   }];
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+  void (^changeBackgroundColor)() = ^{
+    self.backgroundColor =
+        selected ? [UIColor colorWithWhite:kSelectedWhiteValue alpha:1.0]
+                 : [UIColor clearColor];
+  };
+  if (animated) {
+    [UIView animateWithDuration:kButtonAnimationDuration
+                     animations:^{
+                       changeBackgroundColor();
+                     }];
+  } else {
+    changeBackgroundColor();
+  }
 }
-- (void)setActive:(BOOL)active {
-  [UIView animateWithDuration:kButtonAnimationDuration
-                   animations:^{
-                     self.tintColor = active ? UIColorFromRGB(kActiveTintColor)
-                                             : [UIColor lightGrayColor];
-                   }];
+- (void)setActive:(BOOL)active animated:(BOOL)animated {
+  void (^changeTintColor)() = ^{
+    self.tintColor =
+        active ? UIColorFromRGB(kActiveTintColor) : [UIColor lightGrayColor];
+  };
+  if (animated) {
+    [UIView animateWithDuration:kButtonAnimationDuration
+                     animations:^{
+                       changeTintColor();
+                     }];
+  } else {
+    changeTintColor();
+  }
+}
+
+- (void)displayBadge:(BOOL)display animated:(BOOL)animated {
+  void (^changeBadgeDisplay)() = ^{
+    self.hidden = !display;
+  };
+  if (animated) {
+    [UIView animateWithDuration:kButtonAnimationDuration
+                     animations:^{
+                       changeBadgeDisplay();
+                     }];
+
+  } else {
+    changeBadgeDisplay();
+  }
 }
 
 @end
