@@ -25,6 +25,7 @@
   "disable-webrtc-hw-decoding",
   "disable-webrtc-hw-encoding",
   "enable-autofill-credit-card-upload",
+  "enable-command-line-on-non-rooted-devices",
   "enable-devtools-experiments",
   "enable-experimental-web-platform-features",
   "enable-future-v8-vm-features",

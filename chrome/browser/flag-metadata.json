@@ -918,8 +918,10 @@
   },
   {
     "name": "enable-command-line-on-non-rooted-devices",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chrome-android-app" ],
+    // This flag is used for debugging on Android; it causes Android Chromium
+    // builds to read command-line arguments from a writable location on disk.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-content-fullscreen",
