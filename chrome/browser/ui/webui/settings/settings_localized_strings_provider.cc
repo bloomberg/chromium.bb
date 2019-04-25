@@ -2408,9 +2408,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSoundAllowRecommended",
      IDS_SETTINGS_SITE_SETTINGS_SOUND_ALLOW_RECOMMENDED},
     {"siteSettingsSoundBlock", IDS_SETTINGS_SITE_SETTINGS_SOUND_BLOCK},
-    {"siteSettingsSensors", IDS_SETTINGS_SITE_SETTINGS_SENSORS},
-    {"siteSettingsSensorsAllow", IDS_SETTINGS_SITE_SETTINGS_SENSORS_ALLOW},
-    {"siteSettingsSensorsBlock", IDS_SETTINGS_SITE_SETTINGS_SENSORS_BLOCK},
     {"siteSettingsFlash", IDS_SETTINGS_SITE_SETTINGS_FLASH},
     {"siteSettingsFlashAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
     {"siteSettingsFlashAskFirstRecommended",
@@ -2625,6 +2622,24 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  // These ones cannot be constexpr because we need to check base::FeatureList.
+  static LocalizedString kSensorsLocalizedStrings[] = {
+      {"siteSettingsSensors",
+       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+           ? IDS_SETTINGS_SITE_SETTINGS_SENSORS
+           : IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS},
+      {"siteSettingsSensorsAllow",
+       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+           ? IDS_SETTINGS_SITE_SETTINGS_SENSORS_ALLOW
+           : IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS_ALLOW},
+      {"siteSettingsSensorsBlock",
+       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+           ? IDS_SETTINGS_SITE_SETTINGS_SENSORS_BLOCK
+           : IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS_BLOCK},
+  };
+  AddLocalizedStringsBulk(html_source, kSensorsLocalizedStrings,
+                          base::size(kSensorsLocalizedStrings));
 
   html_source->AddBoolean("enableSiteSettings", base::FeatureList::IsEnabled(
                                                     features::kSiteSettings));

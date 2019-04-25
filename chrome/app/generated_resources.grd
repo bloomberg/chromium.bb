@@ -8325,8 +8325,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SENSORS_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use device's sensors.">
         This site is using motion or light sensors.
       </message>
+      <message name="IDS_MOTION_SENSORS_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use device's motion sensors (accelerometer, gyroscope, magnetometer).">
+        This site is using motion sensors.
+      </message>
       <message name="IDS_SENSORS_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using device's sensors.">
         This site has been blocked from using motion and light sensors.
+      </message>
+      <message name="IDS_MOTION_SENSORS_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using device's sensors (accelerometer, gyroscope, magnetometer).">
+        This site has been blocked from using motion sensors.
       </message>
       <message name="IDS_BLOCKED_SENSORS_UNBLOCK" desc="Radio button choice to unblock a site from using device's sensors, displayed in bubble when blocked indicator icon is clicked.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access sensors
@@ -8343,8 +8349,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_ALLOWED_SENSORS_MESSAGE" desc="Message for the page action when access to sensors was allowed">
         This site is accessing your motion or light sensors.
       </message>
+      <message name="IDS_ALLOWED_MOTION_SENSORS_MESSAGE" desc="Message for the page action when access to motion sensors (accelerometer, gyroscope, magnetometer) was allowed.">
+        This site is accessing your motion sensors.
+      </message>
       <message name="IDS_BLOCKED_SENSORS_MESSAGE" desc="Message for the page action when access to sensors was blocked">
         This site has been blocked from accessing your motion or light sensors.
+      </message>
+      <message name="IDS_BLOCKED_MOTION_SENSORS_MESSAGE" desc="Message for the page action when access to motion sensors (accelerometer, gyroscope, magnetometer) was blocked.">
+        This site has been blocked from accessing your motion sensors.
       </message>
       <message name="IDS_ALLOWED_SENSORS_NO_ACTION" desc="Radio button choice to keep allowing a site to use device's sensors, displayed in bubble when location bar is clicked.">
         Continue allowing sensor access
