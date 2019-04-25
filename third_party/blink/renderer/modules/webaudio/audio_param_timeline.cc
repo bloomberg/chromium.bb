@@ -605,19 +605,6 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
       }
     }
 
-    // Overwrite same event type and time.
-    if (events_[i]->Time() == insert_time &&
-        events_[i]->GetType() == event->GetType()) {
-      // Be sure to remove the old event from |new_events_| too, in
-      // case it was just added.
-      if (new_events_.Contains(events_[i].get())) {
-        new_events_.erase(events_[i].get());
-      }
-      events_[i] = std::move(event);
-      new_events_.insert(events_[i].get());
-      return;
-    }
-
     if (events_[i]->Time() > insert_time)
       break;
   }
