@@ -309,15 +309,26 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
   return ".Unknown";
 }
 
-void ServiceWorkerUtils::SendHttpResponseInfoToClient(
+ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
+    ResourceResponseHeadAndMetadata(network::ResourceResponseHead head,
+                                    std::vector<uint8_t> metadata)
+    : head(std::move(head)), metadata(std::move(metadata)) {}
+
+ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
+    ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other) =
+        default;
+
+ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
+    ~ResourceResponseHeadAndMetadata() = default;
+
+ServiceWorkerUtils::ResourceResponseHeadAndMetadata
+ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
     const net::HttpResponseInfo* http_info,
     uint32_t options,
     base::TimeTicks request_start_time,
     base::TimeTicks response_start_time,
-    int response_data_size,
-    network::mojom::URLLoaderClientProxy* client_proxy) {
+    int response_data_size) {
   DCHECK(http_info);
-  DCHECK(client_proxy);
 
   network::ResourceResponseHead head;
   head.request_start = request_start_time;
@@ -338,14 +349,13 @@ void ServiceWorkerUtils::SendHttpResponseInfoToClient(
   if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
     head.ssl_info = http_info->ssl_info;
 
-  client_proxy->OnReceiveResponse(head);
-
+  std::vector<uint8_t> metadata;
   if (http_info->metadata) {
     const uint8_t* data =
         reinterpret_cast<const uint8_t*>(http_info->metadata->data());
-    client_proxy->OnReceiveCachedMetadata(
-        std::vector<uint8_t>(data, data + http_info->metadata->size()));
+    metadata = {data, data + http_info->metadata->size()};
   }
+  return {std::move(head), std::move(metadata)};
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

@@ -489,9 +489,12 @@ int ServiceWorkerNewScriptLoader::WillWriteInfo(
     version_->SetMainScriptHttpResponseInfo(*info);
   }
 
-  ServiceWorkerUtils::SendHttpResponseInfoToClient(
+  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
       info, original_options_, request_start_, base::TimeTicks::Now(),
-      response_info->response_data_size, client_.get());
+      response_info->response_data_size);
+  client_->OnReceiveResponse(std::move(response.head));
+  if (!response.metadata.empty())
+    client_->OnReceiveCachedMetadata(std::move(response.metadata));
 
   mojo::ScopedDataPipeConsumerHandle client_consumer;
   if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=

@@ -83,13 +83,24 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);
 
-  CONTENT_EXPORT static void SendHttpResponseInfoToClient(
-      const net::HttpResponseInfo* http_info,
-      uint32_t options,
-      base::TimeTicks request_start_time,
-      base::TimeTicks response_start_time,
-      int response_data_size,
-      network::mojom::URLLoaderClientProxy* client_proxy);
+  struct CONTENT_EXPORT ResourceResponseHeadAndMetadata {
+    ResourceResponseHeadAndMetadata(network::ResourceResponseHead head,
+                                    std::vector<uint8_t> metadata);
+    ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other);
+    ResourceResponseHeadAndMetadata(
+        const ResourceResponseHeadAndMetadata& other) = delete;
+    ~ResourceResponseHeadAndMetadata();
+
+    network::ResourceResponseHead head;
+    std::vector<uint8_t> metadata;
+  };
+
+  CONTENT_EXPORT static ResourceResponseHeadAndMetadata
+  CreateResourceResponseHeadAndMetadata(const net::HttpResponseInfo* http_info,
+                                        uint32_t options,
+                                        base::TimeTicks request_start_time,
+                                        base::TimeTicks response_start_time,
+                                        int response_data_size);
 
  private:
   static bool IsPathRestrictionSatisfiedInternal(
