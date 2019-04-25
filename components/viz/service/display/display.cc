@@ -123,13 +123,12 @@ Display::Display(
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
     std::unique_ptr<DisplayScheduler> scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner,
-    SkiaOutputSurface* skia_output_surface)
+    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : bitmap_manager_(bitmap_manager),
       settings_(settings),
       frame_sink_id_(frame_sink_id),
-      skia_output_surface_(skia_output_surface),
       output_surface_(std::move(output_surface)),
+      skia_output_surface_(output_surface_->AsSkiaOutputSurface()),
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),

@@ -117,7 +117,6 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
-  SkiaOutputSurface* skia_output_surface = nullptr;
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
@@ -161,7 +160,6 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           gpu_service_impl_, surface_handle, std::move(update_vsync_callback),
           renderer_settings);
     }
-    skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
     DCHECK(task_executor_);
@@ -267,8 +265,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   return std::make_unique<Display>(
       server_shared_bitmap_manager_, renderer_settings, frame_sink_id,
-      std::move(output_surface), std::move(scheduler), task_runner_,
-      skia_output_surface);
+      std::move(output_surface), std::move(scheduler), task_runner_);
 }
 
 uint32_t GpuDisplayProvider::GetRestartId() const {

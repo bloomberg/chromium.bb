@@ -35,6 +35,10 @@ OutputSurface::OutputSurface(
 
 OutputSurface::~OutputSurface() = default;
 
+SkiaOutputSurface* OutputSurface::AsSkiaOutputSurface() {
+  return nullptr;
+}
+
 void OutputSurface::UpdateLatencyInfoOnSwap(
     const gfx::SwapResponse& response,
     std::vector<ui::LatencyInfo>* latency_info) {

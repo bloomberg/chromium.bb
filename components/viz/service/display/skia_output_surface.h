@@ -40,6 +40,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   SkiaOutputSurface();
   ~SkiaOutputSurface() override;
 
+  SkiaOutputSurface* AsSkiaOutputSurface() override;
+
   // Begin painting the current frame. This method will create a
   // SkDeferredDisplayListRecorder and return a SkCanvas of it.
   // The SkiaRenderer will use this SkCanvas to paint the current

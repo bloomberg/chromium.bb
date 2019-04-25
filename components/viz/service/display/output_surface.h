@@ -29,6 +29,7 @@ struct SwapResponse;
 namespace viz {
 class OutputSurfaceClient;
 class OutputSurfaceFrame;
+class SkiaOutputSurface;
 
 // This class represents a platform-independent API for presenting
 // buffers to display via GPU or software compositing. Implementations
@@ -71,6 +72,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
+
+  // Downcasts to SkiaOutputSurface if it is one and returns nullptr otherwise.
+  virtual SkiaOutputSurface* AsSkiaOutputSurface();
 
   void set_color_matrix(const SkMatrix44& color_matrix) {
     color_matrix_ = color_matrix;

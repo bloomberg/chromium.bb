@@ -74,8 +74,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
-          scoped_refptr<base::SingleThreadTaskRunner> current_task_runner,
-          SkiaOutputSurface* skia_output_surface = nullptr);
+          scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
 
   ~Display() override;
 
@@ -178,8 +177,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
-  SkiaOutputSurface* skia_output_surface_;
   std::unique_ptr<OutputSurface> output_surface_;
+  SkiaOutputSurface* const skia_output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;

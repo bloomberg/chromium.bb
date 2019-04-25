@@ -101,7 +101,6 @@ SurfacesInstance::SurfacesInstance()
   auto vulkan_context_provider =
       enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
-  viz::SkiaOutputSurface* skia_output_surface = nullptr;
   gl_surface_ = base::MakeRefCounted<AwGLSurface>();
   if (use_skia_renderer) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
@@ -123,8 +122,6 @@ SurfacesInstance::SurfacesInstance()
         gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
         task_executor->shared_image_manager(),
         task_executor->sync_point_manager(), false /* need_swapbuffers_ack */);
-    skia_output_surface =
-        static_cast<viz::SkiaOutputSurface*>(output_surface.get());
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
         gl_surface_, DeferredGpuCommandService::GetInstance());
@@ -139,7 +136,7 @@ SurfacesInstance::SurfacesInstance()
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
       std::move(output_surface), std::move(scheduler),
-      nullptr /* current_task_runner */, skia_output_surface);
+      nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        enable_shared_image);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),

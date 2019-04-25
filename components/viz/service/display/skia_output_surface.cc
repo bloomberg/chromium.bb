@@ -10,4 +10,8 @@ SkiaOutputSurface::SkiaOutputSurface() = default;
 
 SkiaOutputSurface::~SkiaOutputSurface() = default;
 
+SkiaOutputSurface* SkiaOutputSurface::AsSkiaOutputSurface() {
+  return this;
+}
+
 }  // namespace viz
