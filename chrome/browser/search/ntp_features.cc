@@ -21,6 +21,10 @@ const base::Feature kRemoveNtpFakebox{"RemoveNtpFakebox",
 const base::Feature kFakeboxSearchIconOnNtp{"FakeboxSearchIconOnNtp",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, show a shorter hint text in the NTP fakebox.
+const base::Feature kFakeboxShortHintTextOnNtp{
+    "FakeboxShortHintTextOnNtp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the NTP fakebox will be changed to the Google search style. Also
 // implicitly enabled by |kFakeboxSearchIconOnNtp|.
 const base::Feature kUseAlternateFakeboxOnNtp{
