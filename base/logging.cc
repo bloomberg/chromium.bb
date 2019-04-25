@@ -7,7 +7,9 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include "base/pending_task.h"
 #include "base/stl_util.h"
+#include "base/task/common/task_annotator.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -592,6 +594,15 @@ LogMessage::~LogMessage() {
     base::debug::TaskTrace task_trace;
     if (!task_trace.empty())
       task_trace.OutputToStream(&stream_);
+
+    // Include the IPC context, if any. This is output as a stack trace with a
+    // single frame.
+    const auto* task = base::TaskAnnotator::CurrentTaskForThread();
+    if (task && task->ipc_program_counter) {
+      stream_ << "IPC message handler context:" << std::endl;
+      base::debug::StackTrace ipc_trace(&task->ipc_program_counter, 1);
+      ipc_trace.OutputToStream(&stream_);
+    }
   }
 #endif
   stream_ << std::endl;
