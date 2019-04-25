@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service_factory.h"
+#include "chrome/browser/chromeos/kiosk_next_home/intent_config_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -36,6 +37,19 @@
 namespace chromeos {
 namespace kiosk_next_home {
 
+namespace {
+
+// Returns AppInstance from ArcBridgeService if available, or nullptr.
+arc::mojom::AppInstance* GetArcAppInstanceForLaunchIntent() {
+  return arc::ArcServiceManager::Get()
+             ? ARC_GET_INSTANCE_FOR_METHOD(
+                   arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+                   LaunchIntent)
+             : nullptr;
+}
+
+}  // namespace
+
 // static
 AppControllerService* AppControllerService::Get(
     content::BrowserContext* context) {
@@ -44,7 +58,8 @@ AppControllerService* AppControllerService::Get(
 
 AppControllerService::AppControllerService(Profile* profile)
     : profile_(profile),
-      app_service_proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)) {
+      app_service_proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)),
+      intent_config_helper_(IntentConfigHelper::GetInstance()) {
   DCHECK(profile);
   app_service_proxy_->AppRegistryCache().AddObserver(this);
 
@@ -123,19 +138,31 @@ void AppControllerService::LaunchHomeUrl(const std::string& suffix,
     return;
   }
 
-  arc::mojom::AppInstance* app_instance =
-      arc::ArcServiceManager::Get()
-          ? ARC_GET_INSTANCE_FOR_METHOD(
-                arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
-                LaunchIntent)
-          : nullptr;
-
+  arc::mojom::AppInstance* app_instance = GetArcAppInstanceForLaunchIntent();
   if (!app_instance) {
     std::move(callback).Run(false, "ARC bridge not available.");
     return;
   }
 
   app_instance->LaunchIntent(url.spec(), display::kDefaultDisplayId);
+  std::move(callback).Run(true, base::nullopt);
+}
+
+void AppControllerService::LaunchIntent(const std::string& intent,
+                                        LaunchIntentCallback callback) {
+  GURL intent_uri(intent);
+  if (!intent_config_helper_->IsIntentAllowed(intent_uri)) {
+    std::move(callback).Run(false, "Intent not allowed.");
+    return;
+  }
+
+  arc::mojom::AppInstance* app_instance = GetArcAppInstanceForLaunchIntent();
+  if (!app_instance) {
+    std::move(callback).Run(false, "ARC bridge not available.");
+    return;
+  }
+
+  app_instance->LaunchIntent(intent_uri.spec(), display::kDefaultDisplayId);
   std::move(callback).Run(true, base::nullopt);
 }
 
@@ -153,6 +180,11 @@ void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
 
   if (client_)
     client_->OnAppChanged(CreateAppPtr(update));
+}
+
+void AppControllerService::SetIntentConfigHelperForTesting(
+    std::unique_ptr<IntentConfigHelper> helper) {
+  intent_config_helper_ = std::move(helper);
 }
 
 mojom::AppPtr AppControllerService::CreateAppPtr(

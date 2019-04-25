@@ -163,6 +163,15 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
+  launchIntent(intent) {
+    return this.appControllerProxy_.launchIntent(intent).then(result => {
+      if (!result.launched) {
+        throw result.errorMessage;
+      }
+    });
+  }
+
+  /** @override */
   uninstallApp(appId) {
     this.appControllerProxy_.uninstallApp(appId);
   }

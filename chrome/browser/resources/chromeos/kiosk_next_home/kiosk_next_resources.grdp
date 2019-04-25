@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <grit-part>
+  <include name="IDR_KIOSK_NEXT_INTENT_CONFIG_JSON" file="chromeos/kiosk_next_home/intent_config.json" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_BG_JS" file="chromeos/kiosk_next_home/bg.js" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_ICON_192" file="chromeos/kiosk_next_home/static/icon192.png" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_MAIN_HTML" file="chromeos/kiosk_next_home/main.html" type="chrome_html" />

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/kiosk_next_home/intent_config_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -86,6 +87,12 @@ class MockAppServiceProxy : public KeyedService, public apps::AppServiceProxy {
                     apps::mojom::LaunchSource launch_source,
                     int64_t display_id));
   MOCK_METHOD1(Uninstall, void(const std::string& app_id));
+};
+
+class MockIntentConfigHelper : public IntentConfigHelper {
+ public:
+  // IntentConfigHelper:
+  MOCK_CONST_METHOD1(IsIntentAllowed, bool(const GURL& intent_uri));
 };
 
 class AppControllerServiceTest : public testing::Test {
@@ -200,6 +207,13 @@ class AppControllerServiceTest : public testing::Test {
     EXPECT_EQ(returned_android_id, android_id);
   }
 
+  void SetLaunchIntentAllowed(bool allowed) {
+    auto intent_config_helper = std::make_unique<MockIntentConfigHelper>();
+    EXPECT_CALL(*intent_config_helper, IsIntentAllowed(testing::_))
+        .WillOnce(testing::Return(allowed));
+    service()->SetIntentConfigHelperForTesting(std::move(intent_config_helper));
+  }
+
   void ExpectLaunchHomeUrlResponse(
       const std::string& url_to_launch,
       bool success,
@@ -233,15 +247,38 @@ class AppControllerServiceTest : public testing::Test {
       EXPECT_EQ(returned_error_message.value(), error_message.value());
   }
 
-  void ExpectNoLaunchedHomeUrls() {
+  void ExpectLaunchIntentResponse(
+      const std::string& intent_uri,
+      bool success,
+      const base::Optional<std::string>& error_message) {
+    bool returned_success;
+    base::Optional<std::string> returned_error_message;
+
+    service()->LaunchIntent(
+        intent_uri, base::BindLambdaForTesting(
+                        [&returned_success, &returned_error_message](
+                            bool success,
+                            const base::Optional<std::string>& error_message) {
+                          returned_success = success;
+                          returned_error_message = error_message;
+                        }));
+
+    EXPECT_EQ(returned_success, success);
+
+    ASSERT_EQ(returned_error_message.has_value(), error_message.has_value());
+    if (returned_error_message.has_value())
+      EXPECT_EQ(returned_error_message.value(), error_message.value());
+  }
+
+  void ExpectNoLaunchedIntents() {
     EXPECT_EQ(0U, arc_test_.app_instance()->launch_intents().size())
         << "At least one ARC intent was lauched, we expected none.";
   }
 
-  void ExpectHomeUrlLaunched(const std::string& launched_url) {
+  void ExpectIntentLaunched(const std::string& intent_uri) {
     ASSERT_EQ(arc_test_.app_instance()->launch_intents().size(), 1U)
         << "We expect exactly one ARC intent to be launched.";
-    EXPECT_EQ(arc_test_.app_instance()->launch_intents()[0], launched_url);
+    EXPECT_EQ(arc_test_.app_instance()->launch_intents()[0], intent_uri);
   }
 
   // Expects the given apps were passed to the
@@ -517,7 +554,7 @@ TEST_F(AppControllerServiceTest, GetArcAndroidIdFailureIsPropagated) {
 TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenWeDontHaveUrlPrefix) {
   base::Optional<std::string> error_message("No URL prefix.");
   ExpectLaunchHomeUrlResponse("http://example.com", false, error_message);
-  ExpectNoLaunchedHomeUrls();
+  ExpectNoLaunchedIntents();
 }
 
 TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenArcIsDisabled) {
@@ -525,21 +562,48 @@ TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenArcIsDisabled) {
   StopArc();
   base::Optional<std::string> error_message("ARC bridge not available.");
   ExpectLaunchHomeUrlResponse("example_query", false, error_message);
-  ExpectNoLaunchedHomeUrls();
+  ExpectNoLaunchedIntents();
 }
 
 TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenUrlIsInvalid) {
   SetHomeUrlPrefix("invalid_url_prefix_example");
   base::Optional<std::string> error_message("Invalid URL.");
   ExpectLaunchHomeUrlResponse("invalid_query", false, error_message);
-  ExpectNoLaunchedHomeUrls();
+  ExpectNoLaunchedIntents();
 }
 
 TEST_F(AppControllerServiceTest, LaunchHomeUrlLaunchesWhenWeHaveAValidPrefix) {
   SetHomeUrlPrefix("https://example.com/?q=");
   ExpectLaunchHomeUrlResponse("example_query", true, base::nullopt);
 
-  ExpectHomeUrlLaunched("https://example.com/?q=example_query");
+  ExpectIntentLaunched("https://example.com/?q=example_query");
+}
+
+TEST_F(AppControllerServiceTest, LaunchIntentLaunchesWhenAllowed) {
+  SetLaunchIntentAllowed(/*allowed=*/true);
+  std::string intent = "https://example.com/path?q=query";
+  ExpectLaunchIntentResponse(intent, true, base::nullopt);
+
+  ExpectIntentLaunched(intent);
+}
+
+TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenNotAllowed) {
+  SetLaunchIntentAllowed(/*allowed=*/false);
+  std::string intent = "https://example.com/path?q=query";
+  ExpectLaunchIntentResponse(
+      intent, false, base::Optional<std::string>("Intent not allowed."));
+
+  ExpectNoLaunchedIntents();
+}
+
+TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenArcIsDisabled) {
+  SetLaunchIntentAllowed(/*allowed=*/true);
+  StopArc();
+  std::string intent = "https://example.com/path?q=query";
+  ExpectLaunchIntentResponse(
+      intent, false, base::Optional<std::string>("ARC bridge not available."));
+
+  ExpectNoLaunchedIntents();
 }
 
 TEST_F(AppControllerServiceTest, ClientIsNotifiedOfChangesToAndroidApp) {

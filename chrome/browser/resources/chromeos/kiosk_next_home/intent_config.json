@@ -1,0 +1,5 @@
+// TODO(brunoad): Remove when src-internal version is available.
+{
+  "allowed_hosts": [],
+  "allowed_custom_schemes": []
+}

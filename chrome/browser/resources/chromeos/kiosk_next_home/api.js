@@ -73,6 +73,15 @@ kioskNextHome.Bridge = class {
   launchHomeUrl(suffix) {}
 
   /**
+   * Launches an allowed ARC intent. Intents are checked via
+   * chromeos::kiosk_next_home::IntentConfigHelper.
+   * @param {string} intent
+   * @return {!Promise} Resolves if intent was allowed and launched; rejects
+   *     otherwise.
+   */
+  launchIntent(intent) {}
+
+  /**
    * Shows a prompt to uninstall the app with the given appId.
    *
    * We will notify listeners when the app is uninstalled through a readiness
