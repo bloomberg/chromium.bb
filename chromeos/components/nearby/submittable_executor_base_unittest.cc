@@ -69,7 +69,8 @@ class SubmittableExecutorBaseTest : public testing::Test {
   SubmittableExecutorBaseTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {}
 
   ~SubmittableExecutorBaseTest() override = default;
 
