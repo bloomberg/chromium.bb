@@ -142,6 +142,9 @@ void OAuthTokenGetterImpl::NotifyTokenCallbacks(
     const std::string& user_email,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  response_pending_ = false;
+
   base::queue<TokenCallback> callbacks;
   callbacks.swap(pending_callbacks_);
 
@@ -163,7 +166,6 @@ void OAuthTokenGetterImpl::NotifyUpdatedCallbacks(
 void OAuthTokenGetterImpl::OnOAuthError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LOG(ERROR) << "OAuth: invalid credentials.";
-  response_pending_ = false;
 
   // Throw away invalid credentials and force a refresh.
   oauth_access_token_.clear();
@@ -178,7 +180,6 @@ void OAuthTokenGetterImpl::OnNetworkError(int response_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LOG(ERROR) << "Network error when trying to update OAuth token: "
              << response_code;
-  response_pending_ = false;
   NotifyTokenCallbacks(OAuthTokenGetterImpl::NETWORK_ERROR, std::string(),
                        std::string());
 }
@@ -276,7 +277,6 @@ void OAuthTokenGetterImpl::RefreshAccessToken() {
 void OAuthTokenGetterImpl::ExchangeAccessToken() {
   // Not yet implemented - return the current access token immediately.
   // TODO(lambroslambrou): Fetch scopes and exchange the token.
-  response_pending_ = false;
   NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
                        authorization_credentials_->login, oauth_access_token_);
 }
