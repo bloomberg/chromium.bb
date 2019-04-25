@@ -93,14 +93,6 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::UP));
   }
 
-  // Tap the center of the browser window.
-  void TapBrowserWindowCenter() {
-    gfx::Point center = BrowserView::GetBrowserViewForBrowser(
-        browser())->GetBoundsInScreen().CenterPoint();
-    ui::test::EventGenerator generator(GetRootWindow());
-    generator.GestureTapAt(center);
-  }
-
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
@@ -245,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
   gfx::RenderText* render_text = omnibox_view_views->GetRenderText();
 
   // Take the focus away from the omnibox.
-  ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
@@ -292,7 +285,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
 
   // Take the focus away from the omnibox.
-  ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
@@ -305,7 +299,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Tapping in another view should clear focus and the selection.
-  ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
@@ -325,7 +320,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
 
   // Take the focus away and tap in the omnibox again, but drag a bit before
   // releasing.  We should focus the omnibox but not select all of its text.
-  ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
   ASSERT_NO_FATAL_FAILURE(Tap(tap_location, tap2_location));
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
