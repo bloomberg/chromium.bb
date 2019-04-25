@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -473,8 +474,8 @@ void TextFieldInputType::UpdatePlaceholderText() {
     return;
   }
   if (!placeholder) {
-    HTMLElement* new_element =
-        HTMLDivElement::Create(GetElement().GetDocument());
+    auto* new_element =
+        MakeGarbageCollected<HTMLDivElement>(GetElement().GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,

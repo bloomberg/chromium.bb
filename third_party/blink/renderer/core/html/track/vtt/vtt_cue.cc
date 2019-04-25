@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/layout/layout_vtt_cue.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
@@ -245,7 +246,7 @@ VTTCue::VTTCue(Document& document,
       writing_direction_(kHorizontal),
       cue_alignment_(kCenter),
       vtt_node_tree_(nullptr),
-      cue_background_box_(HTMLDivElement::Create(document)),
+      cue_background_box_(MakeGarbageCollected<HTMLDivElement>(document)),
       snap_to_lines_(true),
       display_tree_should_change_(true) {
   UseCounter::Count(document, WebFeature::kVTTCue);

@@ -220,7 +220,7 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
   Text* text1 = GetDocument().createTextNode(str1);
   Text* text2 = GetDocument().createTextNode(str2);
   Text* text3 = GetDocument().createTextNode(str3);
-  Element* span = HTMLSpanElement::Create(GetDocument());
+  auto* span = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text1);
   div->AppendChild(span);

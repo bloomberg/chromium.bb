@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -50,7 +51,8 @@ static bool ImageSmallerThanAltImage(int pixels_for_alt_image,
 void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   ShadowRoot& root = element.EnsureUserAgentShadowRoot();
 
-  HTMLSpanElement* container = HTMLSpanElement::Create(element.GetDocument());
+  auto* container =
+      MakeGarbageCollected<HTMLSpanElement>(element.GetDocument());
   root.AppendChild(container);
   container->setAttribute(kIdAttr, AtomicString("alttext-container"));
 
@@ -65,7 +67,7 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   broken_image->SetInlineStyleProperty(CSSPropertyID::kMargin, 0,
                                        CSSPrimitiveValue::UnitType::kPixels);
 
-  HTMLSpanElement* alt_text = HTMLSpanElement::Create(element.GetDocument());
+  auto* alt_text = MakeGarbageCollected<HTMLSpanElement>(element.GetDocument());
   container->AppendChild(alt_text);
   alt_text->setAttribute(kIdAttr, AtomicString("alttext"));
 

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -464,7 +465,8 @@ void DateTimeEditBuilder::VisitLiteral(const String& text) {
   DEFINE_STATIC_LOCAL(AtomicString, text_pseudo_id,
                       ("-webkit-datetime-edit-text"));
   DCHECK_GT(text.length(), 0u);
-  HTMLDivElement* element = HTMLDivElement::Create(EditElement().GetDocument());
+  auto* element =
+      MakeGarbageCollected<HTMLDivElement>(EditElement().GetDocument());
   element->SetShadowPseudoId(text_pseudo_id);
   if (parameters_.locale.IsRTL() && text.length()) {
     WTF::unicode::CharDirection dir = WTF::unicode::Direction(text[0]);
@@ -724,7 +726,7 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
   DEFINE_STATIC_LOCAL(AtomicString, fields_wrapper_pseudo_id,
                       ("-webkit-datetime-edit-fields-wrapper"));
   if (!HasChildren()) {
-    HTMLDivElement* element = HTMLDivElement::Create(GetDocument());
+    auto* element = MakeGarbageCollected<HTMLDivElement>(GetDocument());
     element->SetShadowPseudoId(fields_wrapper_pseudo_id);
     AppendChild(element);
   }

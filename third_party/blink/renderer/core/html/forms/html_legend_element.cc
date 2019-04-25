@@ -35,8 +35,6 @@ using namespace html_names;
 HTMLLegendElement::HTMLLegendElement(Document& document)
     : HTMLElement(kLegendTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLLegendElement)
-
 HTMLFormElement* HTMLLegendElement::form() const {
   // According to the specification, If the legend has a fieldset element as
   // its parent, then the form attribute must return the same value as the

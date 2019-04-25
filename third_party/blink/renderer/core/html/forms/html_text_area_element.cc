@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -596,7 +597,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     return;
   }
   if (!placeholder) {
-    HTMLDivElement* new_element = HTMLDivElement::Create(GetDocument());
+    auto* new_element = MakeGarbageCollected<HTMLDivElement>(GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());

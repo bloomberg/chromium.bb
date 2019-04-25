@@ -65,8 +65,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLAnchorElement* Create(Document&);
-
   HTMLAnchorElement(Document& document);
   HTMLAnchorElement(const QualifiedName&, Document&);
   ~HTMLAnchorElement() override;

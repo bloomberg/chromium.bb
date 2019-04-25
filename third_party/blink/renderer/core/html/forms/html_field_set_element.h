@@ -35,8 +35,6 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLFieldSetElement* Create(Document&);
-
   explicit HTMLFieldSetElement(Document&);
 
   HTMLLegendElement* Legend() const;

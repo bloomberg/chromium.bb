@@ -239,7 +239,7 @@ void ImageDocument::CreateDocumentStructure() {
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
-    div_element_ = HTMLDivElement::Create(*this);
+    div_element_ = MakeGarbageCollected<HTMLDivElement>(*this);
     div_element_->setAttribute(kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"

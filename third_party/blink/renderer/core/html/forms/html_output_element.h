@@ -40,8 +40,6 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLOutputElement* Create(Document&);
-
   explicit HTMLOutputElement(Document&);
   ~HTMLOutputElement() override;
 

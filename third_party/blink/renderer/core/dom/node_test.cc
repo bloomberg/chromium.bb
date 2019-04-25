@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ class NodeTest : public EditingTestBase {
     first_shadow.AppendChild(test_node);
     ShadowRoot& second_shadow = test_node->CreateUserAgentShadowRoot();
 
-    HTMLDivElement* class_div = HTMLDivElement::Create(GetDocument());
+    auto* class_div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
     class_div->setAttribute("class", "test");
     second_shadow.AppendChild(class_div);
     return class_div;
@@ -288,7 +289,7 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_V0Content) {
 }
 
 TEST_F(NodeTest, HasMediaControlAncestor_Fail) {
-  HTMLDivElement* node = HTMLDivElement::Create(GetDocument());
+  auto* node = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   EXPECT_FALSE(node->HasMediaControlAncestor());
   EXPECT_FALSE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
 }

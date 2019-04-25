@@ -1256,7 +1256,7 @@ bool IsTableCell(const Node* node) {
 HTMLElement* CreateDefaultParagraphElement(Document& document) {
   switch (document.GetFrame()->GetEditor().DefaultParagraphSeparator()) {
     case EditorParagraphSeparator::kIsDiv:
-      return HTMLDivElement::Create(document);
+      return MakeGarbageCollected<HTMLDivElement>(document);
     case EditorParagraphSeparator::kIsP:
       return MakeGarbageCollected<HTMLParagraphElement>(document);
   }
@@ -1294,7 +1294,7 @@ HTMLSpanElement* TabSpanElement(const Node* node) {
 static HTMLSpanElement* CreateTabSpanElement(Document& document,
                                              Text* tab_text_node) {
   // Make the span to hold the tab.
-  HTMLSpanElement* span_element = HTMLSpanElement::Create(document);
+  auto* span_element = MakeGarbageCollected<HTMLSpanElement>(document);
   span_element->setAttribute(kStyleAttr, "white-space:pre");
 
   // Add tab text to that span.

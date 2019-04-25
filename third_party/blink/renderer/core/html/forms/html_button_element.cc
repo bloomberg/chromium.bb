@@ -42,10 +42,6 @@ HTMLButtonElement::HTMLButtonElement(Document& document)
       type_(SUBMIT),
       is_activated_submit_(false) {}
 
-HTMLButtonElement* HTMLButtonElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLButtonElement>(document);
-}
-
 const AttrNameToTrustedType& HTMLButtonElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -272,7 +273,7 @@ const AtomicString& VTTRegion::TextTrackCueContainerScrollingClass() {
 
 HTMLDivElement* VTTRegion::GetDisplayTree(Document& document) {
   if (!region_display_tree_) {
-    region_display_tree_ = HTMLDivElement::Create(document);
+    region_display_tree_ = MakeGarbageCollected<HTMLDivElement>(document);
     PrepareRegionDisplayTree();
   }
 
@@ -380,7 +381,8 @@ void VTTRegion::PrepareRegionDisplayTree() {
 
   // The cue container is used to wrap the cues and it is the object which is
   // gradually scrolled out as multiple cues are appended to the region.
-  cue_container_ = HTMLDivElement::Create(region_display_tree_->GetDocument());
+  cue_container_ =
+      MakeGarbageCollected<HTMLDivElement>(region_display_tree_->GetDocument());
   cue_container_->SetInlineStyleProperty(CSSPropertyID::kTop, 0.0,
                                          CSSPrimitiveValue::UnitType::kPixels);
 

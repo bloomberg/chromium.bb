@@ -47,10 +47,6 @@ using namespace html_names;
 HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(kLabelTag, document), processing_click_(false) {}
 
-HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLLabelElement>(document);
-}
-
 HTMLElement* HTMLLabelElement::control() const {
   // https://html.spec.whatwg.org/C/#labeled-control
   const AtomicString& control_id = getAttribute(kForAttr);

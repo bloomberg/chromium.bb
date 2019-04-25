@@ -54,8 +54,6 @@ HTMLAreaElement::HTMLAreaElement(Document& document)
 // definition.
 HTMLAreaElement::~HTMLAreaElement() = default;
 
-DEFINE_NODE_FACTORY(HTMLAreaElement)
-
 void HTMLAreaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const AtomicString& value = params.new_value;

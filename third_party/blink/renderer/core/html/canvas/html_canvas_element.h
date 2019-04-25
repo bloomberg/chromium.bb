@@ -110,8 +110,6 @@ class CORE_EXPORT HTMLCanvasElement final
  public:
   using Node::GetExecutionContext;
 
-  DECLARE_NODE_FACTORY(HTMLCanvasElement);
-
   explicit HTMLCanvasElement(Document&);
   ~HTMLCanvasElement() override;
 

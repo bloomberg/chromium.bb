@@ -34,8 +34,6 @@ class HTMLBaseElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLBaseElement);
-
   explicit HTMLBaseElement(Document&);
 
   // Returns attributes that should be checked against Trusted Types

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -67,7 +68,8 @@ class MediaControlPanelElementTest : public PageTestBase {
 };
 
 TEST_F(MediaControlPanelElementTest, StateTransitions) {
-  Element* child_div = HTMLDivElement::Create(GetPanel().GetDocument());
+  auto* child_div =
+      MakeGarbageCollected<HTMLDivElement>(GetPanel().GetDocument());
   GetPanel().ParserAppendChild(child_div);
 
   // Make sure we are displayed (we are already opaque).

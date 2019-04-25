@@ -141,8 +141,6 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
   GetDocument().IncrementNumberOfCanvases();
 }
 
-DEFINE_NODE_FACTORY(HTMLCanvasElement)
-
 intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
 unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 

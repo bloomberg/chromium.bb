@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
@@ -37,17 +38,17 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
   background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
   AppendChild(background_image_);
 
-  cast_icon_ = HTMLDivElement::Create(GetDocument());
+  cast_icon_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   cast_icon_->SetShadowPseudoId(
       AtomicString("-internal-media-remoting-cast-icon"));
   AppendChild(cast_icon_);
 
-  cast_text_message_ = HTMLDivElement::Create(GetDocument());
+  cast_text_message_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   cast_text_message_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-message"));
   AppendChild(cast_text_message_);
 
-  toast_message_ = HTMLDivElement::Create(GetDocument());
+  toast_message_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   toast_message_->SetShadowPseudoId(
       AtomicString("-internal-media-remoting-toast-message"));
   AppendChild(toast_message_);

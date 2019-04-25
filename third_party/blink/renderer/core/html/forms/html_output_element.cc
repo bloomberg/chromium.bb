@@ -44,10 +44,6 @@ HTMLOutputElement::HTMLOutputElement(Document& document)
 
 HTMLOutputElement::~HTMLOutputElement() = default;
 
-HTMLOutputElement* HTMLOutputElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLOutputElement>(document);
-}
-
 const AtomicString& HTMLOutputElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, output, ("output"));
   return output;

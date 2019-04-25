@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
@@ -73,7 +74,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
   background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
   ParserAppendChild(background_image_);
 
-  message_element_ = HTMLDivElement::Create(GetDocument());
+  message_element_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   message_element_->SetShadowPseudoId(
       AtomicString("-internal-picture-in-picture-interstitial-message"));
   message_element_->setInnerText(

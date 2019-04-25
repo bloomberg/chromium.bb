@@ -68,7 +68,7 @@ void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
       ":host > div { will-change: transform; }");
   shadow_root.AppendChild(style);
 
-  Element* mover = HTMLDivElement::Create(GetDocument());
+  auto* mover = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   shadow_root.AppendChild(mover);
 
   mover->AppendChild(

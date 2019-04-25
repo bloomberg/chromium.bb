@@ -33,8 +33,6 @@ class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLLabelElement* Create(Document&);
-
   explicit HTMLLabelElement(Document&);
 
   HTMLElement* control() const;

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -271,7 +272,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
 // Regression test for crbug.com/698123
 TEST_F(RangeTest, ExpandNotCrash) {
   Range* range = Range::Create(GetDocument());
-  Node* div = HTMLDivElement::Create(GetDocument());
+  auto* div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   range->setStart(div, 0, ASSERT_NO_EXCEPTION);
   range->expand("", ASSERT_NO_EXCEPTION);
 }

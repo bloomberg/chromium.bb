@@ -45,8 +45,6 @@ using namespace html_names;
 HTMLBodyElement::HTMLBodyElement(Document& document)
     : HTMLElement(kBodyTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLBodyElement)
-
 HTMLBodyElement::~HTMLBodyElement() = default;
 
 bool HTMLBodyElement::IsPresentationAttribute(const QualifiedName& name) const {

@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -126,10 +127,10 @@ void ColorInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
 
   Document& document = GetElement().GetDocument();
-  HTMLDivElement* wrapper_element = HTMLDivElement::Create(document);
+  auto* wrapper_element = MakeGarbageCollected<HTMLDivElement>(document);
   wrapper_element->SetShadowPseudoId(
       AtomicString("-webkit-color-swatch-wrapper"));
-  HTMLDivElement* color_swatch = HTMLDivElement::Create(document);
+  auto* color_swatch = MakeGarbageCollected<HTMLDivElement>(document);
   color_swatch->SetShadowPseudoId(AtomicString("-webkit-color-swatch"));
   wrapper_element->AppendChild(color_swatch);
   GetElement().UserAgentShadowRoot()->AppendChild(wrapper_element);

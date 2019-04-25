@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -81,8 +82,8 @@ void ChooserOnlyTemporalInputTypeView::CreateShadowSubtree() {
   DEFINE_STATIC_LOCAL(AtomicString, value_container_pseudo,
                       ("-webkit-date-and-time-value"));
 
-  HTMLDivElement* value_container =
-      HTMLDivElement::Create(GetElement().GetDocument());
+  auto* value_container =
+      MakeGarbageCollected<HTMLDivElement>(GetElement().GetDocument());
   value_container->SetShadowPseudoId(value_container_pseudo);
   GetElement().UserAgentShadowRoot()->AppendChild(value_container);
   UpdateView();

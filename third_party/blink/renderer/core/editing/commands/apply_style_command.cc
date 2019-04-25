@@ -483,7 +483,7 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
       // Last styled node was not parent node of this text node, but we wish to
       // style this text node. To make this possible, add a style span to
       // surround this text node.
-      HTMLSpanElement* span = HTMLSpanElement::Create(GetDocument());
+      auto* span = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
       SurroundNodeRangeWithElement(node, node, span, editing_state);
       if (editing_state->IsAborted())
         return;
@@ -1868,7 +1868,7 @@ Position ApplyStyleCommand::PositionToComputeInlineStyleChange(
   // It's okay to obtain the style at the startNode because we've removed all
   // relevant styles from the current run.
   if (!start_node->IsElementNode()) {
-    dummy_element = HTMLSpanElement::Create(GetDocument());
+    dummy_element = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
     InsertNodeAt(dummy_element, Position::BeforeNode(*start_node),
                  editing_state);
     if (editing_state->IsAborted())
@@ -1959,7 +1959,8 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
                          AtomicString(style_change.CssStyle()));
       }
     } else {
-      HTMLSpanElement* style_element = HTMLSpanElement::Create(GetDocument());
+      auto* style_element =
+          MakeGarbageCollected<HTMLSpanElement>(GetDocument());
       style_element->setAttribute(kStyleAttr,
                                   AtomicString(style_change.CssStyle()));
       SurroundNodeRangeWithElement(start_node, end_node, style_element,

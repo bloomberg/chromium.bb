@@ -346,7 +346,7 @@ scoped_refptr<ComputedStyle> SliderThumbElement::CustomStyleForLayoutObject() {
 
 // --------------------------------
 
-inline SliderContainerElement::SliderContainerElement(Document& document)
+SliderContainerElement::SliderContainerElement(Document& document)
     : HTMLDivElement(document),
       has_touch_event_handler_(false),
       touch_started_(false),
@@ -354,8 +354,6 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
   UpdateTouchEventHandlerRegistry();
   SetHasCustomStyleCallbacks();
 }
-
-DEFINE_NODE_FACTORY(SliderContainerElement)
 
 HTMLInputElement* SliderContainerElement::HostInput() const {
   return ToHTMLInputElement(OwnerShadowHost());

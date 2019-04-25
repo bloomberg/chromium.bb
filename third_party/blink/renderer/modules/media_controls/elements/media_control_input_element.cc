@@ -58,7 +58,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // We don't want the button visible within the overflow menu.
   button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
-  overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
+  overflow_menu_text_ = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
@@ -76,7 +76,8 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   button->setTabIndex(-1);
 
   if (MediaControlsImpl::IsModern()) {
-    overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
+    overflow_menu_container_ =
+        MakeGarbageCollected<HTMLDivElement>(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
     overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
     aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
@@ -116,7 +117,8 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
     overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
   } else {
     // Otherwise, create a new element.
-    overflow_menu_subtitle_ = HTMLSpanElement::Create(GetDocument());
+    overflow_menu_subtitle_ =
+        MakeGarbageCollected<HTMLSpanElement>(GetDocument());
     overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
     overflow_menu_subtitle_->setAttribute("class", kOverflowSubtitleCSSClass);
 

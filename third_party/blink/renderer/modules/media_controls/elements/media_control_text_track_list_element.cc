@@ -153,7 +153,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   // contents twice.
   String track_label =
       GetMediaControls().GetTextTrackManager().GetTextTrackLabel(track);
-  HTMLSpanElement* track_label_span = HTMLSpanElement::Create(GetDocument());
+  auto* track_label_span = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
   track_label_span->setInnerText(track_label, ASSERT_NO_EXCEPTION);
   track_label_span->setAttribute(html_names::kAriaHiddenAttr, "true");
   track_item->setAttribute(html_names::kAriaLabelAttr,
@@ -165,7 +165,8 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   // Add a track kind marker icon if there are multiple tracks with the same
   // label or if the track has no label.
   if (track && (track->label().IsEmpty() || HasDuplicateLabel(track))) {
-    HTMLSpanElement* track_kind_marker = HTMLSpanElement::Create(GetDocument());
+    auto* track_kind_marker =
+        MakeGarbageCollected<HTMLSpanElement>(GetDocument());
     if (track->kind() == track->CaptionsKeyword()) {
       track_kind_marker->SetShadowPseudoId(AtomicString(
           "-internal-media-controls-text-track-list-kind-captions"));

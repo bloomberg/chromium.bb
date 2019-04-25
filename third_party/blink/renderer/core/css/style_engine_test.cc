@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
 #include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -1374,7 +1375,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_InsertFirst) {
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
 
   Element* t2 = GetDocument().getElementById("t2");
-  t2->appendChild(HTMLSpanElement::Create(GetDocument()));
+  t2->appendChild(MakeGarbageCollected<HTMLSpanElement>(GetDocument()));
   EXPECT_TRUE(t2->NeedsStyleInvalidation());
 }
 
@@ -1396,7 +1397,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_InsertNotFirst) {
   EXPECT_FALSE(t1->NeedsStyleInvalidation());
 
   Element* t2 = GetDocument().getElementById("t2");
-  t2->appendChild(HTMLSpanElement::Create(GetDocument()));
+  t2->appendChild(MakeGarbageCollected<HTMLSpanElement>(GetDocument()));
   EXPECT_FALSE(t2->NeedsStyleInvalidation());
 }
 

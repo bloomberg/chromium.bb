@@ -91,7 +91,6 @@ class SliderContainerElement final : public HTMLDivElement {
 
   explicit SliderContainerElement(Document&);
 
-  DECLARE_NODE_FACTORY(SliderContainerElement);
   HTMLInputElement* HostInput() const;
   void DefaultEventHandler(Event&) override;
   void HandleTouchEvent(TouchEvent*);
