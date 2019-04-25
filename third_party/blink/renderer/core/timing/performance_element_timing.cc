@@ -19,8 +19,10 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
     int naturalWidth,
     int naturalHeight,
     const AtomicString& id) {
-  DCHECK_GT(naturalWidth, 0);
-  DCHECK_GT(naturalHeight, 0);
+  // It is possible to 'paint' images which have naturalWidth or naturalHeight
+  // equal to 0.
+  DCHECK_GE(naturalWidth, 0);
+  DCHECK_GE(naturalHeight, 0);
   return MakeGarbageCollected<PerformanceElementTiming>(
       name, intersection_rect, start_time, response_end, identifier,
       naturalWidth, naturalHeight, id);
