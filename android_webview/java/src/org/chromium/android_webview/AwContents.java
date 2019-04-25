@@ -993,7 +993,8 @@ public class AwContents implements SmartClipProvider {
 
         // In fullscreen mode FullScreenView owns the AwViewMethodsImpl and AwContents
         // a NullAwViewMethods.
-        FullScreenView fullScreenView = new FullScreenView(mContext, mAwViewMethods, this);
+        FullScreenView fullScreenView = new FullScreenView(mContext, mAwViewMethods, this,
+                mContainerView.getWidth(), mContainerView.getHeight());
         fullScreenView.setFocusable(true);
         fullScreenView.setFocusableInTouchMode(true);
         boolean wasInitialContainerViewFocused = mContainerView.isFocused();
