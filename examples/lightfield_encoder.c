@@ -272,8 +272,8 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   v_blocks = (lf_height + lf_blocksize - 1) / lf_blocksize;
 
   reference_image_num = u_blocks * v_blocks;
-  // Set the max gf group length so the references are guarenteed to be in
-  // a different gf group than any of the regular frames. This avoid using
+  // Set the max gf group length so the references are guaranteed to be in
+  // a different gf group than any of the regular frames. This avoids using
   // both vbr and constant quality mode in a single group. The number of
   // references now cannot surpass 17 because of the enforced MAX_GF_INTERVAL of
   // 16. If it is necessary to exceed this reference frame limit, one will have
