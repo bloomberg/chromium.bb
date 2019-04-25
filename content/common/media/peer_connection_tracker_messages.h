@@ -29,12 +29,16 @@ IPC_STRUCT_END()
 // Messages sent from PeerConnectionTracker to PeerConnectionTrackerHost.
 IPC_MESSAGE_CONTROL1(PeerConnectionTrackerHost_AddPeerConnection,
                      PeerConnectionInfo /* info */)
-IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddStats,
+IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddStandardStats,
+                     int /* lid */,
+                     base::ListValue /* value */)
+IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddLegacyStats,
                      int /* lid */,
                      base::ListValue /* value */)
 
 // Messages sent to PeerConnectionTracker.
-IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)
+IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetStandardStats)
+IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetLegacyStats)
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_OnSuspend)
 IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLog,
                      int /* peer_connection_local_id */,

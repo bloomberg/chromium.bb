@@ -50,7 +50,8 @@ class PeerConnectionTrackerHost
  private:
   // Handlers for IPC messages coming from the renderer.
   void OnAddPeerConnection(const PeerConnectionInfo& info);
-  void OnAddStats(int lid, const base::ListValue& value);
+  void OnAddStandardStats(int lid, const base::ListValue& value);
+  void OnAddLegacyStats(int lid, const base::ListValue& value);
   void SendOnSuspendOnUIThread();
 
   // mojom::PeerConnectionTrackerHost implementation.

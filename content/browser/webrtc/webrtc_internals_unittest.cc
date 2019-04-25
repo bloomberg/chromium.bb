@@ -407,7 +407,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(WebRtcInternalsTest, OnAddStats) {
+TEST_F(WebRtcInternalsTest, OnAddStandardStats) {
   const int rid = 0, pid = 1, lid = 2;
   base::RunLoop loop;
   MockWebRtcInternalsProxy observer(&loop);
@@ -419,11 +419,40 @@ TEST_F(WebRtcInternalsTest, OnAddStats) {
   base::ListValue list;
   list.AppendString("xxx");
   list.AppendString("yyy");
-  webrtc_internals.OnAddStats(pid, lid, list);
+  webrtc_internals.OnAddStandardStats(pid, lid, list);
 
   loop.Run();
 
-  EXPECT_EQ("addStats", observer.command());
+  EXPECT_EQ("addStandardStats", observer.command());
+  ASSERT_TRUE(observer.value());
+
+  base::DictionaryValue* dict = nullptr;
+  EXPECT_TRUE(observer.value()->GetAsDictionary(&dict));
+
+  VerifyInt(dict, "pid", pid);
+  VerifyInt(dict, "lid", lid);
+  VerifyList(dict, "reports", list);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WebRtcInternalsTest, OnAddLegacyStats) {
+  const int rid = 0, pid = 1, lid = 2;
+  base::RunLoop loop;
+  MockWebRtcInternalsProxy observer(&loop);
+  WebRTCInternalsForTest webrtc_internals;
+  webrtc_internals.AddObserver(&observer);
+  webrtc_internals.OnAddPeerConnection(rid, pid, lid, kUrl, kRtcConfiguration,
+                                       kContraints);
+
+  base::ListValue list;
+  list.AppendString("xxx");
+  list.AppendString("yyy");
+  webrtc_internals.OnAddLegacyStats(pid, lid, list);
+
+  loop.Run();
+
+  EXPECT_EQ("addLegacyStats", observer.command());
   ASSERT_TRUE(observer.value());
 
   base::DictionaryValue* dict = nullptr;

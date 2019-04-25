@@ -110,7 +110,9 @@ document.addEventListener('DOMContentLoaded', initialize);
 /** Sends a request to the browser to get peer connection statistics. */
 function requestStats() {
   if (Object.keys(peerConnectionDataStore).length > 0) {
-    chrome.send('getAllStats');
+    // TODO(https://crbug.com/803014): Use the getStandardStats codepath to use
+    // the standard getStats() API.
+    chrome.send('getLegacyStats');
   }
 }
 
@@ -249,9 +251,8 @@ function updateAllPeerConnections(data) {
   requestStats();
 }
 
-
 /**
- * Handles the report of stats.
+ * Handles the report of stats originating from the standard getStats() API.
  *
  * @param {!Object} data The object containing pid, lid, and reports, where
  *     reports is an array of stats reports. Each report contains id, type,
@@ -259,7 +260,21 @@ function updateAllPeerConnections(data) {
  *     which is an array of strings, whose even index entry is the name of the
  *     stat, and the odd index entry is the value.
  */
-function addStats(data) {
+function addStandardStats(data) {
+  // TODO(https://crbug.com/803014): Do different processing on standard stats.
+  addLegacyStats(stats);
+}
+
+/**
+ * Handles the report of stats originating from the legacy getStats() API.
+ *
+ * @param {!Object} data The object containing pid, lid, and reports, where
+ *     reports is an array of stats reports. Each report contains id, type,
+ *     and stats, where stats is the object containing timestamp and values,
+ *     which is an array of strings, whose even index entry is the name of the
+ *     stat, and the odd index entry is the value.
+ */
+function addLegacyStats(data) {
   var peerConnectionElement = $(getPeerConnectionId(data));
   if (!peerConnectionElement) {
     return;

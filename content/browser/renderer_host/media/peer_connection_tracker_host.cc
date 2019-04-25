@@ -26,7 +26,10 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTrackerHost, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddPeerConnection,
                         OnAddPeerConnection)
-    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStats, OnAddStats)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStandardStats,
+                        OnAddStandardStats)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddLegacyStats,
+                        OnAddLegacyStats)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -143,11 +146,20 @@ void PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet(
                                      base::OnceCallback<void(bool)>());
 }
 
-void PeerConnectionTrackerHost::OnAddStats(int lid,
-                                           const base::ListValue& value) {
+void PeerConnectionTrackerHost::OnAddStandardStats(
+    int lid,
+    const base::ListValue& value) {
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals) {
-    webrtc_internals->OnAddStats(peer_pid(), lid, value);
+    webrtc_internals->OnAddStandardStats(peer_pid(), lid, value);
+  }
+}
+
+void PeerConnectionTrackerHost::OnAddLegacyStats(int lid,
+                                                 const base::ListValue& value) {
+  WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
+  if (webrtc_internals) {
+    webrtc_internals->OnAddLegacyStats(peer_pid(), lid, value);
   }
 }
 

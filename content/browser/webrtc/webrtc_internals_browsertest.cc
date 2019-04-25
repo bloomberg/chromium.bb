@@ -331,7 +331,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
            "reports:[" << "{id:'" << id << "', type:'" << type << "', "
                            "stats:" << stats.GetString() << "}]}";
 
-    ASSERT_TRUE(ExecuteJavascript("addStats(" + ss.str() + ")"));
+    ASSERT_TRUE(ExecuteJavascript("addLegacyStats(" + ss.str() + ")"));
     VerifyStatsTable(pc, entry);
   }
 

@@ -80,10 +80,16 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                               const std::string& type,
                               const std::string& value);
 
-  // This method is called when results from PeerConnectionInterface::GetStats
-  // are available. |pid| is the renderer process id, |lid| is the renderer
-  // local id, |value| is the list of stats reports.
-  void OnAddStats(base::ProcessId pid, int lid, const base::ListValue& value);
+  // These methods are called when results from
+  // PeerConnectionInterface::GetStats (legacy or standard API) are available.
+  // |pid| is the renderer process id, |lid| is the renderer local id, |value|
+  // is the list of stats reports.
+  void OnAddStandardStats(base::ProcessId pid,
+                          int lid,
+                          const base::ListValue& value);
+  void OnAddLegacyStats(base::ProcessId pid,
+                        int lid,
+                        const base::ListValue& value);
 
   // This method is called when getUserMedia is called. |render_process_id| is
   // the id of the render process (not OS pid), which is needed because we might
