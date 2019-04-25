@@ -37,12 +37,15 @@ import android.telephony.TelephonyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell.RadioType;
@@ -148,6 +151,14 @@ public class PlatformNetworksManagerTest {
     private CellIdentityCdma mCellIdentityCdma;
     @Mock
     private Intent mNetworkStateChangedIntent;
+    @Mock
+    private Callback<Set<VisibleCell>> mVisibleCellCallback;
+    @Captor
+    ArgumentCaptor<Set<VisibleCell>> mVisibleCellsArgument;
+    @Mock
+    private Callback<VisibleNetworks> mVisibleNetworksCallback;
+    @Captor
+    ArgumentCaptor<VisibleNetworks> mVisibleNetworksArgument;
 
     @Before
     public void setUp() {
@@ -266,13 +277,20 @@ public class PlatformNetworksManagerTest {
     }
 
     @Test
+    public void testGetAllVisibleCells_Q() {
+        // TODO(crbug.com/954620): Add test once Q is supported by Robolectric.
+    }
+
+    @Test
     public void testGetAllVisibleCells_JBMR2() {
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR2);
-        Set<VisibleCell> visibleCells =
-                PlatformNetworksManager.getAllVisibleCells(mContext, mTelephonyManager);
-        assertEquals(4, visibleCells.size());
-        for (VisibleCell visibleCell : visibleCells) {
+        PlatformNetworksManager.getAllVisibleCells(
+                mContext, mTelephonyManager, mVisibleCellCallback);
+        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
+
+        assertEquals(4, mVisibleCellsArgument.getValue().size());
+        for (VisibleCell visibleCell : mVisibleCellsArgument.getValue()) {
             switch (visibleCell.radioType()) {
                 case RadioType.LTE:
                     assertEquals(LTE_CELL, visibleCell);
@@ -304,11 +322,13 @@ public class PlatformNetworksManagerTest {
     public void testGetAllVisibleCells_JBMR1() {
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
-        Set<VisibleCell> visibleCells =
-                PlatformNetworksManager.getAllVisibleCells(mContext, mTelephonyManager);
+        PlatformNetworksManager.getAllVisibleCells(
+                mContext, mTelephonyManager, mVisibleCellCallback);
+        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
+
         // WCDMA should be ignored for pre-JBMR1
-        assertEquals(visibleCells.size(), 3);
-        for (VisibleCell visibleCell : visibleCells) {
+        assertEquals(mVisibleCellsArgument.getValue().size(), 3);
+        for (VisibleCell visibleCell : mVisibleCellsArgument.getValue()) {
             switch (visibleCell.radioType()) {
                 case RadioType.LTE:
                     assertEquals(LTE_CELL, visibleCell);
@@ -337,29 +357,35 @@ public class PlatformNetworksManagerTest {
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
         when(mTelephonyManager.getAllCellInfo()).thenReturn(null);
         // Null case should be handled and return an empty set.
-        Set<VisibleCell> visibleCells =
-                PlatformNetworksManager.getAllVisibleCells(mContext, mTelephonyManager);
-        assertEquals(0, visibleCells.size());
+        PlatformNetworksManager.getAllVisibleCells(
+                mContext, mTelephonyManager, mVisibleCellCallback);
+        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
+
+        assertEquals(0, mVisibleCellsArgument.getValue().size());
     }
 
     @Test
     public void testGetAllVisibleCells_preJBMR1() {
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN);
-        Set<VisibleCell> visibleCells =
-                PlatformNetworksManager.getAllVisibleCells(mContext, mTelephonyManager);
+        PlatformNetworksManager.getAllVisibleCells(
+                mContext, mTelephonyManager, mVisibleCellCallback);
+        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
+
         // Empty set expected
-        assertEquals(0, visibleCells.size());
+        assertEquals(0, mVisibleCellsArgument.getValue().size());
     }
 
     @Test
     public void testGetAllVisibleCells_allPermissionsDenied() {
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
         allPermissionsDenied();
-        Set<VisibleCell> visibleCells =
-                PlatformNetworksManager.getAllVisibleCells(mContext, mTelephonyManager);
+        PlatformNetworksManager.getAllVisibleCells(
+                mContext, mTelephonyManager, mVisibleCellCallback);
+        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
+
         // Empty set expected
-        assertEquals(0, visibleCells.size());
+        assertEquals(0, mVisibleCellsArgument.getValue().size());
     }
 
     @Test
@@ -483,8 +509,8 @@ public class PlatformNetworksManagerTest {
     public void testComputeVisibleNetworks_withoutNonConnectedNetworks() {
         VisibleNetworks expectedVisibleNetworks =
                 VisibleNetworks.create(CONNECTED_WIFI, LTE_CELL, null, null);
-        VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
-                mContext, false /* includeAllVisibleNotConnectedNetworks */);
+        VisibleNetworks visibleNetworks =
+                PlatformNetworksManager.computeConnectedNetworks(mContext);
         assertEquals(expectedVisibleNetworks, visibleNetworks);
     }
 
@@ -496,19 +522,19 @@ public class PlatformNetworksManagerTest {
                 new HashSet<VisibleWifi>(Arrays.asList(CONNECTED_WIFI, NOT_CONNECTED_WIFI));
         VisibleNetworks expectedVisibleNetworks = VisibleNetworks.create(
                 CONNECTED_WIFI, LTE_CELL, expectedVisibleWifis, expectedVisibleCells);
-        VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
-                mContext, true /* includeAllVisibleNotConnectedNetworks */);
-        assertEquals(expectedVisibleNetworks, visibleNetworks);
+        PlatformNetworksManager.computeVisibleNetworks(mContext, mVisibleNetworksCallback);
+        verify(mVisibleNetworksCallback).onResult(mVisibleNetworksArgument.capture());
+        assertEquals(expectedVisibleNetworks, mVisibleNetworksArgument.getValue());
     }
 
     @Test
     public void testComputeVisibleNetworks_allPermissionsDenied() {
         allPermissionsDenied();
 
-        VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
-                mContext, true /* includeAllVisibleNotConnectedNetworks */);
+        PlatformNetworksManager.computeVisibleNetworks(mContext, mVisibleNetworksCallback);
+        verify(mVisibleNetworksCallback).onResult(mVisibleNetworksArgument.capture());
 
-        assertTrue(visibleNetworks.isEmpty());
+        assertTrue(mVisibleNetworksArgument.getValue().isEmpty());
     }
 
     @Test
@@ -520,10 +546,10 @@ public class PlatformNetworksManagerTest {
                 CONNECTED_WIFI, LTE_CELL, expectedVisibleWifis, expectedVisibleCells);
         locationGrantedWifiDenied();
 
-        VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
-                mContext, true /* includeAllVisibleNotConnectedNetworks */);
+        PlatformNetworksManager.computeVisibleNetworks(mContext, mVisibleNetworksCallback);
+        verify(mVisibleNetworksCallback).onResult(mVisibleNetworksArgument.capture());
 
-        assertEquals(expectedVisibleNetworks, visibleNetworks);
+        assertEquals(expectedVisibleNetworks, mVisibleNetworksArgument.getValue());
         verifyNetworkStateAction();
     }
 
@@ -535,10 +561,10 @@ public class PlatformNetworksManagerTest {
         VisibleNetworks expectedVisibleNetworks =
                 VisibleNetworks.create(null, null, expectedVisibleWifis, expectedVisibleCells);
 
-        VisibleNetworks visibleNetworks = PlatformNetworksManager.computeVisibleNetworks(
-                mContext, true /* includeAllVisibleNotConnectedNetworks */);
+        PlatformNetworksManager.computeVisibleNetworks(mContext, mVisibleNetworksCallback);
+        verify(mVisibleNetworksCallback).onResult(mVisibleNetworksArgument.capture());
 
-        assertEquals(expectedVisibleNetworks, visibleNetworks);
+        assertEquals(expectedVisibleNetworks, mVisibleNetworksArgument.getValue());
     }
 
     private void allPermissionsGranted() {

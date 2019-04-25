@@ -20,6 +20,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 
+import org.chromium.base.Callback;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
@@ -203,10 +204,14 @@ public class VisibleNetworksTrackerTest {
         private static List<VisibleNetworks> sOnlyConnectedNetworks;
 
         @Implementation
-        public static VisibleNetworks computeVisibleNetworks(
-                Context context, boolean includeAllVisibleNotConnectedNetworks) {
-            return includeAllVisibleNotConnectedNetworks ? sAllVisibleNetworks.remove(0)
-                                                         : sOnlyConnectedNetworks.remove(0);
+        public static VisibleNetworks computeConnectedNetworks(Context context) {
+            return sOnlyConnectedNetworks.remove(0);
+        }
+
+        @Implementation
+        public static void computeVisibleNetworks(
+                Context context, Callback<VisibleNetworks> callback) {
+            callback.onResult(sAllVisibleNetworks.remove(0));
         }
     }
 }
