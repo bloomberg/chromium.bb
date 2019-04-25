@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.home.empty;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.view.View;
 
@@ -29,7 +28,6 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
     private final EmptyView mView;
 
     private boolean mShowingPrefetch;
-    private boolean mInSearchMode;
 
     /** Creates a {@link EmptyCoordinator} instance that monitors {@code source}. */
     public EmptyCoordinator(Context context, OfflineItemFilterSource source) {
@@ -46,14 +44,6 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
     /** @return The {@link View} that represents the empty screen. */
     public View getView() {
         return mView.getView();
-    }
-
-    /**
-     * Method to inform the coordinator about a change in search mode.
-     * @param inSearchMode Whether we are currently in active search mode.
-     */
-    public void setInSearchMode(boolean inSearchMode) {
-        mInSearchMode = inSearchMode;
     }
 
     // OfflineItemFilterObserver implementation.
@@ -92,18 +82,13 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
 
             @StringRes
             int textId;
-            @DrawableRes
-            int iconId;
             if (mShowingPrefetch) {
-                iconId = R.drawable.ic_library_news_feed;
                 textId = R.string.download_manager_prefetch_tab_empty;
             } else {
-                iconId = R.drawable.downloads_big;
                 textId = R.string.download_manager_no_downloads;
             }
 
             mModel.set(EmptyProperties.EMPTY_TEXT_RES_ID, textId);
-            mModel.set(EmptyProperties.EMPTY_ICON_RES_ID, iconId);
         } else {
             state = State.GONE;
         }
