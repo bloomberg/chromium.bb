@@ -63,6 +63,8 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
                     bool is_discarded));
   MOCK_METHOD2(OnAutoDiscardableStateChange,
                void(content::WebContents* contents, bool is_auto_discardable));
+  MOCK_METHOD2(OnFrozenStateChange,
+               void(content::WebContents* contents, bool is_frozen));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTabLifecycleObserver);
@@ -648,7 +650,9 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
 
   // Should be able to freeze the reloaded tab.
+  EXPECT_CALL(tab_observer_, OnFrozenStateChange(::testing::_, true));
   EXPECT_TRUE(background_lifecycle_unit->Freeze());
+  ::testing::Mock::VerifyAndClear(&tab_observer_);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenCallback) {

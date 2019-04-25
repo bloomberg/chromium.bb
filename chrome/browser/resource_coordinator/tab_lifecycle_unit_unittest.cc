@@ -61,6 +61,8 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
                     bool is_discarded));
   MOCK_METHOD2(OnAutoDiscardableStateChange,
                void(content::WebContents* contents, bool is_auto_discardable));
+  MOCK_METHOD2(OnFrozenStateChange,
+               void(content::WebContents* contents, bool is_frozen));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTabLifecycleObserver);
@@ -690,7 +692,9 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
     DecisionDetails decision_details;
     EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
   }
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, true));
   tab_lifecycle_unit.Freeze();
+  ::testing::Mock::VerifyAndClear(&observer_);
   {
     DecisionDetails decision_details;
     EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
@@ -833,7 +837,10 @@ TEST_F(TabLifecycleUnitTest, ReloadingAFrozenTabUnfreezeIt) {
   DecisionDetails decision_details;
   EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
 
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, true));
   tab_lifecycle_unit.Freeze();
+  ::testing::Mock::VerifyAndClear(&observer_);
+
   web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
   EXPECT_NE(LifecycleUnitState::FROZEN, tab_lifecycle_unit.GetState());
 }

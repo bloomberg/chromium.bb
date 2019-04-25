@@ -143,9 +143,6 @@ class DiscardWaiter : public TabLifecycleObserver {
       run_loop_.Quit();
   }
 
-  void OnAutoDiscardableStateChange(content::WebContents* contents,
-                                    bool is_auto_discardable) override {}
-
   base::RunLoop run_loop_;
 };
 

@@ -279,6 +279,10 @@ class TabLifecycleUnitExternalImpl : public TabLifecycleUnitExternal {
     return tab_lifecycle_unit_->GetDiscardCount();
   }
 
+  bool IsFrozen() const override {
+    return IsFrozenOrPendingFreeze(tab_lifecycle_unit_->GetState());
+  }
+
  private:
   TabLifecycleUnitSource::TabLifecycleUnit* tab_lifecycle_unit_ = nullptr;
 };
@@ -898,6 +902,14 @@ void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
     for (auto& observer : *observers_)
       observer.OnDiscardedStateChange(web_contents(), GetDiscardReason(),
                                       is_discarded);
+  }
+
+  // Invoke OnFrozenStateChange() if necessary.
+  const bool was_frozen = IsFrozenOrPendingFreeze(last_state);
+  const bool is_frozen = IsFrozenOrPendingFreeze(GetState());
+  if (was_frozen != is_frozen) {
+    for (auto& observer : *observers_)
+      observer.OnFrozenStateChange(web_contents(), is_frozen);
   }
 }
 
