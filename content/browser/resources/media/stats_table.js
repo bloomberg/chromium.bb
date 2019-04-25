@@ -44,7 +44,7 @@ var StatsTable = (function(ssrcInfoManager) {
       }
     },
 
-    nukeStatsLists: function(peerConnectionElement) {
+    clearStatsLists: function(peerConnectionElement) {
       let containerId = peerConnectionElement.id + '-table-container';
       let container = $(containerId);
       if (container) {
