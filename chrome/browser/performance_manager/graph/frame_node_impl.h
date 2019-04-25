@@ -44,8 +44,8 @@ class ProcessNodeImpl;
 class FrameNodeImpl
     : public CoordinationUnitInterface<
           FrameNodeImpl,
-          resource_coordinator::mojom::FrameCoordinationUnit,
-          resource_coordinator::mojom::FrameCoordinationUnitRequest> {
+          resource_coordinator::mojom::DocumentCoordinationUnit,
+          resource_coordinator::mojom::DocumentCoordinationUnitRequest> {
  public:
   static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kFrame;

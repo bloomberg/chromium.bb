@@ -110,7 +110,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -573,8 +573,9 @@ void LocalFrame::DidChangeVisibilityState() {
 void LocalFrame::DidFreeze() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
-    auto* frame_resource_coordinator = GetFrameResourceCoordinator();
-    if (frame_resource_coordinator) {
+    auto* document_resource_coordinator =
+        GetDocument()->GetResourceCoordinator();
+    if (document_resource_coordinator) {
       // Determine if there is a beforeunload handler by dispatching a
       // beforeunload that will *not* launch a user dialog. If
       // |proceed| is false then there is a non-empty beforeunload
@@ -582,14 +583,14 @@ void LocalFrame::DidFreeze() {
       bool unused_did_allow_navigation = false;
       bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
           nullptr, false /* is_reload */, unused_did_allow_navigation);
-      frame_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+      document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
     }
 
     GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (frame_resource_coordinator) {
-      frame_resource_coordinator->SetLifecycleState(
+    if (document_resource_coordinator) {
+      document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }
   }
@@ -607,8 +608,9 @@ void LocalFrame::DidResume() {
     resume_histogram.CountMicroseconds(resume_event_end - resume_event_start);
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink
-    if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->SetLifecycleState(
+    if (auto* document_resource_coordinator =
+            GetDocument()->GetResourceCoordinator()) {
+      document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kRunning);
     }
   }
@@ -1243,17 +1245,6 @@ WebContentSettingsClient* LocalFrame::GetContentSettingsClient() {
   return Client() ? Client()->GetContentSettingsClient() : nullptr;
 }
 
-FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
-  if (!frame_resource_coordinator_) {
-    auto* local_frame_client = Client();
-    if (!local_frame_client)
-      return nullptr;
-    frame_resource_coordinator_ = FrameResourceCoordinator::MaybeCreate(
-        local_frame_client->GetInterfaceProvider());
-  }
-  return frame_resource_coordinator_.get();
-}
-
 PluginData* LocalFrame::GetPluginData() const {
   if (!Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return nullptr;
@@ -1459,9 +1450,14 @@ void LocalFrame::SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) {
     return;
   if (ad_frame_type_ != blink::mojom::AdFrameType::kNonAd)
     return;
-  auto* frame_resource_coordinator = GetFrameResourceCoordinator();
-  if (frame_resource_coordinator)
-    frame_resource_coordinator->SetIsAdFrame();
+  if (auto* document = GetDocument()) {
+    // TODO(fdoray): It is possible for the document not to be installed when
+    // this method is called. Consider inheriting frame bit in the graph instead
+    // of sending an IPC.
+    auto* document_resource_coordinator = document->GetResourceCoordinator();
+    if (document_resource_coordinator)
+      document_resource_coordinator->SetIsAdFrame();
+  }
   ad_frame_type_ = ad_frame_type;
   UpdateAdHighlight();
   frame_scheduler_->SetIsAdFrame();

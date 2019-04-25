@@ -77,7 +77,6 @@ class EventHandlerRegistry;
 class FloatSize;
 class FrameConsole;
 class FrameOverlay;
-class FrameResourceCoordinator;
 // class FrameScheduler;
 class FrameSelection;
 class InputMethodController;
@@ -323,10 +322,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   WebContentSettingsClient* GetContentSettingsClient();
 
-  // GetFrameResourceCoordinator may return nullptr when it can not hook up to
-  // services/resource_coordinator.
-  FrameResourceCoordinator* GetFrameResourceCoordinator();
-
   PluginData* GetPluginData() const;
 
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
@@ -552,7 +547,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IntRect remote_viewport_intersection_;
   FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
-  std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

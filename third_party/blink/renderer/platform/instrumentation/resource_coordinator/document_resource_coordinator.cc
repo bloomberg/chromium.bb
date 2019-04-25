@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 
 #include <memory>
 
@@ -20,47 +20,48 @@ using resource_coordinator::mojom::PolicyControlledIntervention;
 }  // namespace
 
 // static
-std::unique_ptr<FrameResourceCoordinator> FrameResourceCoordinator::MaybeCreate(
+std::unique_ptr<DocumentResourceCoordinator>
+DocumentResourceCoordinator::MaybeCreate(
     service_manager::InterfaceProvider* interface_provider) {
   if (!RuntimeEnabledFeatures::PerformanceManagerInstrumentationEnabled())
     return nullptr;
 
-  return base::WrapUnique(new FrameResourceCoordinator(interface_provider));
+  return base::WrapUnique(new DocumentResourceCoordinator(interface_provider));
 }
 
-FrameResourceCoordinator::FrameResourceCoordinator(
+DocumentResourceCoordinator::DocumentResourceCoordinator(
     service_manager::InterfaceProvider* interface_provider) {
   interface_provider->GetInterface(mojo::MakeRequest(&service_));
   DCHECK(service_);
 }
 
-FrameResourceCoordinator::~FrameResourceCoordinator() = default;
+DocumentResourceCoordinator::~DocumentResourceCoordinator() = default;
 
-void FrameResourceCoordinator::SetNetworkAlmostIdle(bool idle) {
+void DocumentResourceCoordinator::SetNetworkAlmostIdle(bool idle) {
   service_->SetNetworkAlmostIdle(idle);
 }
 
-void FrameResourceCoordinator::SetLifecycleState(
+void DocumentResourceCoordinator::SetLifecycleState(
     resource_coordinator::mojom::LifecycleState state) {
   service_->SetLifecycleState(state);
 }
 
-void FrameResourceCoordinator::SetHasNonEmptyBeforeUnload(
+void DocumentResourceCoordinator::SetHasNonEmptyBeforeUnload(
     bool has_nonempty_beforeunload) {
   service_->SetHasNonEmptyBeforeUnload(has_nonempty_beforeunload);
 }
 
-void FrameResourceCoordinator::SetInterventionPolicy(
+void DocumentResourceCoordinator::SetInterventionPolicy(
     PolicyControlledIntervention intervention,
     InterventionPolicy policy) {
   service_->SetInterventionPolicy(intervention, policy);
 }
 
-void FrameResourceCoordinator::SetIsAdFrame() {
+void DocumentResourceCoordinator::SetIsAdFrame() {
   service_->SetIsAdFrame();
 }
 
-void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {
+void DocumentResourceCoordinator::OnNonPersistentNotificationCreated() {
   service_->OnNonPersistentNotificationCreated();
 }
 

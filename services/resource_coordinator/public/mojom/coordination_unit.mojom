@@ -50,10 +50,9 @@ struct CoordinationUnitID {
   int64 id;
 };
 
-// A FrameCoordinationUnit has at most one ProcessCoordinationUnit as its
-// parent, at most one PageCoordinationUnit as its parent, at most one
-// FrameCoordinationUnit as parent frame, and can have many child frames.
-interface FrameCoordinationUnit {
+// Interface used by a blink::Document to communicate state associated with
+// resource management to the embedder.
+interface DocumentCoordinationUnit {
   // Property signals.
   SetNetworkAlmostIdle(bool idle);
   SetLifecycleState(LifecycleState state);

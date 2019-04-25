@@ -255,7 +255,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "network.mojom.WebSocket",
                   "payments.mojom.PaymentManager",
                   "payments.mojom.PaymentRequest",
-                  "resource_coordinator.mojom.FrameCoordinationUnit",
+                  "resource_coordinator.mojom.DocumentCoordinationUnit",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection",

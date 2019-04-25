@@ -251,13 +251,13 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (interface_name !=
-      resource_coordinator::mojom::FrameCoordinationUnit::Name_)
+      resource_coordinator::mojom::DocumentCoordinationUnit::Name_)
     return;
 
   auto it = frames_.find(render_frame_host);
   DCHECK(it != frames_.end());
   PostToGraph(FROM_HERE, &FrameNodeImpl::AddBinding, it->second.get(),
-              resource_coordinator::mojom::FrameCoordinationUnitRequest(
+              resource_coordinator::mojom::DocumentCoordinationUnitRequest(
                   std::move(*interface_pipe)));
 }
 

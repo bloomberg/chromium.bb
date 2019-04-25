@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_DOCUMENT_RESOURCE_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_DOCUMENT_RESOURCE_COORDINATOR_H_
 
 #include <memory>
 
@@ -18,14 +18,14 @@ class InterfaceProvider;
 
 namespace blink {
 
-class PLATFORM_EXPORT FrameResourceCoordinator final {
-  USING_FAST_MALLOC(FrameResourceCoordinator);
+class PLATFORM_EXPORT DocumentResourceCoordinator final {
+  USING_FAST_MALLOC(DocumentResourceCoordinator);
 
  public:
   // Returns nullptr if instrumentation is not enabled.
-  static std::unique_ptr<FrameResourceCoordinator> MaybeCreate(
+  static std::unique_ptr<DocumentResourceCoordinator> MaybeCreate(
       service_manager::InterfaceProvider*);
-  ~FrameResourceCoordinator();
+  ~DocumentResourceCoordinator();
 
   void SetNetworkAlmostIdle(bool);
   void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
@@ -38,13 +38,13 @@ class PLATFORM_EXPORT FrameResourceCoordinator final {
   void OnNonPersistentNotificationCreated();
 
  private:
-  explicit FrameResourceCoordinator(service_manager::InterfaceProvider*);
+  explicit DocumentResourceCoordinator(service_manager::InterfaceProvider*);
 
-  resource_coordinator::mojom::blink::FrameCoordinationUnitPtr service_;
+  resource_coordinator::mojom::blink::DocumentCoordinationUnitPtr service_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameResourceCoordinator);
+  DISALLOW_COPY_AND_ASSIGN(DocumentResourceCoordinator);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_DOCUMENT_RESOURCE_COORDINATOR_H_

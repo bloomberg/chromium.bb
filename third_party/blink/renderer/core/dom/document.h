@@ -109,6 +109,7 @@ class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentOutliveTimeReporter;
 class DocumentParser;
+class DocumentResourceCoordinator;
 class DocumentState;
 class DocumentTimeline;
 class DocumentType;
@@ -1383,6 +1384,9 @@ class CORE_EXPORT Document : public ContainerNode,
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
   mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() final;
 
+  // May return nullptr when PerformanceManager instrumentation is disabled.
+  DocumentResourceCoordinator* GetResourceCoordinator();
+
   // Set an explicit feature policy on this document in response to an HTTP
   // Feature-Policy header. This will be relayed to the embedder through the
   // LocalFrameClient.
@@ -1710,8 +1714,8 @@ class CORE_EXPORT Document : public ContainerNode,
   KURL base_url_;  // Node.baseURI: The URL to use when resolving relative URLs.
   KURL base_url_override_;  // An alternative base URL that takes precedence
                             // over base_url_ (but not base_element_url_).
-  KURL base_element_url_;  // The URL set by the <base> element.
-  KURL cookie_url_;        // The URL to use for cookie access.
+  KURL base_element_url_;   // The URL set by the <base> element.
+  KURL cookie_url_;         // The URL to use for cookie access.
   std::unique_ptr<OriginAccessEntry> access_entry_from_url_;
 
   AtomicString base_target_;
@@ -2006,6 +2010,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // necessary.
   Member<BeforeUnloadEventListener>
       mime_handler_view_before_unload_event_listener_;
+
+  // Used to communicate state associated with resource management to the
+  // embedder.
+  std::unique_ptr<DocumentResourceCoordinator> resource_coordinator_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

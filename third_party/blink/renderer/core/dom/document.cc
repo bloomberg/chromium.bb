@@ -278,7 +278,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
@@ -2853,6 +2853,8 @@ void Document::Shutdown() {
   }
 
   mime_handler_view_before_unload_event_listener_ = nullptr;
+
+  resource_coordinator_.reset();
 
   // This is required, as our LocalFrame might delete itself as soon as it
   // detaches us. However, this violates Node::detachLayoutTree() semantics, as
@@ -5959,8 +5961,9 @@ struct InterventionPolicyGetters {
 };
 
 // A helper function for setting intervention policy values on a frame en masse.
-void SetInitialInterventionPolicies(FrameResourceCoordinator* frame_coordinator,
-                                    const ExecutionContext* context) {
+void SetInitialInterventionPolicies(
+    DocumentResourceCoordinator* document_resource_coordinator,
+    const ExecutionContext* context) {
   DEFINE_STATIC_LOCAL(Vector<InterventionPolicyGetters>,
                       kInterventionPolicyGetters, ());
   if (kInterventionPolicyGetters.IsEmpty()) {
@@ -5990,7 +5993,7 @@ void SetInitialInterventionPolicies(FrameResourceCoordinator* frame_coordinator,
     else if (opt_in)
       policy = InterventionPolicy::kOptIn;
 
-    frame_coordinator->SetInterventionPolicy(
+    document_resource_coordinator->SetInterventionPolicy(
         static_cast<PolicyControlledIntervention>(i), policy);
   }
 }
@@ -6058,9 +6061,8 @@ void Document::FinishedParsing() {
     // Forward intervention policy state to the corresponding frame object
     // in the resource coordinator.
     // TODO(chrisha): Plumb in dynamic policy changes driven from Javascript.
-    if (auto* frame_coordinator = frame->GetFrameResourceCoordinator()) {
-      SetInitialInterventionPolicies(frame_coordinator, this);
-    }
+    if (auto* document_resource_coordinator = GetResourceCoordinator())
+      SetInitialInterventionPolicies(document_resource_coordinator, this);
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while
@@ -7509,6 +7511,17 @@ mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
     return nullptr;
 
   return &GetFrame()->GetDocumentInterfaceBroker();
+}
+
+DocumentResourceCoordinator* Document::GetResourceCoordinator() {
+  if (!resource_coordinator_) {
+    auto* interface_provider = GetInterfaceProvider();
+    if (interface_provider) {
+      resource_coordinator_ =
+          DocumentResourceCoordinator::MaybeCreate(interface_provider);
+    }
+  }
+  return resource_coordinator_.get();
 }
 
 void Document::BindDocumentInterfaceBroker(
