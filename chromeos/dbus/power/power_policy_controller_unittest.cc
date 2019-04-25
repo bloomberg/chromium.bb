@@ -95,6 +95,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_force_nonzero_brightness_for_user_activity(false);
   expected_policy.set_boot_on_ac(true);
   expected_policy.set_usb_power_share(false);
+
   expected_policy.set_reason(PowerPolicyController::kPrefsReason);
   EXPECT_EQ(
       PowerPolicyController::GetPolicyDebugString(expected_policy),
@@ -189,21 +190,42 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.peak_shift_enabled = true;
   prefs.peak_shift_battery_threshold = 20;
 
-  constexpr PowerPolicyController::PeakShiftDayConfiguration
-      kPeakShiftDayConfig = {
-          PowerPolicyController::WEEK_DAY_TUESDAY, {10, 0}, {20, 15}, {23, 45}};
-  prefs.peak_shift_day_configurations.push_back(kPeakShiftDayConfig);
+  power_manager::PowerManagementPolicy::PeakShiftDayConfig peak_shift_config;
+  peak_shift_config.set_day(power_manager::PowerManagementPolicy::TUESDAY);
+  peak_shift_config.mutable_start_time()->set_hour(10);
+  peak_shift_config.mutable_start_time()->set_minute(0);
+  peak_shift_config.mutable_end_time()->set_hour(20);
+  peak_shift_config.mutable_end_time()->set_minute(15);
+  peak_shift_config.mutable_charge_start_time()->set_hour(23);
+  peak_shift_config.mutable_charge_start_time()->set_minute(45);
+
+  prefs.peak_shift_day_configs.push_back(peak_shift_config);
   policy_controller_->ApplyPrefs(prefs);
 
   expected_policy.set_peak_shift_battery_percent_threshold(20);
-  auto* proto_config = expected_policy.add_peak_shift_day_configs();
-  proto_config->set_day(power_manager::PowerManagementPolicy::TUESDAY);
-  proto_config->mutable_start_time()->set_hour(10);
-  proto_config->mutable_start_time()->set_minute(0);
-  proto_config->mutable_end_time()->set_hour(20);
-  proto_config->mutable_end_time()->set_minute(15);
-  proto_config->mutable_charge_start_time()->set_hour(23);
-  proto_config->mutable_charge_start_time()->set_minute(45);
+  *expected_policy.mutable_peak_shift_day_configs()->Add() = peak_shift_config;
+
+  EXPECT_EQ(
+      PowerPolicyController::GetPolicyDebugString(expected_policy),
+      PowerPolicyController::GetPolicyDebugString(power_manager()->policy()));
+
+  // Set AdvancedBatteryChargeMode prefs.
+  prefs.advanced_battery_charge_mode_enabled = true;
+
+  power_manager::PowerManagementPolicy::AdvancedBatteryChargeModeDayConfig
+      advanced_mode_config;
+  advanced_mode_config.set_day(power_manager::PowerManagementPolicy::FRIDAY);
+  advanced_mode_config.mutable_charge_start_time()->set_hour(10);
+  advanced_mode_config.mutable_charge_start_time()->set_minute(0);
+  advanced_mode_config.mutable_charge_end_time()->set_hour(23);
+  advanced_mode_config.mutable_charge_end_time()->set_minute(45);
+
+  prefs.advanced_battery_charge_mode_day_configs.push_back(
+      advanced_mode_config);
+  policy_controller_->ApplyPrefs(prefs);
+
+  *expected_policy.mutable_advanced_battery_charge_mode_day_configs()->Add() =
+      advanced_mode_config;
 
   EXPECT_EQ(
       PowerPolicyController::GetPolicyDebugString(expected_policy),

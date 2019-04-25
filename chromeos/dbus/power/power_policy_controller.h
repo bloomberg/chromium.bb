@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 
@@ -21,6 +22,12 @@ namespace chromeos {
 class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     : public PowerManagerClient::Observer {
  public:
+  using PeakShiftDayConfig =
+      power_manager::PowerManagementPolicy::PeakShiftDayConfig;
+
+  using AdvancedBatteryChargeModeDayConfig =
+      power_manager::PowerManagementPolicy::AdvancedBatteryChargeModeDayConfig;
+
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(PowerManagerClient* power_manager_client);
 
@@ -49,28 +56,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     ACTION_STOP_SESSION = 1,
     ACTION_SHUT_DOWN = 2,
     ACTION_DO_NOTHING = 3,
-  };
-
-  enum WeekDay {
-    WEEK_DAY_MONDAY = 0,
-    WEEK_DAY_TUESDAY = 1,
-    WEEK_DAY_WEDNESDAY = 2,
-    WEEK_DAY_THURSDAY = 3,
-    WEEK_DAY_FRIDAY = 4,
-    WEEK_DAY_SATURDAY = 5,
-    WEEK_DAY_SUNDAY = 6,
-  };
-
-  struct DayTime {
-    int hour = 0;
-    int minute = 0;
-  };
-
-  struct PeakShiftDayConfiguration {
-    WeekDay day = WeekDay::WEEK_DAY_MONDAY;
-    DayTime start_time;
-    DayTime end_time;
-    DayTime charge_start_time;
   };
 
   // Values of various power-management-related preferences.
@@ -111,18 +96,39 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     bool fast_suspend_when_backlights_forced_off = true;
     bool peak_shift_enabled = false;
     int peak_shift_battery_threshold = -1;
-    std::vector<PeakShiftDayConfiguration> peak_shift_day_configurations;
+    std::vector<PeakShiftDayConfig> peak_shift_day_configs;
+    bool advanced_battery_charge_mode_enabled = false;
+    std::vector<AdvancedBatteryChargeModeDayConfig>
+        advanced_battery_charge_mode_day_configs;
     bool boot_on_ac = false;
     bool usb_power_share = true;
   };
 
-  // Returns a string describing |policy|.  Useful for tests.
+  // Converts |base::DictionaryValue| to |std::vector<PeakShiftDayConfig>| and
+  // returns true if there are no missing fields and errors.
+  static bool GetPeakShiftDayConfigs(
+      const base::DictionaryValue& value,
+      std::vector<PeakShiftDayConfig>* configs_out);
+
+  // Converts |base::DictionaryValue| to
+  // |std::vector<AdvancedBatteryChargeModeDayConfig>| and returns true if there
+  // are no missing fields and errors.
+  static bool GetAdvancedBatteryChargeModeDayConfigs(
+      const base::DictionaryValue& value,
+      std::vector<AdvancedBatteryChargeModeDayConfig>* configs_out);
+
+  // Returns a string describing |policy|.  Useful for comparisons in tests.
   static std::string GetPolicyDebugString(
       const power_manager::PowerManagementPolicy& policy);
 
   // Returns a string describing |PeakShift| part of |policy|.  Useful for
-  // tests.
+  // comparisons in tests.
   static std::string GetPeakShiftPolicyDebugString(
+      const power_manager::PowerManagementPolicy& policy);
+
+  // Returns a string describing |AdvancedBatteryChargeMode| part of |policy|.
+  // Useful for comparisons in tests.
+  static std::string GetAdvancedBatteryChargeModePolicyDebugString(
       const power_manager::PowerManagementPolicy& policy);
 
   // Delay in milliseconds between the screen being turned off and the screen

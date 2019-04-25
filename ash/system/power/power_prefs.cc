@@ -16,6 +16,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "chromeos/dbus/power_manager/policy.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry.h"
@@ -25,8 +26,11 @@ namespace ash {
 
 namespace {
 
-using PeakShiftDayConfiguration =
-    chromeos::PowerPolicyController::PeakShiftDayConfiguration;
+using PeakShiftDayConfig =
+    power_manager::PowerManagementPolicy::PeakShiftDayConfig;
+
+using AdvancedBatteryChargeModeDayConfig =
+    power_manager::PowerManagementPolicy::AdvancedBatteryChargeModeDayConfig;
 
 chromeos::PowerPolicyController::Action GetPowerPolicyAction(
     const PrefService* prefs,
@@ -130,85 +134,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
     registry->RegisterForeignPref(prefs::kAllowScreenLock);
     registry->RegisterForeignPref(prefs::kEnableAutoScreenLock);
   }
-}
-
-// Saves appropriate value to |week_day| and returns true if there is mapping
-// between week day string and enum value.
-bool GetWeekDayFromString(const std::string& week_day_str,
-                          chromeos::PowerPolicyController::WeekDay* week_day) {
-  DCHECK(week_day);
-  if (week_day_str == "MONDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_MONDAY;
-  } else if (week_day_str == "TUESDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_TUESDAY;
-  } else if (week_day_str == "WEDNESDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_WEDNESDAY;
-  } else if (week_day_str == "THURSDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_THURSDAY;
-  } else if (week_day_str == "FRIDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_FRIDAY;
-  } else if (week_day_str == "SATURDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_SATURDAY;
-  } else if (week_day_str == "SUNDAY") {
-    *week_day = chromeos::PowerPolicyController::WeekDay::WEEK_DAY_SUNDAY;
-  } else {
-    return false;
-  }
-  return true;
-}
-
-// Converts |base::Value| to |std::vector<PeakShiftDayConfiguration>| and
-// returns true if there are no missing fields and errors.
-bool GetPeakShiftDayConfigurations(
-    const base::DictionaryValue& value,
-    std::vector<PeakShiftDayConfiguration>* configs_out) {
-  DCHECK(configs_out);
-  configs_out->clear();
-
-  const base::Value* entries =
-      value.FindKeyOfType({"entries"}, base::Value::Type::LIST);
-  if (!entries) {
-    return false;
-  }
-
-  for (const base::Value& item : entries->GetList()) {
-    const base::Value* week_day_value =
-        item.FindKeyOfType({"day"}, base::Value::Type::STRING);
-    const base::Value* start_time_hour =
-        item.FindPathOfType({"start_time", "hour"}, base::Value::Type::INTEGER);
-    const base::Value* start_time_minute = item.FindPathOfType(
-        {"start_time", "minute"}, base::Value::Type::INTEGER);
-    const base::Value* end_time_hour =
-        item.FindPathOfType({"end_time", "hour"}, base::Value::Type::INTEGER);
-    const base::Value* end_time_minute =
-        item.FindPathOfType({"end_time", "minute"}, base::Value::Type::INTEGER);
-    const base::Value* charge_start_time_hour = item.FindPathOfType(
-        {"charge_start_time", "hour"}, base::Value::Type::INTEGER);
-    const base::Value* charge_start_time_minute = item.FindPathOfType(
-        {"charge_start_time", "minute"}, base::Value::Type::INTEGER);
-
-    chromeos::PowerPolicyController::WeekDay week_day_enum;
-    if (!week_day_value ||
-        !GetWeekDayFromString(week_day_value->GetString(), &week_day_enum) ||
-        !start_time_hour || !start_time_minute || !end_time_hour ||
-        !end_time_minute || !charge_start_time_hour ||
-        !charge_start_time_minute) {
-      return false;
-    }
-
-    PeakShiftDayConfiguration config;
-    config.day = week_day_enum;
-    config.start_time.hour = start_time_hour->GetInt();
-    config.start_time.minute = start_time_minute->GetInt();
-    config.end_time.hour = end_time_hour->GetInt();
-    config.end_time.minute = end_time_minute->GetInt();
-    config.charge_start_time.hour = charge_start_time_hour->GetInt();
-    config.charge_start_time.minute = charge_start_time_minute->GetInt();
-
-    configs_out->push_back(std::move(config));
-  }
-
-  return true;
 }
 
 }  // namespace
@@ -419,15 +344,36 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     const base::DictionaryValue* configs_value =
         local_state_->GetDictionary(prefs::kPowerPeakShiftDayConfig);
     DCHECK(configs_value);
-    std::vector<PeakShiftDayConfiguration> configs;
-    if (GetPeakShiftDayConfigurations(*configs_value, &configs)) {
+    std::vector<PeakShiftDayConfig> configs;
+    if (chromeos::PowerPolicyController::GetPeakShiftDayConfigs(*configs_value,
+                                                                &configs)) {
       values.peak_shift_enabled = true;
       values.peak_shift_battery_threshold =
           local_state_->GetInteger(prefs::kPowerPeakShiftBatteryThreshold);
-      values.peak_shift_day_configurations = std::move(configs);
+      values.peak_shift_day_configs = std::move(configs);
     } else {
       LOG(WARNING) << "Invalid Peak Shift day configs format: "
                    << *configs_value;
+    }
+  }
+
+  if (local_state_->GetBoolean(prefs::kAdvancedBatteryChargeModeEnabled) &&
+      local_state_->IsManagedPreference(
+          prefs::kAdvancedBatteryChargeModeEnabled) &&
+      local_state_->IsManagedPreference(
+          prefs::kAdvancedBatteryChargeModeDayConfig)) {
+    const base::DictionaryValue* configs_value =
+        local_state_->GetDictionary(prefs::kAdvancedBatteryChargeModeDayConfig);
+    DCHECK(configs_value);
+    std::vector<AdvancedBatteryChargeModeDayConfig> configs;
+    if (chromeos::PowerPolicyController::GetAdvancedBatteryChargeModeDayConfigs(
+            *configs_value, &configs)) {
+      values.advanced_battery_charge_mode_enabled = true;
+      values.advanced_battery_charge_mode_day_configs = std::move(configs);
+    } else {
+      LOG(WARNING)
+          << "Invalid Advanced Battery Charge Mode day configs format: "
+          << *configs_value;
     }
   }
 
@@ -505,6 +451,11 @@ void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
   local_state_registrar_->Add(prefs::kPowerPeakShiftBatteryThreshold,
                               update_callback);
   local_state_registrar_->Add(prefs::kPowerPeakShiftDayConfig, update_callback);
+
+  local_state_registrar_->Add(prefs::kAdvancedBatteryChargeModeEnabled,
+                              update_callback);
+  local_state_registrar_->Add(prefs::kAdvancedBatteryChargeModeDayConfig,
+                              update_callback);
 
   local_state_registrar_->Add(prefs::kBootOnAcEnabled, update_callback);
 
