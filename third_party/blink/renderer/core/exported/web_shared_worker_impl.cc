@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -427,9 +428,14 @@ void WebSharedWorkerImpl::StartWorkerThread(
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
   if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
     // The script has not yet been fetched. Fetch it now.
-    GetWorkerThread()->FetchAndRunClassicScript(script_request_url_,
-                                                outside_settings_object,
-                                                v8_inspector::V8StackTraceId());
+
+    // Currently we don't plumb performance timing for toplevel shared worker
+    // script fetch. https://crbug.com/954005
+    auto* resource_timing_notifier =
+        MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+    GetWorkerThread()->FetchAndRunClassicScript(
+        script_request_url_, outside_settings_object, resource_timing_notifier,
+        v8_inspector::V8StackTraceId());
     // We continue in WorkerGlobalScope::EvaluateClassicScript() on the worker
     // thread.
   } else {

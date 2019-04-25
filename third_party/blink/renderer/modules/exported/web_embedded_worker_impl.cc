@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -530,11 +531,17 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // > "classic": Fetch a classic worker script given job's serialized script
     // > url, job's client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
-    case mojom::ScriptType::kClassic:
+
+    // Currently we don't plumb performance timing for toplevel service worker
+    // script fetch. https://crbug.com/954005
+    case mojom::ScriptType::kClassic: {
+      auto* resource_timing_notifier =
+          MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
       worker_thread_->FetchAndRunClassicScript(
           worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
-          v8_inspector::V8StackTraceId());
+          resource_timing_notifier, v8_inspector::V8StackTraceId());
       return;
+    }
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the
     // > to-be-created environment settings object for this service worker.

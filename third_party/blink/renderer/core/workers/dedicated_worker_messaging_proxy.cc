@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
@@ -64,10 +65,15 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // "classic: Fetch a classic worker script given url, outside settings,
     // destination, and inside settings."
     switch (off_main_thread_fetch_option) {
-      case OffMainThreadWorkerScriptFetchOption::kEnabled:
+      case OffMainThreadWorkerScriptFetchOption::kEnabled: {
+        auto* resource_timing_notifier =
+            MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+                *GetExecutionContext());
         GetWorkerThread()->FetchAndRunClassicScript(
-            script_url, outside_settings_object, stack_id);
+            script_url, outside_settings_object, resource_timing_notifier,
+            stack_id);
         break;
+      }
       case OffMainThreadWorkerScriptFetchOption::kDisabled:
         // Legacy code path (to be deprecated, see https://crbug.com/835717):
         GetWorkerThread()->EvaluateClassicScript(

@@ -19,6 +19,7 @@ class CoreProbeSink;
 class SubresourceFilter;
 class WebWorkerFetchContext;
 class WorkerContentSettingsClient;
+class WorkerResourceTimingNotifier;
 class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
 enum class ResourceType : uint8_t;
@@ -34,7 +35,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
                      SubresourceFilter*,
-                     ContentSecurityPolicy&);
+                     ContentSecurityPolicy&,
+                     WorkerResourceTimingNotifier*);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -107,6 +109,9 @@ class WorkerFetchContext final : public BaseFetchContext {
   // WorkerGlobalScope::GetContentSecurityPolicy(), not bound to
   // WorkerGlobalScope and owned by this WorkerFetchContext.
   const Member<ContentSecurityPolicy> content_security_policy_;
+
+  const CrossThreadPersistent<WorkerResourceTimingNotifier>
+      resource_timing_notifier_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally

@@ -59,9 +59,10 @@ class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class OffscreenFontSelector;
-class V8VoidFunction;
+class WorkerResourceTimingNotifier;
 class StringOrTrustedScriptURL;
 class TrustedTypePolicyFactory;
+class V8VoidFunction;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -150,6 +151,7 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) = 0;
 
   // Fetches and evaluates the top-level module script.

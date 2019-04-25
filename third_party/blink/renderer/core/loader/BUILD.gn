@@ -146,6 +146,8 @@ blink_core_sources("loader") {
     "worker_fetch_context.h",
     "worker_resource_fetcher_properties.cc",
     "worker_resource_fetcher_properties.h",
+    "worker_resource_timing_notifier_impl.cc",
+    "worker_resource_timing_notifier_impl.h",
   ]
 
   public_deps = [

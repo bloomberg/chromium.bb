@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
@@ -168,14 +169,17 @@ void WorkerThread::EvaluateClassicScript(
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url,
-                      WTF::Passed(outside_settings_object.CopyData()),
-                      stack_id));
+      CrossThreadBind(
+          &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
+          CrossThreadUnretained(this), script_url,
+          WTF::Passed(outside_settings_object.CopyData()),
+          WrapCrossThreadPersistent(outside_resource_timing_notifier),
+          stack_id));
 }
 
 void WorkerThread::FetchAndRunModuleScript(
@@ -522,13 +526,14 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
-          stack_id);
+          outside_resource_timing_notifier, stack_id);
 }
 
 void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(

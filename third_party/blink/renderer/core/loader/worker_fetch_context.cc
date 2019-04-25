@@ -23,6 +23,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -36,14 +38,18 @@ WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
-    ContentSecurityPolicy& content_security_policy)
+    ContentSecurityPolicy& content_security_policy,
+    WorkerResourceTimingNotifier* resource_timing_notifier)
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       content_security_policy_(&content_security_policy),
+      resource_timing_notifier_(resource_timing_notifier),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
+  // TODO(bashi): Add DCHECK for |resource_timing_notifier| once all callsites
+  // of this ctor pass a valid WorkerResourceTimingNotifier.
 }
 
 KURL WorkerFetchContext::GetSiteForCookies() const {
@@ -218,9 +224,15 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // worklets.
   if (global_scope_->IsWorkletGlobalScope())
     return;
-  WorkerGlobalScopePerformance::performance(
-      To<WorkerGlobalScope>(*global_scope_))
-      ->GenerateAndAddResourceTiming(info);
+  if (resource_timing_notifier_) {
+    const SecurityOrigin* security_origin = GetResourceFetcherProperties()
+                                                .GetFetchClientSettingsObject()
+                                                .GetSecurityOrigin();
+    WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
+        *security_origin, info, *global_scope_);
+    resource_timing_notifier_->AddResourceTiming(web_info,
+                                                 info.InitiatorType());
+  }
 }
 
 void WorkerFetchContext::PopulateResourceRequest(

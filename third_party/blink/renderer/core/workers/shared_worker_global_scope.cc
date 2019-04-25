@@ -64,6 +64,7 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
 void SharedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   DCHECK(!IsContextPaused());
@@ -80,8 +81,10 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
-      *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
-      destination, network::mojom::FetchRequestMode::kSameOrigin,
+      *this,
+      CreateOutsideSettingsFetcher(outside_settings_object,
+                                   outside_resource_timing_notifier),
+      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       WTF::Bind(&SharedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),

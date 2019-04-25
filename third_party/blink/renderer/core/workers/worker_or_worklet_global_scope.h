@@ -29,6 +29,7 @@ class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
+class WorkerResourceTimingNotifier;
 class SubresourceFilter;
 class WebWorkerFetchContext;
 class WorkerOrWorkletScriptController;
@@ -112,7 +113,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // more data to the outside ResourceFetcher to fix the behavior and reduce the
   // dependencies.
   ResourceFetcher* CreateOutsideSettingsFetcher(
-      const FetchClientSettingsObject&);
+      const FetchClientSettingsObject&,
+      WorkerResourceTimingNotifier*);
 
   const String Name() const { return name_; }
   const base::UnguessableToken& GetParentDevToolsToken() {
@@ -155,7 +157,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
-                                         ContentSecurityPolicy&);
+                                         ContentSecurityPolicy&,
+                                         WorkerResourceTimingNotifier*);
 
   bool web_fetch_context_initialized_ = false;
 

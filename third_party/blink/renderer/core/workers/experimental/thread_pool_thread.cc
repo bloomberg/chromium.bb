@@ -39,6 +39,7 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override {
     NOTREACHED();
   }

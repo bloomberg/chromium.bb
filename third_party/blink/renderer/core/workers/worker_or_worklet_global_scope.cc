@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -273,15 +274,18 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   // non-null here.
   DCHECK(GetContentSecurityPolicy());
 
+  auto* resource_timing_notifier =
+      MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(*this);
   inside_settings_resource_fetcher_ = CreateFetcherInternal(
       *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this),
-      *GetContentSecurityPolicy());
+      *GetContentSecurityPolicy(), resource_timing_notifier);
   return inside_settings_resource_fetcher_;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     const FetchClientSettingsObject& fetch_client_settings_object,
-    ContentSecurityPolicy& content_security_policy) {
+    ContentSecurityPolicy& content_security_policy,
+    WorkerResourceTimingNotifier* resource_timing_notifier) {
   DCHECK(IsContextThread());
   InitializeWebFetchContextIfNeeded();
   ResourceFetcher* fetcher = nullptr;
@@ -292,7 +296,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
 
         MakeGarbageCollected<WorkerFetchContext>(
             *this, web_worker_fetch_context_, subresource_filter_,
-            content_security_policy),
+            content_security_policy, resource_timing_notifier),
         GetTaskRunner(TaskType::kNetworking),
         MakeGarbageCollected<LoaderFactoryForWorker>(
             *this, web_worker_fetch_context_));
@@ -322,7 +326,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
-    const FetchClientSettingsObject& outside_settings_object) {
+    const FetchClientSettingsObject& outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier) {
   DCHECK(IsContextThread());
 
   auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -338,7 +343,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
   content_security_policy->BindToDelegate(*csp_delegate);
 
   return CreateFetcherInternal(outside_settings_object,
-                               *content_security_policy);
+                               *content_security_policy,
+                               outside_resource_timing_notifier);
 }
 
 bool WorkerOrWorkletGlobalScope::IsJSExecutionForbidden() const {
@@ -438,10 +444,12 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
+  // TODO(bashi): Pass WorkerResourceTimingNotifier. It should be plumbed from
+  // WorkerThread::FetchAndRunModuleScript().
   modulator->FetchTree(
       module_url_record,
-      CreateOutsideSettingsFetcher(fetch_client_settings_object), destination,
-      options, custom_fetch_type, client);
+      CreateOutsideSettingsFetcher(fetch_client_settings_object, nullptr),
+      destination, options, custom_fetch_type, client);
 }
 
 void WorkerOrWorkletGlobalScope::TasksWerePaused() {

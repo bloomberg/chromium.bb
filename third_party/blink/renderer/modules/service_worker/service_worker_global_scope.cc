@@ -146,6 +146,7 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
 void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kOffMainThreadServiceWorkerScriptFetch));
@@ -178,8 +179,10 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
-      *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
-      destination, network::mojom::FetchRequestMode::kSameOrigin,
+      *this,
+      CreateOutsideSettingsFetcher(outside_settings_object,
+                                   outside_resource_timing_notifier),
+      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),

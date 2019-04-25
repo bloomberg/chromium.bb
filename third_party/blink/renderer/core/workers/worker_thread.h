@@ -62,6 +62,7 @@ class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
+class WorkerResourceTimingNotifier;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
 struct WorkerDevToolsParams;
@@ -118,6 +119,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to fetch and run a top-level module script on the worker
@@ -301,6 +303,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
