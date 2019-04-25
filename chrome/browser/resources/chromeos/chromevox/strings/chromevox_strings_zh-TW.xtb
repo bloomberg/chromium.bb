@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">可點擊</translation>
 <translation id="2628764385451019380">沒有上一個下拉式方塊。</translation>
 <translation id="2637227747952042642">數學</translation>
+<translation id="2638785836053527382">已繼續下載「<ph name="FILE_NAME" />」</translation>
 <translation id="2639750663247012216">ChromeVox 輔助鍵</translation>
 <translation id="2644542693584024604">拼字錯誤</translation>
 <translation id="2661530546602071611">聲明</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">深橘</translation>
 <translation id="2879867157561757640">以三指向下滑動</translation>
 <translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到下一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{分鐘}other{分鐘}}</translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左大括弧}other{# 個左大括弧}}</translation>
 <translation id="2911433807131383493">開啟 ChromeVox 教學課程</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">無輸入語音回應</translation>
 <translation id="3086746722712840547">附註</translation>
 <translation id="308895241372589742">沒有下一個數學運算式。</translation>
+<translation id="3090227230165225418">朗讀下載通知</translation>
 <translation id="3090532668523289635">群組</translation>
 <translation id="3093176084511590672">下一個地標</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{右大括弧}other{# 個右大括弧}}</translation>
 <translation id="4158704014418536539">區分大小寫。</translation>
 <translation id="4159784952369912983">紫色</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{秒}other{秒}}</translation>
 <translation id="4161663686871496107">ChromeVox 互動朗讀已啟用</translation>
 <translation id="4173994908659439270">沒有可編輯的文字欄位。</translation>
 <translation id="4176463684765177261">已停用</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">反向連結</translation>
 <translation id="536031132345979795">在連續朗讀時向後跳過</translation>
 <translation id="5368000168321181111">聽覺標示已關閉</translation>
+<translation id="5368505757342402527">「<ph name="FILE_NAME" />」的下載作業已完成 <ph name="PROGRESS" />%。大約還需要 <ph name="TIME" /> <ph name="UNITS" />的時間。</translation>
 <translation id="5374320867641260420">沒有下一個按鈕。</translation>
 <translation id="5376407118396657359">按下搜尋鍵 + Ctrl + Alt 鍵和方向鍵即可依儲存格瀏覽。</translation>
 <translation id="5382299583965267720">沒有下一第 1 階標題。</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">文件</translation>
 <translation id="6688209025607531203">非強制回應警示</translation>
 <translation id="6689672606256159458">深鮭紅</translation>
+<translation id="669617842401078250">已暫停下載 <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">前言</translation>
 <translation id="6697092096875747123">上一個下拉式方塊</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{驚嘆號}other{# 個驚嘆號}}</translation>
@@ -939,6 +945,7 @@
 <translation id="7641134354185483015">沒有上一個第 3 階標題。</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文字方塊</translation>
 <translation id="7663318257180412551">標題 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{小時}other{小時}}</translation>
 <translation id="7674576868851035240">下一個連結</translation>
 <translation id="7674768236845044097">標記</translation>
 <translation id="7684431668231950609">編輯文字，網址項目</translation>
@@ -953,6 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">已開始下載「<ph name="FILE_NAME" />」</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密碼文字方塊</translation>
 <translation id="7776293189010177726">開啟 ChromeVox 選單</translation>
 <translation id="7800558923657349506">結語</translation>
@@ -1077,6 +1085,7 @@
 <translation id="8096975275316362544">薄荷奶油色</translation>
 <translation id="8098587210054821856">岩灰</translation>
 <translation id="8110647606445335195">沒有 ARIA 地標。</translation>
+<translation id="812886159861361726">已停止下載「<ph name="FILE_NAME" />」</translation>
 <translation id="8138880386467279117">輕觸</translation>
 <translation id="8153880621934657047">不在表格內。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{底線}other{# 個底線}}</translation>
@@ -1146,6 +1155,7 @@
 <translation id="8743786158317878347">進入結構化內容，例如表格</translation>
 <translation id="8747966237988593539">排序清單</translation>
 <translation id="8749988712346667988">銀</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="8759334257841767240">沒有下一個連結。</translation>
 <translation id="8767968232364267681">下一個第 4 階標題</translation>
 <translation id="8770473310765924354">離開結構化內容，例如表格</translation>
