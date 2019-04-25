@@ -12,6 +12,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 assert(enable_extensions)
 
 jumbo_static_library("extensions") {
@@ -752,6 +756,10 @@ jumbo_static_library("extensions") {
     "//build/config/compiler:wexit_time_destructors",
   ]
   defines = []
+
+  if (is_chromeos && enable_kiosk_next) {
+    defines += [ "KIOSK_NEXT" ]
+  }
 
   allow_circular_includes_from = [
     # Lots of APIs use headers from the list above.

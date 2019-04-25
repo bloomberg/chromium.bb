@@ -22,8 +22,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
-#include "chrome/browser/chromeos/kiosk_next_home/kiosk_next_home_interface_broker_impl.h"
-#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -41,10 +39,14 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #endif
 
+#if defined(KIOSK_NEXT)
+#include "chrome/browser/chromeos/kiosk_next_home/kiosk_next_home_interface_broker_impl.h"
+#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
+#endif  // defined(KIOSK_NEXT)
+
 namespace extensions {
 namespace {
 #if defined(OS_CHROMEOS)
-const char kKioskNextHomeInterfaceBrokerImplKey[] = "cros_kiosk_next_home_impl";
 
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on its own.
@@ -56,6 +58,9 @@ void ForwardRequest(const char* service_name,
       ->GetConnector()
       ->BindInterface(service_name, std::move(request));
 }
+
+#if defined(KIOSK_NEXT)
+const char kKioskNextHomeInterfaceBrokerImplKey[] = "cros_kiosk_next_home_impl";
 
 void BindKioskNextHomeInterfaceBrokerRequest(
     content::BrowserContext* context,
@@ -74,6 +79,7 @@ void BindKioskNextHomeInterfaceBrokerRequest(
   }
   impl->BindRequest(std::move(request));
 }
+#endif  // defined(KIOSK_NEXT)
 
 // Translates the renderer-side source ID to video device id.
 void TranslateVideoDeviceId(
@@ -152,11 +158,13 @@ void RegisterChromeInterfacesForExtension(
         chromeos::ime::mojom::kServiceName));
   }
 
+#if defined(KIOSK_NEXT)
   if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
       extension->id() == extension_misc::kKioskNextHomeAppId) {
     registry->AddInterface(
         base::BindRepeating(&BindKioskNextHomeInterfaceBrokerRequest, context));
   }
+#endif  // defined(KIOSK_NEXT)
 
   if (extension->permissions_data()->HasAPIPermission(
           APIPermission::kMediaPerceptionPrivate)) {

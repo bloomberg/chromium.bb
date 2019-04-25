@@ -5,6 +5,10 @@
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (closure_compile) {
@@ -107,6 +111,10 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
+      if (enable_kiosk_next) {
+        defines += [ "_kiosk_next" ]
+      }
+
       # The .grd contains references to generated files.
       source_is_generated = true
 

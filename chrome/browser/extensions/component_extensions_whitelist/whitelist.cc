@@ -98,9 +98,11 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #if defined(GOOGLE_CHROME_BUILD)
     case IDR_GENIUS_APP_MANIFEST:
     case IDR_HELP_MANIFEST:
-    case IDR_KIOSK_NEXT_HOME_MANIFEST:
     case IDR_QUICKOFFICE_MANIFEST:
 #endif  // defined(GOOGLE_CHROME_BUILD)
+#if defined(KIOSK_NEXT)
+    case IDR_KIOSK_NEXT_HOME_MANIFEST:
+#endif  // defined(KIOSK_NEXT)
 #endif  // defined(OS_CHROMEOS)
       return true;
   }

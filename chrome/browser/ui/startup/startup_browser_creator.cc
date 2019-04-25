@@ -288,7 +288,7 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   // again.
   bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
 
-#if defined(CHROMEOS)
+#if defined(KIOSK_NEXT)
   DCHECK(!chromeos::ProfileHelper::IsSigninProfile(profile));
   if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
     const PrefService* prefs = profile->GetPrefs();

@@ -459,10 +459,11 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
-
+#if defined(KIOSK_NEXT)
   html_source->AddBoolean(
       "showKioskNextShell",
       base::FeatureList::IsEnabled(ash::features::kKioskNextShell));
+#endif
 
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(

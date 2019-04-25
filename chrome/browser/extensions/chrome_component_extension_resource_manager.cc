@@ -39,7 +39,7 @@ ChromeComponentExtensionResourceManager() {
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
 #endif
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(KIOSK_NEXT)
     {"chromeos/kiosk_next_home/kiosk_next_home.mojom.js",
      IDR_KIOSK_NEXT_HOME_MOJOM_JS},
 #endif

@@ -546,16 +546,18 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
+#if defined(KIOSK_NEXT)
+    if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
+      Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
+    }
+#endif  // defined(KIOSK_NEXT)
+
 #if defined(GOOGLE_CHROME_BUILD)
     std::string id = Add(IDR_QUICKOFFICE_MANIFEST,
                          base::FilePath(FILE_PATH_LITERAL(
                              "/usr/share/chromeos-assets/quickoffice")));
     EnableFileSystemInGuestMode(id);
-
-    if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-      Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
-    }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
     Add(IDR_ECHO_MANIFEST,

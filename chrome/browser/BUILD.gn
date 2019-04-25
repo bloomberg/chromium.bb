@@ -37,6 +37,10 @@ if (is_android) {
   import("//tools/grit/grit_rule.gni")
 }
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
 
@@ -5033,6 +5037,10 @@ grit("resources") {
   defines = chrome_grit_defines
   if (enable_hangout_services_extension) {
     defines += [ "enable_hangout_services_extension" ]
+  }
+
+  if (is_chromeos && enable_kiosk_next) {
+    defines += [ "_kiosk_next" ]
   }
 
   output_dir = "$root_gen_dir/chrome"
