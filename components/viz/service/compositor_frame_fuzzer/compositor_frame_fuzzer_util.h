@@ -67,7 +67,7 @@ class FuzzedCompositorFrameBuilder {
   // reduce this if bots are running out of memory.
   static constexpr uint64_t kMaxTextureMemory = 1 << 29;
 
-  void AddRenderPass(
+  RenderPassId AddRenderPass(
       const content::fuzzing::proto::RenderPass& render_pass_spec);
 
   // Helper methods for AddRenderPass. Try* methods may return before
@@ -81,6 +81,11 @@ class FuzzedCompositorFrameBuilder {
                           const gfx::Rect& rect,
                           const gfx::Rect& visible_rect,
                           const content::fuzzing::proto::DrawQuad& quad_spec);
+  void TryAddRenderPassDrawQuad(
+      RenderPass* pass,
+      const gfx::Rect& rect,
+      const gfx::Rect& visible_rect,
+      const content::fuzzing::proto::DrawQuad& quad_spec);
 
   // Configure the SharedQuadState to match the specifications in the
   // protobuf, if they are defined for this quad. Otherwise, use sensible
@@ -105,6 +110,8 @@ class FuzzedCompositorFrameBuilder {
   // Number of bytes that have already been reserved for the allocation of
   // specific bitmaps/textures.
   uint64_t reserved_bytes_ = 0;
+
+  RenderPassId next_pass_id_ = 1;
 
   // Frame and data being built.
   FuzzedData data_;

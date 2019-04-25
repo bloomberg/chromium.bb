@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "cc/base/math_util.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -121,7 +123,7 @@ FuzzedData FuzzedCompositorFrameBuilder::Build(
   return std::move(data_);
 }
 
-void FuzzedCompositorFrameBuilder::AddRenderPass(
+RenderPassId FuzzedCompositorFrameBuilder::AddRenderPass(
     const content::fuzzing::proto::RenderPass& render_pass_spec) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   gfx::Rect rp_output_rect =
@@ -141,7 +143,8 @@ void FuzzedCompositorFrameBuilder::AddRenderPass(
           ? GetTransformFromProtobuf(
                 render_pass_spec.transform_to_root_target())
           : gfx::Transform();
-  pass->SetNew(1, rp_output_rect, rp_damage_rect, transform_to_root_target);
+  pass->SetNew(next_pass_id_++, rp_output_rect, rp_damage_rect,
+               transform_to_root_target);
 
   for (const content::fuzzing::proto::DrawQuad& quad_spec :
        render_pass_spec.quad_list()) {
@@ -169,12 +172,18 @@ void FuzzedCompositorFrameBuilder::AddRenderPass(
         TryAddTileDrawQuad(pass.get(), quad_rect, quad_visible_rect, quad_spec);
         break;
       }
+      case content::fuzzing::proto::DrawQuad::kRenderPassQuad: {
+        TryAddRenderPassDrawQuad(pass.get(), quad_rect, quad_visible_rect,
+                                 quad_spec);
+        break;
+      }
       case content::fuzzing::proto::DrawQuad::QUAD_NOT_SET: {
         NOTREACHED();
       }
     }
   }
   data_.frame.render_pass_list.push_back(std::move(pass));
+  return data_.frame.render_pass_list.back()->id;
 }
 
 void FuzzedCompositorFrameBuilder::AddSolidColorDrawQuad(
@@ -228,6 +237,64 @@ void FuzzedCompositorFrameBuilder::TryAddTileDrawQuad(
   data_.frame.resource_list.push_back(transferable_resource);
 }
 
+void FuzzedCompositorFrameBuilder::TryAddRenderPassDrawQuad(
+    RenderPass* pass,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    const content::fuzzing::proto::DrawQuad& quad_spec) {
+  // Since child RenderPasses are allocated as textures, skip
+  // RenderPasses that would overflow our limit on allocated memory for
+  // this CompositorFrame.
+  gfx::Size render_pass_size =
+      GetRectFromProtobuf(
+          quad_spec.render_pass_quad().render_pass().output_rect())
+          .size();
+
+  // RenderPass texture dimensions are rounded up to a
+  // multiple of 64 pixels to reduce fragmentation.
+  constexpr int multiple = 64;
+  if (!cc::MathUtil::VerifyRoundup(render_pass_size.width(), multiple) ||
+      !cc::MathUtil::VerifyRoundup(render_pass_size.height(), multiple)) {
+    VLOG(1) << "Skipping RenderPassDrawQuad: bitmap of size "
+            << render_pass_size.ToString() << " can't be allocated.";
+    return;
+  }
+  render_pass_size = gfx::Size(
+      cc::MathUtil::UncheckedRoundUp(render_pass_size.width(), multiple),
+      cc::MathUtil::UncheckedRoundUp(render_pass_size.height(), multiple));
+
+  if (!TryReserveBitmapBytes(render_pass_size)) {
+    VLOG(1) << "Skipping RenderPassDrawQuad: bitmap of size "
+            << render_pass_size.ToString() << " can't be allocated.";
+    return;
+  }
+
+  // Build the child RenderPass and add it to the frame's
+  // RenderPassList.
+  RenderPassId child_pass_id =
+      AddRenderPass(quad_spec.render_pass_quad().render_pass());
+
+  // Unless a tex_coord_rect is defined in the protobuf specification,
+  // a good default is a rectangle covering the entire quad.
+  gfx::RectF tex_coord_rect = gfx::RectF(
+      quad_spec.render_pass_quad().has_tex_coord_rect()
+          ? GetRectFromProtobuf(quad_spec.render_pass_quad().tex_coord_rect())
+          : rect);
+
+  auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
+  ConfigureSharedQuadState(shared_quad_state, quad_spec);
+  auto* quad = pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  quad->SetNew(shared_quad_state, rect, visible_rect, child_pass_id,
+               /*mask_resource_id=*/ResourceId(),
+               /*mask_uv_rect=*/gfx::RectF(),
+               /*mask_texture_size=*/gfx::Size(),
+               /*filters_scale=*/gfx::Vector2dF(),
+               /*filters_origin=*/gfx::PointF(),
+               /*tex_coord_rect=*/tex_coord_rect,
+               /*force_anti_aliasing_off=*/false,
+               /*backdrop_filter_quality=*/1.0);
+}
+
 void FuzzedCompositorFrameBuilder::ConfigureSharedQuadState(
     SharedQuadState* shared_quad_state,
     const content::fuzzing::proto::DrawQuad& quad_spec) {
@@ -241,12 +308,24 @@ void FuzzedCompositorFrameBuilder::ConfigureSharedQuadState(
         Normalize(quad_spec.sqs().opacity()), SkBlendMode::kSrcOver,
         quad_spec.sqs().sorting_context_id());
   } else {
-    shared_quad_state->SetAll(
-        gfx::Transform(), GetRectFromProtobuf(quad_spec.rect()),
-        GetRectFromProtobuf(quad_spec.visible_rect()), gfx::RRectF(),
-        gfx::Rect(), /*is_clipped=*/false,
-        /*are_contents_opaque=*/true, /*opacity=*/1.0, SkBlendMode::kSrcOver,
-        /*sorting_context_id=*/0);
+    gfx::Transform transform;
+
+    if (quad_spec.quad_case() ==
+            content::fuzzing::proto::DrawQuad::kRenderPassQuad &&
+        quad_spec.render_pass_quad()
+            .render_pass()
+            .has_transform_to_root_target()) {
+      transform = GetTransformFromProtobuf(quad_spec.render_pass_quad()
+                                               .render_pass()
+                                               .transform_to_root_target());
+    }
+
+    shared_quad_state->SetAll(transform, GetRectFromProtobuf(quad_spec.rect()),
+                              GetRectFromProtobuf(quad_spec.visible_rect()),
+                              gfx::RRectF(), gfx::Rect(), /*is_clipped=*/false,
+                              /*are_contents_opaque=*/true, /*opacity=*/1.0,
+                              SkBlendMode::kSrcOver,
+                              /*sorting_context_id=*/0);
   }
 }
 

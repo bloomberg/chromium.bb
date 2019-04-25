@@ -15,7 +15,8 @@ message RenderPass {
 
 message DrawQuad {
   // If not present, defaults to same dimensions as quad, with identity
-  // transform
+  // transform (or with |transform_to_root_target| if quad is a
+  // RenderPassDrawQuad).
   optional SharedQuadState sqs = 1;
 
   required Rect rect = 2;
@@ -26,6 +27,7 @@ message DrawQuad {
   oneof quad {
     SolidColorDrawQuad solid_color_quad = 4;
     TileDrawQuad tile_quad = 5;
+    RenderPassDrawQuad render_pass_quad = 6;
   }
 }
 
@@ -68,6 +70,13 @@ message TileDrawQuad {
   required bool is_premultiplied = 6;
   required bool nearest_neighbor = 7;
   required bool force_anti_aliasing_off = 8;
+}
+
+message RenderPassDrawQuad {
+  required RenderPass render_pass = 1;
+
+  // If not present, defaults to DrawQuad's |rect|
+  optional Rect tex_coord_rect = 2;
 }
 
 // Spec to initialize a gfx::Rect.
