@@ -73,6 +73,11 @@ const CGFloat kImageHeight = 30;
 
 @implementation TableViewClearBrowsingDataCell
 
+static UIColor* const selectedStateImageViewTintColor =
+    UIColorFromRGB(0x4285F4);
+static UIColor* const unselectedStateImageViewTintColor =
+    UIColorFromRGB(0x9AA0A6);
+
 @synthesize imageView = _imageView;
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
@@ -198,9 +203,14 @@ const CGFloat kImageHeight = 30;
   [super layoutSubviews];
 }
 
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+  [super setSelected:selected animated:animated];
+  self.imageView.tintColor = selected ? selectedStateImageViewTintColor
+                                      : unselectedStateImageViewTintColor;
+}
+
 - (void)setImage:(UIImage*)image {
-  self.imageView.image = image;
-  self.imageView.highlightedImage =
+  self.imageView.image =
       [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   if (self.imageView.image == nil) {
     self.imageVisibleConstraint.active = NO;
