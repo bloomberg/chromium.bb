@@ -139,6 +139,13 @@ TEST(AnimationTimingCalculationsTest, OverallProgress) {
                                         /*iteration_duration=*/0.0,
                                         /*iteration_count=*/3.0,
                                         /*iteration_start=*/0.0));
+  // Edge case for duration being within Epsilon of zero.
+  // crbug.com/954558
+  EXPECT_EQ(1, CalculateOverallProgress(AnimationEffect::kPhaseActive,
+                                        /*active_time=*/3.0,
+                                        /*iteration_duration=*/1e-18,
+                                        /*iteration_count=*/1.0,
+                                        /*iteration_start=*/0.0));
 
   // Otherwise.
   EXPECT_EQ(3.0, CalculateOverallProgress(AnimationEffect::kPhaseAfter,
@@ -207,6 +214,14 @@ TEST(AnimationTimingCalculationsTest, CurrentIteration) {
                                          /*active_time=*/3.0,
                                          /*iteration_count=*/3.0,
                                          /*overall_progress=*/3.0,
+                                         /*simple_iteration_progress=*/1.0));
+
+  // Edge case for zero-duration animation.
+  // crbug.com/954558
+  EXPECT_EQ(0, CalculateCurrentIteration(AnimationEffect::kPhaseAfter,
+                                         /*active_time=*/0.0,
+                                         /*iteration_count=*/1.0,
+                                         /*overall_progress=*/0.0,
                                          /*simple_iteration_progress=*/1.0));
 
   // Otherwise.

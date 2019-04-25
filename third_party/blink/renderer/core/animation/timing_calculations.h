@@ -190,7 +190,7 @@ static inline double CalculateOverallProgress(AnimationEffect::Phase phase,
 
   // 2. Calculate an initial value for overall progress.
   double overall_progress = 0;
-  if (!iteration_duration) {
+  if (IsWithinEpsilon(iteration_duration, 0)) {
     if (phase != AnimationEffect::kPhaseBefore)
       overall_progress = iteration_count;
   } else {
@@ -261,8 +261,10 @@ static inline double CalculateCurrentIteration(
 
   // 3. If the simple iteration progress is 1.0, return floor(overall progress)
   // - 1.
-  if (simple_iteration_progress == 1.0)
-    return floor(overall_progress) - 1;
+  if (simple_iteration_progress == 1.0) {
+    // Safeguard for zero duration animation (crbug.com/954558).
+    return fmax(0, floor(overall_progress) - 1);
+  }
 
   // 4. Otherwise, return floor(overall progress).
   return floor(overall_progress);
