@@ -1511,10 +1511,13 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
 }
 
 void WebViewImpl::DidBeginFrame() {
-  DCHECK(MainFrameImpl()->GetFrame());
-  DocumentLifecycle::AllowThrottlingScope throttling_scope(
-      MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::DidBeginFrame(*MainFrameImpl()->GetFrame());
+  if (!MainFrameImpl() || !MainFrameImpl()->GetFrame())
+    return;
+  if (Document* document = MainFrameImpl()->GetFrame()->GetDocument()) {
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        document->Lifecycle());
+    PageWidgetDelegate::DidBeginFrame(*MainFrameImpl()->GetFrame());
+  }
 }
 
 void WebViewImpl::BeginRafAlignedInput() {
