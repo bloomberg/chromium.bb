@@ -1011,8 +1011,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
 
   EXPECT_EQ(static_cast<gunichar>('d'),
             atk_text_get_character_at_offset(atk_text, 2));
-  EXPECT_EQ(static_cast<gunichar>('A'),
-            atk_text_get_character_at_offset(atk_text, -1));
+  EXPECT_EQ(0u, atk_text_get_character_at_offset(atk_text, -1));
   EXPECT_EQ(0u, atk_text_get_character_at_offset(atk_text, 42342));
   EXPECT_EQ(0x263Au, atk_text_get_character_at_offset(atk_text, 23));
   EXPECT_EQ(static_cast<gunichar>(' '),
@@ -1029,6 +1028,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
 
   auto verify_text_at_offset = [&](const char* expected_text, int offset,
                                    int expected_start, int expected_end) {
+    testing::Message message;
+    message << "While checking at offset " << offset;
+    SCOPED_TRACE(message);
+
     int start = 0, end = 0;
     char* text = atk_text_get_text_at_offset(
         atk_text, offset, ATK_TEXT_BOUNDARY_CHAR, &start, &end);
@@ -1043,6 +1046,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
 
   auto verify_text_after_offset = [&](const char* expected_text, int offset,
                                       int expected_start, int expected_end) {
+    testing::Message message;
+    message << "While checking after offset " << offset;
+    SCOPED_TRACE(message);
+
     int start = 0, end = 0;
     char* text = atk_text_get_text_after_offset(
         atk_text, offset, ATK_TEXT_BOUNDARY_CHAR, &start, &end);
@@ -1059,6 +1066,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
 
   auto verify_text_before_offset = [&](const char* expected_text, int offset,
                                        int expected_start, int expected_end) {
+    testing::Message message;
+    message << "While checking before offset " << offset;
+    SCOPED_TRACE(message);
+
     int start = 0, end = 0;
     char* text = atk_text_get_text_before_offset(
         atk_text, offset, ATK_TEXT_BOUNDARY_CHAR, &start, &end);
@@ -1112,9 +1123,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWordGranularity) {
     char* content = atk_text_get_text_at_offset(atk_text, tests[i].offset,
                                                 ATK_TEXT_BOUNDARY_WORD_START,
                                                 &start_offset, &end_offset);
-    EXPECT_STREQ(content, tests[i].content) << "with test index=" << i;
-    EXPECT_EQ(start_offset, tests[i].start_offset) << "with test index=" << i;
-    EXPECT_EQ(end_offset, tests[i].end_offset) << "with test index=" << i;
+    EXPECT_STREQ(content, tests[i].content);
+    EXPECT_EQ(start_offset, tests[i].start_offset);
+    EXPECT_EQ(end_offset, tests[i].end_offset);
     g_free(content);
   }
 
@@ -1976,24 +1987,46 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
       G_CALLBACK(+[](AtkObject* atkobject, bool* flag) { *flag = true; }),
       &saw_selection_change);
 
+  int selection_start, selection_end;
+
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
   EXPECT_TRUE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 1);
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
   EXPECT_TRUE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 1);
 
   saw_selection_change = false;
-  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 2, 2));
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 2, 4));
   EXPECT_TRUE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 2);
+  EXPECT_EQ(selection_end, 4);
 
   saw_selection_change = false;
   EXPECT_FALSE(atk_text_set_selection(atk_text, 1, 0, 0));
   EXPECT_FALSE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 2);
+  EXPECT_EQ(selection_end, 4);
 
   saw_selection_change = false;
   EXPECT_FALSE(atk_text_set_selection(atk_text, 0, 0, 50));
   EXPECT_FALSE(saw_selection_change);
+
+  saw_selection_change = false;
+  int n_characters = atk_text_get_character_count(atk_text);
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, -1));
+  EXPECT_TRUE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, n_characters);
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));

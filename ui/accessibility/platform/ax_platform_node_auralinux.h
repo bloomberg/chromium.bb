@@ -112,7 +112,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   const AXHypertext& GetAXHypertext();
   const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
-  size_t UnicodeToUTF16OffsetInText(size_t unicode_offset);
+  size_t UnicodeToUTF16OffsetInText(int unicode_offset);
 
   void SetEmbeddedDocument(AtkObject* new_document);
   void SetEmbeddingWindow(AtkObject* new_embedding_window);

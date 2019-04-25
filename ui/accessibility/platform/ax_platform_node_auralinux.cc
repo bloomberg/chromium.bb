@@ -56,6 +56,10 @@ namespace ui {
 
 namespace {
 
+// When accepting input from clients calling the API, an ATK character offset
+// of -1 can often represent the length of the string.
+static const int kStringLengthOffset = -1;
+
 // We must forward declare this because it is used by the traditional GObject
 // type manipulation macros.
 namespace atk_object {
@@ -935,12 +939,12 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
   if (!obj)
     return nullptr;
 
-  if (start_offset < 0)
-    return nullptr;
-
   base::string16 text = obj->GetHypertext();
 
   start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
+  if (start_offset < 0)
+    return nullptr;
+
   if (end_offset < 0) {
     end_offset = text.size();
   } else {
@@ -1090,6 +1094,11 @@ char* GetTextAfterOffset(AtkText* atk_text,
     return nullptr;
   }
 
+  // ATK does not offer support for the special negative index and we don't
+  // want to do arithmetic on that value below.
+  if (offset == kStringLengthOffset)
+    return nullptr;
+
   return GetCharacter(atk_text, offset + 1, start_offset, end_offset);
 }
 
@@ -1103,6 +1112,11 @@ char* GetTextBeforeOffset(AtkText* atk_text,
     *end_offset = -1;
     return nullptr;
   }
+
+  // ATK does not offer support for the special negative index and we don't
+  // want to do arithmetic on that value below.
+  if (offset == kStringLengthOffset)
+    return nullptr;
 
   return GetCharacter(atk_text, offset - 1, start_offset, end_offset);
 }
@@ -3394,8 +3408,10 @@ size_t AXPlatformNodeAuraLinux::UTF16ToUnicodeOffsetInText(
   return unicode_offset;
 }
 
-size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(
-    size_t unicode_offset) {
+size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(int unicode_offset) {
+  if (unicode_offset == kStringLengthOffset)
+    return GetHypertext().size();
+
   size_t utf16_offset = unicode_offset;
   base::OffsetAdjuster::UnadjustOffset(GetHypertextAdjustments(),
                                        &utf16_offset);
@@ -3651,9 +3667,9 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   end_offset = UnicodeToUTF16OffsetInText(end_offset);
 
   base::string16 text = GetHypertext();
-  if (start_offset < 0 || start_offset > static_cast<int>(text.length()))
+  if (start_offset < 0 || start_offset > int{text.length()})
     return false;
-  if (end_offset < 0 || end_offset > static_cast<int>(text.length()))
+  if (end_offset < 0 || end_offset > int{text.length()})
     return false;
 
   bool result = SetTextSelection(start_offset, end_offset);
