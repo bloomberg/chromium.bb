@@ -9,6 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
@@ -18,7 +21,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -59,6 +64,7 @@
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -1837,8 +1843,16 @@ class PreviewsLitePageAndPageHintsBrowserTest
     cmd->AppendSwitch("purge_hint_cache_store");
   }
 
- private:
+  void WriteConfigToFile(const optimization_guide::proto::Configuration& config,
+                         const base::FilePath& filePath) {
+    std::string serialized_config;
+    ASSERT_TRUE(config.SerializeToString(&serialized_config));
+    ASSERT_EQ(static_cast<int32_t>(serialized_config.length()),
+              base::WriteFile(filePath, serialized_config.data(),
+                              serialized_config.length()));
+  }
 
+ private:
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 };
@@ -1847,6 +1861,42 @@ class PreviewsLitePageAndPageHintsBrowserTest
 INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
                          PreviewsLitePageAndPageHintsBrowserTest,
                          testing::Bool());
+
+// Regression test for crbug.com/954554.
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageAndPageHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsServerIsInBloomFilter)) {
+  previews::BloomFilter blacklist_bloom_filter(7, 511);
+  blacklist_bloom_filter.Add(previews_server_url().host());
+  blacklist_bloom_filter.Add("subdomain." + previews_server_url().host());
+
+  std::string blacklist_data((char*)&blacklist_bloom_filter.bytes()[0],
+                             blacklist_bloom_filter.bytes().size());
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::OptimizationFilter* blacklist_proto =
+      config.add_optimization_blacklists();
+  blacklist_proto->set_optimization_type(
+      optimization_guide::proto::LITE_PAGE_REDIRECT);
+  std::unique_ptr<optimization_guide::proto::BloomFilter> bloom_filter_proto =
+      std::make_unique<optimization_guide::proto::BloomFilter>();
+  bloom_filter_proto->set_num_hash_functions(7);
+  bloom_filter_proto->set_num_bits(511);
+  bloom_filter_proto->set_data(blacklist_data);
+  blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  optimization_guide::HintsComponentInfo info(
+      base::Version("2.0.0"),
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
+  ProcessHintsComponent(info);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+}
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageAndPageHintsBrowserTest,
