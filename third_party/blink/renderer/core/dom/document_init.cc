@@ -116,13 +116,13 @@ WebInsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy() const {
   return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
-SecurityContext::InsecureNavigationsSet*
+const SecurityContext::InsecureNavigationsSet*
 DocumentInit::InsecureNavigationsToUpgrade() const {
   DCHECK(MasterDocumentLoader());
   Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
   if (!parent_frame)
     return nullptr;
-  return parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
+  return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
 }
 
 bool DocumentInit::IsHostedInReservedIPRange() const {

@@ -254,7 +254,7 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
 }
 
 void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
-  FeaturePolicy* parent_feature_policy = nullptr;
+  const FeaturePolicy* parent_feature_policy = nullptr;
   if (Parent()) {
     Frame* parent_frame = GetFrame()->Client()->Parent();
     parent_feature_policy =

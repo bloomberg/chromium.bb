@@ -78,8 +78,8 @@ FetchClientSettingsObjectImpl::GetInsecureRequestsPolicy() const {
 
 const FetchClientSettingsObject::InsecureNavigationsSet&
 FetchClientSettingsObjectImpl::GetUpgradeInsecureNavigationsSet() const {
-  return *execution_context_->GetSecurityContext()
-              .InsecureNavigationsToUpgrade();
+  return execution_context_->GetSecurityContext()
+      .InsecureNavigationsToUpgrade();
 }
 
 bool FetchClientSettingsObjectImpl::GetMixedAutoUpgradeOptOut() const {

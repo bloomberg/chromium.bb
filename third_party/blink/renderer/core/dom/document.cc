@@ -7419,7 +7419,7 @@ void Document::DidEnforceInsecureNavigationsSet() {
     return;
   GetFrame()->Client()->DidEnforceInsecureNavigationsSet(
       SecurityContext::SerializeInsecureNavigationSet(
-          *InsecureNavigationsToUpgrade()));
+          InsecureNavigationsToUpgrade()));
 }
 
 void Document::CountDetachingNodeAccessInDOMNodeRemovedHandler() {

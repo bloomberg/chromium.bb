@@ -75,9 +75,8 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
-    EXPECT_EQ(expect_upgrade,
-              document->InsecureNavigationsToUpgrade()->Contains(
-                  document->Url().Host().Impl()->GetHash()));
+    EXPECT_EQ(expect_upgrade, document->InsecureNavigationsToUpgrade().Contains(
+                                  document->Url().Host().Impl()->GetHash()));
   }
 
   // Report-Only
@@ -94,7 +93,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(kLeaveInsecureRequestsAlone,
               execution_context->GetInsecureRequestPolicy());
-    EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade()->Contains(
+    EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade().Contains(
         secure_origin->Host().Impl()->GetHash()));
   }
 }

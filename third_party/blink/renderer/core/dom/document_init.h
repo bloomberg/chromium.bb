@@ -77,7 +77,8 @@ class CORE_EXPORT DocumentInit final {
   WebSandboxFlags GetSandboxFlags() const;
   bool IsHostedInReservedIPRange() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
-  SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;
+  const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
+      const;
 
   Settings* GetSettings() const;
 
