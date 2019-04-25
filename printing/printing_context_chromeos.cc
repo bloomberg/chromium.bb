@@ -126,8 +126,7 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
       ConstructOption(kIppCollate,
                       GetCollateString(settings.collate())));  // collate
   if (settings.send_user_info()) {
-    options.push_back(
-        ConstructOption(kIppDocumentName, base::UTF16ToUTF8(settings.title())));
+    options.push_back(ConstructOption(kIppDocumentName, settings.job_title()));
     options.push_back(
         ConstructOption(kIppRequestingUserName, settings.username()));
   }
