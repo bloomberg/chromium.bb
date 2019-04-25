@@ -120,7 +120,7 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   Cronet_RequestFinishedInfoListenerPtr request_finished_listener_ = nullptr;
 
   // Executor upon which |request_finished_listener_| will run. If
-  // |request_finished_info_| is not nullptr, this won't be nullptr either.
+  // |request_finished_listener_| is not nullptr, this won't be nullptr either.
   //
   // Owned by the app -- must outlive this UrlRequest.
   Cronet_ExecutorPtr request_finished_executor_ = nullptr;
