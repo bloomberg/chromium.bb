@@ -36,7 +36,7 @@ class DWriteFontLookupTableBuilderTest : public testing::Test {
  public:
   DWriteFontLookupTableBuilderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC) {
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
     feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
   }
 
