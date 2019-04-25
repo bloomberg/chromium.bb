@@ -20,7 +20,7 @@ class DataSourceTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_ = {
       base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
+      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 };
 
 class TestDataSourceDelegate : public DataSourceDelegate {
