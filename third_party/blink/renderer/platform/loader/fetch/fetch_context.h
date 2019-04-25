@@ -117,8 +117,6 @@ class PLATFORM_EXPORT FetchContext
                               WebScopedVirtualTimePauser& virtual_time_pauser,
                               ResourceType);
 
-  bool ShouldLoadNewResource(ResourceType) const;
-
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
   virtual void RecordLoadingActivity(const ResourceRequest&,

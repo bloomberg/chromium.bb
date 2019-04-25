@@ -79,10 +79,6 @@ void FetchContext::PrepareRequest(ResourceRequest&,
                                   WebScopedVirtualTimePauser&,
                                   ResourceType) {}
 
-bool FetchContext::ShouldLoadNewResource(ResourceType type) const {
-  return !GetResourceFetcherProperties().ShouldBlockLoadingSubResource();
-}
-
 void FetchContext::RecordLoadingActivity(
     const ResourceRequest&,
     ResourceType,

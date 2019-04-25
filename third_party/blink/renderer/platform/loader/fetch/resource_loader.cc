@@ -937,7 +937,7 @@ void ResourceLoader::DidReceiveResponseInternal(
       DCHECK(!last_request.GetSkipServiceWorker());
       // This code handles the case when a controlling service worker doesn't
       // handle a cross origin request.
-      if (!Context().ShouldLoadNewResource(resource_type)) {
+      if (fetcher_->GetProperties().ShouldBlockLoadingSubResource()) {
         // Cancel the request if we should not trigger a reload now.
         HandleError(
             ResourceError::CancelledError(response.CurrentRequestUrl()));
@@ -1199,7 +1199,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     data_pipe_completion_notifier_->SignalError(BytesConsumer::Error());
 
   if (is_cache_aware_loading_activated_ && error.IsCacheMiss() &&
-      Context().ShouldLoadNewResource(resource_->GetType())) {
+      !fetcher_->GetProperties().ShouldBlockLoadingSubResource()) {
     resource_->WillReloadAfterDiskCacheMiss();
     is_cache_aware_loading_activated_ = false;
     Restart(resource_->GetResourceRequest());

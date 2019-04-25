@@ -1105,14 +1105,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }
 
-TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kImage));
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kRaw));
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kScript));
-}
-
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
   ResourceRequest request(KURL("https://www.example.com/"));
 

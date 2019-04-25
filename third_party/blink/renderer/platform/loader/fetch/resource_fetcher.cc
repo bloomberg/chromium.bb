@@ -1860,8 +1860,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
         revalidation_start_forbidden_scope(resource);
     ScriptForbiddenScope script_forbidden_scope;
 
-    if (!Context().ShouldLoadNewResource(resource->GetType()) &&
-        IsMainThread()) {
+    if (properties_->ShouldBlockLoadingSubResource() && IsMainThread()) {
       GetMemoryCache()->Remove(resource);
       return false;
     }
