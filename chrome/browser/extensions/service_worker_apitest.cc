@@ -12,11 +12,13 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -1131,6 +1133,81 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
   // Check extension shutdown path.
   UnloadExtension(extension->id());
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+}
+
+// Tests that updating an unpacked extension with modified scripts works
+// properly -- we expect that the new script will execute, rather than the
+// previous one.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  constexpr char kManifest1[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker": "script.js"}
+         })";
+  constexpr char kManifest2[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.2",
+           "background": {"service_worker": "script.js"}
+         })";
+
+  std::string id;
+
+  ExtensionService* const extension_service =
+      ExtensionSystem::Get(profile())->extension_service();
+  scoped_refptr<UnpackedInstaller> installer =
+      UnpackedInstaller::Create(extension_service);
+
+  // Set a completion callback so we can get the ID of the extension.
+  installer->set_completion_callback(base::BindLambdaForTesting(
+      [&id](const Extension* extension, const base::FilePath& path,
+            const std::string& error) {
+        ASSERT_TRUE(extension);
+        ASSERT_TRUE(error.empty());
+        id = extension->id();
+      }));
+
+  TestExtensionDir test_dir;
+
+  // Write the manifest and script files and load the extension.
+  test_dir.WriteManifest(kManifest1);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     "chrome.test.sendMessage('ready1');");
+  {
+    ExtensionTestMessageListener ready_listener("ready1", false);
+
+    installer->Load(test_dir.UnpackedPath());
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    ASSERT_FALSE(id.empty());
+  }
+
+  // Rewrite the script file without a version change in the manifest and reload
+  // the extension. The new script should execute.
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     "chrome.test.sendMessage('ready2');");
+  {
+    ExtensionTestMessageListener ready_listener("ready2", false);
+
+    extension_service->ReloadExtension(id);
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+  }
+
+  // Rewrite the manifest and script files with a version change in the manifest
+  // file. After reloading the extension, the new script should execute.
+  test_dir.WriteManifest(kManifest2);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     "chrome.test.sendMessage('ready3');");
+  {
+    ExtensionTestMessageListener ready_listener("ready3", false);
+
+    extension_service->ReloadExtension(id);
+    EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, Events) {

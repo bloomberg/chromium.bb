@@ -218,7 +218,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
                                                       extension->url())
       ->GetServiceWorkerContext()
       ->UnregisterServiceWorker(
-          script_url,
+          extension->url(),
           base::BindOnce(&ServiceWorkerTaskQueue::DidUnregisterServiceWorker,
                          weak_factory_.GetWeakPtr(), extension_id));
 }
@@ -280,6 +280,8 @@ void ServiceWorkerTaskQueue::DidUnregisterServiceWorker(
     const ExtensionId& extension_id,
     bool success) {
   // TODO(lazyboy): Handle success = false case.
+  if (!success)
+    LOG(ERROR) << "Failed to unregister service worker!";
 }
 
 base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
