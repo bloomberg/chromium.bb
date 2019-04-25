@@ -164,7 +164,7 @@ class CONTENT_EXPORT BrowsingInstance final
   // Helper function used by other methods in this class to ensure consistent
   // mapping between |url| and site URL.
   // Note: This should not be used by code outside this class.
-  GURL GetSiteForURL(const GURL url) const;
+  GURL GetSiteForURL(const GURL& url) const;
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.

@@ -183,7 +183,7 @@ BrowsingInstance::~BrowsingInstance() {
     default_process_->RemoveObserver(this);
 }
 
-GURL BrowsingInstance::GetSiteForURL(const GURL url) const {
+GURL BrowsingInstance::GetSiteForURL(const GURL& url) const {
   return SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
 }
 
