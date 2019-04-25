@@ -626,7 +626,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RequestSetBounds(const gfx::Rect& new_bounds) override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
-  bool DidAddMessageToConsole(int32_t level,
+  bool DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;

@@ -149,7 +149,7 @@ class FrameImpl : public fuchsia::web::Frame,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
   bool DidAddMessageToConsole(content::WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;

@@ -23,6 +23,7 @@
 #include "fuchsia/engine/browser/message_port_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/logging/logging_utils.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -634,33 +635,36 @@ bool FrameImpl::ShouldCreateWebContents(
   return false;
 }
 
-bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
-                                       int32_t level,
-                                       const base::string16& message,
-                                       int32_t line_no,
-                                       const base::string16& source_id) {
-  if (log_level_ > level) {
+bool FrameImpl::DidAddMessageToConsole(
+    content::WebContents* source,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
+  logging::LogSeverity log_severity =
+      blink::ConsoleMessageLevelToLogSeverity(log_level);
+  if (log_level_ > log_severity) {
     return false;
   }
 
   std::string formatted_message =
       base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
                          line_no, base::UTF16ToUTF8(message).data());
-  switch (level) {
-    case logging::LOG_VERBOSE:
+  switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
       LOG(INFO) << "debug:" << formatted_message;
       break;
-    case logging::LOG_INFO:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
       LOG(INFO) << "info:" << formatted_message;
       break;
-    case logging::LOG_WARNING:
+    case blink::mojom::ConsoleMessageLevel::kWarning:
       LOG(WARNING) << "warn:" << formatted_message;
       break;
-    case logging::LOG_ERROR:
+    case blink::mojom::ConsoleMessageLevel::kError:
       LOG(ERROR) << "error:" << formatted_message;
       break;
     default:
-      DLOG(WARNING) << "Unknown log level: " << level;
+      DLOG(WARNING) << "Unknown log level: " << log_severity;
       return false;
   }
 

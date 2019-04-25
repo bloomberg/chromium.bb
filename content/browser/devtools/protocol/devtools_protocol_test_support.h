@@ -31,7 +31,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  protected:
   // WebContentsDelegate methods:
   bool DidAddMessageToConsole(WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;

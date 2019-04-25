@@ -29,6 +29,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -111,10 +112,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual const GURL& GetMainFrameLastCommittedURL();
 
   // A message was added to to the console.
-  virtual bool DidAddMessageToConsole(int32_t level,
-                                      const base::string16& message,
-                                      int32_t line_no,
-                                      const base::string16& source_id);
+  virtual bool DidAddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel log_level,
+      const base::string16& message,
+      int32_t line_no,
+      const base::string16& source_id);
 
   // Called when a RenderFrame for |render_frame_host| is created in the
   // renderer process. Use |RenderFrameDeleted| to listen for when this

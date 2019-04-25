@@ -36,7 +36,7 @@ class CastWebView {
     // Returning true indicates that the delegate handled the message.
     // If false is returned the default logging mechanism will be used.
     virtual bool OnAddMessageToConsoleReceived(
-        int32_t level,
+        blink::mojom::ConsoleMessageLevel log_level,
         const base::string16& message,
         int32_t line_no,
         const base::string16& source_id) = 0;

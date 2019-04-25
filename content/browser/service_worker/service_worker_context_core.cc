@@ -792,8 +792,8 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   // BrowserContext and call ContentBrowserClient::IsBuiltinComponent().
   const bool is_builtin_component = HasWebUIScheme(source_url);
 
-  LogConsoleMessage(ConsoleMessageLevelToLogSeverity(message_level), message,
-                    line_number, is_builtin_component, wrapper_->is_incognito(),
+  LogConsoleMessage(message_level, message, line_number, is_builtin_component,
+                    wrapper_->is_incognito(),
                     base::UTF8ToUTF16(source_url.spec()));
 
   observer_list_->Notify(
