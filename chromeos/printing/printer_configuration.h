@@ -151,6 +151,10 @@ class CHROMEOS_EXPORT Printer {
   //   [kIpp, kIpps, kHttp, kHttps, kSocket, kLpd]
   bool HasNetworkProtocol() const;
 
+  // Returns true if the current protocol of the printer is either kUSb or
+  // kIppUsb.
+  bool IsUsbProtocol() const;
+
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
 
