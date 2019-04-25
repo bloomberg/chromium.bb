@@ -13,6 +13,16 @@
 #error "This file requires ARC support."
 #endif
 
+#pragma mark - Factory method
+
+OverlayRequestQueue* OverlayRequestQueue::FromWebState(
+    web::WebState* web_state,
+    OverlayModality modality) {
+  OverlayRequestQueueImpl::Container::CreateForWebState(web_state);
+  return OverlayRequestQueueImpl::Container::FromWebState(web_state)
+      ->QueueForModality(modality);
+}
+
 #pragma mark - OverlayRequestQueueImpl::Container
 
 WEB_STATE_USER_DATA_KEY_IMPL(OverlayRequestQueueImpl::Container)
@@ -33,20 +43,20 @@ OverlayRequestQueueImpl* OverlayRequestQueueImpl::Container::QueueForModality(
 OverlayRequestQueueImpl::OverlayRequestQueueImpl() = default;
 OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;
 
-void OverlayRequestQueueImpl::AddRequest(
-    std::unique_ptr<OverlayRequest> request) {
-  requests_.push_back(std::move(request));
-  for (auto& observer : observers_) {
-    observer.OnRequestAdded(this, requests_.back().get());
-  }
-}
-
 void OverlayRequestQueueImpl::PopRequest() {
   DCHECK(!requests_.empty());
   std::unique_ptr<OverlayRequest> popped_request = std::move(requests_.front());
   requests_.pop_front();
   for (auto& observer : observers_) {
     observer.OnRequestRemoved(this, popped_request.get());
+  }
+}
+
+void OverlayRequestQueueImpl::AddRequest(
+    std::unique_ptr<OverlayRequest> request) {
+  requests_.push_back(std::move(request));
+  for (auto& observer : observers_) {
+    observer.OnRequestAdded(this, requests_.back().get());
   }
 }
 

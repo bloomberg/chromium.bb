@@ -46,14 +46,12 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     observers_.RemoveObserver(observer);
   }
 
-  // Adds |request| to the queue.
-  void AddRequest(std::unique_ptr<OverlayRequest> request);
-
   // Removes the front-most request from the queue and returns it.  Must be
   // called on a non-empty queue.
   void PopRequest();
 
   // OverlayRequestQueue:
+  void AddRequest(std::unique_ptr<OverlayRequest> request) override;
   OverlayRequest* front_request() const override;
 
  private:

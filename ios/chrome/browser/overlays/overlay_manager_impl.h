@@ -40,17 +40,12 @@ class OverlayManagerImpl : public OverlayManager {
   // OverlayManager:
   void AddObserver(OverlayManagerObserver* observer) override;
   void RemoveObserver(OverlayManagerObserver* observer) override;
-  void AddRequest(std::unique_ptr<OverlayRequest> request,
-                  web::WebState* web_state) override;
-  OverlayRequestQueue* GetQueueForWebState(web::WebState* web_state) override;
 
  private:
-  OverlayManagerImpl(OverlayModality modality, WebStateList* web_state_list);
+  OverlayManagerImpl(WebStateList* web_state_list);
 
   // The manager's observers.
   base::ObserverList<OverlayManagerObserver>::Unchecked observers_;
-  // The manager's modality.
-  OverlayModality modality_;
   // The Browser's WebStateList.  Used to update overlay scheduling for when
   // WebStates are removed from the Browser.
   WebStateList* web_state_list_ = nullptr;

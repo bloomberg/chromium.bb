@@ -5,12 +5,25 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_QUEUE_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_QUEUE_H_
 
+#include "ios/chrome/browser/overlays/public/overlay_modality.h"
+
 class OverlayRequest;
+namespace web {
+class WebState;
+}
 
 // A queue of OverlayRequests for a specific WebState.
 class OverlayRequestQueue {
  public:
   virtual ~OverlayRequestQueue() = default;
+
+  // Returns the request queue for |web_state| at |modality|.
+  static OverlayRequestQueue* FromWebState(web::WebState* web_state,
+                                           OverlayModality modality);
+
+  // Adds |request| to be displayed alongside the content area of queue's
+  // corresponding WebState.
+  virtual void AddRequest(std::unique_ptr<OverlayRequest> request) = 0;
 
   // Returns the front request in the queue, or nullptr if the queue is empty.
   // The returned value should not be cached, as it may be destructed if the

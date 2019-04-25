@@ -49,15 +49,3 @@ class OverlayManagerImplTest : public PlatformTest {
   TestBrowser browser_;
   OverlayManagerImpl* manager_;
 };
-
-// Tests that OverlayRequests added to the manager are added to the WebState's
-// OverlayRequestQueue.
-TEST_F(OverlayManagerImplTest, AddRequest) {
-  std::unique_ptr<OverlayRequest> passed_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* request = passed_request.get();
-  manager()->AddRequest(std::move(passed_request), web_state());
-  OverlayRequestQueue* queue = manager()->GetQueueForWebState(web_state());
-  ASSERT_TRUE(queue);
-  EXPECT_EQ(request, queue->front_request());
-}

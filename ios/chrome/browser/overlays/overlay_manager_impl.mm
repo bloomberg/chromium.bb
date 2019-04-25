@@ -38,17 +38,15 @@ OverlayManagerImpl* OverlayManagerImpl::Container::ManagerForModality(
     OverlayModality modality) {
   auto& manager = managers_[modality];
   if (!manager) {
-    manager =
-        base::WrapUnique(new OverlayManagerImpl(modality, web_state_list_));
+    manager = base::WrapUnique(new OverlayManagerImpl(web_state_list_));
   }
   return manager.get();
 }
 
 #pragma mark - OverlayManagerImpl
 
-OverlayManagerImpl::OverlayManagerImpl(OverlayModality modality,
-                                       WebStateList* web_state_list)
-    : modality_(modality), web_state_list_(web_state_list) {
+OverlayManagerImpl::OverlayManagerImpl(WebStateList* web_state_list)
+    : web_state_list_(web_state_list) {
   DCHECK(web_state_list_);
 }
 
@@ -60,19 +58,4 @@ void OverlayManagerImpl::AddObserver(OverlayManagerObserver* observer) {
 
 void OverlayManagerImpl::RemoveObserver(OverlayManagerObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void OverlayManagerImpl::AddRequest(std::unique_ptr<OverlayRequest> request,
-                                    web::WebState* web_state) {
-  OverlayRequestQueueImpl::Container::CreateForWebState(web_state);
-  OverlayRequestQueueImpl::Container::FromWebState(web_state)
-      ->QueueForModality(modality_)
-      ->AddRequest(std::move(request));
-}
-
-OverlayRequestQueue* OverlayManagerImpl::GetQueueForWebState(
-    web::WebState* web_state) {
-  OverlayRequestQueueImpl::Container::CreateForWebState(web_state);
-  return OverlayRequestQueueImpl::Container::FromWebState(web_state)
-      ->QueueForModality(modality_);
 }
