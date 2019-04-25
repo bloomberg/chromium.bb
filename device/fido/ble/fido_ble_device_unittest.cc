@@ -353,4 +353,15 @@ TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
   EXPECT_EQ(FidoDevice::State::kMsgError, device()->state_for_testing());
 }
 
+TEST_F(FidoBleDeviceTest, Timeout) {
+  EXPECT_CALL(*connection(), ConnectPtr);
+  TestDeviceCallbackReceiver callback_receiver;
+  device()->SendPing(std::vector<uint8_t>(), callback_receiver.callback());
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device()->state_for_testing());
+  EXPECT_TRUE(callback_receiver.was_called());
+  EXPECT_FALSE(callback_receiver.value());
+}
+
 }  // namespace device
