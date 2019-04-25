@@ -198,6 +198,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
     StringAppendF(&str, "boot_on_ac=%d ", policy.boot_on_ac());
   }
 
+  if (policy.has_usb_power_share()) {
+    StringAppendF(&str, "usb_power_share=%d ", policy.usb_power_share());
+  }
+
   if (policy.has_reason())
     StringAppendF(&str, "reason=\"%s\" ", policy.reason().c_str());
   base::TrimWhitespaceASCII(str, base::TRIM_TRAILING, &str);
@@ -339,6 +343,8 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   }
 
   prefs_policy_.set_boot_on_ac(values.boot_on_ac);
+
+  prefs_policy_.set_usb_power_share(values.usb_power_share);
 
   prefs_were_set_ = true;
   SendCurrentPolicy();
