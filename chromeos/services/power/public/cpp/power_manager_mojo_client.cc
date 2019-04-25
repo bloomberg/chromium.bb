@@ -27,7 +27,8 @@ PowerManagerMojoClient::~PowerManagerMojoClient() {
 
 void PowerManagerMojoClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
-  // TODO(estade): Call PowerManagerBecameAvailable as appropriate.
+  if (service_available_)
+    observer->PowerManagerBecameAvailable(*service_available_);
 }
 
 void PowerManagerMojoClient::RemoveObserver(Observer* observer) {
@@ -132,6 +133,12 @@ void PowerManagerMojoClient::DeleteArcTimers(const std::string& tag,
                                              VoidDBusMethodCallback callback) {}
 
 void PowerManagerMojoClient::DeferScreenDim() {}
+
+void PowerManagerMojoClient::PowerManagerBecameAvailable(bool available) {
+  service_available_ = available;
+  for (auto& observer : observers_)
+    observer.PowerManagerBecameAvailable(available);
+}
 
 void PowerManagerMojoClient::ScreenBrightnessChanged(
     const power_manager::BacklightBrightnessChange& change) {

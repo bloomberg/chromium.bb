@@ -28,10 +28,13 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CONTROLLER)
   // mojom::PowerManagerMojoController:
   void SetObserver(
       power::mojom::PowerManagerObserverAssociatedPtrInfo client) override;
+  void SetScreenBrightness(
+      const power_manager::SetBacklightBrightnessRequest& request) override;
   void GetScreenBrightnessPercent(
       GetScreenBrightnessPercentCallback callback) override;
 
   // PowerManagerClient::Observer:
+  void PowerManagerBecameAvailable(bool available) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
   void KeyboardBrightnessChanged(

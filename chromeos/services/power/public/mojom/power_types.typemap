@@ -15,4 +15,7 @@ deps = [
 type_mappings = [
   "chromeos.power.mojom.BacklightBrightnessChange=power_manager::BacklightBrightnessChange",
   "chromeos.power.mojom.BacklightBrightnessChangeCause=power_manager::BacklightBrightnessChange_Cause",
+  "chromeos.power.mojom.SetBacklightBrightnessRequest=power_manager::SetBacklightBrightnessRequest",
+  "chromeos.power.mojom.SetBacklightBrightnessRequestCause=power_manager::SetBacklightBrightnessRequest_Cause",
+  "chromeos.power.mojom.SetBacklightBrightnessRequestTransition=power_manager::SetBacklightBrightnessRequest_Transition",
 ]

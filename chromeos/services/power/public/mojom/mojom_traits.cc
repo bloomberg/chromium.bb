@@ -6,96 +6,173 @@
 
 namespace mojo {
 
+using chromeos::power::mojom::BacklightBrightnessChangeCause;
+using chromeos::power::mojom::SetBacklightBrightnessRequestCause;
+using chromeos::power::mojom::SetBacklightBrightnessRequestTransition;
+
 // static
-chromeos::power::mojom::BacklightBrightnessChangeCause
-EnumTraits<chromeos::power::mojom::BacklightBrightnessChangeCause,
+SetBacklightBrightnessRequestTransition
+EnumTraits<SetBacklightBrightnessRequestTransition,
+           power_manager::SetBacklightBrightnessRequest_Transition>::
+    ToMojom(
+        power_manager::SetBacklightBrightnessRequest_Transition transition) {
+  switch (transition) {
+    case power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL:
+      return SetBacklightBrightnessRequestTransition::kGradual;
+    case power_manager::SetBacklightBrightnessRequest_Transition_INSTANT:
+      return SetBacklightBrightnessRequestTransition::kInstant;
+  }
+  NOTREACHED();
+  return SetBacklightBrightnessRequestTransition::kGradual;
+}
+
+// static
+bool EnumTraits<SetBacklightBrightnessRequestTransition,
+                power_manager::SetBacklightBrightnessRequest_Transition>::
+    FromMojom(SetBacklightBrightnessRequestTransition transition,
+              power_manager::SetBacklightBrightnessRequest_Transition* out) {
+  switch (transition) {
+    case SetBacklightBrightnessRequestTransition::kGradual:
+      *out = power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL;
+      return true;
+    case SetBacklightBrightnessRequestTransition::kInstant:
+      *out = power_manager::SetBacklightBrightnessRequest_Transition_INSTANT;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+SetBacklightBrightnessRequestCause
+EnumTraits<SetBacklightBrightnessRequestCause,
+           power_manager::SetBacklightBrightnessRequest_Cause>::
+    ToMojom(power_manager::SetBacklightBrightnessRequest_Cause cause) {
+  switch (cause) {
+    case power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST:
+      return SetBacklightBrightnessRequestCause::kUserRequest;
+    case power_manager::SetBacklightBrightnessRequest_Cause_MODEL:
+      return SetBacklightBrightnessRequestCause::kModel;
+  }
+  NOTREACHED();
+  return SetBacklightBrightnessRequestCause::kUserRequest;
+}
+
+// static
+bool EnumTraits<SetBacklightBrightnessRequestCause,
+                power_manager::SetBacklightBrightnessRequest_Cause>::
+    FromMojom(SetBacklightBrightnessRequestCause cause,
+              power_manager::SetBacklightBrightnessRequest_Cause* out) {
+  switch (cause) {
+    case SetBacklightBrightnessRequestCause::kUserRequest:
+      *out = power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST;
+      return true;
+    case SetBacklightBrightnessRequestCause::kModel:
+      *out = power_manager::SetBacklightBrightnessRequest_Cause_MODEL;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool StructTraits<chromeos::power::mojom::SetBacklightBrightnessRequestDataView,
+                  power_manager::SetBacklightBrightnessRequest>::
+    Read(chromeos::power::mojom::SetBacklightBrightnessRequestDataView data,
+         power_manager::SetBacklightBrightnessRequest* out) {
+  if (data.percent() < 0. || data.percent() > 100.)
+    return false;
+
+  out->set_percent(data.percent());
+
+  power_manager::SetBacklightBrightnessRequest_Transition transition;
+  power_manager::SetBacklightBrightnessRequest_Cause cause;
+  if (!data.ReadTransition(&transition) || !data.ReadCause(&cause))
+    return false;
+
+  out->set_transition(transition);
+  out->set_cause(cause);
+  return true;
+}
+
+// static
+BacklightBrightnessChangeCause
+EnumTraits<BacklightBrightnessChangeCause,
            power_manager::BacklightBrightnessChange_Cause>::
     ToMojom(power_manager::BacklightBrightnessChange_Cause cause) {
   switch (cause) {
     case power_manager::BacklightBrightnessChange_Cause_USER_REQUEST:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kUserRequest;
+      return BacklightBrightnessChangeCause::kUserRequest;
     case power_manager::BacklightBrightnessChange_Cause_USER_ACTIVITY:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kUserActivity;
+      return BacklightBrightnessChangeCause::kUserActivity;
     case power_manager::BacklightBrightnessChange_Cause_USER_INACTIVITY:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kUserInactivity;
+      return BacklightBrightnessChangeCause::kUserInactivity;
     case power_manager::BacklightBrightnessChange_Cause_AMBIENT_LIGHT_CHANGED:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kAmbientLightChanged;
+      return BacklightBrightnessChangeCause::kAmbientLightChanged;
     case power_manager::
         BacklightBrightnessChange_Cause_EXTERNAL_POWER_CONNECTED:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kExternalPowerConnected;
+      return BacklightBrightnessChangeCause::kExternalPowerConnected;
     case power_manager::
         BacklightBrightnessChange_Cause_EXTERNAL_POWER_DISCONNECTED:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kExternalPowerDisconnected;
+      return BacklightBrightnessChangeCause::kExternalPowerDisconnected;
     case power_manager::BacklightBrightnessChange_Cause_FORCED_OFF:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::kForcedOff;
+      return BacklightBrightnessChangeCause::kForcedOff;
     case power_manager::BacklightBrightnessChange_Cause_NO_LONGER_FORCED_OFF:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kNoLongerForcedOff;
+      return BacklightBrightnessChangeCause::kNoLongerForcedOff;
     case power_manager::BacklightBrightnessChange_Cause_OTHER:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::kOther;
+      return BacklightBrightnessChangeCause::kOther;
     case power_manager::BacklightBrightnessChange_Cause_MODEL:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::kModel;
+      return BacklightBrightnessChangeCause::kModel;
     case power_manager::BacklightBrightnessChange_Cause_WAKE_NOTIFICATION:
-      return chromeos::power::mojom::BacklightBrightnessChangeCause::
-          kWakeNotification;
+      return BacklightBrightnessChangeCause::kWakeNotification;
   }
   NOTREACHED();
-  return chromeos::power::mojom::BacklightBrightnessChangeCause::kUserRequest;
+  return BacklightBrightnessChangeCause::kUserRequest;
 }
 
 // static
-bool EnumTraits<chromeos::power::mojom::BacklightBrightnessChangeCause,
+bool EnumTraits<BacklightBrightnessChangeCause,
                 power_manager::BacklightBrightnessChange_Cause>::
-    FromMojom(chromeos::power::mojom::BacklightBrightnessChangeCause cause,
+    FromMojom(BacklightBrightnessChangeCause cause,
               power_manager::BacklightBrightnessChange_Cause* out) {
   switch (cause) {
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::kUserRequest:
+    case BacklightBrightnessChangeCause::kUserRequest:
       *out = power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::kUserActivity:
+    case BacklightBrightnessChangeCause::kUserActivity:
       *out = power_manager::BacklightBrightnessChange_Cause_USER_ACTIVITY;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kUserInactivity:
+    case BacklightBrightnessChangeCause::kUserInactivity:
       *out = power_manager::BacklightBrightnessChange_Cause_USER_INACTIVITY;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kAmbientLightChanged:
+    case BacklightBrightnessChangeCause::kAmbientLightChanged:
       *out =
           power_manager::BacklightBrightnessChange_Cause_AMBIENT_LIGHT_CHANGED;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kExternalPowerConnected:
+    case BacklightBrightnessChangeCause::kExternalPowerConnected:
       *out = power_manager::
           BacklightBrightnessChange_Cause_EXTERNAL_POWER_CONNECTED;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kExternalPowerDisconnected:
+    case BacklightBrightnessChangeCause::kExternalPowerDisconnected:
       *out = power_manager::
           BacklightBrightnessChange_Cause_EXTERNAL_POWER_DISCONNECTED;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::kForcedOff:
+    case BacklightBrightnessChangeCause::kForcedOff:
       *out = power_manager::BacklightBrightnessChange_Cause_FORCED_OFF;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kNoLongerForcedOff:
+    case BacklightBrightnessChangeCause::kNoLongerForcedOff:
       *out =
           power_manager::BacklightBrightnessChange_Cause_NO_LONGER_FORCED_OFF;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::kOther:
+    case BacklightBrightnessChangeCause::kOther:
       *out = power_manager::BacklightBrightnessChange_Cause_OTHER;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::kModel:
+    case BacklightBrightnessChangeCause::kModel:
       *out = power_manager::BacklightBrightnessChange_Cause_MODEL;
       return true;
-    case chromeos::power::mojom::BacklightBrightnessChangeCause::
-        kWakeNotification:
+    case BacklightBrightnessChangeCause::kWakeNotification:
       *out = power_manager::BacklightBrightnessChange_Cause_WAKE_NOTIFICATION;
       return true;
   }

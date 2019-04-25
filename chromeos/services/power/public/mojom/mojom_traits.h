@@ -13,6 +13,50 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<
+    chromeos::power::mojom::SetBacklightBrightnessRequestTransition,
+    power_manager::SetBacklightBrightnessRequest_Transition> {
+  static chromeos::power::mojom::SetBacklightBrightnessRequestTransition
+  ToMojom(power_manager::SetBacklightBrightnessRequest_Transition cause);
+
+  static bool FromMojom(
+      chromeos::power::mojom::SetBacklightBrightnessRequestTransition cause,
+      power_manager::SetBacklightBrightnessRequest_Transition* out);
+};
+
+template <>
+struct EnumTraits<chromeos::power::mojom::SetBacklightBrightnessRequestCause,
+                  power_manager::SetBacklightBrightnessRequest_Cause> {
+  static chromeos::power::mojom::SetBacklightBrightnessRequestCause ToMojom(
+      power_manager::SetBacklightBrightnessRequest_Cause cause);
+
+  static bool FromMojom(
+      chromeos::power::mojom::SetBacklightBrightnessRequestCause cause,
+      power_manager::SetBacklightBrightnessRequest_Cause* out);
+};
+
+template <>
+struct StructTraits<
+    chromeos::power::mojom::SetBacklightBrightnessRequestDataView,
+    power_manager::SetBacklightBrightnessRequest> {
+  static double percent(
+      const power_manager::SetBacklightBrightnessRequest& request) {
+    return request.percent();
+  }
+  static power_manager::SetBacklightBrightnessRequest_Transition transition(
+      const power_manager::SetBacklightBrightnessRequest& request) {
+    return request.transition();
+  }
+  static power_manager::SetBacklightBrightnessRequest_Cause cause(
+      const power_manager::SetBacklightBrightnessRequest& request) {
+    return request.cause();
+  }
+  static bool Read(
+      chromeos::power::mojom::SetBacklightBrightnessRequestDataView data,
+      power_manager::SetBacklightBrightnessRequest* out);
+};
+
+template <>
 struct EnumTraits<chromeos::power::mojom::BacklightBrightnessChangeCause,
                   power_manager::BacklightBrightnessChange_Cause> {
   static chromeos::power::mojom::BacklightBrightnessChangeCause ToMojom(

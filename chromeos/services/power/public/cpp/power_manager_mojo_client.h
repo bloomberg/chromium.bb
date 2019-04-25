@@ -73,6 +73,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CLIENT) PowerManagerMojoClient
   void DeferScreenDim() override;
 
   // power::mojom::PowerManagerObserver:
+  void PowerManagerBecameAvailable(bool available) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
   void KeyboardBrightnessChanged(
@@ -100,6 +101,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CLIENT) PowerManagerMojoClient
 
   // The last proto received via mojo; initially empty.
   base::Optional<power_manager::PowerSupplyProperties> proto_;
+
+  base::Optional<bool> service_available_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerMojoClient);
 };

@@ -28,6 +28,11 @@ void PowerManagerMojoController::SetObserver(
   PowerManagerClient::Get()->AddObserver(this);
 }
 
+void PowerManagerMojoController::SetScreenBrightness(
+    const power_manager::SetBacklightBrightnessRequest& request) {
+  PowerManagerClient::Get()->SetScreenBrightness(request);
+}
+
 void PowerManagerMojoController::GetScreenBrightnessPercent(
     GetScreenBrightnessPercentCallback callback) {
   // This extra thunk is only necessary to convert between
@@ -41,6 +46,10 @@ void PowerManagerMojoController::GetScreenBrightnessPercent(
           std::move(callback).Run({});
       },
       std::move(callback)));
+}
+
+void PowerManagerMojoController::PowerManagerBecameAvailable(bool available) {
+  client_->PowerManagerBecameAvailable(available);
 }
 
 void PowerManagerMojoController::ScreenBrightnessChanged(

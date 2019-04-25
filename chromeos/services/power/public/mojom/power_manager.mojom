@@ -4,6 +4,23 @@
 
 module chromeos.power.mojom;
 
+enum SetBacklightBrightnessRequestTransition {
+  kGradual,
+  kInstant,
+};
+
+enum SetBacklightBrightnessRequestCause {
+  kUserRequest,
+  kModel,
+};
+
+struct SetBacklightBrightnessRequest {
+  // The brightness percent is in the range [0.0, 100.0].
+  double percent;
+  SetBacklightBrightnessRequestTransition transition;
+  SetBacklightBrightnessRequestCause cause;
+};
+
 // TODO(https://crbug.com/657632): This struct wrapper exists to allow the value
 // to be null.
 struct Brightness {
@@ -42,6 +59,7 @@ interface PowerManagerController {
 
   // All following methods and their semantics are copied from the
   // PowerManagerClient interface. Refer to that for documentation.
+  SetScreenBrightness(SetBacklightBrightnessRequest request);
   GetScreenBrightnessPercent() => (Brightness? brightness);
 };
 
@@ -50,6 +68,7 @@ interface PowerManagerController {
 interface PowerManagerObserver {
   // All following methods and their semantics are copied from the
   // PowerManagerClient::Observer interface. Refer to that for documentation.
+  PowerManagerBecameAvailable(bool available);
   ScreenBrightnessChanged(BacklightBrightnessChange change);
   KeyboardBrightnessChanged(BacklightBrightnessChange change);
 };
