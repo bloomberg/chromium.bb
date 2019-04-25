@@ -3962,6 +3962,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacSystemMediaPermissionsInfoUi)},
 #endif  // defined(OS_MACOSX)
 
+    {"enable-send-tab-to-self-broadcast",
+     flag_descriptions::kSendTabToSelfBroadcastName,
+     flag_descriptions::kSendTabToSelfBroadcastDescription, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -605,6 +605,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
+    {"enable-send-tab-to-self-broadcast",
+     flag_descriptions::kSendTabToSelfBroadcastName,
+     flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -13,6 +13,9 @@ namespace send_tab_to_self {
 const base::Feature kSendTabToSelfShowSendingUI{
     "SendTabToSelfShowSendingUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSendTabToSelfBroadcast{"SendTabToSelfBroadcast",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
   syncer::SyncPrefs sync_prefs(prefs);
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&

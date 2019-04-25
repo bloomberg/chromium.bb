@@ -393,6 +393,11 @@ const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
 
+const char kSendTabToSelfBroadcastName[] = "Send tab to self broadcast";
+const char kSendTabToSelfBroadcastDescription[] =
+    "Allows users to broadcast the tab they send to all of their devices "
+    "instead of targetting only one device.";
+
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs that were pushed from another of their "

@@ -319,6 +319,11 @@ extern const char kIgnoresViewportScaleLimitsDescription[];
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
 
+// Title and description for the flag to enable the tab to be broadcasted to all
+// of the users devices.
+extern const char kSendTabToSelfBroadcastName[];
+extern const char kSendTabToSelfBroadcastDescription[];
+
 // Title and description for the flag to enable the send tab to self receiving
 // feature.
 extern const char kSendTabToSelfName[];

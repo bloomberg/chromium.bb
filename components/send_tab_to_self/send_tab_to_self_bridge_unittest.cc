@@ -40,6 +40,7 @@ const char kGuidFormat[] = "guid %d";
 const char kURLFormat[] = "https://www.url%d.com/";
 const char kTitleFormat[] = "title %d";
 const char kDeviceFormat[] = "device %d";
+const char kTargetDeviceCacheGuid[] = "target_device";
 
 sync_pb::SendTabToSelfSpecifics CreateSpecifics(
     int suffix,
@@ -50,6 +51,7 @@ sync_pb::SendTabToSelfSpecifics CreateSpecifics(
   specifics.set_url(base::StringPrintf(kURLFormat, suffix));
   specifics.set_device_name(base::StringPrintf(kDeviceFormat, suffix));
   specifics.set_title(base::StringPrintf(kTitleFormat, suffix));
+  specifics.set_target_device_sync_cache_guid(kTargetDeviceCacheGuid);
   specifics.set_shared_time_usec(
       shared_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   specifics.set_navigation_time_usec(
@@ -77,6 +79,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
+    SetLocalDeviceCacheGuid("target_device");
   }
 
   // Initialized the bridge based on the current local device and store. Can
@@ -149,6 +152,11 @@ class SendTabToSelfBridgeTest : public testing::Test {
                       "target_device");
     bridge_->AddEntry(GURL("http://d.com"), "d", AdvanceAndGetTime(),
                       "target_device");
+  }
+
+  void SetLocalDeviceCacheGuid(const std::string& cache_guid) {
+    ON_CALL(mock_processor_, TrackedCacheGuid())
+        .WillByDefault(Return(cache_guid));
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
@@ -482,6 +490,75 @@ TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
   bridge()->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime(),
                      "target_device");
   EXPECT_EQ(3ul, bridge()->GetAllGuids().size());
+}
+
+TEST_F(SendTabToSelfBridgeTest,
+       NotifyRemoteSendTabToSelfEntryAdded_BroadcastDisabled) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{kSendTabToSelfShowSendingUI},
+      /*disabled_features=*/{kSendTabToSelfBroadcast});
+
+  InitializeBridge();
+  SetLocalDeviceCacheGuid("Device1");
+
+  // Add on entry targeting this device and another targeting another device.
+  syncer::EntityChangeList remote_input;
+  SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device1");
+  SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device2");
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid2", MakeEntityData(entry2)));
+
+  auto metadata_change_list =
+      std::make_unique<syncer::InMemoryMetadataChangeList>();
+
+  // There should only be one entry sent to the observers.
+  EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(1)));
+  bridge()->MergeSyncData(std::move(metadata_change_list),
+                          std::move(remote_input));
+
+  EXPECT_EQ(2ul, bridge()->GetAllGuids().size());
+}
+
+TEST_F(SendTabToSelfBridgeTest,
+       NotifyRemoteSendTabToSelfEntryAdded_BroadcastEnabled) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{kSendTabToSelfShowSendingUI,
+                            kSendTabToSelfBroadcast},
+      /*disabled_features=*/{});
+
+  InitializeBridge();
+  SetLocalDeviceCacheGuid("Device1");
+
+  // Add on entry targeting this device and another targeting another device.
+  syncer::EntityChangeList remote_input;
+  SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device1");
+  SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device2");
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid2", MakeEntityData(entry2)));
+
+  auto metadata_change_list =
+      std::make_unique<syncer::InMemoryMetadataChangeList>();
+
+  // The 2 entries should be sent to the observers.
+  EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(2)));
+  bridge()->MergeSyncData(std::move(metadata_change_list),
+                          std::move(remote_input));
+
+  EXPECT_EQ(2ul, bridge()->GetAllGuids().size());
 }
 
 }  // namespace
