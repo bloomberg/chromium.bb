@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/sync_scheduler.h"
@@ -128,7 +129,9 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
  private:
   // CryptAuthGCMManager::Observer:
   void OnGCMRegistrationResult(bool success) override;
-  void OnReenrollMessage() override;
+  void OnReenrollMessage(
+      const base::Optional<std::string>& session_id,
+      const base::Optional<CryptAuthFeatureType>& feature_type) override;
 
   // Callback when a new keypair is generated.
   void OnKeyPairGenerated(const std::string& public_key,

@@ -290,7 +290,8 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
   }
 
   void RequestEnrollmentThroughGcm() {
-    fake_gcm_manager_.PushReenrollMessage();
+    fake_gcm_manager_.PushReenrollMessage(base::nullopt /* session_id */,
+                                          base::nullopt /* feature_type */);
   }
 
   void VerifyEnrollmentManagerObserversNotifiedOfStart(

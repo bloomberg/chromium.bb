@@ -16,6 +16,7 @@
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -138,7 +139,9 @@ class CryptAuthV2EnrollmentManagerImpl
 
   // CryptAuthGCMManager::Observer:
   void OnGCMRegistrationResult(bool success) override;
-  void OnReenrollMessage() override;
+  void OnReenrollMessage(
+      const base::Optional<std::string>& session_id,
+      const base::Optional<CryptAuthFeatureType>& feature_type) override;
 
   void OnClientAppMetadataFetched(
       const base::Optional<cryptauthv2::ClientAppMetadata>&

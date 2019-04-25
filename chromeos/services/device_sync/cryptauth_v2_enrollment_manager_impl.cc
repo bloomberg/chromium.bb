@@ -370,7 +370,10 @@ void CryptAuthV2EnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   AttemptEnrollment();
 }
 
-void CryptAuthV2EnrollmentManagerImpl::OnReenrollMessage() {
+// TODO(nohle): Route session_id to ClientMetadata.
+void CryptAuthV2EnrollmentManagerImpl::OnReenrollMessage(
+    const base::Optional<std::string>& session_id,
+    const base::Optional<CryptAuthFeatureType>& feature_type) {
   ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 }
 

@@ -459,7 +459,8 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, ReenrollOnGCMPushMessage) {
   enrollment_manager_.Start();
 
   // Simulate receiving a GCM push message, forcing the device to re-enroll.
-  gcm_manager_.PushReenrollMessage();
+  gcm_manager_.PushReenrollMessage(base::nullopt /* session_id */,
+                                   base::nullopt /* feature_type */);
   auto completion_callback =
       FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 
