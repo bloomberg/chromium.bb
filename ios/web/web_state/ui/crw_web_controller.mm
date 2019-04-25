@@ -4908,17 +4908,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         item->SetURL(ExtractUrlFromPlaceholderUrl(webViewURL));
       }
 
-      // TODO(crbug.com/956035): This can probably be removed.
-      if (web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
-          ![_nativeProvider hasControllerForURL:item->GetURL()]) {
-        // WebUIManager is normally created when initiating a new load (in
-        // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
-        // navigation, the WebUI manager would have not been created. Attempt
-        // to create WebUI now. Not all app-specific URLs are WebUI, so WebUI
-        // creation may fail.
-        [self createWebUIForURL:item->GetURL()];
-      }
-
       if ([self shouldLoadURLInNativeView:item->GetURL()]) {
         // Native content may have already been presented if this navigation is
         // started in
