@@ -434,7 +434,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
     auto* resource_timing_notifier =
         MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
     GetWorkerThread()->FetchAndRunClassicScript(
-        script_request_url_, outside_settings_object, resource_timing_notifier,
+        script_request_url_, outside_settings_object, *resource_timing_notifier,
         v8_inspector::V8StackTraceId());
     // We continue in WorkerGlobalScope::EvaluateClassicScript() on the worker
     // thread.

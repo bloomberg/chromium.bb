@@ -522,6 +522,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     return;
   }
 
+  // Currently we don't plumb performance timing for toplevel service worker
+  // script fetch. https://crbug.com/954005
+  auto* resource_timing_notifier =
+      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+
   // If this is a new (not installed) service worker, we are in the Update
   // algorithm here:
   // > Switching on job's worker type, run these substeps with the following
@@ -532,22 +537,18 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // > url, job's client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
 
-    // Currently we don't plumb performance timing for toplevel service worker
-    // script fetch. https://crbug.com/954005
-    case mojom::ScriptType::kClassic: {
-      auto* resource_timing_notifier =
-          MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+    case mojom::ScriptType::kClassic:
       worker_thread_->FetchAndRunClassicScript(
           worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
-          resource_timing_notifier, v8_inspector::V8StackTraceId());
+          *resource_timing_notifier, v8_inspector::V8StackTraceId());
       return;
-    }
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the
     // > to-be-created environment settings object for this service worker.
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
           worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+          *resource_timing_notifier,
           network::mojom::FetchCredentialsMode::kOmit);
       return;
   }

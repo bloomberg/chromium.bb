@@ -70,7 +70,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
             MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
                 *GetExecutionContext());
         GetWorkerThread()->FetchAndRunClassicScript(
-            script_url, outside_settings_object, resource_timing_notifier,
+            script_url, outside_settings_object, *resource_timing_notifier,
             stack_id);
         break;
       }
@@ -90,8 +90,12 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);
     DCHECK(result);
+    auto* resource_timing_notifier =
+        MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+            *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
-        script_url, outside_settings_object, credentials_mode);
+        script_url, outside_settings_object, *resource_timing_notifier,
+        credentials_mode);
   } else {
     NOTREACHED();
   }

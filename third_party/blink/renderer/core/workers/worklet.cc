@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -130,6 +131,10 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
               ->Fetcher()
               ->GetProperties()
               .GetFetchClientSettingsObject());
+  auto* outside_resource_timing_notifier =
+      MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+          *GetExecutionContext());
+
   // Specify TaskType::kInternalLoading because it's commonly used for module
   // loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =
@@ -167,6 +172,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   for (const auto& proxy : proxies_) {
     proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
                                 *outside_settings_object,
+                                *outside_resource_timing_notifier,
                                 outside_settings_task_runner, pending_tasks);
   }
 }

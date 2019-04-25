@@ -36,7 +36,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                      scoped_refptr<WebWorkerFetchContext>,
                      SubresourceFilter*,
                      ContentSecurityPolicy&,
-                     WorkerResourceTimingNotifier*);
+                     WorkerResourceTimingNotifier&);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:

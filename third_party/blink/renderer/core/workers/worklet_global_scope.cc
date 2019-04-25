@@ -196,6 +196,7 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
@@ -218,7 +219,8 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,
   // https://crbug.com/843982)
   auto destination = mojom::RequestContextType::SCRIPT;
-  FetchModuleScript(module_url_record, outside_settings_object, destination,
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkletAddModule, client);
 }

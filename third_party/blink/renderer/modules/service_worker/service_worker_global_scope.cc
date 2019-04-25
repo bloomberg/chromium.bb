@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
@@ -161,7 +162,7 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
 void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kOffMainThreadServiceWorkerScriptFetch));
@@ -210,9 +211,11 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
 void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
   FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
@@ -270,9 +273,15 @@ void ServiceWorkerGlobalScope::RunInstalledModuleScript(
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
+  // Currently we don't plumb performance timing for toplevel service worker
+  // script fetch. https://crbug.com/954005
+  auto* outside_resource_timing_notifier =
+      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+
   // The installed scripts will be read from the service worker script storage
   // during module script fetch.
   FetchModuleScript(module_url_record, outside_settings_object,
+                    *outside_resource_timing_notifier,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
                     ModuleScriptCustomFetchType::kInstalledServiceWorker,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(

@@ -106,7 +106,7 @@ void DedicatedWorkerGlobalScope::Initialize(const KURL& response_url) {
 void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kOffMainThreadDedicatedWorkerScriptFetch));
@@ -141,6 +141,7 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
 void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
@@ -151,7 +152,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
-  FetchModuleScript(module_url_record, outside_settings_object, destination,
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<WorkerModuleTreeClient>(modulator));

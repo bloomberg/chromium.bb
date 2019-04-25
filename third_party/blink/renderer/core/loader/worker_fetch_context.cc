@@ -39,17 +39,15 @@ WorkerFetchContext::WorkerFetchContext(
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
     ContentSecurityPolicy& content_security_policy,
-    WorkerResourceTimingNotifier* resource_timing_notifier)
+    WorkerResourceTimingNotifier& resource_timing_notifier)
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       content_security_policy_(&content_security_policy),
-      resource_timing_notifier_(resource_timing_notifier),
+      resource_timing_notifier_(&resource_timing_notifier),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
-  // TODO(bashi): Add DCHECK for |resource_timing_notifier| once all callsites
-  // of this ctor pass a valid WorkerResourceTimingNotifier.
 }
 
 KURL WorkerFetchContext::GetSiteForCookies() const {
@@ -224,15 +222,12 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // worklets.
   if (global_scope_->IsWorkletGlobalScope())
     return;
-  if (resource_timing_notifier_) {
-    const SecurityOrigin* security_origin = GetResourceFetcherProperties()
-                                                .GetFetchClientSettingsObject()
-                                                .GetSecurityOrigin();
-    WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
-        *security_origin, info, *global_scope_);
-    resource_timing_notifier_->AddResourceTiming(web_info,
-                                                 info.InitiatorType());
-  }
+  const SecurityOrigin* security_origin = GetResourceFetcherProperties()
+                                              .GetFetchClientSettingsObject()
+                                              .GetSecurityOrigin();
+  WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
+      *security_origin, info, *global_scope_);
+  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType());
 }
 
 void WorkerFetchContext::PopulateResourceRequest(

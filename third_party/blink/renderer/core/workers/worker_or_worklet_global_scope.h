@@ -114,7 +114,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // dependencies.
   ResourceFetcher* CreateOutsideSettingsFetcher(
       const FetchClientSettingsObject&,
-      WorkerResourceTimingNotifier*);
+      WorkerResourceTimingNotifier&);
 
   const String Name() const { return name_; }
   const base::UnguessableToken& GetParentDevToolsToken() {
@@ -146,6 +146,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   void FetchModuleScript(const KURL& module_url_record,
                          const FetchClientSettingsObjectSnapshot&,
+                         WorkerResourceTimingNotifier&,
                          mojom::RequestContextType destination,
                          network::mojom::FetchCredentialsMode,
                          ModuleScriptCustomFetchType,
@@ -158,7 +159,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
                                          ContentSecurityPolicy&,
-                                         WorkerResourceTimingNotifier*);
+                                         WorkerResourceTimingNotifier&);
 
   bool web_fetch_context_initialized_ = false;
 

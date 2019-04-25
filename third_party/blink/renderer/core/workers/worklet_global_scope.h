@@ -98,6 +98,7 @@ class CORE_EXPORT WorkletGlobalScope
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 

@@ -278,14 +278,14 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
       MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(*this);
   inside_settings_resource_fetcher_ = CreateFetcherInternal(
       *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this),
-      *GetContentSecurityPolicy(), resource_timing_notifier);
+      *GetContentSecurityPolicy(), *resource_timing_notifier);
   return inside_settings_resource_fetcher_;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     const FetchClientSettingsObject& fetch_client_settings_object,
     ContentSecurityPolicy& content_security_policy,
-    WorkerResourceTimingNotifier* resource_timing_notifier) {
+    WorkerResourceTimingNotifier& resource_timing_notifier) {
   DCHECK(IsContextThread());
   InitializeWebFetchContextIfNeeded();
   ResourceFetcher* fetcher = nullptr;
@@ -327,7 +327,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
     const FetchClientSettingsObject& outside_settings_object,
-    WorkerResourceTimingNotifier* outside_resource_timing_notifier) {
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier) {
   DCHECK(IsContextThread());
 
   auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -419,6 +419,7 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    WorkerResourceTimingNotifier& resource_timing_notifier,
     mojom::RequestContextType destination,
     network::mojom::FetchCredentialsMode credentials_mode,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -444,11 +445,10 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
-  // TODO(bashi): Pass WorkerResourceTimingNotifier. It should be plumbed from
-  // WorkerThread::FetchAndRunModuleScript().
   modulator->FetchTree(
       module_url_record,
-      CreateOutsideSettingsFetcher(fetch_client_settings_object, nullptr),
+      CreateOutsideSettingsFetcher(fetch_client_settings_object,
+                                   resource_timing_notifier),
       destination, options, custom_fetch_type, client);
 }
 
