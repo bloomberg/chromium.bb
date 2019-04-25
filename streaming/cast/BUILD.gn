@@ -24,14 +24,17 @@ source_set("cast") {
     "ssrc.h",
   ]
 
+  # TODO(btolsch): Here and elsewhere, this begs the question of whether we
+  # should either change //base to //osp_base (like webrtc) or maybe introduce
+  # an osp_source_set template (also like webrtc).
+  if (build_with_chromium) {
+    configs -= [ "//build/config/compiler:default_include_dirs" ]
+  }
+  configs += [ "../..:root_config_overrides" ]
   public_deps = [
     "../../third_party/abseil",
+    "../../third_party/boringssl",
   ]
-  if (build_with_chromium) {
-    public_deps += [ "//third_party/boringssl" ]
-  } else {
-    public_deps += [ "../../third_party/boringssl" ]
-  }
 
   deps = [
     "../../platform",
@@ -49,6 +52,10 @@ source_set("cast_unittests") {
     "ssrc_unittest.cc",
   ]
 
+  if (build_with_chromium) {
+    configs -= [ "//build/config/compiler:default_include_dirs" ]
+  }
+  configs += [ "../..:root_config_overrides" ]
   deps = [
     ":cast",
     "../../third_party/googletest:gtest",

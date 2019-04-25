@@ -18,8 +18,6 @@ source_set("platform") {
     "api/task_runner.h",
     "api/task_runner_factory.h",
     "api/time.h",
-    "base/event_loop.cc",
-    "base/event_loop.h",
     "base/time.cc",
   ]
 
@@ -36,6 +34,8 @@ source_set("platform") {
     public_deps += [ "//base" ]
   } else {  # !build_with_chromium
     sources += [
+      "base/event_loop.cc",
+      "base/event_loop.h",
       "base/logging.cc",
       "base/task_runner_factory.cc",
       "base/task_runner_impl.cc",
@@ -96,7 +96,7 @@ source_set("platform_unittests") {
 
   deps = [
     ":platform",
-    "//third_party/googletest:gtest",
+    "../third_party/googletest:gtest",
   ]
 
   configs += [ "..:root_config_overrides" ]

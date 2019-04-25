@@ -77,7 +77,7 @@ def validateCddlInput(cddlFile):
 def echoAndRunCommand(commandArray, allowFailure, logfile = None):
   print("\tExecuting Command: '%s'" % " ".join(commandArray))
   if logfile != None:
-    process = subprocess.Popen(commandArray, stdout=logfile)
+    process = subprocess.Popen(commandArray, stdout=logfile, stderr=logfile)
     process.wait()
     logfile.flush()
   else:
@@ -87,7 +87,6 @@ def echoAndRunCommand(commandArray, allowFailure, logfile = None):
   if returncode != None and returncode != 0:
     if not allowFailure:
       sys.exit("\t\tERROR: Command failed with error code: '%i'!" % returncode)
-      
     else:
       print("\t\tWARNING: Command failed with error code: '%i'!" % returncode)
 

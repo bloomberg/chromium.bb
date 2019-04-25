@@ -29,7 +29,7 @@ namespace presentation {
   static constexpr MessageDecodingFunction<ResponseMsgType> kDecoder = \
       &msgs::DecodePresentation##base_name##Response;                  \
   static constexpr msgs::Type kResponseType =                          \
-      msgs::Type::kPresentation##base_name##Response;
+      msgs::Type::kPresentation##base_name##Response
 
 struct StartRequest {
   DECLARE_MSG_REQUEST_RESPONSE(Start);

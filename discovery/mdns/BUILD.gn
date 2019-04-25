@@ -28,8 +28,8 @@ source_set("mdns_unittests") {
 
   deps = [
     ":mdns_interface",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest",
+    "../../third_party/googletest:gmock",
+    "../../third_party/googletest:gtest",
   ]
   configs += [ "../..:root_config_overrides" ]
 
