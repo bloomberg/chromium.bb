@@ -912,6 +912,15 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
+  // If detached, we do very early return here to skip all processing below.
+  if (properties_->IsDetached()) {
+    return ResourceForBlockedRequest(
+        params, factory, ResourceRequestBlockedReason::kOther, client);
+  }
+  // Otherwise, we assume we can send network requests and the fetch client's
+  // settings object's origin is non-null.
+  DCHECK(properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
+
   uint64_t identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   resource_request.SetInspectorId(identifier);
