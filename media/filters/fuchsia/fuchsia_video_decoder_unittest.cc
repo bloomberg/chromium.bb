@@ -101,7 +101,8 @@ TEST_F(FuchsiaVideoDecoderTest, DISABLED_VP9) {
   EXPECT_EQ(num_output_frames_, 1);
 }
 
-TEST_F(FuchsiaVideoDecoderTest, H264) {
+// Disabled to workaround https://crbug.com/956446
+TEST_F(FuchsiaVideoDecoderTest, DISABLED_H264) {
   ASSERT_TRUE(Initialize(TestVideoConfig::NormalH264()));
 
   ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-0") == DecodeStatus::OK);
