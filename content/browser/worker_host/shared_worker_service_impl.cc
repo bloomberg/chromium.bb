@@ -224,8 +224,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     const blink::MessagePortChannel& message_port,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory,
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -262,8 +261,7 @@ void SharedWorkerServiceImpl::StartWorker(
     const blink::MessagePortChannel& message_port,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory,
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

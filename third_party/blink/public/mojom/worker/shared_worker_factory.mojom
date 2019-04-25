@@ -55,12 +55,7 @@ interface SharedWorkerFactory {
       // usual loader or the controller service worker if appropriate).
       //
       // This is only non-null when NetworkService is disabled.
-      //
-      // TODO(leonhsl): It doesn't really need to be associated. Make it
-      // non-associated and update
-      // ServiceWorkerNetworkProviderForWorker::script_loader_factory_
-      // as well.
-      associated network.mojom.URLLoaderFactory? main_script_loader_factory,
+      network.mojom.URLLoaderFactory? main_script_loader_factory,
 
       // NetworkService (PlzWorker):
       // Used for passing a main script pre-requested by the browser process and

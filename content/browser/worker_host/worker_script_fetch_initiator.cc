@@ -35,7 +35,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
@@ -338,8 +337,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   }
 
   // Create the WorkerScriptLoaderFactory.
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
-  mojo::MakeStrongAssociatedBinding(
+  network::mojom::URLLoaderFactoryPtr main_script_loader_factory;
+  mojo::MakeStrongBinding(
       std::make_unique<WorkerScriptLoaderFactory>(
           process_id, std::move(service_worker_host), std::move(appcache_host),
           resource_context_getter, std::move(url_loader_factory)),
@@ -357,8 +356,7 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory,
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

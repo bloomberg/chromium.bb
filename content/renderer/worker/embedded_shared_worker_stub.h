@@ -66,8 +66,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
       int appcache_host_id,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          main_script_loader_factory,
+      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
@@ -133,7 +132,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   // NetworkService: The URLLoaderFactory used for loading the shared worker
   // main script.
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory_;
+  network::mojom::URLLoaderFactoryPtr main_script_loader_factory_;
 
   // NetworkService:
   blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;

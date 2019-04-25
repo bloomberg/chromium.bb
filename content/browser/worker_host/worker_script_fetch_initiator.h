@@ -46,7 +46,7 @@ class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo,
+      network::mojom::URLLoaderFactoryPtr,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
       blink::mojom::ControllerServiceWorkerInfoPtr,
@@ -97,8 +97,7 @@ class WorkerScriptFetchInitiator {
       CompletionCallback callback,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          main_script_loader_factory,
+      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

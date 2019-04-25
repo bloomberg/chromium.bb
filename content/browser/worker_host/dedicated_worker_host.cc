@@ -143,8 +143,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          main_script_loader_factory,
+      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

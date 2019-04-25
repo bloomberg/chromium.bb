@@ -24,8 +24,7 @@ namespace content {
 std::unique_ptr<ServiceWorkerNetworkProviderForWorker>
 ServiceWorkerNetworkProviderForWorker::Create(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        script_loader_factory_info,
+    network::mojom::URLLoaderFactoryPtr script_loader_factory,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
     bool is_secure_context,
@@ -37,10 +36,9 @@ ServiceWorkerNetworkProviderForWorker::Create(
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
       std::move(controller_info), std::move(fallback_loader_factory));
-  if (script_loader_factory_info.is_valid()) {
-    provider->script_loader_factory_.Bind(
-        std::move(script_loader_factory_info));
-  }
+  if (script_loader_factory)
+    provider->script_loader_factory_ = std::move(script_loader_factory);
+
   return provider;
 }
 

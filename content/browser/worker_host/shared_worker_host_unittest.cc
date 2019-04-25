@@ -23,7 +23,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
@@ -73,8 +72,7 @@ class SharedWorkerHostTest : public testing::Test {
   void StartWorker(SharedWorkerHost* host,
                    blink::mojom::SharedWorkerFactoryPtr factory) {
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr provider_info = nullptr;
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory;
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory;
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params;
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories;
@@ -106,7 +104,7 @@ class SharedWorkerHostTest : public testing::Test {
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
           &provider_info);
 
-      mojo::MakeStrongAssociatedBinding(
+      mojo::MakeStrongBinding(
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&main_script_loader_factory));
 
