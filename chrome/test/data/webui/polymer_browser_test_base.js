@@ -38,16 +38,15 @@ PolymerTest.prototype = {
   runAccessibilityChecks: false,
 
   /**
-   * Files that need not be compiled. Should be overridden to use correct
-   * relative paths with PolymerTest.getLibraries.
+   * Files that need not be compiled.
    * @override
    */
   extraLibraries: [
-    'ui/webui/resources/js/cr.js',
-    'ui/webui/resources/js/promise_resolver.js',
-    'third_party/mocha/mocha.js',
-    'chrome/test/data/webui/mocha_adapter.js',
-    'third_party/polymer/v1_0/components-chromium/iron-test-helpers/' +
+    '//ui/webui/resources/js/cr.js',
+    '//ui/webui/resources/js/promise_resolver.js',
+    '//third_party/mocha/mocha.js',
+    '//chrome/test/data/webui/mocha_adapter.js',
+    '//third_party/polymer/v1_0/components-chromium/iron-test-helpers/' +
         'mock-interactions.js',
   ],
 
@@ -177,17 +176,12 @@ PolymerTest.clearBody = function() {
 };
 
 /**
- * Helper function to return the list of extra libraries relative to basePath.
+ * Just an alias for PolymerTest.prototype.extraLibraries.
+ * TODO(olsen): Remove this function since it is no longer needed - since paths
+ * no longer need to be re-written in terms of the ROOT_PATH.
  */
-PolymerTest.getLibraries = function(basePath) {
-  // Ensure basePath ends in '/'.
-  if (basePath.length && basePath[basePath.length - 1] != '/') {
-    basePath += '/';
-  }
-
-  return PolymerTest.prototype.extraLibraries.map(function(library) {
-    return basePath + library;
-  });
+PolymerTest.getLibraries = function() {
+  return PolymerTest.prototype.extraLibraries;
 };
 
 /*
