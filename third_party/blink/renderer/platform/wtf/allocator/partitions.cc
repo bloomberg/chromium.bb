@@ -39,6 +39,9 @@
 
 namespace WTF {
 
+const base::Feature kNoPartitionAllocDecommit{
+    "NoPartitionAllocDecommit", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
@@ -88,8 +91,10 @@ void Partitions::Initialize(
 
 void Partitions::DecommitFreeableMemory() {
   CHECK(IsMainThread());
-  if (!initialized_)
+  if (!initialized_ ||
+      base::FeatureList::IsEnabled(kNoPartitionAllocDecommit)) {
     return;
+  }
 
   ArrayBufferPartition()->PurgeMemory(
       base::PartitionPurgeDecommitEmptyPages |
