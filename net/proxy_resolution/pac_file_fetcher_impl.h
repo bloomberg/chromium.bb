@@ -81,6 +81,7 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   void OnAuthRequired(URLRequest* request,
                       const AuthChallengeInfo& auth_info) override;
   void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
                              const SSLInfo& ssl_info,
                              bool is_hsts_ok) override;
   void OnResponseStarted(URLRequest* request, int net_error) override;

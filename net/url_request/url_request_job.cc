@@ -361,9 +361,10 @@ void URLRequestJob::NotifyCertificateRequested(
   request_->NotifyCertificateRequested(cert_request_info);
 }
 
-void URLRequestJob::NotifySSLCertificateError(const SSLInfo& ssl_info,
+void URLRequestJob::NotifySSLCertificateError(int net_error,
+                                              const SSLInfo& ssl_info,
                                               bool fatal) {
-  request_->NotifySSLCertificateError(ssl_info, fatal);
+  request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
 }
 
 bool URLRequestJob::CanGetCookies(const CookieList& cookie_list) const {

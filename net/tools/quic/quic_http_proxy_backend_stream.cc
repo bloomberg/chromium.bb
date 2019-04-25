@@ -226,6 +226,7 @@ void QuicHttpProxyBackendStream::OnCertificateRequested(
 
 void QuicHttpProxyBackendStream::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   request->Cancel();

@@ -264,6 +264,7 @@ void TestDelegate::OnAuthRequired(URLRequest* request,
 }
 
 void TestDelegate::OnSSLCertificateError(URLRequest* request,
+                                         int net_error,
                                          const SSLInfo& ssl_info,
                                          bool fatal) {
   // The caller can control whether it needs all SSL requests to go through,

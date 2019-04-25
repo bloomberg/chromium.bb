@@ -788,11 +788,12 @@ class MockCertificateReportSender
 class OCSPErrorTestDelegate : public TestDelegate {
  public:
   void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
                              const SSLInfo& ssl_info,
                              bool fatal) override {
     ssl_info_ = ssl_info;
     on_ssl_certificate_error_called_ = true;
-    TestDelegate::OnSSLCertificateError(request, ssl_info, fatal);
+    TestDelegate::OnSSLCertificateError(request, net_error, ssl_info, fatal);
   }
 
   bool on_ssl_certificate_error_called() {
@@ -9903,6 +9904,51 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
       }
     }
   }
+}
+
+// A TestDelegate used to test that an appropriate net error code is provided
+// when an SSL certificate error occurs.
+class SSLNetErrorTestDelegate : public TestDelegate {
+ public:
+  void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
+                             const SSLInfo& ssl_info,
+                             bool fatal) override {
+    net_error_ = net_error;
+    on_ssl_certificate_error_called_ = true;
+    TestDelegate::OnSSLCertificateError(request, net_error, ssl_info, fatal);
+  }
+
+  bool on_ssl_certificate_error_called() {
+    return on_ssl_certificate_error_called_;
+  }
+
+  int net_error() { return net_error_; }
+
+ private:
+  bool on_ssl_certificate_error_called_ = false;
+  int net_error_ = net::OK;
+};
+
+// Tests that the URLRequest::Delegate receives an appropriate net error code
+// when an SSL certificate error occurs.
+TEST_F(HTTPSRequestTest, SSLNetErrorReportedToDelegate) {
+  EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  SSLNetErrorTestDelegate d;
+  std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+      test_server.GetURL("/defaultresponse"), DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->Start();
+  EXPECT_TRUE(r->is_pending());
+  d.RunUntilComplete();
+
+  EXPECT_TRUE(d.on_ssl_certificate_error_called());
+  EXPECT_EQ(net::ERR_CERT_DATE_INVALID, d.net_error());
 }
 
 // TODO(svaldez): iOS tests are flaky with EmbeddedTestServer and transport

@@ -93,6 +93,7 @@ class Delegate : public URLRequest::Delegate {
                               SSLCertRequestInfo* cert_request_info) override;
 
   void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
                              const SSLInfo& ssl_info,
                              bool fatal) override;
 
@@ -453,10 +454,11 @@ void Delegate::OnCertificateRequested(URLRequest* request,
 }
 
 void Delegate::OnSSLCertificateError(URLRequest* request,
+                                     int net_error,
                                      const SSLInfo& ssl_info,
                                      bool fatal) {
   owner_->connect_delegate()->OnSSLCertificateError(
-      std::make_unique<SSLErrorCallbacks>(request), ssl_info, fatal);
+      std::make_unique<SSLErrorCallbacks>(request), net_error, ssl_info, fatal);
 }
 
 void Delegate::OnReadCompleted(URLRequest* request, int bytes_read) {

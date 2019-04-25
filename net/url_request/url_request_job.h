@@ -264,7 +264,9 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
 
   // Notifies the job about an SSL certificate error.
-  void NotifySSLCertificateError(const SSLInfo& ssl_info, bool fatal);
+  void NotifySSLCertificateError(int net_error,
+                                 const SSLInfo& ssl_info,
+                                 bool fatal);
 
   // Delegates to URLRequest.
   bool CanGetCookies(const CookieList& cookie_list) const;

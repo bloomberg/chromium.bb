@@ -2958,7 +2958,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
 
   CreateChannelAndConnect();
   connect_data_.argument_saver.connect_delegate->OnSSLCertificateError(
-      std::move(fake_callbacks), ssl_info, fatal);
+      std::move(fake_callbacks), net::ERR_CERT_DATE_INVALID, ssl_info, fatal);
 }
 
 // Calls to OnAuthRequired() must be passed through to the event interface.

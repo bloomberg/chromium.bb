@@ -166,6 +166,7 @@ class HttpProtocolHandlerCore
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
                              const SSLInfo& ssl_info,
                              bool fatal) override;
   void OnResponseStarted(URLRequest* request, int net_error) override;
@@ -472,6 +473,7 @@ void HttpProtocolHandlerCore::HostStateCallback(bool carryOn) {
 }
 
 void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
+                                                    int net_error,
                                                     const SSLInfo& ssl_info,
                                                     bool fatal) {
   DCHECK(thread_checker_.CalledOnValidThread());

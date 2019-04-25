@@ -865,7 +865,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     // Maybe overridable, maybe not. Ask the delegate to decide.
     TransportSecurityState* state = context->transport_security_state();
     NotifySSLCertificateError(
-        transaction_->GetResponseInfo()->ssl_info,
+        result, transaction_->GetResponseInfo()->ssl_info,
         state->ShouldSSLErrorsBeFatal(request_info_.url.host()));
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(

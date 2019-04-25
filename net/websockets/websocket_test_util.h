@@ -193,6 +193,7 @@ class DummyConnectDelegate : public WebSocketStream::ConnectDelegate {
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {}
   int OnAuthRequired(const AuthChallengeInfo& auth_info,

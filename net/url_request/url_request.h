@@ -209,6 +209,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // preference, or built-in policy). In this case, errors must not be
     // bypassable by the user.
     virtual void OnSSLCertificateError(URLRequest* request,
+                                       int net_error,
                                        const SSLInfo& ssl_info,
                                        bool fatal);
 
@@ -827,7 +828,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
   void NotifyAuthRequiredComplete(NetworkDelegate::AuthRequiredResponse result);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
-  void NotifySSLCertificateError(const SSLInfo& ssl_info, bool fatal);
+  void NotifySSLCertificateError(int net_error,
+                                 const SSLInfo& ssl_info,
+                                 bool fatal);
   void NotifyReadCompleted(int bytes_read);
 
   // These functions delegate to |network_delegate_| if it is not NULL.

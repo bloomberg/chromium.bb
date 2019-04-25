@@ -442,6 +442,7 @@ void ResourceLoader::OnCertificateRequested(
 }
 
 void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
+                                           int net_error,
                                            const net::SSLInfo& ssl_info,
                                            bool fatal) {
   ResourceRequestInfoImpl* info = GetRequestInfo();

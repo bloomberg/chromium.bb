@@ -218,10 +218,10 @@ void CronetURLRequest::NetworkTasks::OnCertificateRequested(
 
 void CronetURLRequest::NetworkTasks::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  int net_error = net::MapCertStatusToNetError(ssl_info.cert_status);
   ReportError(request, net_error);
   request->Cancel();
 }

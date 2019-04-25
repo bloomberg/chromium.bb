@@ -209,6 +209,7 @@ class TestDelegate : public URLRequest::Delegate {
   // (Unit tests use this as a post-condition.) But for policy, this method
   // consults |allow_certificate_errors_|.
   void OnSSLCertificateError(URLRequest* request,
+                             int net_error,
                              const SSLInfo& ssl_info,
                              bool fatal) override;
   void OnResponseStarted(URLRequest* request, int net_error) override;

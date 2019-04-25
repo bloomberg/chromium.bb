@@ -94,6 +94,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void OnCertificateRequested(net::URLRequest* request,
                               net::SSLCertRequestInfo* info) override;
   void OnSSLCertificateError(net::URLRequest* request,
+                             int net_error,
                              const net::SSLInfo& info,
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;

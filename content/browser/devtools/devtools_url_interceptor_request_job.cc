@@ -58,6 +58,7 @@ class DevToolsURLInterceptorRequestJob::SubRequest
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(net::URLRequest* request,
+                             int net_error,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* request, int net_error) override;
@@ -201,9 +202,11 @@ void DevToolsURLInterceptorRequestJob::SubRequest::OnCertificateRequested(
 
 void DevToolsURLInterceptorRequestJob::SubRequest::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  devtools_interceptor_request_job_->NotifySSLCertificateError(ssl_info, fatal);
+  devtools_interceptor_request_job_->NotifySSLCertificateError(net_error,
+                                                               ssl_info, fatal);
 }
 
 void DevToolsURLInterceptorRequestJob::SubRequest::OnResponseStarted(

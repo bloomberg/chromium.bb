@@ -141,6 +141,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(net::URLRequest* request,
+                             int net_error,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* request, int net_error) override;
@@ -326,9 +327,10 @@ void CastExtensionURLRequestJob::OnCertificateRequested(
 
 void CastExtensionURLRequestJob::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  NotifySSLCertificateError(ssl_info, fatal);
+  NotifySSLCertificateError(net_error, ssl_info, fatal);
 }
 
 void CastExtensionURLRequestJob::OnResponseStarted(net::URLRequest* request,

@@ -813,6 +813,7 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
 }
 
 void URLLoader::OnSSLCertificateError(net::URLRequest* request,
+                                      int net_error,
                                       const net::SSLInfo& ssl_info,
                                       bool fatal) {
   if (!network_service_client_) {

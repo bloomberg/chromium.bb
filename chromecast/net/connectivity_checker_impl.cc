@@ -221,6 +221,7 @@ void ConnectivityCheckerImpl::OnReadCompleted(net::URLRequest* request,
 
 void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   if (url_request_context_->http_transaction_factory()

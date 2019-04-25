@@ -199,6 +199,7 @@ class WebSocketChannel::ConnectDelegate
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {
     creator_->OnSSLCertificateError(std::move(ssl_error_callbacks), ssl_info,
