@@ -83,6 +83,11 @@ public abstract class CardViewHolder
     }
 
     @Override
+    public String getContextMenuTitle() {
+        return null;
+    }
+
+    @Override
     public boolean isDismissable() {
         int position = getAdapterPosition();
         if (position == RecyclerView.NO_POSITION) return false;

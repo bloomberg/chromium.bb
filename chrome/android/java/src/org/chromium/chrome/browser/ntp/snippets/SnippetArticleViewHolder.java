@@ -105,6 +105,11 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     }
 
     @Override
+    public String getContextMenuTitle() {
+        return mArticle.mTitle;
+    }
+
+    @Override
     public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
         Boolean isSupported = mCategoryInfo.isContextMenuItemSupported(menuItemId);
         if (isSupported != null) return isSupported;

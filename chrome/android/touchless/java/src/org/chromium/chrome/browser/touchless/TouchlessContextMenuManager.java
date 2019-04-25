@@ -57,7 +57,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
 
         PropertyModel[] menuItemsArray = new PropertyModel[menuItems.size()];
         menuItemsArray = menuItems.toArray(menuItemsArray);
-        mTouchlessMenuModel = buildMenuModel(context, menuItemsArray);
+        mTouchlessMenuModel =
+                buildMenuModel(context, delegate.getContextMenuTitle(), menuItemsArray);
         mModalDialogManager = modalDialogManager;
         mModalDialogManager.showDialog(mTouchlessMenuModel, ModalDialogManager.ModalDialogType.APP);
 
@@ -99,8 +100,10 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     }
 
     /** Builds PropertyModel for context menu from list of PropertyModels for individual items. */
-    private PropertyModel buildMenuModel(Context context, PropertyModel[] menuItems) {
-        return new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
+    private PropertyModel buildMenuModel(Context context, String title, PropertyModel[] menuItems) {
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS);
+        builder.with(TouchlessDialogProperties.IS_FULLSCREEN, true)
                 .with(ModalDialogProperties.CONTROLLER,
                         new ModalDialogProperties.Controller() {
                             @Override
@@ -116,8 +119,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                         org.chromium.chrome.R.string.cancel)
                 .with(TouchlessDialogProperties.CANCEL_ACTION, (v) -> closeTouchlessContextMenu())
                 .with(TouchlessDialogProperties.LIST_MODELS, menuItems)
-                .with(TouchlessDialogProperties.PRIORITY, TouchlessDialogProperties.Priority.HIGH)
-                .build();
+                .with(TouchlessDialogProperties.PRIORITY, TouchlessDialogProperties.Priority.HIGH);
+        if (title != null) {
+            builder.with(ModalDialogProperties.TITLE, title);
+        }
+        return builder.build();
     }
 
     private void closeTouchlessContextMenu() {
