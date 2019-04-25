@@ -108,19 +108,19 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   input_format_.dwChannelMask =
       CoreAudioUtil::GetChannelConfig(device_id, eCapture);
   input_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+  DVLOG(1) << "Input: " << CoreAudioUtil::WaveFormatToString(&input_format_);
 
   // Set up the fixed output format based on |params|. Will not be changed and
   // does not required an extended wave format structure since any multi-channel
   // input will be converted to stereo.
   output_format_.wFormatTag = WAVE_FORMAT_PCM;
   output_format_.nChannels = format->nChannels;
-  ;
   output_format_.nSamplesPerSec = format->nSamplesPerSec;
   output_format_.wBitsPerSample = format->wBitsPerSample;
   output_format_.nBlockAlign = format->nBlockAlign;
   output_format_.nAvgBytesPerSec = format->nAvgBytesPerSec;
   output_format_.cbSize = 0;
-  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&output_format_);
+  DVLOG(1) << "Output: " << CoreAudioUtil::WaveFormatToString(&output_format_);
 
   // Size in bytes of each audio frame.
   frame_size_bytes_ = format->nBlockAlign;
@@ -696,6 +696,8 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
       reinterpret_cast<const WAVEFORMATEX*>(&input_format_), &closest_match);
   DLOG_IF(ERROR, hresult == S_FALSE)
       << "Format is not supported but a closest match exists.";
+  if (FAILED(hresult))
+    LOG(ERROR) << "Input format is not supported: " << std::hex << hresult;
 
   if (hresult == S_FALSE) {
     // Change the format we're going to ask for to better match with what the OS
