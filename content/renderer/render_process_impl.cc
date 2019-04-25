@@ -138,6 +138,9 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfNotFeature(features::kWebAssemblyBaseline,
                         "--no-liftoff --no-wasm-tier-up");
 
+  SetV8FlagIfFeature(features::kWebAssemblyCodeGC, "--wasm-code-gc");
+  SetV8FlagIfNotFeature(features::kWebAssemblyCodeGC, "--no-wasm-code-gc");
+
   if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
     constexpr char kFlags[] =
         "--harmony-sharedarraybuffer "

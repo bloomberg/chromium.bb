@@ -603,6 +603,9 @@ extern const char kEnableIncognitoWindowCounterDescription[];
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 
+extern const char kEnableWasmCodeGCName[];
+extern const char kEnableWasmCodeGCDescription[];
+
 extern const char kEnableWasmCodeCacheName[];
 extern const char kEnableWasmCodeCacheDescription[];
 

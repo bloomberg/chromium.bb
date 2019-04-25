@@ -32970,6 +32970,7 @@ from previous Chrome versions.
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
   <int value="-1064302126"
       label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
+  <int value="-1064082797" label="WebAssemblyCodeGC:disabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
@@ -34528,6 +34529,7 @@ from previous Chrome versions.
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:enabled"/>
   <int value="1413158119" label="WebRtcRemoteEventLog:disabled"/>
   <int value="1413948819" label="NupPrinting:enabled"/>
+  <int value="1415806054" label="WebAssemblyCodeGC:enabled"/>
   <int value="1416309272" label="only-new-password-form-parsing:enabled"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
   <int value="1418054870" label="SpecialLocale:enabled"/>

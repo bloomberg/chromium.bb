@@ -550,6 +550,10 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 #endif
 };
 
+// Enable garbage collection of WebAssembly code.
+const base::Feature kWebAssemblyCodeGC{"WebAssemblyCodeGC",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly threads.
 // https://github.com/WebAssembly/threads
 const base::Feature kWebAssemblyThreads {

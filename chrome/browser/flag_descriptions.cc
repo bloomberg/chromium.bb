@@ -1000,6 +1000,10 @@ const char kEnableWasmCodeCacheName[] = "WebAssembly compiled module cache";
 const char kEnableWasmCodeCacheDescription[] =
     "Enables caching of compiled WebAssembly modules.";
 
+const char kEnableWasmCodeGCName[] = "WebAssembly code garbage collection";
+const char kEnableWasmCodeGCDescription[] =
+    "Enables garbage collection of WebAssembly code.";
+
 const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
 const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "

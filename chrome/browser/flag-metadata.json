@@ -1830,6 +1830,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-webassembly-code-gc",
+    "owners": [ "clemensh", "wasm-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-webassembly-threads",
     "owners": [ "binji", "hablich", "wasm-team@google.com" ],
     "expiry_milestone": 76
