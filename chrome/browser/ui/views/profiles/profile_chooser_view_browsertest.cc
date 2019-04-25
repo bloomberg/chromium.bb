@@ -225,7 +225,7 @@ class ProfileChooserViewExtensionsTest
         ProfileChooserView::GetBubbleForTesting());
   }
 
-  views::LabelButton* signin_current_profile_button() {
+  views::Button* signin_current_profile_button() {
     return current_profile_bubble()->signin_current_profile_button_;
   }
 

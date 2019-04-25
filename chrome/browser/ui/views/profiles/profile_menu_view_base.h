@@ -22,19 +22,53 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 
 class Browser;
 
-// TODO(https://crbug.com/934689): Separation of providing content for different
-// menus and the UI effort to view it between this class and
-// |ProfileChooserView| is in progress.
+namespace views {
+class Button;
+class Label;
+}  // namespace views
+
+struct AccountInfo;
+class DiceSigninButtonView;
 
 // This class provides the UI for different menus that are created by user
 // clicking the avatar button.
 class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::BubbleDialogDelegateView,
+                            public views::ButtonListener,
                             public views::StyledLabelListener {
  public:
+  // MenuItems struct keeps the menu items and meta data for a group of items in
+  // a menu. It takes the ownership of views and passes it to the menu when menu
+  // is constructed.
+  struct MenuItems {
+    MenuItems();
+    MenuItems(MenuItems&&);
+    ~MenuItems();
+
+    enum ItemType {
+      kNone,
+      kTitleCard,
+      kLabel,
+      kButton,
+      kStyledButton,
+      kGeneral
+    };
+
+    std::vector<std::unique_ptr<views::View>> items;
+
+    ItemType first_item_type;
+    ItemType last_item_type;
+    bool different_item_types;
+
+    DISALLOW_COPY_AND_ASSIGN(MenuItems);
+  };
+
+  enum GroupMarginSize { kNone, kTiny, kSmall, kLarge };
+
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't
@@ -58,7 +92,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   static ProfileMenuViewBase* GetBubbleForTesting();
 
-  typedef std::vector<std::unique_ptr<views::View>> MenuItems;
+  // Spacing between the edge of the user menu and the top/bottom or left/right
+  // of the menu items.
+  // TODO(https://crbug.com/934689): Remove after refactoring.
+  int GetMenuEdgeMargin() const;
 
  protected:
   ProfileMenuViewBase(views::Button* anchor_button,
@@ -68,11 +105,34 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   ~ProfileMenuViewBase() override;
 
   void Reset();
-  // Adds a set of menu items, either as a |new_group| (using a separator) or
-  // appended to the last added items. Takes ownership of the items and passes
-  // them to the underlying view when menu is built using
-  // |RepopulateViewFromMenuItems|.
-  void AddMenuItems(MenuItems& menu_items, bool new_group);
+
+  // Initializes a new group of menu items. A separator is added before them if
+  // |add_separator| is true.
+  void AddMenuGroup(bool add_separator = true);
+
+  // The following functions add different menu items to the latest menu group.
+  // They pass the ownership of the generated item to |menu_item_groups_| and
+  // return a raw pointer to the object. The ownership is transferred to the
+  // menu when view is repopulated from menu items.
+  // Please use |AddViewItem| only if none of the previous ones match.
+  views::Button* CreateAndAddTitleCard(std::unique_ptr<views::View> icon_view,
+                                       const base::string16& title,
+                                       const base::string16& subtitle,
+                                       bool enabled = true);
+  views::Button* CreateAndAddButton(const gfx::ImageSkia& icon,
+                                    const base::string16& title);
+  views::Button* CreateAndAddBlueButton(const base::string16& text,
+                                        bool md_style);
+#if !defined(OS_CHROMEOS)
+  DiceSigninButtonView* CreateAndAddDiceSigninButton(
+      AccountInfo* account_info = nullptr,
+      gfx::Image* account_icon = nullptr);
+#endif
+  views::Label* CreateAndAddLabel(
+      const base::string16& text,
+      int text_context = views::style::CONTEXT_LABEL);
+  void AddViewItem(std::unique_ptr<views::View> view);
+
   void RepopulateViewFromMenuItems();
 
   Browser* browser() const { return browser_; }
@@ -85,14 +145,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   bool ShouldProvideInitiallyFocusedView() const;
 
-  // TODO(https://crbug.com/934689): Remove menu_width function and make
-  // decisions inside this class.
-  int menu_width() { return menu_width_; }
-
   gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon);
 
-  // TODO(https://crbug.com/934689): Remove function and make decisions inside
-  // this class.
   int GetDefaultIconSize();
 
  private:
@@ -115,6 +169,12 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
+
+  // Returns the size of different margin types.
+  int GetMarginSize(GroupMarginSize margin_size) const;
+
+  void AddMenuItemInternal(std::unique_ptr<views::View> view,
+                           MenuItems::ItemType item_type);
 
   Browser* const browser_;
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 
 namespace views {
-class LabelButton;
+class Button;
 }
 
 class Browser;
@@ -24,8 +24,7 @@ class Browser;
 
 // This bubble view is displayed when the user clicks on the avatar button in
 // incognito mode and displays the incognito menu.
-class IncognitoMenuView : public ProfileMenuViewBase,
-                          public views::ButtonListener {
+class IncognitoMenuView : public ProfileMenuViewBase {
  public:
   IncognitoMenuView(views::Button* anchor_button,
                     const gfx::Rect& anchor_rect,
@@ -46,8 +45,7 @@ class IncognitoMenuView : public ProfileMenuViewBase,
   // Adds the incognito window count view.
   void AddIncognitoWindowCountView();
 
-  views::LabelButton* title_card_;
-  views::LabelButton* close_button_;
+  views::Button* exit_button_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoMenuView);
 };
