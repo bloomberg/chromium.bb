@@ -3236,11 +3236,6 @@ const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =
     "Use the ZIP Archiver for mounting/unpacking ZIP files";
 
-const char kOfficeEditingComponentAppName[] =
-    "Office Editing for Docs, Sheets & Slides";
-const char kOfficeEditingComponentAppDescription[] =
-    "Office Editing for Docs, Sheets & Slides for testing purposes.";
-
 const char kPhysicalKeyboardAutocorrectName[] = "Physical keyboard autocorrect";
 const char kPhysicalKeyboardAutocorrectDescription[] =
     "Enable physical keyboard autocorrect for US keyboard, which can provide "

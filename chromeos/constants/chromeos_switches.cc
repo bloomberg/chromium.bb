@@ -233,12 +233,6 @@ const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
-// Disables Office Editing for Docs, Sheets & Slides component app so handlers
-// won't be registered, making it possible to install another version for
-// testing.
-const char kDisableOfficeEditingComponentApp[] =
-    "disable-office-editing-component-extension";
-
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 

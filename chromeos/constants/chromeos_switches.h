@@ -85,8 +85,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMultiDisplayLayout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableNewZIPUnpacker[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableOfficeEditingComponentApp[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisablePerUserTimezone[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisablePhysicalKeyboardAutocorrect[];

@@ -547,12 +547,10 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
 #if defined(GOOGLE_CHROME_BUILD)
-    if (!command_line->HasSwitch(
-            chromeos::switches::kDisableOfficeEditingComponentApp)) {
-      std::string id = Add(IDR_QUICKOFFICE_MANIFEST, base::FilePath(
-          FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
-      EnableFileSystemInGuestMode(id);
-    }
+    std::string id = Add(IDR_QUICKOFFICE_MANIFEST,
+                         base::FilePath(FILE_PATH_LITERAL(
+                             "/usr/share/chromeos-assets/quickoffice")));
+    EnableFileSystemInGuestMode(id);
 
     if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
       Add(IDR_KIOSK_NEXT_HOME_MANIFEST,

@@ -540,11 +540,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "disable-office-editing-component-app",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     // See https://crbug.com/882238.
     "name": "disable-pushstate-throttle",
     "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],

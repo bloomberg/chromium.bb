@@ -1961,9 +1961,6 @@ extern const char kNetworkPortalNotificationDescription[];
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
 
-extern const char kOfficeEditingComponentAppName[];
-extern const char kOfficeEditingComponentAppDescription[];
-
 extern const char kPhysicalKeyboardAutocorrectName[];
 extern const char kPhysicalKeyboardAutocorrectDescription[];
 

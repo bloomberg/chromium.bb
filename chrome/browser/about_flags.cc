@@ -1297,14 +1297,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"cryptauth-v2-enrollment", flag_descriptions::kCryptAuthV2EnrollmentName,
      flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2Enrollment)},
-    {
-        "disable-office-editing-component-app",
-        flag_descriptions::kOfficeEditingComponentAppName,
-        flag_descriptions::kOfficeEditingComponentAppDescription,
-        kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(
-            chromeos::switches::kDisableOfficeEditingComponentApp),
-    },
     {"updated_cellular_activation_ui",
      flag_descriptions::kUpdatedCellularActivationUiName,
      flag_descriptions::kUpdatedCellularActivationUiDescription, kOsCrOS,
