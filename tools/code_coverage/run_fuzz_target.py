@@ -182,7 +182,7 @@ def _RunWithTimeout(cmd, timeout):
       # SIGINT, suppress it here to prevent interrupting the script itself.
       pass
 
-    output, error = runner.communicate()
+    runner.communicate()
 
   logging.info('Finished running the fuzz target.')
 
