@@ -45,6 +45,8 @@ component("auth") {
     "auth_status_consumer.h",
     "authenticator.cc",
     "authenticator.h",
+    "challenge_response/cert_utils.cc",
+    "challenge_response/cert_utils.h",
     "cryptohome_authenticator.cc",
     "cryptohome_authenticator.h",
     "extended_authenticator.cc",
@@ -117,11 +119,14 @@ source_set("unit_tests") {
     "//chromeos/dbus/auth_policy:authpolicy_proto",
     "//chromeos/dbus/cryptohome",
     "//chromeos/tpm:test_support",
+    "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
   ]
   sources = [
+    "challenge_response/cert_utils_unittest.cc",
     "key_unittest.cc",
   ]
 }
