@@ -55,6 +55,9 @@ def main():
 
   failed = False
 
+  # If given, always run the additional merge script, even if we only have one
+  # output json. Merge scripts sometimes upload artifacts to cloud storage, or
+  # do other processing which can be needed even if there's only one output.
   if params.additional_merge_script:
     new_args = [
         '--build-properties', params.build_properties,
@@ -75,6 +78,15 @@ def main():
       logging.warning('Additional merge script %s exited with %s' % (
           params.additional_merge_script, rc
       ))
+  elif len(params.jsons_to_merge) == 1:
+    logging.info("Only one output needs to be merged; directly copying it.")
+    with open(params.jsons_to_merge[0]) as f_read:
+      with open(params.output_json, 'w') as f_write:
+        f_write.write(f_read.read())
+  else:
+      logging.warning(
+          "This script was told to merge %d test results, but no additional "
+          "merge script was given.")
 
   invalid_profiles = coverage_merger.merge_profiles(
       params.task_output_dir,
