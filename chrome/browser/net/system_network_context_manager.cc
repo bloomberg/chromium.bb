@@ -177,7 +177,8 @@ network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   auth_static_params->allow_gssapi_library_load =
-      connector->IsActiveDirectoryManaged();
+      connector->IsActiveDirectoryManaged() ||
+      local_state->GetBoolean(prefs::kKerberosEnabled);
 #endif
 
   return auth_static_params;
@@ -727,8 +728,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 
   network_context_params->primary_network_context = true;
 
-  proxy_config_monitor_.AddToNetworkContextParams(
-      network_context_params.get());
+  proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
   return network_context_params;
 }

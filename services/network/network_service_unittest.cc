@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/network/network_service.h"
+
 #include <memory>
 #include <utility>
 
@@ -37,7 +39,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
@@ -235,7 +236,7 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryDisabled) {
   mojom::HttpAuthStaticParamsPtr auth_params =
       mojom::HttpAuthStaticParams::New();
   auth_params->supported_schemes.push_back("negotiate");
-  auth_params->allow_gssapi_library_load = true;
+  auth_params->allow_gssapi_library_load = false;
   service()->SetUpHttpAuth(std::move(auth_params));
 
   mojom::NetworkContextPtr network_context_ptr;
@@ -243,8 +244,8 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryDisabled) {
                                  mojo::MakeRequest(&network_context_ptr),
                                  CreateContextParams());
   ASSERT_TRUE(GetNegotiateFactory(&network_context));
-  EXPECT_TRUE(GetNegotiateFactory(&network_context)
-                  ->allow_gssapi_library_load_for_testing());
+  EXPECT_FALSE(GetNegotiateFactory(&network_context)
+                   ->allow_gssapi_library_load_for_testing());
 }
 #endif  // defined(OS_CHROMEOS)
 

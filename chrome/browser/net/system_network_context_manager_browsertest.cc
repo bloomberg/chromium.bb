@@ -200,6 +200,16 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
       SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
   EXPECT_EQ(dev_null, static_params->gssapi_library_name);
 #endif
+
+#if defined(OS_CHROMEOS)
+  // The kerberos.enabled pref is false and the device is not Active Directory
+  // managed by default.
+  EXPECT_EQ(false, static_params->allow_gssapi_library_load);
+  local_state->SetBoolean(prefs::kKerberosEnabled, true);
+  static_params =
+      SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
+  EXPECT_EQ(true, static_params->allow_gssapi_library_load);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
