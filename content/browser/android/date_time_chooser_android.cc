@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -85,10 +84,9 @@ void DateTimeChooserAndroid::OpenDateTimeDialog(
       const mojom::DateTimeSuggestionPtr suggestion =
           std::move(value->suggestions[i]);
       ScopedJavaLocalRef<jstring> localized_value = ConvertUTF16ToJavaString(
-          env, SanitizeSuggestionString(
-                   base::ASCIIToUTF16(suggestion->localized_value)));
+          env, SanitizeSuggestionString(suggestion->localized_value));
       ScopedJavaLocalRef<jstring> label = ConvertUTF16ToJavaString(
-          env, SanitizeSuggestionString(base::ASCIIToUTF16(suggestion->label)));
+          env, SanitizeSuggestionString(suggestion->label));
       Java_DateTimeChooserAndroid_setDateTimeSuggestionAt(
           env, suggestions_array, i, suggestion->value, localized_value, label);
     }

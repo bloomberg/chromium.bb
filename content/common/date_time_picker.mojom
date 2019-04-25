@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/mojo/ime_types.mojom";
 
 struct DateTimeSuggestion {
@@ -11,10 +12,10 @@ struct DateTimeSuggestion {
   double value;
 
   // The localized value to be shown to the user.
-  string localized_value;
+  mojo_base.mojom.String16 localized_value;
 
   // The label for the suggestion.
-  string label;
+  mojo_base.mojom.String16 label;
 };
 
 struct DateTimeDialogValue {

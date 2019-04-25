@@ -26,8 +26,8 @@ struct TypeConverter<::content::mojom::DateTimeSuggestionPtr,
     content::mojom::DateTimeSuggestionPtr output =
         content::mojom::DateTimeSuggestion::New();
     output->value = input.value;
-    output->localized_value = input.localized_value.Ascii();
-    output->label = input.label.Ascii();
+    output->localized_value = input.localized_value.Utf16();
+    output->label = input.label.Utf16();
     return output;
   }
 };
