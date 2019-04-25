@@ -44,6 +44,23 @@ extern const base::Feature kFallbackCursorMode;
 // When enabled, this feature prevent blink sending key event to web unless it
 // is on installed PWA.
 extern const base::Feature kDontSendKeyEventsToJavascript;
+
+// Skips the browser touch event filter, ensuring that events that reach the
+// queue and would otherwise be filtered out will instead be passed onto the
+// renderer compositor process as long as the page hasn't timed out. If
+// skip_filtering_process is browser_and_renderer, also skip the renderer cc
+// touch event filter, ensuring that events will be passed onto the renderer
+// main thread. Which event types will be always forwarded is controlled by the
+// "type" FeatureParam,
+// which can be either "discrete" (default) or "all".
+extern const base::Feature kSkipBrowserTouchFilter;
+extern const char kSkipBrowserTouchFilterTypeParamName[];
+extern const char kSkipBrowserTouchFilterTypeParamValueDiscrete[];
+extern const char kSkipBrowserTouchFilterTypeParamValueAll[];
+extern const char kSkipBrowserTouchFilterFilteringProcessParamName[];
+extern const char kSkipBrowserTouchFilterFilteringProcessParamValueBrowser[];
+extern const char
+    kSkipBrowserTouchFilterFilteringProcessParamValueBrowserAndRenderer[];
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_
