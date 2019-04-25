@@ -24,6 +24,8 @@
 
 namespace heap_profiling {
 
+struct ExportParams;
+
 using VmRegions =
     base::flat_map<base::ProcessId,
                    std::vector<memory_instrumentation::mojom::VmRegionPtr>>;
@@ -73,15 +75,9 @@ class ConnectionManager {
       uint32_t sampling_rate,
       mojom::HeapProfilePtr profile);
 
-  void DoDumpOneProcessForTracing(
-      scoped_refptr<DumpProcessesForTracingTracking> tracking,
-      base::ProcessId pid,
-      mojom::ProcessType process_type,
-      bool strip_path_from_mapped_files,
-      bool success,
-      AllocationMap counts,
-      ContextMap context,
-      AddressToStringMap mapped_strings);
+  bool ConvertProfileToExportParams(mojom::HeapProfilePtr profile,
+                                    uint32_t sampling_rate,
+                                    ExportParams* out_params);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker

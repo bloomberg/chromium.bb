@@ -1232,7 +1232,6 @@ jumbo_component("platform") {
     "mhtml/serialized_resource.h",
     "mhtml/shared_buffer_chunk_reader.cc",
     "mhtml/shared_buffer_chunk_reader.h",
-    "mojo/big_string_mojom_traits.cc",
     "mojo/big_string_mojom_traits.h",
     "mojo/bluetooth_struct_traits.cc",
     "mojo/bluetooth_struct_traits.h",
