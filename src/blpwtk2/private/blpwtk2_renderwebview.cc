@@ -806,7 +806,16 @@ void RenderWebView::updateGeometry()
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
     GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
-    d_renderViewObserver->DispatchSynchronizeVisualProperties(params);
+    // Renderer-driven popups do not have a 'd_renderViewObserver', so check
+    // its value before dereferencing it:
+    if (d_renderViewObserver) {
+        d_renderViewObserver->DispatchSynchronizeVisualProperties(params);
+    }
+    else {
+        dispatchToRenderWidget(
+            WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
+                params));
+    }
 }
 
 void RenderWebView::updateFocus()
