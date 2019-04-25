@@ -112,12 +112,6 @@ bool IsIncludedInHoldbackFieldTrial() {
          IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
-bool IsIncludedInSecureProxyHoldbackFieldTrial() {
-  return base::StartsWith(
-      base::FieldTrialList::FindFullName("DataCompressionProxyHoldback"),
-      "SecureProxy_Disabled", base::CompareCase::SENSITIVE);
-}
-
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
@@ -205,14 +199,6 @@ bool IsIncludedInQuicFieldTrial() {
   }
   // QUIC is enabled by default.
   return true;
-}
-
-bool IsQuicEnabledForNonCoreProxies() {
-  DCHECK(IsIncludedInQuicFieldTrial());
-  std::map<std::string, std::string> params;
-  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
-  return GetStringValueForVariationParamWithDefaultValue(
-             params, "enable_quic_non_core_proxies", "true") != "false";
 }
 
 const char* GetQuicFieldTrialName() {

@@ -72,11 +72,6 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
       continue;
     }
 
-    if (!probe_url_config && http_proxy.IsSecureProxy() &&
-        params::IsIncludedInSecureProxyHoldbackFieldTrial()) {
-      continue;
-    }
-
     config.proxy_rules().proxies_for_http.AddProxyServer(
         http_proxy.proxy_server());
   }

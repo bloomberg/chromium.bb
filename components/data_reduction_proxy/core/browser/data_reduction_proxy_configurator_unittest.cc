@@ -208,17 +208,6 @@ TEST_F(DataReductionProxyConfiguratorTest, TestSecureInsecureCoreRestricted) {
                    std::string());
 }
 
-TEST_F(DataReductionProxyConfiguratorTest, TestSecureRestrictedInHoldback) {
-  base::FieldTrialList field_trial_list(nullptr);
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "DataCompressionProxyHoldback", "SecureProxy_Disabled"));
-
-  config_->Enable(*manager_, BuildProxyList("https://www.foo.com:443",
-                                            "http://www.bar.com:80"));
-  CheckProxyConfig(net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
-                   "PROXY www.bar.com:80;DIRECT", std::string());
-}
-
 TEST_F(DataReductionProxyConfiguratorTest, TestRestrictedQuic) {
   base::HistogramTester histogram_tester;
   manager_->SetHasWarmupURLProbeFailed(true, true, true);
