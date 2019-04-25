@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "gpu/config/gpu_finch_features.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -364,13 +365,16 @@ void GpuWatchdogThread::OnCheckTimeout() {
     // In this case the watched thread might need more time to finish posting
     // OnAcknowledge task.
 
-    // Continue with the termination after an additional delay.
-    task_runner()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(
-            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-            weak_factory_.GetWeakPtr()),
-        0.5 * timeout_);
+    if (!base::FeatureList::IsEnabled(
+            features::kGpuWatchdogNoTerminationAwaitingAcknowledge)) {
+      // Continue with the termination after an additional delay.
+      task_runner()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+              weak_factory_.GetWeakPtr()),
+          0.5 * timeout_);
+    }
 
     // Post a task that does nothing on the watched thread to bump its priority
     // and make it more likely to get scheduled.
