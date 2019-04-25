@@ -136,12 +136,14 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     node.GetLayoutObject()->ScrollRectToVisible(
         bounding_box,
         WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                ScrollAlignment::kAlignCenterIfNeeded,
+                                ScrollAlignment::kAlignToEdgeIfNeeded,
                                 kProgrammaticScroll));
   }
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
+  // TODO(nburris): Determine what we should do with overlapping text matches.
+  // Currently, AddTextMatchMarker will crash when adding an overlapping marker.
   frame_->GetDocument()->Markers().AddTextMatchMarker(
       dom_range, TextMatchMarker::MatchStatus::kActive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);

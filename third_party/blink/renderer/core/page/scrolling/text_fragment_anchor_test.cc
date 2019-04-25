@@ -389,6 +389,227 @@ TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
   EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
+// Test matching a text range within the same element
+TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
+  SimRequest request("https://example.com/test.html#targetText=this,page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=this,page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "This is a test page".
+  Text* text = ToText(GetDocument().getElementById("text")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(19u, markers.at(0)->EndOffset());
+}
+
+// Test matching a text range across two neighboring elements
+TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
+  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text1">This is a test page</p>
+    <p id="text2">with another paragraph of text</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "test page"
+  Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text1, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(19u, markers.at(0)->EndOffset());
+
+  // Expect marker on "with another paragraph"
+  Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
+  markers = GetDocument().Markers().MarkersFor(
+      *text2, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(22u, markers.at(0)->EndOffset());
+}
+
+// Test matching a text range from an element to a deeper nested element
+TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
+  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text1">This is a test page</p>
+    <div>
+      <p id="text2">with another paragraph of text</p>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "test page"
+  Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text1, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(19u, markers.at(0)->EndOffset());
+
+  // Expect marker on "with another paragraph"
+  Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
+  markers = GetDocument().Markers().MarkersFor(
+      *text2, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(22u, markers.at(0)->EndOffset());
+}
+
+// Ensure that we don't match anything if endText is not found.
+TEST_F(TextFragmentAnchorTest, TextRangeEndTextNotFound) {
+  SimRequest request("https://example.com/test.html#targetText=test,cat",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test,cat");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+}
+
+// Test matching multiple text ranges
+TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=test,with&targetText=paragraph,text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=test,with&targetText=paragraph,text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text1">This is a test page</p>
+    <div>
+      <p id="text2">with another paragraph of text</p>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "test page"
+  Text* text1 = ToText(GetDocument().getElementById("text1")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text1, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(19u, markers.at(0)->EndOffset());
+
+  // Expect markers on "with" and "paragraph of text"
+  Text* text2 = ToText(GetDocument().getElementById("text2")->firstChild());
+  markers = GetDocument().Markers().MarkersFor(
+      *text2, DocumentMarker::MarkerTypes::TextMatch());
+  EXPECT_EQ(2u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(4u, markers.at(0)->EndOffset());
+  EXPECT_EQ(13u, markers.at(1)->StartOffset());
+  EXPECT_EQ(30u, markers.at(1)->EndOffset());
+}
+
+// Ensure we scroll to the beginning of a text range larger than the viewport.
+TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
+  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 3000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+    <p>with another paragraph of text</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+}
+
 }  // namespace
 
 }  // namespace blink
