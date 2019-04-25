@@ -56,8 +56,6 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -267,16 +265,6 @@ base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
   return base::BindRepeating(&MatchesUrlFilter, filter->type,
                              std::move(filter_domains),
                              std::move(filter_origins));
-}
-
-void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
-                         base::OnceClosure callback) {
-  // Need to close open SSL connections which may be using the channel ids we
-  // deleted.
-  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
-  // service/store have observers that can notify relevant things directly.
-  ssl_config_service->NotifySSLConfigChange();
-  std::move(callback).Run();
 }
 
 #if defined(OS_ANDROID)
@@ -810,30 +798,6 @@ void NetworkContext::ComputeHttpCacheSize(
       url_request_context_, start_time, end_time,
       base::BindOnce(&NetworkContext::OnHttpCacheSizeComputed,
                      base::Unretained(this), std::move(callback))));
-}
-
-void NetworkContext::ClearChannelIds(base::Time start_time,
-                                     base::Time end_time,
-                                     mojom::ClearDataFilterPtr filter,
-                                     ClearChannelIdsCallback callback) {
-  net::ChannelIDService* channel_id_service =
-      url_request_context_->channel_id_service();
-  if (!channel_id_service) {
-    std::move(callback).Run();
-    return;
-  }
-  net::ChannelIDStore* channel_id_store =
-      channel_id_service->GetChannelIDStore();
-  if (!channel_id_store) {
-    std::move(callback).Run();
-    return;
-  }
-
-  channel_id_store->DeleteForDomainsCreatedBetween(
-      MakeDomainFilter(filter.get()), start_time, end_time,
-      base::BindOnce(&OnClearedChannelIds,
-                     url_request_context_->ssl_config_service(),
-                     std::move(callback)));
 }
 
 void NetworkContext::ClearHostCache(mojom::ClearDataFilterPtr filter,

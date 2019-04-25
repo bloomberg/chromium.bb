@@ -270,9 +270,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
         GetAsMask(data_to_remove, "serviceWorkers",
                   content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS) |
         GetAsMask(data_to_remove, "webSQL",
-                  content::BrowsingDataRemover::DATA_TYPE_WEB_SQL) |
-        GetAsMask(data_to_remove, "serverBoundCertificates",
-                  content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS);
+                  content::BrowsingDataRemover::DATA_TYPE_WEB_SQL);
 
     EXPECT_EQ(expected_removal_mask, removal_mask);
   }
@@ -375,7 +373,6 @@ TEST_F(BrowsingDataApiTest, RemoveBrowsingDataAll) {
       // TODO(ramyasharma): implement clearing of external protocol data
       // via the browsing data API. https://crbug.com/692850.
       content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-          content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
           (content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE &
            ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
            ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE) |
@@ -434,9 +431,6 @@ TEST_F(BrowsingDataApiTest, BrowsingDataRemovalMask) {
       "indexedDB", content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "localStorage", content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE);
-  RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
-      "serverBoundCertificates",
-      content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "passwords", ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS);
   // We can't remove plugin data inside a test profile.
@@ -510,8 +504,7 @@ TEST_F(BrowsingDataApiTest, ShortcutFunctionRemovalMask) {
   RunAndCompareRemovalMask<BrowsingDataRemoveCacheStorageFunction>(
       content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCookiesFunction>(
-      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-      content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS);
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   RunAndCompareRemovalMask<BrowsingDataRemoveDownloadsFunction>(
       content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
   RunAndCompareRemovalMask<BrowsingDataRemoveFileSystemsFunction>(
@@ -574,7 +567,6 @@ TEST_F(BrowsingDataApiTest, SettingsFunctionSimple) {
 TEST_F(BrowsingDataApiTest, SettingsFunctionSiteData) {
   int supported_site_data_except_plugins =
       (content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-       content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE) &
       ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
       ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE;
@@ -606,7 +598,6 @@ TEST_F(BrowsingDataApiTest, SettingsFunctionSiteData) {
 TEST_F(BrowsingDataApiTest, SettingsFunctionAssorted) {
   int supported_site_data =
       (content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-       content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE) &
       ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
       ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE;

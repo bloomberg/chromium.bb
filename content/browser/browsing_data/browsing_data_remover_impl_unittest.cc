@@ -48,8 +48,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -305,68 +303,6 @@ bool FilterMatchesCookie(const CookieDeletionFilterPtr& filter,
 }  // namespace
 
 // Testers -------------------------------------------------------------------
-
-class RemoveChannelIDTester : public net::SSLConfigService::Observer {
- public:
-  explicit RemoveChannelIDTester(BrowserContext* browser_context) {
-    net::URLRequestContext* url_request_context =
-        BrowserContext::GetDefaultStoragePartition(browser_context)
-            ->GetURLRequestContext()
-            ->GetURLRequestContext();
-    channel_id_service_ = url_request_context->channel_id_service();
-    ssl_config_service_ = url_request_context->ssl_config_service();
-    ssl_config_service_->AddObserver(this);
-  }
-
-  ~RemoveChannelIDTester() override {
-    ssl_config_service_->RemoveObserver(this);
-  }
-
-  int ChannelIDCount() { return channel_id_service_->channel_id_count(); }
-
-  // Add a server bound cert for |server| with specific creation and expiry
-  // times.  The cert and key data will be filled with dummy values.
-  void AddChannelIDWithTimes(const std::string& server_identifier,
-                             base::Time creation_time) {
-    GetChannelIDStore()->SetChannelID(
-        std::make_unique<net::ChannelIDStore::ChannelID>(
-            server_identifier, creation_time, crypto::ECPrivateKey::Create()));
-  }
-
-  // Add a server bound cert for |server|, with the current time as the
-  // creation time.  The cert and key data will be filled with dummy values.
-  void AddChannelID(const std::string& server_identifier) {
-    base::Time now = base::Time::Now();
-    AddChannelIDWithTimes(server_identifier, now);
-  }
-
-  void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
-    GetChannelIDStore()->GetAllChannelIDs(base::BindOnce(
-        &RemoveChannelIDTester::GetAllChannelIDsCallback, channel_ids));
-  }
-
-  net::ChannelIDStore* GetChannelIDStore() {
-    return channel_id_service_->GetChannelIDStore();
-  }
-
-  int ssl_config_changed_count() const { return ssl_config_changed_count_; }
-
-  // net::SSLConfigService::Observer implementation:
-  void OnSSLConfigChanged() override { ssl_config_changed_count_++; }
-
- private:
-  static void GetAllChannelIDsCallback(
-      net::ChannelIDStore::ChannelIDList* dest,
-      const net::ChannelIDStore::ChannelIDList& result) {
-    *dest = result;
-  }
-
-  net::ChannelIDService* channel_id_service_;
-  net::SSLConfigService* ssl_config_service_;
-  int ssl_config_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);
-};
 
 class RemoveDownloadsTester {
  public:
@@ -632,93 +568,6 @@ TEST_F(BrowsingDataRemoverImplTest,
   // The entry stays unchanged.
   EXPECT_EQ(entry, http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                            net::HttpAuth::AUTH_SCHEME_BASIC));
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDForever) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestOrigin1);
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
-
-  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
-                                BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                                false);
-
-  EXPECT_EQ(BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  EXPECT_EQ(1, tester.ssl_config_changed_count());
-  EXPECT_EQ(0, tester.ChannelIDCount());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDLastHour) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  base::Time now = base::Time::Now();
-  tester.AddChannelID(kTestOrigin1);
-  tester.AddChannelIDWithTimes(kTestOrigin2,
-                               now - base::TimeDelta::FromHours(2));
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(2, tester.ChannelIDCount());
-
-  BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
-                                BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                                false);
-
-  EXPECT_EQ(BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  EXPECT_EQ(1, tester.ssl_config_changed_count());
-  ASSERT_EQ(1, tester.ChannelIDCount());
-  net::ChannelIDStore::ChannelIDList channel_ids;
-  tester.GetChannelIDList(&channel_ids);
-  ASSERT_EQ(1U, channel_ids.size());
-  EXPECT_EQ(kTestOrigin2, channel_ids.front().server_identifier());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsForServerIdentifiers) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestRegisterableDomain1);
-  tester.AddChannelID(kTestRegisterableDomain3);
-  EXPECT_EQ(2, tester.ChannelIDCount());
-
-  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
-  filter_builder->AddRegisterableDomain(kTestRegisterableDomain1);
-
-  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
-                              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                              std::move(filter_builder));
-
-  EXPECT_EQ(1, tester.ChannelIDCount());
-  net::ChannelIDStore::ChannelIDList channel_ids;
-  tester.GetChannelIDList(&channel_ids);
-  EXPECT_EQ(kTestRegisterableDomain3, channel_ids.front().server_identifier());
-}
-
-TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsAvoidClosingConnections) {
-  RemoveChannelIDTester tester(GetBrowserContext());
-
-  tester.AddChannelID(kTestOrigin1);
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
-
-  int remove_mask = BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-                    BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
-
-  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), remove_mask,
-                                false);
-
-  EXPECT_EQ(remove_mask, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-
-  // No deletion took place because the AVOID_CLOSING_CONNECTIONS flag
-  // was specified.
-  EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ChannelIDCount());
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
@@ -1676,11 +1525,6 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
                      BrowsingDataRemover::DATA_TYPE_WEB_SQL,
                      BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
                      std::move(filter_builder_1), observer.target_b());
-  tasks.emplace_back(base::Time::UnixEpoch(), base::Time::Now(),
-                     BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS,
-                     BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
-                         BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
-                     std::move(filter_builder_2), nullptr);
 
   for (BrowsingDataRemoverImpl::RemovalTask& task : tasks) {
     // All tasks can be directly translated to a RemoveInternal() call. Since

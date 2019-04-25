@@ -538,7 +538,7 @@ interface NetworkContext {
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies
-  // to network objects without more specific methods (Channel ID, Cookies,
+  // to network objects without more specific methods (Cookies,
   // and the cache have, or will have, their own clearing APIs). This currently
   // only covers server properties and transport security state.
   //
@@ -584,17 +584,6 @@ interface NetworkContext {
                      RequestPriority priority,
                      mojo_base.mojom.Time expected_response_time,
                      array<uint8> data);
-
-  // Clears channel IDs. A specific range of time can be specified with
-  // |start_time| and |end_time|. This supports unbounded deletes in either
-  // direction by using null Time values for either argument.
-  //
-  // If a non-null |filter| is specified, will clear only IDs matching the
-  // filter. Filtering by origins is not supported. If |filter| is non-null,
-  // |filter.origins| must be empty.
-  ClearChannelIds(mojo_base.mojom.Time start_time,
-                  mojo_base.mojom.Time end_time,
-                  ClearDataFilter? filter) => ();
 
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.
@@ -821,7 +810,7 @@ interface NetworkContext {
   // See |load_flags.h| for possible values.
   // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
   // it is true, then the request must be sent over a connection that cannot be
-  // tracked by the server (e.g. without channel id).
+  // tracked by the server.
   PreconnectSockets(uint32 num_streams,
                     url.mojom.Url url,
                     int32 load_flags,

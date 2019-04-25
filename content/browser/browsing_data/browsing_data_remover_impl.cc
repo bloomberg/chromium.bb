@@ -318,27 +318,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // DATA_TYPE_CHANNEL_IDS
-  // Channel IDs are not separated for protected and unprotected web
-  // origins. We check the origin_type_mask_ to prevent unintended deletion.
-  if (remove_mask & DATA_TYPE_CHANNEL_IDS &&
-      !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS) &&
-      origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
-
-    network::mojom::ClearDataFilterPtr service_filter =
-        filter_builder.BuildNetworkServiceFilter();
-    DCHECK(!service_filter || service_filter->origins.empty())
-        << "Origin-based deletion is not suitable for channel IDs.";
-
-    BrowserContext::GetDefaultStoragePartition(browser_context_)
-        ->GetNetworkContext()
-        ->ClearChannelIds(
-            delete_begin, delete_end, std::move(service_filter),
-            CreateTaskCompletionClosureForMojo(TracingDataType::kChannelIds));
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
   // STORAGE PARTITION DATA
   uint32_t storage_partition_remove_mask = 0;
 

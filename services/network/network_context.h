@@ -198,10 +198,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                           net::RequestPriority priority,
                           base::Time expected_response_time,
                           const std::vector<uint8_t>& data) override;
-  void ClearChannelIds(base::Time start_time,
-                       base::Time end_time,
-                       mojom::ClearDataFilterPtr filter,
-                       ClearChannelIdsCallback callback) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
