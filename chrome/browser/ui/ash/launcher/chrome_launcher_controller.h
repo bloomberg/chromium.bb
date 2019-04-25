@@ -56,6 +56,10 @@ namespace ui {
 class BaseWindow;
 }
 
+namespace chromeos {
+FORWARD_DECLARE_TEST(SpokenFeedbackTest, ShelfIconFocusForward);
+}
+
 // ChromeLauncherController helps manage Ash's shelf for Chrome prefs and apps.
 // It helps synchronize shelf state with profile preferences and app content.
 // NOTE: Launcher is an old name for the shelf, this class should be renamed.
@@ -260,11 +264,16 @@ class ChromeLauncherController
   friend class ShelfAppBrowserTest;
   friend class TestChromeLauncherController;
 
+  FRIEND_TEST_ALL_PREFIXES(chromeos::SpokenFeedbackTest, ShelfIconFocusForward);
+
   using WebContentsToAppIDMap = std::map<content::WebContents*, std::string>;
 
   // Creates a new app shortcut item and controller on the shelf at |index|.
   ash::ShelfID CreateAppShortcutLauncherItem(const ash::ShelfID& shelf_id,
                                              int index);
+  ash::ShelfID CreateAppShortcutLauncherItem(const ash::ShelfID& shelf_id,
+                                             int index,
+                                             const base::string16& title);
 
   // Remembers / restores list of running applications.
   // Note that this order will neither be stored in the preference nor will it

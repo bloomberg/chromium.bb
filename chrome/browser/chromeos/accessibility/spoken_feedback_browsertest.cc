@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -354,6 +356,51 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   SendKeyPress(ui::VKEY_TAB);
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+}
+
+// Verifies that pressing right arrow button with search button should move
+// focus to the next ShelfItem instead of the last one
+// (see https://crbug.com/947683).
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
+  const std::string title("MockApp");
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+
+  // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
+  // when an extension is enabled, the ShelfItems which are not recorded as
+  // pinned apps in user preference will be removed.
+  EnableChromeVox();
+  controller->CreateAppShortcutLauncherItem(
+      ash::ShelfID("FakeApp"), controller->shelf_model()->item_count(),
+      base::ASCIIToUTF16(title));
+
+  // Wait for the change on ShelfModel to reach ash.
+  base::RunLoop().RunUntilIdle();
+
+  // Focus on the shelf.
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (base::MatchPattern(utterance, "Launcher"))
+      break;
+  }
+
+  ASSERT_EQ("Button", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Shelf", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ(", window", speech_monitor_.GetNextUtterance());
+  ASSERT_EQ("Press Search plus Space to activate.",
+            speech_monitor_.GetNextUtterance());
+
+  // Verifies that pressing right key with search key should move the focus of
+  // ShelfItem correctly.
+  SendKeyPressWithSearch(ui::VKEY_RIGHT);
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  SendKeyPressWithSearch(ui::VKEY_RIGHT);
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), title));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {

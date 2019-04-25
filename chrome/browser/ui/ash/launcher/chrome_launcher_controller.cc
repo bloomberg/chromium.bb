@@ -833,9 +833,16 @@ bool ChromeLauncherController::ConnectToShelfController() {
 ash::ShelfID ChromeLauncherController::CreateAppShortcutLauncherItem(
     const ash::ShelfID& shelf_id,
     int index) {
+  return CreateAppShortcutLauncherItem(shelf_id, index, base::string16());
+}
+
+ash::ShelfID ChromeLauncherController::CreateAppShortcutLauncherItem(
+    const ash::ShelfID& shelf_id,
+    int index,
+    const base::string16& title) {
   return InsertAppLauncherItem(
       AppShortcutLauncherItemController::Create(shelf_id), ash::STATUS_CLOSED,
-      index, ash::TYPE_PINNED_APP);
+      index, ash::TYPE_PINNED_APP, title);
 }
 
 void ChromeLauncherController::RememberUnpinnedRunningApplicationOrder() {
