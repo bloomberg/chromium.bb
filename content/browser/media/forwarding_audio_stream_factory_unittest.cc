@@ -19,9 +19,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
@@ -42,22 +40,23 @@ namespace {
 class MockStreamFactory : public audio::FakeStreamFactory,
                           public audio::mojom::LocalMuter {
  public:
-  MockStreamFactory() : muter_binding_(this) {}
-  ~MockStreamFactory() final {}
+  MockStreamFactory() = default;
+  ~MockStreamFactory() final = default;
 
   bool IsConnected() const { return receiver_.is_bound(); }
-  bool IsMuterConnected() const { return muter_binding_.is_bound(); }
+  bool IsMuterConnected() const { return muter_receiver_.is_bound(); }
 
  private:
-  void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
-                 const base::UnguessableToken& group_id) final {
-    muter_binding_.Bind(std::move(request));
-    muter_binding_.set_connection_error_handler(base::BindOnce(
-        &MockStreamFactory::MuterUnbound, base::Unretained(this)));
+  void BindMuter(
+      mojo::PendingAssociatedReceiver<audio::mojom::LocalMuter> receiver,
+      const base::UnguessableToken& group_id) final {
+    muter_receiver_.Bind(std::move(receiver));
+    muter_receiver_.set_disconnect_handler(base::BindOnce(
+        &MockStreamFactory::MuterDisconnected, base::Unretained(this)));
   }
-  void MuterUnbound() { muter_binding_.Close(); }
+  void MuterDisconnected() { muter_receiver_.reset(); }
 
-  mojo::AssociatedBinding<audio::mojom::LocalMuter> muter_binding_;
+  mojo::AssociatedReceiver<audio::mojom::LocalMuter> muter_receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(MockStreamFactory);
 };
 

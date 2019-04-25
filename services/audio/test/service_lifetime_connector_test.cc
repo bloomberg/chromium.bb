@@ -13,7 +13,7 @@
 #include "services/audio/service.h"
 #include "services/audio/service_factory.h"
 #include "services/audio/system_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +40,7 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
     service_ = std::make_unique<Service>(
         std::make_unique<InProcessAudioManagerAccessor>(audio_manager_.get()),
         kQuitTimeout, false /* device_notifications_enabled */,
-        std::make_unique<service_manager::BinderRegistry>(),
+        std::make_unique<service_manager::BinderMap>(),
         connector_factory_.RegisterInstance(mojom::kServiceName));
     service_->set_termination_closure(quit_request_.Get());
     connector_ = connector_factory_.CreateConnector();
@@ -72,7 +72,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
   audio_manager_.reset();
   service_manager::TestConnectorFactory connector_factory;
   service_ = audio::CreateStandaloneService(
-      std::make_unique<service_manager::BinderRegistry>(),
+      std::make_unique<service_manager::BinderMap>(),
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();

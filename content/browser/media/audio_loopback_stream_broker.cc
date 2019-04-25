@@ -87,8 +87,9 @@ void AudioLoopbackStreamBroker::CreateStream(
       &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
   factory->CreateLoopbackStream(
-      std::move(stream_request), std::move(client), std::move(observer_ptr),
-      params_, shared_memory_count_, source_->GetGroupID(),
+      std::move(stream_request), client.PassInterface(),
+      observer_ptr.PassInterface(), params_, shared_memory_count_,
+      source_->GetGroupID(),
       base::BindOnce(&AudioLoopbackStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }

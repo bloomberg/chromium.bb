@@ -69,7 +69,7 @@ class StreamFactory final : public mojom::StreamFactory {
       const std::string& output_device_id) final;
 
   void CreateOutputStream(
-      mojo::PendingReceiver<media::mojom::AudioOutputStream> stream_receiver,
+      mojo::PendingReceiver<media::mojom::AudioOutputStream> receiver,
       mojo::PendingAssociatedRemote<media::mojom::AudioOutputStreamObserver>
           observer,
       mojo::PendingRemote<media::mojom::AudioLog> log,
@@ -78,12 +78,12 @@ class StreamFactory final : public mojom::StreamFactory {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final;
-  void BindMuter(mojom::LocalMuterAssociatedRequest request,
+  void BindMuter(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
                  const base::UnguessableToken& group_id) final;
   void CreateLoopbackStream(
-      media::mojom::AudioInputStreamRequest stream_request,
-      media::mojom::AudioInputStreamClientPtr client,
-      media::mojom::AudioInputStreamObserverPtr observer,
+      mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver,
+      mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+      mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       const base::UnguessableToken& group_id,

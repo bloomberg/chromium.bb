@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -30,12 +31,12 @@ class UtilityServiceFactory {
 
  private:
   std::unique_ptr<service_manager::Service> CreateAudioService(
-      service_manager::mojom::ServiceRequest request);
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
   // Allows embedders to register their interface implementations before the
   // network or audio services are created. Used for testing.
   std::unique_ptr<service_manager::BinderRegistry> network_registry_;
-  std::unique_ptr<service_manager::BinderRegistry> audio_registry_;
+  std::unique_ptr<service_manager::BinderMap> audio_binders_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityServiceFactory);
 };

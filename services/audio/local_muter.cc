@@ -42,7 +42,7 @@ void LocalMuter::SetAllBindingsLostCallback(base::OnceClosure callback) {
   all_bindings_lost_callback_ = std::move(callback);
 }
 
-void LocalMuter::AddBinding(
+void LocalMuter::AddReceiver(
     mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   receivers_.Add(this, std::move(receiver));

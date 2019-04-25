@@ -101,9 +101,9 @@ TEST(LocalMuter, UnmutesWhenLastBindingIsLost) {
 
   // Create two bindings to the muter.
   mojo::AssociatedRemote<mojom::LocalMuter> remote_muter1;
-  muter->AddBinding(remote_muter1.BindNewEndpointAndPassReceiver());
+  muter->AddReceiver(remote_muter1.BindNewEndpointAndPassReceiver());
   mojo::AssociatedRemote<mojom::LocalMuter> remote_muter2;
-  muter->AddBinding(remote_muter2.BindNewEndpointAndPassReceiver());
+  muter->AddReceiver(remote_muter2.BindNewEndpointAndPassReceiver());
 
   // A member joins the group and should be muted.
   StrictMock<MockGroupMember> member;

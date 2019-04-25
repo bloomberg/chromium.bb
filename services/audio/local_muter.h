@@ -34,7 +34,7 @@ class LocalMuter : public mojom::LocalMuter,
   // SetAllBindingsLostCallback() must be called before the first call to
   // AddBinding().
   void SetAllBindingsLostCallback(base::OnceClosure callback);
-  void AddBinding(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver);
+  void AddReceiver(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver);
 
   // LoopbackCoordinator::Observer implementation.
   void OnMemberJoinedGroup(LoopbackGroupMember* member) final;

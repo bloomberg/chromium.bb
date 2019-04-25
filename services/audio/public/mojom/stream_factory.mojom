@@ -84,7 +84,7 @@ interface StreamFactory {
   // output streams must remain muted until they are shut down, the binding to
   // the muter must not be closed until after all other streams' binding. (This
   // is the reason for the associated request argument.)
-  BindMuter(associated LocalMuter& request,
+  BindMuter(pending_associated_receiver<LocalMuter> receiver,
             mojo_base.mojom.UnguessableToken group_id);
 
   // Creates an AudioInputStream that provides the result of looping-back and
@@ -94,11 +94,12 @@ interface StreamFactory {
   // and the result are as described in CreateInputStream() above, except for
   // |stream_id|. Loopback streams have no ID, since they cannot be used in
   // echo cancellation.
-  CreateLoopbackStream(media.mojom.AudioInputStream& stream,
-                       media.mojom.AudioInputStreamClient client,
-                       media.mojom.AudioInputStreamObserver observer,
-                       media.mojom.AudioParameters params,
-                       uint32 shared_memory_count,
-                       mojo_base.mojom.UnguessableToken group_id)
+  CreateLoopbackStream(
+      pending_receiver<media.mojom.AudioInputStream> receiver,
+      pending_remote<media.mojom.AudioInputStreamClient> client,
+      pending_remote<media.mojom.AudioInputStreamObserver> observer,
+      media.mojom.AudioParameters params,
+      uint32 shared_memory_count,
+      mojo_base.mojom.UnguessableToken group_id)
     => (media.mojom.ReadOnlyAudioDataPipe? data_pipe);
 };

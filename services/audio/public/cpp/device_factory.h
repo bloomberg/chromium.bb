@@ -9,6 +9,7 @@
 #include <string>
 
 #include "media/audio/audio_input_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -21,7 +22,7 @@ scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     std::unique_ptr<service_manager::Connector> connector,
     const std::string& device_id,
-    media::mojom::AudioLogPtr);
+    mojo::PendingRemote<media::mojom::AudioLog>);
 
 }  // namespace audio
 

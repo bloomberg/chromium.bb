@@ -129,8 +129,8 @@ void RunNetworkServiceOnIOThread(
 
 UtilityServiceFactory::UtilityServiceFactory()
     : network_registry_(std::make_unique<service_manager::BinderRegistry>()),
-      audio_registry_(std::make_unique<service_manager::BinderRegistry>()) {
-  GetContentClient()->utility()->RegisterAudioBinders(audio_registry_.get());
+      audio_binders_(std::make_unique<service_manager::BinderMap>()) {
+  GetContentClient()->utility()->RegisterAudioBinders(audio_binders_.get());
 }
 
 UtilityServiceFactory::~UtilityServiceFactory() {}
@@ -206,7 +206,7 @@ void UtilityServiceFactory::RunService(
 
 std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateAudioService(
-    service_manager::mojom::ServiceRequest request) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
 #if defined(OS_MACOSX)
   // Don't connect to launch services when running sandboxed
   // (https://crbug.com/874785).
@@ -238,8 +238,8 @@ UtilityServiceFactory::CreateAudioService(
 
 #endif
 
-  return audio::CreateStandaloneService(std::move(audio_registry_),
-                                        std::move(request));
+  return audio::CreateStandaloneService(std::move(audio_binders_),
+                                        std::move(receiver));
 }
 
 }  // namespace content

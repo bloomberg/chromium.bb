@@ -6,6 +6,7 @@
 #define SERVICES_AUDIO_TEST_SERVICE_LIFETIME_TEST_TEMPLATE_H_
 
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 #include "services/audio/test/service_observer_mock.h"
@@ -26,9 +27,10 @@ class ServiceLifetimeTestTemplate : public TestBase {
   void SetUp() override {
     TestBase::SetUp();
 
-    service_manager::mojom::ServiceManagerPtr service_manager;
-    TestBase::connector()->BindInterface(service_manager::mojom::kServiceName,
-                                         &service_manager);
+    mojo::Remote<service_manager::mojom::ServiceManager> service_manager;
+    TestBase::connector()->Connect(
+        service_manager::mojom::kServiceName,
+        service_manager.BindNewPipeAndPassReceiver());
 
     service_manager::mojom::ServiceManagerListenerPtr listener;
     service_observer_ = std::make_unique<ServiceObserverMock>(

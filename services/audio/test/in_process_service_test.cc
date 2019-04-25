@@ -49,8 +49,7 @@ class ServiceTestHelper : public service_manager::Service {
       service_ = std::make_unique<audio::Service>(
           std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
           service_quit_timeout_, false /* device_notifications_enabled */,
-          std::make_unique<service_manager::BinderRegistry>(),
-          std::move(request));
+          std::make_unique<service_manager::BinderMap>(), std::move(request));
       service_->set_termination_closure(base::BindOnce(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
     }

@@ -141,8 +141,9 @@ void StreamFactory::CreateOutputStream(
   SetStateForCrashing("created output stream");
 }
 
-void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
-                              const base::UnguessableToken& group_id) {
+void StreamFactory::BindMuter(
+    mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
+    const base::UnguessableToken& group_id) {
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("binding muter");
@@ -166,16 +167,15 @@ void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
     muter = it->get();
   }
 
-  // Add the binding.
-  muter->AddBinding(
-      mojo::PendingAssociatedReceiver<mojom::LocalMuter>(request.PassHandle()));
+  // Add the receiver.
+  muter->AddReceiver(std::move(receiver));
   SetStateForCrashing("bound muter");
 }
 
 void StreamFactory::CreateLoopbackStream(
-    media::mojom::AudioInputStreamRequest request,
-    media::mojom::AudioInputStreamClientPtr client,
-    media::mojom::AudioInputStreamObserverPtr observer,
+    mojo::PendingReceiver<media::mojom::AudioInputStream> receiver,
+    mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+    mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     const base::UnguessableToken& group_id,
@@ -193,7 +193,7 @@ void StreamFactory::CreateLoopbackStream(
       std::move(created_callback),
       base::BindOnce(&StreamFactory::DestroyLoopbackStream,
                      base::Unretained(this)),
-      audio_manager_->GetWorkerTaskRunner(), std::move(request),
+      audio_manager_->GetWorkerTaskRunner(), std::move(receiver),
       std::move(client), std::move(observer), params, shared_memory_count,
       &coordinator_, group_id);
   loopback_streams_.emplace_back(std::move(stream));

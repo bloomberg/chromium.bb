@@ -17,6 +17,10 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_layout.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/loopback_group_member.h"
 #include "services/audio/test/fake_consumer.h"
@@ -64,26 +68,28 @@ const media::AudioParameters& GetLoopbackStreamParams() {
 class MockClientAndObserver : public media::mojom::AudioInputStreamClient,
                               public media::mojom::AudioInputStreamObserver {
  public:
-  MockClientAndObserver() : client_binding_(this), observer_binding_(this) {}
-
+  MockClientAndObserver() = default;
   ~MockClientAndObserver() override = default;
 
-  void Bind(media::mojom::AudioInputStreamClientRequest client_request,
-            media::mojom::AudioInputStreamObserverRequest observer_request) {
-    client_binding_.Bind(std::move(client_request));
-    observer_binding_.Bind(std::move(observer_request));
+  void Bind(mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+                client_receiver,
+            mojo::PendingReceiver<media::mojom::AudioInputStreamObserver>
+                observer_receiver) {
+    client_receiver_.Bind(std::move(client_receiver));
+    observer_receiver_.Bind(std::move(observer_receiver));
   }
 
-  void CloseClientBinding() { client_binding_.Close(); }
-  void CloseObserverBinding() { observer_binding_.Close(); }
+  void CloseClientBinding() { client_receiver_.reset(); }
+  void CloseObserverBinding() { observer_receiver_.reset(); }
 
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD0(DidStartRecording, void());
   void OnMutedStateChanged(bool) override { NOTREACHED(); }
 
  private:
-  mojo::Binding<media::mojom::AudioInputStreamClient> client_binding_;
-  mojo::Binding<media::mojom::AudioInputStreamObserver> observer_binding_;
+  mojo::Receiver<media::mojom::AudioInputStreamClient> client_receiver_{this};
+  mojo::Receiver<media::mojom::AudioInputStreamObserver> observer_receiver_{
+      this};
 };
 
 // Subclass of FakeConsumer that adapts the SyncWriter interface to allow the
@@ -164,10 +170,10 @@ class LoopbackStreamTest : public testing::Test {
   void CreateLoopbackStream() {
     CHECK(!stream_);
 
-    media::mojom::AudioInputStreamClientPtr client_ptr;
-    media::mojom::AudioInputStreamObserverPtr observer_ptr;
-    client_.Bind(mojo::MakeRequest(&client_ptr),
-                 mojo::MakeRequest(&observer_ptr));
+    mojo::PendingRemote<media::mojom::AudioInputStreamClient> client;
+    mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer;
+    client_.Bind(client.InitWithNewPipeAndPassReceiver(),
+                 observer.InitWithNewPipeAndPassReceiver());
 
     stream_ = std::make_unique<LoopbackStream>(
         base::BindOnce([](media::mojom::ReadOnlyAudioDataPipePtr pipe) {
@@ -178,8 +184,8 @@ class LoopbackStreamTest : public testing::Test {
                           LoopbackStream* stream) { self->stream_ = nullptr; },
                        this),
         scoped_task_environment_.GetMainThreadTaskRunner(),
-        mojo::MakeRequest(&input_stream_ptr_), std::move(client_ptr),
-        std::move(observer_ptr), GetLoopbackStreamParams(),
+        remote_input_stream_.BindNewPipeAndPassReceiver(), std::move(client),
+        std::move(observer), GetLoopbackStreamParams(),
         // The following argument is the |shared_memory_count|, which does not
         // matter because the SyncWriter will be overridden with FakeSyncWriter
         // below.
@@ -199,23 +205,23 @@ class LoopbackStreamTest : public testing::Test {
     stream_->set_sync_writer_for_testing(std::move(consumer));
 
     // Set the volume for the LoopbackStream.
-    input_stream_ptr_->SetVolume(kLoopbackVolume);
+    remote_input_stream_->SetVolume(kLoopbackVolume);
 
     // Allow all pending mojo tasks for all of the above to run and propagate
     // state.
     RunMojoTasks();
 
-    ASSERT_TRUE(input_stream_ptr_);
+    ASSERT_TRUE(remote_input_stream_);
   }
 
   void StartLoopbackRecording() {
     ASSERT_EQ(0, consumer_->GetRecordedFrameCount());
-    input_stream_ptr_->Record();
+    remote_input_stream_->Record();
     RunMojoTasks();
   }
 
   void SetLoopbackVolume(double volume) {
-    input_stream_ptr_->SetVolume(volume);
+    remote_input_stream_->SetVolume(volume);
     RunMojoTasks();
   }
 
@@ -240,7 +246,7 @@ class LoopbackStreamTest : public testing::Test {
   }
 
   void CloseInputStreamPtr() {
-    input_stream_ptr_.reset();
+    remote_input_stream_.reset();
     RunMojoTasks();
   }
 
@@ -254,7 +260,7 @@ class LoopbackStreamTest : public testing::Test {
   std::unique_ptr<LoopbackStream> stream_;
   FakeSyncWriter* consumer_ = nullptr;  // Owned by |stream_|.
 
-  media::mojom::AudioInputStreamPtr input_stream_ptr_;
+  mojo::Remote<media::mojom::AudioInputStream> remote_input_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(LoopbackStreamTest);
 };
