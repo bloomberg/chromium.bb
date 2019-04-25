@@ -1141,6 +1141,8 @@ if (enable_java_templates) {
     }
   }
 
+  # Variables
+  #   apply_mapping: The path to the ProGuard mapping file to apply.
   template("dex") {
     assert(defined(invoker.output))
 
@@ -1161,6 +1163,9 @@ if (enable_java_templates) {
 
     assert(!(defined(invoker.input_jars) && _proguard_enabled),
            "input_jars can't be specified when proguarding a dex.")
+
+    assert(!(defined(invoker.apply_mapping) && !_proguard_enabled),
+           "apply_mapping can only be specified if proguard is enabled.")
 
     if (_enable_main_dex_list) {
       _main_dex_rules = "//build/android/main_dex_classes.flags"
@@ -1223,6 +1228,12 @@ if (enable_java_templates) {
             "--repackage-classes",
             "${invoker.repackage_classes}",
           ]
+        }
+
+        if (defined(invoker.apply_mapping)) {
+          _rebased_apply_mapping_path =
+              rebase_path(invoker.apply_mapping, root_build_dir)
+          args += [ "--apply-mapping=$_rebased_apply_mapping_path" ]
         }
 
         if (defined(invoker.min_sdk_version)) {

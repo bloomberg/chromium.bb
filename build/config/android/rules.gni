@@ -4148,6 +4148,14 @@ if (enable_java_templates) {
     # Prevent "unused variable".
     not_needed([ "_enable_multidex" ])
 
+    if (_proguard_enabled) {
+      _sync_dex_target = "${target_name}__sync_dex"
+
+      # TODO(crbug.com/938635): Combine synchronous proguard run mapping file
+      # and asynchronous proguard run mapping files into single .mapping.
+      _sync_proguard_mapping_path = "${_bundle_path}.mapping"
+    }
+
     assert(_proguard_enabled || !defined(invoker.enable_multidex),
            "Bundle only adds dexing step if proguarding is enabled.")
 
@@ -4181,7 +4189,6 @@ if (enable_java_templates) {
         if (defined(_module.proguard_async) && _module.proguard_async) {
           if (_proguard_enabled) {
             # Use asynchronous proguarding for async modules.
-            # TODO(crbug.com/938635): Combine async module mapping paths with the sync one.
             _async_proguard_mapping_path =
                 "${_bundle_path}_${_module.name}.mapping"
 
@@ -4203,7 +4210,12 @@ if (enable_java_templates) {
               build_config = _module.build_config
               repackage_classes = "ap${_async_package_number}"
 
+              # Pass mapping file of synchronous proguarding run to async module proguarding
+              # runs to preserve compatibility.
+              apply_mapping = _sync_proguard_mapping_path
+
               deps = [
+                ":${_sync_dex_target}",
                 _module.module_target,
               ]
 
@@ -4244,14 +4256,12 @@ if (enable_java_templates) {
     }
 
     if (_proguard_enabled) {
-      _proguard_mapping_path = "${_bundle_path}.mapping"
       _unsplit_dex_zip =
-          "${target_gen_dir}/${target_name}/${target_name}__unsplit_dex.zip"
-      _unsplit_dex_target = "${target_name}__unsplit_dex"
-      dex(_unsplit_dex_target) {
+          "${target_gen_dir}/${target_name}/${target_name}__sync_dex.zip"
+      dex(_sync_dex_target) {
         enable_multidex = _enable_multidex
         proguard_enabled = true
-        proguard_mapping_path = _proguard_mapping_path
+        proguard_mapping_path = _sync_proguard_mapping_path
         forward_variables_from(invoker,
                                [
                                  "proguard_jar_path",
@@ -4263,13 +4273,13 @@ if (enable_java_templates) {
         output = _unsplit_dex_zip
       }
 
-      _dexsplitter_target = "${_unsplit_dex_target}__dexsplitter"
+      _dexsplitter_target = "${_sync_dex_target}__dexsplitter"
       dexsplitter(_dexsplitter_target) {
         input_dex_zip = _unsplit_dex_zip
-        proguard_mapping = _proguard_mapping_path
+        proguard_mapping = _sync_proguard_mapping_path
         all_modules = _sync_modules
         deps = [
-          ":${_unsplit_dex_target}",
+          ":${_sync_dex_target}",
         ]
       }
     }
@@ -4487,7 +4497,7 @@ if (enable_java_templates) {
       if (_proguard_enabled) {
         args += [
           "--proguard-mapping-path",
-          rebase_path(_proguard_mapping_path, root_build_dir),
+          rebase_path(_sync_proguard_mapping_path, root_build_dir),
         ]
       }
     }

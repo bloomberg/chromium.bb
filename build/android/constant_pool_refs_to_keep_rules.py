@@ -162,12 +162,14 @@ def main(argv):
   with open(args.output_file, 'w') as keep_rules:
     # Write super classes and implemented interfaces to keep rules.
     for super_class in sorted(extended_and_implemented_classes):
-      keep_rules.write('-keep class %s { *; }\n' % (super_class.rstrip()))
+      keep_rules.write(
+          '-keep,allowobfuscation class %s { *; }\n' % (super_class.rstrip()))
       keep_rules.write('\n')
     # Write all other class references to keep rules.
     for c in sorted(dep_refs.iterkeys()):
       class_keeps = '\n  '.join(dep_refs[c])
-      keep_rules.write('-keep class %s {\n  %s\n}\n' % (c, class_keeps))
+      keep_rules.write(
+          '-keep,allowobfuscation class %s {\n  %s\n}\n' % (c, class_keeps))
       keep_rules.write('\n')
 
 
