@@ -34,8 +34,7 @@ bool IsAnyMainBubbleShown() {
 
 void ConfigureSliderViewStyle(views::View* slider_view) {
   slider_view->SetBackground(UnifiedSystemTrayView::CreateBackground());
-  slider_view->SetBorder(
-      views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
+  slider_view->SetBorder(views::CreateEmptyBorder(kUnifiedSliderBubblePadding));
 }
 
 }  // namespace
