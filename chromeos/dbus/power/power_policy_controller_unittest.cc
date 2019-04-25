@@ -95,6 +95,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_force_nonzero_brightness_for_user_activity(false);
   expected_policy.set_boot_on_ac(true);
   expected_policy.set_usb_power_share(false);
+  expected_policy.mutable_battery_charge_mode()->set_mode(
+      power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD);
 
   expected_policy.set_reason(PowerPolicyController::kPrefsReason);
   EXPECT_EQ(
@@ -226,6 +228,37 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
 
   *expected_policy.mutable_advanced_battery_charge_mode_day_configs()->Add() =
       advanced_mode_config;
+
+  EXPECT_EQ(
+      PowerPolicyController::GetPolicyDebugString(expected_policy),
+      PowerPolicyController::GetPolicyDebugString(power_manager()->policy()));
+
+  // Set BatteryChargeMode prefs.
+  prefs.battery_charge_mode =
+      power_manager::PowerManagementPolicy::BatteryChargeMode::PRIMARILY_AC_USE;
+
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy.mutable_battery_charge_mode()->set_mode(
+      power_manager::PowerManagementPolicy::BatteryChargeMode::
+          PRIMARILY_AC_USE);
+
+  EXPECT_EQ(
+      PowerPolicyController::GetPolicyDebugString(expected_policy),
+      PowerPolicyController::GetPolicyDebugString(power_manager()->policy()));
+
+  // Set BatteryChargeMode prefs.
+  prefs.battery_charge_mode =
+      power_manager::PowerManagementPolicy::BatteryChargeMode::CUSTOM;
+  prefs.custom_charge_start = 51;
+  prefs.custom_charge_stop = 97;
+
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy.mutable_battery_charge_mode()->set_mode(
+      power_manager::PowerManagementPolicy::BatteryChargeMode::CUSTOM);
+  expected_policy.mutable_battery_charge_mode()->set_custom_charge_start(51);
+  expected_policy.mutable_battery_charge_mode()->set_custom_charge_stop(97);
 
   EXPECT_EQ(
       PowerPolicyController::GetPolicyDebugString(expected_policy),

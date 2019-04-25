@@ -246,6 +246,37 @@ bool PowerPolicyController::GetAdvancedBatteryChargeModeDayConfigs(
 }
 
 // static
+bool PowerPolicyController::GetBatteryChargeModeFromInteger(
+    int mode,
+    power_manager::PowerManagementPolicy::BatteryChargeMode::Mode* mode_out) {
+  DCHECK(mode_out);
+  switch (mode) {
+    case 1:
+      *mode_out =
+          power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD;
+      return true;
+    case 2:
+      *mode_out = power_manager::PowerManagementPolicy::BatteryChargeMode::
+          EXPRESS_CHARGE;
+      return true;
+    case 3:
+      *mode_out = power_manager::PowerManagementPolicy::BatteryChargeMode::
+          PRIMARILY_AC_USE;
+      return true;
+    case 4:
+      *mode_out =
+          power_manager::PowerManagementPolicy::BatteryChargeMode::ADAPTIVE;
+      return true;
+    case 5:
+      *mode_out =
+          power_manager::PowerManagementPolicy::BatteryChargeMode::CUSTOM;
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
 std::string PowerPolicyController::GetPolicyDebugString(
     const power_manager::PowerManagementPolicy& policy) {
   std::string str;
@@ -296,6 +327,21 @@ std::string PowerPolicyController::GetPolicyDebugString(
   str += GetPeakShiftPolicyDebugString(policy);
 
   str += GetAdvancedBatteryChargeModePolicyDebugString(policy);
+
+  if (policy.has_battery_charge_mode()) {
+    if (policy.battery_charge_mode().has_mode()) {
+      StringAppendF(&str, "battery_charge_mode=%d ",
+                    policy.battery_charge_mode().mode());
+    }
+    if (policy.battery_charge_mode().has_custom_charge_start()) {
+      StringAppendF(&str, "custom_charge_start=%d ",
+                    policy.battery_charge_mode().custom_charge_start());
+    }
+    if (policy.battery_charge_mode().has_custom_charge_stop()) {
+      StringAppendF(&str, "custom_charge_stop=%d ",
+                    policy.battery_charge_mode().custom_charge_stop());
+    }
+  }
 
   if (policy.has_boot_on_ac()) {
     StringAppendF(&str, "boot_on_ac=%d ", policy.boot_on_ac());
@@ -462,6 +508,14 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
     *prefs_policy_.mutable_advanced_battery_charge_mode_day_configs() = {
         values.advanced_battery_charge_mode_day_configs.begin(),
         values.advanced_battery_charge_mode_day_configs.end()};
+  }
+
+  auto* battery_charge_mode = prefs_policy_.mutable_battery_charge_mode();
+  battery_charge_mode->set_mode(values.battery_charge_mode);
+  if (values.battery_charge_mode ==
+      power_manager::PowerManagementPolicy::BatteryChargeMode::CUSTOM) {
+    battery_charge_mode->set_custom_charge_start(values.custom_charge_start);
+    battery_charge_mode->set_custom_charge_stop(values.custom_charge_stop);
   }
 
   prefs_policy_.set_boot_on_ac(values.boot_on_ac);
