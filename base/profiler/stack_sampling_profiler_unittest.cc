@@ -22,6 +22,7 @@
 #include "base/path_service.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/unwinder.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
@@ -798,6 +799,29 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
                                scenario.GetOuterFunctionAddressRange()});
 }
 
+// A simple unwinder that always generates one frame then aborts the stack walk.
+class TestAuxUnwinder : public Unwinder {
+ public:
+  TestAuxUnwinder(const Frame& frame_to_report)
+      : frame_to_report_(frame_to_report) {}
+
+  TestAuxUnwinder(const TestAuxUnwinder&) = delete;
+  TestAuxUnwinder& operator=(const TestAuxUnwinder&) = delete;
+
+  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+
+  UnwindResult TryUnwind(RegisterContext* thread_context,
+                         uintptr_t stack_top,
+                         ModuleCache* module_cache,
+                         std::vector<Frame>* stack) const override {
+    stack->push_back(frame_to_report_);
+    return UnwindResult::ABORTED;
+  }
+
+ private:
+  const Frame frame_to_report_;
+};
+
 // Checks that the profiler handles stacks containing dynamically-allocated
 // stack memory.
 // macOS ASAN is not yet supported - crbug.com/718628.
@@ -1468,6 +1492,112 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     profiler_thread1.Join();
     profiler_thread2.Join();
   });
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_BeforeStart) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_profile = 1;
+
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+
+  Profile profile;
+  WithTargetThread(&scenario, [&](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.AddAuxUnwinder(
+        std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  });
+
+  // The sample should have one frame from the context values and one from the
+  // TestAuxUnwinder.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const Frames& frames = profile.frame_sets[0];
+
+  ASSERT_EQ(2u, frames.size());
+  EXPECT_EQ(23u, frames[1].instruction_pointer);
+  EXPECT_EQ(nullptr, frames[1].module);
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStart) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_profile = 1;
+
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+
+  Profile profile;
+  WithTargetThread(&scenario, [&](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    profiler.AddAuxUnwinder(
+        std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+    sampling_thread_completed.Wait();
+  });
+
+  // The sample should have one frame from the context values and one from the
+  // TestAuxUnwinder.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const Frames& frames = profile.frame_sets[0];
+
+  ASSERT_EQ(2u, frames.size());
+  EXPECT_EQ(23u, frames[1].instruction_pointer);
+  EXPECT_EQ(nullptr, frames[1].module);
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStop) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_profile = 1;
+
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+
+  Profile profile;
+  WithTargetThread(&scenario, [&](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    profiler.Stop();
+    profiler.AddAuxUnwinder(
+        std::make_unique<TestAuxUnwinder>(Frame(23, nullptr)));
+    sampling_thread_completed.Wait();
+  });
+
+  // The AuxUnwinder should be accepted without error. It will have no effect
+  // since the collection has stopped.
 }
 
 }  // namespace base

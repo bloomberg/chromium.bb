@@ -716,6 +716,9 @@ void StackSamplingProfiler::Start() {
   if (!sampler_)
     return;
 
+  if (pending_aux_unwinder_)
+    sampler_->AddAuxUnwinder(std::move(pending_aux_unwinder_));
+
   // The IsSignaled() check below requires that the WaitableEvent be manually
   // reset, to avoid signaling the event in IsSignaled() itself.
   static_assert(kResetPolicy == WaitableEvent::ResetPolicy::MANUAL,
@@ -748,6 +751,13 @@ void StackSamplingProfiler::Stop() {
 }
 
 void StackSamplingProfiler::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
+  if (profiler_id_ == kNullProfilerId) {
+    // We haven't started sampling, and so don't have a sampler to which we can
+    // pass the unwinder yet. Save it on the instance until we do.
+    pending_aux_unwinder_ = std::move(unwinder);
+    return;
+  }
+
   SamplingThread::GetInstance()->AddAuxUnwinder(profiler_id_,
                                                 std::move(unwinder));
 }
