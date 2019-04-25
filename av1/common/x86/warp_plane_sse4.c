@@ -31,7 +31,7 @@
      coefficients into the correct order more quickly.
 */
 /* clang-format off */
-DECLARE_ALIGNED(8, static const int8_t,
+DECLARE_ALIGNED(8, const int8_t,
                 filter_8bit[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8]) = {
 #if WARPEDPIXEL_PREC_BITS == 6
   // [-1, 0)
