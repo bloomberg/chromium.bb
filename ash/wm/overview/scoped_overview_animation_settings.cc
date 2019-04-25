@@ -48,22 +48,6 @@ constexpr base::TimeDelta kOverviewSelectorTransition =
 constexpr base::TimeDelta kDropTargetFadeIn =
     base::TimeDelta::FromMilliseconds(250);
 
-// Duration of the show/hide animation of the overview title bar.
-constexpr base::TimeDelta kOverviewTitleFade =
-    base::TimeDelta::FromMilliseconds(167);
-
-// Delay before the show animation of the overview title bar.
-constexpr base::TimeDelta kOverviewTitleFadeInDelay =
-    base::TimeDelta::FromMilliseconds(83);
-
-// Duration of the show animation of close icons when a window is snapped.
-constexpr base::TimeDelta kOverviewCloseIconFadeInOnSnap =
-    base::TimeDelta::FromMilliseconds(300);
-
-// Delay before the show animation of close icons when a window is snapped.
-constexpr base::TimeDelta kOverviewCloseIconFadeInOnSnapDelay =
-    base::TimeDelta::FromMilliseconds(750);
-
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -91,11 +75,6 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
       return kOverviewSelectorTransition;
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
-      return kOverviewTitleFade;
-    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
-      return kOverviewCloseIconFadeInOnSnap;
   };
   NOTREACHED();
   return base::TimeDelta();
@@ -163,9 +142,6 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
-    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER:
@@ -262,25 +238,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      break;
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
-      animation_settings_->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-      animation_settings_->SetPreemptionStrategy(
-          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      animator->SchedulePauseForProperties(kOverviewTitleFadeInDelay,
-                                           ui::LayerAnimationElement::OPACITY);
-      break;
-    case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:
-      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
-      animation_settings_->SetPreemptionStrategy(
-          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      break;
-    case OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP:
-      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-      animation_settings_->SetPreemptionStrategy(
-          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      animator->SchedulePauseForProperties(kOverviewCloseIconFadeInOnSnapDelay,
-                                           ui::LayerAnimationElement::OPACITY);
       break;
   }
   animation_settings_->SetTransitionDuration(

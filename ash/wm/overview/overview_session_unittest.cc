@@ -292,7 +292,7 @@ class OverviewSessionTest : public AshTestBase {
   }
 
   views::ImageButton* GetCloseButton(OverviewItem* item) {
-    return item->caption_container_view_->GetCloseButton();
+    return item->GetCloseButtonForTesting();
   }
 
   views::Label* GetLabelView(OverviewItem* item) {

@@ -34,6 +34,7 @@ class ASH_EXPORT OverviewWindowDragController {
     kDragToClose,  // On drag complete, the window will be closed, if it meets
                    // requirements.
   };
+
   enum class DragResult {
     kNeverDisambiguated,     // The drag ended without ever being disambiguated
                              // between drag-to-snap and drag-to-close.
@@ -41,8 +42,8 @@ class ASH_EXPORT OverviewWindowDragController {
     kCanceledDragToSnap,     // The drag was considered as drag-to-snap, but did
                              // not result in snapping the window.
     kSuccessfulDragToClose,  // The drag resulted in closing the window.
-    kCanceledDragToClose,  // The drag was considered as drag-to-close, but did
-                           // not result in closing the window.
+    kCanceledDragToClose,    // The drag was considered as drag-to-close, but
+                             // did not result in closing the window.
   };
 
   explicit OverviewWindowDragController(OverviewSession* overview_session);

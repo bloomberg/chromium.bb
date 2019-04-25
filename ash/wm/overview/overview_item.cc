@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -30,11 +31,17 @@
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -65,6 +72,16 @@ constexpr int kSwipeToCloseCloseTranslationDp = 96;
 // outset in each dimension is on both sides, for a total of twice this much
 // change in the size of the item along that dimension.
 constexpr float kDragWindowScale = 0.05f;
+
+constexpr int kCloseButtonInkDropInsetDp = 2;
+
+constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
+
+// The colors of the close button ripple.
+constexpr SkColor kCloseButtonInkDropRippleColor =
+    SkColorSetA(kCloseButtonColor, 0x0F);
+constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
+    SkColorSetA(kCloseButtonColor, 0x14);
 
 }  // namespace
 
@@ -103,6 +120,62 @@ class OverviewItem::WindowSurfaceCacheObserver : public aura::WindowObserver {
 
   aura::Window* window_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(WindowSurfaceCacheObserver);
+};
+
+// The close button for the overview item. It has a custom ink drop.
+class OverviewItem::OverviewCloseButton : public views::ImageButton {
+ public:
+  explicit OverviewCloseButton(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
+    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
+    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                      views::ImageButton::ALIGN_MIDDLE);
+    SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
+    SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+  }
+
+  ~OverviewCloseButton() override = default;
+
+  // Resets the listener so that the listener can go out of scope.
+  void ResetListener() { listener_ = nullptr; }
+
+ protected:
+  // views::Button:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
+    ink_drop->SetAutoHighlightMode(
+        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+    ink_drop->SetShowHighlightOnHover(true);
+    return ink_drop;
+  }
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+        kCloseButtonInkDropRippleColor, /*visible_opacity=*/1.f);
+  }
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return std::make_unique<views::InkDropHighlight>(
+        gfx::PointF(GetLocalBounds().CenterPoint()),
+        std::make_unique<views::CircleLayerDelegate>(
+            kCloseButtonInkDropRippleHighlightColor, GetInkDropRadius()));
+  }
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::CircleInkDropMask>(
+        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
+  }
+
+ private:
+  int GetInkDropRadius() const {
+    return std::min(size().width(), size().height()) / 2 -
+           kCloseButtonInkDropInsetDp;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
 };
 
 OverviewItem::OverviewItem(aura::Window* window,
@@ -157,6 +230,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   }
 
   caption_container_view_->ResetEventDelegate();
+  close_button_->ResetListener();
   transform_window_.RestoreWindow(
       reset_transform, overview_session_->enter_exit_overview_type());
 }
@@ -341,6 +415,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
   animating_to_close_ = true;
   overview_session_->PositionWindows(/*animate=*/true);
   caption_container_view_->ResetEventDelegate();
+  close_button_->ResetListener();
 
   int translation_y = kSwipeToCloseCloseTranslationDp * (up ? -1 : 1);
   gfx::Transform transform;
@@ -460,7 +535,7 @@ void OverviewItem::OnSelectorItemDragEnded(bool snap) {
 
   // Update the header.
   if (snap) {
-    caption_container_view_->FadeInCloseIconAfterSnap();
+    caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
@@ -693,7 +768,13 @@ void OverviewItem::HandleGestureEndEvent() {
   overview_session_->ResetDraggedWindowGesture();
 }
 
-void OverviewItem::HandleCloseButtonClicked() {
+bool OverviewItem::ShouldIgnoreGestureEvents() {
+  return IsSlidingOutOverviewFromShelf();
+}
+
+void OverviewItem::ButtonPressed(views::Button* sender,
+                                 const ui::Event& event) {
+  DCHECK_EQ(sender, close_button_);
   if (IsSlidingOutOverviewFromShelf())
     return;
 
@@ -706,10 +787,6 @@ void OverviewItem::HandleCloseButtonClicked() {
         base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
   }
   CloseWindow();
-}
-
-bool OverviewItem::ShouldIgnoreGestureEvents() {
-  return IsSlidingOutOverviewFromShelf();
 }
 
 void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
@@ -759,8 +836,12 @@ void OverviewItem::OnImplicitAnimationsCompleted() {
   transform_window_.Close();
 }
 
+views::ImageButton* OverviewItem::GetCloseButtonForTesting() {
+  return static_cast<views::ImageButton*>(close_button_);
+}
+
 float OverviewItem::GetCloseButtonVisibilityForTesting() const {
-  return caption_container_view_->GetCloseButton()->layer()->opacity();
+  return close_button_->layer()->opacity();
 }
 
 float OverviewItem::GetTitlebarOpacityForTesting() const {
@@ -839,7 +920,9 @@ void OverviewItem::CreateWindowLabel() {
   shadow_->Init(kShadowElevation);
   item_widget_->GetLayer()->Add(shadow_->layer());
 
-  caption_container_view_ = new CaptionContainerView(this, GetWindow());
+  close_button_ = new OverviewCloseButton(this);
+  caption_container_view_ =
+      new CaptionContainerView(this, GetWindow(), close_button_);
   item_widget_->SetContentsView(caption_container_view_);
   item_widget_->Show();
   item_widget_->SetOpacity(0);

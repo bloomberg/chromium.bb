@@ -33,7 +33,8 @@ class RoundedLabelWidget;
 // This class represents an item in overview mode.
 class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                                 public aura::WindowObserver,
-                                public ui::ImplicitAnimationObserver {
+                                public ui::ImplicitAnimationObserver,
+                                public views::ButtonListener {
  public:
   OverviewItem(aura::Window* window,
                OverviewSession* overview,
@@ -194,8 +195,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                              float velocity_y) override;
   void HandleTapEvent() override;
   void HandleGestureEndEvent() override;
-  void HandleCloseButtonClicked() override;
   bool ShouldIgnoreGestureEvents() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -233,6 +236,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
+  views::ImageButton* GetCloseButtonForTesting();
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
@@ -242,6 +246,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
  private:
   friend class OverviewSessionTest;
+  class OverviewCloseButton;
   class WindowSurfaceCacheObserver;
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
@@ -296,6 +301,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // The view associated with |item_widget_|. Contains a title, close button and
   // maybe a backdrop. Forwards certain events to |this|.
   CaptionContainerView* caption_container_view_ = nullptr;
+
+  OverviewCloseButton* close_button_ = nullptr;
 
   // A widget with text that may show up on top of |transform_window_| to notify
   // users this window cannot be snapped.

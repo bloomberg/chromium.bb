@@ -13,10 +13,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace ui {
-class Layer;
-}  // namespace ui
-
 namespace views {
 class ImageButton;
 class ImageView;
@@ -55,27 +51,28 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
         const gfx::PointF& location_in_screen) = 0;
     virtual void HandleTapEvent() = 0;
     virtual void HandleGestureEndEvent() = 0;
-    virtual void HandleCloseButtonClicked() = 0;
     virtual bool ShouldIgnoreGestureEvents() = 0;
 
    protected:
     virtual ~EventDelegate() {}
   };
 
-  CaptionContainerView(EventDelegate* event_delegate, aura::Window* window);
+  CaptionContainerView(EventDelegate* event_delegate,
+                       aura::Window* window,
+                       views::ImageButton* close_button);
   ~CaptionContainerView() override;
 
-  // Fades in and out the app icon, title, and close button, choosing an
-  // overview animation type based on whether fading in or fading out. When a
-  // window gets snapped, use |FadeInCloseIconAfterSnap| instead.
+  // Fades the app icon and title out if |visibility| is kInvisible, in
+  // otherwise. If |close_button_| is not null, also fades the close button in
+  // if |visibility| is kVisible, out otherwise. Sets
+  // |current_header_visibility_| to |visibility|.
   void SetHeaderVisibility(HeaderVisibility visibility);
 
-  // Fade in the close icon with a special overview animation type (specifically
-  // |OVERVIEW_ANIMATION_OVERVIEW_CLOSE_ICON_FADE_IN_ON_SNAP|) for when a
-  // dragged window gets snapped. This function may be called before or after
-  // the window is snapped. It is called before the snap in case of dragging
-  // from the top, but after the snap in case of dragging from overview.
-  void FadeInCloseIconAfterSnap();
+  // Hides the close button instantaneously, and then fades it in slowly and
+  // with a long delay. Sets |current_header_visibility_| to kVisible. Assumes
+  // that |close_button_| is not null, and that |current_header_visibility_| is
+  // not kInvisible.
+  void HideCloseInstantlyAndThenShowItSlowly();
 
   // Sets the visiblity of |backdrop_view_|. Creates it if it is null.
   void SetBackdropVisibility(bool visible);
@@ -84,8 +81,6 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
 
   // Set the title of the view, and also updates the accessiblity name.
   void SetTitle(const base::string16& title);
-
-  views::ImageButton* GetCloseButton();
 
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
@@ -102,22 +97,14 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   bool CanAcceptEvent(const ui::Event& event) override;
 
  private:
-  class OverviewCloseButton;
-
-  // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
-  // otherwise. The tween type differs for |visible| and if |visible| is true
-  // there is a slight delay before the animation begins. Does not animate if
-  // opacity matches |visible|.
-  void AnimateLayerOpacity(ui::Layer* layer, bool visible);
-
   // The delegate which all the events get forwarded to.
   EventDelegate* event_delegate_;
 
-  // View which contains the icon, title and close button.
+  // View which contains the icon, title and an optional close button.
   views::View* header_view_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::ImageView* image_view_ = nullptr;
-  OverviewCloseButton* close_button_ = nullptr;
+  views::ImageButton* close_button_;
 
   // A view that covers the area except the header. It is null when the window
   // associated is not pillar or letter boxed.
