@@ -42,7 +42,7 @@
 #include "common/video_reader.h"
 
 // Max JSON buffer size.
-const int MAX_BUFFER = 1024 * 1024 * 32;
+const int MAX_BUFFER = 1024 * 1024 * 256;
 
 typedef enum {
   ACCOUNTING_LAYER = 1,
