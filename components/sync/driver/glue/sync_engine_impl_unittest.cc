@@ -31,7 +31,6 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"

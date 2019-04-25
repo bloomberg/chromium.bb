@@ -13,7 +13,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"

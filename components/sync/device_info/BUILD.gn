@@ -44,3 +44,25 @@ jumbo_static_library("device_info") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "device_count_metrics_provider_unittest.cc",
+    "device_info_sync_bridge_unittest.cc",
+    "device_info_util_unittest.cc",
+    "local_device_info_provider_impl_unittest.cc",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  deps = [
+    ":device_info",
+    "//base",
+    "//base/test:test_support",
+    "//components/sync:test_support",
+    "//components/version_info:version_string",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

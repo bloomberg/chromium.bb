@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/engine/sync_encryption_handler.h"

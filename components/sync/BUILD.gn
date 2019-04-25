@@ -17,8 +17,8 @@ group("sync") {
 
 # Note: This target intentionally doesn't include test_support_fake_server -
 # targets that need the fake server should depend on it explicitly. It also
-# doesn't include test_support_device_info or test_support_user_events, which
-# should be moved out of components/sync entirely.
+# doesn't include test_support_user_events, which should be moved out of
+# components/sync entirely.
 group("test_support") {
   testonly = true
   public_deps = [
@@ -587,10 +587,6 @@ source_set("unit_tests") {
     "base/system_encryptor_unittest.cc",
     "base/unique_position_unittest.cc",
     "base/weak_handle_unittest.cc",
-    "device_info/device_count_metrics_provider_unittest.cc",
-    "device_info/device_info_sync_bridge_unittest.cc",
-    "device_info/device_info_util_unittest.cc",
-    "device_info/local_device_info_provider_impl_unittest.cc",
     "driver/about_sync_util_unittest.cc",
     "driver/async_directory_type_controller_unittest.cc",
     "driver/backend_migrator_unittest.cc",
@@ -702,7 +698,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/signin/core/browser:internals_test_support",
     "//components/sync/base:test_support",
-    "//components/sync/device_info",
+    "//components/sync/device_info:unit_tests",
     "//components/sync/driver:test_support",
     "//components/sync/js:test_support",
     "//components/sync/user_events",
