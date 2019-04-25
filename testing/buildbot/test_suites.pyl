@@ -2541,6 +2541,9 @@
 
     'cronet_isolated_scripts': {
       'cronet_sizes': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
         'swarming': {
           'dimension_sets': [
             {

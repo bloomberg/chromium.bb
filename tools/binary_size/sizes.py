@@ -403,10 +403,16 @@ def main():
       default=default_platform,
       help='specify platform (%s) [default: %%(default)s]' %
       ', '.join(platforms))
-  parser.add_argument('--json', help='Path to JSON output file')
+
+  # Accepted to conform to the isolated script interface, but ignored.
+  parser.add_argument('--isolated-script-test-filter', help=argparse.SUPPRESS)
   parser.add_argument(
-      '--results-directory',
-      help='Directory to dump data in the HistogramSet format')
+      '--isolated-script-test-perf-output', help=argparse.SUPPRESS)
+
+  parser.add_argument(
+      '--isolated-script-test-output',
+      type=os.path.realpath,
+      help='File to which simplified JSON results will be written.')
 
   args = parser.parse_args()
 
@@ -420,28 +426,44 @@ def main():
     sys.stderr.write(msg + '    ' + ' '.join(platforms) + '\n')
     return 2
 
+  isolated_script_output = {'valid': False, 'failures': []}
+  test_name = 'sizes'
+
+  results_directory = None
+  if args.isolated_script_test_output:
+    results_directory = os.path.join(
+        os.path.dirname(args.isolated_script_test_output), test_name)
+    if not os.path.exists(results_directory):
+      os.makedirs(results_directory)
+
   results_collector = ResultsCollector()
-  rc = real_main(args.output_directory, results_collector)
+  try:
+    rc = real_main(args.output_directory, results_collector)
+    isolated_script_output = {
+        'valid': True,
+        'failures': [test_name] if rc else [],
+    }
+  finally:
+    if results_directory:
+      results_path = os.path.join(results_directory, 'test_results.json')
+      with open(results_path, 'w') as output_file:
+        json.dump(isolated_script_output, output_file)
 
-  if args.json:
-    with open(args.json, 'w') as f:
-      json.dump(results_collector.results, f)
-
-  if args.results_directory:
-    histogram_path = os.path.join(args.results_directory, 'perf_results.json')
-    # We need to add a bit more data to the results and rearrange some things,
-    # otherwise the conversion fails due to the provided data being malformed.
-    updated_results = format_for_histograms_conversion(
-        results_collector.results)
-    with open(histogram_path, 'w') as f:
-      json.dump(updated_results, f)
-    histogram_result = convert_chart_json.ConvertChartJson(histogram_path)
-    if histogram_result.returncode != 0:
-      sys.stderr.write(
-          'chartjson conversion failed: %s\n' % histogram_result.stdout)
-      return histogram_result.returncode
-    with open(histogram_path, 'w') as f:
-      f.write(histogram_result.stdout)
+      histogram_path = os.path.join(results_directory, 'perf_results.json')
+      # We need to add a bit more data to the results and rearrange some things,
+      # otherwise the conversion fails due to the provided data being malformed.
+      updated_results = format_for_histograms_conversion(
+          results_collector.results)
+      with open(histogram_path, 'w') as f:
+        json.dump(updated_results, f)
+      histogram_result = convert_chart_json.ConvertChartJson(histogram_path)
+      if histogram_result.returncode != 0:
+        sys.stderr.write(
+            'chartjson conversion failed: %s\n' % histogram_result.stdout)
+        rc = rc or histogram_result.returncode
+      else:
+        with open(histogram_path, 'w') as f:
+          f.write(histogram_result.stdout)
 
   return rc
 

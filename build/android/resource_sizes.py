@@ -758,9 +758,11 @@ def main():
 
   isolated_script_output = {'valid': False, 'failures': []}
 
+  test_name = 'resource_sizes (%s)' % os.path.basename(args.input)
+
   if args.isolated_script_test_output:
     args.output_dir = os.path.join(
-        os.path.dirname(args.isolated_script_test_output), 'resource_sizes')
+        os.path.dirname(args.isolated_script_test_output), test_name)
     if not os.path.exists(args.output_dir):
       os.makedirs(args.output_dir)
 
@@ -768,7 +770,7 @@ def main():
     result = ResourceSizes(args)
     isolated_script_output = {
         'valid': True,
-        'failures': ['resource_sizes'] if result else [],
+        'failures': [test_name] if result else [],
     }
   finally:
     if args.isolated_script_test_output:

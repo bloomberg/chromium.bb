@@ -17995,6 +17995,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "cronet_sizes",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18074,6 +18077,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "cronet_sizes",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19076,6 +19082,9 @@
     "isolated_scripts": [
       {
         "isolate_name": "cronet_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "cronet_sizes",
         "swarming": {
           "can_use_on_swarming_builders": true,
