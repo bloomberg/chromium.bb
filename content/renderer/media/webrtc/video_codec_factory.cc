@@ -6,7 +6,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -63,14 +62,7 @@ std::vector<webrtc::SdpVideoFormat> MergeFormats(
 std::unique_ptr<webrtc::VideoDecoder> CreateDecoder(
     webrtc::VideoDecoderFactory* factory,
     const webrtc::SdpVideoFormat& format) {
-  if (base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter))
-    return factory ? factory->CreateVideoDecoder(format) : nullptr;
-
-  // TODO(sandersd): Remove calls to GetSupportedFormats() once the
-  // RTCVideoDecoder path is gone.
-  return IsFormatSupported(factory, format)
-             ? factory->CreateVideoDecoder(format)
-             : nullptr;
+  return factory ? factory->CreateVideoDecoder(format) : nullptr;
 }
 
 std::unique_ptr<webrtc::VideoDecoder> Wrap(

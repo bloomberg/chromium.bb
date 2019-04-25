@@ -115,13 +115,7 @@ void GetHardwareSecureDecryptionCaps(
     return;
   }
 
-#if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
-    DVLOG(1) << "Hardware secure codecs not supported because mojo video "
-                "decode was disabled at runtime";
-    return;
-  }
-#else
+#if !BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   DVLOG(1) << "Hardware secure codecs not supported because mojo video "
               "decode was disabled at buildtime";
   return;

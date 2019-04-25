@@ -65,9 +65,7 @@ following gn arguments, the media pipeline will enable `MojoRenderer` and
 enable_mojo_media = true
 mojo_media_services = ["renderer", "cdm"]
 ```
-Note that you must set `enable_mojo_media` first.  Also, some remote media
-components are also controlled by run time features, e.g.
-`media::kMojoVideoDecoder`.
+Note that you must set `enable_mojo_media` first.
 
 ### Media Mojo Interface Factory
 

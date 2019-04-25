@@ -38,7 +38,6 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
 
  private:
   media::GpuVideoAcceleratorFactories* gpu_factories_;
-  std::vector<webrtc::SdpVideoFormat> supported_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };

@@ -48,9 +48,6 @@ void MojoDecoderFactory::CreateVideoDecoders(
     const gfx::ColorSpace& target_color_space,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  // If MojoVideoDecoder is not enabled, then return without adding anything.
-  if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder))
-    return;
   mojom::VideoDecoderPtr video_decoder_ptr;
 
 #if defined(OS_WIN)

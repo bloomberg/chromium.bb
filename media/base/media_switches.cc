@@ -245,12 +245,7 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable MojoVideoDecoder, replacing GpuVideoDecoder.
-const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable The D3D11 Video decoder. Must also enable MojoVideoDecoder for
-// this to have any effect.
+// Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -277,10 +272,6 @@ const base::Feature kMseBufferByPts{"MseBufferByPts",
 // new estimator.
 const base::Feature kNewEncodeCpuLoadEstimator{
     "NewEncodeCpuLoadEstimator", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
-const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
