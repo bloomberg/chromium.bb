@@ -5,14 +5,17 @@
 #include "ash/system/message_center/unified_message_list_view.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/notification_swipe_control_view.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/auto_reset.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view_factory.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -33,6 +36,32 @@ constexpr base::TimeDelta kClearAllVisibleAnimationDuration =
     base::TimeDelta::FromMilliseconds(160);
 
 }  // namespace
+
+// The background of the UnifiedMessageListView, which has a strait top and a
+// rounded bottom.
+class UnifiedMessageListView::Background : public views::Background {
+ public:
+  Background() = default;
+  ~Background() override = default;
+
+  // views::Background:
+  void Paint(gfx::Canvas* canvas, View* view) const override {
+    gfx::Rect bounds = view->GetLocalBounds();
+    SkPath background_path;
+    SkScalar radius = SkIntToScalar(kUnifiedTrayCornerRadius);
+    SkScalar radii[8] = {0, 0, 0, 0, radius, radius, radius, radius};
+    background_path.addRoundRect(gfx::RectToSkRect(bounds), radii);
+
+    cc::PaintFlags flags;
+    flags.setColor(message_center_style::kSwipeControlBackgroundColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    canvas->DrawPath(background_path, flags);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Background);
+};
 
 // Container view of notification and swipe control.
 // All children of UnifiedMessageListView should be MessageViewContainer.
@@ -169,6 +198,8 @@ UnifiedMessageListView::UnifiedMessageListView(
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
   animation_->SetCurrentValue(1.0);
+  SetBackground(std::unique_ptr<views::Background>(
+      new UnifiedMessageListView::Background()));
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {

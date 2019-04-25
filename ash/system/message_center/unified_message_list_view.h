@@ -102,6 +102,7 @@ class ASH_EXPORT UnifiedMessageListView
  private:
   friend class UnifiedMessageCenterViewTest;
   friend class UnifiedMessageListViewTest;
+  class Background;
   class MessageViewContainer;
 
   // UnifiedMessageListView always runs single animation at one time. When
