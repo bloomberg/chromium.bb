@@ -121,7 +121,8 @@ class InputIPCTest : public ::testing::Test {
   InputIPCTest()
       : scoped_task_environment(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {}
   std::unique_ptr<StrictMock<TestStreamFactory>> factory_;
 
   void SetUp() override {

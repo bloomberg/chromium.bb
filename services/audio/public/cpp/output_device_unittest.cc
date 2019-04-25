@@ -138,7 +138,8 @@ class AudioServiceOutputDeviceTest : public testing::Test {
  public:
   AudioServiceOutputDeviceTest()
       : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                      QUEUED) {
     service_manager::mojom::ConnectorRequest connector_request;
     connector_ = service_manager::Connector::Create(&connector_request);
     stream_factory_ = std::make_unique<FakeOutputStreamFactory>();
