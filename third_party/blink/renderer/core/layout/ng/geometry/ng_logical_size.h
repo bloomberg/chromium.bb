@@ -49,6 +49,18 @@ inline NGLogicalSize& operator-=(NGLogicalSize& a, const NGBoxStrut& b) {
   return a;
 }
 
+inline NGLogicalOffset operator+(const NGLogicalOffset& offset,
+                                 const NGLogicalSize& size) {
+  return {offset.inline_offset + size.inline_size,
+          offset.block_offset + size.block_size};
+}
+
+inline NGLogicalOffset& operator+=(NGLogicalOffset& offset,
+                                   const NGLogicalSize& size) {
+  offset = offset + size;
+  return offset;
+}
+
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLogicalSize&);
 
 // NGLogicalDelta resolves the ambiguity of subtractions.
@@ -64,6 +76,11 @@ struct CORE_EXPORT NGLogicalDelta : public NGLogicalSize {
   using NGLogicalSize::NGLogicalSize;
   operator NGLogicalOffset() const { return {inline_size, block_size}; }
 };
+
+inline NGLogicalDelta operator-(const NGLogicalOffset& a,
+                                const NGLogicalOffset& b) {
+  return {a.inline_offset - b.inline_offset, a.block_offset - b.block_offset};
+}
 
 }  // namespace blink
 

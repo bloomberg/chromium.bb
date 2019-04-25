@@ -38,7 +38,9 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
 
   bool Contains(const NGPhysicalOffsetRect& other) const;
 
-  NGPhysicalOffsetRect operator+(const NGPhysicalOffset&) const;
+  NGPhysicalOffsetRect operator+(const NGPhysicalOffset&) const {
+    return {this->offset + offset, size};
+  }
 
   void Unite(const NGPhysicalOffsetRect&);
   void UniteIfNonZero(const NGPhysicalOffsetRect&);

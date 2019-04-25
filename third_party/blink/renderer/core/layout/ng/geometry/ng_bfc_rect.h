@@ -39,7 +39,10 @@ struct CORE_EXPORT NGBfcRect {
     return end_offset.line_offset - start_offset.line_offset;
   }
 
-  bool operator==(const NGBfcRect& other) const;
+  bool operator==(const NGBfcRect& other) const {
+    return start_offset == other.start_offset && end_offset == other.end_offset;
+  }
+
   bool operator!=(const NGBfcRect& other) const { return !(*this == other); }
 
   NGBfcOffset start_offset;

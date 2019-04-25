@@ -13,7 +13,6 @@
 namespace blink {
 
 struct NGLogicalDelta;
-struct NGLogicalSize;
 struct NGPhysicalOffset;
 struct NGPhysicalSize;
 
@@ -39,22 +38,49 @@ struct CORE_EXPORT NGLogicalOffset {
                                      NGPhysicalSize outer_size,
                                      NGPhysicalSize inner_size) const;
 
-  bool operator==(const NGLogicalOffset& other) const;
-  bool operator!=(const NGLogicalOffset& other) const;
+  bool operator==(const NGLogicalOffset& other) const {
+    return std::tie(other.inline_offset, other.block_offset) ==
+           std::tie(inline_offset, block_offset);
+  }
+  bool operator!=(const NGLogicalOffset& other) const {
+    return !operator==(other);
+  }
 
-  NGLogicalOffset operator+(const NGLogicalOffset& other) const;
-  NGLogicalOffset operator+(const NGLogicalSize& size) const;
-  NGLogicalOffset& operator+=(const NGLogicalOffset& other);
-  NGLogicalOffset& operator+=(const NGLogicalSize& size);
+  NGLogicalOffset operator+(const NGLogicalOffset& other) const {
+    return {inline_offset + other.inline_offset,
+            block_offset + other.block_offset};
+  }
 
-  NGLogicalDelta operator-(const NGLogicalOffset& other) const;
-  NGLogicalOffset& operator-=(const NGLogicalOffset& other);
+  NGLogicalOffset& operator+=(const NGLogicalOffset& other) {
+    *this = *this + other;
+    return *this;
+  }
 
-  bool operator>(const NGLogicalOffset& other) const;
-  bool operator>=(const NGLogicalOffset& other) const;
+  NGLogicalOffset& operator-=(const NGLogicalOffset& other) {
+    inline_offset -= other.inline_offset;
+    block_offset -= other.block_offset;
+    return *this;
+  }
 
-  bool operator<(const NGLogicalOffset& other) const;
-  bool operator<=(const NGLogicalOffset& other) const;
+  // We also have +, - operators for NGLogicalDelta, NGLogicalSize and
+  // NGLogicalOffset defined in ng_logical_size.h
+
+  bool operator>(const NGLogicalOffset& other) const {
+    return inline_offset > other.inline_offset &&
+           block_offset > other.block_offset;
+  }
+  bool operator>=(const NGLogicalOffset& other) const {
+    return inline_offset >= other.inline_offset &&
+           block_offset >= other.block_offset;
+  }
+  bool operator<(const NGLogicalOffset& other) const {
+    return inline_offset < other.inline_offset &&
+           block_offset < other.block_offset;
+  }
+  bool operator<=(const NGLogicalOffset& other) const {
+    return inline_offset <= other.inline_offset &&
+           block_offset <= other.block_offset;
+  }
 
   String ToString() const;
 };

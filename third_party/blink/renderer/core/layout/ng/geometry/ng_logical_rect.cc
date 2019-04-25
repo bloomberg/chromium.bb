@@ -24,23 +24,6 @@ inline NGLogicalOffset Max(NGLogicalOffset a, NGLogicalOffset b) {
 
 }  // namespace
 
-NGLogicalRect::NGLogicalRect(const LayoutRect& source)
-    : NGLogicalRect({source.X(), source.Y()},
-                    {source.Width(), source.Height()}) {}
-
-LayoutRect NGLogicalRect::ToLayoutRect() const {
-  return {offset.inline_offset, offset.block_offset, size.inline_size,
-          size.block_size};
-}
-
-bool NGLogicalRect::operator==(const NGLogicalRect& other) const {
-  return other.offset == offset && other.size == size;
-}
-
-NGLogicalRect NGLogicalRect::operator+(const NGLogicalOffset& offset) const {
-  return {this->offset + offset, size};
-}
-
 void NGLogicalRect::Unite(const NGLogicalRect& other) {
   if (other.IsEmpty())
     return;

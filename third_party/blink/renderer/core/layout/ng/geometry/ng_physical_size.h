@@ -47,6 +47,8 @@ struct CORE_EXPORT NGPhysicalSize {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
+  explicit NGPhysicalSize(const LayoutSize& size)
+      : width(size.Width()), height(size.Height()) {}
   LayoutSize ToLayoutSize() const { return {width, height}; }
 
   String ToString() const;

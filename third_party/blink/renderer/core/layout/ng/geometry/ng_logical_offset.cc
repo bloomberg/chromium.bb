@@ -52,66 +52,6 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
   }
 }
 
-bool NGLogicalOffset::operator==(const NGLogicalOffset& other) const {
-  return std::tie(other.inline_offset, other.block_offset) ==
-         std::tie(inline_offset, block_offset);
-}
-
-bool NGLogicalOffset::operator!=(const NGLogicalOffset& other) const {
-  return !operator==(other);
-}
-
-NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalOffset& other) const {
-  NGLogicalOffset result;
-  result.inline_offset = this->inline_offset + other.inline_offset;
-  result.block_offset = this->block_offset + other.block_offset;
-  return result;
-}
-
-NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalSize& size) const {
-  return {inline_offset + size.inline_size, block_offset + size.block_size};
-}
-
-NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalOffset& other) {
-  *this = *this + other;
-  return *this;
-}
-
-NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalSize& size) {
-  *this = *this + size;
-  return *this;
-}
-
-bool NGLogicalOffset::operator>(const NGLogicalOffset& other) const {
-  return inline_offset > other.inline_offset &&
-         block_offset > other.block_offset;
-}
-
-bool NGLogicalOffset::operator>=(const NGLogicalOffset& other) const {
-  return inline_offset >= other.inline_offset &&
-         block_offset >= other.block_offset;
-}
-
-bool NGLogicalOffset::operator<(const NGLogicalOffset& other) const {
-  return inline_offset < other.inline_offset &&
-         block_offset < other.block_offset;
-}
-
-bool NGLogicalOffset::operator<=(const NGLogicalOffset& other) const {
-  return inline_offset <= other.inline_offset &&
-         block_offset <= other.block_offset;
-}
-
-NGLogicalDelta NGLogicalOffset::operator-(const NGLogicalOffset& other) const {
-  return {inline_offset - other.inline_offset,
-          block_offset - other.block_offset};
-}
-
-NGLogicalOffset& NGLogicalOffset::operator-=(const NGLogicalOffset& other) {
-  *this = *this - other;
-  return *this;
-}
-
 String NGLogicalOffset::ToString() const {
   return String::Format("%d,%d", inline_offset.ToInt(), block_offset.ToInt());
 }

@@ -44,8 +44,12 @@ struct CORE_EXPORT NGBfcOffset {
             block_offset + delta.block_offset_delta};
   }
 
-  bool operator==(const NGBfcOffset& other) const;
-  bool operator!=(const NGBfcOffset& other) const;
+  bool operator==(const NGBfcOffset& other) const {
+    return std::tie(other.line_offset, other.block_offset) ==
+           std::tie(line_offset, block_offset);
+  }
+
+  bool operator!=(const NGBfcOffset& other) const { return !operator==(other); }
 
   String ToString() const;
 };

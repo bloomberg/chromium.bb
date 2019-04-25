@@ -16,11 +16,6 @@ bool NGPhysicalOffsetRect::Contains(const NGPhysicalOffsetRect& other) const {
          Right() >= other.Right() && Bottom() >= other.Bottom();
 }
 
-NGPhysicalOffsetRect NGPhysicalOffsetRect::operator+(
-    const NGPhysicalOffset& offset) const {
-  return {this->offset + offset, size};
-}
-
 void NGPhysicalOffsetRect::Unite(const NGPhysicalOffsetRect& other) {
   if (other.IsEmpty())
     return;

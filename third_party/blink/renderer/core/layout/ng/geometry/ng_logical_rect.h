@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
@@ -20,8 +21,14 @@ struct CORE_EXPORT NGLogicalRect {
   NGLogicalRect(const NGLogicalOffset& offset, const NGLogicalSize& size)
       : offset(offset), size(size) {}
 
-  explicit NGLogicalRect(const LayoutRect&);
-  LayoutRect ToLayoutRect() const;
+  explicit NGLogicalRect(const LayoutRect& source)
+      : NGLogicalRect({source.X(), source.Y()},
+                      {source.Width(), source.Height()}) {}
+
+  LayoutRect ToLayoutRect() const {
+    return {offset.inline_offset, offset.block_offset, size.inline_size,
+            size.block_size};
+  }
 
   NGLogicalOffset offset;
   NGLogicalSize size;
@@ -29,9 +36,13 @@ struct CORE_EXPORT NGLogicalRect {
   NGLogicalOffset EndOffset() const { return offset + size; }
   bool IsEmpty() const { return size.IsEmpty(); }
 
-  bool operator==(const NGLogicalRect& other) const;
+  bool operator==(const NGLogicalRect& other) const {
+    return other.offset == offset && other.size == size;
+  }
 
-  NGLogicalRect operator+(const NGLogicalOffset&) const;
+  NGLogicalRect operator+(const NGLogicalOffset&) const {
+    return {this->offset + offset, size};
+  }
 
   void Unite(const NGLogicalRect&);
 

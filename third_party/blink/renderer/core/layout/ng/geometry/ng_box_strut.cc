@@ -41,10 +41,6 @@ NGLineBoxStrut::NGLineBoxStrut(const NGBoxStrut& flow_relative,
   }
 }
 
-LayoutRectOutsets NGPhysicalBoxStrut::ToLayoutRectOutsets() const {
-  return LayoutRectOutsets(top, right, bottom, left);
-}
-
 std::ostream& operator<<(std::ostream& stream, const NGLineBoxStrut& value) {
   return stream << "Inline: (" << value.inline_start << " " << value.inline_end
                 << ") Line: (" << value.line_over << " " << value.line_under
