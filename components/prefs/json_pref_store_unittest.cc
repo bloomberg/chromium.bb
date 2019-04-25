@@ -134,16 +134,16 @@ enum class CommitPendingWriteMode {
   WITH_SYNCHRONOUS_CALLBACK,
 };
 
-base::test::ScopedTaskEnvironment::ExecutionMode GetExecutionMode(
+base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode GetExecutionMode(
     CommitPendingWriteMode commit_mode) {
   switch (commit_mode) {
     case CommitPendingWriteMode::WITHOUT_CALLBACK:
       FALLTHROUGH;
     case CommitPendingWriteMode::WITH_CALLBACK:
-      return base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED;
+      return base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED;
     case CommitPendingWriteMode::WITH_SYNCHRONOUS_CALLBACK:
       // Synchronous callbacks require async tasks to run on their own.
-      return base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC;
+      return base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC;
   }
 }
 
@@ -838,7 +838,7 @@ class JsonPrefStoreCallbackTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
+      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 
   base::ScopedTempDir temp_dir_;
 
