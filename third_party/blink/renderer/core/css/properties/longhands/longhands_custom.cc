@@ -2078,8 +2078,10 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
     list->Append(*size);
   if (layout)
     list->Append(*layout);
-  if (style)
+  if (style) {
+    context.Count(WebFeature::kCSSValueContainStyle);
     list->Append(*style);
+  }
   if (paint)
     list->Append(*paint);
   if (!list->length())

@@ -535,4 +535,15 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyAnimationNameCustomIdentUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyContainStyleUseCount) {
+  WebFeature feature = WebFeature::kCSSValueContainStyle;
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "strict");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "content");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kContain, "style paint");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
 }  // namespace blink
