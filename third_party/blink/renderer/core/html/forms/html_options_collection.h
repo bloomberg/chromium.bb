@@ -37,9 +37,8 @@ class HTMLOptionsCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLOptionsCollection* Create(ContainerNode&, CollectionType);
-
   explicit HTMLOptionsCollection(ContainerNode&);
+  HTMLOptionsCollection(ContainerNode&, CollectionType);
 
   HTMLOptionElement* item(unsigned offset) const {
     return ToHTMLOptionElement(HTMLCollection::item(offset));

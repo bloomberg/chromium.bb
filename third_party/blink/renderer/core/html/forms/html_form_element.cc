@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 
 #include <limits>
+
 #include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
@@ -81,11 +82,8 @@ HTMLFormElement::HTMLFormElement(Document& document)
       is_in_reset_function_(false) {
   static unsigned next_nique_renderer_form_id = 0;
   unique_renderer_form_id_ = next_nique_renderer_form_id++;
-}
 
-HTMLFormElement* HTMLFormElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kFormElement);
-  return MakeGarbageCollected<HTMLFormElement>(document);
 }
 
 HTMLFormElement::~HTMLFormElement() = default;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
 #include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -127,7 +128,7 @@ TEST_F(HTMLInputElementTest, DefaultToolTip) {
   GetDocument().body()->AppendChild(input_without_form);
   EXPECT_EQ("<<ValidationValueMissing>>", input_without_form->DefaultToolTip());
 
-  HTMLFormElement* form = HTMLFormElement::Create(GetDocument());
+  auto* form = MakeGarbageCollected<HTMLFormElement>(GetDocument());
   GetDocument().body()->AppendChild(form);
   auto* input_with_form =
       HTMLInputElement::Create(GetDocument(), CreateElementFlags());

@@ -44,8 +44,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLFormElement* Create(Document&);
-
   explicit HTMLFormElement(Document&);
   ~HTMLFormElement() override;
   void Trace(Visitor*) override;

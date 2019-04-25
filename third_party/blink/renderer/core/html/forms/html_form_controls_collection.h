@@ -42,9 +42,9 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLFormControlsCollection* Create(ContainerNode&, CollectionType);
-
   explicit HTMLFormControlsCollection(ContainerNode&);
+  HTMLFormControlsCollection(ContainerNode&, CollectionType);
+
   ~HTMLFormControlsCollection() override;
 
   HTMLElement* item(unsigned offset) const {

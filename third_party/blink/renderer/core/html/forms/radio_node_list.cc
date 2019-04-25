@@ -36,16 +36,18 @@
 
 namespace blink {
 
-RadioNodeList::RadioNodeList(ContainerNode& root_node,
-                             const AtomicString& name,
-                             CollectionType type)
-    : LiveNodeList(root_node,
+RadioNodeList::RadioNodeList(ContainerNode& owner_node,
+                             CollectionType type,
+                             const AtomicString& name)
+    : LiveNodeList(owner_node,
                    type,
                    kInvalidateForFormControls,
-                   IsHTMLFormElement(root_node)
+                   IsHTMLFormElement(owner_node)
                        ? NodeListSearchRoot::kTreeScope
                        : NodeListSearchRoot::kOwnerNode),
-      name_(name) {}
+      name_(name) {
+  DCHECK(type == kRadioNodeListType || type == kRadioImgNodeListType);
+}
 
 RadioNodeList::~RadioNodeList() = default;
 

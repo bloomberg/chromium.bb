@@ -34,6 +34,12 @@ HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
   DCHECK(IsHTMLSelectElement(select));
 }
 
+HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select,
+                                             CollectionType type)
+    : HTMLOptionsCollection(select) {
+  DCHECK_EQ(type, kSelectOptions);
+}
+
 void HTMLOptionsCollection::SupportedPropertyNames(Vector<String>& names) {
   // As per
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
@@ -62,11 +68,6 @@ void HTMLOptionsCollection::SupportedPropertyNames(Vector<String>& names) {
         names.push_back(name_attribute);
     }
   }
-}
-
-HTMLOptionsCollection* HTMLOptionsCollection::Create(ContainerNode& select,
-                                                     CollectionType) {
-  return MakeGarbageCollected<HTMLOptionsCollection>(select);
 }
 
 void HTMLOptionsCollection::add(

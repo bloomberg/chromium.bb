@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/name_node_list.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
@@ -20,7 +21,8 @@ class LiveNodeListRegistryTest : public PageTestBase {
 
  protected:
   const LiveNodeListBase* CreateNodeList() {
-    return NameNodeList::Create(GetDocument(), kNameNodeListType, g_empty_atom);
+    return MakeGarbageCollected<NameNodeList>(GetDocument(), kNameNodeListType,
+                                              g_empty_atom);
   }
 };
 

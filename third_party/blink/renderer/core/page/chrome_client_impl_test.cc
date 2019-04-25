@@ -190,7 +190,7 @@ class PagePopupSuppressionTest : public testing::Test {
         frame->GetDocument()->documentElement());
     date_time_chooser_client_ = MakeGarbageCollected<FakeDateTimeChooserClient>(
         frame->GetDocument()->documentElement());
-    select_ = HTMLSelectElement::Create(*(frame->GetDocument()));
+    select_ = MakeGarbageCollected<HTMLSelectElement>(*(frame->GetDocument()));
   }
 
  protected:

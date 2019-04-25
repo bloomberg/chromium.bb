@@ -46,11 +46,11 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(
   DCHECK(IsHTMLFormElement(owner_node));
 }
 
-HTMLFormControlsCollection* HTMLFormControlsCollection::Create(
+HTMLFormControlsCollection::HTMLFormControlsCollection(
     ContainerNode& owner_node,
-    CollectionType type) {
+    CollectionType type)
+    : HTMLFormControlsCollection(owner_node) {
   DCHECK_EQ(type, kFormControls);
-  return MakeGarbageCollected<HTMLFormControlsCollection>(owner_node);
 }
 
 HTMLFormControlsCollection::~HTMLFormControlsCollection() = default;

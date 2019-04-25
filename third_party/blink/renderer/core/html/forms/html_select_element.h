@@ -52,8 +52,6 @@ class CORE_EXPORT HTMLSelectElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLSelectElement* Create(Document&);
-
   explicit HTMLSelectElement(Document&);
   ~HTMLSelectElement() override;
 

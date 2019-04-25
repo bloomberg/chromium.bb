@@ -146,10 +146,10 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
   DCHECK(IsHTMLTableElement(table));
 }
 
-HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,
-                                                         CollectionType type) {
+HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table,
+                                                 CollectionType type)
+    : HTMLTableRowsCollection(table) {
   DCHECK_EQ(type, kTableRows);
-  return MakeGarbageCollected<HTMLTableRowsCollection>(table);
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {

@@ -100,10 +100,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
   EnsureUserAgentShadowRoot();
 }
 
-HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLSelectElement>(document);
-}
-
 HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
