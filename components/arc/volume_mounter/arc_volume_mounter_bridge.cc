@@ -99,13 +99,13 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
   chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_SD;
 
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
-      chromeos::disks::DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath,
-      kMyFilesUuid, device_label, device_type));
+      DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
+      device_label, device_type));
 }
 
 void ArcVolumeMounterBridge::OnConnectionReady() {
   // Deferring the SendAllMountEvents as a task to current thread to not
-  // block the mojo request since SendAllMountEvents might takes non trivial
+  // block the mojo request since SendAllMountEvents might take non trivial
   // amount of time.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ArcVolumeMounterBridge::SendAllMountEvents,
@@ -115,7 +115,7 @@ void ArcVolumeMounterBridge::OnConnectionReady() {
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPointInfo& mount_info) {
   // ArcVolumeMounter is limited for local storage, as Android's StorageManager
   // volume concept relies on assumption that it is local filesystem. Hence,
   // special volumes like DriveFS should not come through this path.
@@ -166,7 +166,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
 
 void ArcVolumeMounterBridge::RequestAllMountPoints() {
   // Deferring the SendAllMountEvents as a task to current thread to not
-  // block the mojo request since SendAllMountEvents might takes non trivial
+  // block the mojo request since SendAllMountEvents might take non trivial
   // amount of time.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ArcVolumeMounterBridge::SendAllMountEvents,
