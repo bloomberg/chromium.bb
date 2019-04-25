@@ -18,9 +18,13 @@ import time
 import webbrowser
 
 from core import cli_helpers
+from core import path_util
 from core.services import luci_auth
 from core.services import pinpoint_service
 from core.services import request
+
+import py_utils
+from py_utils import binary_manager
 
 
 SRC_ROOT = os.path.abspath(
@@ -33,6 +37,11 @@ RUN_BENCHMARK = os.path.join(SRC_ROOT, 'tools', 'perf', 'run_benchmark')
 DATA_DIR = os.path.join(SRC_ROOT, 'tools', 'perf', 'page_sets', 'data')
 RECORD_WPR = os.path.join(SRC_ROOT, 'tools', 'perf', 'record_wpr')
 DEFAULT_REVIEWERS = ['perezju@chromium.org']
+MISSING_RESOURCE_RE = re.compile(
+    r'\[network\]: Failed to load resource: the server responded with a status '
+    r'of 404 \(\) ([^\s]+)')
+TELEMETRY_BIN_DEPS_CONFIG = os.path.join(
+    path_util.GetTelemetryDir(), 'telemetry', 'binary_dependencies.json')
 
 
 def _GetBranchName():
@@ -113,6 +122,26 @@ def _PrintResultsHTMLInfo(out_file):
         cli_helpers.Info('    %-26s%s' % ('[%s]:' % line[0], line[2]))
 
 
+def _ExtractMissingURLsFromLog(replay_log):
+  missing_urls = []
+  with open(replay_log) as replay_file:
+    for line in replay_file:
+      match = MISSING_RESOURCE_RE.search(line)
+      if match:
+        missing_urls.append(match.group(1))
+  return missing_urls
+
+
+def _CountLogLines(log_file, line_matcher_re=r'.*'):
+  num_lines = 0
+  line_matcher = re.compile(line_matcher_re)
+  with open(log_file) as log_file_handle:
+    for line in log_file_handle:
+      if line_matcher.search(line):
+        num_lines += 1
+  return num_lines
+
+
 def _UploadArchiveToGoogleStorage(archive):
   """Uploads specified WPR archive to the GS."""
   cli_helpers.Run([
@@ -131,6 +160,37 @@ def _GitAddArtifactHash(archive):
   return True
 
 
+def _PrintRunInfo(out_file, chrome_log_file=False, results_details=True):
+  try:
+    if results_details:
+      _PrintResultsHTMLInfo(out_file)
+  except Exception as e:
+    cli_helpers.Error('Could not print results.html tests: %s' % e)
+
+  cli_helpers.Info('Stdout/Stderr Log: %s' % out_file)
+  if chrome_log_file:
+    cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
+  cli_helpers.Info('    Total output:   %d' % _CountLogLines(out_file))
+  cli_helpers.Info('    Total Console:  %d' %
+                   _CountLogLines(out_file, r'DevTools console'))
+  cli_helpers.Info('    [security]:     %d' %
+                   _CountLogLines(out_file, r'DevTools console .security.'))
+  cli_helpers.Info('    [network]:      %d' %
+                   _CountLogLines(out_file, r'DevTools console .network.'))
+
+  chrome_log = '%s.chrome.log' % out_file
+  if os.path.isfile(chrome_log):
+    cli_helpers.Info('    [javascript]:      %d' %
+                     _CountLogLines(chrome_log, r'Uncaught .*Error'))
+
+  if results_details:
+    missing_urls = _ExtractMissingURLsFromLog(out_file)
+    if missing_urls:
+      cli_helpers.Info( 'Missing URLs in the archive:')
+      for missing_url in missing_urls:
+        cli_helpers.Info(' - %s' % missing_url)
+
+
 class WprUpdater(object):
   def __init__(self, args):
     self.story = args.story
@@ -143,6 +203,7 @@ class WprUpdater(object):
     self.output_dir = tempfile.mkdtemp()
     self.bug_id = args.bug_id
     self.reviewers = args.reviewers or DEFAULT_REVIEWERS
+    self.wpr_go_bin = None
 
   def _CheckLog(self, command, log_name):
     # This is a wrapper around cli_helpers.CheckLog that adds timestamp to the
@@ -232,44 +293,6 @@ class WprUpdater(object):
       _ExtractLogFile(out_file)
     return out_file
 
-  def _PrintRunInfo(self, out_file, results_details=True):
-    try:
-      if results_details:
-        _PrintResultsHTMLInfo(out_file)
-    except Exception as e:
-      cli_helpers.Error('Could not print results.html tests: %s' % e)
-
-    def shell(cmd):
-      return subprocess.check_output(cmd, shell=True).rstrip()
-
-    def statsFor(name, filters='wc -l'):
-      cmd = 'grep "DevTools console .%s." "%s"' % (name, out_file)
-      cmd += ' | ' + filters
-      output = shell(cmd) or '0'
-      if len(output) > 7:
-        cli_helpers.Info('    %-26s%s' % ('[%s]:' % name, cmd))
-        cli_helpers.Info('      ' + output.replace('\n', '\n      '))
-      else:
-        cli_helpers.Info('    %-16s%-8s  %s' % ('[%s]:' % name, output, cmd))
-
-    cli_helpers.Info('Stdout/Stderr Log: %s' % out_file)
-    if self._IsDesktop():  # Mobile test runner does not product the log file.
-      cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
-    cli_helpers.Info(
-        '    Total output:   %s' %
-        subprocess.check_output(['wc', '-l', out_file]).rstrip())
-    cli_helpers.Info(
-        '    Total Console:  %s' %
-        shell('grep "DevTools console" "%s" | wc -l' % out_file))
-    statsFor('security')
-    statsFor('network', 'cut -d " " -f 20- | sort | uniq -c | sort -nr')
-
-    chrome_log = '%s.chrome.log' % out_file
-    if os.path.isfile(chrome_log):
-      cmd = 'grep "Uncaught .*Error" "%s"' % chrome_log
-      count = shell(cmd + '| wc -l')
-      cli_helpers.Info('    %-16s%-8s  %s' % ('[javascript]:', count, cmd))
-
   def _GetBranchIssueUrl(self):
     output_file = os.path.join(self.output_dir, 'git_cl_issue.json')
     subprocess.check_output(['git', 'cl', 'issue', '--json', output_file])
@@ -344,11 +367,26 @@ class WprUpdater(object):
         configuration=configuration, url=resp['jobUrl'])
     return resp['jobUrl']
 
+  def _AddMissingURLsToArchive(self, replay_out_file):
+    existing_wpr = self._ExistingWpr()
+    if not existing_wpr:
+      return
+
+    missing_urls = _ExtractMissingURLsFromLog(replay_out_file)
+    if not missing_urls:
+      return
+
+    if not self.wpr_go_bin:
+      self.wpr_go_bin = (
+        binary_manager.BinaryManager([TELEMETRY_BIN_DEPS_CONFIG]).FetchPath(
+        'wpr_go', py_utils.GetHostArchName(), py_utils.GetHostOsName()))
+    subprocess.check_call([self.wpr_go_bin, 'add', existing_wpr] + missing_urls)
+
   def LiveRun(self):
     cli_helpers.Step('LIVE RUN: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
         log_name='live', live=True)
-    self._PrintRunInfo(out_file)
+    _PrintRunInfo(out_file, chrome_log_file=self._IsDesktop())
     return out_file
 
   def Cleanup(self):
@@ -368,13 +406,14 @@ class WprUpdater(object):
     else:
       args.extend(['--device={device_id}', 'mobile_system_health_story_set'])
     out_file = self._CheckLog(args, log_name='record')
-    self._PrintRunInfo(out_file, results_details=False)
+    _PrintRunInfo(
+        out_file, chrome_log_file=self._IsDesktop(), results_details=False)
 
   def ReplayWpr(self):
     cli_helpers.Step('REPLAY WPR: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
         log_name='replay', live=False)
-    self._PrintRunInfo(out_file)
+    _PrintRunInfo(out_file, chrome_log_file=self._IsDesktop())
     return out_file
 
   def UploadWpr(self):
@@ -501,10 +540,13 @@ class WprUpdater(object):
 
     # Record & replay.
     action = 'record'
+    replay_out_file = None
     while action != 'continue':
       if action == 'record':
         self.RecordWpr()
-      if action in ['record', 'just-replay']:
+      if action == 'add-missing':
+        self._AddMissingURLsToArchive(replay_out_file)
+      if action in ['record', 'add-missing', 'just-replay']:
         replay_out_file = self.ReplayWpr()
         cli_helpers.Comment(
             'Check that the console:error:all metrics above have low values '
@@ -519,10 +561,11 @@ class WprUpdater(object):
       if action == 'stop':
         return
       action = cli_helpers.Ask(
-          'Should I record and replay again, just replay, continue with '
-          'uploading CL, stop and exit, or would you prefer to see diff '
-          'between live/replay console logs?',
-          ['record', 'just-replay', 'continue', 'stop', 'diff'],
+          'Should I record and replay again, just replay, add all missing URLs '
+          'into archive and try replay again, continue with uploading CL, stop '
+          'and exit, or would you prefer to see diff between live/replay '
+          'console logs?',
+          ['record', 'just-replay', 'add-missing', 'continue', 'stop', 'diff'],
           default='continue')
 
     # Upload WPR and create a WIP CL for the new story.

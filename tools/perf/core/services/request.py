@@ -8,9 +8,11 @@ import urllib
 
 import httplib2
 
-from py_utils import retry_util  # pylint: disable=import-error
-
+from core import path_util
 from core.services import luci_auth
+
+path_util.AddPyUtilsToPath()
+from py_utils import retry_util  # pylint: disable=import-error
 
 
 # Some services pad JSON responses with a security prefix to prevent against
