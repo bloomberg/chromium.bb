@@ -384,62 +384,6 @@ template("test") {
   }
 }
 
-template("generated_script_test") {
-  # Invoker must define generator_script location which is used to generate
-  # the executable script. The generator_script will be invoked as follows:
-  # $ <generator_script> --script-output-path=<path to generate the executable>
-  #                      [extra args]
-  # For this template, it's expected to generate the executable script in bin/
-  # directory of the output directory.
-  assert(defined(invoker.generator_script), "Generator script must be defined")
-
-  # Invoker can add extra arguments to be passed to the generator script
-  # through defining |extra_args|.
-  _extra_args = []
-  if (defined(invoker.extra_args)) {
-    _extra_args += invoker.extra_args
-  }
-
-  _generator_script = invoker.generator_script
-  _gen_runner_target = "${target_name}__runner"
-  _target_name = target_name
-
-  action(_gen_runner_target) {
-    if (is_win) {
-      _target_executable = "run_${_target_name}.bat"
-    } else {
-      _target_executable = "run_${_target_name}"
-    }
-    _wrapper_dir = "${root_build_dir}/bin"
-    script = _generator_script
-    inputs = []
-    outputs = [
-      "$_wrapper_dir/$_target_executable",
-    ]
-    args = [
-      "--script-output-path",
-      rebase_path(outputs[0], root_build_dir),
-    ]
-    args += _extra_args
-  }
-
-  group(target_name) {
-    testonly = true
-    forward_variables_from(invoker,
-                           [
-                             "deps",
-                             "testonly",
-                             "data",
-                             "data_deps",
-                           ])
-
-    if (!defined(invoker.deps)) {
-      deps = []
-    }
-    deps += [ ":$_gen_runner_target" ]
-  }
-}
-
 # Test defaults.
 set_defaults("test") {
   if (is_android) {

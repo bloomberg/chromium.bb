@@ -12,6 +12,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
+import("//build/util/generate_wrapper.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -19,7 +20,6 @@ import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
-import("//testing/test.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
@@ -979,19 +979,22 @@ if (!is_ios) {
   # and is useful for testing with the regular isolate mechanism.
   # To run the full web test suite you need to use
   # :blink_web_tests_exparchive, above, instead.
-  generated_script_test("blink_web_tests") {
-    generator_script =
-        "//testing/scripts/generators/gen_run_web_tests_script.py"
-    extra_args = []
+  generate_wrapper("blink_web_tests") {
+    testonly = true
+    wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"
+    executable = "//third_party/blink/tools/run_web_tests.py"
+    executable_args = []
+
     if (is_debug) {
-      extra_args += [
-        "--build-type",
-        "debug",
-      ]
+      executable_args += [ "--debug" ]
     } else {
-      extra_args += [
-        "--build-type",
-        "release",
+      executable_args += [ "--release" ]
+    }
+
+    if (is_android) {
+      executable_args += [
+        "--platform",
+        "android",
       ]
     }
 
