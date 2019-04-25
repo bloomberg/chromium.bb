@@ -69,8 +69,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
   CHECK(render_view_host ||
-        (frame_tree_node_->render_manager()->ForInnerDelegate() &&
-         frame_tree_node_->IsMainFrame()));
+        frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate());
   if (render_view_host)
     frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
@@ -80,8 +79,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
                                     ->current_frame_host()
                                     ->GetSiteInstance() == site_instance;
   bool is_proxy_to_outer_delegate =
-      frame_tree_node_->IsMainFrame() &&
-      frame_tree_node_->render_manager()->ForInnerDelegate();
+      frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate();
 
   // If this is a proxy to parent frame or this proxy is for the inner
   // WebContents's FrameTreeNode in outer WebContents's SiteInstance, then we
@@ -269,9 +267,7 @@ void RenderFrameProxyHost::SetDestructionCallback(
 }
 
 void RenderFrameProxyHost::OnDetach() {
-  if (frame_tree_node_->render_manager()->ForInnerDelegate()) {
-    // Only main frame proxy can detach for inner WebContents.
-    DCHECK(frame_tree_node_->IsMainFrame());
+  if (frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate()) {
     frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();
     return;
   }

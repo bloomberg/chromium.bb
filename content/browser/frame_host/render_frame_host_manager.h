@@ -203,9 +203,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // there is no current one.
   RenderWidgetHostView* GetRenderWidgetHostView() const;
 
-  // Returns whether this manager belongs to a FrameTreeNode that belongs to an
-  // inner WebContents.
-  bool ForInnerDelegate();
+  // Returns whether this manager is a main frame and belongs to a FrameTreeNode
+  // that belongs to an inner WebContents.
+  bool IsMainFrameForInnerDelegate();
 
   // Returns the RenderWidgetHost of the outer WebContents (if any) that can be
   // used to fetch the last keyboard event.
@@ -213,8 +213,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // remote frames.
   RenderWidgetHostImpl* GetOuterRenderWidgetHostForKeyboardInput();
 
-  // Return the FrameTreeNode for the frame in the outer WebContents (if any)
-  // that contains the inner WebContents.
+  // If this is a RenderFrameHostManager for a main frame, this method returns
+  // the FrameTreeNode for the frame in the outer WebContents (if any) that
+  // contains the inner WebContents.
   FrameTreeNode* GetOuterDelegateNode();
 
   // Return a proxy for this frame in the parent frame's SiteInstance.  Returns
@@ -222,13 +223,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   // example, if this frame is same-site with its parent).
   RenderFrameProxyHost* GetProxyToParent();
 
-  // Returns the proxy to inner WebContents in the outer WebContents's
-  // SiteInstance. Returns nullptr if this WebContents isn't part of inner/outer
-  // relationship.
+  // If this is a RenderFrameHostManager for a main frame, returns the proxy to
+  // inner WebContents in the outer WebContents's SiteInstance. Returns nullptr
+  // if this WebContents isn't part of inner/outer relationship.
   RenderFrameProxyHost* GetProxyToOuterDelegate();
 
-  // Removes the FrameTreeNode in the outer WebContents that represents this
-  // FrameTreeNode.
+  // If this is a RenderFrameHostManager for a main frame, removes the
+  // FrameTreeNode in the outer WebContents that represents this FrameTreeNode.
   // TODO(lazyboy): This does not belong to RenderFrameHostManager, move it to
   // somehwere else.
   void RemoveOuterDelegateFrame();

@@ -482,4 +482,58 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AsyncEventTargetingIgnoresPortals) {
       << "Note: The portal's FrameSinkId is " << portal_view->GetFrameSinkId();
 }
 
+class PortalOOPIFBrowserTest : public PortalBrowserTest {
+ protected:
+  PortalOOPIFBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+};
+
+// Tests that creating and destroying OOPIFs inside the portal works as
+// intended.
+IN_PROC_BROWSER_TEST_F(PortalOOPIFBrowserTest, OOPIFInsidePortal) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  PortalCreatedObserver portal_created_observer(main_frame);
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(ExecJs(main_frame,
+                     JsReplace("var portal = document.createElement('portal');"
+                               "portal.src = $1;"
+                               "document.body.appendChild(portal);",
+                               a_url)));
+  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_main_frame = portal_contents->GetMainFrame();
+  TestNavigationObserver portal_navigation_observer(portal_contents);
+  portal_navigation_observer.Wait();
+
+  // Add an out-of-process iframe to the portal.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationObserver iframe_navigation_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(portal_main_frame,
+                     JsReplace("var iframe = document.createElement('iframe');"
+                               "iframe.src = $1;"
+                               "document.body.appendChild(iframe);",
+                               b_url)));
+  iframe_navigation_observer.Wait();
+  EXPECT_EQ(b_url, iframe_navigation_observer.last_navigation_url());
+  RenderFrameHostImpl* portal_iframe =
+      portal_main_frame->child_at(0)->current_frame_host();
+  EXPECT_NE(portal_main_frame->GetSiteInstance(),
+            portal_iframe->GetSiteInstance());
+
+  // Remove the OOPIF from the portal.
+  RenderFrameDeletedObserver deleted_observer(portal_iframe);
+  EXPECT_TRUE(
+      ExecJs(portal_main_frame, "document.querySelector('iframe').remove();"));
+  deleted_observer.WaitUntilDeleted();
+}
+
 }  // namespace content
