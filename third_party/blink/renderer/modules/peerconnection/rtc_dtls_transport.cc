@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
 
+#include <memory>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -96,6 +98,7 @@ void RTCDtlsTransport::Close() {
   if (current_state_.state() != webrtc::DtlsTransportState::kClosed) {
     DispatchEvent(*Event::Create(event_type_names::kStatechange));
   }
+  ice_transport_->stop();
 }
 
 // Implementation of DtlsTransportProxy::Delegate
@@ -109,11 +112,6 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   current_state_ = info;
   if (!closed_from_owner_) {
     DispatchEvent(*Event::Create(event_type_names::kStatechange));
-  }
-  if (current_state_.state() == webrtc::DtlsTransportState::kClosed) {
-    // Make sure the ICE transport is also closed. This must happen prior
-    // to garbage collection.
-    ice_transport_->stop();
   }
 }
 

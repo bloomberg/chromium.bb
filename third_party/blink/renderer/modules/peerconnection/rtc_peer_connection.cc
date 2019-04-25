@@ -1166,6 +1166,11 @@ bool RTCPeerConnection::HasDocumentMedia() const {
          user_media_controller->HasRequestedUserMedia();
 }
 
+void RTCPeerConnection::UpdateIceConnectionState() {
+  DCHECK_EQ(webrtc::SdpSemantics::kUnifiedPlan, sdp_semantics_);
+  ChangeIceConnectionState(ComputeIceConnectionState());
+}
+
 void RTCPeerConnection::ReportSetSdpUsage(
     SetSdpOperationType operation_type,
     const RTCSessionDescriptionInit* session_description_init) const {
@@ -2488,7 +2493,7 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
     return transport_locator->value;
   }
   RTCIceTransport* transport =
-      RTCIceTransport::Create(GetExecutionContext(), ice_transport);
+      RTCIceTransport::Create(GetExecutionContext(), ice_transport, this);
   ice_transports_by_native_transport_.insert(ice_transport.get(), transport);
   return transport;
 }
@@ -2527,9 +2532,9 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
 
 void RTCPeerConnection::close() {
   if (signaling_state_ ==
-      webrtc::PeerConnectionInterface::SignalingState::kClosed)
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return;
-
+  }
   CloseInternal();
 }
 
@@ -2623,7 +2628,10 @@ void RTCPeerConnection::DidChangeIceConnectionState(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  ChangeIceConnectionState(new_state);
+  // Unified plan relies on UpdateIceConnectionState instead.
+  if (sdp_semantics_ != webrtc::SdpSemantics::kUnifiedPlan) {
+    ChangeIceConnectionState(new_state);
+  }
 }
 
 void RTCPeerConnection::DidChangePeerConnectionState(
@@ -2996,27 +3004,90 @@ bool RTCPeerConnection::SetIceGatheringState(
 
 void RTCPeerConnection::ChangeIceConnectionState(
     webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state) {
-  if (ice_connection_state_ !=
-      webrtc::PeerConnectionInterface::kIceConnectionClosed) {
-    ScheduleDispatchEvent(
-        Event::Create(event_type_names::kIceconnectionstatechange),
-        WTF::Bind(&RTCPeerConnection::SetIceConnectionState,
-                  WrapPersistent(this), ice_connection_state));
+  if (ice_connection_state_ ==
+          webrtc::PeerConnectionInterface::kIceConnectionClosed ||
+      ice_connection_state_ == ice_connection_state) {
+    return;
+  }
+  ice_connection_state_ = ice_connection_state;
+  DispatchEvent(*Event::Create(event_type_names::kIceconnectionstatechange));
+  if (ice_connection_state_ ==
+      webrtc::PeerConnectionInterface::kIceConnectionConnected) {
+    RecordRapporMetrics();
   }
 }
 
-bool RTCPeerConnection::SetIceConnectionState(
-    webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state) {
-  if (ice_connection_state_ !=
-          webrtc::PeerConnectionInterface::kIceConnectionClosed &&
-      ice_connection_state_ != ice_connection_state) {
-    ice_connection_state_ = ice_connection_state;
-    if (ice_connection_state_ ==
-        webrtc::PeerConnectionInterface::kIceConnectionConnected)
-      RecordRapporMetrics();
-    return true;
+webrtc::PeerConnectionInterface::IceConnectionState
+RTCPeerConnection::ComputeIceConnectionState() {
+  if (closed_)
+    return webrtc::PeerConnectionInterface::kIceConnectionClosed;
+  if (HasAnyFailedIceTransport())
+    return webrtc::PeerConnectionInterface::kIceConnectionFailed;
+  if (HasAnyDisconnectedIceTransport())
+    return webrtc::PeerConnectionInterface::kIceConnectionDisconnected;
+  if (HasAllNewOrClosedIceTransports())
+    return webrtc::PeerConnectionInterface::kIceConnectionNew;
+  if (HasAnyNewOrCheckingIceTransport())
+    return webrtc::PeerConnectionInterface::kIceConnectionChecking;
+  if (HasAllCompletedOrClosedIceTransports())
+    return webrtc::PeerConnectionInterface::kIceConnectionCompleted;
+  if (HasAllConnectedCompletedOrClosedIceTransports())
+    return webrtc::PeerConnectionInterface::kIceConnectionConnected;
+
+  return ice_connection_state_;
+}
+
+bool RTCPeerConnection::HasAnyFailedIceTransport() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() == webrtc::IceTransportState::kFailed)
+      return true;
   }
   return false;
+}
+
+bool RTCPeerConnection::HasAnyDisconnectedIceTransport() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() == webrtc::IceTransportState::kDisconnected)
+      return true;
+  }
+  return false;
+}
+
+bool RTCPeerConnection::HasAllNewOrClosedIceTransports() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() != webrtc::IceTransportState::kNew &&
+        transport->GetState() != webrtc::IceTransportState::kClosed)
+      return false;
+  }
+  return true;
+}
+
+bool RTCPeerConnection::HasAnyNewOrCheckingIceTransport() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() == webrtc::IceTransportState::kNew ||
+        transport->GetState() == webrtc::IceTransportState::kChecking)
+      return true;
+  }
+  return false;
+}
+
+bool RTCPeerConnection::HasAllCompletedOrClosedIceTransports() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() != webrtc::IceTransportState::kCompleted &&
+        transport->GetState() != webrtc::IceTransportState::kClosed)
+      return false;
+  }
+  return true;
+}
+
+bool RTCPeerConnection::HasAllConnectedCompletedOrClosedIceTransports() const {
+  for (auto transport : ice_transports_by_native_transport_.Values()) {
+    if (transport->GetState() != webrtc::IceTransportState::kConnected &&
+        transport->GetState() != webrtc::IceTransportState::kCompleted &&
+        transport->GetState() != webrtc::IceTransportState::kClosed)
+      return false;
+  }
+  return true;
 }
 
 void RTCPeerConnection::ChangePeerConnectionState(
