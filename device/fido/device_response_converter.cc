@@ -370,12 +370,22 @@ static base::Optional<std::string> FixInvalidUTF8String(
       NOTREACHED();
       return base::nullopt;
 
-    case base::StreamingUtf8Validator::VALID_MIDPOINT:
+    case base::StreamingUtf8Validator::VALID_MIDPOINT: {
       // This string has been truncated. This is the case that we expect to
       // have to handle since CTAP2 devices are permitted to truncate strings
       // without reference to UTF-8.
-      return std::string(reinterpret_cast<const char*>(utf8_bytes.data()),
-                         longest_valid_prefix_len);
+      const std::string candidate(
+          reinterpret_cast<const char*>(utf8_bytes.data()),
+          longest_valid_prefix_len);
+      // Check that the result is now acceptable to |IsStringUTF8|, which is
+      // stricter than |StreamingUtf8Validator|. Without this, a string could
+      // have both contained invalid code-points /and/ been truncated, and this
+      // function would only have corrected the latter issue.
+      if (base::IsStringUTF8(candidate)) {
+        return candidate;
+      }
+      return base::nullopt;
+    }
   }
 }
 

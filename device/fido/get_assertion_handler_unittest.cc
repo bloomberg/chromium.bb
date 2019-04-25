@@ -372,6 +372,23 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedUTF8) {
   EXPECT_EQ(63u, response.value()[0].user_entity()->name->size());
 }
 
+TEST_F(FidoGetAssertionHandlerTest, TruncatedAndInvalidUTF8) {
+  // This test exercises the case where a UTF-8 string is truncated in a
+  // response, and the UTF-8 string contains invalid code-points that
+  // |base::IsStringUTF8| will be unhappy with.
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestCtap2OnlyAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      test_data::kTestGetAssertionResponseWithTruncatedAndInvalidUTF8);
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
+}
+
 // Tests a scenario where authenticator responds without user entity in its
 // response but client is expecting a resident key credential.
 TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
