@@ -140,14 +140,16 @@ AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
 KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(profile);
-  AccountReconcilor* reconcilor = new AccountReconcilor(
-      IdentityManagerFactory::GetForProfile(profile), signin_client,
-      CreateAccountReconcilorDelegate(profile));
+  AccountReconcilor* reconcilor =
+      new AccountReconcilor(identity_manager, signin_client,
+                            CreateAccountReconcilorDelegate(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
-  reconcilor->SetConsistencyCookieManager(
-      CreateConsistencyCookieManager(signin_client, reconcilor));
+  reconcilor->SetConsistencyCookieManager(CreateConsistencyCookieManager(
+      identity_manager, signin_client, reconcilor));
   return reconcilor;
 }
 
@@ -203,12 +205,13 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
 
 std::unique_ptr<signin::ConsistencyCookieManagerBase>
 AccountReconcilorFactory::CreateConsistencyCookieManager(
+    identity::IdentityManager* identity_manager,
     SigninClient* signin_client,
     AccountReconcilor* account_reconcilor) const {
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(signin::kMiceFeature)) {
     return std::make_unique<signin::ConsistencyCookieManagerAndroid>(
-        signin_client, account_reconcilor);
+        identity_manager, signin_client, account_reconcilor);
   }
 #endif
   return nullptr;
