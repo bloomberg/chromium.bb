@@ -115,8 +115,7 @@ RenderProcessImpl::RenderProcessImpl(
 
   if (base::SysInfo::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
-    v8::V8::SetFlagsFromString(optimize_flag.c_str(),
-                               static_cast<int>(optimize_flag.size()));
+    v8::V8::SetFlagsFromString(optimize_flag.c_str(), optimize_flag.size());
   }
 
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
@@ -213,7 +212,7 @@ RenderProcessImpl::RenderProcessImpl(
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
     std::string flags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
-    v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+    v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
   }
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
