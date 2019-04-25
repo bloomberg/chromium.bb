@@ -298,7 +298,9 @@ class FuchsiaVideoDecoder : public VideoDecoder {
   void OnInputConstraints(
       fuchsia::media::StreamBufferConstraints input_constraints);
   void OnFreeInputPacket(fuchsia::media::PacketHeader free_input_packet);
-  void OnOutputConfig(fuchsia::media::StreamOutputConfig output_config);
+  void OnOutputConstraints(
+      fuchsia::media::StreamOutputConstraints output_constraints);
+  void OnOutputFormat(fuchsia::media::StreamOutputFormat output_format);
   void OnOutputPacket(fuchsia::media::Packet output_packet,
                       bool error_detected_before,
                       bool error_detected_during);
@@ -427,8 +429,10 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       fit::bind_member(this, &FuchsiaVideoDecoder::OnInputConstraints);
   codec_.events().OnFreeInputPacket =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnFreeInputPacket);
-  codec_.events().OnOutputConfig =
-      fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputConfig);
+  codec_.events().OnOutputConstraints =
+      fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputConstraints);
+  codec_.events().OnOutputFormat =
+      fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputFormat);
   codec_.events().OnOutputPacket =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputPacket);
   codec_.events().OnOutputEndOfStream =
@@ -541,42 +545,57 @@ void FuchsiaVideoDecoder::OnFreeInputPacket(
   PumpInput();
 }
 
-void FuchsiaVideoDecoder::OnOutputConfig(
-    fuchsia::media::StreamOutputConfig output_config) {
-  if (!output_config.has_stream_lifetime_ordinal() ||
-      !output_config.has_format_details()) {
-    DLOG(ERROR) << "Received OnOutputConfig() with missing required fields.";
+void FuchsiaVideoDecoder::OnOutputConstraints(
+    fuchsia::media::StreamOutputConstraints output_constraints) {
+  if (!output_constraints.has_stream_lifetime_ordinal()) {
+    DLOG(ERROR) << "Received OnOutputConstraints() with missing required "
+                   "fields.";
     OnError();
     return;
   }
 
-  if (output_config.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+  if (output_constraints.stream_lifetime_ordinal() !=
+      stream_lifetime_ordinal_) {
     return;
   }
 
-  auto* format = output_config.mutable_format_details();
-
-  if (!format->has_domain() || !format->domain().is_video() ||
-      !format->domain().video().is_uncompressed()) {
-    DLOG(ERROR) << "Received OnOutputConfig() with invalid format.";
-    OnError();
-    return;
-  }
-
-  if (output_config.has_buffer_constraints_action_required() &&
-      output_config.buffer_constraints_action_required()) {
-    if (!output_config.has_buffer_constraints()) {
-      DLOG(ERROR) << "Received OnOutputConfig() which requires buffer "
+  if (output_constraints.has_buffer_constraints_action_required() &&
+      output_constraints.buffer_constraints_action_required()) {
+    if (!output_constraints.has_buffer_constraints()) {
+      DLOG(ERROR) << "Received OnOutputConstraints() which requires buffer "
                      "constraints action, but without buffer constraints.";
       OnError();
       return;
     }
     if (!InitializeOutputBuffers(
-            std::move(*output_config.mutable_buffer_constraints()))) {
+            std::move(*output_constraints.mutable_buffer_constraints()))) {
       DLOG(ERROR) << "Failed to initialize output buffers.";
       OnError();
       return;
     }
+  }
+}
+
+void FuchsiaVideoDecoder::OnOutputFormat(
+    fuchsia::media::StreamOutputFormat output_format) {
+  if (!output_format.has_stream_lifetime_ordinal() ||
+      !output_format.has_format_details()) {
+    DLOG(ERROR) << "Received OnOutputFormat() with missing required fields.";
+    OnError();
+    return;
+  }
+
+  if (output_format.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+    return;
+  }
+
+  auto* format = output_format.mutable_format_details();
+
+  if (!format->has_domain() || !format->domain().is_video() ||
+      !format->domain().video().is_uncompressed()) {
+    DLOG(ERROR) << "Received OnOutputFormat() with invalid format.";
+    OnError();
+    return;
   }
 
   output_format_ = std::move(format->mutable_domain()->video().uncompressed());
