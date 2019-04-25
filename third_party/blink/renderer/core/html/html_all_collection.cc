@@ -38,6 +38,11 @@ HTMLAllCollection* HTMLAllCollection::Create(ContainerNode& node,
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
     : HTMLCollection(node, kDocAll, kDoesNotOverrideItemAfter) {}
 
+HTMLAllCollection::HTMLAllCollection(ContainerNode& node, CollectionType type)
+    : HTMLAllCollection(node) {
+  DCHECK_EQ(type, kDocAll);
+}
+
 HTMLAllCollection::~HTMLAllCollection() = default;
 
 Element* HTMLAllCollection::AnonymousIndexedGetter(unsigned index) {

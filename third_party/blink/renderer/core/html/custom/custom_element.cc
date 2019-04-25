@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
@@ -214,7 +215,7 @@ HTMLElement* CustomElement::CreateFailedElement(Document& document,
   // given namespace, namespace prefix set to null, custom element state set
   // to "failed", and node document set to document.
 
-  HTMLElement* element = HTMLUnknownElement::Create(tag_name, document);
+  auto* element = MakeGarbageCollected<HTMLUnknownElement>(tag_name, document);
   element->SetCustomElementState(CustomElementState::kFailed);
   return element;
 }

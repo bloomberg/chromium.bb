@@ -20,6 +20,9 @@ class DocumentNameCollection final : public HTMLNameCollection {
   }
 
   DocumentNameCollection(ContainerNode& document, const AtomicString& name);
+  DocumentNameCollection(ContainerNode& document,
+                         CollectionType type,
+                         const AtomicString& name);
 
   HTMLElement* Item(unsigned offset) const {
     return ToHTMLElement(HTMLNameCollection::item(offset));

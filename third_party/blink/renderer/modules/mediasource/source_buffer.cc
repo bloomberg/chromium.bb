@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -228,7 +229,7 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exception_state) const {
 
   // 2. Return a new static normalized TimeRanges object for the media segments
   //    buffered.
-  return TimeRanges::Create(web_source_buffer_->Buffered());
+  return MakeGarbageCollected<TimeRanges>(web_source_buffer_->Buffered());
 }
 
 double SourceBuffer::timestampOffset() const {

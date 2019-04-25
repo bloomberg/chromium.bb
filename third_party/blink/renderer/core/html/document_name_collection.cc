@@ -13,6 +13,13 @@ DocumentNameCollection::DocumentNameCollection(ContainerNode& document,
                                                const AtomicString& name)
     : HTMLNameCollection(document, kDocumentNamedItems, name) {}
 
+DocumentNameCollection::DocumentNameCollection(ContainerNode& document,
+                                               CollectionType type,
+                                               const AtomicString& name)
+    : DocumentNameCollection(document, name) {
+  DCHECK_EQ(type, kDocumentNamedItems);
+}
+
 // https://html.spec.whatwg.org/C/#dom-document-nameditem-filter
 bool DocumentNameCollection::ElementMatches(const HTMLElement& element) const {
   // Match images, forms, embeds, objects and iframes by name,

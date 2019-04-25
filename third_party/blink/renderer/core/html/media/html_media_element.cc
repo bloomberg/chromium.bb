@@ -95,6 +95,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
@@ -968,7 +969,7 @@ void HTMLMediaElement::InvokeResourceSelectionAlgorithm() {
   // 2 - Set the element's show poster flag to true
   // TODO(srirama.m): Introduce show poster flag and update it as per spec
 
-  played_time_ranges_ = TimeRanges::Create();
+  played_time_ranges_ = MakeGarbageCollected<TimeRanges>();
 
   // FIXME: Investigate whether these can be moved into network_state_ !=
   // kNetworkEmpty block above
@@ -1931,7 +1932,7 @@ void HTMLMediaElement::AddPlayedRange(double start, double end) {
   DVLOG(3) << "addPlayedRange(" << (void*)this << ", " << start << ", " << end
            << ")";
   if (!played_time_ranges_)
-    played_time_ranges_ = TimeRanges::Create();
+    played_time_ranges_ = MakeGarbageCollected<TimeRanges>();
   played_time_ranges_->Add(start, end);
 }
 
@@ -3322,9 +3323,9 @@ TimeRanges* HTMLMediaElement::buffered() const {
     return media_source_->Buffered();
 
   if (!GetWebMediaPlayer())
-    return TimeRanges::Create();
+    return MakeGarbageCollected<TimeRanges>();
 
-  return TimeRanges::Create(GetWebMediaPlayer()->Buffered());
+  return MakeGarbageCollected<TimeRanges>(GetWebMediaPlayer()->Buffered());
 }
 
 TimeRanges* HTMLMediaElement::played() {
@@ -3335,19 +3336,19 @@ TimeRanges* HTMLMediaElement::played() {
   }
 
   if (!played_time_ranges_)
-    played_time_ranges_ = TimeRanges::Create();
+    played_time_ranges_ = MakeGarbageCollected<TimeRanges>();
 
   return played_time_ranges_->Copy();
 }
 
 TimeRanges* HTMLMediaElement::seekable() const {
   if (!GetWebMediaPlayer())
-    return TimeRanges::Create();
+    return MakeGarbageCollected<TimeRanges>();
 
   if (media_source_)
     return media_source_->Seekable();
 
-  return TimeRanges::Create(GetWebMediaPlayer()->Seekable());
+  return MakeGarbageCollected<TimeRanges>(GetWebMediaPlayer()->Seekable());
 }
 
 bool HTMLMediaElement::PotentiallyPlaying() const {

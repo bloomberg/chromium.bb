@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -53,7 +54,8 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
 HTMLElement* HTMLPortalElement::Create(Document& document) {
   if (RuntimeEnabledFeatures::PortalsEnabled())
     return MakeGarbageCollected<HTMLPortalElement>(document);
-  return HTMLUnknownElement::Create(html_names::kPortalTag, document);
+  return MakeGarbageCollected<HTMLUnknownElement>(html_names::kPortalTag,
+                                                  document);
 }
 
 void HTMLPortalElement::Navigate() {

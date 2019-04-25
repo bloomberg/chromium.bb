@@ -937,7 +937,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
       if (CustomElement::IsValidName(qname.LocalName()))
         element = MakeGarbageCollected<HTMLElement>(qname, *this);
       else
-        element = HTMLUnknownElement::Create(qname, *this);
+        element = MakeGarbageCollected<HTMLUnknownElement>(qname, *this);
     }
     saw_elements_in_known_namespaces_ = true;
   } else if (qname.NamespaceURI() == svg_names::kNamespaceURI) {
@@ -983,7 +983,7 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
                          html_names::xhtmlNamespaceURI);
     if (RegistrationContext() && V0CustomElement::IsValidName(local_name))
       return RegistrationContext()->CreateCustomTagElement(*this, q_name);
-    return HTMLUnknownElement::Create(q_name, *this);
+    return MakeGarbageCollected<HTMLUnknownElement>(q_name, *this);
   }
   return Element::Create(QualifiedName(g_null_atom, name, g_null_atom), this);
 }

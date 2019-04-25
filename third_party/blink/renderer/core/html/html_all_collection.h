@@ -40,6 +40,7 @@ class HTMLAllCollection final : public HTMLCollection {
   static HTMLAllCollection* Create(ContainerNode&, CollectionType);
 
   explicit HTMLAllCollection(ContainerNode&);
+  HTMLAllCollection(ContainerNode&, CollectionType);
   ~HTMLAllCollection() override;
 
   Element* AnonymousIndexedGetter(unsigned index);

@@ -13,8 +13,4 @@ HTMLDataElement::HTMLDataElement(Document& document)
   UseCounter::Count(document, WebFeature::kDataElement);
 }
 
-HTMLDataElement* HTMLDataElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLDataElement>(document);
-}
-
 }  // namespace blink

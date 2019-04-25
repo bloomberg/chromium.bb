@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -36,18 +37,14 @@ TimeRanges::TimeRanges(double start, double end) {
   Add(start, end);
 }
 
-TimeRanges* TimeRanges::Create(const blink::WebTimeRanges& web_ranges) {
-  TimeRanges* ranges = TimeRanges::Create();
-
+TimeRanges::TimeRanges(const blink::WebTimeRanges& web_ranges) {
   wtf_size_t size = SafeCast<wtf_size_t>(web_ranges.size());
   for (wtf_size_t i = 0; i < size; ++i)
-    ranges->Add(web_ranges[i].start, web_ranges[i].end);
-
-  return ranges;
+    Add(web_ranges[i].start, web_ranges[i].end);
 }
 
 TimeRanges* TimeRanges::Copy() const {
-  TimeRanges* new_session = TimeRanges::Create();
+  auto* new_session = MakeGarbageCollected<TimeRanges>();
 
   wtf_size_t size = ranges_.size();
   for (wtf_size_t i = 0; i < size; i++)
@@ -57,7 +54,7 @@ TimeRanges* TimeRanges::Copy() const {
 }
 
 void TimeRanges::Invert() {
-  TimeRanges* inverted = TimeRanges::Create();
+  auto* inverted = MakeGarbageCollected<TimeRanges>();
   double pos_inf = std::numeric_limits<double>::infinity();
   double neg_inf = -std::numeric_limits<double>::infinity();
 
