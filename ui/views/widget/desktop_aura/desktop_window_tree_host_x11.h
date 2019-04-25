@@ -449,9 +449,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool had_pointer_grab_ = false;
   bool had_window_focus_ = false;
 
-  // Cached value for SetVisible.  Not the same as the IsVisible public API.
-  bool is_compositor_set_visible_ = false;
-
   // Captures system key events when keyboard lock is requested.
   std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 

@@ -231,9 +231,6 @@ Compositor::Compositor(
 
   host_->SetHasGpuRasterizationTrigger(features::IsUiGpuRasterizationEnabled());
   host_->SetRootLayer(root_web_layer_);
-
-  // This shouldn't be done in the constructor in order to match Widget.
-  // See: http://crbug.com/956264.
   host_->SetVisible(true);
 
   if (command_line->HasSwitch(switches::kUISlowAnimations)) {

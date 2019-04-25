@@ -196,55 +196,6 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     event_source_.Dispatch(event);
   }
 
-  void Minimize(Widget* widget) {
-    XID xid = widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-    Display* display = gfx::GetXDisplay();
-
-    // Minimize by sending _NET_WM_STATE_HIDDEN
-    std::vector<::Atom> atom_list;
-    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
-    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
-
-    XEvent xevent;
-    memset(&xevent, 0, sizeof(xevent));
-    xevent.type = PropertyNotify;
-    xevent.xproperty.type = PropertyNotify;
-    xevent.xproperty.send_event = 1;
-    xevent.xproperty.display = display;
-    xevent.xproperty.window = xid;
-    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
-    xevent.xproperty.state = 0;
-    XSendEvent(display, DefaultRootWindow(display), x11::False,
-               SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
-
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_HIDDEN", true);
-    waiter.Wait();
-  }
-
-  void Focus(Widget* widget) {
-    XID xid = widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-    Display* display = gfx::GetXDisplay();
-
-    std::vector<::Atom> atom_list;
-    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
-    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
-
-    XEvent xevent;
-    memset(&xevent, 0, sizeof(xevent));
-    xevent.type = PropertyNotify;
-    xevent.xproperty.type = PropertyNotify;
-    xevent.xproperty.send_event = 1;
-    xevent.xproperty.display = display;
-    xevent.xproperty.window = xid;
-    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
-    xevent.xproperty.state = 0;
-    XSendEvent(display, DefaultRootWindow(display), x11::False,
-               SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
-
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_FOCUSED", true);
-    waiter.Wait();
-  }
-
  private:
   ui::test::PlatformEventSourceTestAPI event_source_;
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11Test);
@@ -417,10 +368,53 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
-  Minimize(&widget);
+  XID xid = widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  Display* display = gfx::GetXDisplay();
+
+  // Minimize by sending _NET_WM_STATE_HIDDEN
+  {
+    std::vector< ::Atom> atom_list;
+    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
+    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+
+    XEvent xevent;
+    memset(&xevent, 0, sizeof(xevent));
+    xevent.type = PropertyNotify;
+    xevent.xproperty.type = PropertyNotify;
+    xevent.xproperty.send_event = 1;
+    xevent.xproperty.display = display;
+    xevent.xproperty.window = xid;
+    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.state = 0;
+    XSendEvent(display, DefaultRootWindow(display), x11::False,
+               SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
+
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_HIDDEN", true);
+    waiter.Wait();
+  }
   EXPECT_FALSE(widget.GetNativeWindow()->IsVisible());
 
-  Focus(&widget);
+  // Show from minimized by sending _NET_WM_STATE_FOCUSED
+  {
+    std::vector< ::Atom> atom_list;
+    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
+    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+
+    XEvent xevent;
+    memset(&xevent, 0, sizeof(xevent));
+    xevent.type = PropertyNotify;
+    xevent.xproperty.type = PropertyNotify;
+    xevent.xproperty.send_event = 1;
+    xevent.xproperty.display = display;
+    xevent.xproperty.window = xid;
+    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.state = 0;
+    XSendEvent(display, DefaultRootWindow(display), x11::False,
+               SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
+
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_FOCUSED", true);
+    waiter.Wait();
+  }
   EXPECT_TRUE(widget.GetNativeWindow()->IsVisible());
 }
 
@@ -641,43 +635,6 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest, MouseNCEvents) {
   EXPECT_TRUE(recorder.mouse_events()[0].flags() & ui::EF_IS_NON_CLIENT);
 
   widget->GetNativeWindow()->RemovePreTargetHandler(&recorder);
-}
-
-// A Widget that observes visibility changes.
-class VisibilityWidget : public Widget {
- public:
-  VisibilityWidget() = default;
-  ~VisibilityWidget() override = default;
-
-  // Widget:
-  void OnNativeWidgetVisibilityChanged(bool visible) override {
-    visible_ = visible;
-  }
-
-  bool is_visible() const { return visible_; }
-
- private:
-  bool visible_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(VisibilityWidget);
-};
-
-// Regression test for http://crbug.com/949199.
-TEST_F(DesktopWindowTreeHostX11Test, SetVisible) {
-  VisibilityWidget widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
-
-  widget.Show();
-  EXPECT_TRUE(widget.is_visible());
-
-  Minimize(&widget);
-  EXPECT_TRUE(widget.IsMinimized());
-  EXPECT_FALSE(widget.is_visible());
-
-  Focus(&widget);
-  EXPECT_TRUE(widget.is_visible());
 }
 
 }  // namespace views

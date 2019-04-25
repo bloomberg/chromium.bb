@@ -855,13 +855,10 @@ bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
 }
 
 void DesktopWindowTreeHostX11::SetVisible(bool visible) {
-  if (is_compositor_set_visible_ == visible)
-    return;
-
-  is_compositor_set_visible_ = visible;
   if (compositor())
     compositor()->SetVisible(visible);
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
+  if (IsVisible() != visible)
+    native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
 void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
