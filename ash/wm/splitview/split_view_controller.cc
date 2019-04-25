@@ -875,11 +875,18 @@ void SplitViewController::OnPostWindowStateTypeChange(
     EndOverview();
   } else if (window_state->IsMinimized()) {
     OnSnappedWindowDetached(window_state->window(), /*window_drag=*/false);
-    // Insert the minimized window back to overview if split view mode is ended
-    // because of the minimization of the window, but overview mode is still
-    // active at the moment.
-    if (!IsSplitViewModeActive())
-      InsertWindowToOverview(window_state->window());
+
+    if (!IsSplitViewModeActive()) {
+      // We have different behaviors for a minimized window: in tablet splitview
+      // mode, we'll insert the minimized window back to overview, as normally
+      // the window is not supposed to be minmized in tablet mode. And in
+      // clamshell splitview mode, we respect the minimization of the window
+      // and end overview instead.
+      if (split_view_type_ == SplitViewType::kTabletType)
+        InsertWindowToOverview(window_state->window());
+      else
+        EndOverview();
+    }
   }
 }
 
@@ -1480,6 +1487,7 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     EndSplitView(window_drag ? EndReason::kWindowDragStarted
                              : EndReason::kNormal);
   } else {
+    DCHECK_EQ(split_view_type_, SplitViewType::kTabletType);
     // If there is still one snapped window after minimizing/closing one snapped
     // window, update its snap state and open overview window grid.
     default_snap_position_ = left_window_ ? LEFT : RIGHT;

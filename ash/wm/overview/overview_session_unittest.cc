@@ -4555,4 +4555,26 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
 
+// Test that in clamshell splitview mode, if the snapped window is minimized,
+// splitview mode and overview mode are both ended.
+TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Drag |window1| selector item to snap to left.
+  const int grid_index = 0;
+  OverviewItem* overview_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(overview_item1, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->IsSelecting());
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  // Now minimize the snapped |window1|.
+  wm::GetWindowState(window1.get())->Minimize();
+  EXPECT_FALSE(overview_controller()->IsSelecting());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
 }  // namespace ash
