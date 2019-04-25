@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -19,6 +20,7 @@ class DisplayLockSuspendedHandle;
 class Element;
 class DisplayLockOptions;
 class DisplayLockScopedLogger;
+class TaskHandle;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -308,7 +310,6 @@ class CORE_EXPORT DisplayLockContext final
   base::Optional<LayoutRect> locked_frame_rect_;
 
   bool update_forced_ = false;
-  bool timeout_task_is_scheduled_ = false;
   bool activatable_ = false;
 
   bool is_locked_after_connect_ = false;
@@ -317,7 +318,7 @@ class CORE_EXPORT DisplayLockContext final
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
 
-  base::WeakPtrFactory<DisplayLockContext> weak_factory_;
+  TaskHandle timeout_task_handle_;
 };
 
 }  // namespace blink

@@ -89,8 +89,7 @@ DisplayLockContext::DisplayLockContext(Element* element,
     : ContextLifecycleObserver(context),
       element_(element),
       document_(&element_->GetDocument()),
-      state_(this),
-      weak_factory_(this) {
+      state_(this) {
   if (document_->View())
     document_->View()->RegisterForLifecycleNotifications(this);
 }
@@ -126,7 +125,6 @@ void DisplayLockContext::Dispose() {
 
   if (document_ && document_->View())
     document_->View()->UnregisterFromLifecycleNotifications(this);
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
@@ -812,20 +810,15 @@ void DisplayLockContext::RescheduleTimeoutTask(double delay) {
 
   // Make sure the delay is at least 1ms.
   delay = std::max(delay, 1.);
-  GetExecutionContext()
-      ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-      ->PostDelayedTask(FROM_HERE,
-                        WTF::Bind(&DisplayLockContext::TriggerTimeout,
-                                  weak_factory_.GetWeakPtr()),
-                        TimeDelta::FromMillisecondsD(delay));
-  timeout_task_is_scheduled_ = true;
+  timeout_task_handle_ = PostDelayedCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI),
+      FROM_HERE,
+      WTF::Bind(&DisplayLockContext::TriggerTimeout, WrapWeakPersistent(this)),
+      TimeDelta::FromMillisecondsD(delay));
 }
 
 void DisplayLockContext::CancelTimeoutTask() {
-  if (!timeout_task_is_scheduled_)
-    return;
-  weak_factory_.InvalidateWeakPtrs();
-  timeout_task_is_scheduled_ = false;
+  timeout_task_handle_.Cancel();
 }
 
 void DisplayLockContext::TriggerTimeout() {
@@ -834,7 +827,6 @@ void DisplayLockContext::TriggerTimeout() {
   if (!element_ || !document_->Lifecycle().IsActive())
     return;
   StartCommit();
-  timeout_task_is_scheduled_ = false;
 }
 
 bool DisplayLockContext::ElementSupportsDisplayLocking() const {
