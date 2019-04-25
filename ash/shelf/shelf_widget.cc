@@ -576,7 +576,11 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     }
     ShowIfHidden();
   }
-  login_shelf_view_->UpdateAfterSessionStateChange(state);
+  login_shelf_view_->UpdateAfterSessionChange();
+}
+
+void ShelfWidget::OnUserSessionAdded(const AccountId& account_id) {
+  login_shelf_view_->UpdateAfterSessionChange();
 }
 
 SkColor ShelfWidget::GetShelfBackgroundColor() const {

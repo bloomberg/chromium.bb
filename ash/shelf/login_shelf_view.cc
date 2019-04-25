@@ -437,7 +437,7 @@ LoginShelfView::LoginShelfView(
 
 LoginShelfView::~LoginShelfView() = default;
 
-void LoginShelfView::UpdateAfterSessionStateChange(SessionState state) {
+void LoginShelfView::UpdateAfterSessionChange() {
   UpdateUi();
 }
 
@@ -658,6 +658,9 @@ void LoginShelfView::UpdateUi() {
   bool dialog_visible = dialog_state_ != mojom::OobeDialogState::HIDDEN;
   bool is_oobe = (session_state == SessionState::OOBE);
 
+  bool user_session_started =
+      Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
+
   // Show guest button if:
   // 1. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
   // is manually controlled by the WebUI.
@@ -667,15 +670,17 @@ void LoginShelfView::UpdateUi() {
   // 4. OOBE UI dialog is not currently showing gaia signin screen, or if there
   // are no user views available. If there are no user pods (i.e. Gaia is the
   // only signin option), the guest button should be shown if allowed.
+  // 5. No users sessions have started. Button is hidden from all post login
+  // screens like sync consent, etc.
   GetViewByID(kBrowseAsGuest)
       ->SetVisible(
+          (is_login_primary || (is_oobe && allow_guest_in_oobe_)) &&
           allow_guest_ &&
           dialog_state_ != mojom::OobeDialogState::WRONG_HWID_WARNING &&
           dialog_state_ != mojom::OobeDialogState::SAML_PASSWORD_CONFIRM &&
-          dialog_state_ != mojom::OobeDialogState::SYNC_CONSENT &&
           (dialog_state_ != mojom::OobeDialogState::GAIA_SIGNIN ||
            !login_screen_has_users_) &&
-          (is_login_primary || (is_oobe && allow_guest_in_oobe_)));
+          !user_session_started);
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a

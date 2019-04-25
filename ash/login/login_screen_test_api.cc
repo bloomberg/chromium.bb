@@ -155,6 +155,18 @@ void LoginScreenTestApi::IsAuthErrorBubbleShown(
   std::move(callback).Run(lock_contents_test.auth_error_bubble()->visible());
 }
 
+void LoginScreenTestApi::IsGuestButtonShown(
+    IsGuestButtonShownCallback callback) {
+  std::move(callback).Run(
+      IsLoginShelfViewButtonShown(LoginShelfView::kBrowseAsGuest));
+}
+
+void LoginScreenTestApi::IsAddUserButtonShown(
+    IsAddUserButtonShownCallback callback) {
+  std::move(callback).Run(
+      IsLoginShelfViewButtonShown(LoginShelfView::kAddUser));
+}
+
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
                                         const std::string& password,
                                         SubmitPasswordCallback callback) {
