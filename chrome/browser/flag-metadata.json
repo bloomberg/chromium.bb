@@ -1561,6 +1561,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-send-tab-to-self-when-signed-in",
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-sensor-content-setting",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 76

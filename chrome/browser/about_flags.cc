@@ -3596,6 +3596,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
 
+    {"enable-send-tab-to-self-when-signed-in",
+     flag_descriptions::kSendTabToSelfWhenSignedInName,
+     flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
+
     {"enable-data-reduction-proxy-with-network-service",
      flag_descriptions::kEnableDataReductionProxyNetworkServiceName,
      flag_descriptions::kEnableDataReductionProxyNetworkServiceDescription,

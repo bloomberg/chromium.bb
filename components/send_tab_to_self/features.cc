@@ -16,10 +16,18 @@ const base::Feature kSendTabToSelfShowSendingUI{
 const base::Feature kSendTabToSelfBroadcast{"SendTabToSelfBroadcast",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSendTabToSelfWhenSignedIn{
+    "SendTabToSelfWhenSignedIn", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
   syncer::SyncPrefs sync_prefs(prefs);
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
          sync_prefs.GetSelectedTypes().Has(syncer::UserSelectableType::kTabs);
+}
+
+bool EnabledOnSignIn() {
+  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
+         base::FeatureList::IsEnabled(kSendTabToSelfWhenSignedIn);
 }
 
 }  // namespace send_tab_to_self

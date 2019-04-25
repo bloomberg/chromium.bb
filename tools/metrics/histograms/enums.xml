@@ -32911,6 +32911,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1155543191" label="CopylessPaste:disabled"/>
   <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
+  <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
@@ -33323,7 +33324,6 @@ from previous Chrome versions.
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-503430431" label="XRSandbox:enabled"/>
-  -
   <int value="-498740735" label="ArcUsbHost:disabled"/>
   <int value="-498463128" label="MacSystemShareMenu:enabled"/>
   <int value="-496119023" label="WebXR:enabled"/>
@@ -34607,6 +34607,7 @@ from previous Chrome versions.
   <int value="1530177325" label="LanguagesPreference:disabled"/>
   <int value="1531164533" label="SyncPseudoUSSFavicons:disabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>
+  <int value="1534386287" label="SendTabToSelfWhenSignedIn:enabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538685213" label="DownloadHomeV2:enabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>

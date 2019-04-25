@@ -1734,6 +1734,13 @@ const char kSendTabToSelfShowSendingUIDescription[] =
     "Allows users to send tabs to other synced devices by accessing the "
     "sending user interface. Requires Send tab to self to also be enabled";
 
+const char kSendTabToSelfWhenSignedInName[] =
+    "Send tab to self: enable use when signed-in regardless of sync state";
+const char kSendTabToSelfWhenSignedInDescription[] =
+    "Allows use of the send-tab-to-self feature for users who are signed-in "
+    "but not necessarily syncing. The tab-share data is thus ephemeral, "
+    "rather than persistent sync data.";
+
 const char kServiceWorkerImportedScriptUpdateCheckName[] =
     "Enable update check for service worker importScripts() resources";
 const char kServiceWorkerImportedScriptUpdateCheckDescription[] =

@@ -19,11 +19,21 @@ extern const base::Feature kSendTabToSelfShowSendingUI;
 // targeted to a specific device. This only affects the receiving side.
 extern const base::Feature kSendTabToSelfBroadcast;
 
+// If this feature is enabled, we will use signed-in, ephemeral data rather than
+// persistent sync data. Users who are signed in can use the feature regardless
+// of whether they have the sync feature enabled.
+extern const base::Feature kSendTabToSelfWhenSignedIn;
+
 // Returns whether the receiving components of the feature is enabled on this
 // device. This is different from IsReceivingEnabled in SendTabToSelfUtil
 // because it doesn't rely on the SendTabToSelfSyncService to be actively up and
 // ready.
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs);
+
+// Returns whether we should use ephemeral sign-in data, rather than full,
+// persistent sync data. Then the feature may be used by signed-in users,
+// regardless of whether they have full sync enabled.
+bool EnabledOnSignIn();
 
 }  // namespace send_tab_to_self
 
