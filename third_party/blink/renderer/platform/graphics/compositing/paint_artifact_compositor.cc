@@ -1156,8 +1156,8 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
   for (auto id = effect_tree.size() - 1;
        id > cc::EffectTree::kSecondaryRootNodeId; id--) {
     auto* effect = effect_tree.Node(id);
-    if (IsRenderSurfaceCandidate(*effect, blink_effects) &&
-        effect_layer_counts[id] > 1) {
+    if (effect_layer_counts[id] > 1 &&
+        IsRenderSurfaceCandidate(*effect, blink_effects)) {
       // The render surface candidate needs a render surface because it
       // controls more than 1 layer.
       effect->has_render_surface = true;
