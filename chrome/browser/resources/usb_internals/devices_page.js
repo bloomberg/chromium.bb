@@ -65,6 +65,9 @@ cr.define('devices_page', function() {
 
         tableBody.appendChild(clone);
       }
+      // window.deviceListCompleteFn() provides a hook for the test suite to
+      // perform test actions after the devices list is loaded.
+      await window.deviceListCompleteFn();
     }
 
     /**
@@ -418,3 +421,7 @@ cr.define('devices_page', function() {
     DevicesPage,
   };
 });
+
+window.deviceListCompleteFn = window.deviceListCompleteFn || function() {
+  return Promise.resolve();
+};

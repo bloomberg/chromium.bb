@@ -13,6 +13,7 @@
  */
 function UsbInternalsTest() {
   this.setupResolver = new PromiseResolver();
+  this.deviceManagerGetDevicesResolver = new PromiseResolver();
 }
 
 UsbInternalsTest.prototype = {
@@ -50,13 +51,13 @@ UsbInternalsTest.prototype = {
       async bindUsbDeviceManagerInterface(deviceManagerRequest) {
         this.methodCalled(
             'bindUsbDeviceManagerInterface', deviceManagerRequest);
-        this.deviceManager_ = new FakeDeviceManagerProxy();
-        this.deviceManager_.addTestDevice(
+        this.deviceManager = new FakeDeviceManagerProxy();
+        this.deviceManager.addTestDevice(
             FakeDeviceManagerProxy.fakeDeviceInfo(0));
-        this.deviceManager_.addTestDevice(
+        this.deviceManager.addTestDevice(
             FakeDeviceManagerProxy.fakeDeviceInfo(1));
         this.deviceManagerBinding_ =
-            new device.mojom.UsbDeviceManager(this.deviceManager_);
+            new device.mojom.UsbDeviceManager(this.deviceManager);
         this.deviceManagerBinding_.bindHandle(deviceManagerRequest.handle);
       }
 
@@ -130,6 +131,11 @@ UsbInternalsTest.prototype = {
       async setClient() {}
     }
 
+    window.deviceListCompleteFn = () => {
+      this.deviceManagerGetDevicesResolver.resolve();
+      return Promise.resolve();
+    };
+
     window.setupFn = () => {
       this.pageHandlerInterceptor = new MojoInterfaceInterceptor(
           mojom.UsbInternalsPageHandler.$interfaceName);
@@ -155,6 +161,9 @@ TEST_F('UsbInternalsTest', 'WebUITest', function() {
     pageHandler = this.pageHandler;
   });
 
+  let deviceManagerGetDevicesPromise =
+      this.deviceManagerGetDevicesResolver.promise;
+
   suite('UsbtoothInternalsUITest', function() {
     const EXPECT_DEVICES_NUM = 2;
 
@@ -162,6 +171,7 @@ TEST_F('UsbInternalsTest', 'WebUITest', function() {
       return setupPromise.then(function() {
         return Promise.all([
           pageHandler.whenCalled('bindUsbDeviceManagerInterface'),
+          pageHandler.deviceManager.whenCalled('getDevices'),
         ]);
       });
     });
@@ -188,6 +198,7 @@ TEST_F('UsbInternalsTest', 'WebUITest', function() {
                           .querySelectorAll('th');
       expectEquals(8, columns.length);
 
+      await deviceManagerGetDevicesPromise;
       const devices = devicesTable.querySelectorAll('tbody tr');
       expectEquals(EXPECT_DEVICES_NUM, devices.length);
     });
