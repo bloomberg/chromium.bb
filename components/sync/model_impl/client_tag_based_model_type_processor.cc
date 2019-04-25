@@ -166,10 +166,6 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
   ConnectIfReady();
 }
 
-bool ClientTagBasedModelTypeProcessor::IsModelReadyOrError() const {
-  return model_error_ || model_ready_to_sync_;
-}
-
 bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Changes can be handled correctly even before pending data is loaded.
@@ -177,16 +173,17 @@ bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
-  if (!IsModelReadyOrError() || !start_callback_)
+  if (!start_callback_) {
     return;
-
+  }
   if (model_error_) {
     activation_request_.error_handler.Run(model_error_.value());
     start_callback_.Reset();
     return;
   }
-
-  DCHECK(model_ready_to_sync_);
+  if (!model_ready_to_sync_) {
+    return;
+  }
 
   if (!model_type_state_.has_cache_guid()) {
     model_type_state_.set_cache_guid(activation_request_.cache_guid);

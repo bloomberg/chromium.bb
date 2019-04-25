@@ -119,9 +119,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // tracking maps such as |entities_| and |storage_key_to_tag_hash_|.
   void ClearMetadataAndResetState();
 
-  // Returns true if the model is ready or encountered an error.
-  bool IsModelReadyOrError() const;
-
   // Whether the processor is allowing changes to its model type. If this is
   // false, the bridge should not allow any changes to its data.
   bool IsAllowingChanges() const;
