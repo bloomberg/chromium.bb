@@ -870,7 +870,7 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
   bool callback_called = false;
   base::test::ScopedTaskEnvironment task_env_{
       base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
+      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   scoped_refptr<ui::DrmFramebuffer> drm_framebuffer_;
   const FakeFenceFD fake_fence_fd1_;
   const FakeFenceFD fake_fence_fd2_;
