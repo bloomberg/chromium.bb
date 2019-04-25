@@ -172,7 +172,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 }  // namespace
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal()
-    : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
+    : exclusions_(base::MakeRefCounted<NGExclusionPtrArray>()),
       num_exclusions_(0),
       track_shape_exclusions_(false),
       derived_geometry_(nullptr) {}
@@ -219,23 +219,22 @@ NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry(
 }
 
 void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
-  DCHECK_LE(num_exclusions_, exclusions_->size());
+  DCHECK_LE(num_exclusions_, exclusions_->data.size());
 
   bool already_exists = false;
 
-  if (num_exclusions_ < exclusions_->size()) {
-    if (*exclusion == *exclusions_->at(num_exclusions_) &&
+  if (num_exclusions_ < exclusions_->data.size()) {
+    if (*exclusion == *exclusions_->data.at(num_exclusions_) &&
         !exclusion->shape_data) {
       // We might be adding an exclusion seen in a previous layout pass.
       already_exists = true;
     } else {
       // Perform a copy-on-write if the number of exclusions has gone out of
       // sync.
-      scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions =
-          RefVector<scoped_refptr<const NGExclusion>>::Create();
-      exclusions->GetMutableVector()->AppendRange(
-          exclusions_->GetVector().begin(),
-          exclusions_->GetVector().begin() + num_exclusions_);
+      scoped_refptr<NGExclusionPtrArray> exclusions =
+          base::MakeRefCounted<NGExclusionPtrArray>();
+      exclusions->data.AppendRange(exclusions_->data.begin(),
+                                   exclusions_->data.begin() + num_exclusions_);
       std::swap(exclusions_, exclusions);
     }
   }
@@ -261,7 +260,7 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
       std::max(last_float_block_start_, exclusion->rect.BlockStartOffset());
 
   if (!already_exists)
-    exclusions_->emplace_back(std::move(exclusion));
+    exclusions_->data.emplace_back(std::move(exclusion));
   num_exclusions_++;
 }
 
@@ -636,9 +635,9 @@ NGExclusionSpaceInternal::GetDerivedGeometry() const {
   if (!derived_geometry_) {
     derived_geometry_ =
         std::make_unique<DerivedGeometry>(track_shape_exclusions_);
-    DCHECK_LE(num_exclusions_, exclusions_->size());
+    DCHECK_LE(num_exclusions_, exclusions_->data.size());
     for (wtf_size_t i = 0; i < num_exclusions_; ++i)
-      derived_geometry_->Add(*exclusions_->GetVector()[i]);
+      derived_geometry_->Add(*exclusions_->data[i]);
   }
 
   return *derived_geometry_;

@@ -19,6 +19,8 @@
 namespace blink {
 
 typedef Vector<NGLayoutOpportunity, 8> LayoutOpportunityVector;
+typedef base::RefCountedData<WTF::Vector<scoped_refptr<const NGExclusion>>>
+    NGExclusionPtrArray;
 
 // This class is an implementation detail. For use of the exclusion space,
 // see NGExclusionSpace below. NGExclusionSpace was designed to be cheap
@@ -95,8 +97,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // Pre-initializes the exclusions vector to something used in a previous
   // layout pass, however keeps the number of exclusions as zero.
   void PreInitialize(const NGExclusionSpaceInternal& other) {
-    DCHECK_EQ(exclusions_->size(), 0u);
-    DCHECK_GT(other.exclusions_->size(), 0u);
+    DCHECK(exclusions_->data.IsEmpty());
+    DCHECK_GT(other.exclusions_->data.size(), 0u);
 
     exclusions_ = other.exclusions_;
   }
@@ -112,7 +114,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     // Iterate through all the exclusions which were added by the layout, and
     // update the DerivedGeometry.
     for (wtf_size_t i = other.num_exclusions_; i < num_exclusions_; ++i) {
-      const NGExclusion& exclusion = *exclusions_->at(i);
+      const NGExclusion& exclusion = *exclusions_->data.at(i);
 
       // If we come across an exclusion with shape data, we opt-out of this
       // optimization.
@@ -134,7 +136,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     // layout result.
     for (wtf_size_t i = previous_input ? previous_input->num_exclusions_ : 0;
          i < previous_output.num_exclusions_; ++i) {
-      Add(previous_output.exclusions_->at(i)->CopyWithOffset(offset_delta));
+      Add(previous_output.exclusions_->data.at(i)->CopyWithOffset(
+          offset_delta));
     }
   }
 
@@ -234,7 +237,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   //
   // num_exclusions_ is how many exclusions *this* instance of an exclusion
   // space has, which may differ to the number of exclusions in the Vector.
-  scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
+  scoped_refptr<NGExclusionPtrArray> exclusions_;
   wtf_size_t num_exclusions_;
 
   // These members are used for keeping track of the "lowest" offset for each
