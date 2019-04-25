@@ -243,8 +243,6 @@ class ObfuscatedOriginEnumerator
     }
     base::FilePath path =
         base_file_path_.Append(current_.path).AppendASCII(type_string);
-    // TODO(https://crbug.com/93417): Ensure that there are no paths on disk in
-    // incognito.
     return base::DirectoryExists(path);
   }
 

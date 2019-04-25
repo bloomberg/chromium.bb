@@ -13,8 +13,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -94,17 +96,23 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
 
 }  // namespace
 
-class QuotaBackendImplTest : public testing::Test {
+class QuotaBackendImplTest : public testing::Test,
+                             public ::testing::WithParamInterface<bool> {
  public:
-  QuotaBackendImplTest() : quota_manager_proxy_(new MockQuotaManagerProxy) {}
+  QuotaBackendImplTest()
+      : file_system_usage_cache_(is_incognito()),
+        quota_manager_proxy_(new MockQuotaManagerProxy) {
+    if (is_incognito()) {
+      feature_list_.InitAndEnableFeature(
+          storage::features::kEnableFilesystemInIncognito);
+    }
+  }
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("quota");
-    // TODO(https://crbug.com/93417): Add support for incognito tests.
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        nullptr, data_dir_.GetPath(), in_memory_env_.get(),
-        /*is_incognito*/ false));
+        nullptr, data_dir_.GetPath(), in_memory_env_.get(), is_incognito()));
     backend_ = std::make_unique<QuotaBackendImpl>(
         file_task_runner(), file_util_.get(), &file_system_usage_cache_,
         quota_manager_proxy_.get());
@@ -116,6 +124,8 @@ class QuotaBackendImplTest : public testing::Test {
     file_util_.reset();
     base::RunLoop().RunUntilIdle();
   }
+
+  bool is_incognito() { return GetParam(); }
 
  protected:
   void InitializeForOriginAndType(const url::Origin& origin,
@@ -148,6 +158,7 @@ class QuotaBackendImplTest : public testing::Test {
     return path;
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
@@ -160,7 +171,9 @@ class QuotaBackendImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(QuotaBackendImplTest);
 };
 
-TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
+INSTANTIATE_TEST_SUITE_P(, QuotaBackendImplTest, testing::Bool());
+
+TEST_P(QuotaBackendImplTest, ReserveQuota_Basic) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
@@ -188,7 +201,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
   EXPECT_EQ(2, quota_manager_proxy_->storage_modified_count());
 }
 
-TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
+TEST_P(QuotaBackendImplTest, ReserveQuota_NoSpace) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(100);
@@ -207,7 +220,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
   EXPECT_EQ(1, quota_manager_proxy_->storage_modified_count());
 }
 
-TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
+TEST_P(QuotaBackendImplTest, ReserveQuota_Revert) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
@@ -226,7 +239,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
   EXPECT_EQ(2, quota_manager_proxy_->storage_modified_count());
 }
 
-TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
+TEST_P(QuotaBackendImplTest, ReleaseReservedQuota) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   const int64_t kInitialUsage = 2000;
@@ -240,7 +253,7 @@ TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
   EXPECT_EQ(1, quota_manager_proxy_->storage_modified_count());
 }
 
-TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
+TEST_P(QuotaBackendImplTest, CommitQuotaUsage) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
@@ -263,7 +276,7 @@ TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
   EXPECT_EQ(2, quota_manager_proxy_->storage_modified_count());
 }
 
-TEST_F(QuotaBackendImplTest, DirtyCount) {
+TEST_P(QuotaBackendImplTest, DirtyCount) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   InitializeForOriginAndType(kOrigin, type);
   base::FilePath path = GetUsageCachePath(kOrigin, type);

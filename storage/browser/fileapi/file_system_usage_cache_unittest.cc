@@ -12,28 +12,37 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileSystemUsageCache;
 
 namespace content {
 
-class FileSystemUsageCacheTest : public testing::Test {
+class FileSystemUsageCacheTest : public testing::Test,
+                                 public ::testing::WithParamInterface<bool> {
  public:
-  FileSystemUsageCacheTest() = default;
+  FileSystemUsageCacheTest() : usage_cache_(is_incognito()) {
+    if (is_incognito()) {
+      feature_list_.InitAndEnableFeature(
+          storage::features::kEnableFilesystemInIncognito);
+    }
+  }
 
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
+
+  bool is_incognito() { return GetParam(); }
 
  protected:
   base::FilePath GetUsageFilePath() {
     return data_dir_.GetPath().Append(FileSystemUsageCache::kUsageFileName);
   }
 
-  FileSystemUsageCache* usage_cache() {
-    return &usage_cache_;
-  }
+  FileSystemUsageCache* usage_cache() { return &usage_cache_; }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
   FileSystemUsageCache usage_cache_;
@@ -41,12 +50,14 @@ class FileSystemUsageCacheTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FileSystemUsageCacheTest);
 };
 
-TEST_F(FileSystemUsageCacheTest, CreateTest) {
+INSTANTIATE_TEST_SUITE_P(, FileSystemUsageCacheTest, testing::Bool());
+
+TEST_P(FileSystemUsageCacheTest, CreateTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
   EXPECT_TRUE(usage_cache()->UpdateUsage(usage_file_path, 0));
 }
 
-TEST_F(FileSystemUsageCacheTest, SetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, SetSizeTest) {
   static const int64_t size = 240122;
   base::FilePath usage_file_path = GetUsageFilePath();
   int64_t usage = 0;
@@ -55,7 +66,7 @@ TEST_F(FileSystemUsageCacheTest, SetSizeTest) {
   EXPECT_EQ(size, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, SetLargeSizeTest) {
+TEST_P(FileSystemUsageCacheTest, SetLargeSizeTest) {
   static const int64_t size = std::numeric_limits<int64_t>::max();
   base::FilePath usage_file_path = GetUsageFilePath();
   int64_t usage = 0;
@@ -64,7 +75,7 @@ TEST_F(FileSystemUsageCacheTest, SetLargeSizeTest) {
   EXPECT_EQ(size, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -76,7 +87,7 @@ TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   EXPECT_EQ(98214, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, DecAndGetSizeTest) {
   static const int64_t size = 71839;
   base::FilePath usage_file_path = GetUsageFilePath();
   int64_t usage = 0;
@@ -87,7 +98,7 @@ TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
   EXPECT_EQ(size, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
   static const int64_t size = 198491;
   base::FilePath usage_file_path = GetUsageFilePath();
   int64_t usage = 0;
@@ -98,7 +109,7 @@ TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
   EXPECT_EQ(size, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
   uint32_t dirty = 0;
   int64_t usage = 0;
@@ -114,7 +125,7 @@ TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   EXPECT_EQ(854238, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
   static const int64_t size = 82412;
   base::FilePath usage_file_path = GetUsageFilePath();
   int64_t usage = 0;
@@ -127,7 +138,7 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
   EXPECT_EQ(size, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
+TEST_P(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
   uint32_t dirty = 0;
   int64_t usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
@@ -142,18 +153,18 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
   EXPECT_EQ(19319, usage);
 }
 
-TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
+TEST_P(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
   int64_t usage = 0;
   base::FilePath usage_file_path = GetUsageFilePath();
   EXPECT_FALSE(usage_cache()->GetUsage(usage_file_path, &usage));
 }
 
-TEST_F(FileSystemUsageCacheTest, IncrementDirtyWithoutCacheFileTest) {
+TEST_P(FileSystemUsageCacheTest, IncrementDirtyWithoutCacheFileTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
   EXPECT_FALSE(usage_cache()->IncrementDirty(usage_file_path));
 }
 
-TEST_F(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
+TEST_P(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
   base::FilePath usage_file_path = GetUsageFilePath();
   EXPECT_FALSE(usage_cache()->IncrementDirty(usage_file_path));
 }
