@@ -17,11 +17,11 @@
 #include "base/values.h"
 #include "components/sync/base/immutable.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/proto_value_ptr.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/metahandle_set.h"
+#include "components/sync/syncable/proto_value_ptr.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {

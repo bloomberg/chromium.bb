@@ -55,7 +55,6 @@ jumbo_static_library("base") {
     "pref_names.h",
     "progress_marker_map.cc",
     "progress_marker_map.h",
-    "proto_value_ptr.h",
     "report_unrecoverable_error.cc",
     "report_unrecoverable_error.h",
     "stop_source.h",

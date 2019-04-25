@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_BASE_PROTO_VALUE_PTR_H_
-#define COMPONENTS_SYNC_BASE_PROTO_VALUE_PTR_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_PROTO_VALUE_PTR_H_
+#define COMPONENTS_SYNC_SYNCABLE_PROTO_VALUE_PTR_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -139,4 +139,4 @@ size_t EstimateMemoryUsage(const ProtoValuePtr<T, Traits>& ptr) {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_BASE_PROTO_VALUE_PTR_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_PROTO_VALUE_PTR_H_

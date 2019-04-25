@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/base/proto_value_ptr.h"
+#include "components/sync/syncable/proto_value_ptr.h"
 
 #include <memory>
 #include <utility>
