@@ -961,7 +961,7 @@ GEN('#endif');
 
 CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/runtime_hosts_dialog.html';
   }
 
@@ -981,7 +981,7 @@ TEST_F('CrExtensionsRuntimeHostsDialogTest', 'All', () => {
 
 CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/runtime_host_permissions.html';
   }
 
@@ -1002,7 +1002,7 @@ TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
 CrExtensionsHostPermissionsToggleListTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
-  get browserPreload() {
+  get browsePreload() {
     return 'chrome://extensions/host_permissions_toggle_list.html';
   }
 
