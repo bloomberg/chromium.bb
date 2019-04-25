@@ -110,7 +110,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Returns true if split view mode is active. Please see SplitViewType above
   // to see the difference between tablet mode and clamshell mode splitview
   // mode.
-  bool IsSplitViewModeActive() const;
+  bool InSplitViewMode() const;
   bool InClamshellSplitViewMode() const;
   bool InTabletSplitViewMode() const;
 

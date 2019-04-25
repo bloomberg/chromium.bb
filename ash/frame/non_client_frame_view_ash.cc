@@ -460,7 +460,7 @@ SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
 void NonClientFrameViewAsh::UpdateHeaderView() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (in_overview_ && split_view_controller->IsSplitViewModeActive() &&
+  if (in_overview_ && split_view_controller->InSplitViewMode() &&
       split_view_controller->GetDefaultSnappedWindow() ==
           frame_->GetNativeWindow()) {
     // TODO(sammiequon): This works for now, but we may have to check if

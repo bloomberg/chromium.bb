@@ -108,7 +108,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       // mru list.
       SplitViewController* split_view_controller =
           Shell::Get()->split_view_controller();
-      if (split_view_controller->IsSplitViewModeActive() &&
+      if (split_view_controller->InSplitViewMode() &&
           mru_window_list.size() > 2u) {
         if (mru_window_list[0] ==
                 split_view_controller->GetDefaultSnappedWindow() ||

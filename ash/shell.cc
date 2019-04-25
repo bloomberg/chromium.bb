@@ -552,11 +552,6 @@ void Shell::DoInitialWorkspaceAnimation() {
   workspace->DoInitialAnimation();
 }
 
-bool Shell::IsSplitViewModeActive() const {
-  return split_view_controller_.get() &&
-         split_view_controller_->IsSplitViewModeActive();
-}
-
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                             ui::MenuSourceType source_type) {
   // Bail with no active user session, in the lock screen, or in app/kiosk mode.

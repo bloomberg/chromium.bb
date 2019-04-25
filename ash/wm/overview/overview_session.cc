@@ -94,7 +94,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (!split_view_controller->IsSplitViewModeActive())
+  if (!split_view_controller->InSplitViewMode())
     return work_area;
 
   SplitViewController::SnapPosition opposite_position =
@@ -683,7 +683,7 @@ void OverviewSession::OnWindowActivating(
 
   // Do not cancel overview mode if the window activation was caused by
   // snapping window to one side of the screen.
-  if (Shell::Get()->IsSplitViewModeActive())
+  if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
 
   // Do not cancel overview mode if the window activation was caused while
@@ -747,7 +747,7 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
   // For metrics changes that happen when the split view mode is active, the
   // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
-  if (Shell::Get()->IsSplitViewModeActive())
+  if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
   OnDisplayBoundsChanged();
 }
@@ -768,7 +768,7 @@ void OverviewSession::OnWindowHierarchyChanged(
   // If the new window is added when splitscreen is active, do nothing.
   // SplitViewController will do the right thing to snap the window or end
   // overview mode.
-  if (Shell::Get()->IsSplitViewModeActive() &&
+  if (Shell::Get()->split_view_controller()->InSplitViewMode() &&
       new_window->GetRootWindow() == Shell::Get()
                                          ->split_view_controller()
                                          ->GetDefaultSnappedWindow()
@@ -811,7 +811,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     case ui::VKEY_ESCAPE:
       // Cancel overview unless we're in single split mode with no overview
       // windows.
-      if (!(IsEmpty() && shell->IsSplitViewModeActive()))
+      if (!(IsEmpty() && shell->split_view_controller()->InSplitViewMode()))
         CancelSelection();
       break;
     case ui::VKEY_UP:
@@ -909,7 +909,7 @@ void OverviewSession::OnSplitViewStateChanged(
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {
-  DCHECK(Shell::Get()->IsSplitViewModeActive());
+  DCHECK(Shell::Get()->split_view_controller()->InSplitViewMode());
   // Re-calculate the bounds for the window grids and position all the windows.
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
@@ -997,7 +997,7 @@ void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
   // progress when we notify that split view has started so check for that case.
   if (!IsEmpty() ||
       (IsWindowDragInProgress() &&
-       !Shell::Get()->split_view_controller()->IsSplitViewModeActive())) {
+       !Shell::Get()->split_view_controller()->InSplitViewMode())) {
     no_windows_widget_.reset();
     return;
   }

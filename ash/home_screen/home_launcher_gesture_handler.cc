@@ -165,7 +165,7 @@ aura::Window* GetBackdropWindow(aura::Window* window) {
 aura::Window* GetDividerWindow() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (!split_view_controller->IsSplitViewModeActive())
+  if (!split_view_controller->InSplitViewMode())
     return nullptr;
   return split_view_controller->split_view_divider()
       ->divider_widget()
@@ -770,7 +770,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
       Shell::Get()->split_view_controller();
   overview_active_on_gesture_start_ =
       Shell::Get()->overview_controller()->IsSelecting();
-  const bool split_view_active = split_view_controller->IsSplitViewModeActive();
+  const bool split_view_active = split_view_controller->InSplitViewMode();
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (window && (mode != Mode::kSlideDownToHide ||
                  overview_active_on_gesture_start_ || split_view_active)) {

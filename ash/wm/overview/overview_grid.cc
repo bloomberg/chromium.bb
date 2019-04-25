@@ -238,7 +238,7 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
                                               IndicatorState indicator_state) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (split_view_controller->IsSplitViewModeActive())
+  if (split_view_controller->InSplitViewMode())
     return GetGridBoundsInScreenAfterDragging(dragged_window);
   switch (indicator_state) {
     case IndicatorState::kPreviewAreaLeft:
@@ -381,7 +381,7 @@ void OverviewGrid::Shutdown() {
 
   // OverviewGrid in splitscreen does not include the window to be activated.
   if (!window_list_.empty() ||
-      Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
+      Shell::Get()->split_view_controller()->InSplitViewMode()) {
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
         root_window_->layer()->GetCompositor(), single_animation_in_clamshell);

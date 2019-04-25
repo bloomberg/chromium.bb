@@ -308,7 +308,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
 
   // Snap window to the left.
   overview_session_->CompleteDrag(item, gfx::PointF(edge_inset, y_position));
-  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
 
@@ -423,7 +423,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
   overview_session_->CompleteDrag(
       item, gfx::PointF(primary_screen_bounds.CenterPoint()));
   ASSERT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  ASSERT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Select an item on the secondary display and verify the indicators widget
   // has reparented to the secondary root window.

@@ -168,7 +168,7 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
   void OnIndicatorTypeChanged(IndicatorState indicator_state,
                               IndicatorState previous_indicator_state) {
     // In split view, the labels never show, and they do not need to be updated.
-    if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+    if (Shell::Get()->split_view_controller()->InSplitViewMode())
       return;
 
     // On transition to a state with no indicators, any label that is showing

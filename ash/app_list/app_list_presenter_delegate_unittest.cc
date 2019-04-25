@@ -1552,11 +1552,11 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   // Press app list button.
   PressAppListButton();
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

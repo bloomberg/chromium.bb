@@ -471,7 +471,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.
-  if (split_view_controller->IsSplitViewModeActive()) {
+  if (split_view_controller->InSplitViewMode()) {
     // In some cases the window returned by wm::GetActiveWindow will be an item
     // in overview mode (maybe the overview mode text selection widget). The
     // active window may also be a transient descendant of the left or right

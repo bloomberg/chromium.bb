@@ -223,7 +223,7 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
         SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
             previous_indicator_state);
     DoSplitviewOpacityAnimation(
-        layer(), Shell::Get()->split_view_controller()->IsSplitViewModeActive()
+        layer(), Shell::Get()->split_view_controller()->InSplitViewMode()
                      ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
                      : (was_this_the_preview
                             ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
@@ -244,7 +244,7 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
                ? SK_ColorBLACK
                : SK_ColorWHITE);
   DoSplitviewOpacityAnimation(
-      layer(), Shell::Get()->split_view_controller()->IsSplitViewModeActive()
+      layer(), Shell::Get()->split_view_controller()->InSplitViewMode()
                    ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
                    : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
 }

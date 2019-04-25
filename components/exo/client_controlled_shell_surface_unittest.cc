@@ -2011,7 +2011,7 @@ TEST_F(ClientControlledShellSurfaceTest,
   EnableTabletMode(true);
 
   auto* split_view_controller = ash::Shell::Get()->split_view_controller();
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:
   const gfx::Size buffer_size(256, 256);
@@ -2034,12 +2034,12 @@ TEST_F(ClientControlledShellSurfaceTest,
       window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
   split_view_controller->SnapWindow(
       window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   // Should end split view.
   shell_surface->SetRestored();
   surface->Commit();
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
 }
 
 TEST_F(ClientControlledShellSurfaceTest,
@@ -2047,7 +2047,7 @@ TEST_F(ClientControlledShellSurfaceTest,
   EnableTabletMode(true);
 
   auto* split_view_controller = ash::Shell::Get()->split_view_controller();
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:
   const gfx::Size buffer_size(256, 256);
@@ -2070,12 +2070,12 @@ TEST_F(ClientControlledShellSurfaceTest,
       window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
   split_view_controller->SnapWindow(
       window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   // Should not end split-view.
   shell_surface->SetMinimized();
   surface->Commit();
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, DoNotReplayWindowStateRequest) {

@@ -49,7 +49,7 @@ const gfx::Transform& GetShiftTransform() {
 bool CanCoverAvailableWorkspace(aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (split_view_controller->IsSplitViewModeActive())
+  if (split_view_controller->InSplitViewMode())
     return CanSnapInSplitview(window);
   return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
 }

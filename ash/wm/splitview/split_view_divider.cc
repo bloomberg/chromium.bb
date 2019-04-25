@@ -211,7 +211,7 @@ class DividerView : public views::View,
     // It's possible that when this function is called, split view mode has
     // been ended, and the divider widget is to be deleted soon. In this case
     // no need to update the divider layout and do the animation.
-    if (!controller_->IsSplitViewModeActive())
+    if (!controller_->InSplitViewMode())
       return;
 
     // Do the white handler bar enlarge/shrink animation when starting/ending

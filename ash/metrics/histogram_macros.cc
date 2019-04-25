@@ -18,7 +18,7 @@ bool IsInTabletMode() {
 bool IsInSplitView() {
   auto* shell = Shell::Get();
   return shell && shell->split_view_controller() &&
-         shell->split_view_controller()->IsSplitViewModeActive();
+         shell->split_view_controller()->InSplitViewMode();
 }
 
 }  // namespace ash

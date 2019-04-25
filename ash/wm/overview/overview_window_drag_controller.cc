@@ -410,7 +410,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   // to snap it to a position that already has a snapped window in place, we
   // should show the preview window as soon as the window past the split divider
   // bar.
-  if (split_view_controller_->IsSplitViewModeActive()) {
+  if (split_view_controller_->InSplitViewMode()) {
     const int position = gfx::ToRoundedInt(
         is_landscape ? location_in_screen.x() : location_in_screen.y());
     SplitViewController::SnapPosition default_snap_position =

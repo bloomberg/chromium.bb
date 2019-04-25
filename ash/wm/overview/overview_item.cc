@@ -224,7 +224,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled() &&
-      !Shell::Get()->split_view_controller()->IsSplitViewModeActive() &&
+      !Shell::Get()->split_view_controller()->InSplitViewMode() &&
       reset_transform) {
     MaximizeIfSnapped(GetWindow());
   }
@@ -589,7 +589,7 @@ void OverviewItem::OnDragAnimationCompleted() {
   aura::Window* dragged_window = GetWindowForStacking();
   aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
   aura::Window* parent_window = dragged_widget_window->parent();
-  if (Shell::Get()->IsSplitViewModeActive()) {
+  if (Shell::Get()->split_view_controller()->InSplitViewMode()) {
     aura::Window* snapped_window =
         Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
     if (snapped_window->parent() == parent_window &&

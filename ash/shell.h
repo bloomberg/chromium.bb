@@ -606,9 +606,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Force setting compositing on/off without checking dependency.
   void SetCursorCompositingEnabled(bool enabled);
 
-  // Returns true if split view mode is active.
-  bool IsSplitViewModeActive() const;
-
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);

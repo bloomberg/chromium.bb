@@ -361,14 +361,14 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
       GetSnapPosition(location_in_screen);
   // If splitscreen is not active, do not merge back if the dragged window is
   // in the drag-to-snap preview area.
-  if (!split_view_controller_->IsSplitViewModeActive() &&
+  if (!split_view_controller_->InSplitViewMode() &&
       desired_snap_position != SplitViewController::NONE) {
     return;
   }
 
   // In splitscreen, do not merge back if the drag point is on one side of the
   // split view divider and the source window is snapped on the opposite side.
-  if (split_view_controller_->IsSplitViewModeActive()) {
+  if (split_view_controller_->InSplitViewMode()) {
     const int drag_position = IsCurrentScreenOrientationLandscape()
                                   ? location_in_screen.x()
                                   : location_in_screen.y();

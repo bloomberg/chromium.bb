@@ -143,8 +143,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   OverviewController* controller = Shell::Get()->overview_controller();
   bool was_overview_open = controller->IsSelecting();
 
-  const bool was_splitview_active =
-      split_view_controller_->IsSplitViewModeActive();
+  const bool was_splitview_active = split_view_controller_->InSplitViewMode();
   // If the dragged window is one of the snapped windows, SplitViewController
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);

@@ -2955,7 +2955,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   }
 
   gfx::Rect GetSplitViewDividerBounds(bool is_dragging) {
-    if (!split_view_controller()->IsSplitViewModeActive())
+    if (!split_view_controller()->InSplitViewMode())
       return gfx::Rect();
     return split_view_controller()
         ->split_view_divider_->GetDividerBoundsInScreen(is_dragging);
@@ -3045,7 +3045,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 
   ToggleOverview();
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Drag |window1| selector item to snap to left.
   const int grid_index = 0;
@@ -3053,7 +3053,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
 
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
@@ -3355,7 +3355,7 @@ TEST_F(SplitViewOverviewSessionTest,
   // right window of split view mode should be.
   const gfx::PointF left(0, 0);
   overview_session()->Drag(overview_item, left);
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller()->state());
   EXPECT_TRUE(split_view_controller()->left_window() == nullptr);
   EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
@@ -3444,7 +3444,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   DragWindowTo(overview_item1, gfx::PointF());
 
   // Test that overview mode is active in this single window case.
-  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
   EXPECT_TRUE(overview_controller()->IsSelecting());
@@ -3481,7 +3481,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   EXPECT_TRUE(overview_controller()->IsSelecting());
 
   EndSplitView();
-  EXPECT_FALSE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->IsSelecting());
 
   // Test that ToggleOverview() can end overview if we're not in split view
@@ -3494,10 +3494,10 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   ToggleOverview();
   overview_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
-  EXPECT_TRUE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->IsSelecting());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->IsSelecting());
 
   // Test that closing all windows in overview can end overview if we're not in
@@ -3705,7 +3705,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
   // Snap the snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
-  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Select the unsnappable window.
   const int grid_index = 0;
@@ -3718,7 +3718,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
   // Verify that we are out of split view and overview mode, and that the active
   // window is the unsnappable window.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->IsSelecting());
   EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
 
@@ -3729,13 +3729,13 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
                                       SplitViewController::RIGHT);
 
   // Split view mode should be active. Overview mode should be ended.
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
             split_view_controller()->state());
   EXPECT_FALSE(overview_controller()->IsSelecting());
 
   ToggleOverview();
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
   EXPECT_TRUE(overview_controller()->IsSelecting());
@@ -3748,7 +3748,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
   // Split view mode should be ended. And the unsnappable window should be the
   // active window now.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->IsSelecting());
   EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
 }
@@ -3778,7 +3778,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
 
   // Snap the extra snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(snappable_overview_item->cannot_snap_widget_for_testing());
   ASSERT_TRUE(unsnappable_overview_item->cannot_snap_widget_for_testing());
   ui::Layer* unsnappable_layer =
@@ -3795,7 +3795,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
   GetEventGenerator()->DragMouseTo(0, 0);
   SkipDividerSnapAnimation();
 
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(0.f, unsnappable_layer->opacity());
 }
 
@@ -3817,7 +3817,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
   // Test that overview mode and split view mode are both active.
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 
   // Drag the divider toward closing the snapped window.
@@ -3827,7 +3827,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 
   // Now drag |window2| selector item to snap to left.
@@ -3835,7 +3835,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
       GetWindowItemForWindow(grid_index, window2.get());
   DragWindowTo(overview_item2, gfx::PointF());
   // Test that overview mode and split view mode are both active.
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 
   // Drag the divider toward closing the overview window grid.
@@ -3847,7 +3847,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
 
   // Test that split view mode is ended. Overview mode is also ended. |window2|
   // should be activated.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(window2.get(), wm::GetActiveWindow());
 }
@@ -3912,7 +3912,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   // Test that |window1| has the dimensions of a tablet mode maxed window, so
   // that when it is placed back on the grid it will not look skinny.
@@ -3940,7 +3940,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   // Test that |window2| has the dimensions of a tablet mode maxed window, so
   // that when it is placed back on the grid it will not look skinny.
@@ -3968,7 +3968,7 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
   EXPECT_TRUE(IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ASSERT_TRUE(split_view_controller()->split_view_divider());
   std::vector<aura::Window*> window_list =
       overview_controller()->GetWindowsListInOverviewGridsForTest();
@@ -3987,7 +3987,7 @@ TEST_F(SplitViewOverviewSessionTest,
   // Verify that it is still in overview mode and that |window1| is returned to
   // the overview list.
   EXPECT_TRUE(IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   window_list = overview_controller()->GetWindowsListInOverviewGridsForTest();
   EXPECT_EQ(3u, window_list.size());
   EXPECT_TRUE(base::ContainsValue(window_list, window1.get()));
@@ -4073,7 +4073,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
 
   // Minimize |window1| will put |window1| back to overview grid.
   wm::GetWindowState(window1.get())->Minimize();
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(IsSelecting());
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
 
@@ -4089,7 +4089,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
 
   // Minimize |window1| will open overview and put |window1| to overview grid.
   wm::GetWindowState(window1.get())->Minimize();
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::RIGHT_SNAPPED);
   EXPECT_TRUE(IsSelecting());
@@ -4097,7 +4097,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
 
   // Minimize |window2| also put |window2| to overview grid.
   wm::GetWindowState(window2.get())->Minimize();
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(IsSelecting());
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window2.get()));
@@ -4300,7 +4300,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(window_state1->IsSnapped());
   ToggleOverview();
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   // Drag |window1| selector item to snap to left.
   const int grid_index = 0;
   OverviewItem* overview_item1 =
@@ -4311,7 +4311,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_EQ(window_state1->GetStateType(),
             mojom::WindowStateType::LEFT_SNAPPED);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 2. Test if one window is snapped, the other windows are showing in
   // overview, close all windows in overview will end overview and also
@@ -4319,12 +4319,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   ToggleOverview();
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   overview_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(600, 300));
   // SplitView and overview are both active at the moment.
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_TRUE(overview_controller()->overview_session()->IsWindowInOverview(
       window2.get()));
@@ -4333,7 +4333,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // Close |window2| will end overview and splitview.
   window2.reset();
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 3. Test that snap 2 windows will end overview and splitview.
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
@@ -4348,7 +4348,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
             mojom::WindowStateType::RIGHT_SNAPPED);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 4. Test if one window is snapped, the other windows are showing in
   // overview, we can drag another window in overview to snap in splitview, and
@@ -4370,12 +4370,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
             mojom::WindowStateType::LEFT_SNAPPED);
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ToggleOverview();
   EXPECT_EQ(wm::GetWindowState(window4.get())->GetStateType(),
             mojom::WindowStateType::RIGHT_SNAPPED);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 5. Test if one window is snapped, the other window are showing in overview,
   // activating an new window will open in splitview, which ends splitview and
@@ -4384,11 +4384,11 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   overview_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   std::unique_ptr<aura::Window> window5(CreateWindow(bounds));
   wm::ActivateWindow(window5.get());
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 6. Test if one window is snapped, the other window is showing in overview,
   // close the snapped window will end split view, but overview is still active.
@@ -4397,12 +4397,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   overview_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
   window1.reset();
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   // Overview bounds will adjust from snapped bounds to fullscreen bounds.
   EXPECT_EQ(GetGridBounds(), overview_bounds);
 }
@@ -4436,7 +4436,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, IgnoreEventsIfApplistVisible) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Open app list.
   app_list_controller->ToggleAppList(
@@ -4446,18 +4446,18 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, IgnoreEventsIfApplistVisible) {
   // Test that app list is open, splitview and overview are both active.
   EXPECT_TRUE(app_list_controller->IsVisible());
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Send ui::VKEY_ESCAPE should dismiss app list. But splitview and overview
   // should still be active.
   SendKey(ui::VKEY_ESCAPE);
   EXPECT_FALSE(app_list_controller->IsVisible());
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   // Send ui::VKEY_ESCAPE should then end overview.
   SendKey(ui::VKEY_ESCAPE);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
 // Test that when overview and splitview are both active, only resize that
@@ -4491,7 +4491,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
                                       window1.get());
   generator1.DragMouseBy(50, 50);
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_NE(GetGridBounds(), overview_snapped_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
@@ -4503,12 +4503,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
       GetWindowItemForWindow(grid_index, window2.get());
   DragWindowTo(overview_item2, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ui::test::EventGenerator generator2(Shell::GetPrimaryRootWindow(),
                                       window2.get());
   generator2.DragMouseBy(50, 50);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   ToggleOverview();
   OverviewItem* overview_item3 =
@@ -4518,7 +4518,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
                                       window3.get());
   generator3.DragMouseBy(50, 50);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   ToggleOverview();
   OverviewItem* overview_item4 =
@@ -4528,7 +4528,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
                                       window4.get());
   generator4.DragMouseBy(50, 50);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
 // Test that when laptop splitview mode is active, moving the snapped window
@@ -4546,13 +4546,13 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   ui::test::EventGenerator generator1(Shell::GetPrimaryRootWindow(),
                                       window1.get());
   generator1.DragMouseBy(50, 50);
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
 // Test that in clamshell splitview mode, if the snapped window is minimized,
@@ -4569,12 +4569,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->IsSelecting());
-  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Now minimize the snapped |window1|.
   wm::GetWindowState(window1.get())->Minimize();
   EXPECT_FALSE(overview_controller()->IsSelecting());
-  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
 }  // namespace ash

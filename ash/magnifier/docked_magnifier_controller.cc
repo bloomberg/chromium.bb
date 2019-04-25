@@ -574,7 +574,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   auto* overview_controller = shell->overview_controller();
   if (overview_controller->IsSelecting()) {
     auto* split_view_controller = shell->split_view_controller();
-    if (split_view_controller->IsSplitViewModeActive()) {
+    if (split_view_controller->InSplitViewMode()) {
       // In this case, we're in a single-split-view mode, i.e. a window is
       // snapped to one side of the split view, while the other side has
       // overview active. We need to exit split view as well as exiting overview

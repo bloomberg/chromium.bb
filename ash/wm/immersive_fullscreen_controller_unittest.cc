@@ -731,7 +731,7 @@ TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
   Shell::Get()->split_view_controller()->SnapWindow(window(),
                                                     SplitViewController::LEFT);
   EXPECT_TRUE(wm::GetWindowState(window())->IsSnapped());
-  EXPECT_TRUE(Shell::Get()->split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 }

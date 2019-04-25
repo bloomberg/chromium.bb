@@ -513,7 +513,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       return SHELF_BACKGROUND_DEFAULT;
   }
 
-  if (Shell::Get()->IsSplitViewModeActive() ||
+  const bool in_split_view_mode =
+      Shell::Get()->split_view_controller() &&
+      Shell::Get()->split_view_controller()->InSplitViewMode();
+  if (in_split_view_mode ||
       (state_.visibility_state != SHELF_AUTO_HIDE &&
        state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED)) {
     return SHELF_BACKGROUND_MAXIMIZED;
