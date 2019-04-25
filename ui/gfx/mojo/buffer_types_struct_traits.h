@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
 
@@ -214,6 +216,17 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
       gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.planes;
   }
+
+#if defined(OS_FUCHSIA)
+  static base::Optional<base::UnguessableToken> buffer_collection_id(
+      const gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.buffer_collection_id;
+  }
+
+  static uint32_t& buffer_index(gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.buffer_index;
+  }
+#endif  // defined(OS_FUCHSIA)
 
   static bool Read(gfx::mojom::NativePixmapHandleDataView data,
                    gfx::NativePixmapHandle* out);

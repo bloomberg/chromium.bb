@@ -81,6 +81,10 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::NativePixmapHandle)
   IPC_STRUCT_TRAITS_MEMBER(planes)
+#if defined(OS_FUCHSIA)
+  IPC_STRUCT_TRAITS_MEMBER(buffer_collection_id)
+  IPC_STRUCT_TRAITS_MEMBER(buffer_index)
+#endif
 IPC_STRUCT_TRAITS_END()
 #endif
 

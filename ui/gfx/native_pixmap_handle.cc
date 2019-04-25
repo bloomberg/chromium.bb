@@ -81,10 +81,13 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
                               std::move(fd_dup), plane.modifier);
 #elif defined(OS_FUCHSIA)
     zx::vmo vmo_dup;
-    zx_status_t status = plane.vmo.duplicate(ZX_RIGHT_SAME_RIGHTS, &vmo_dup);
-    if (status != ZX_OK) {
-      ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
-      return NativePixmapHandle();
+    // VMO may be set to NULL for pixmaps that cannot be mapped.
+    if (plane.vmo) {
+      zx_status_t status = plane.vmo.duplicate(ZX_RIGHT_SAME_RIGHTS, &vmo_dup);
+      if (status != ZX_OK) {
+        ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
+        return NativePixmapHandle();
+      }
     }
     clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
                               std::move(vmo_dup), plane.modifier);
@@ -92,6 +95,12 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
 #error Unsupported OS
 #endif
   }
+
+#if defined(OS_FUCHSIA)
+  clone.buffer_collection_id = handle.buffer_collection_id;
+  clone.buffer_index = handle.buffer_index;
+#endif
+
   return clone;
 }
 

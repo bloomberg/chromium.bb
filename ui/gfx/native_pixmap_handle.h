@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -66,6 +68,12 @@ struct GFX_EXPORT NativePixmapPlane {
 #endif
 };
 
+#if defined(OS_FUCHSIA)
+// Buffer collection ID is used to identify sysmem buffer collections across
+// processes.
+using SysmemBufferCollectionId = base::UnguessableToken;
+#endif
+
 struct GFX_EXPORT NativePixmapHandle {
   NativePixmapHandle();
   NativePixmapHandle(NativePixmapHandle&& other);
@@ -75,6 +83,11 @@ struct GFX_EXPORT NativePixmapHandle {
   NativePixmapHandle& operator=(NativePixmapHandle&& other);
 
   std::vector<NativePixmapPlane> planes;
+
+#if defined(OS_FUCHSIA)
+  base::Optional<SysmemBufferCollectionId> buffer_collection_id;
+  uint32_t buffer_index;
+#endif
 };
 
 // Returns an instance of |handle| which can be sent over IPC. This duplicates

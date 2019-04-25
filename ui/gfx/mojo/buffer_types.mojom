@@ -5,6 +5,7 @@
 module gfx.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // gfx::BufferFormat
 enum BufferFormat {
@@ -62,6 +63,11 @@ struct NativePixmapPlane {
 [EnableIf=supports_native_pixmap]
 struct NativePixmapHandle {
   array<NativePixmapPlane> planes;
+
+  [EnableIf=is_fuchsia]
+  mojo_base.mojom.UnguessableToken? buffer_collection_id;
+  [EnableIf=is_fuchsia]
+  uint32 buffer_index;
 };
 
 [EnableIf=is_android]
