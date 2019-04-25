@@ -146,7 +146,7 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
                 base::TimeDelta::FromMilliseconds(500)),
             // Animation parameters.
-            {.is_cyclic = true}));
+            {/*is_cyclic=*/true}));
   }
 }
 
