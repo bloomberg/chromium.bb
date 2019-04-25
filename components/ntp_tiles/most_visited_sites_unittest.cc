@@ -1509,7 +1509,8 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   // Complete a second custom link action.
   EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(false));
   EXPECT_CALL(*mock_custom_links_, DeleteLink(_)).WillOnce(Return(true));
-  EXPECT_CALL(*mock_custom_links_, IsInitialized()).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_custom_links_, GetLinks())
       .WillOnce(ReturnRef(expected_links));
   most_visited_sites_->DeleteCustomLink(GURL("test.com"));
@@ -1522,6 +1523,73 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   EXPECT_CALL(*mock_custom_links_, GetLinks())
       .WillOnce(ReturnRef(expected_links));
   most_visited_sites_->UndoCustomLinkAction();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(MostVisitedSitesWithCustomLinksTest,
+       UninitializeCustomLinksIfFirstActionFails) {
+  const char kTestUrl[] = "http://site1/";
+  const char kTestTitle[] = "Site 1";
+  std::vector<CustomLinksManager::Link> expected_links(
+      {CustomLinksManager::Link{GURL(kTestUrl),
+                                base::UTF8ToUTF16(kTestTitle)}});
+  std::map<SectionType, NTPTilesVector> sections;
+  DisableRemoteSuggestions();
+
+  // Build initial tiles with Top Sites.
+  EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_));
+  ExpectBuildWithTopSites(
+      MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}, &sections);
+  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
+                                                  /*num_sites=*/1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(
+      sections.at(SectionType::PERSONALIZED),
+      ElementsAre(MatchesTile(kTestTitle, kTestUrl, TileSource::TOP_SITES)));
+
+  // Fail to add a custom link. This should not initialize custom links nor
+  // notify.
+  EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, AddLink(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_custom_links_, Uninitialize());
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_)).Times(0);
+  most_visited_sites_->AddCustomLink(GURL(kTestUrl), base::UTF8ToUTF16("test"));
+  base::RunLoop().RunUntilIdle();
+
+  // Fail to edit a custom link. This should not initialize custom links nor
+  // notify.
+  EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, UpdateLink(_, _, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_custom_links_, Uninitialize());
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_)).Times(0);
+  most_visited_sites_->UpdateCustomLink(GURL("test.com"), GURL("test2.com"),
+                                        base::UTF8ToUTF16("test"));
+  base::RunLoop().RunUntilIdle();
+
+  // Fail to reorder a custom link. This should not initialize custom links nor
+  // notify.
+  EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, ReorderLink(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_custom_links_, Uninitialize());
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_)).Times(0);
+  most_visited_sites_->ReorderCustomLink(GURL("test.com"), 1);
+  base::RunLoop().RunUntilIdle();
+
+  // Fail to delete a custom link. This should not initialize custom links nor
+  // notify.
+  EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, DeleteLink(_)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_custom_links_, Uninitialize());
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_)).Times(0);
+  most_visited_sites_->DeleteCustomLink(GURL("test.com"));
   base::RunLoop().RunUntilIdle();
 }
 

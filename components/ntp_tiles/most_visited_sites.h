@@ -176,24 +176,25 @@ class MostVisitedSites : public history::TopSitesObserver,
   void EnableCustomLinks(bool enable);
   // Adds a custom link. If the number of current links is maxed, returns false
   // and does nothing. Will initialize custom links if they have not been
-  // initialized yet. Custom links must be enabled.
+  // initialized yet, unless the action fails. Custom links must be enabled.
   bool AddCustomLink(const GURL& url, const base::string16& title);
   // Updates the URL and/or title of the custom link specified by |url|. If
   // |url| does not exist or |new_url| already exists in the custom link list,
   // returns false and does nothing. Will initialize custom links if they have
-  // not been initialized yet. Custom links must be enabled.
+  // not been initialized yet, unless the action fails. Custom links must be
+  // enabled.
   bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const base::string16& new_title);
   // Moves the custom link specified by |url| to the index |new_pos|. If |url|
   // does not exist, or |new_pos| is invalid, returns false and does nothing.
-  // Will initialize custom links if they have not been initialized yet. Custom
-  // links must be enabled.
+  // Will initialize custom links if they have not been initialized yet, unless
+  // the action fails. Custom links must be enabled.
   bool ReorderCustomLink(const GURL& url, size_t new_pos);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, returns false and does nothing. Will initialize
-  // custom links if they have not been initialized yet. Custom links must be
-  // enabled.
+  // custom links if they have not been initialized yet, unless the action
+  // fails. Custom links must be enabled.
   bool DeleteCustomLink(const GURL& url);
   // Restores the previous state of custom links before the last action that
   // modified them. If there was no action, does nothing. If this is undoing the
