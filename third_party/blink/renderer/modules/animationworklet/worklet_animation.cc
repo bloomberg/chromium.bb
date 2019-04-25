@@ -59,14 +59,6 @@ bool ConvertAnimationEffects(
     return false;
   }
 
-  // TODO(crbug.com/781816): Allow using effects with no target.
-  for (const auto& effect : keyframe_effects) {
-    if (!effect->target()) {
-      error_string = "All effect targets must exist";
-      return false;
-    }
-  }
-
   return true;
 }
 
@@ -119,6 +111,7 @@ bool CheckElementComposited(const Node& target) {
 void StartEffectOnCompositor(CompositorAnimation* animation,
                              KeyframeEffect* effect) {
   DCHECK(effect);
+  DCHECK(effect->target());
   Element& target = *effect->target();
   effect->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
@@ -304,7 +297,9 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
 
   for (auto& effect : effects_) {
     Element* target = effect->target();
-    DCHECK(target);
+    if (!target)
+      continue;
+
     // TODO(yigu): Currently we have to keep a set of worklet animations in
     // ElementAnimations so that the compositor knows that there are active
     // worklet animations running. Ideally, this should be done via the regular
@@ -375,7 +370,8 @@ void WorkletAnimation::cancel() {
 
   for (auto& effect : effects_) {
     Element* target = effect->target();
-    DCHECK(target);
+    if (!target)
+      continue;
     // TODO(yigu): Currently we have to keep a set of worklet animations in
     // ElementAnimations so that the compositor knows that there are active
     // worklet animations running. Ideally, this should be done via the regular
@@ -502,8 +498,17 @@ void WorkletAnimation::UpdateCompositingState() {
     // TODO(majidvp): If keyframes have changed then it may be possible to now
     // run the animation on compositor. The current logic does not allow this
     // switch from main to compositor to happen.
-    if (!running_on_main_thread_)
-      UpdateOnCompositor();
+    if (!running_on_main_thread_) {
+      if (!UpdateOnCompositor()) {
+        // When an animation that is running on compositor loses the target, it
+        // falls back to main thread. We need to initialize the last play state
+        // before this transition to avoid re-adding the same animation to the
+        // worklet.
+        last_play_state_ = play_state_;
+
+        StartOnMain();
+      }
+    }
   }
   DCHECK(running_on_main_thread_ != !!compositor_animation_)
       << "Active worklet animation should either run on main or compositor";
@@ -528,6 +533,9 @@ bool WorkletAnimation::StartOnCompositor() {
     // Compositor doesn't support multiple effects but they can be run via main.
     return false;
   }
+
+  if (!GetEffect()->target())
+    return false;
 
   Element& target = *GetEffect()->target();
 
@@ -582,13 +590,17 @@ bool WorkletAnimation::StartOnCompositor() {
   return true;
 }
 
-void WorkletAnimation::UpdateOnCompositor() {
+bool WorkletAnimation::UpdateOnCompositor() {
   if (effect_needs_restart_) {
     // We want to update the keyframe effect on compositor animation without
     // destroying the compositor animation instance. This is achieved by
     // canceling, and start the blink keyframe effect on compositor.
     effect_needs_restart_ = false;
     GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
+    if (!GetEffect()->target()) {
+      DestroyCompositorAnimation();
+      return false;
+    }
     StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   }
 
@@ -617,6 +629,7 @@ void WorkletAnimation::UpdateOnCompositor() {
         start_scroll_offset, end_scroll_offset);
   }
   compositor_animation_->UpdatePlaybackRate(playback_rate_);
+  return true;
 }
 
 void WorkletAnimation::DestroyCompositorAnimation() {

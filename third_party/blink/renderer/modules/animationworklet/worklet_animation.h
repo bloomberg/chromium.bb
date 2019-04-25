@@ -174,8 +174,9 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // time and avoid the animation output from jumping.
   void SetPlaybackRateInternal(double);
 
-  // Updates a running animation on the compositor side.
-  void UpdateOnCompositor();
+  // Updates a running animation on the compositor side. Returns false if the
+  // update is terminated. e.g. the animated target is gone.
+  bool UpdateOnCompositor();
 
   std::unique_ptr<cc::AnimationOptions> CloneOptions() const {
     return options_ ? options_->Clone() : nullptr;
