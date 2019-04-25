@@ -1282,7 +1282,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_NE(nullptr, AddURL(1, folder1, 1, "BooKMarK 1", GURL(kGenericURL)));
   ASSERT_NE(nullptr, AddURL(1, folder1, 2, "bOOKMARK 2", GURL(kGenericURL)));
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1308,7 +1309,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, i, title1, url1));
   }
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1331,7 +1333,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, i, title, url));
   }
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1348,12 +1351,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, i, title, url));
   }
 
-  // Enable sync on Client 0 and wait until bookmarks are committed.
-  ASSERT_TRUE(GetClient(0)->SetupSync()) << "GetClient(0)->SetupSync() failed.";
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-
-  // Enable sync on Client 1 and wait until all bookmarks are merged.
-  ASSERT_TRUE(GetClient(1)->SetupSync()) << "GetClient(1)->SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
@@ -1377,7 +1376,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     GURL url1 = GURL(IndexedURL(2*i+1));
     ASSERT_NE(nullptr, AddURL(1, folder1, i, title1, url1));
   }
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1419,12 +1419,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, title, url));
   }
 
-  // Enable sync on Client 0 and wait until bookmarks are committed.
-  ASSERT_TRUE(GetClient(0)->SetupSync()) << "GetClient(0)->SetupSync() failed.";
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-
-  // Enable sync on Client 1 and wait until all bookmarks are merged.
-  ASSERT_TRUE(GetClient(1)->SetupSync()) << "GetClient(1)->SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1449,7 +1445,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
       }
     }
   }
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1472,7 +1469,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, j, title, url));
   }
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
   ASSERT_FALSE(ContainsDuplicateBookmarks(1));
@@ -1503,7 +1501,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_NE(nullptr,
             AddURL(1, folder1, 4, IndexedURLTitle(1), GURL(IndexedURL(1))));
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1533,7 +1532,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_NE(nullptr,
             AddURL(1, folder1, 3, IndexedURLTitle(8), GURL(IndexedURL(8))));
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1585,7 +1585,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(1, i, title, url));
   }
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Commit sequentially to make sure there is no race condition.
+  SetupSyncOneClientAfterAnother();
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   for (int i = 1; i < 5 ; ++i) {
