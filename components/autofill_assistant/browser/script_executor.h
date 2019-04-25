@@ -175,6 +175,8 @@ class ScriptExecutor : public ActionDelegate,
   void SetInfoBox(const InfoBox& info_box) override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
+  void SetResizeViewport(bool resize_viewport) override;
+  void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

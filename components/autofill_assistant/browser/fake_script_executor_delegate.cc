@@ -85,6 +85,11 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
+void FakeScriptExecutorDelegate::SetResizeViewport(bool resize_viewport) {}
+
+void FakeScriptExecutorDelegate::SetPeekMode(
+    ConfigureBottomSheetProto::PeekMode peek_mode) {}
+
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
 }

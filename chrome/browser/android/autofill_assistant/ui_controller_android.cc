@@ -127,6 +127,8 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
     OnTouchableAreaChanged(area);
+    OnResizeViewportChanged(ui_delegate->GetResizeViewport());
+    OnPeekModeChanged(ui_delegate->GetPeekMode());
 
     OnStateChanged(ui_delegate->GetState());
   }
@@ -233,6 +235,17 @@ void UiControllerAndroid::OnProgressChanged(int progress) {
 void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
   Java_AssistantHeaderModel_setProgressVisible(AttachCurrentThread(),
                                                GetHeaderModel(), visible);
+}
+
+void UiControllerAndroid::OnResizeViewportChanged(bool resize_viewport) {
+  Java_AutofillAssistantUiController_setResizeViewport(
+      AttachCurrentThread(), java_object_, resize_viewport);
+}
+
+void UiControllerAndroid::OnPeekModeChanged(
+    ConfigureBottomSheetProto::PeekMode peek_mode) {
+  Java_AutofillAssistantUiController_setPeekMode(AttachCurrentThread(),
+                                                 java_object_, peek_mode);
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {

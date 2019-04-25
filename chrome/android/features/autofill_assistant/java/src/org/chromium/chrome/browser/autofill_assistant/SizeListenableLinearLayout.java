@@ -29,6 +29,19 @@ public class SizeListenableLinearLayout extends LinearLayout {
     }
 
     @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (mListener != null) {
+            // TODO(crbug.com/806868): In some edge cases, #onLayout is called and #onSizeChanged is
+            // not. This call with invalid values ensures that the BottomSheet is resized correctly
+            // when that happens. A correct fix is to make the BottomSheet always listen for layout
+            // changes (it currently does that only if there is no ContentSizeListener attached to
+            // the BottomSheetContent).
+            mListener.onSizeChanged(-1, bottom - top, -1, -1);
+        }
+    }
+
+    @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (mListener != null) {

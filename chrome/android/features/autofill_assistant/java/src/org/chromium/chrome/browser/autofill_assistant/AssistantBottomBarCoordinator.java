@@ -5,14 +5,13 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -37,7 +36,8 @@ import org.chromium.ui.modelutil.ListModel;
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
  */
-class AssistantBottomBarCoordinator implements CompositorViewResizer {
+class AssistantBottomBarCoordinator
+        implements CompositorViewResizer, AssistantPeekHeightCoordinator.Delegate {
     private final AssistantModel mModel;
     private final BottomSheetController mBottomSheetController;
     private final AssistantBottomSheetContent mContent;
@@ -49,11 +49,11 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
     private final AssistantCarouselCoordinator mActionsCoordinator;
+    private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
 
     private final ObserverList<CompositorViewResizer.Observer> mSizeObservers =
             new ObserverList<>();
-    private final int mPeekHeight;
-    private int mContentHeight;
+    private boolean mResizeViewport;
 
     @Nullable
     private ScrollView mOnboardingScrollView;
@@ -63,8 +63,6 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         mModel = model;
         mBottomSheetController = controller;
         mContent = new AssistantBottomSheetContent(context);
-        mPeekHeight = context.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_peek_height);
 
         // Instantiate child components.
         mHeaderCoordinator = new AssistantHeaderCoordinator(
@@ -77,6 +75,10 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
                 new AssistantSuggestionsCarouselCoordinator(context, model.getSuggestionsModel());
         mActionsCoordinator =
                 new AssistantActionsCarouselCoordinator(context, model.getActionsModel());
+        BottomSheet bottomSheet = controller.getBottomSheet();
+        mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(context, this, bottomSheet,
+                mContent.mToolbarView, mContent.mBottomBarView, mSuggestionsCoordinator.getView(),
+                mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
 
         // Add child views to bottom bar container.
         mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
@@ -106,28 +108,37 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mPaymentRequestCoordinator.getView());
 
-        // Set the toolbar background color to white only in the PEEK state, to make sure it does
-        // not hide parts of the content view (which it overlaps).
-        controller.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
+        View bottomSheetContainer =
+                bottomSheet.findViewById(org.chromium.chrome.R.id.bottom_sheet_content);
+        bottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetOpened(int reason) {
-                mContent.mToolbarView.setBackgroundColor(Color.TRANSPARENT);
+            public void onSheetClosed(int reason) {
+                // When scrolling with y < peekHeight, the BottomSheet will make the content
+                // invisible. This is a workaround to prevent that as our toolbar is transparent and
+                // we want to sheet content to stay visible.
+                if ((bottomSheet.getSheetState() == BottomSheet.SheetState.SCROLLING
+                            || bottomSheet.getSheetState() == BottomSheet.SheetState.PEEK)
+                        && bottomSheet.getCurrentSheetContent() == mContent
+                        && model.get(AssistantModel.VISIBLE)) {
+                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
-            public void onSheetClosed(int reason) {
-                mContent.mToolbarView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                        context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
+            public void onSheetStateChanged(int newState) {
+                if (newState == BottomSheet.SheetState.PEEK
+                        && bottomSheet.getCurrentSheetContent() == mContent) {
+                    // When in the peek state, the BottomSheet hides the content view. We override
+                    // that because we artificially increase the height of the transparent toolbar
+                    // to show parts of the content view.
+                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
             public void onSheetContentChanged(@Nullable BottomSheet.BottomSheetContent newContent) {
-                // As resizing the web content area is an expensive operation, we only shrink it by
-                // our peek height when our BottomSheetContent is shown. This way, the whole web
-                // content will be visible when the sheet is in the PEEK state.
                 // TODO(crbug.com/806868): Make sure this works and does not interfere with Duet
                 // once we are in ChromeTabbedActivity.
-                mContentHeight = newContent == mContent ? mPeekHeight : 0;
                 notifyAutofillAssistantSizeChanged();
             }
         });
@@ -193,6 +204,29 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
         mBottomSheetController.hideContent(mContent, /* animate= */ true);
     }
 
+    void setResizeViewport(boolean resizeViewport) {
+        if (resizeViewport == mResizeViewport) return;
+
+        mResizeViewport = resizeViewport;
+        notifyAutofillAssistantSizeChanged();
+    }
+
+    /** Set the peek mode. */
+    void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
+        mPeekHeightCoordinator.setPeekMode(peekMode);
+    }
+
+    @Override
+    public void setShowOnlyCarousels(boolean showOnlyCarousels) {
+        mDetailsCoordinator.setForceInvisible(showOnlyCarousels);
+        mPaymentRequestCoordinator.setForceInvisible(showOnlyCarousels);
+    }
+
+    @Override
+    public void onPeekHeightChanged() {
+        notifyAutofillAssistantSizeChanged();
+    }
+
     private void setChildMarginTop(View child, int marginTop) {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) child.getLayoutParams();
         params.topMargin = marginTop;
@@ -233,14 +267,21 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
     }
 
     private void notifyAutofillAssistantSizeChanged() {
-        for (Observer observer : mSizeObservers) observer.onHeightChanged(mContentHeight);
+        int height = getHeight();
+        for (Observer observer : mSizeObservers) {
+            observer.onHeightChanged(height);
+        }
     }
 
     // Implementation of methods from AutofillAssistantSizeManager.
 
     @Override
     public int getHeight() {
-        return mContentHeight;
+        if (mResizeViewport
+                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent)
+            return mPeekHeightCoordinator.getPeekHeight();
+
+        return 0;
     }
 
     @Override
@@ -255,11 +296,11 @@ class AssistantBottomBarCoordinator implements CompositorViewResizer {
 
     // TODO(crbug.com/806868): Move this class at the top of the file once it is a static class.
     private class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
-        private final View mToolbarView;
+        private final ViewGroup mToolbarView;
         private final SizeListenableLinearLayout mBottomBarView;
 
         public AssistantBottomSheetContent(Context context) {
-            mToolbarView = LayoutInflater.from(context).inflate(
+            mToolbarView = (ViewGroup) LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_bottom_sheet_toolbar, /* root= */ null);
             mBottomBarView = (SizeListenableLinearLayout) LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);

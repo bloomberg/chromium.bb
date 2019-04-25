@@ -69,6 +69,9 @@ class UiControllerAndroid : public UiController {
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
+  void OnResizeViewportChanged(bool resize_viewport) override;
+  void OnPeekModeChanged(
+      ConfigureBottomSheetProto::PeekMode peek_mode) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();

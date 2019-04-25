@@ -341,6 +341,7 @@ message ActionProto {
     ShowInfoBoxProto show_info_box = 39;
     ExpectNavigationProto expect_navigation = 40;
     WaitForNavigationProto wait_for_navigation = 41;
+    ConfigureBottomSheetProto configure_bottom_sheet = 42;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1063,4 +1064,47 @@ message InfoBoxProto {
 // when |info_box| is not set.
 message ShowInfoBoxProto {
   optional InfoBoxProto info_box = 1;
+}
+
+// Allow scripts to configure the peek height of the sheet and whether we should
+// resize the viewport by this peek height.
+message ConfigureBottomSheetProto {
+  enum ViewportResizing {
+    // Don't change resizing configuration.
+    NO_CHANGE = 0;
+
+    // Resize the viewport such that it is completely visible when the sheet is
+    // in the peek state.
+    RESIZE = 1;
+
+    // Don't resize the viewport such that it is overlaid by the sheet, even in
+    // the peek state.
+    NO_RESIZE = 2;
+  }
+
+  // The peek mode allows to set what components are visible when the sheet is
+  // in the peek (minimized) state.
+  enum PeekMode {
+    UNDEFINED_PEEK_MODE = 0;
+
+    // Only show the swipe handle.
+    HANDLE = 1;
+
+    // Show the swipe handle, header (status message, poodle, profile icon) and
+    // progress bar.
+    HANDLE_HEADER = 2;
+
+    // Show swipe handle, header, progress bar, suggestions and actions.
+    HANDLE_HEADER_CAROUSELS = 3;
+  }
+
+  // Whether the viewport should be resized. Resizing the viewport is an
+  // expensive operation, so toggling the resize on/off should be done
+  // cautiously.
+  optional ViewportResizing viewport_resizing = 1;
+
+  // Set the peek mode. This will change the peek height of the sheet. If
+  // resize_viewport is true or was set to true by a previous actions, the
+  // viewport will be resized to match the new peek height.
+  optional PeekMode peek_mode = 2;
 }

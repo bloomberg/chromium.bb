@@ -75,6 +75,12 @@ class UiController {
   // can correspond to empty rectangles. Coordinates are relative to the width
   // or height of the visible viewport, as a number between 0 and 1.
   virtual void OnTouchableAreaChanged(const std::vector<RectF>& rectangles);
+
+  // Called when the viewport resize flag has changed.
+  virtual void OnResizeViewportChanged(bool resize_viewport);
+
+  // Called when the peek mode has changed.
+  virtual void OnPeekModeChanged(ConfigureBottomSheetProto::PeekMode peek_mode);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

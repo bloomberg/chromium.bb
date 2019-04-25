@@ -24,5 +24,8 @@ void UiController::OnInfoBoxChanged(const InfoBox* info_box) {}
 void UiController::OnProgressChanged(int progress) {}
 void UiController::OnProgressVisibilityChanged(bool visible) {}
 void UiController::OnTouchableAreaChanged(const std::vector<RectF>& areas) {}
+void UiController::OnResizeViewportChanged(bool resize_viewport) {}
+void UiController::OnPeekModeChanged(
+    ConfigureBottomSheetProto::PeekMode peek_mode) {}
 
 }  // namespace autofill_assistant
