@@ -2714,10 +2714,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 
   auto* shadow_root = MakeGarbageCollected<ShadowRoot>(GetDocument(), type);
 
-  if (type != ShadowRootType::V0 && InActiveDocument()) {
-    // Detach the host's children here for v1 (including UA shadow root),
-    // because we skip SetNeedsDistributionRecalc() in attaching v1 shadow root.
-    // See https://crrev.com/2822113002 for details.
+  if (InActiveDocument()) {
     // We need to call child.RemovedFromFlatTree() before setting a shadow
     // root to the element because detach must use the original flat tree
     // structure before attachShadow happens. We cannot use

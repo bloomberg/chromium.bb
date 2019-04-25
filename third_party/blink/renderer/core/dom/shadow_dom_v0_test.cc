@@ -171,6 +171,24 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
   EXPECT_FALSE(span->NeedsReattachLayoutTree());
 }
 
+TEST_F(ShadowDOMV0Test, DetachLayoutTreeOnShadowRootCreation) {
+  LoadURL("about:blank");
+
+  auto* host = GetDocument().CreateRawElement(html_names::kDivTag);
+  host->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kContents);
+  auto* span = GetDocument().CreateRawElement(html_names::kSpanTag);
+  host->appendChild(span);
+  GetDocument().body()->appendChild(host);
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+
+  EXPECT_TRUE(span->GetLayoutObject());
+
+  host->CreateV0ShadowRootForTesting();
+
+  EXPECT_FALSE(span->GetLayoutObject());
+}
+
 }  // namespace
 
 }  // namespace blink
