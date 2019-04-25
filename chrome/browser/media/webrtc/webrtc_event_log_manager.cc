@@ -394,7 +394,7 @@ void WebRtcEventLogManager::StartRemoteLogging(
   if (!browser_context) {
     // RPH died before processing of this notification.
     UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kDeadRph);
-    error = kStartRemoteLoggingFailureGeneric;
+    error = kStartRemoteLoggingFailureDeadRenderProcessHost;
   } else if (!IsRemoteLoggingAllowedForBrowserContext(browser_context)) {
     UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kFeatureDisabled);
     error = kStartRemoteLoggingFailureFeatureDisabled;
