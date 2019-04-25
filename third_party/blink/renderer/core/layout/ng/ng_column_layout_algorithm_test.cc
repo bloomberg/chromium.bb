@@ -2821,5 +2821,113 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeLine) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, Nested) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:50px; column-fill:auto; width:320px; }
+      .inner { columns:2; height:100px; column-fill:auto; padding:1px; }
+      .outer, .inner { column-gap:10px; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="content" style="width:5px;"></div>
+        <div class="inner">
+          <div class="content" style="width:10px;"></div>
+          <div class="content" style="width:20px;"></div>
+          <div class="content" style="width:30px;"></div>
+          <div class="content" style="width:40px;"></div>
+          <div class="content" style="width:50px;"></div>
+          <div class="content" style="width:60px;"></div>
+          <div class="content" style="width:70px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:320x50
+      offset:0,0 size:100x50
+        offset:0,0 size:5x20
+        offset:0,20 size:100x30
+          offset:1,1 size:44x29
+            offset:0,0 size:10x20
+          offset:55,1 size:44x29
+            offset:0,0 size:20x20
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:1,0 size:44x50
+            offset:0,0 size:30x20
+            offset:0,20 size:40x20
+          offset:55,0 size:44x50
+            offset:0,0 size:50x20
+            offset:0,20 size:60x20
+      offset:220,0 size:100x23
+        offset:0,0 size:100x23
+          offset:1,0 size:44x20
+            offset:0,0 size:70x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, NestedLimitedHeight) {
+  // This tests that we don't advance to the next outer fragmentainer when we've
+  // reached the bottom of an inner multicol container. We should create inner
+  // columns that overflow in the inline direction in that case.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:2; height:50px; column-fill:auto; width:210px; }
+      .inner { columns:2; height:80px; column-fill:auto; }
+      .outer, .inner { column-gap:10px; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="content" style="width:5px;"></div>
+        <div class="inner">
+          <div class="content" style="width:10px;"></div>
+          <div class="content" style="width:20px;"></div>
+          <div class="content" style="width:30px;"></div>
+          <div class="content" style="width:40px;"></div>
+          <div class="content" style="width:50px;"></div>
+          <div class="content" style="width:60px;"></div>
+          <div class="content" style="width:70px;"></div>
+          <div class="content" style="width:80px;"></div>
+          <div class="content" style="width:90px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:210x50
+      offset:0,0 size:100x50
+        offset:0,0 size:5x20
+        offset:0,20 size:100x30
+          offset:0,0 size:45x30
+            offset:0,0 size:10x20
+          offset:55,0 size:45x30
+            offset:0,0 size:20x20
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:0,0 size:45x50
+            offset:0,0 size:30x20
+            offset:0,20 size:40x20
+          offset:55,0 size:45x50
+            offset:0,0 size:50x20
+            offset:0,20 size:60x20
+          offset:110,0 size:45x50
+            offset:0,0 size:70x20
+            offset:0,20 size:80x20
+          offset:165,0 size:45x20
+            offset:0,0 size:90x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

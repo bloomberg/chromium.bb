@@ -168,7 +168,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     const NGConstraintSpace& space,
     const NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
-      is_resuming_(break_token && !break_token->IsBreakBefore()),
+      is_resuming_(IsResumingLayout(break_token)),
       exclusion_space_(space.ExclusionSpace()) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
@@ -872,9 +872,8 @@ void NGBlockLayoutAlgorithm::HandleFloat(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child,
     const NGBlockBreakToken* child_break_token) {
-  // If there is a break token for a float we must be resuming layout, we must
-  // always know our position in the BFC.
-  DCHECK(!child_break_token || child_break_token->IsBreakBefore() ||
+  // If we're resuming layout, we must always know our position in the BFC.
+  DCHECK(!IsResumingLayout(child_break_token) ||
          container_builder_.BfcBlockOffset());
 
   NGUnpositionedFloat unpositioned_float(child, child_break_token);

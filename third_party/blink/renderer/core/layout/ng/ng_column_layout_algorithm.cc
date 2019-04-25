@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -91,15 +92,63 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   NGLogicalSize column_size = CalculateColumnSize(content_box_size);
 
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
-  LayoutUnit column_block_offset(border_scrollbar_padding.block_start);
+
+  // Omit leading border+padding+scrollbar for all fragments but the first.
+  LayoutUnit column_block_offset = IsResumingLayout(BreakToken())
+                                       ? LayoutUnit()
+                                       : border_scrollbar_padding.block_start;
+
+  // Figure out how much space we've already been able to process in previous
+  // fragments, if this multicol container participates in an outer
+  // fragmentation context.
+  LayoutUnit previously_used_block_size;
+  if (const auto* token = BreakToken())
+    previously_used_block_size = token->UsedBlockSize();
+
+  bool needs_more_fragments_in_outer = false;
+  if (ConstraintSpace().HasBlockFragmentation()) {
+    // Subtract the space for content we've processed in previous fragments.
+    column_size.block_size -= previously_used_block_size;
+
+    // Check if we can fit everything (that's remaining), block-wise, within the
+    // current outer fragmentainer. If we can't, we need to adjust the block
+    // size, and allow the multicol container to continue in a subsequent outer
+    // fragmentainer.
+    LayoutUnit available_outer_space =
+        ConstraintSpace().FragmentainerSpaceAtBfcStart() - column_block_offset;
+    if (column_size.block_size > available_outer_space) {
+      column_size.block_size = available_outer_space;
+      needs_more_fragments_in_outer = true;
+    }
+  }
   LayoutUnit column_inline_progression =
       column_size.inline_size +
       ResolveUsedColumnGap(content_box_size.inline_size, Style());
   int used_column_count =
       ResolveUsedColumnCount(content_box_size.inline_size, Style());
 
+  if (ConstraintSpace().HasBlockFragmentation())
+    container_builder_.SetHasBlockFragmentation();
+
   do {
-    scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
+    scoped_refptr<const NGBlockBreakToken> break_token;
+    if (const auto* token = BreakToken()) {
+      // We're resuming layout of this multicol container after an outer
+      // fragmentation break. Resume at the break token of the last column that
+      // we were able to lay out. Note that in some cases, there may be no child
+      // break tokens. That happens if we weren't able to lay out anything at
+      // all in the previous outer fragmentainer, e.g. due to a forced break
+      // before this multicol container, or e.g. if there was leading
+      // unbreakable content that couldn't fit in the space we were offered back
+      // then. In other words, in that case, we're about to create the first
+      // fragment for this multicol container.
+      const auto child_tokens = token->ChildBreakTokens();
+      if (child_tokens.size()) {
+        break_token =
+            To<NGBlockBreakToken>(child_tokens[child_tokens.size() - 1]);
+      }
+    }
+
     LayoutUnit intrinsic_block_size;
     LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
     int actual_column_count = 0;
@@ -150,7 +199,44 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
       column_inline_offset += column_inline_progression;
       break_token = To<NGBlockBreakToken>(column->BreakToken());
+
+      // If we're participating in an outer fragmentation context, we'll only
+      // allow as many columns as the used value of column-count, so that we
+      // don't overflow in the inline direction. There's one important
+      // exception: If we have determined that this is going to be the last
+      // fragment for this multicol container in the outer fragmentation
+      // context, we'll just allow as many columns as needed (and let them
+      // overflow in the inline direction, if necessary). We're not going to
+      // progress into a next outer fragmentainer if the (remaining part of the)
+      // multicol container fits block-wise in the current outer fragmentainer.
+      if (ConstraintSpace().HasBlockFragmentation() && break_token &&
+          !break_token->IsFinished() &&
+          actual_column_count >= used_column_count &&
+          needs_more_fragments_in_outer) {
+        LayoutUnit fragment_block_size = child_space.FragmentainerBlockSize();
+        // Calculate how much block space we've been able to process so far, in
+        // this fragment and all previous fragments generated for this multicol
+        // container.
+        LayoutUnit used_block_size = fragment_block_size;
+        // If this isn't the first fragment, add the amount that we were able to
+        // process in previous fragments. Otherwise, we're the first fragment,
+        // and we have to add leading border+padding+scrollbar to the fragment
+        // size (which would otherwise only be the size of the columns), since
+        // that's put at the start of the first fragment.
+        if (previously_used_block_size)
+          used_block_size += previously_used_block_size;
+        else
+          fragment_block_size += border_scrollbar_padding.block_start;
+        container_builder_.SetUsedBlockSize(used_block_size);
+        container_builder_.SetBlockSize(fragment_block_size);
+        container_builder_.SetDidBreak();
+        break;
+      }
     } while (break_token && !break_token->IsFinished());
+
+    // TODO(mstensho): Nested column balancing.
+    if (container_builder_.DidBreak())
+      break;
 
     // If we overflowed (actual column count larger than what we have room for),
     // and we're supposed to calculate the column lengths automatically (column
@@ -186,13 +272,23 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   // TODO(mstensho): Propagate baselines.
 
-  if (border_box_size.block_size == NGSizeIndefinite) {
-    // Get the block size from the columns if it's auto.
-    border_box_size.block_size =
-        column_size.block_size + border_scrollbar_padding.BlockSum();
+  // If we need another fragment for this multicol container (because we're
+  // nested inside another fragmentation context), we have already calculated
+  // the block size correctly. Otherwise, do it now.
+  if (!container_builder_.DidBreak()) {
+    LayoutUnit block_size;
+    if (border_box_size.block_size == NGSizeIndefinite) {
+      // Get the block size from the columns if it's auto.
+      block_size = column_size.block_size + border_scrollbar_padding.BlockSum();
+    } else {
+      // TODO(mstensho): end border and padding may overflow the parent
+      // fragmentainer, and we should avoid that.
+      block_size = border_box_size.block_size - previously_used_block_size;
+    }
+    container_builder_.SetBlockSize(block_size);
   }
+
   container_builder_.SetInlineSize(border_box_size.inline_size);
-  container_builder_.SetBlockSize(border_box_size.block_size);
   container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Node()));
   container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
