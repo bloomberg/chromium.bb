@@ -49,6 +49,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -62,6 +63,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
@@ -1204,6 +1206,29 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         std::move(callback),
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
     return;
+  }
+
+  // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
+  // are enabled, non-SameSite cookies without the Secure attribute will be
+  // treated as secure if set from a secure context, or rejected if set from an
+  // insecure context.
+  if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
+      base::FeatureList::IsEnabled(
+          features::kCookiesWithoutSameSiteMustBeSecure) &&
+      cc->GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION &&
+      !cc->IsSecure()) {
+    if (!secure_source) {
+      DVLOG(net::cookie_util::kVlogSetCookies)
+          << "SetCookie() rejecting insecure cookie with SameSite=None.";
+      status = CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_SAMESITE_NONE_INSECURE;
+      MaybeRunCookieCallback(std::move(callback), status);
+      return;
+    }
+    DVLOG(net::cookie_util::kVlogSetCookies)
+        << "SetCookie() treating cookie without SameSite restrictions as "
+           "secure.";
+    cc->SetSecure(true);
   }
 
   const std::string key(GetKey(cc->Domain()));

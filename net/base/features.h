@@ -41,8 +41,7 @@ NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
 NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
 
 // Changes the timeout after which unused sockets idle sockets are cleaned up.
-NET_EXPORT
-extern const base::Feature kNetUnusedIdleSocketTimeout;
+NET_EXPORT extern const base::Feature kNetUnusedIdleSocketTimeout;
 
 // When enabled, makes cookies without a SameSite attribute behave like
 // SameSite=Lax cookies by default, and requires SameSite=None to be specified
@@ -50,6 +49,12 @@ extern const base::Feature kNetUnusedIdleSocketTimeout;
 // the default behavior for cookies without a SameSite attribute specified is no
 // restriction, i.e., available in a third-party context.
 NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
+
+// When enabled, cookies without SameSite restrictions that don't specify the
+// Secure attribute will be rejected if set from an insecure context, or treated
+// as secure if set from a secure context. This ONLY has an effect if
+// SameSiteByDefaultCookies is also enabled.
+NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
 
 }  // namespace features
 }  // namespace net

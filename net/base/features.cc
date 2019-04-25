@@ -40,5 +40,8 @@ const base::Feature kNetUnusedIdleSocketTimeout{
 const base::Feature kSameSiteByDefaultCookies{
     "SameSiteByDefaultCookies", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCookiesWithoutSameSiteMustBeSecure{
+    "CookiesWithoutSameSiteMustBeSecure", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net

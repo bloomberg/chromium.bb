@@ -728,6 +728,35 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   }
 }
 
+// Test that non-SameSite, insecure cookies are excluded if both
+// SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure are enabled.
+TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
+  GURL url("https://www.example.com");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  std::unique_ptr<CanonicalCookie> cookie;
+
+  // Create the cookie without the experimental options enabled.
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
+                                   options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_FALSE(cookie->IsSecure());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->GetEffectiveSameSite());
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {features::kSameSiteByDefaultCookies,
+         features::kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
+        {} /* disabled_features */);
+
+    EXPECT_EQ(
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE,
+        cookie->IncludeForRequestURL(url, options));
+  }
+}
+
 TEST(CanonicalCookieTest, PartialCompare) {
   GURL url("http://www.example.com");
   base::Time creation_time = base::Time::Now();

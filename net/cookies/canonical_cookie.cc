@@ -421,6 +421,19 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
       break;
   }
 
+  // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
+  // are enabled, non-SameSite cookies without the Secure attribute should be
+  // ignored. This can apply to cookies which were created before the
+  // experimental options were enabled (as non-SameSite, insecure cookies cannot
+  // be set while the options are on).
+  if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
+      base::FeatureList::IsEnabled(
+          features::kCookiesWithoutSameSiteMustBeSecure) &&
+      GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION && !IsSecure()) {
+    return CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE;
+  }
+
   return CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
