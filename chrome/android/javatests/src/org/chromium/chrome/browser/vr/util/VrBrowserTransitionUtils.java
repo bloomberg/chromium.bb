@@ -122,6 +122,7 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
                 new Intent(ContextUtils.getApplicationContext(), ChromeTabbedActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ContextUtils.getApplicationContext().startActivity(intent); });
     }
