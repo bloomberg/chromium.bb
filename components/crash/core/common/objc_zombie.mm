@@ -19,11 +19,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/gwp_asan/buildflags/buildflags.h"
-
-#if BUILDFLAG(ENABLE_GWP_ASAN)
-#include "components/gwp_asan/client/sampling_allocator_shims.h"
-#endif
 
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
 // because then the class would have to override many/most of the
@@ -97,14 +92,8 @@ void ZombieDealloc(id self, SEL _cmd) {
   DCHECK_EQ(_cmd, @selector(dealloc));
 
   // Use the original |-dealloc| if the object doesn't wish to be
-  // zombied or GWP-ASan is the backing allocator.
-#if BUILDFLAG(ENABLE_GWP_ASAN)
-  bool gwp_asan_allocation = gwp_asan::IsGwpAsanAllocation(self);
-#else
-  bool gwp_asan_allocation = false;
-#endif
-  if ((!g_zombieAllObjects && ![self shouldBecomeCrZombie]) ||
-      gwp_asan_allocation) {
+  // zombied.
+  if (!g_zombieAllObjects && ![self shouldBecomeCrZombie]) {
     g_originalDeallocIMP(self, _cmd);
     return;
   }

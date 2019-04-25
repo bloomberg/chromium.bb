@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//components/gwp_asan/buildflags/buildflags.gni")
 
 declare_args() {
   # If set to true, this will stub out and disable the entire crash key system.
@@ -125,12 +124,7 @@ if (is_mac || is_ios) {
     deps = [
       ":crash_key",
       "//base",
-      "//components/gwp_asan/buildflags",
     ]
-
-    if (enable_gwp_asan) {
-      deps += [ "//components/gwp_asan/client" ]
-    }
 
     libs = [ "Foundation.framework" ]
   }
