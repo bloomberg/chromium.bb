@@ -694,7 +694,8 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
     return ERR_IO_PENDING;
   }
   void CancelRequest(const ClientSocketPool::GroupId& group_id,
-                     ClientSocketHandle* handle) override {}
+                     ClientSocketHandle* handle,
+                     bool cancel_connect_job) override {}
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t generation) override {}

@@ -2145,7 +2145,8 @@ void MockTransportClientSocketPool::SetPriority(
 
 void MockTransportClientSocketPool::CancelRequest(
     const ClientSocketPool::GroupId& group_id,
-    ClientSocketHandle* handle) {
+    ClientSocketHandle* handle,
+    bool cancel_connect_job) {
   for (std::unique_ptr<MockConnectJob>& it : job_list_) {
     if (it->CancelHandle(handle)) {
       cancel_count_++;

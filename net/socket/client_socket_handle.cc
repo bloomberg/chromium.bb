@@ -45,7 +45,7 @@ int ClientSocketHandle::Init(
   requesting_source_ = net_log.source();
 
   CHECK(!group_id.destination().IsEmpty());
-  ResetInternal(true);
+  ResetInternal(true /* cancel */, false /* cancel_connect_job */);
   ResetErrorState();
   pool_ = pool;
   group_id_ = group_id;
@@ -75,11 +75,20 @@ void ClientSocketHandle::SetPriority(RequestPriority priority) {
 }
 
 void ClientSocketHandle::Reset() {
-  ResetInternal(true);
+  ResetInternal(true /* cancel */, false /* cancel_connect_job */);
   ResetErrorState();
 }
 
-void ClientSocketHandle::ResetInternal(bool cancel) {
+void ClientSocketHandle::ResetAndCloseSocket() {
+  if (is_initialized() && socket_)
+    socket_->Disconnect();
+  ResetInternal(true /* cancel */, true /* cancel_connect_job */);
+  ResetErrorState();
+}
+
+void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {
+  DCHECK(cancel || !cancel_connect_job);
+
   // Was Init called?
   if (!group_id_.destination().IsEmpty()) {
     // If so, we must have a pool.
@@ -98,7 +107,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     } else if (cancel) {
       // If we did not get initialized yet and we have a socket
       // request pending, cancel it.
-      pool_->CancelRequest(group_id_, this);
+      pool_->CancelRequest(group_id_, this, cancel_connect_job);
     }
   }
   is_initialized_ = false;
@@ -216,7 +225,9 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
   CHECK_NE(ERR_IO_PENDING, result);
   if (result != OK) {
     if (!socket_.get())
-      ResetInternal(false);  // Nothing to cancel since the request failed.
+      ResetInternal(false /* cancel */,
+                    false /* cancel_connect_job */);  // Nothing to cancel since
+                                                      // the request failed.
     else
       is_initialized_ = true;
     return;

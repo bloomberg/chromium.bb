@@ -291,9 +291,13 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Called to cancel a RequestSocket call that returned ERR_IO_PENDING.  The
   // same handle parameter must be passed to this method as was passed to the
   // RequestSocket call being cancelled.  The associated callback is not run.
-  // However, for performance, we will let one ConnectJob complete and go idle.
+  // If |cancel_connect_job| is true, and there are more ConnectJobs than
+  // requests, a ConnectJob will be canceled. If it's false, excess ConnectJobs
+  // may be allowed to continue, just in case there are new requests to the same
+  // endpoint.
   virtual void CancelRequest(const GroupId& group_id,
-                             ClientSocketHandle* handle) = 0;
+                             ClientSocketHandle* handle,
+                             bool cancel_connect_job) = 0;
 
   // Called to release a socket once the socket is no longer needed.  If the
   // socket still has an established connection, then it will be added to the

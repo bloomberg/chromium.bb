@@ -447,7 +447,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   }
 
   void CancelRequest(const ClientSocketPool::GroupId& group_id,
-                     ClientSocketHandle* handle) override {
+                     ClientSocketHandle* handle,
+                     bool cancel_connect_job) override {
     ADD_FAILURE();
   }
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,

@@ -558,7 +558,8 @@ void TransportClientSocketPool::SetPriority(const GroupId& group_id,
 }
 
 void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
-                                              ClientSocketHandle* handle) {
+                                              ClientSocketHandle* handle,
+                                              bool cancel_connect_job) {
   auto callback_it = pending_callback_map_.find(handle);
   if (callback_it != pending_callback_map_.end()) {
     int result = callback_it->second.result;
@@ -590,12 +591,16 @@ void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
     request->net_log().AddEvent(NetLogEventType::CANCELLED);
     request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
 
-    // We let the job run, unless we're at the socket limit and there is
-    // not another request waiting on the job.
+    // Let the job run, unless |cancel_connect_job| is true, or we're at the
+    // socket limit and there are no other requests waiting on the job.
+    bool reached_limit = ReachedMaxSocketsLimit();
     if (group->jobs().size() > group->unbound_request_count() &&
-        ReachedMaxSocketsLimit()) {
+        (cancel_connect_job || reached_limit)) {
       RemoveConnectJob(group->jobs().begin()->get(), group);
-      CheckForStalledSocketGroups();
+      if (group->IsEmpty())
+        RemoveGroup(group->group_id());
+      if (reached_limit)
+        CheckForStalledSocketGroups();
     }
   }
 }

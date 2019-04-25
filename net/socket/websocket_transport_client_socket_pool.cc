@@ -151,7 +151,8 @@ void WebSocketTransportClientSocketPool::SetPriority(const GroupId& group_id,
 
 void WebSocketTransportClientSocketPool::CancelRequest(
     const GroupId& group_id,
-    ClientSocketHandle* handle) {
+    ClientSocketHandle* handle,
+    bool cancel_connect_job) {
   DCHECK(!handle->is_initialized());
   if (DeleteStalledRequest(handle))
     return;

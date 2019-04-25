@@ -226,7 +226,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
   void CancelRequest(const GroupId& group_id,
-                     ClientSocketHandle* handle) override;
+                     ClientSocketHandle* handle,
+                     bool cancel_connect_job) override;
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t group_generation) override;

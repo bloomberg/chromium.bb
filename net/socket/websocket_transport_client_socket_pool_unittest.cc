@@ -559,7 +559,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   EXPECT_THAT(StartRequest(kDefaultPriority), IsError(ERR_IO_PENDING));
   EXPECT_THAT(StartRequest(kDefaultPriority), IsError(ERR_IO_PENDING));
   RunUntilIdle();
-  pool_.CancelRequest(group_id_, request(0)->handle());
+  pool_.CancelRequest(group_id_, request(0)->handle(),
+                      false /* cancel_connect_job */);
   EXPECT_THAT(request(1)->WaitForResult(), IsOk());
 }
 

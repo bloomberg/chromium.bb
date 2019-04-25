@@ -109,6 +109,11 @@ class NET_EXPORT ClientSocketHandle {
   // StreamSocket.
   void Reset();
 
+  // Like Reset(), but also closes the socket (if there is one) and cancels any
+  // pending attempt to establish a connection, if the connection attempt is
+  // still ongoing.
+  void ResetAndCloseSocket();
+
   // Used after Init() is called, but before the ClientSocketPool has
   // initialized the ClientSocketHandle.
   LoadState GetLoadState() const;
@@ -216,8 +221,11 @@ class NET_EXPORT ClientSocketHandle {
 
   // Resets the state of the ClientSocketHandle.  |cancel| indicates whether or
   // not to try to cancel the request with the ClientSocketPool.  Does not
-  // reset the supplemental error state.
-  void ResetInternal(bool cancel);
+  // reset the supplemental error state. |cancel_connect_job| indicates whether
+  // a pending ConnectJob, if there is one in the SocketPool, should be
+  // cancelled in addition to cancelling the request. It may only be true if
+  // |cancel| is also true.
+  void ResetInternal(bool cancel, bool cancel_connect_job);
 
   // Resets the supplemental error state.
   void ResetErrorState();
