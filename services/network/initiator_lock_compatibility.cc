@@ -4,6 +4,8 @@
 
 #include "services/network/initiator_lock_compatibility.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -56,16 +58,6 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   }
 
   return InitiatorLockCompatibility::kIncorrectLock;
-}
-
-InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request) {
-  if (factory_params.process_id == mojom::kBrowserProcessId)
-    return InitiatorLockCompatibility::kBrowserProcess;
-
-  return VerifyRequestInitiatorLock(factory_params.request_initiator_site_lock,
-                                    request.request_initiator);
 }
 
 url::Origin GetTrustworthyInitiator(

@@ -4,6 +4,8 @@
 
 #include "services/network/cors/cors_url_loader.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,6 +19,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -34,6 +38,7 @@
 #include "services/network/resource_scheduler.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -41,6 +46,8 @@ namespace network {
 namespace cors {
 
 namespace {
+
+const uint32_t kRendererProcessId = 573;
 
 class TestURLLoaderFactory : public mojom::URLLoaderFactory {
  public:
@@ -155,7 +162,7 @@ class CorsURLLoaderTest : public testing::Test {
         network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
         std::move(context_params));
 
-    ResetFactory(base::nullopt);
+    ResetFactory(base::nullopt, kRendererProcessId);
   }
 
   void CreateLoaderAndStart(const GURL& origin,
@@ -215,10 +222,9 @@ class CorsURLLoaderTest : public testing::Test {
 
   void FollowRedirect() {
     DCHECK(url_loader_);
-    url_loader_->FollowRedirect({},            // removed_headers
-                                {},            // modified_headers
-                                base::nullopt  // new_url
-    );
+    url_loader_->FollowRedirect({},              // removed_headers
+                                {},              // modified_headers
+                                base::nullopt);  // new_url
   }
 
   const ResourceRequest& GetRequest() const {
@@ -279,7 +285,7 @@ class CorsURLLoaderTest : public testing::Test {
     factory_bound_allow_patterns_.push_back(mojom::CorsOriginPattern::New(
         protocol, domain, mode,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
-    ResetFactory(source_origin);
+    ResetFactory(source_origin, kRendererProcessId);
   }
 
   static net::RedirectInfo CreateRedirectInfo(
@@ -297,8 +303,8 @@ class CorsURLLoaderTest : public testing::Test {
     return redirect_info;
   }
 
- private:
-  void ResetFactory(base::Optional<url::Origin> initiator) {
+  void ResetFactory(base::Optional<url::Origin> initiator,
+                    uint32_t process_id) {
     std::unique_ptr<TestURLLoaderFactory> factory =
         std::make_unique<TestURLLoaderFactory>();
     test_url_loader_factory_ = factory->GetWeakPtr();
@@ -311,12 +317,12 @@ class CorsURLLoaderTest : public testing::Test {
         cloned_patterns.push_back(item.Clone());
       factory_params->factory_bound_allow_patterns = std::move(cloned_patterns);
     }
-    constexpr int kProcessId = 573;
-    factory_params->process_id = kProcessId;
+    factory_params->process_id = process_id;
+    factory_params->is_corb_enabled = (process_id != mojom::kBrowserProcessId);
     constexpr int kRouteId = 765;
     auto resource_scheduler_client =
         base::MakeRefCounted<ResourceSchedulerClient>(
-            kProcessId, kRouteId, &resource_scheduler_,
+            process_id, kRouteId, &resource_scheduler_,
             url_request_context_->network_quality_estimator());
     cors_url_loader_factory_ = std::make_unique<CorsURLLoaderFactory>(
         network_context_.get(), std::move(factory_params),
@@ -325,6 +331,7 @@ class CorsURLLoaderTest : public testing::Test {
         std::move(factory));
   }
 
+ private:
   // Testing instance to enable kOutOfBlinkCors feature.
   base::test::ScopedFeatureList feature_list_;
 
@@ -358,7 +365,38 @@ class CorsURLLoaderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CorsURLLoaderTest);
 };
 
-TEST_F(CorsURLLoaderTest, SameOriginWithoutInitiator) {
+class CorsURLLoaderBadMessageTest : public CorsURLLoaderTest {
+ public:
+  CorsURLLoaderBadMessageTest()
+      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+        &CorsURLLoaderBadMessageTest::OnBadMessage, base::Unretained(this)));
+  }
+
+  ~CorsURLLoaderBadMessageTest() override {
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
+  }
+
+ protected:
+  const std::vector<std::string>& bad_message_reports() const {
+    return bad_message_reports_;
+  }
+
+ private:
+  void OnBadMessage(const std::string& reason) {
+    bad_message_reports_.push_back(reason);
+  }
+
+  std::vector<std::string> bad_message_reports_;
+
+  mojo::Message dummy_message_;
+  mojo::internal::MessageDispatchContext context_;
+
+  DISALLOW_COPY_AND_ASSIGN(CorsURLLoaderBadMessageTest);
+};
+
+TEST_F(CorsURLLoaderBadMessageTest, SameOriginWithoutInitiator) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kSameOrigin;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
@@ -373,6 +411,9 @@ TEST_F(CorsURLLoaderTest, SameOriginWithoutInitiator) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(
+      bad_message_reports(),
+      ::testing::ElementsAre("CorsURLLoaderFactory: cors without initiator"));
 }
 
 TEST_F(CorsURLLoaderTest, NoCorsWithoutInitiator) {
@@ -394,7 +435,7 @@ TEST_F(CorsURLLoaderTest, NoCorsWithoutInitiator) {
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
-TEST_F(CorsURLLoaderTest, CorsWithoutInitiator) {
+TEST_F(CorsURLLoaderBadMessageTest, CorsWithoutInitiator) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
@@ -409,9 +450,14 @@ TEST_F(CorsURLLoaderTest, CorsWithoutInitiator) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(
+      bad_message_reports(),
+      ::testing::ElementsAre("CorsURLLoaderFactory: cors without initiator"));
 }
 
-TEST_F(CorsURLLoaderTest, NavigateWithoutInitiator) {
+TEST_F(CorsURLLoaderBadMessageTest, NavigateWithoutInitiator) {
+  ResetFactory(base::nullopt /* initiator */, mojom::kBrowserProcessId);
+
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
@@ -430,7 +476,8 @@ TEST_F(CorsURLLoaderTest, NavigateWithoutInitiator) {
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
-TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther1) {
+TEST_F(CorsURLLoaderBadMessageTest,
+       CredentialsModeAndLoadFlagsContradictEachOther1) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
@@ -447,9 +494,13 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther1) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_reports(),
+              ::testing::ElementsAre(
+                  "CorsURLLoaderFactory: omit-credentials vs load_flags"));
 }
 
-TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther2) {
+TEST_F(CorsURLLoaderBadMessageTest,
+       CredentialsModeAndLoadFlagsContradictEachOther2) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
@@ -466,9 +517,13 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther2) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_reports(),
+              ::testing::ElementsAre(
+                  "CorsURLLoaderFactory: omit-credentials vs load_flags"));
 }
 
-TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther3) {
+TEST_F(CorsURLLoaderBadMessageTest,
+       CredentialsModeAndLoadFlagsContradictEachOther3) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
@@ -485,6 +540,28 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther3) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_reports(),
+              ::testing::ElementsAre(
+                  "CorsURLLoaderFactory: omit-credentials vs load_flags"));
+}
+
+TEST_F(CorsURLLoaderBadMessageTest, NavigationFromRenderer) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_reports(),
+              ::testing::ElementsAre(
+                  "CorsURLLoaderFactory: navigate from non-browser-process"));
 }
 
 TEST_F(CorsURLLoaderTest, SameOriginRequest) {

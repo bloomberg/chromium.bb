@@ -15,8 +15,6 @@ class URLRequest;
 
 namespace network {
 
-struct ResourceRequest;
-
 namespace mojom {
 class URLLoaderFactoryParams;
 }  // namespace mojom
@@ -54,10 +52,6 @@ enum class InitiatorLockCompatibility {
 
 // Verifies if |request.request_initiator| matches
 // |factory_params.request_initiator_site_lock|.
-COMPONENT_EXPORT(NETWORK_SERVICE)
-InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const mojom::URLLoaderFactoryParams& factory_params,
-    const ResourceRequest& request);
 COMPONENT_EXPORT(NETWORK_SERVICE)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,

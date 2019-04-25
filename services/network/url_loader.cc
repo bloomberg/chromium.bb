@@ -347,6 +347,7 @@ URLLoader::URLLoader(
       fetch_window_id_(request.fetch_window_id),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
+  DCHECK(factory_params_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     CHECK(!url_loader_client_.internal_state()
                     ->handle()
@@ -402,17 +403,6 @@ URLLoader::URLLoader(
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-      VerifyRequestInitiatorLock(*factory_params_, request));
-  // TODO(lukasza): Enforce the origin lock.
-  // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
-  //   a renderer kill, but this can't be done until HTML Imports are gone.
-  // - https://crbug.com/515309: The lock should apply to Origin header (and
-  //   SameSite cookies) in addition to CORB (which was taken care of in
-  //   https://crbug.com/871827).  Here enforcement most likely would mean
-  //   setting |url_request_|'s initiator to something other than
-  //   |request.request_initiator| (opaque origin?  lock origin?).
   url_request_->set_initiator(request.request_initiator);
 
   if (request.update_first_party_url_on_redirect) {

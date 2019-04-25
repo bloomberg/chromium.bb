@@ -692,8 +692,10 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       request.SetFetchRequestMode(fetch_request_data_->Mode());
       break;
     case FetchRequestMode::kNavigate:
-      // Using kSameOrigin here to reduce the security risk.
-      // "navigate" request is only available in ServiceWorker.
+      // NetworkService (i.e. CorsURLLoaderFactory::IsSane) rejects kNavigate
+      // requests coming from renderers, so using kSameOrigin here.
+      // TODO(lukasza): Tweak CorsURLLoaderFactory::IsSane to accept kNavigate
+      // if request_initiator and the target are same-origin.
       request.SetFetchRequestMode(FetchRequestMode::kSameOrigin);
       break;
   }
