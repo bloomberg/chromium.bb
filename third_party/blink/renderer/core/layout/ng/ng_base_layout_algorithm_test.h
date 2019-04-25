@@ -6,7 +6,7 @@
 #define NG_BASE_LAYOUT_ALGORITHM_TEST_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -55,7 +55,7 @@ class FragmentChildIterator {
   }
 
   const NGPhysicalBoxFragment* NextChild(
-      NGPhysicalOffset* fragment_offset = nullptr);
+      PhysicalOffset* fragment_offset = nullptr);
 
  private:
   const NGPhysicalBoxFragment* parent_;
@@ -65,10 +65,10 @@ class FragmentChildIterator {
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingMode writing_mode,
     TextDirection direction,
-    NGLogicalSize size,
+    LogicalSize size,
     bool shrink_to_fit = false,
     bool is_new_formatting_context = false,
-    LayoutUnit fragmentainer_space_available = NGSizeIndefinite);
+    LayoutUnit fragmentainer_space_available = kIndefiniteSize);
 
 }  // namespace blink
 

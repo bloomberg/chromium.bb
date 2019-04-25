@@ -43,7 +43,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   NGBoxStrut border_padding = borders + padding;
-  NGLogicalSize border_box_size =
+  LogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node(), border_padding);
   const auto writing_mode = ConstraintSpace().GetWritingMode();
   LayoutUnit block_start_padding_edge = borders.block_start;
@@ -52,7 +52,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     // Lay out the legend. While the fieldset container normally ignores its
     // padding, the legend is laid out within what would have been the content
     // box had the fieldset been a regular block with no weirdness.
-    NGLogicalSize content_box_size =
+    LogicalSize content_box_size =
         ShrinkAvailableSize(border_box_size, border_padding);
     auto legend_space =
         CreateConstraintSpaceForLegend(legend, content_box_size);
@@ -66,9 +66,9 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     // that the center of the border will be flush with the center of the
     // border-box of the legend.
     // TODO(mstensho): inline alignment
-    NGLogicalOffset legend_offset = NGLogicalOffset(
-        border_padding.inline_start + legend_margins.inline_start,
-        legend_margins.block_start);
+    LogicalOffset legend_offset =
+        LogicalOffset(border_padding.inline_start + legend_margins.inline_start,
+                      legend_margins.block_start);
     LayoutUnit legend_margin_box_block_size =
         logical_fragment.BlockSize() + legend_margins.BlockSum();
     LayoutUnit space_left = borders.block_start - legend_margin_box_block_size;
@@ -97,7 +97,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // Proceed with normal fieldset children (excluding the rendered legend). They
   // all live inside an anonymous child box of the fieldset container.
   if (auto fieldset_content = Node().GetFieldsetContent()) {
-    NGLogicalSize adjusted_padding_box_size =
+    LogicalSize adjusted_padding_box_size =
         ShrinkAvailableSize(border_box_size, borders_with_legend);
     auto child_space =
         CreateConstraintSpaceForFieldsetContent(adjusted_padding_box_size);
@@ -169,13 +169,13 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
 const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGBlockNode legend,
-    NGLogicalSize available_size) {
+    LogicalSize available_size) {
   NGConstraintSpaceBuilder builder(
       ConstraintSpace(), legend.Style().GetWritingMode(), /* is_new_fc */ true);
   SetOrthogonalFallbackInlineSizeIfNeeded(Style(), legend, &builder);
 
   builder.SetAvailableSize(available_size);
-  NGLogicalSize percentage_size =
+  LogicalSize percentage_size =
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetIsShrinkToFit(legend.Style().LogicalWidth().IsAuto());
@@ -185,14 +185,14 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
 
 const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
-    NGLogicalSize padding_box_size) {
+    LogicalSize padding_box_size) {
   NGConstraintSpaceBuilder builder(ConstraintSpace(),
                                    ConstraintSpace().GetWritingMode(),
                                    /* is_new_fc */ true);
   builder.SetAvailableSize(padding_box_size);
   builder.SetPercentageResolutionSize(
       ConstraintSpace().PercentageResolutionSize());
-  builder.SetIsFixedSizeBlock(padding_box_size.block_size != NGSizeIndefinite);
+  builder.SetIsFixedSizeBlock(padding_box_size.block_size != kIndefiniteSize);
   return builder.ToConstraintSpace();
 }
 

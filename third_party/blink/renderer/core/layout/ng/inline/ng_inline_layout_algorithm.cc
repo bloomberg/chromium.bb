@@ -478,7 +478,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
 
   LayoutUnit line_top = item_result->margins.line_over - metrics.ascent;
   line_box_.AddChild(std::move(item_result->layout_result),
-                     NGLogicalOffset{inline_offset, line_top},
+                     LogicalOffset{inline_offset, line_top},
                      item_result->inline_size, item.BidiLevel());
 }
 
@@ -528,7 +528,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     if (!box)
       continue;
 
-    NGLogicalOffset static_offset(LayoutUnit(), baseline_adjustment);
+    LogicalOffset static_offset(LayoutUnit(), baseline_adjustment);
     if (box->StyleRef().IsOriginalDisplayInlineType()) {
       // An inline-level OOF element positions itself within the line, at the
       // position it would have been if it was in-flow.

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalOffsetRect_h
-#define NGPhysicalOffsetRect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_PHYSICAL_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_PHYSICAL_RECT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -17,56 +17,54 @@ namespace blink {
 class ComputedStyle;
 struct NGPhysicalBoxStrut;
 
-// NGPhysicalOffsetRect is the position and size of a rect (typically a
-// fragment) relative to its parent rect in the physical coordinate system.
-struct CORE_EXPORT NGPhysicalOffsetRect {
-  NGPhysicalOffsetRect() = default;
-  NGPhysicalOffsetRect(const NGPhysicalOffset& offset,
-                       const NGPhysicalSize& size)
+// PhysicalRect is the position and size of a rect (typically a fragment)
+// relative to its parent rect in the physical coordinate system.
+struct CORE_EXPORT PhysicalRect {
+  PhysicalRect() = default;
+  PhysicalRect(const PhysicalOffset& offset, const PhysicalSize& size)
       : offset(offset), size(size) {}
 
-  NGPhysicalOffset offset;
-  NGPhysicalSize size;
+  PhysicalOffset offset;
+  PhysicalSize size;
 
   bool IsEmpty() const { return size.IsEmpty(); }
   LayoutUnit Right() const { return offset.left + size.width; }
   LayoutUnit Bottom() const { return offset.top + size.height; }
 
-  bool operator==(const NGPhysicalOffsetRect& other) const {
+  bool operator==(const PhysicalRect& other) const {
     return offset == other.offset && size == other.size;
   }
 
-  bool Contains(const NGPhysicalOffsetRect& other) const;
+  bool Contains(const PhysicalRect& other) const;
 
-  NGPhysicalOffsetRect operator+(const NGPhysicalOffset&) const {
+  PhysicalRect operator+(const PhysicalOffset&) const {
     return {this->offset + offset, size};
   }
 
-  void Unite(const NGPhysicalOffsetRect&);
-  void UniteIfNonZero(const NGPhysicalOffsetRect&);
-  void UniteEvenIfEmpty(const NGPhysicalOffsetRect&);
+  void Unite(const PhysicalRect&);
+  void UniteIfNonZero(const PhysicalRect&);
+  void UniteEvenIfEmpty(const PhysicalRect&);
 
   void Expand(const NGPhysicalBoxStrut&);
   void ExpandEdgesToPixelBoundaries();
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit NGPhysicalOffsetRect(const LayoutRect& r)
+  explicit PhysicalRect(const LayoutRect& r)
       : offset(r.X(), r.Y()), size(r.Width(), r.Height()) {}
   LayoutRect ToLayoutRect() const {
     return LayoutRect(offset.left, offset.top, size.width, size.height);
   }
   LayoutRect ToLayoutFlippedRect(const ComputedStyle&,
-                                 const NGPhysicalSize&) const;
+                                 const PhysicalSize&) const;
 
   FloatRect ToFloatRect() const { return FloatRect(ToLayoutRect()); }
 
   String ToString() const;
 };
 
-CORE_EXPORT std::ostream& operator<<(std::ostream&,
-                                     const NGPhysicalOffsetRect&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const PhysicalRect&);
 
 }  // namespace blink
 
-#endif  // NGPhysicalOffsetRect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_PHYSICAL_RECT_H_

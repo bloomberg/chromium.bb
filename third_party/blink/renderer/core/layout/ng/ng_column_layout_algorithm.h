@@ -14,7 +14,7 @@ class NGBlockNode;
 class NGBlockBreakToken;
 class NGBreakToken;
 class NGConstraintSpace;
-struct NGLogicalSize;
+struct LogicalSize;
 
 class CORE_EXPORT NGColumnLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
@@ -31,8 +31,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  NGLogicalSize CalculateColumnSize(const NGLogicalSize& content_box_size);
-  LayoutUnit CalculateBalancedColumnBlockSize(const NGLogicalSize& column_size,
+  LogicalSize CalculateColumnSize(const LogicalSize& content_box_size);
+  LayoutUnit CalculateBalancedColumnBlockSize(const LogicalSize& column_size,
                                               int column_count);
 
   // Stretch the column length, if allowed. We do this during column balancing,
@@ -44,10 +44,10 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       LayoutUnit container_content_box_block_size) const;
 
   NGConstraintSpace CreateConstraintSpaceForColumns(
-      const NGLogicalSize& column_size,
+      const LogicalSize& column_size,
       bool separate_leading_margins) const;
   NGConstraintSpace CreateConstaintSpaceForBalancing(
-      const NGLogicalSize& column_size) const;
+      const LogicalSize& column_size) const;
 };
 
 }  // namespace blink

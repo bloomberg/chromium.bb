@@ -89,25 +89,24 @@ LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
   return box->OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 }
 
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
+PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   DCHECK(GetLayoutObject());
   LayoutObject* layout_object = GetLayoutObject();
   if (layout_object->IsBox()) {
     if (HasOverflowClip())
-      return NGPhysicalOffsetRect({}, Size());
+      return PhysicalRect({}, Size());
     // Legacy is the source of truth for overflow
-    return NGPhysicalOffsetRect(
-        ToLayoutBox(layout_object)->LayoutOverflowRect());
+    return PhysicalRect(ToLayoutBox(layout_object)->LayoutOverflowRect());
   } else if (layout_object->IsLayoutInline()) {
     // Inline overflow is a union of child overflows.
-    NGPhysicalOffsetRect overflow({}, Size());
+    PhysicalRect overflow({}, Size());
     WritingMode container_writing_mode = Style().GetWritingMode();
     TextDirection container_direction = Style().Direction();
     for (const auto& child_fragment : Children()) {
-      NGPhysicalOffsetRect child_overflow =
+      PhysicalRect child_overflow =
           child_fragment->ScrollableOverflowForPropagation(layout_object);
       if (child_fragment->Style() != Style()) {
-        NGPhysicalOffset relative_offset = ComputeRelativeOffset(
+        PhysicalOffset relative_offset = ComputeRelativeOffset(
             child_fragment->Style(), container_writing_mode,
             container_direction, Size());
         child_overflow.offset += relative_offset;
@@ -119,7 +118,7 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   } else {
     NOTREACHED();
   }
-  return NGPhysicalOffsetRect({}, Size());
+  return PhysicalRect({}, Size());
 }
 
 IntSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
@@ -134,7 +133,7 @@ LayoutSize NGPhysicalBoxFragment::ScrollSize() const {
   return LayoutSize(box->ScrollWidth(), box->ScrollHeight());
 }
 
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
+PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
   CheckCanUpdateInkOverflow();
   const ComputedStyle& style = Style();
   LayoutRect ink_overflow({}, Size().ToLayoutSize());
@@ -155,7 +154,7 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
       ink_overflow.Unite(rect);
     }
   }
-  return NGPhysicalOffsetRect(ink_overflow);
+  return PhysicalRect(ink_overflow);
 }
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(

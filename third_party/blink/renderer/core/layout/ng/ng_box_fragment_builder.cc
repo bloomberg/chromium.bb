@@ -28,7 +28,7 @@ void GatherInlineContainerFragmentsFromLinebox(
     NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
     HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map,
     const NGPhysicalLineBoxFragment* linebox,
-    const NGPhysicalOffset linebox_offset) {
+    const PhysicalOffset linebox_offset) {
   for (auto& descendant : NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
     if (!descendant.fragment->IsBox())
       continue;
@@ -51,7 +51,7 @@ void GatherInlineContainerFragmentsFromLinebox(
 
     // |DescendantsOf| returns the offset from the given fragment. Since
     // we give it the line box, need to add the |linebox_offset|.
-    NGPhysicalOffsetRect fragment_rect(
+    PhysicalRect fragment_rect(
         linebox_offset + descendant.offset_to_container_box,
         descendant.fragment->Size());
     if (containing_lineboxes.first == linebox) {
@@ -59,8 +59,8 @@ void GatherInlineContainerFragmentsFromLinebox(
     } else if (!containing_lineboxes.first) {
       containing_lineboxes.first = linebox;
       containing_block_geometry =
-          NGBoxFragmentBuilder::InlineContainingBlockGeometry{
-              fragment_rect, NGPhysicalOffsetRect()};
+          NGBoxFragmentBuilder::InlineContainingBlockGeometry{fragment_rect,
+                                                              PhysicalRect()};
     }
     // Skip fragments within an empty line boxes for the end fragment.
     if (containing_lineboxes.second == linebox) {
@@ -170,27 +170,27 @@ void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
                                              inline_container};
   // Need 0,0 physical coordinates as child offset. Because offset
   // is stored as logical, must convert physical 0,0 to logical.
-  NGLogicalOffset zero_offset;
+  LogicalOffset zero_offset;
   switch (GetWritingMode()) {
     case WritingMode::kHorizontalTb:
       if (IsLtr(Direction()))
-        zero_offset = NGLogicalOffset();
+        zero_offset = LogicalOffset();
       else
-        zero_offset = NGLogicalOffset(InlineSize(), LayoutUnit());
+        zero_offset = LogicalOffset(InlineSize(), LayoutUnit());
       break;
     case WritingMode::kVerticalRl:
     case WritingMode::kSidewaysRl:
       if (IsLtr(Direction()))
-        zero_offset = NGLogicalOffset(LayoutUnit(), BlockSize());
+        zero_offset = LogicalOffset(LayoutUnit(), BlockSize());
       else
-        zero_offset = NGLogicalOffset(InlineSize(), BlockSize());
+        zero_offset = LogicalOffset(InlineSize(), BlockSize());
       break;
     case WritingMode::kVerticalLr:
     case WritingMode::kSidewaysLr:
       if (IsLtr(Direction()))
-        zero_offset = NGLogicalOffset();
+        zero_offset = LogicalOffset();
       else
-        zero_offset = NGLogicalOffset(InlineSize(), LayoutUnit());
+        zero_offset = LogicalOffset(InlineSize(), LayoutUnit());
       break;
   }
   oof_positioned_candidates_.push_back(
@@ -284,9 +284,9 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
       const auto* linebox = To<NGPhysicalLineBoxFragment>(children_[i].get());
-      const NGPhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
+      const PhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
-          ToNGPhysicalSize(Size(), GetWritingMode()), linebox->Size());
+          ToPhysicalSize(Size(), GetWritingMode()), linebox->Size());
       GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                 &containing_linebox_map,
                                                 linebox, linebox_offset);
@@ -303,15 +303,15 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // lineboxes inside anonymous box.
       // For more on this special case, see "css container is an inline, with
       // inline splitting" comment in NGOutOfFlowLayoutPart::LayoutDescendant.
-      const NGPhysicalOffset box_offset = offsets_[i].ConvertToPhysical(
+      const PhysicalOffset box_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
-          ToNGPhysicalSize(Size(), GetWritingMode()), box_fragment->Size());
+          ToPhysicalSize(Size(), GetWritingMode()), box_fragment->Size());
 
       // Traverse lineboxes of anonymous box.
       for (const auto& child : box_fragment->Children()) {
         if (child->IsLineBox()) {
           const auto* linebox = To<NGPhysicalLineBoxFragment>(child.get());
-          const NGPhysicalOffset linebox_offset = child.Offset() + box_offset;
+          const PhysicalOffset linebox_offset = child.Offset() + box_offset;
           GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                     &containing_linebox_map,
                                                     linebox, linebox_offset);

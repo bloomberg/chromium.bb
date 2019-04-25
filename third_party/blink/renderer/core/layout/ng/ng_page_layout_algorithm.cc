@@ -28,11 +28,11 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
-  NGLogicalSize border_box_size =
+  LogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node(), borders + padding);
-  NGLogicalSize content_box_size =
+  LogicalSize content_box_size =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
-  NGLogicalSize page_size = content_box_size;
+  LogicalSize page_size = content_box_size;
 
   NGConstraintSpace child_space = CreateConstraintSpaceForPages(page_size);
   container_builder_.SetInlineSize(border_box_size.inline_size);
@@ -40,9 +40,9 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
   scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
-  NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
+  LogicalOffset page_offset(border_scrollbar_padding.StartOffset());
   // TODO(mstensho): Handle auto block size.
-  NGLogicalOffset page_progression(LayoutUnit(), page_size.block_size);
+  LogicalOffset page_progression(LayoutUnit(), page_size.block_size);
 
   do {
     // Lay out one page. Each page will become a fragment.
@@ -87,7 +87,7 @@ base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
 }
 
 NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
-    const NGLogicalSize& page_size) const {
+    const LogicalSize& page_size) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(page_size);

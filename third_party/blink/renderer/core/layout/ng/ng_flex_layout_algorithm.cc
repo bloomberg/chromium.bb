@@ -203,7 +203,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
               child_space, child_style, border_padding_in_child_writing_mode,
               specified_length_in_main_axis,
               layout_result->IntrinsicBlockSize(), LengthResolvePhase::kLayout);
-          DCHECK_NE(specified_size_suggestion, NGSizeIndefinite);
+          DCHECK_NE(specified_size_suggestion, kIndefiniteSize);
         }
         // Spec says to clamp specified_size_suggestion by max size but because
         // content_size_suggestion already is, and we take the min of those
@@ -281,7 +281,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item.ng_input_node,
                                               &space_builder);
 
-      NGLogicalSize available_size;
+      LogicalSize available_size;
       if (is_column_) {
         available_size.inline_size = content_box_size_.inline_size;
         available_size.block_size =
@@ -366,7 +366,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
         SetOrthogonalFallbackInlineSizeIfNeeded(
             Style(), flex_item.ng_input_node, &space_builder);
 
-        NGLogicalSize available_size(
+        LogicalSize available_size(
             flex_item.flexed_content_size +
                 flex_item.main_axis_border_scrollbar_padding,
             flex_item.cross_axis_size);

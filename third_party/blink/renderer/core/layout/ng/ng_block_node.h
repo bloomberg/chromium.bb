@@ -6,7 +6,7 @@
 #define NGBlockNode_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -24,7 +24,7 @@ class NGPhysicalContainerFragment;
 class NGPhysicalFragment;
 struct MinMaxSize;
 struct NGBoxStrut;
-struct NGLogicalOffset;
+struct LogicalOffset;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
@@ -47,7 +47,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // If the containing-block size hasn't changed, and we are layout-clean we
   // can reuse the previous layout result.
   scoped_refptr<const NGLayoutResult> CachedLayoutResultForOutOfFlowPositioned(
-      NGLogicalSize container_content_size) const;
+      LogicalSize container_content_size) const;
 
   NGLayoutInputNode NextSibling() const;
 
@@ -106,7 +106,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void UseLegacyOutOfFlowPositioning() const;
 
   // Save static position for legacy AbsPos layout.
-  void SaveStaticOffsetForLegacy(const NGLogicalOffset&,
+  void SaveStaticOffsetForLegacy(const LogicalOffset&,
                                  const LayoutObject* offset_container);
 
   // Write back resolved margins to legacy.
@@ -135,16 +135,16 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGPhysicalContainerFragment& container,
       LayoutUnit initial_container_width,
       bool initial_container_is_flipped,
-      NGPhysicalOffset offset = {});
+      PhysicalOffset offset = {});
   void PlaceChildrenInLayoutBox(const NGConstraintSpace&,
                                 const NGPhysicalBoxFragment&,
-                                const NGPhysicalOffset& offset_from_start);
+                                const PhysicalOffset& offset_from_start);
   void PlaceChildrenInFlowThread(const NGConstraintSpace&,
                                  const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
       const NGPhysicalFragment& fragment,
-      const NGPhysicalOffset fragment_offset,
-      const NGPhysicalOffset additional_offset = NGPhysicalOffset());
+      const PhysicalOffset fragment_offset,
+      const PhysicalOffset additional_offset = PhysicalOffset());
 
   void CopyBaselinesFromLegacyLayout(const NGConstraintSpace&,
                                      NGBoxFragmentBuilder*);

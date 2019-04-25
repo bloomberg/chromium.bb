@@ -55,7 +55,7 @@ bool NGUnpositionedListMarker::AddToBox(
     const NGConstraintSpace& space,
     FontBaseline baseline_type,
     const NGPhysicalFragment& content,
-    NGLogicalOffset* content_offset,
+    LogicalOffset* content_offset,
     NGBoxFragmentBuilder* container_builder,
     const NGBoxStrut& border_scrollbar_padding) const {
   // Baselines from two different writing-mode cannot be aligned.
@@ -97,9 +97,8 @@ bool NGUnpositionedListMarker::AddToBox(
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(), space.Direction(),
                                 marker_physical_fragment);
-  NGLogicalOffset marker_offset(
-      InlineOffset(marker_fragment.Size().inline_size),
-      content_offset->block_offset);
+  LogicalOffset marker_offset(InlineOffset(marker_fragment.Size().inline_size),
+                              content_offset->block_offset);
 
   // Adjust the block offset to align baselines of the marker and the content.
   NGLineHeightMetrics marker_metrics = marker_fragment.BaselineMetrics(
@@ -135,9 +134,9 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
 
   // When there are no line boxes, marker is top-aligned to the list item.
   // https://github.com/w3c/csswg-drafts/issues/2417
-  NGLogicalSize marker_size =
+  LogicalSize marker_size =
       marker_physical_fragment.Size().ConvertToLogical(space.GetWritingMode());
-  NGLogicalOffset offset(InlineOffset(marker_size.inline_size), LayoutUnit());
+  LogicalOffset offset(InlineOffset(marker_size.inline_size), LayoutUnit());
 
   DCHECK(container_builder);
   container_builder->AddChild(*marker_layout_result, offset);
@@ -165,7 +164,7 @@ LayoutUnit NGUnpositionedListMarker::ComputeIntrudedFloatOffset(
                               border_scrollbar_padding.inline_end;
   NGLayoutOpportunity opportunity =
       space.ExclusionSpace().FindLayoutOpportunity(
-          origin_offset, available_size, NGLogicalSize());
+          origin_offset, available_size, LogicalSize());
   DCHECK(marker_layout_object_);
   const TextDirection direction = marker_layout_object_->StyleRef().Direction();
   if (direction == TextDirection::kLtr) {

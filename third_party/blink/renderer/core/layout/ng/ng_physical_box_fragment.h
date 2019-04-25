@@ -46,7 +46,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   bool HasControlClip() const;
 
-  NGPhysicalOffsetRect ScrollableOverflow() const;
+  PhysicalRect ScrollableOverflow() const;
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment
@@ -58,7 +58,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   LayoutSize ScrollSize() const;
 
   // Compute visual overflow of this box in the local coordinate.
-  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
+  PhysicalRect ComputeSelfInkOverflow() const;
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.

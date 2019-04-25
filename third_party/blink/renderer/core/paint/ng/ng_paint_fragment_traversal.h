@@ -6,7 +6,7 @@
 #define NGPaintFragmentTraversal_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

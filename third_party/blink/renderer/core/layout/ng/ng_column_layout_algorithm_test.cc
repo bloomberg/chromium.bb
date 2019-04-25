@@ -41,7 +41,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+        LogicalSize(LayoutUnit(1000), kIndefiniteSize));
     return RunBlockLayoutAlgorithm(space, container);
   }
 
@@ -82,20 +82,20 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(space, container);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // There should be nothing inside the multicol container.
   // TODO(mstensho): Get rid of this column fragment. It shouldn't be here.
   fragment = FragmentChildIterator(fragment).NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 
@@ -123,30 +123,30 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(space, container);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
   ASSERT_TRUE(fragment);
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
 
   // first column fragment
-  NGPhysicalOffset offset;
+  PhysicalOffset offset;
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
+  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
+  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
@@ -172,31 +172,31 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   scoped_refptr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(310), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(LayoutUnit(310), LayoutUnit(100)), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
 
   // first column fragment
-  NGPhysicalOffset offset;
+  PhysicalOffset offset;
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
+  EXPECT_EQ(PhysicalSize(LayoutUnit(150), LayoutUnit(100)), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(NGPhysicalSize(LayoutUnit(90), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
+  EXPECT_EQ(PhysicalSize(LayoutUnit(90), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
@@ -1985,7 +1985,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   layout_object->SetStyle(style);
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize));
   NGColumnLayoutAlgorithm algorithm(node, space);
   base::Optional<MinMaxSize> size;
   MinMaxSizeInput zero_input(

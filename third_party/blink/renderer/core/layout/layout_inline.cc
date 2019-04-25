@@ -1251,7 +1251,7 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
         ContainingBlockFlowFragmentOf(*this);
     if (!box_fragment)
       return LayoutRect();
-    NGPhysicalOffsetRect bounding_box;
+    PhysicalRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
@@ -1395,13 +1395,12 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGPhysicalOffsetRect result;
+    PhysicalRect result;
     NGPaintFragment::InlineFragmentsIncludingCulledFor(
         *this,
         [](NGPaintFragment* fragment, void* context) {
-          NGPhysicalOffsetRect* result =
-              static_cast<NGPhysicalOffsetRect*>(context);
-          NGPhysicalOffsetRect child_rect = fragment->InkOverflow();
+          PhysicalRect* result = static_cast<PhysicalRect*>(context);
+          PhysicalRect child_rect = fragment->InkOverflow();
           child_rect.offset += fragment->InlineOffsetToContainerBox();
           result->Unite(child_rect);
         },

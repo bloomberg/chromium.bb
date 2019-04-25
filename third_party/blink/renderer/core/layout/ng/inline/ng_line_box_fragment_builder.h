@@ -5,7 +5,7 @@
 #ifndef NGLineBoxFragmentBuilder_h
 #define NGLineBoxFragmentBuilder_h
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -72,7 +72,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
-    NGLogicalOffset offset;
+    LogicalOffset offset;
     // The offset of a positioned float wrt. the root BFC. This should only be
     // set for positioned floats.
     NGBfcOffset bfc_offset;
@@ -90,13 +90,13 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Child() = default;
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
-    Child(NGLogicalOffset offset) : offset(offset) {}
+    Child(LogicalOffset offset) : offset(offset) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
     // Create an in-flow |NGLayoutResult|.
     Child(scoped_refptr<const NGLayoutResult> layout_result,
-          NGLogicalOffset offset,
+          LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : layout_result(std::move(layout_result)),
@@ -105,7 +105,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           bidi_level(bidi_level) {}
     // Create an in-flow |NGPhysicalFragment|.
     Child(scoped_refptr<const NGPhysicalFragment> fragment,
-          NGLogicalOffset offset,
+          LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
@@ -204,7 +204,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     }
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
-                     const NGLogicalOffset& offset,
+                     const LogicalOffset& offset,
                      LayoutUnit inline_size,
                      UBiDiLevel bidi_level) {
       children_.insert(index, Child{std::move(layout_result), offset,

@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
@@ -213,9 +213,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   struct InlineContainingBlockGeometry {
     DISALLOW_NEW();
     // Union of fragments generated on the first line.
-    NGPhysicalOffsetRect start_fragment_union_rect;
+    PhysicalRect start_fragment_union_rect;
     // Union of fragments generated on the last line.
-    NGPhysicalOffsetRect end_fragment_union_rect;
+    PhysicalRect end_fragment_union_rect;
   };
 
   using InlineContainingBlockMap =

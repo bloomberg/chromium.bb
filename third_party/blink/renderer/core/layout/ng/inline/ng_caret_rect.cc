@@ -6,8 +6,8 @@
 
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -16,13 +16,12 @@ namespace blink {
 
 namespace {
 
-NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
-    const NGPaintFragment& fragment,
-    NGCaretPositionType position_type) {
+PhysicalRect ComputeLocalCaretRectByBoxSide(const NGPaintFragment& fragment,
+                                            NGCaretPositionType position_type) {
   const bool is_horizontal = fragment.Style().IsHorizontalWritingMode();
   DCHECK(fragment.ContainerLineBox());
   const NGPaintFragment& line_box = *fragment.ContainerLineBox();
-  const NGPhysicalOffset offset_to_line_box =
+  const PhysicalOffset offset_to_line_box =
       fragment.InlineOffsetToContainerBox() -
       line_box.InlineOffsetToContainerBox();
   LayoutUnit caret_height =
@@ -48,12 +47,12 @@ NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
     std::swap(caret_width, caret_height);
   }
 
-  const NGPhysicalOffset caret_location(caret_left, caret_top);
-  const NGPhysicalSize caret_size(caret_width, caret_height);
-  return NGPhysicalOffsetRect(caret_location, caret_size);
+  const PhysicalOffset caret_location(caret_left, caret_top);
+  const PhysicalSize caret_size(caret_width, caret_height);
+  return PhysicalRect(caret_location, caret_size);
 }
 
-NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
+PhysicalRect ComputeLocalCaretRectAtTextOffset(
     const NGPaintFragment& paint_fragment,
     unsigned offset) {
   const auto& fragment =
@@ -81,16 +80,15 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
   }
 
   // Adjust the location to be relative to the inline formatting context.
-  NGPhysicalOffset caret_location = NGPhysicalOffset(caret_left, caret_top) +
-                                    paint_fragment.InlineOffsetToContainerBox();
-  NGPhysicalSize caret_size(caret_width, caret_height);
+  PhysicalOffset caret_location = PhysicalOffset(caret_left, caret_top) +
+                                  paint_fragment.InlineOffsetToContainerBox();
+  PhysicalSize caret_size(caret_width, caret_height);
 
   const NGPaintFragment& context_fragment =
       *NGPaintFragment::GetForInlineContainer(fragment.GetLayoutObject());
   const NGPaintFragment* line_box = paint_fragment.ContainerLineBox();
-  const NGPhysicalOffset line_box_offset =
-      line_box->InlineOffsetToContainerBox();
-  const NGPhysicalOffsetRect line_box_rect(line_box_offset, line_box->Size());
+  const PhysicalOffset line_box_offset = line_box->InlineOffsetToContainerBox();
+  const PhysicalRect line_box_rect(line_box_offset, line_box->Size());
 
   // For horizontal text, adjust the location in the x direction to ensure that
   // it completely falls in the union of line box and containing block, and
@@ -102,7 +100,7 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
         std::max(context_fragment.Size().width, line_box_rect.Right());
     caret_location.left = std::min(caret_location.left, max_x - caret_width);
     caret_location.left = LayoutUnit(caret_location.left.Round());
-    return NGPhysicalOffsetRect(caret_location, caret_size);
+    return PhysicalRect(caret_location, caret_size);
   }
 
   // Similar adjustment and rounding for vertical text.
@@ -112,7 +110,7 @@ NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
       std::max(context_fragment.Size().height, line_box_rect.Bottom());
   caret_location.top = std::min(caret_location.top, max_y - caret_height);
   caret_location.top = LayoutUnit(caret_location.top.Round());
-  return NGPhysicalOffsetRect(caret_location, caret_size);
+  return PhysicalRect(caret_location, caret_size);
 }
 
 LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
@@ -125,15 +123,14 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kBeforeBox:
     case NGCaretPositionType::kAfterBox: {
       DCHECK(fragment.PhysicalFragment().IsBox());
-      const NGPhysicalOffsetRect fragment_local_rect =
-          ComputeLocalCaretRectByBoxSide(fragment,
-                                         caret_position.position_type);
+      const PhysicalRect fragment_local_rect = ComputeLocalCaretRectByBoxSide(
+          fragment, caret_position.position_type);
       return {layout_object, fragment_local_rect.ToLayoutRect()};
     }
     case NGCaretPositionType::kAtTextOffset: {
       DCHECK(fragment.PhysicalFragment().IsText());
       DCHECK(caret_position.text_offset.has_value());
-      const NGPhysicalOffsetRect caret_rect = ComputeLocalCaretRectAtTextOffset(
+      const PhysicalRect caret_rect = ComputeLocalCaretRectAtTextOffset(
           fragment, *caret_position.text_offset);
       LayoutRect layout_rect = caret_rect.ToLayoutRect();
 

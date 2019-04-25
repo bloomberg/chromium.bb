@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -10,13 +10,13 @@ namespace blink {
 
 namespace {
 
-struct LogicalRectUniteTestData {
+struct PhysicalOffsetRectUniteTestData {
   const char* test_case;
-  NGLogicalRect a;
-  NGLogicalRect b;
-  NGLogicalRect expected;
-} logical_rect_unite_test_data[] = {
-    {"empty", {}, {}, {}},
+  PhysicalRect a;
+  PhysicalRect b;
+  PhysicalRect expected;
+} physical_offset_rect_unite_test_data[] = {
+    {"all_empty", {}, {}, {}},
     {"a empty",
      {},
      {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}},
@@ -36,21 +36,22 @@ struct LogicalRectUniteTestData {
 };
 
 std::ostream& operator<<(std::ostream& os,
-                         const LogicalRectUniteTestData& data) {
+                         const PhysicalOffsetRectUniteTestData& data) {
   return os << "Unite " << data.test_case;
 }
 
-class NGLogicalRectUniteTest
+class PhysicalRectUniteTest
     : public testing::Test,
-      public testing::WithParamInterface<LogicalRectUniteTestData> {};
+      public testing::WithParamInterface<PhysicalOffsetRectUniteTestData> {};
 
-INSTANTIATE_TEST_SUITE_P(NGGeometryUnitsTest,
-                         NGLogicalRectUniteTest,
-                         testing::ValuesIn(logical_rect_unite_test_data));
+INSTANTIATE_TEST_SUITE_P(
+    GeometryUnitsTest,
+    PhysicalRectUniteTest,
+    testing::ValuesIn(physical_offset_rect_unite_test_data));
 
-TEST_P(NGLogicalRectUniteTest, Data) {
+TEST_P(PhysicalRectUniteTest, Data) {
   const auto& data = GetParam();
-  NGLogicalRect actual = data.a;
+  PhysicalRect actual = data.a;
   actual.Unite(data.b);
   EXPECT_EQ(data.expected, actual);
 }

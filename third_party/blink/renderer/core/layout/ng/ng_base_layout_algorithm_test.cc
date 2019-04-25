@@ -57,7 +57,7 @@ const NGPhysicalBoxFragment* NGBaseLayoutAlgorithmTest::CurrentFragmentFor(
 }
 
 const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
-    NGPhysicalOffset* fragment_offset) {
+    PhysicalOffset* fragment_offset) {
   if (!parent_)
     return nullptr;
   if (index_ >= parent_->Children().size())
@@ -77,12 +77,12 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingMode writing_mode,
     TextDirection direction,
-    NGLogicalSize size,
+    LogicalSize size,
     bool shrink_to_fit,
     bool is_new_formatting_context,
     LayoutUnit fragmentainer_space_available) {
   NGFragmentationType block_fragmentation =
-      fragmentainer_space_available != NGSizeIndefinite
+      fragmentainer_space_available != kIndefiniteSize
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 

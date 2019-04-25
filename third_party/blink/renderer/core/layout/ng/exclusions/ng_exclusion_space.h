@@ -41,7 +41,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
-      const NGLogicalSize& minimum_size) const {
+      const LogicalSize& minimum_size) const {
     // If the area clears all floats, we can just return the layout opportunity
     // which matches the available space.
     if (offset.block_offset >=
@@ -286,7 +286,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     NGLayoutOpportunity FindLayoutOpportunity(
         const NGBfcOffset& offset,
         const LayoutUnit available_inline_size,
-        const NGLogicalSize& minimum_size) const;
+        const LogicalSize& minimum_size) const;
 
     LayoutOpportunityVector AllLayoutOpportunities(
         const NGBfcOffset& offset,
@@ -381,7 +381,7 @@ class CORE_EXPORT NGExclusionSpace {
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
-      const NGLogicalSize& minimum_size) const {
+      const LogicalSize& minimum_size) const {
     if (!exclusion_space_) {
       NGBfcOffset end_offset(
           offset.line_offset + available_inline_size.ClampNegativeToZero(),

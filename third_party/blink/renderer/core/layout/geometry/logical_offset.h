@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLogicalOffset_h
-#define NGLogicalOffset_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_LOGICAL_OFFSET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_LOGICAL_OFFSET_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -12,15 +12,15 @@
 
 namespace blink {
 
-struct NGLogicalDelta;
-struct NGPhysicalOffset;
-struct NGPhysicalSize;
+struct LogicalDelta;
+struct PhysicalOffset;
+struct PhysicalSize;
 
-// NGLogicalOffset is the position of a rect (typically a fragment) relative to
+// LogicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the logical coordinate system.
-struct CORE_EXPORT NGLogicalOffset {
-  NGLogicalOffset() = default;
-  NGLogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
+struct CORE_EXPORT LogicalOffset {
+  LogicalOffset() = default;
+  LogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
       : inline_offset(inline_offset), block_offset(block_offset) {}
 
   LayoutUnit inline_offset;
@@ -33,51 +33,51 @@ struct CORE_EXPORT NGLogicalOffset {
   // the same point.
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
-  NGPhysicalOffset ConvertToPhysical(WritingMode,
-                                     TextDirection,
-                                     NGPhysicalSize outer_size,
-                                     NGPhysicalSize inner_size) const;
+  PhysicalOffset ConvertToPhysical(WritingMode,
+                                   TextDirection,
+                                   PhysicalSize outer_size,
+                                   PhysicalSize inner_size) const;
 
-  bool operator==(const NGLogicalOffset& other) const {
+  bool operator==(const LogicalOffset& other) const {
     return std::tie(other.inline_offset, other.block_offset) ==
            std::tie(inline_offset, block_offset);
   }
-  bool operator!=(const NGLogicalOffset& other) const {
+  bool operator!=(const LogicalOffset& other) const {
     return !operator==(other);
   }
 
-  NGLogicalOffset operator+(const NGLogicalOffset& other) const {
+  LogicalOffset operator+(const LogicalOffset& other) const {
     return {inline_offset + other.inline_offset,
             block_offset + other.block_offset};
   }
 
-  NGLogicalOffset& operator+=(const NGLogicalOffset& other) {
+  LogicalOffset& operator+=(const LogicalOffset& other) {
     *this = *this + other;
     return *this;
   }
 
-  NGLogicalOffset& operator-=(const NGLogicalOffset& other) {
+  LogicalOffset& operator-=(const LogicalOffset& other) {
     inline_offset -= other.inline_offset;
     block_offset -= other.block_offset;
     return *this;
   }
 
-  // We also have +, - operators for NGLogicalDelta, NGLogicalSize and
-  // NGLogicalOffset defined in ng_logical_size.h
+  // We also have +, - operators for LogicalDelta, LogicalSize and
+  // LogicalOffset defined in ng_logical_size.h
 
-  bool operator>(const NGLogicalOffset& other) const {
+  bool operator>(const LogicalOffset& other) const {
     return inline_offset > other.inline_offset &&
            block_offset > other.block_offset;
   }
-  bool operator>=(const NGLogicalOffset& other) const {
+  bool operator>=(const LogicalOffset& other) const {
     return inline_offset >= other.inline_offset &&
            block_offset >= other.block_offset;
   }
-  bool operator<(const NGLogicalOffset& other) const {
+  bool operator<(const LogicalOffset& other) const {
     return inline_offset < other.inline_offset &&
            block_offset < other.block_offset;
   }
-  bool operator<=(const NGLogicalOffset& other) const {
+  bool operator<=(const LogicalOffset& other) const {
     return inline_offset <= other.inline_offset &&
            block_offset <= other.block_offset;
   }
@@ -85,8 +85,8 @@ struct CORE_EXPORT NGLogicalOffset {
   String ToString() const;
 };
 
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLogicalOffset&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const LogicalOffset&);
 
 }  // namespace blink
 
-#endif  // NGLogicalOffset_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_LOGICAL_OFFSET_H_

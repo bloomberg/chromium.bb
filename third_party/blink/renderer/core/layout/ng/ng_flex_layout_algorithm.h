@@ -50,8 +50,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const NGBoxStrut padding_;
   const NGBoxStrut border_padding_;
   const bool is_column_;
-  NGLogicalSize border_box_size_;
-  NGLogicalSize content_box_size_;
+  LogicalSize border_box_size_;
+  LogicalSize content_box_size_;
   // This is populated at the top of Layout(), so isn't available in
   // ComputeMinMaxSize() or anything it calls.
   base::Optional<FlexLayoutAlgorithm> algorithm_;

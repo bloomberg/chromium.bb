@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_column_layout_algorithm.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -22,7 +22,7 @@ namespace {
 
 inline bool NeedsColumnBalancing(LayoutUnit block_size,
                                  const ComputedStyle& style) {
-  return block_size == NGSizeIndefinite ||
+  return block_size == kIndefiniteSize ||
          style.GetColumnFill() == EColumnFill::kBalance;
 }
 
@@ -57,7 +57,7 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
   LayoutUnit extent = ResolveMainBlockLength(space, style, border_padding,
                                              style.LogicalHeight(), size,
                                              LengthResolvePhase::kLayout);
-  if (extent != NGSizeIndefinite) {
+  if (extent != kIndefiniteSize) {
     // A specified height/width will just constrain the maximum length.
     max = std::min(max, extent);
   }
@@ -85,11 +85,11 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style()) +
                        ComputeIntrinsicPadding(ConstraintSpace(), Node());
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
-  NGLogicalSize border_box_size =
+  LogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node(), borders + padding);
-  NGLogicalSize content_box_size =
+  LogicalSize content_box_size =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
-  NGLogicalSize column_size = CalculateColumnSize(content_box_size);
+  LogicalSize column_size = CalculateColumnSize(content_box_size);
 
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
 
@@ -175,7 +175,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       const auto* column =
           To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
-      NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
+      LogicalOffset logical_offset(column_inline_offset, column_block_offset);
       container_builder_.AddChild(*result, logical_offset);
 
       LayoutUnit space_shortage = result->MinimalSpaceShortage();
@@ -277,7 +277,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   // the block size correctly. Otherwise, do it now.
   if (!container_builder_.DidBreak()) {
     LayoutUnit block_size;
-    if (border_box_size.block_size == NGSizeIndefinite) {
+    if (border_box_size.block_size == kIndefiniteSize) {
       // Get the block size from the columns if it's auto.
       block_size = column_size.block_size + border_scrollbar_padding.BlockSum();
     } else {
@@ -332,9 +332,9 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   return sizes;
 }
 
-NGLogicalSize NGColumnLayoutAlgorithm::CalculateColumnSize(
-    const NGLogicalSize& content_box_size) {
-  NGLogicalSize column_size = content_box_size;
+LogicalSize NGColumnLayoutAlgorithm::CalculateColumnSize(
+    const LogicalSize& content_box_size) {
+  LogicalSize column_size = content_box_size;
   DCHECK_GE(column_size.inline_size, LayoutUnit());
   column_size.inline_size =
       ResolveUsedColumnInlineSize(column_size.inline_size, Style());
@@ -350,7 +350,7 @@ NGLogicalSize NGColumnLayoutAlgorithm::CalculateColumnSize(
 }
 
 LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
-    const NGLogicalSize& column_size,
+    const LogicalSize& column_size,
     int column_count) {
   // To calculate a balanced column size, we need to figure out how tall our
   // content is. To do that we need to lay out. Create a special constraint
@@ -391,7 +391,7 @@ LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
 }
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
-    const NGLogicalSize& column_size,
+    const LogicalSize& column_size,
     bool separate_leading_margins) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
@@ -418,10 +418,10 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
 }
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
-    const NGLogicalSize& column_size) const {
+    const LogicalSize& column_size) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
-  space_builder.SetAvailableSize({column_size.inline_size, NGSizeIndefinite});
+  space_builder.SetAvailableSize({column_size.inline_size, kIndefiniteSize});
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsIntermediateLayout(true);

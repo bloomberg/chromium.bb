@@ -16,39 +16,38 @@ namespace blink {
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     const NGLayoutResult& child,
-    const NGLogicalOffset& child_offset) {
+    const LogicalOffset& child_offset) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
   const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
   if (!out_of_flow_descendants.IsEmpty()) {
-    NGLogicalOffset top_left_offset;
-    NGPhysicalSize child_size = child.PhysicalFragment()->Size();
+    LogicalOffset top_left_offset;
+    PhysicalSize child_size = child.PhysicalFragment()->Size();
     switch (GetWritingMode()) {
       case WritingMode::kHorizontalTb:
         top_left_offset =
             (IsRtl(Direction()))
-                ? NGLogicalOffset{child_offset.inline_offset + child_size.width,
-                                  child_offset.block_offset}
+                ? LogicalOffset{child_offset.inline_offset + child_size.width,
+                                child_offset.block_offset}
                 : child_offset;
         break;
       case WritingMode::kVerticalRl:
       case WritingMode::kSidewaysRl:
         top_left_offset =
             (IsRtl(Direction()))
-                ? NGLogicalOffset{child_offset.inline_offset +
-                                      child_size.height,
-                                  child_offset.block_offset + child_size.width}
-                : NGLogicalOffset{child_offset.inline_offset,
-                                  child_offset.block_offset + child_size.width};
+                ? LogicalOffset{child_offset.inline_offset + child_size.height,
+                                child_offset.block_offset + child_size.width}
+                : LogicalOffset{child_offset.inline_offset,
+                                child_offset.block_offset + child_size.width};
         break;
       case WritingMode::kVerticalLr:
       case WritingMode::kSidewaysLr:
-        top_left_offset = (IsRtl(Direction()))
-                              ? NGLogicalOffset{child_offset.inline_offset +
-                                                    child_size.height,
-                                                child_offset.block_offset}
-                              : child_offset;
+        top_left_offset =
+            (IsRtl(Direction()))
+                ? LogicalOffset{child_offset.inline_offset + child_size.height,
+                                child_offset.block_offset}
+                : child_offset;
         break;
     }
 
@@ -64,10 +63,9 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     // relative positioned objects directly in the fragment tree.
     if (LayoutBox* child_box =
             ToLayoutBoxOrNull(child.PhysicalFragment()->GetLayoutObject())) {
-      top_left_offset +=
-          NGPhysicalOffset(child_box->OffsetForInFlowPosition())
-              .ConvertToLogical(GetWritingMode(), Direction(), NGPhysicalSize(),
-                                NGPhysicalSize());
+      top_left_offset += PhysicalOffset(child_box->OffsetForInFlowPosition())
+                             .ConvertToLogical(GetWritingMode(), Direction(),
+                                               PhysicalSize(), PhysicalSize());
     }
 
     for (const NGOutOfFlowPositionedDescendant& descendant :
@@ -96,7 +94,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
-    const NGLogicalOffset& child_offset) {
+    const LogicalOffset& child_offset) {
   NGBreakToken* child_break_token = child->BreakToken();
   if (child_break_token && has_block_fragmentation_) {
     switch (child->Type()) {
@@ -143,7 +141,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   return *this;
 }
 
-NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
+LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
     const LayoutObject* child) const {
   for (wtf_size_t i = 0; i < children_.size(); ++i) {
     if (children_[i]->GetLayoutObject() == child)
@@ -167,13 +165,13 @@ NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
     }
   }
   NOTREACHED();
-  return NGLogicalOffset();
+  return LogicalOffset();
 }
 
 NGContainerFragmentBuilder&
 NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
-    const NGLogicalOffset& child_offset,
+    const LogicalOffset& child_offset,
     base::Optional<TextDirection> container_direction) {
   DCHECK(child);
   DCHECK(layout_object_ && !layout_object_->IsLayoutInline() ||
@@ -188,7 +186,7 @@ NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
   oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate(
       NGOutOfFlowPositionedDescendant(
           child, NGStaticPosition::Create(GetWritingMode(), direction,
-                                          NGPhysicalOffset())),
+                                          PhysicalOffset())),
       child_offset));
 
   return *this;
@@ -212,12 +210,11 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
-  NGPhysicalSize builder_physical_size =
-      ToNGPhysicalSize(Size(), GetWritingMode());
+  PhysicalSize builder_physical_size = ToPhysicalSize(Size(), GetWritingMode());
 
   for (NGOutOfFlowPositionedCandidate& candidate : oof_positioned_candidates_) {
-    NGPhysicalOffset child_offset = candidate.child_offset.ConvertToPhysical(
-        GetWritingMode(), Direction(), builder_physical_size, NGPhysicalSize());
+    PhysicalOffset child_offset = candidate.child_offset.ConvertToPhysical(
+        GetWritingMode(), Direction(), builder_physical_size, PhysicalSize());
 
     NGStaticPosition builder_relative_position;
     builder_relative_position.type = candidate.descendant.static_position.type;
@@ -241,10 +238,10 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     descendant_candidates->push_back(NGOutOfFlowPositionedDescendant(
         candidate.descendant.node, builder_relative_position,
         inline_container));
-    NGLogicalOffset container_offset =
+    LogicalOffset container_offset =
         builder_relative_position.offset.ConvertToLogical(
             GetWritingMode(), Direction(), builder_physical_size,
-            NGPhysicalSize());
+            PhysicalSize());
     candidate.descendant.node.SaveStaticOffsetForLegacy(container_offset,
                                                         current_container);
   }

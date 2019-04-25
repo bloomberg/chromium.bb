@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
@@ -1991,7 +1991,7 @@ float LayoutText::Width(unsigned from,
 LayoutRect LayoutText::LinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           ContainingBlockFlowFragment()) {
-    NGPhysicalOffsetRect bounding_box;
+    PhysicalRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
@@ -2114,7 +2114,7 @@ LayoutRect LayoutText::LocalSelectionRect() const {
           frame_selection.ComputeLayoutSelectionStatus(*fragment);
       if (status.start == status.end)
         continue;
-      NGPhysicalOffsetRect fragment_rect =
+      PhysicalRect fragment_rect =
           fragment->ComputeLocalSelectionRectForText(status);
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
       rect.Unite(fragment_rect.ToLayoutRect());

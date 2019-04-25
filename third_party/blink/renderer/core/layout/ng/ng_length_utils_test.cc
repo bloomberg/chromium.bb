@@ -24,7 +24,7 @@ static NGConstraintSpace ConstructConstraintSpace(
     bool fixed_inline = false,
     bool fixed_block = false,
     WritingMode writing_mode = WritingMode::kHorizontalTb) {
-  NGLogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
+  LogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
   return NGConstraintSpaceBuilder(
              writing_mode, writing_mode,
@@ -406,7 +406,7 @@ TEST_F(NGLengthUtilsTest, testIndefinitePercentages) {
   style_->SetMinHeight(Length::Fixed(20));
   style_->SetHeight(Length::Percent(20));
 
-  EXPECT_EQ(NGSizeIndefinite,
+  EXPECT_EQ(kIndefiniteSize,
             ComputeBlockSizeForFragment(ConstructConstraintSpace(200, -1),
                                         LayoutUnit(-1)));
   EXPECT_EQ(LayoutUnit(20),
@@ -523,7 +523,7 @@ int GetUsedColumnWidth(int computed_column_count,
                        int available_inline_size) {
   LayoutUnit column_width(computed_column_width);
   if (!computed_column_width)
-    column_width = LayoutUnit(NGSizeIndefinite);
+    column_width = LayoutUnit(kIndefiniteSize);
   return ResolveUsedColumnInlineSize(computed_column_count, column_width,
                                      LayoutUnit(used_column_gap),
                                      LayoutUnit(available_inline_size))
@@ -535,7 +535,7 @@ int GetUsedColumnCount(int computed_column_count,
                        int available_inline_size) {
   LayoutUnit column_width(computed_column_width);
   if (!computed_column_width)
-    column_width = LayoutUnit(NGSizeIndefinite);
+    column_width = LayoutUnit(kIndefiniteSize);
   return ResolveUsedColumnCount(computed_column_count, column_width,
                                 LayoutUnit(used_column_gap),
                                 LayoutUnit(available_inline_size));

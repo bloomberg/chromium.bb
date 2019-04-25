@@ -59,10 +59,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // ScrollableOverflow is not precomputed/cached because it cannot be computed
   // when LineBox is generated because it needs container dimensions to
   // resolve relative position of its children.
-  NGPhysicalOffsetRect ScrollableOverflow(
-      const LayoutObject* container,
-      const ComputedStyle* container_style,
-      NGPhysicalSize container_physical_size) const;
+  PhysicalRect ScrollableOverflow(const LayoutObject* container,
+                                  const ComputedStyle* container_style,
+                                  PhysicalSize container_physical_size) const;
 
   // Returns the first/last leaf fragment in the line in logical order. Returns
   // nullptr if the line box is empty.
@@ -71,8 +70,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   // Returns a point at the visual start/end of the line.
   // Encapsulates the handling of text direction and writing mode.
-  NGPhysicalOffset LineStartPoint() const;
-  NGPhysicalOffset LineEndPoint() const;
+  PhysicalOffset LineStartPoint() const;
+  PhysicalOffset LineEndPoint() const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;

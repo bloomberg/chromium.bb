@@ -6,8 +6,8 @@
 #define NGConstraintSpaceBuilder_h
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -63,13 +63,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   void AdjustInlineSizeIfNeeded(LayoutUnit* inline_size) const {
     DCHECK(!is_in_parallel_flow_);
-    if (*inline_size != NGSizeIndefinite)
+    if (*inline_size != kIndefiniteSize)
       return;
-    DCHECK_NE(orthogonal_fallback_inline_size_, NGSizeIndefinite);
+    DCHECK_NE(orthogonal_fallback_inline_size_, kIndefiniteSize);
     *inline_size = orthogonal_fallback_inline_size_;
   }
 
-  NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
+  NGConstraintSpaceBuilder& SetAvailableSize(LogicalSize available_size) {
 #if DCHECK_IS_ON()
     is_available_size_set_ = true;
 #endif
@@ -84,10 +84,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
-      NGLogicalSize percentage_resolution_size);
+      LogicalSize percentage_resolution_size);
 
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
-      NGLogicalSize replaced_percentage_resolution_size);
+      LogicalSize replaced_percentage_resolution_size);
 
   // Set the fallback available inline-size for an orthogonal child. The size is
   // the inline size in the writing mode of the orthogonal child.
@@ -101,7 +101,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_fragmentainer_block_size_set_);
     is_fragmentainer_block_size_set_ = true;
 #endif
-    if (size != NGSizeIndefinite)
+    if (size != kIndefiniteSize)
       space_.EnsureRareData()->fragmentainer_block_size = size;
     return *this;
   }
@@ -111,7 +111,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_fragmentainer_space_at_bfc_start_set_);
     is_fragmentainer_space_at_bfc_start_set_ = true;
 #endif
-    if (space != NGSizeIndefinite)
+    if (space != kIndefiniteSize)
       space_.EnsureRareData()->fragmentainer_space_at_bfc_start = space;
     return *this;
   }
@@ -300,7 +300,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // Orthogonal writing mode roots may need a fallback, to prevent available
   // inline size from being indefinite, which isn't allowed. This is the
   // available inline size in the writing mode of the orthogonal child.
-  LayoutUnit orthogonal_fallback_inline_size_ = NGSizeIndefinite;
+  LayoutUnit orthogonal_fallback_inline_size_ = kIndefiniteSize;
 
   bool is_in_parallel_flow_;
   bool is_new_fc_;

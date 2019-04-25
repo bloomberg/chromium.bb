@@ -97,12 +97,12 @@ bool BlockLengthUnresolvable(
         opt_percentage_resolution_block_size_for_min_max
             ? *opt_percentage_resolution_block_size_for_min_max
             : constraint_space.PercentageResolutionBlockSize();
-    return percentage_resolution_block_size == NGSizeIndefinite;
+    return percentage_resolution_block_size == kIndefiniteSize;
   }
 
   if (length.IsFillAvailable()) {
     return phase == LengthResolvePhase::kIntrinsic ||
-           constraint_space.AvailableSize().block_size == NGSizeIndefinite;
+           constraint_space.AvailableSize().block_size == kIndefiniteSize;
   }
 
   return false;
@@ -253,7 +253,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
           .ToConstraintSpace();
 
   LayoutUnit content_size =
-      min_and_max ? min_and_max->max_size : NGSizeIndefinite;
+      min_and_max ? min_and_max->max_size : kIndefiniteSize;
 
   MinMaxSize computed_sizes;
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
@@ -487,8 +487,8 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
       constraint_space, style, border_padding, logical_height, content_size,
       LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
-  if (extent == NGSizeIndefinite) {
-    DCHECK_EQ(content_size, NGSizeIndefinite);
+  if (extent == kIndefiniteSize) {
+    DCHECK_EQ(content_size, kIndefiniteSize);
     return extent;
   }
 
@@ -522,7 +522,7 @@ LayoutUnit ComputeBlockSizeForFragment(
 }
 
 // Computes size for a replaced element.
-NGLogicalSize ComputeReplacedSize(
+LogicalSize ComputeReplacedSize(
     const NGLayoutInputNode& node,
     const NGConstraintSpace& space,
     const base::Optional<MinMaxSize>& child_minmax) {
@@ -561,11 +561,11 @@ NGLogicalSize ComputeReplacedSize(
     replaced_block = ConstrainByMinMax(*replaced_block, block_min, block_max);
   }
   if (replaced_inline && replaced_block)
-    return NGLogicalSize(*replaced_inline, *replaced_block);
+    return LogicalSize(*replaced_inline, *replaced_block);
 
   base::Optional<LayoutUnit> intrinsic_inline;
   base::Optional<LayoutUnit> intrinsic_block;
-  NGLogicalSize aspect_ratio;
+  LogicalSize aspect_ratio;
 
   node.IntrinsicSize(&intrinsic_inline, &intrinsic_block, &aspect_ratio);
   // Computing intrinsic size is complicated by the fact that
@@ -682,14 +682,14 @@ NGLogicalSize ComputeReplacedSize(
       }
     }
   }
-  return NGLogicalSize(*replaced_inline, *replaced_block);
+  return LogicalSize(*replaced_inline, *replaced_block);
 }
 
 int ResolveUsedColumnCount(int computed_count,
                            LayoutUnit computed_size,
                            LayoutUnit used_gap,
                            LayoutUnit available_size) {
-  if (computed_size == NGSizeIndefinite) {
+  if (computed_size == kIndefiniteSize) {
     DCHECK(computed_count);
     return computed_count;
   }
@@ -706,7 +706,7 @@ int ResolveUsedColumnCount(LayoutUnit available_size,
                            const ComputedStyle& style) {
   LayoutUnit computed_column_inline_size =
       style.HasAutoColumnWidth()
-          ? NGSizeIndefinite
+          ? kIndefiniteSize
           : std::max(LayoutUnit(1), LayoutUnit(style.ColumnWidth()));
   LayoutUnit gap = ResolveUsedColumnGap(available_size, style);
   int computed_count = style.ColumnCount();
@@ -731,7 +731,7 @@ LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
 
   LayoutUnit computed_size =
       style.HasAutoColumnWidth()
-          ? NGSizeIndefinite
+          ? kIndefiniteSize
           : std::max(LayoutUnit(1), LayoutUnit(style.ColumnWidth()));
   int computed_count = style.HasAutoColumnCount() ? 0 : style.ColumnCount();
   LayoutUnit used_gap = ResolveUsedColumnGap(available_size, style);
@@ -986,10 +986,10 @@ NGBoxStrut CalculateBorderScrollbarPadding(
          node.GetScrollbarSizes();
 }
 
-NGLogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
-                                     const NGBlockNode& node,
-                                     const NGBoxStrut& border_padding,
-                                     LayoutUnit block_content_size) {
+LogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
+                                   const NGBlockNode& node,
+                                   const NGBoxStrut& border_padding,
+                                   LayoutUnit block_content_size) {
   // If we have a percentage size, we need to set the
   // HasPercentHeightDescendants flag correctly so that flexboz knows it may
   // need to redo layout and can also do some performance optimizations.
@@ -1003,18 +1003,18 @@ NGLogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
     node.GetLayoutBox()->ComputePercentageLogicalHeight(Length::Percent(0));
   }
 
-  return NGLogicalSize(
+  return LogicalSize(
       ComputeInlineSizeForFragment(constraint_space, node, border_padding),
       ComputeBlockSizeForFragment(constraint_space, node.Style(),
                                   border_padding, block_content_size));
 }
 
-NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset) {
-  DCHECK_NE(size.inline_size, NGSizeIndefinite);
+LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset) {
+  DCHECK_NE(size.inline_size, kIndefiniteSize);
   size.inline_size -= inset.InlineSum();
   size.inline_size = std::max(size.inline_size, LayoutUnit());
 
-  if (size.block_size != NGSizeIndefinite) {
+  if (size.block_size != kIndefiniteSize) {
     size.block_size -= inset.BlockSum();
     size.block_size = std::max(size.block_size, LayoutUnit());
   }
@@ -1034,30 +1034,30 @@ LayoutUnit CalculateDefaultBlockSize(
     return std::max(block_size.ClampNegativeToZero(),
                     border_scrollbar_padding.BlockSum());
   }
-  return NGSizeIndefinite;
+  return kIndefiniteSize;
 }
 
 namespace {
 
 // Implements the common part of the child percentage size calculation. Deals
 // with how percentages are propagated from parent to child in quirks mode.
-NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
+LogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
     const NGConstraintSpace& space,
     const NGBlockNode node,
-    NGLogicalSize child_percentage_size,
+    LogicalSize child_percentage_size,
     LayoutUnit parent_percentage_block_size) {
   // Flex items may have a fixed block-size, but children shouldn't resolve
   // their percentages against this.
   if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite()) {
     DCHECK(node.IsFlexItem());
-    child_percentage_size.block_size = NGSizeIndefinite;
+    child_percentage_size.block_size = kIndefiniteSize;
     return child_percentage_size;
   }
 
   // In quirks mode the percentage resolution height is passed from parent to
   // child.
   // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
-  if (child_percentage_size.block_size == NGSizeIndefinite &&
+  if (child_percentage_size.block_size == kIndefiniteSize &&
       node.UseParentPercentageResolutionBlockSizeForChildren())
     child_percentage_size.block_size = parent_percentage_block_size;
 
@@ -1066,15 +1066,15 @@ NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
 
 }  // namespace
 
-NGLogicalSize CalculateChildPercentageSize(
+LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace& space,
     const NGBlockNode node,
-    const NGLogicalSize& child_available_size) {
+    const LogicalSize& child_available_size) {
   // Anonymous block or spaces should pass the percent size straight through.
   if (space.IsAnonymous() || node.IsAnonymousBlock())
     return space.PercentageResolutionSize();
 
-  NGLogicalSize child_percentage_size = child_available_size;
+  LogicalSize child_percentage_size = child_available_size;
 
   bool is_table_cell_in_measure_phase =
       node.IsTableCell() && !space.IsFixedSizeBlock();
@@ -1082,7 +1082,7 @@ NGLogicalSize CalculateChildPercentageSize(
   // Table cells which are measuring their content, force their children to
   // have an indefinite percentage resolution size.
   if (is_table_cell_in_measure_phase) {
-    child_percentage_size.block_size = NGSizeIndefinite;
+    child_percentage_size.block_size = kIndefiniteSize;
     return child_percentage_size;
   }
 
@@ -1098,10 +1098,10 @@ NGLogicalSize CalculateChildPercentageSize(
       space.PercentageResolutionBlockSize());
 }
 
-NGLogicalSize CalculateReplacedChildPercentageSize(
+LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace& space,
     const NGBlockNode node,
-    NGLogicalSize border_box_size,
+    LogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding) {
   // Anonymous block or spaces should pass the percent size straight through.
@@ -1121,12 +1121,12 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
   // To handle this we recalculate the border-box block-size, ignoring the
   // fixed size constraint.
   if (is_table_cell_in_layout_phase && has_resolvable_block_size) {
-    border_box_size.block_size = ComputeBlockSizeForFragmentInternal(
-        space, node.Style(), border_padding,
-        /* content_size */ NGSizeIndefinite);
+    border_box_size.block_size =
+        ComputeBlockSizeForFragmentInternal(space, node.Style(), border_padding,
+                                            /* content_size */ kIndefiniteSize);
   }
 
-  NGLogicalSize child_percentage_size =
+  LogicalSize child_percentage_size =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
 
   return AdjustChildPercentageSizeForQuirksAndFlex(
@@ -1149,12 +1149,12 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
       &parent_percentage_block_size);
 
   LayoutUnit child_percentage_block_size =
-      block_size == NGSizeIndefinite
-          ? NGSizeIndefinite
+      block_size == kIndefiniteSize
+          ? kIndefiniteSize
           : (block_size - border_padding.BlockSum()).ClampNegativeToZero();
 
   // For OOF-positioned nodes, use the parent (containing-block) size.
-  if (child_percentage_block_size == NGSizeIndefinite &&
+  if (child_percentage_block_size == kIndefiniteSize &&
       (node.UseParentPercentageResolutionBlockSizeForChildren() ||
        node.IsOutOfFlowPositioned()))
     child_percentage_block_size = parent_percentage_block_size;

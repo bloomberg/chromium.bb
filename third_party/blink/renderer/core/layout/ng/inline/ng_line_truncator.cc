@@ -109,7 +109,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
                                        baseline_type);
   line_box->AddChild(
       builder.ToTextFragment(),
-      NGLogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
+      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
       ellipsis_width, 0);
   return std::max(ellipsis_inline_offset + ellipsis_width, line_width);
 }

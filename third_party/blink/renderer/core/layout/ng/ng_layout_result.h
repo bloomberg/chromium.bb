@@ -58,7 +58,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return oof_positioned_descendants_;
   }
 
-  NGLogicalOffset OutOfFlowPositionedOffset() const {
+  LogicalOffset OutOfFlowPositionedOffset() const {
     return oof_positioned_offset_;
   }
 
@@ -144,7 +144,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
    protected:
     friend class NGOutOfFlowLayoutPart;
 
-    void SetOutOfFlowPositionedOffset(const NGLogicalOffset& offset) {
+    void SetOutOfFlowPositionedOffset(const LogicalOffset& offset) {
       layout_result_->oof_positioned_offset_ = offset;
     }
 
@@ -200,7 +200,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // writing-mode. This is set by the |NGOutOfFlowLayoutPart| while generating
   // this layout result.
   // This field is unused for other objects.
-  NGLogicalOffset oof_positioned_offset_;
+  LogicalOffset oof_positioned_offset_;
   NGUnpositionedListMarker unpositioned_list_marker_;
 
   const NGExclusionSpace exclusion_space_;

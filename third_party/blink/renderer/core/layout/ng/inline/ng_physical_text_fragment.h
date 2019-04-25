@@ -17,7 +17,7 @@
 
 namespace blink {
 
-struct NGPhysicalOffsetRect;
+struct PhysicalRect;
 class NGTextFragmentBuilder;
 
 enum class AdjustMidCluster;
@@ -99,13 +99,12 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // The layout box of text in (start, end) range in local coordinate.
   // Start and end offsets must be between StartOffset() and EndOffset().
-  NGPhysicalOffsetRect LocalRect(unsigned start_offset,
-                                 unsigned end_offset) const;
+  PhysicalRect LocalRect(unsigned start_offset, unsigned end_offset) const;
   using NGPhysicalFragment::LocalRect;
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
-  NGPhysicalOffsetRect SelfInkOverflow() const;
+  PhysicalRect SelfInkOverflow() const;
 
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
@@ -124,7 +123,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   bool IsAnonymousText() const { return is_anonymous_text_; }
 
   // Returns the text offset in the fragment placed closest to the given point.
-  unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
+  unsigned TextOffsetForPoint(const PhysicalOffset&) const;
 
   UBiDiLevel BidiLevel() const;
   TextDirection ResolvedDirection() const;
@@ -147,7 +146,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     USING_FAST_MALLOC(RareData);
 
    public:
-    NGPhysicalOffsetRect self_ink_overflow_;
+    PhysicalRect self_ink_overflow_;
     scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
   };
   RareData* EnsureRareData() const;
@@ -156,7 +155,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;
 
-  NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
+  PhysicalRect ConvertToLocal(const LayoutRect&) const;
 
   void ComputeSelfInkOverflow() const;
   void ClearSelfInkOverflow() const;

@@ -22,7 +22,7 @@ class NGBoxFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalFragment;
 
-struct NGLogicalOffset;
+struct LogicalOffset;
 
 // Represents an unpositioned list marker.
 //
@@ -50,7 +50,7 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   bool AddToBox(const NGConstraintSpace&,
                 FontBaseline,
                 const NGPhysicalFragment& content,
-                NGLogicalOffset* content_offset,
+                LogicalOffset* content_offset,
                 NGBoxFragmentBuilder*,
                 const NGBoxStrut&) const;
 

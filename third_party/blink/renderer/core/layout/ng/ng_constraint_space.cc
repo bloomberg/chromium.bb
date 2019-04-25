@@ -19,7 +19,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGConstraintSpace {
-  NGLogicalSize available_size;
+  LogicalSize available_size;
   union {
     NGBfcOffset bfc_offset;
     void* rare_data;
@@ -44,9 +44,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       LayoutBoxUtils::AvailableLogicalWidth(block, cb);
   LayoutUnit available_logical_height =
       LayoutBoxUtils::AvailableLogicalHeight(block, cb);
-  NGLogicalSize percentage_size = {available_logical_width,
-                                   available_logical_height};
-  NGLogicalSize available_size = percentage_size;
+  LogicalSize percentage_size = {available_logical_width,
+                                 available_logical_height};
+  LogicalSize available_size = percentage_size;
 
   bool fixed_inline = false, fixed_block = false;
   bool fixed_block_is_definite = true;

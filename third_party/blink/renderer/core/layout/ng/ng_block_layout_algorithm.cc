@@ -127,11 +127,11 @@ LayoutUnit LogicalFromBfcLineOffset(LayoutUnit child_bfc_line_offset,
   return inline_offset;
 }
 
-NGLogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
-                                      const NGBfcOffset& parent_bfc_offset,
-                                      LayoutUnit child_inline_size,
-                                      LayoutUnit parent_inline_size,
-                                      TextDirection direction) {
+LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
+                                    const NGBfcOffset& parent_bfc_offset,
+                                    LayoutUnit child_inline_size,
+                                    LayoutUnit parent_inline_size,
+                                    TextDirection direction) {
   LayoutUnit inline_offset = LogicalFromBfcLineOffset(
       child_bfc_offset.line_offset, parent_bfc_offset.line_offset,
       child_inline_size, parent_inline_size, direction);
@@ -328,7 +328,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   return sizes;
 }
 
-NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
+LogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
     const NGFragment& fragment,
     LayoutUnit child_bfc_line_offset,
     const base::Optional<LayoutUnit>& child_bfc_block_offset) {
@@ -377,7 +377,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
-  NGLogicalSize border_box_size = CalculateBorderBoxSize(
+  LogicalSize border_box_size = CalculateBorderBoxSize(
       ConstraintSpace(), Node(), border_padding_,
       CalculateDefaultBlockSize(ConstraintSpace(), Node(),
                                 border_scrollbar_padding_));
@@ -577,7 +577,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
 scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     NGPreviousInflowPosition* previous_inflow_position,
-    NGLogicalSize border_box_size,
+    LogicalSize border_box_size,
     const NGBoxStrut& borders,
     const NGBoxStrut& scrollbars) {
   NGMarginStrut end_margin_strut = previous_inflow_position->margin_strut;
@@ -764,11 +764,11 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   TextDirection direction = container_builder_.Direction();
   DCHECK_EQ(writing_mode, lineboxes->Style().GetWritingMode());
   DCHECK_EQ(direction, lineboxes->Style().Direction());
-  const NGPhysicalSize outer_size = lineboxes->Size();
+  const PhysicalSize outer_size = lineboxes->Size();
 
   struct FragmentWithLogicalOffset {
     const NGPhysicalFragment& fragment;
-    NGLogicalOffset offset;
+    LogicalOffset offset;
   };
   // Avoid calling |ReserveInitialCapacity()| because
   // |lineboxes->Children().size()| is O(n), not linear, but it's critical to
@@ -783,7 +783,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     if (!child_fragment.IsLineBox())
       return nullptr;
 
-    NGLogicalOffset logical_offset = child->Offset().ConvertToLogical(
+    LogicalOffset logical_offset = child->Offset().ConvertToLogical(
         writing_mode, direction, outer_size, child_fragment.Size());
     fragments.push_back(
         FragmentWithLogicalOffset{child_fragment, logical_offset});
@@ -826,8 +826,8 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     NGBlockNode child) {
   const ComputedStyle& child_style = child.Style();
 
-  NGLogicalOffset offset = {border_scrollbar_padding_.inline_start,
-                            previous_inflow_position.logical_block_offset};
+  LogicalOffset offset = {border_scrollbar_padding_.inline_start,
+                          previous_inflow_position.logical_block_offset};
 
   // We only include the margin strut in the OOF static-position if we know we
   // aren't going to be a zero-block-size fragment.
@@ -847,7 +847,7 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     // zero-sized line.
     NGLayoutOpportunity opportunity = exclusion_space_.FindLayoutOpportunity(
         {child_origin_line_offset, BfcBlockOffset() + offset.block_offset},
-        child_available_size_.inline_size, /* minimum_size */ NGLogicalSize());
+        child_available_size_.inline_size, /* minimum_size */ LogicalSize());
 
     LayoutUnit child_line_offset = IsLtr(direction)
                                        ? opportunity.rect.LineStartOffset()
@@ -1089,7 +1089,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   NGBfcOffset child_bfc_offset(child_bfc_line_offset,
                                opportunity.rect.start_offset.block_offset);
 
-  NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
+  LogicalOffset logical_offset = LogicalFromBfcOffsets(
       child_bfc_offset, ContainerBfcOffset(), fragment.InlineSize(),
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
@@ -1191,7 +1191,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // auto inline size by subtracting the inline margins from available inline
     // size. We have calculated a layout opportunity without margins in mind,
     // since they overlap with adjacent floats. Now we need to add them.
-    NGLogicalSize child_available_size = {
+    LogicalSize child_available_size = {
         (opportunity.rect.InlineSize() - inline_negative_margin + inline_margin)
             .ClampNegativeToZero(),
         child_available_size_.block_size};
@@ -1469,7 +1469,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   const auto& physical_fragment = *layout_result->PhysicalFragment();
   NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
-  NGLogicalOffset logical_offset = CalculateLogicalOffset(
+  LogicalOffset logical_offset = CalculateLogicalOffset(
       fragment, layout_result->BfcLineOffset(), child_bfc_block_offset);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
@@ -1569,7 +1569,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
     const base::Optional<LayoutUnit>& child_bfc_block_offset,
-    const NGLogicalOffset& logical_offset,
+    const LogicalOffset& logical_offset,
     const NGLayoutResult& layout_result,
     const NGFragment& fragment,
     bool empty_block_affected_by_clearance) {
@@ -2049,7 +2049,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
 NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
-    const NGLogicalSize child_available_size,
+    const LogicalSize child_available_size,
     const base::Optional<LayoutUnit> floats_bfc_block_offset) {
   const ComputedStyle& style = Style();
   const ComputedStyle& child_style = child.Style();
@@ -2317,7 +2317,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
         ConstraintSpace().GetWritingMode(),
         *positioned_float.layout_result->PhysicalFragment());
 
-    NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
+    LogicalOffset logical_offset = LogicalFromBfcOffsets(
         positioned_float.bfc_offset, bfc_offset, child_fragment.InlineSize(),
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
@@ -2332,7 +2332,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
 LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
     const NGMarginStrut& end_margin_strut) {
   if (!Node().GetDocument().InQuirksMode())
-    return NGSizeIndefinite;
+    return kIndefiniteSize;
 
   if (Node().IsDocumentElement() && Node().Style().LogicalHeight().IsAuto()) {
     return ConstraintSpace().AvailableSize().block_size -
@@ -2356,12 +2356,12 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
         ConstraintSpace().AvailableSize().block_size - margin_sum;
     return minimum_block_size.ClampNegativeToZero();
   }
-  return NGSizeIndefinite;
+  return kIndefiniteSize;
 }
 
 void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     const NGLayoutResult& layout_result,
-    NGLogicalOffset* content_offset) {
+    LogicalOffset* content_offset) {
   // If this is not a list-item, propagate unpositioned list markers to
   // ancestors.
   if (!node_.IsListItem()) {

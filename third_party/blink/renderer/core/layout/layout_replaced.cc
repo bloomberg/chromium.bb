@@ -25,14 +25,14 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -927,13 +927,13 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
     const ComputedStyle& line_style = line_box_container->Style();
     const WritingMode writing_mode = line_style.GetWritingMode();
     const TextDirection text_direction = line_style.Direction();
-    const NGPhysicalOffset line_box_offset =
+    const PhysicalOffset line_box_offset =
         line_box_container->InlineOffsetToContainerBox();
-    const NGPhysicalSize line_box_size = line_box_container->Size();
-    const NGLogicalOffset logical_offset = line_box_offset.ConvertToLogical(
+    const PhysicalSize line_box_size = line_box_container->Size();
+    const LogicalOffset logical_offset = line_box_offset.ConvertToLogical(
         writing_mode, text_direction, inline_container->Size(),
         line_box_container->Size());
-    const NGLogicalSize logical_size =
+    const LogicalSize logical_size =
         line_box_size.ConvertToLogical(writing_mode);
     return {logical_offset.block_offset,
             logical_offset.block_offset + logical_size.block_size};
@@ -991,7 +991,7 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       LayoutRect rect;
       for (const NGPaintFragment* fragment : fragments) {
-        const NGPhysicalOffsetRect fragment_rect =
+        const PhysicalRect fragment_rect =
             fragment->ComputeLocalSelectionRectForReplaced();
         rect.Unite(fragment_rect.ToLayoutRect());
       }

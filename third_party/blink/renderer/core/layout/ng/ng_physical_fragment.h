@@ -8,9 +8,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -151,11 +151,11 @@ class CORE_EXPORT NGPhysicalFragment
   // exist for paint, hit-testing, etc.
 
   // Returns the border-box size.
-  NGPhysicalSize Size() const { return size_; }
+  PhysicalSize Size() const { return size_; }
 
   // Returns the rect in the local coordinate of this fragment; i.e., offset is
   // (0, 0).
-  NGPhysicalOffsetRect LocalRect() const { return {{}, size_}; }
+  PhysicalRect LocalRect() const { return {{}, size_}; }
 
   // Bitmask for border edges, see NGBorderEdges::Physical.
   unsigned BorderEdges() const { return border_edge_; }
@@ -190,10 +190,10 @@ class CORE_EXPORT NGPhysicalFragment
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   // Scrollable overflow. including contents, in the local coordinate.
-  NGPhysicalOffsetRect ScrollableOverflow() const;
+  PhysicalRect ScrollableOverflow() const;
 
   // ScrollableOverflow(), with transforms applied wrt container if needed.
-  NGPhysicalOffsetRect ScrollableOverflowForPropagation(
+  PhysicalRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
   // The allowed touch action is the union of the effective touch action
@@ -226,7 +226,7 @@ class CORE_EXPORT NGPhysicalFragment
   typedef int DumpFlags;
 
   String DumpFragmentTree(DumpFlags,
-                          base::Optional<NGPhysicalOffset> = base::nullopt,
+                          base::Optional<PhysicalOffset> = base::nullopt,
                           unsigned indent = 2) const;
 
 #ifndef NDEBUG
@@ -240,7 +240,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   NGPhysicalFragment(LayoutObject* layout_object,
                      NGStyleVariant,
-                     NGPhysicalSize size,
+                     PhysicalSize size,
                      NGFragmentType type,
                      unsigned sub_type,
                      scoped_refptr<NGBreakToken> break_token = nullptr);
@@ -248,7 +248,7 @@ class CORE_EXPORT NGPhysicalFragment
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
   LayoutObject* const layout_object_;
-  const NGPhysicalSize size_;
+  const PhysicalSize size_;
   scoped_refptr<NGBreakToken> break_token_;
 
   const unsigned type_ : 2;      // NGFragmentType
@@ -286,9 +286,9 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
   DISALLOW_NEW();
 
   scoped_refptr<const NGPhysicalFragment> fragment;
-  NGPhysicalOffset offset_to_container_box;
+  PhysicalOffset offset_to_container_box;
 
-  NGPhysicalOffsetRect RectInContainerBox() const;
+  PhysicalRect RectInContainerBox() const;
 };
 
 #if !DCHECK_IS_ON()

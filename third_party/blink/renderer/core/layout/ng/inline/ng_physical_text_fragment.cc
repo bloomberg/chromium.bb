@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -60,15 +60,14 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
     unsigned start_offset,
     unsigned end_offset,
     scoped_refptr<const ShapeResultView> shape_result)
-    : NGPhysicalFragment(source.GetLayoutObject(),
-                         source.StyleVariant(),
-                         source.IsHorizontal()
-                             ? NGPhysicalSize{shape_result->SnappedWidth(),
-                                              source.Size().height}
-                             : NGPhysicalSize{source.Size().width,
-                                              shape_result->SnappedWidth()},
-                         kFragmentText,
-                         source.TextType()),
+    : NGPhysicalFragment(
+          source.GetLayoutObject(),
+          source.StyleVariant(),
+          source.IsHorizontal()
+              ? PhysicalSize{shape_result->SnappedWidth(), source.Size().height}
+              : PhysicalSize{source.Size().width, shape_result->SnappedWidth()},
+          kFragmentText,
+          source.TextType()),
       text_(source.text_),
       start_offset_(start_offset),
       end_offset_(end_offset),
@@ -124,11 +123,11 @@ const ComputedStyle& NGPhysicalTextFragment::Style() const {
 }
 
 // Convert logical cooridnate to local physical coordinate.
-NGPhysicalOffsetRect NGPhysicalTextFragment::ConvertToLocal(
+PhysicalRect NGPhysicalTextFragment::ConvertToLocal(
     const LayoutRect& logical_rect) const {
   switch (LineOrientation()) {
     case NGLineOrientation::kHorizontal:
-      return NGPhysicalOffsetRect(logical_rect);
+      return PhysicalRect(logical_rect);
     case NGLineOrientation::kClockWiseVertical:
       return {{size_.width - logical_rect.MaxY(), logical_rect.X()},
               {logical_rect.Height(), logical_rect.Width()}};
@@ -137,7 +136,7 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::ConvertToLocal(
               {logical_rect.Height(), logical_rect.Width()}};
   }
   NOTREACHED();
-  return NGPhysicalOffsetRect(logical_rect);
+  return PhysicalRect(logical_rect);
 }
 
 // Compute the inline position from text offset, in logical coordinate relative
@@ -190,9 +189,8 @@ NGPhysicalTextFragment::LineLeftAndRightForOffsets(unsigned start_offset,
              : std::make_pair(start_position, end_position);
 }
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
-    unsigned start_offset,
-    unsigned end_offset) const {
+PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
+                                               unsigned end_offset) const {
   if (start_offset == start_offset_ && end_offset == end_offset_)
     return LocalRect();
   LayoutUnit start_position, end_position;
@@ -212,7 +210,7 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
   return {};
 }
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::SelfInkOverflow() const {
+PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
   if (!ink_overflow_computed_)
     ComputeSelfInkOverflow();
   return UNLIKELY(rare_data_) ? rare_data_->self_ink_overflow_ : LocalRect();
@@ -274,8 +272,8 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
 
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.
-  NGPhysicalOffsetRect local_ink_overflow = ConvertToLocal(ink_overflow);
-  NGPhysicalOffsetRect local_rect = LocalRect();
+  PhysicalRect local_ink_overflow = ConvertToLocal(ink_overflow);
+  PhysicalRect local_rect = LocalRect();
   if (local_rect.Contains(local_ink_overflow)) {
     ClearSelfInkOverflow();
     return;
@@ -299,7 +297,7 @@ scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
-    const NGPhysicalOffset& point) const {
+    const PhysicalOffset& point) const {
   const ComputedStyle& style = Style();
   const LayoutUnit& point_in_line_direction =
       style.IsHorizontalWritingMode() ? point.left : point.top;
@@ -316,7 +314,7 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
   DCHECK(IsFlowControl());
 
   // Zero-inline-size objects such as newline always return the start offset.
-  NGLogicalSize size = Size().ConvertToLogical(style.GetWritingMode());
+  LogicalSize size = Size().ConvertToLogical(style.GetWritingMode());
   if (!size.inline_size)
     return StartOffset();
 

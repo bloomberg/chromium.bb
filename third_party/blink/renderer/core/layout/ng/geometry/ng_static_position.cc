@@ -8,7 +8,7 @@ namespace blink {
 
 NGStaticPosition NGStaticPosition::Create(WritingMode writing_mode,
                                           TextDirection direction,
-                                          NGPhysicalOffset offset) {
+                                          PhysicalOffset offset) {
   NGStaticPosition position;
   position.offset = offset;
   switch (writing_mode) {

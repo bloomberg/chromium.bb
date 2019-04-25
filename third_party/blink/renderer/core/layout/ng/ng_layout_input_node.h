@@ -7,8 +7,8 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -26,8 +26,8 @@ class NGInlineChildLayoutContext;
 class NGLayoutResult;
 class NGPaintFragment;
 struct MinMaxSize;
-struct NGLogicalSize;
-struct NGPhysicalSize;
+struct LogicalSize;
+struct PhysicalSize;
 
 enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
 
@@ -168,7 +168,7 @@ class CORE_EXPORT NGLayoutInputNode {
   // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
   void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
                      base::Optional<LayoutUnit>* computed_block_size,
-                     NGLogicalSize* aspect_ratio) const;
+                     LogicalSize* aspect_ratio) const;
 
   LayoutUnit IntrinsicPaddingBlockStart() const;
   LayoutUnit IntrinsicPaddingBlockEnd() const;
@@ -178,7 +178,7 @@ class CORE_EXPORT NGLayoutInputNode {
 
   Document& GetDocument() const { return box_->GetDocument(); }
 
-  NGPhysicalSize InitialContainingBlockSize() const;
+  PhysicalSize InitialContainingBlockSize() const;
 
   // Returns the LayoutObject which is associated with this node.
   LayoutBox* GetLayoutBox() const { return box_; }

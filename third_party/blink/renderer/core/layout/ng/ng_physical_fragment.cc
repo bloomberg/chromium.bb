@@ -25,7 +25,7 @@ namespace {
 struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
   void* pointers[2];
-  NGPhysicalSize size;
+  PhysicalSize size;
   unsigned flags;
 };
 
@@ -33,12 +33,11 @@ static_assert(sizeof(NGPhysicalFragment) ==
                   sizeof(SameSizeAsNGPhysicalFragment),
               "NGPhysicalFragment should stay small");
 
-bool AppendFragmentOffsetAndSize(
-    const NGPhysicalFragment* fragment,
-    base::Optional<NGPhysicalOffset> fragment_offset,
-    StringBuilder* builder,
-    NGPhysicalFragment::DumpFlags flags,
-    bool has_content) {
+bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
+                                 base::Optional<PhysicalOffset> fragment_offset,
+                                 StringBuilder* builder,
+                                 NGPhysicalFragment::DumpFlags flags,
+                                 bool has_content) {
   if (flags & NGPhysicalFragment::DumpOffset) {
     if (has_content)
       builder->Append(" ");
@@ -114,7 +113,7 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
 }
 
 void AppendFragmentToString(const NGPhysicalFragment* fragment,
-                            base::Optional<NGPhysicalOffset> fragment_offset,
+                            base::Optional<PhysicalOffset> fragment_offset,
                             StringBuilder* builder,
                             NGPhysicalFragment::DumpFlags flags,
                             unsigned indent = 2) {
@@ -225,7 +224,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
     : layout_object_(builder->layout_object_),
-      size_(ToNGPhysicalSize(builder->size_, builder->GetWritingMode())),
+      size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       break_token_(std::move(builder->break_token_)),
       type_(type),
       sub_type_(sub_type),
@@ -236,7 +235,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
-                                       NGPhysicalSize size,
+                                       PhysicalSize size,
                                        NGFragmentType type,
                                        unsigned sub_type,
                                        scoped_refptr<NGBreakToken> break_token)
@@ -365,7 +364,7 @@ void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
 }
 #endif
 
-NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
+PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
@@ -381,16 +380,16 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   return {{}, Size()};
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflowForPropagation(
+PhysicalRect NGPhysicalFragment::ScrollableOverflowForPropagation(
     const LayoutObject* container) const {
   DCHECK(container);
-  NGPhysicalOffsetRect overflow = ScrollableOverflow();
+  PhysicalRect overflow = ScrollableOverflow();
   if (GetLayoutObject() &&
       GetLayoutObject()->ShouldUseTransformFromContainer(container)) {
     TransformationMatrix transform;
     GetLayoutObject()->GetTransformFromContainer(container, LayoutSize(),
                                                  transform);
-    overflow = NGPhysicalOffsetRect(transform.MapRect(overflow.ToLayoutRect()));
+    overflow = PhysicalRect(transform.MapRect(overflow.ToLayoutRect()));
   }
   return overflow;
 }
@@ -473,7 +472,7 @@ String NGPhysicalFragment::ToString() const {
 
 String NGPhysicalFragment::DumpFragmentTree(
     DumpFlags flags,
-    base::Optional<NGPhysicalOffset> fragment_offset,
+    base::Optional<PhysicalOffset> fragment_offset,
     unsigned indent) const {
   StringBuilder string_builder;
   if (flags & DumpHeaderText)
@@ -489,7 +488,7 @@ void NGPhysicalFragment::ShowFragmentTree() const {
 }
 #endif  // !NDEBUG
 
-NGPhysicalOffsetRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
+PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
   return {offset_to_container_box, fragment->Size()};
 }
 

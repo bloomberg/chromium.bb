@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -55,8 +55,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(20), LayoutUnit(0)},
-                                 {LayoutUnit(20), LayoutUnit(10)}),
+  EXPECT_EQ(PhysicalRect({LayoutUnit(20), LayoutUnit(0)},
+                         {LayoutUnit(20), LayoutUnit(10)}),
             text_fragments[1]->LocalRect(8, 10));
 }
 
@@ -78,7 +78,7 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
   // The 2nd line starts at 12, because the div has a bidi-control.
   EXPECT_EQ(12u, text_fragments[1]->StartOffset());
   // TODO(layout-dev): Investigate whether this is correct.
-  // EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(50), LayoutUnit(0)},
+  // EXPECT_EQ(PhysicalRect({LayoutUnit(50), LayoutUnit(0)},
   //                               {LayoutUnit(20), LayoutUnit(10)}),
   //          text_fragments[1]->LocalRect(14, 16));
 }
@@ -97,8 +97,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVLR) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(0), LayoutUnit(20)},
-                                 {LayoutUnit(10), LayoutUnit(20)}),
+  EXPECT_EQ(PhysicalRect({LayoutUnit(0), LayoutUnit(20)},
+                         {LayoutUnit(10), LayoutUnit(20)}),
             text_fragments[1]->LocalRect(8, 10));
 }
 
@@ -116,8 +116,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(0), LayoutUnit(20)},
-                                 {LayoutUnit(10), LayoutUnit(20)}),
+  EXPECT_EQ(PhysicalRect({LayoutUnit(0), LayoutUnit(20)},
+                         {LayoutUnit(10), LayoutUnit(20)}),
             text_fragments[1]->LocalRect(8, 10));
 }
 

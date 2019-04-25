@@ -199,10 +199,10 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
   // may want to move the call to RecordHitTestRect into
   // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
   // the background painting code already uses.
-  NGPhysicalOffsetRect border_box = physical_fragment.LocalRect();
+  PhysicalRect border_box = physical_fragment.LocalRect();
   if (physical_fragment.IsInline())
     border_box.offset += box_fragment_.InlineOffsetToContainerBox();
-  border_box.offset += NGPhysicalOffset(paint_offset);
+  border_box.offset += PhysicalOffset(paint_offset);
   HitTestDisplayItem::Record(
       paint_info.context, box_fragment_,
       HitTestRect(border_box.ToLayoutRect(),
@@ -213,8 +213,8 @@ void NGBoxFragmentPainter::RecordHitTestDataForLine(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     const NGPaintFragment& line) {
-  NGPhysicalOffsetRect border_box = line.PhysicalFragment().LocalRect();
-  border_box.offset += NGPhysicalOffset(paint_offset);
+  PhysicalRect border_box = line.PhysicalFragment().LocalRect();
+  border_box.offset += PhysicalOffset(paint_offset);
   HitTestDisplayItem::Record(
       paint_info.context, line,
       HitTestRect(border_box.ToLayoutRect(),
@@ -325,9 +325,9 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   // overflow, in which case check with |LocalRect()|. For 2, check with
   // |LayoutOverflow()|, but this can be approximiated with
   // |ContentsInkOverflow()|.
-  NGPhysicalOffsetRect content_ink_rect = fragment.LocalRect();
+  PhysicalRect content_ink_rect = fragment.LocalRect();
   content_ink_rect.Unite(box_fragment_.ContentsInkOverflow());
-  content_ink_rect.offset += NGPhysicalOffset(paint_offset);
+  content_ink_rect.offset += PhysicalOffset(paint_offset);
   if (!paint_info.GetCullRect().Intersects(content_ink_rect.ToLayoutRect()))
     return;
 
@@ -470,7 +470,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     // TODO(eae): We need better converters for ng geometry types. Long term we
     // probably want to change the paint code to take NGPhysical* but that is a
     // much bigger change.
-    NGPhysicalSize size = box_fragment_.Size();
+    PhysicalSize size = box_fragment_.Size();
     paint_rect = LayoutRect(LayoutPoint(), LayoutSize(size.width, size.height));
     paint_rect.MoveBy(paint_offset);
   }
@@ -733,7 +733,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     // inline direction.
     const LayoutPoint child_offset =
         paint_offset + line->Offset().ToLayoutPoint();
-    NGPhysicalOffsetRect child_rect = line->InkOverflow();
+    PhysicalRect child_rect = line->InkOverflow();
     if (is_horizontal) {
       LayoutUnit y = child_rect.offset.top + child_offset.Y();
       if (!paint_info.GetCullRect().IntersectsVerticalRange(
@@ -1207,7 +1207,7 @@ bool NGBoxFragmentPainter::HitTestChildren(
   children.ToList(&child_vector);
   for (unsigned i = child_vector.size(); i;) {
     const NGPaintFragment* child = child_vector[--i];
-    const NGPhysicalOffset offset = child->Offset();
+    const PhysicalOffset offset = child->Offset();
     if (child->HasSelfPaintingLayer())
       continue;
 

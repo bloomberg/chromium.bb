@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LINK_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
@@ -16,7 +16,7 @@ namespace blink {
 // to use this struct instead of using NGLink because flexible array members
 // cannot have destructors, so we need to do manual refcounting.
 struct NGLinkStorage {
-  NGPhysicalOffset Offset() const { return offset; }
+  PhysicalOffset Offset() const { return offset; }
   const NGPhysicalFragment* get() const { return fragment; }
 
   operator bool() const { return fragment; }
@@ -24,7 +24,7 @@ struct NGLinkStorage {
   const NGPhysicalFragment* operator->() const { return fragment; }
 
   const NGPhysicalFragment* fragment;
-  NGPhysicalOffset offset;
+  PhysicalOffset offset;
 };
 
 // Class representing the offset of a child fragment relative to the
@@ -37,7 +37,7 @@ class CORE_EXPORT NGLink {
  public:
   NGLink() = default;
   NGLink(scoped_refptr<const NGPhysicalFragment> fragment,
-         NGPhysicalOffset offset)
+         PhysicalOffset offset)
       : fragment_(std::move(fragment)), offset_(offset) {}
   NGLink(NGLink&& o) noexcept
       : fragment_(std::move(o.fragment_)), offset_(o.offset_) {}
@@ -49,7 +49,7 @@ class CORE_EXPORT NGLink {
   NGLink& operator=(NGLink&&) = default;
 
   // Returns the offset relative to the parent fragment's content-box.
-  NGPhysicalOffset Offset() const { return offset_; }
+  PhysicalOffset Offset() const { return offset_; }
 
   operator bool() const { return fragment_.get(); }
   const NGPhysicalFragment& operator*() const { return *fragment_.get(); }
@@ -58,7 +58,7 @@ class CORE_EXPORT NGLink {
 
  private:
   scoped_refptr<const NGPhysicalFragment> fragment_;
-  NGPhysicalOffset offset_;
+  PhysicalOffset offset_;
 
   // The builder classes needs to set the offset_ field during
   // fragment construciton to allow the child vector to be moved

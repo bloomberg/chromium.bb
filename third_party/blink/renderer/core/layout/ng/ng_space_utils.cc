@@ -30,7 +30,7 @@ NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
   WritingMode child_writing_mode = child.Style().GetWritingMode();
   DCHECK(!IsParallelWritingMode(parent_writing_mode, child_writing_mode));
 
-  NGLogicalSize indefinite_size(NGSizeIndefinite, NGSizeIndefinite);
+  LogicalSize indefinite_size(kIndefiniteSize, kIndefiniteSize);
   NGConstraintSpaceBuilder builder(parent_writing_mode, child_writing_mode,
                                    child.CreatesNewFormattingContext());
   SetOrthogonalFallbackInlineSizeIfNeeded(container_style, child, &builder);
@@ -51,7 +51,7 @@ void SetOrthogonalFallbackInlineSizeIfNeeded(
                             child.Style().GetWritingMode()))
     return;
 
-  NGPhysicalSize orthogonal_children_containing_block_size =
+  PhysicalSize orthogonal_children_containing_block_size =
       child.InitialContainingBlockSize();
 
   LayoutUnit fallback_size;

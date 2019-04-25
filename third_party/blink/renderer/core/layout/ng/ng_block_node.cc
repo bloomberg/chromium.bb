@@ -288,7 +288,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
 scoped_refptr<const NGLayoutResult>
 NGBlockNode::CachedLayoutResultForOutOfFlowPositioned(
-    NGLogicalSize container_content_size) const {
+    LogicalSize container_content_size) const {
   DCHECK(IsOutOfFlowPositioned());
 
   if (box_->NeedsLayout())
@@ -574,7 +574,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   NGBoxFragment fragment(constraint_space.GetWritingMode(),
                          constraint_space.Direction(), physical_fragment);
-  NGLogicalSize fragment_logical_size = fragment.Size();
+  LogicalSize fragment_logical_size = fragment.Size();
   // For each fragment we process, we'll accumulate the logical height and
   // logical intrinsic content box height. We reset it at the first fragment,
   // and accumulate at each method call for fragments belonging to the same
@@ -623,7 +623,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   if (UNLIKELY(flow_thread)) {
     PlaceChildrenInFlowThread(constraint_space, physical_fragment);
   } else {
-    NGPhysicalOffset offset_from_start;
+    PhysicalOffset offset_from_start;
     if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
       // Need to include any block space that this container has used in
       // previous fragmentainers. The offset of children will be relative to
@@ -674,7 +674,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGPhysicalBoxFragment& physical_fragment,
-    const NGPhysicalOffset& offset_from_start) {
+    const PhysicalOffset& offset_from_start) {
   LayoutBox* rendered_legend = nullptr;
   for (const auto& child_fragment : physical_fragment.Children()) {
     // Skip any line-boxes we have as children, this is handled within
@@ -717,7 +717,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     DCHECK(child->GetLayoutObject() == box_);
 
     // TODO(mstensho): writing modes
-    NGPhysicalOffset offset(LayoutUnit(), flowthread_offset);
+    PhysicalOffset offset(LayoutUnit(), flowthread_offset);
 
     // Position each child node in the first column that they occur, relatively
     // to the block-start of the flow thread.
@@ -731,8 +731,8 @@ void NGBlockNode::PlaceChildrenInFlowThread(
 // Copies data back to the legacy layout tree for a given child fragment.
 void NGBlockNode::CopyChildFragmentPosition(
     const NGPhysicalFragment& fragment,
-    const NGPhysicalOffset fragment_offset,
-    const NGPhysicalOffset additional_offset) {
+    const PhysicalOffset fragment_offset,
+    const PhysicalOffset additional_offset) {
   LayoutBox* layout_box = ToLayoutBox(fragment.GetLayoutObject());
   if (!layout_box)
     return;
@@ -771,17 +771,17 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
     const NGPhysicalContainerFragment& container,
     LayoutUnit initial_container_width,
     bool initial_container_is_flipped,
-    NGPhysicalOffset offset) {
+    PhysicalOffset offset) {
   for (const auto& child : container.Children()) {
     if (child->IsContainer()) {
-      NGPhysicalOffset child_offset = offset + child.Offset();
+      PhysicalOffset child_offset = offset + child.Offset();
 
       // Replaced elements and inline blocks need Location() set relative to
       // their block container.
       LayoutObject* layout_object = child->GetLayoutObject();
       if (layout_object && layout_object->IsBox()) {
         LayoutBox& layout_box = ToLayoutBox(*layout_object);
-        NGPhysicalOffset maybe_flipped_offset = child_offset;
+        PhysicalOffset maybe_flipped_offset = child_offset;
         if (initial_container_is_flipped) {
           maybe_flipped_offset.left = initial_container_width -
                                       child->Size().width -
@@ -919,7 +919,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
       box_->ForceLayout();
 
     // Synthesize a new layout result.
-    NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
+    LogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
     // TODO(kojii): Implement use_first_line_style.
     NGBoxFragmentBuilder builder(*this, box_->Style(), &constraint_space,
                                  writing_mode, box_->StyleRef().Direction());
@@ -1036,7 +1036,7 @@ void NGBlockNode::UseLegacyOutOfFlowPositioning() const {
 
 // Save static position for legacy AbsPos layout.
 void NGBlockNode::SaveStaticOffsetForLegacy(
-    const NGLogicalOffset& offset,
+    const LogicalOffset& offset,
     const LayoutObject* offset_container) {
   DCHECK(box_->IsOutOfFlowPositioned());
   // Only set static position if the current offset container

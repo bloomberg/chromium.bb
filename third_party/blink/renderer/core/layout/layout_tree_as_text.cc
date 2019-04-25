@@ -445,7 +445,7 @@ static void WriteTextRun(WTF::TextStream& ts,
 
 static void WriteTextFragment(WTF::TextStream& ts,
                               const NGPhysicalFragment& physical_fragment,
-                              NGPhysicalOffset offset_to_container_box) {
+                              PhysicalOffset offset_to_container_box) {
   const auto* physical_text_fragment =
       DynamicTo<NGPhysicalTextFragment>(physical_fragment);
   if (!physical_text_fragment)

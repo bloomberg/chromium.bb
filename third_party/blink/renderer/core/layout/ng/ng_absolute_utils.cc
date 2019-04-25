@@ -229,9 +229,9 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   if (!style.Right().IsAuto())
     right = MinimumValueForLength(style.Right(), percentage_width);
   base::Optional<LayoutUnit> width = incoming_width;
-  NGPhysicalSize container_size =
-      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
-  DCHECK_NE(container_size.width, NGSizeIndefinite);
+  PhysicalSize container_size =
+      ToPhysicalSize(space.AvailableSize(), space.GetWritingMode());
+  DCHECK_NE(container_size.width, kIndefiniteSize);
 
   // Solving the equation:
   // left + marginLeft + width + marginRight + right  = container width
@@ -400,9 +400,9 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     bottom = MinimumValueForLength(style.Bottom(), percentage_height);
   base::Optional<LayoutUnit> height = incoming_height;
 
-  NGPhysicalSize container_size =
-      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
-  DCHECK_NE(container_size.height, NGSizeIndefinite);
+  PhysicalSize container_size =
+      ToPhysicalSize(space.AvailableSize(), space.GetWritingMode());
+  DCHECK_NE(container_size.height, kIndefiniteSize);
 
   // Solving the equation:
   // top + marginTop + height + marginBottom + bottom
@@ -603,7 +603,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGBoxStrut& border_padding,
     const NGStaticPosition& static_position,
     const base::Optional<MinMaxSize>& child_minmax,
-    const base::Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction) {
   NGAbsolutePhysicalPosition position;
@@ -639,7 +639,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const NGBoxStrut& border_padding,
     const NGStaticPosition& static_position,
     const base::Optional<LayoutUnit>& child_block_size,
-    const base::Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position) {

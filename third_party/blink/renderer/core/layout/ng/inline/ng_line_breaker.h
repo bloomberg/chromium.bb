@@ -47,7 +47,7 @@ class CORE_EXPORT NGLineBreaker {
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
   inline void NextLine(NGLineInfo* line_info) {
-    NextLine(NGSizeIndefinite, nullptr, line_info);
+    NextLine(kIndefiniteSize, nullptr, line_info);
   }
 
   // During the min/max size calculation we need a special percentage

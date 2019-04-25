@@ -2340,7 +2340,7 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
     for (const NGPaintFragment* child : paint_fragment->Children()) {
       if (child->HasSelfPaintingLayer())
         continue;
-      NGPhysicalOffsetRect child_rect = child->InkOverflow();
+      PhysicalRect child_rect = child->InkOverflow();
       if (!child_rect.IsEmpty()) {
         child_rect.offset += child->Offset();
         AddContentsVisualOverflow(child_rect.ToLayoutRect());

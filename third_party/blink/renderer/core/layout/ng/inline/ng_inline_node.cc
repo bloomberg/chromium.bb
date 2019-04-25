@@ -1042,7 +1042,7 @@ static LayoutUnit ComputeContentSize(
                                /* out_writing_mode */ writing_mode,
                                /* is_new_fc */ false)
           .SetTextDirection(style.Direction())
-          .SetAvailableSize({available_inline_size, NGSizeIndefinite})
+          .SetAvailableSize({available_inline_size, kIndefiniteSize})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .SetReplacedPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .SetIsIntermediateLayout(true)

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
@@ -254,8 +254,8 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   DCHECK(box->style);
   const ComputedStyle& style = *box->style;
 
-  NGLogicalOffset offset;
-  NGLogicalSize size;
+  LogicalOffset offset;
+  LogicalSize size;
   if (!is_empty_line_) {
     // The inline box should have the height of the font metrics without the
     // line-height property. Compute from style because |box->metrics| includes
@@ -601,7 +601,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       // child.offset is the static position wrt. the linebox. As we are adding
       // this as a child of an inline level fragment, we adjust the static
       // position to be relative to this fragment.
-      NGLogicalOffset static_offset = child.offset - offset;
+      LogicalOffset static_offset = child.offset - offset;
 
       box.AddOutOfFlowChildCandidate(oof_box, static_offset,
                                      child.container_direction);

@@ -152,7 +152,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
                                Base::StyleRef().Direction());
   }
 
-  NGPhysicalOffsetRect children_overflow;
+  PhysicalRect children_overflow;
 
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
@@ -162,7 +162,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // correctly. NG is not yet transform-aware. crbug.com/855965
   if (!physical_fragment->Children().IsEmpty()) {
     for (const auto& child : physical_fragment->Children()) {
-      NGPhysicalOffsetRect child_scrollable_overflow;
+      PhysicalRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
         child_scrollable_overflow =
             child->ScrollableOverflowForPropagation(this);
@@ -339,7 +339,7 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
     return Base::CreatePositionWithAffinity(0);
 
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(NGPhysicalOffset(point));
+      PaintFragment()->PositionForPoint(PhysicalOffset(point));
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

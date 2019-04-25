@@ -14,7 +14,7 @@
 namespace blink {
 
 struct NGBorderEdges;
-struct NGLogicalSize;
+struct LogicalSize;
 
 class CORE_EXPORT NGFragment {
   STACK_ALLOCATED();
@@ -40,7 +40,7 @@ class CORE_EXPORT NGFragment {
                ? physical_fragment_.Size().height
                : physical_fragment_.Size().width;
   }
-  NGLogicalSize Size() const {
+  LogicalSize Size() const {
     return physical_fragment_.Size().ConvertToLogical(
         static_cast<WritingMode>(writing_mode_));
   }

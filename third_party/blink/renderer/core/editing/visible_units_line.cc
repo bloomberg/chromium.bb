@@ -151,7 +151,7 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
         caret_position.fragment->ContainerLineBox();
     const NGPhysicalLineBoxFragment& line_box =
         To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
-    const NGPhysicalOffset start_point = line_box.LineStartPoint();
+    const PhysicalOffset start_point = line_box.LineStartPoint();
     return FromPositionInDOMTree<Strategy>(
         line_box_paint->PositionForPoint(start_point));
   }
@@ -426,7 +426,7 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
         caret_position.fragment->ContainerLineBox();
     const NGPhysicalLineBoxFragment& line_box =
         To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
-    const NGPhysicalOffset end_point = line_box.LineEndPoint();
+    const PhysicalOffset end_point = line_box.LineEndPoint();
     return FromPositionInDOMTree<Strategy>(
         line_box_paint->PositionForPoint(end_point));
   }

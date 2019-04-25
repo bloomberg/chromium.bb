@@ -15,7 +15,7 @@ NGPercentageStorage GetPercentageStorage(LayoutUnit percentage_size,
   if (percentage_size == available_size)
     return kSameAsAvailable;
 
-  if (percentage_size == NGSizeIndefinite)
+  if (percentage_size == kIndefiniteSize)
     return kIndefinite;
 
   if (percentage_size == LayoutUnit())
@@ -27,7 +27,7 @@ NGPercentageStorage GetPercentageStorage(LayoutUnit percentage_size,
 }  // namespace
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
-    NGLogicalSize percentage_resolution_size) {
+    LogicalSize percentage_resolution_size) {
 #if DCHECK_IS_ON()
   DCHECK(is_available_size_set_);
 #endif
@@ -73,7 +73,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
 
 NGConstraintSpaceBuilder&
 NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
-    NGLogicalSize replaced_percentage_resolution_size) {
+    LogicalSize replaced_percentage_resolution_size) {
 #if DCHECK_IS_ON()
   DCHECK(is_available_size_set_);
 #endif

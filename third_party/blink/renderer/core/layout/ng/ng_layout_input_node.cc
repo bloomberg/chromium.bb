@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -83,12 +83,12 @@ MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
 void NGLayoutInputNode::IntrinsicSize(
     base::Optional<LayoutUnit>* computed_inline_size,
     base::Optional<LayoutUnit>* computed_block_size,
-    NGLogicalSize* aspect_ratio) const {
+    LogicalSize* aspect_ratio) const {
   DCHECK(IsReplaced());
   if (ShouldApplySizeContainment()) {
     *computed_inline_size = LayoutUnit();
     *computed_block_size = LayoutUnit();
-    *aspect_ratio = NGLogicalSize(LayoutUnit(), LayoutUnit());
+    *aspect_ratio = LogicalSize(LayoutUnit(), LayoutUnit());
     return;
   }
   IntrinsicSizingInfo legacy_sizing_info;
@@ -99,8 +99,8 @@ void NGLayoutInputNode::IntrinsicSize(
   if (legacy_sizing_info.has_height)
     *computed_block_size = LayoutUnit(legacy_sizing_info.size.Height());
   *aspect_ratio =
-      NGLogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),
-                    LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
+      LogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),
+                  LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
 }
 
 LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockStart() const {
@@ -119,11 +119,11 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
                      : To<NGBlockNode>(*this).NextSibling();
 }
 
-NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
+PhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
   IntSize icb_size =
       GetDocument().GetLayoutView()->GetLayoutSize(kExcludeScrollbars);
-  return NGPhysicalSize{LayoutUnit(icb_size.Width()),
-                        LayoutUnit(icb_size.Height())};
+  return PhysicalSize{LayoutUnit(icb_size.Width()),
+                      LayoutUnit(icb_size.Height())};
 }
 
 const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {

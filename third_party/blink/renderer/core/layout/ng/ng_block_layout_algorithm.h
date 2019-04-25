@@ -76,7 +76,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> FinishLayout(
       NGPreviousInflowPosition*,
-      NGLogicalSize border_box_size,
+      LogicalSize border_box_size,
       const NGBoxStrut& borders,
       const NGBoxStrut& scrollbars);
 
@@ -107,7 +107,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGConstraintSpace CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
-      const NGLogicalSize child_available_size,
+      const LogicalSize child_available_size,
       const base::Optional<LayoutUnit> floats_bfc_block_offset = base::nullopt);
 
   // @return Estimated BFC block offset for the "to be layout" child.
@@ -122,7 +122,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGLayoutInputNode child,
       const NGInflowChildData&,
       const base::Optional<LayoutUnit>& child_bfc_block_offset,
-      const NGLogicalOffset&,
+      const LogicalOffset&,
       const NGLayoutResult&,
       const NGFragment&,
       bool empty_block_affected_by_clearance);
@@ -281,7 +281,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
   // Positions a list marker for the specified block content.
-  void PositionOrPropagateListMarker(const NGLayoutResult&, NGLogicalOffset*);
+  void PositionOrPropagateListMarker(const NGLayoutResult&, LogicalOffset*);
 
   // Positions a list marker when the block does not have any line boxes.
   void PositionListMarkerWithoutLineBoxes();
@@ -290,18 +290,18 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // intrinsic_block_size_} when the fragment doesn't know it's offset or
   // {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
-  NGLogicalOffset CalculateLogicalOffset(
+  LogicalOffset CalculateLogicalOffset(
       const NGFragment& fragment,
       LayoutUnit child_bfc_line_offset,
       const base::Optional<LayoutUnit>& child_bfc_block_offset);
 
   // Computes minimum size for HTML and BODY elements in quirks mode.
-  // Returns NGSizeIndefinite in all other cases.
+  // Returns kIndefiniteSize in all other cases.
   LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
 
-  NGLogicalSize child_available_size_;
-  NGLogicalSize child_percentage_size_;
-  NGLogicalSize replaced_child_percentage_size_;
+  LogicalSize child_available_size_;
+  LogicalSize child_percentage_size_;
+  LogicalSize replaced_child_percentage_size_;
 
   NGBoxStrut border_padding_;
   NGBoxStrut border_scrollbar_padding_;

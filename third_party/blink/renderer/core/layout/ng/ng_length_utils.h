@@ -7,10 +7,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -261,10 +261,9 @@ ComputeBlockSizeForFragment(const NGConstraintSpace&,
                             LayoutUnit content_size);
 
 // Computes intrinsic size for replaced elements.
-CORE_EXPORT NGLogicalSize
-ComputeReplacedSize(const NGLayoutInputNode&,
-                    const NGConstraintSpace&,
-                    const base::Optional<MinMaxSize>&);
+CORE_EXPORT LogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
+                                            const NGConstraintSpace&,
+                                            const base::Optional<MinMaxSize>&);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
@@ -436,19 +435,19 @@ NGBoxStrut CalculateBorderScrollbarPadding(
 
 // border_padding can be passed in as an optimization; otherwise this function
 // will compute it itself.
-NGLogicalSize CalculateBorderBoxSize(
+LogicalSize CalculateBorderBoxSize(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode& node,
     const NGBoxStrut& border_padding,
-    LayoutUnit block_content_size = NGSizeIndefinite);
+    LayoutUnit block_content_size = kIndefiniteSize);
 
 // Shrink and return the available size by an inset. This may e.g. be used to
 // convert from border-box to content-box size. Indefinite block size is
 // allowed, in which case the inset will be ignored for block size.
-NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset);
+LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
 
 // Calculates default content size for html and body elements in quirks mode.
-// Returns NGSizeIndefinite in all other cases.
+// Returns kIndefiniteSize in all other cases.
 LayoutUnit CalculateDefaultBlockSize(
     const NGConstraintSpace&,
     const NGBlockNode&,
@@ -456,17 +455,17 @@ LayoutUnit CalculateDefaultBlockSize(
 
 // Calculates the percentage resolution size that children of the node should
 // use.
-NGLogicalSize CalculateChildPercentageSize(
+LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    const NGLogicalSize& child_available_size);
+    const LogicalSize& child_available_size);
 
 // Calculates the percentage resolution size that replaced children of the node
 // should use.
-NGLogicalSize CalculateReplacedChildPercentageSize(
+LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    NGLogicalSize border_box_size,
+    LogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
 

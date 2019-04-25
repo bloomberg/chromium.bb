@@ -43,14 +43,14 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+        LogicalSize(LayoutUnit(1000), kIndefiniteSize));
     return RunBlockLayoutAlgorithm(space, container);
   }
 
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(), LayoutUnit()));
+        LogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGFieldsetLayoutAlgorithm algorithm(node, space);
     MinMaxSizeInput input(

@@ -17,7 +17,7 @@ class ComputedStyle;
 class NGConstraintSpace;
 class NGExclusionSpace;
 struct NGBfcOffset;
-struct NGLogicalSize;
+struct LogicalSize;
 struct NGPositionedFloat;
 struct NGUnpositionedFloat;
 
@@ -41,9 +41,9 @@ LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
 // @returns A positioned float.
 CORE_EXPORT NGPositionedFloat
-PositionFloat(const NGLogicalSize& float_available_size,
-              const NGLogicalSize& float_percentage_size,
-              const NGLogicalSize& float_replaced_percentage_size,
+PositionFloat(const LogicalSize& float_available_size,
+              const LogicalSize& float_percentage_size,
+              const LogicalSize& float_replaced_percentage_size,
               const NGBfcOffset& origin_bfc_offset,
               NGUnpositionedFloat*,
               const NGConstraintSpace& parent_space,

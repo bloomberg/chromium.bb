@@ -15,7 +15,7 @@ class NGBlockNode;
 class NGBlockBreakToken;
 class NGBreakToken;
 class NGConstraintSpace;
-struct NGLogicalSize;
+struct LogicalSize;
 
 class CORE_EXPORT NGPageLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
@@ -33,7 +33,7 @@ class CORE_EXPORT NGPageLayoutAlgorithm
 
  private:
   NGConstraintSpace CreateConstraintSpaceForPages(
-      const NGLogicalSize& size) const;
+      const LogicalSize& size) const;
 };
 
 }  // namespace blink

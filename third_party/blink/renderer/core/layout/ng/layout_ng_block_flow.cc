@@ -118,13 +118,13 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position,
       css_container->IsBox() ? nullptr : css_container);
 
-  base::Optional<NGLogicalSize> initial_containing_block_fixed_size;
+  base::Optional<LogicalSize> initial_containing_block_fixed_size;
   if (container->IsLayoutView() && !GetDocument().Printing()) {
     if (LocalFrameView* frame_view = ToLayoutView(container)->GetFrameView()) {
       IntSize size =
           frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size());
-      NGPhysicalSize physical_size =
-          NGPhysicalSize(LayoutUnit(size.Width()), LayoutUnit(size.Height()));
+      PhysicalSize physical_size =
+          PhysicalSize(LayoutUnit(size.Width()), LayoutUnit(size.Height()));
       initial_containing_block_fixed_size =
           physical_size.ConvertToLogical(container->Style()->GetWritingMode());
     }
@@ -156,7 +156,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     DCHECK(child_fragment->GetLayoutObject()->IsBox());
     LayoutBox* child_legacy_box =
         ToLayoutBox(child_fragment->GetLayoutObject());
-    NGPhysicalOffset child_offset = child.Offset();
+    PhysicalOffset child_offset = child.Offset();
     if (container_style->IsFlippedBlocksWritingMode()) {
       child_legacy_box->SetX(container_border_box_logical_height -
                              child_offset.left - child_fragment->Size().width);

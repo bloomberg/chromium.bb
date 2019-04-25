@@ -241,11 +241,11 @@ void NGLineBreaker::SetLineEndFragment(
   bool is_horizontal =
       IsHorizontalWritingMode(constraint_space_.GetWritingMode());
   if (line_info->LineEndFragment()) {
-    const NGPhysicalSize& size = line_info->LineEndFragment()->Size();
+    const PhysicalSize& size = line_info->LineEndFragment()->Size();
     position_ -= is_horizontal ? size.width : size.height;
   }
   if (fragment) {
-    const NGPhysicalSize& size = fragment->Size();
+    const PhysicalSize& size = fragment->Size();
     position_ += is_horizontal ? size.width : size.height;
   }
   line_info->SetLineEndFragment(std::move(fragment));
@@ -1272,7 +1272,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        constraint_space_.AvailableSize().inline_size, NGLogicalSize());
+        constraint_space_.AvailableSize().inline_size, LogicalSize());
 
     DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
 

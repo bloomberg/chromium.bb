@@ -39,7 +39,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
                                     public DisplayItemClient {
  public:
   NGPaintFragment(scoped_refptr<const NGPhysicalFragment>,
-                  NGPhysicalOffset offset,
+                  PhysicalOffset offset,
                   NGPaintFragment*);
   ~NGPaintFragment() override;
 
@@ -142,20 +142,20 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   bool IsDirty() const { return is_dirty_inline_; }
 
   // Returns offset to its container box for inline and line box fragments.
-  const NGPhysicalOffset& InlineOffsetToContainerBox() const {
+  const PhysicalOffset& InlineOffsetToContainerBox() const {
     DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
     return inline_offset_to_container_box_;
   }
 
   // InkOverflow of itself, not including contents, in the local coordinate.
-  NGPhysicalOffsetRect SelfInkOverflow() const;
+  PhysicalRect SelfInkOverflow() const;
 
   // InkOverflow of its contents, not including itself, in the local coordinate.
-  NGPhysicalOffsetRect ContentsInkOverflow() const;
+  PhysicalRect ContentsInkOverflow() const;
 
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
-  NGPhysicalOffsetRect InkOverflow() const;
+  PhysicalRect InkOverflow() const;
 
   void RecalcInlineChildrenInkOverflow();
 
@@ -172,9 +172,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   IntRect VisualRect() const override;
   IntRect PartialInvalidationVisualRect() const override;
 
-  NGPhysicalOffsetRect ComputeLocalSelectionRectForText(
+  PhysicalRect ComputeLocalSelectionRectForText(
       const LayoutSelectionStatus&) const;
-  NGPhysicalOffsetRect ComputeLocalSelectionRectForReplaced() const;
+  PhysicalRect ComputeLocalSelectionRectForReplaced() const;
 
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
   void SetShouldDoFullPaintInvalidation();
@@ -196,15 +196,15 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return PhysicalFragment().GetLayoutObject();
   }
   const ComputedStyle& Style() const { return PhysicalFragment().Style(); }
-  NGPhysicalOffset Offset() const {
+  PhysicalOffset Offset() const {
     DCHECK(parent_);
     return offset_;
   }
-  NGPhysicalSize Size() const { return PhysicalFragment().Size(); }
+  PhysicalSize Size() const { return PhysicalFragment().Size(); }
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.
-  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
 
   // The node to return when hit-testing on this fragment. This can be different
   // from GetNode() when this fragment is content of a pseudo node.
@@ -295,13 +295,13 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
  private:
   static scoped_refptr<NGPaintFragment> CreateOrReuse(
       scoped_refptr<const NGPhysicalFragment> fragment,
-      NGPhysicalOffset offset,
+      PhysicalOffset offset,
       NGPaintFragment* parent,
       scoped_refptr<NGPaintFragment> previous_instance,
       bool* populate_children);
 
   void PopulateDescendants(
-      const NGPhysicalOffset inline_offset_to_container_box,
+      const PhysicalOffset inline_offset_to_container_box,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
   void AssociateWithLayoutObject(
       LayoutObject*,
@@ -310,11 +310,11 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   void RemoveChildren();
 
   // Helps for PositionForPoint() when |this| falls in different categories.
-  PositionWithAffinity PositionForPointInText(const NGPhysicalOffset&) const;
+  PositionWithAffinity PositionForPointInText(const PhysicalOffset&) const;
   PositionWithAffinity PositionForPointInInlineFormattingContext(
-      const NGPhysicalOffset&) const;
+      const PhysicalOffset&) const;
   PositionWithAffinity PositionForPointInInlineLevelBox(
-      const NGPhysicalOffset&) const;
+      const PhysicalOffset&) const;
 
   // Dirty line boxes containing |layout_object|.
   static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
@@ -323,8 +323,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   LayoutBox* InkOverflowOwnerBox() const;
 
   // Re-compute ink overflow of children and return the union.
-  NGPhysicalOffsetRect RecalcInkOverflow();
-  NGPhysicalOffsetRect RecalcContentsInkOverflow();
+  PhysicalRect RecalcInkOverflow();
+  PhysicalRect RecalcContentsInkOverflow();
 
   // This fragment will use the layout object's visual rect.
   const LayoutObject& VisualRectLayoutObject(bool& this_as_inline_box) const;
@@ -334,7 +334,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   //
 
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
-  NGPhysicalOffset offset_;
+  PhysicalOffset offset_;
 
   NGPaintFragment* parent_;
   scoped_refptr<NGPaintFragment> first_child_;
@@ -344,18 +344,18 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   scoped_refptr<NGPaintFragment> next_fragmented_;
 
   NGPaintFragment* next_for_same_layout_object_ = nullptr;
-  NGPhysicalOffset inline_offset_to_container_box_;
+  PhysicalOffset inline_offset_to_container_box_;
 
   // The ink overflow storage for when |InkOverflowOwnerBox()| is nullptr.
   struct NGInkOverflowModel {
     USING_FAST_MALLOC(NGInkOverflowModel);
 
    public:
-    NGInkOverflowModel(const NGPhysicalOffsetRect& self_ink_overflow,
-                       const NGPhysicalOffsetRect& contents_ink_overflow);
+    NGInkOverflowModel(const PhysicalRect& self_ink_overflow,
+                       const PhysicalRect& contents_ink_overflow);
 
-    NGPhysicalOffsetRect self_ink_overflow;
-    NGPhysicalOffsetRect contents_ink_overflow;
+    PhysicalRect self_ink_overflow;
+    PhysicalRect contents_ink_overflow;
   };
   std::unique_ptr<NGInkOverflowModel> ink_overflow_;
 

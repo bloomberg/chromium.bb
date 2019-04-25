@@ -7,11 +7,11 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -153,7 +153,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
-  NGLogicalSize AvailableSize() const { return available_size_; }
+  LogicalSize AvailableSize() const { return available_size_; }
 
   // The size to use for percentage resolution.
   // See: https://drafts.csswg.org/css-sizing/#percentage-sizing
@@ -168,7 +168,7 @@ class CORE_EXPORT NGConstraintSpace final {
       case kZero:
         return LayoutUnit();
       case kIndefinite:
-        return NGSizeIndefinite;
+        return kIndefiniteSize;
       case kRareDataPercentage:
         DCHECK(HasRareData());
         return rare_data_->percentage_resolution_size.inline_size;
@@ -186,14 +186,14 @@ class CORE_EXPORT NGConstraintSpace final {
       case kZero:
         return LayoutUnit();
       case kIndefinite:
-        return NGSizeIndefinite;
+        return kIndefiniteSize;
       case kRareDataPercentage:
         DCHECK(HasRareData());
         return rare_data_->percentage_resolution_size.block_size;
     }
   }
 
-  NGLogicalSize PercentageResolutionSize() const {
+  LogicalSize PercentageResolutionSize() const {
     return {PercentageResolutionInlineSize(), PercentageResolutionBlockSize()};
   }
 
@@ -209,7 +209,7 @@ class CORE_EXPORT NGConstraintSpace final {
       case kZero:
         return LayoutUnit();
       case kIndefinite:
-        return NGSizeIndefinite;
+        return kIndefiniteSize;
       case kRareDataPercentage:
         DCHECK(HasRareData());
         return rare_data_->replaced_percentage_resolution_block_size;
@@ -221,7 +221,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   // The size to use for percentage resolution of replaced elements.
-  NGLogicalSize ReplacedPercentageResolutionSize() const {
+  LogicalSize ReplacedPercentageResolutionSize() const {
     return {ReplacedPercentageResolutionInlineSize(),
             ReplacedPercentageResolutionBlockSize()};
   }
@@ -232,7 +232,7 @@ class CORE_EXPORT NGConstraintSpace final {
   LayoutUnit PercentageResolutionInlineSizeForParentWritingMode() const {
     if (!IsOrthogonalWritingModeRoot())
       return PercentageResolutionInlineSize();
-    if (PercentageResolutionBlockSize() != NGSizeIndefinite)
+    if (PercentageResolutionBlockSize() != kIndefiniteSize)
       return PercentageResolutionBlockSize();
     // TODO(mstensho): Figure out why we get here. It seems wrong, but we do get
     // here in some grid layout situations.
@@ -241,7 +241,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   LayoutUnit FragmentainerBlockSize() const {
     return HasRareData() ? rare_data_->fragmentainer_block_size
-                         : NGSizeIndefinite;
+                         : kIndefiniteSize;
   }
 
   // Return the block space that was available in the current fragmentainer at
@@ -251,7 +251,7 @@ class CORE_EXPORT NGConstraintSpace final {
   LayoutUnit FragmentainerSpaceAtBfcStart() const {
     DCHECK(HasBlockFragmentation());
     return HasRareData() ? rare_data_->fragmentainer_space_at_bfc_start
-                         : NGSizeIndefinite;
+                         : kIndefiniteSize;
   }
 
   // Whether the current constraint space is for the newly established
@@ -508,7 +508,7 @@ class CORE_EXPORT NGConstraintSpace final {
     RareData(const RareData&) = default;
     ~RareData() = default;
 
-    NGLogicalSize percentage_resolution_size;
+    LogicalSize percentage_resolution_size;
     LayoutUnit replaced_percentage_resolution_block_size;
 
     NGBfcOffset bfc_offset;
@@ -517,8 +517,8 @@ class CORE_EXPORT NGConstraintSpace final {
     base::Optional<LayoutUnit> floats_bfc_block_offset;
     LayoutUnit clearance_offset = LayoutUnit::Min();
 
-    LayoutUnit fragmentainer_block_size = NGSizeIndefinite;
-    LayoutUnit fragmentainer_space_at_bfc_start = NGSizeIndefinite;
+    LayoutUnit fragmentainer_block_size = kIndefiniteSize;
+    LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
     unsigned block_direction_fragmentation_type : 2;
 
@@ -536,8 +536,8 @@ class CORE_EXPORT NGConstraintSpace final {
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
              floats_bfc_block_offset == base::nullopt &&
-             fragmentainer_block_size == NGSizeIndefinite &&
-             fragmentainer_space_at_bfc_start == NGSizeIndefinite &&
+             fragmentainer_block_size == kIndefiniteSize &&
+             fragmentainer_space_at_bfc_start == kIndefiniteSize &&
              block_direction_fragmentation_type == kFragmentNone;
     }
   };
@@ -599,7 +599,7 @@ class CORE_EXPORT NGConstraintSpace final {
     return rare_data_;
   }
 
-  NGLogicalSize available_size_;
+  LogicalSize available_size_;
 
   // To save a little space, we union these two fields. rare_data_ is valid if
   // the |has_rare_data| bit is set, otherwise bfc_offset_ is valid.

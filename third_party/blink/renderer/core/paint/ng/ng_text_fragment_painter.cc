@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment.h"
@@ -97,14 +97,14 @@ unsigned ClampOffset(unsigned offset,
 }
 
 void PaintRect(GraphicsContext& context,
-               const NGPhysicalOffset& location,
-               const NGPhysicalOffsetRect& rect,
+               const PhysicalOffset& location,
+               const PhysicalRect& rect,
                const Color color) {
   if (!color.Alpha())
     return;
   if (rect.size.IsEmpty())
     return;
-  const NGPhysicalOffsetRect global_rect(rect.offset + location, rect.size);
+  const PhysicalRect global_rect(rect.offset + location, rect.size);
   context.FillRect(global_rect.ToFloatRect(), color);
 }
 
@@ -175,7 +175,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
                   text_match_marker.IsActiveMatch());
           PaintRect(
-              context, NGPhysicalOffset(box_origin),
+              context, PhysicalOffset(box_origin),
               text_fragment.LocalRect(paint_start_offset, paint_end_offset),
               color);
           break;
@@ -197,7 +197,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
         const auto& styleable_marker = To<StyleableMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           PaintRect(
-              context, NGPhysicalOffset(box_origin),
+              context, PhysicalOffset(box_origin),
               text_fragment.LocalRect(paint_start_offset, paint_end_offset),
               styleable_marker.BackgroundColor());
           break;
@@ -239,9 +239,9 @@ static void PaintSelection(GraphicsContext& context,
       To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   const Color color =
       SelectionBackgroundColor(document, style, text_fragment, text_color);
-  const NGPhysicalOffsetRect selection_rect =
+  const PhysicalRect selection_rect =
       paint_fragment.ComputeLocalSelectionRectForText(selection_status);
-  PaintRect(context, NGPhysicalOffset(box_rect.Location()), selection_rect,
+  PaintRect(context, PhysicalOffset(box_rect.Location()), selection_rect,
             color);
 }
 
@@ -325,7 +325,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   LayoutPoint adjusted_paint_offset =
       LayoutPoint(paint_offset.X(), LayoutUnit(paint_offset.Y().Round()));
 
-  NGPhysicalOffset offset = fragment_.Offset();
+  PhysicalOffset offset = fragment_.Offset();
   LayoutPoint box_origin(offset.left, offset.top);
   box_origin.Move(adjusted_paint_offset.X(), adjusted_paint_offset.Y());
 
@@ -352,7 +352,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
   // Since NGPaintFragment::ComputeLocalSelectionRectForText() returns
-  // NGPhysicalOffsetRect rather than NGLogicalRect, we should paint selection
+  // PhysicalRect rather than LogicalRect, we should paint selection
   // before GraphicsContext flip.
   // TODO(yoichio): Make NGPhysicalTextFragment::LocalRect and
   // NGPaintFragment::ComputeLocalSelectionRectForText logical so that we can

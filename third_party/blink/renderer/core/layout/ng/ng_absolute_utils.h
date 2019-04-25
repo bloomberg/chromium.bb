@@ -7,9 +7,9 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ struct NGStaticPosition;
 
 struct CORE_EXPORT NGAbsolutePhysicalPosition {
   NGPhysicalBoxStrut inset;
-  NGPhysicalSize size;
+  PhysicalSize size;
   NGPhysicalBoxStrut margins;
   String ToString() const;
 };
@@ -65,18 +65,18 @@ ComputePartialAbsoluteWithChildInlineSize(
     const NGBoxStrut& border_padding,
     const NGStaticPosition&,
     const base::Optional<MinMaxSize>& child_minmax,
-    const base::Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction);
 
-// Compute rest of NGPhysicalRect that depends on child's block_size.
+// Compute rest of PhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const NGStaticPosition&,
     const base::Optional<LayoutUnit>& child_block_size,
-    const base::Optional<NGLogicalSize>& replaced_size,
+    const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position);

@@ -24,7 +24,7 @@ struct CORE_EXPORT NGBfcDelta {
 // a block formatting context (BFC). BFCs are agnostic to text direction, and
 // uses line_offset instead of inline_offset.
 //
-// Care must be taken when converting this to a NGLogicalOffset to respect the
+// Care must be taken when converting this to a LogicalOffset to respect the
 // text direction.
 struct CORE_EXPORT NGBfcOffset {
   NGBfcOffset() = default;

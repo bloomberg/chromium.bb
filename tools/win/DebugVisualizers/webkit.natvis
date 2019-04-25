@@ -114,6 +114,18 @@
     <DisplayString Condition="is_float_">{(blink::Length::Type)type_} {float_value_}</DisplayString>
     <DisplayString>{(blink::Length::Type)type_} {int_value_}</DisplayString>
   </Type>
+  <Type Name="blink::LogicalOffset">
+    <DisplayString>({inline_offset}, {block_offset})</DisplayString>
+  </Type>
+  <Type Name="blink::LogicalSize">
+    <DisplayString>({inline_size} x {block_size})</DisplayString>
+  </Type>
+  <Type Name="blink::PhysicalOffset">
+    <DisplayString>({left}, {top})</DisplayString>
+  </Type>
+  <Type Name="blink::PhysicalSize">
+    <DisplayString>({width} x {height})</DisplayString>
+  </Type>
   <Type Name="blink::WebRect">
     <AlternativeType Name="blink::WebFloatRect"/>
     <DisplayString>({x}, {y}) x ({width}, {height})</DisplayString>
@@ -269,18 +281,6 @@
         </Expand>
       </Synthetic>
     </Expand>
-  </Type>
-  <Type Name="blink::NGLogicalOffset">
-    <DisplayString>({inline_offset}, {block_offset})</DisplayString>
-  </Type>
-  <Type Name="blink::NGLogicalSize">
-    <DisplayString>({inline_size} x {block_size})</DisplayString>
-  </Type>
-  <Type Name="blink::NGPhysicalOffset">
-    <DisplayString>({left}, {top})</DisplayString>
-  </Type>
-  <Type Name="blink::NGPhysicalSize">
-    <DisplayString>({width} x {height})</DisplayString>
   </Type>
   <!-- Layout: TextRun -->
   <Type Name="blink::TextRun">

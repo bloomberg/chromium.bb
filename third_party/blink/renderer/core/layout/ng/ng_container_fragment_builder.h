@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
@@ -32,7 +32,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
  public:
   typedef Vector<scoped_refptr<const NGPhysicalFragment>, 4> ChildrenVector;
-  typedef Vector<NGLogicalOffset, 4> OffsetVector;
+  typedef Vector<LogicalOffset, 4> OffsetVector;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -77,18 +77,18 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
 
   NGContainerFragmentBuilder& AddChild(const NGLayoutResult&,
-                                       const NGLogicalOffset&);
+                                       const LogicalOffset&);
 
   // This version of AddChild will not propagate floats/out_of_flow.
   // Use the AddChild(NGLayoutResult) variant if NGLayoutResult is available.
   NGContainerFragmentBuilder& AddChild(scoped_refptr<const NGPhysicalFragment>,
-                                       const NGLogicalOffset&);
+                                       const LogicalOffset&);
 
   const ChildrenVector& Children() const { return children_; }
 
   // Returns offset for given child. DCHECK if child not found.
   // Warning: Do not call unless necessary.
-  NGLogicalOffset GetChildOffset(const LayoutObject* child) const;
+  LogicalOffset GetChildOffset(const LayoutObject* child) const;
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -120,7 +120,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Pass in direction if candidates direction does not match.
   NGContainerFragmentBuilder& AddOutOfFlowChildCandidate(
       NGBlockNode,
-      const NGLogicalOffset& child_offset,
+      const LogicalOffset& child_offset,
       base::Optional<TextDirection> container_direction = base::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
@@ -187,7 +187,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // 2. A fragment containing an out-of-flow positioned-descendant. The
   //    child_offset in this case is the containing fragment's offset.
   //
-  // The child_offset is stored as a NGLogicalOffset as the physical offset
+  // The child_offset is stored as a LogicalOffset as the physical offset
   // cannot be computed until we know the current fragment's size.
   //
   // When returning the positioned-candidates (from
@@ -196,10 +196,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // physical size the fragment builder.
   struct NGOutOfFlowPositionedCandidate {
     NGOutOfFlowPositionedDescendant descendant;
-    NGLogicalOffset child_offset;  // Logical offset of child's top left vertex.
+    LogicalOffset child_offset;  // Logical offset of child's top left vertex.
 
     NGOutOfFlowPositionedCandidate(NGOutOfFlowPositionedDescendant descendant,
-                                   NGLogicalOffset child_offset)
+                                   LogicalOffset child_offset)
         : descendant(descendant), child_offset(child_offset) {}
   };
 

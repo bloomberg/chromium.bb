@@ -531,7 +531,7 @@ NGLayoutOpportunity
 NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
-    const NGLogicalSize& minimum_size) const {
+    const LogicalSize& minimum_size) const {
   // TODO(ikilpatrick): Determine what to do for a -ve available_inline_size.
 
   NGLayoutOpportunity return_opportunity;

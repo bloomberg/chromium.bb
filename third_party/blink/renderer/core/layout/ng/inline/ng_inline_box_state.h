@@ -5,7 +5,7 @@
 #ifndef NGInlineBoxState_h
 #define NGInlineBoxState_h
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -204,7 +204,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     BoxData(unsigned start,
             unsigned end,
             const NGInlineItem* item,
-            NGLogicalSize size)
+            LogicalSize size)
         : fragment_start(start), fragment_end(end), item(item), size(size) {}
 
     BoxData(const BoxData& other, unsigned start, unsigned end)
@@ -219,7 +219,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     unsigned fragment_end;
 
     const NGInlineItem* item;
-    NGLogicalSize size;
+    LogicalSize size;
 
     bool has_line_left_edge = false;
     bool has_line_right_edge = false;
@@ -230,7 +230,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     LayoutUnit margin_border_padding_line_left;
     LayoutUnit margin_border_padding_line_right;
 
-    NGLogicalOffset offset;
+    LogicalOffset offset;
     unsigned parent_box_data_index = 0;
     unsigned fragmented_box_data_index = 0;
 

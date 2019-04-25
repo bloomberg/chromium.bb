@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,11 +12,11 @@ namespace blink {
 
 namespace {
 
-TEST(NGGeometryUnitsTest, ConvertPhysicalOffsetToLogicalOffset) {
-  NGPhysicalOffset physical_offset(LayoutUnit(20), LayoutUnit(30));
-  NGPhysicalSize outer_size(LayoutUnit(300), LayoutUnit(400));
-  NGPhysicalSize inner_size(LayoutUnit(5), LayoutUnit(65));
-  NGLogicalOffset offset;
+TEST(GeometryUnitsTest, ConvertPhysicalOffsetToLogicalOffset) {
+  PhysicalOffset physical_offset(LayoutUnit(20), LayoutUnit(30));
+  PhysicalSize outer_size(LayoutUnit(300), LayoutUnit(400));
+  PhysicalSize inner_size(LayoutUnit(5), LayoutUnit(65));
+  LogicalOffset offset;
 
   offset = physical_offset.ConvertToLogical(
       WritingMode::kHorizontalTb, TextDirection::kLtr, outer_size, inner_size);
