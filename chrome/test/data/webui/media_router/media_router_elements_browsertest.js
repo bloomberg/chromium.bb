@@ -4,12 +4,8 @@
 
 /** @fileoverview Runs the Media Router Polymer elements tests. */
 
-/** @const {string} Path to source root. */
-var ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for Media Router Polymer elements.
@@ -32,7 +28,8 @@ MediaRouterElementsBrowserTest.prototype = {
   // List tests for individual elements. The media-router-container tests are
   // split between several files and use common functionality from
   // media_router_container_test_base.js.
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
     'issue_banner_tests.js',
     'media_router_container_cast_mode_list_tests.js',
     'media_router_container_filter_tests.js',
@@ -45,7 +42,7 @@ MediaRouterElementsBrowserTest.prototype = {
     'media_router_search_highlighter_tests.js',
     'route_controls_tests.js',
     'route_details_tests.js',
-  ]),
+  ],
 
   /**
    * Mocks the browser API methods to make them fire events instead.

@@ -4,19 +4,13 @@
 
 /** @fileoverview Tests for shared Polymer elements which rely on focus. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
 function CrElementsFocusTest() {}
 
 CrElementsFocusTest.prototype = {
   __proto__: PolymerInteractiveUITest.prototype,
-
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 };
 
 function CrElementsActionMenuTest() {}
@@ -202,7 +196,7 @@ CrElementsExpandButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
+    '//ui/webui/resources/js/util.js',
     '../settings/test_util.js',
     'cr_expand_button_focus_tests.js',
   ]),

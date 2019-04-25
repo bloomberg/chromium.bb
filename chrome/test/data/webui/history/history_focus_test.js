@@ -7,10 +7,7 @@
  * Should be used for tests which care about focus.
  */
 
-const ROOT_PATH = '../../../../../';
-
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
 function HistoryFocusTest() {}
 
@@ -19,12 +16,13 @@ HistoryFocusTest.prototype = {
 
   browsePreload: 'chrome://history',
 
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerInteractiveUITest.prototype.extraLibraries,
     'test_util.js',
-  ]),
+  ],
 
   setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
+    PolymerInteractiveUITest.prototype.setUp.call(this);
 
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.

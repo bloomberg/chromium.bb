@@ -4,12 +4,8 @@
 
 /** @fileoverview Runs the Polymer Settings tests. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#if defined(OS_CHROMEOS)');
 GEN('#include "ash/public/cpp/ash_features.h"');
@@ -35,9 +31,10 @@ CrSettingsBrowserTest.prototype = {
   },
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
     'ensure_lazy_loaded.js',
-  ]),
+  ],
 
   /** @override */
   setUp: function() {
@@ -767,7 +764,7 @@ CrSettingsAppearancePageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'appearance_page_test.js',
   ]),
@@ -791,7 +788,7 @@ CrSettingsAppearanceFontsPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'appearance_fonts_page_test.js',
   ]),
@@ -867,7 +864,7 @@ CrSettingsDownloadsPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'downloads_page_test.js',
   ]),
@@ -1033,7 +1030,7 @@ CrSettingsPersonalizationOptionsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     'test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
@@ -1067,7 +1064,7 @@ CrSettingsPrivacyPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     'test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
@@ -1505,7 +1502,7 @@ CrSettingsDevicePageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     'fake_settings_private.js',
     'fake_system_display.js',
@@ -1552,7 +1549,7 @@ CrSettingsBluetoothPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     'fake_bluetooth.js',
     'fake_bluetooth_private.js',
@@ -1579,8 +1576,8 @@ CrSettingsInternetPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
     '../chromeos/cr_onc_strings.js',
@@ -1607,9 +1604,9 @@ CrSettingsInternetDetailPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
+    '//ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/util.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
     '../chromeos/cr_onc_strings.js',
@@ -1761,7 +1758,7 @@ CrSettingsLanguagesTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     'test_util.js',
     '../test_browser_proxy.js',
@@ -2055,7 +2052,7 @@ CrSettingsPrintingPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '//ui/webui/resources/js/assert.js',
     'test_util.js',
     '../test_browser_proxy.js',
     'cups_printer_page_tests.js',
@@ -2266,7 +2263,7 @@ CrSettingsCrostiniPageTest.prototype = {
   featureList: ['features::kCrostini', ''],
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'test_crostini_browser_proxy.js',
     'crostini_page_test.js',
@@ -2291,7 +2288,7 @@ CrSettingsPluginVmPageTest.prototype = {
   browsePreload: 'chrome://settings/plugin_vm_page/plugin_vm_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'plugin_vm_page_test.js',
   ]),
@@ -2315,7 +2312,7 @@ CrSettingsAndroidAppsPageTest.prototype = {
   browsePreload: 'chrome://settings/android_apps_page/android_apps_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'test_android_apps_browser_proxy.js',
     'android_apps_page_test.js',
@@ -2369,7 +2366,7 @@ CrSettingsGoogleAssistantPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
     'google_assistant_page_test.js',
   ]),
