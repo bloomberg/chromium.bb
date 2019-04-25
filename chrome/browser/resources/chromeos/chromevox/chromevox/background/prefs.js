@@ -63,6 +63,7 @@ cvox.ChromeVoxPrefs = function() {
 cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'active': true,
   'announceDownloadNotifications': true,
+  'announceRichTextAttributes': true,
   'audioStrategy': 'audioNormal',
   'autoRead': false,
   'brailleCaptions': false,
@@ -74,7 +75,6 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   // class to manage multiple key maps. Also, this doesn't belong as a pref;
   // should just store in local storage.
   'currentKeyMap': cvox.KeyMap.DEFAULT_KEYMAP,
-  'customizeRichTextIndication': false,
   'cvoxKey': '',
   'enableBrailleLogging': false,
   'enableEarconLogging': false,
@@ -96,11 +96,6 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'useIBeamCursor': cvox.ChromeVox.isMac,
   'useClassic': false,
   'useVerboseMode': true,
-
-  'indicateMisspell': 'do nothing',
-  'indicateBold': 'do nothing',
-  'indicateItalic': 'do nothing',
-  'indicateUnderline': 'do nothing',
 
   // eventStreamFilters
   'activedescendantchanged': true,

@@ -458,7 +458,8 @@ AutomationRichEditableText.prototype = {
           this.speakTextMarker_(container.markerTypes[markerEndIndex], true);
       }
 
-      this.speakTextStyle_(container);
+      if (localStorage['announceRichTextAttributes'] == 'true')
+        this.speakTextStyle_(container);
       return;
     }
 
@@ -674,18 +675,15 @@ AutomationRichEditableText.prototype = {
       msgs.push(
           this.superscript_ ? {msg: 'superscript'} : {msg: 'not_superscript'});
     }
-    if ((localStorage['indicateBold'].toLowerCase() == 'announce') &&
-        (bold !== this.bold_)) {
+    if (bold !== this.bold_) {
       this.bold_ = bold;
       msgs.push(this.bold_ ? {msg: 'bold'} : {msg: 'not_bold'});
     }
-    if ((localStorage['indicateItalic'].toLowerCase() == 'announce') &&
-        (italic !== this.italic_)) {
+    if (italic !== this.italic_) {
       this.italic_ = italic;
       msgs.push(this.italic_ ? {msg: 'italic'} : {msg: 'not_italic'});
     }
-    if ((localStorage['indicateUnderline'].toLowerCase() == 'announce') &&
-        (underline !== this.underline_)) {
+    if (underline !== this.underline_) {
       this.underline_ = underline;
       msgs.push(this.underline_ ? {msg: 'underline'} : {msg: 'not_underline'});
     }
