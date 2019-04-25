@@ -259,6 +259,9 @@ id<GREYMatcher> ContextMenuCopyButton();
 // Returns matcher for defoucesed omnibox on a new tab.
 id<GREYMatcher> NewTabPageOmnibox();
 
+// Returns matcher for a fake omnibox on a new tab page.
+id<GREYMatcher> FakeOmnibox();
+
 // Returns a matcher for the current WebView.
 id<GREYMatcher> WebViewMatcher();
 

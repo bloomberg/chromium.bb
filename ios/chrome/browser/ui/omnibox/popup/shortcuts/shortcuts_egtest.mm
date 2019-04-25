@@ -240,9 +240,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey openNewTab];
 
   // Tap the fake omnibox.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   // Wait for the real omnibox to be visible.
   [ChromeEarlGrey

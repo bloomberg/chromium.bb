@@ -245,9 +245,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Open a new tab and switch to the first tab.
   [ChromeEarlGrey openNewTab];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
@@ -270,9 +268,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey goBack];
 
   // Navigate to the other tab.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
@@ -332,9 +328,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Start typing url of the two opened pages in a new tab.
   [ChromeEarlGrey openNewTab];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(@"page")];
 
   // Check that both elements are displayed.

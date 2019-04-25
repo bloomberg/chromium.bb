@@ -329,6 +329,10 @@ id<GREYMatcher> NewTabPageOmnibox() {
   return [ChromeMatchersAppInterface NTPOmnibox];
 }
 
+id<GREYMatcher> FakeOmnibox() {
+  return [ChromeMatchersAppInterface fakeOmnibox];
+}
+
 id<GREYMatcher> WebViewMatcher() {
   return [ChromeMatchersAppInterface webViewMatcher];
 }

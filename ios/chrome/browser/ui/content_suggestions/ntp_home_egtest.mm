@@ -267,8 +267,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
   CGFloat fakeOmniboxWidth = searchFieldWidth(collectionWidth);
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:OmniboxWidth(fakeOmniboxWidth)];
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
@@ -282,8 +281,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                      @"The collection width has not changed.");
   fakeOmniboxWidth = searchFieldWidth(collectionWidthAfterRotation);
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:OmniboxWidth(fakeOmniboxWidth)];
 }
 
@@ -302,8 +300,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
   CGFloat fakeOmniboxWidth = searchFieldWidth(collectionWidth);
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:OmniboxWidth(fakeOmniboxWidth)];
 
   [ChromeEarlGreyUI openSettingsMenu];
@@ -322,8 +319,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                      @"The collection width has not changed.");
   fakeOmniboxWidth = searchFieldWidth(collectionWidthAfterRotation);
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:OmniboxWidth(fakeOmniboxWidth)];
 }
 
@@ -346,8 +342,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // The fake omnibox might be slightly bigger than the screen in order to cover
   // it for all screen scale.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:OmniboxWidthBetween(collectionWidth + 1, 2)];
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
@@ -358,8 +353,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
@@ -563,8 +557,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint offsetAfterTap = collectionView.contentOffset;
 
   // Make sure the fake omnibox has been hidden and the collection has moved.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   CGFloat top = ntp_home::CollectionView().safeAreaInsets.top;
@@ -577,8 +570,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tapAtPoint(CGPointMake(0, offsetAfterTap.y + 100))];
 
   // Check the fake omnibox is displayed again at the same position.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   GREYAssertEqual(
@@ -613,8 +605,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                         CGPointMake(0, collectionView.contentOffset.y + 100))];
 
   // Check the fake omnibox is displayed again at the same position.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // The collection might be slightly moved on iPhone.
@@ -646,8 +637,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGreyUI openNewTab];
 
   // Check that the fake omnibox is here.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
   id<GREYMatcher> tabGridMatcher = nil;
   if (IsIPadIdiom()) {
@@ -672,8 +662,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:tabGridMatcher]
       assertWithMatcher:grey_accessibilityValue(
@@ -744,8 +733,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Taps the fake omnibox and waits for the real omnibox to be visible.
 - (void)focusFakebox {
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];

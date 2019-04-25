@@ -77,9 +77,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
@@ -90,9 +88,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey openNewTab];
 
   // Type the begining of the address to have the autocomplete suggestion.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   ntp_home::FakeOmniboxAccessibilityID())]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];

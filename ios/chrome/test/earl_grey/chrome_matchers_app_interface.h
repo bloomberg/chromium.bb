@@ -260,6 +260,9 @@
 // Returns matcher for defoucesed omnibox on a new tab.
 + (id<GREYMatcher>)NTPOmnibox;
 
+// Returns matcher for a fake omnibox on a new tab page.
++ (id<GREYMatcher>)fakeOmnibox;
+
 // Returns a matcher for the current WebView.
 + (id<GREYMatcher>)webViewMatcher;
 

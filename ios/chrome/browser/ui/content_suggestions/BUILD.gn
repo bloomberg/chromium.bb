@@ -224,13 +224,12 @@ source_set("eg_tests") {
     "ntp_home_egtest.mm",
     "ntp_home_provider_test_singleton.h",
     "ntp_home_provider_test_singleton.mm",
-    "ntp_home_test_utils.h",
-    "ntp_home_test_utils.mm",
   ]
   deps = [
     ":content_suggestions_constant",
     ":content_suggestions_ui",
     ":content_suggestions_ui_util",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/keyed_service/ios",
@@ -266,6 +265,22 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "ntp_home_test_utils.h",
+    "ntp_home_test_utils.mm",
+  ]
+  deps = [
+    "//components/ntp_snippets",
+    "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
+    "//ios/third_party/earl_grey:earl_grey+link",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

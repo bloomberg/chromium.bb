@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
@@ -548,6 +549,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
       grey_minimumVisiblePercent(0.2), nil);
+}
+
++ (id<GREYMatcher>)fakeOmnibox {
+  return grey_accessibilityID(ntp_home::FakeOmniboxAccessibilityID());
 }
 
 + (id<GREYMatcher>)webViewMatcher {
