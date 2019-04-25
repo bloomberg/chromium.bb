@@ -153,7 +153,7 @@ struct Error {
 
   /**
    * Contains detailed <a href="https://www.chromium.org/quic">QUIC</a> error code from
-   * <a href=https://cs.chromium.org/chromium/src/net/quic/quic_protocol.h?type=cs&q=%22enum+QuicErrorCode+%7B%22+file:src/net/quic/quic_protocol.h>
+   * <a href="https://cs.chromium.org/search/?q=symbol:%5CbQuicErrorCode%5Cb">
    * QuicErrorCode</a> when the |error_code| code is |ERROR_QUIC_PROTOCOL_FAILED|.
    */
   int32 quic_detailed_error_code = 0;
