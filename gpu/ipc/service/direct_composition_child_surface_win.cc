@@ -14,6 +14,7 @@
 #include "base/win/windows_version.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/color_space_utils.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
@@ -84,7 +85,6 @@ bool IsSwapChainTearingSupported() {
   }();
   return supported;
 }
-
 }  // namespace
 
 DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() = default;
@@ -285,8 +285,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   // |real_surface_|.
   ui::ScopedReleaseCurrent release_current;
 
-  DXGI_FORMAT output_format =
-      is_hdr_ ? DXGI_FORMAT_R16G16B16A16_FLOAT : DXGI_FORMAT_B8G8R8A8_UNORM;
+  DXGI_FORMAT dxgi_format = gl::ColorSpaceUtils::GetDXGIFormat(color_space_);
+
   if (enable_dc_layers_ && !dcomp_surface_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
                  "width", size_.width(), "height", size_.height());
@@ -294,7 +294,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     // Always treat as premultiplied, because an underlay could cause it to
     // become transparent.
     HRESULT hr = dcomp_device_->CreateSurface(
-        size_.width(), size_.height(), output_format,
+        size_.width(), size_.height(), dxgi_format,
         DXGI_ALPHA_MODE_PREMULTIPLIED, &dcomp_surface_);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
@@ -305,8 +305,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
                  "width", size_.width(), "height", size_.height());
     dcomp_surface_.Reset();
 
-    DXGI_ALPHA_MODE alpha_mode =
-        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
     d3d11_device_.As(&dxgi_device);
     DCHECK(dxgi_device);
@@ -320,14 +318,15 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     desc.Width = size_.width();
     desc.Height = size_.height();
-    desc.Format = output_format;
+    desc.Format = dxgi_format;
     desc.Stereo = FALSE;
     desc.SampleDesc.Count = 1;
     desc.BufferCount = 2;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = alpha_mode;
+    desc.AlphaMode =
+        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags =
         IsSwapChainTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
@@ -337,6 +336,11 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
                   << std::hex << hr;
       return false;
+    }
+    Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
+    if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
+      swap_chain->SetColorSpace1(
+          gl::ColorSpaceUtils::GetDXGIColorSpace(color_space_));
     }
   }
 
@@ -396,11 +400,7 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
                                               float scale_factor,
                                               ColorSpace color_space,
                                               bool has_alpha) {
-  bool size_changed = size != size_;
-  bool is_hdr = color_space == ColorSpace::SCRGB_LINEAR;
-  bool hdr_changed = is_hdr != is_hdr_;
-  bool alpha_changed = has_alpha != has_alpha_;
-  if (!size_changed && !hdr_changed && !alpha_changed)
+  if (size_ == size && has_alpha_ == has_alpha && color_space_ == color_space)
     return true;
 
   // This will release indirect references to swap chain (|real_surface_|) by
@@ -408,14 +408,15 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
   if (!ReleaseDrawTexture(true /* will_discard */))
     return false;
 
+  bool resize_only = has_alpha_ == has_alpha && color_space_ == color_space;
+
   size_ = size;
-  is_hdr_ = is_hdr;
+  color_space_ = color_space;
   has_alpha_ = has_alpha;
 
   // ResizeBuffers can't change alpha blending mode.
-  if (swap_chain_ && !alpha_changed) {
-    DXGI_FORMAT format =
-        is_hdr_ ? DXGI_FORMAT_R16G16B16A16_FLOAT : DXGI_FORMAT_B8G8R8A8_UNORM;
+  if (swap_chain_ && resize_only) {
+    DXGI_FORMAT format = gl::ColorSpaceUtils::GetDXGIFormat(color_space_);
     UINT flags =
         IsSwapChainTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = swap_chain_->ResizeBuffers(2 /* BufferCount */, size.width(),

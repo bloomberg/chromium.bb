@@ -24,8 +24,9 @@ namespace {
 constexpr int DEFAULT_BITS_PER_PIXEL = 24;
 constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
 
-constexpr int HDR_BITS_PER_PIXEL = 48;
-constexpr int HDR_BITS_PER_COMPONENT = 16;
+// Assuming HDR10 color space with RGB10A2 backbuffer.
+constexpr int HDR_BITS_PER_PIXEL = 30;
+constexpr int HDR_BITS_PER_COMPONENT = 10;
 
 // This variable tracks whether the forced device scale factor switch needs to
 // be read from the command line, i.e. if it is set to -1 then the command line
@@ -209,12 +210,10 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
-      device_scale_factor_(GetForcedDeviceScaleFactor()),
-      color_space_(gfx::ColorSpace::CreateSRGB()),
-      color_depth_(DEFAULT_BITS_PER_PIXEL),
-      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
-  if (HasForceDisplayColorProfile())
-    SetColorSpaceAndDepth(GetForcedDisplayColorProfile());
+      device_scale_factor_(GetForcedDeviceScaleFactor()) {
+  SetColorSpaceAndDepth(HasForceDisplayColorProfile()
+                            ? GetForcedDisplayColorProfile()
+                            : gfx::ColorSpace::CreateSRGB());
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
@@ -298,8 +297,11 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }
 
-void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space) {
+void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space,
+                                    float sdr_white_level) {
   color_space_ = color_space;
+  sdr_white_level_ = sdr_white_level;
+  // Assuming HDR10 color space and buffer format.
   if (color_space_.IsHDR()) {
     color_depth_ = HDR_BITS_PER_PIXEL;
     depth_per_component_ = HDR_BITS_PER_COMPONENT;

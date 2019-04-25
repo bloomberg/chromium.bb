@@ -61,9 +61,9 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
 
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_dc_layers_ = false;
-  bool is_hdr_ = false;
   bool has_alpha_ = true;
   bool vsync_enabled_ = true;
+  ColorSpace color_space_ = ColorSpace::UNSPECIFIED;
 
   // This is a placeholder surface used when not rendering to the
   // DirectComposition surface.

@@ -181,9 +181,10 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_rotation(display_info.rotation());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
-      display.SetColorSpaceAndDepth(
-          gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(
-              80.0 / display_info.sdr_white_level()));
+      // It doesn't matter what HDR color space we set since UI compositor will
+      // override it to HDR10 if opaque or SCRGB linear if translucent.
+      display.SetColorSpaceAndDepth(gfx::ColorSpace::CreateHDR10(),
+                                    display_info.sdr_white_level());
     } else {
       display.SetColorSpaceAndDepth(
           color_profile_reader->GetDisplayColorSpace(display_info.id()));

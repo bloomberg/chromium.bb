@@ -422,7 +422,8 @@ void WindowTreeHost::InitCompositor() {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space());
+  compositor_->SetDisplayColorSpace(display.color_space(),
+                                    display.sdr_white_level());
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {
@@ -480,7 +481,8 @@ void WindowTreeHost::OnHostDisplayChanged() {
     return;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space());
+  compositor_->SetDisplayColorSpace(display.color_space(),
+                                    display.sdr_white_level());
 }
 
 void WindowTreeHost::OnHostCloseRequested() {
@@ -506,7 +508,8 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
     display::Screen* screen = display::Screen::GetScreen();
     if (compositor_ &&
         display.id() == screen->GetDisplayNearestView(window()).id()) {
-      compositor_->SetDisplayColorSpace(display.color_space());
+      compositor_->SetDisplayColorSpace(display.color_space(),
+                                        display.sdr_white_level());
     }
   }
 }

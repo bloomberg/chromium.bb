@@ -77,9 +77,10 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
   host_->OnHostResizedInPixels(bounds_in_pixel.size());
 }
 
-void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space) {
+void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space,
+                               float sdr_white_level) {
   display::Display display(GetPrimaryDisplay());
-  display.set_color_space(color_space);
+  display.SetColorSpaceAndDepth(color_space, sdr_white_level);
   display_list().UpdateDisplay(display);
 }
 

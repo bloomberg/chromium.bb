@@ -293,8 +293,11 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // number.
   viz::LocalSurfaceIdAllocation RequestNewChildLocalSurfaceId();
 
-  // Set the output color profile into which this compositor should render.
-  void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
+  // Set the output color profile into which this compositor should render. Also
+  // sets the SDR white level (in nits) used to scale HDR color space primaries.
+  void SetDisplayColorSpace(
+      const gfx::ColorSpace& color_space,
+      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
@@ -505,6 +508,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   gfx::ColorSpace output_color_space_;
   gfx::ColorSpace blending_color_space_;
+
+  float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
 
   // If true, all paint commands are recorded at pixel size instead of DIP.
   const bool is_pixel_canvas_;

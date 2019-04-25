@@ -210,7 +210,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Generates a process global unique ID that can be used to key a color space.
   static int GetNextId();
-  static int kInvalidId;
+  static constexpr int kInvalidId = -1;
+
+  static constexpr float kDefaultSDRWhiteLevel = 80.f;
 
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;

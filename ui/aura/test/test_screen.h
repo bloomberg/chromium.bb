@@ -37,7 +37,9 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   WindowTreeHost* CreateHostForPrimaryDisplay(Env* env = nullptr);
 
   void SetDeviceScaleFactor(float device_scale_fator);
-  void SetColorSpace(const gfx::ColorSpace& color_space);
+  void SetColorSpace(
+      const gfx::ColorSpace& color_space,
+      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
   void SetDisplayRotation(display::Display::Rotation rotation);
   void SetUIScale(float ui_scale);
   void SetWorkAreaInsets(const gfx::Insets& insets);

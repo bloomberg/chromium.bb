@@ -43,7 +43,8 @@ static bool FloatsEqualWithinTolerance(const float* a,
 }  // namespace
 
 // static
-int ColorSpace::kInvalidId = -1;
+constexpr int ColorSpace::kInvalidId;
+constexpr float ColorSpace::kDefaultSDRWhiteLevel;
 
 ColorSpace::ColorSpace(PrimaryID primaries,
                        TransferID transfer)

@@ -659,6 +659,8 @@ void SurfaceAggregator::AddColorConversionPass() {
   color_conversion_pass->SetNew(color_conversion_render_pass_id_, output_rect,
                                 root_render_pass->damage_rect,
                                 root_render_pass->transform_to_root_target);
+  color_conversion_pass->has_transparent_background =
+      root_render_pass->has_transparent_background;
   color_conversion_pass->color_space = output_color_space_;
 
   auto* shared_quad_state =
