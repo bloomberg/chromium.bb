@@ -260,7 +260,6 @@ class PolicyTemplateChecker(object):
           (TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE,
            total_device_policy_external_data_max_size))
 
-
   # Returns True if the example value for a policy seems to contain JSON
   # embedded inside a string. Simply checks if strings start with '{', so it
   # doesn't flag numbers (which are valid JSON) but it does flag both JSON
@@ -274,6 +273,49 @@ class PolicyTemplateChecker(object):
       return any(
           self._AppearsToContainEmbeddedJson(v)
           for v in example_value.itervalues())
+
+  # Checks that there are no duplicate proto paths in device_policy_proto_map.
+  def _CheckDevicePolicyProtoMappingUniqueness(self, device_policy_proto_map,
+                                               legacy_device_policy_proto_map):
+    # Check that device_policy_proto_map does not have duplicate values.
+    proto_paths = set()
+    for proto_path in device_policy_proto_map.itervalues():
+      if proto_path in proto_paths:
+        self._Error(
+            "Duplicate proto path '%s' in device_policy_proto_map. Did you set "
+            "the right path for your device policy?" % proto_path)
+      proto_paths.add(proto_path)
+
+    # Check that legacy_device_policy_proto_map only contains pairs
+    # [policy_name, proto_path] and does not have duplicate proto_paths.
+    for policy_and_path in legacy_device_policy_proto_map:
+      if len(policy_and_path) != 2 or not isinstance(
+          policy_and_path[0], str) or not isinstance(policy_and_path[1], str):
+        self._Error(
+            "Every entry in legacy_device_policy_proto_map must be an array of "
+            "two strings, but found '%s'" % policy_and_path)
+      if policy_and_path[1] != '' and policy_and_path[1] in proto_paths:
+        self._Error(
+            "Duplicate proto path '%s' in legacy_device_policy_proto_map. Did "
+            "you set the right path for your device policy?" %
+            policy_and_path[1])
+      proto_paths.add(policy_and_path[1])
+
+  # If 'device only' field is true, the policy must be mapped to its proto
+  # field in device_policy_proto_map.json.
+  def _CheckDevicePolicyProtoMapping(self, policy, device_policy_proto_map,
+                                     legacy_device_policy_proto_map):
+    if not policy.get('device_only', False):
+      return
+
+    name = policy.get('name')
+    if not name in device_policy_proto_map and not any(
+        name == policy_and_path[0]
+        for policy_and_path in legacy_device_policy_proto_map):
+      self._Error(
+          "Please add '%s' to device_policy_proto_map and map it to "
+          "the corresponding field in chrome_device_policy.proto." % name)
+      return
 
   def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
     if not isinstance(policy, dict):
@@ -713,10 +755,28 @@ class PolicyTemplateChecker(object):
         parent_element=None,
         container_name='The root element',
         offending=None)
+    device_policy_proto_map = self._CheckContains(
+        data,
+        'device_policy_proto_map',
+        dict,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
+    legacy_device_policy_proto_map = self._CheckContains(
+        data,
+        'legacy_device_policy_proto_map',
+        list,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
+    self._CheckDevicePolicyProtoMappingUniqueness(
+        device_policy_proto_map, legacy_device_policy_proto_map)
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
         self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids)
+        self._CheckDevicePolicyProtoMapping(policy, device_policy_proto_map,
+                                            legacy_device_policy_proto_map)
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
       if highest_id is not None:
         self._CheckHighestId(policy_ids, highest_id)
