@@ -38,6 +38,7 @@ extern const char kLanguage[];
 extern const char kLazyReattach[];
 extern const char kLinkColorChange[];
 extern const char kPlatformColorChange[];
+extern const char kPluginChanged[];
 extern const char kPolicyViolation[];
 extern const char kPropertyRegistration[];
 extern const char kPropertyUnregistration[];

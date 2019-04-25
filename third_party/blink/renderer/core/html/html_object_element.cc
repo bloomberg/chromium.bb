@@ -234,7 +234,7 @@ void HTMLObjectElement::ReloadPluginOnAttributeChange(
   }
   SetNeedsPluginUpdate(true);
   if (needs_invalidation)
-    LazyReattachIfNeeded();
+    ReattachOnPluginChangeIfNeeded();
 }
 
 // TODO(schenney): crbug.com/572908 This should be unified with
@@ -307,7 +307,7 @@ void HTMLObjectElement::RemovedFrom(ContainerNode& insertion_point) {
 void HTMLObjectElement::ChildrenChanged(const ChildrenChange& change) {
   if (isConnected() && !UseFallbackContent()) {
     SetNeedsPluginUpdate(true);
-    LazyReattachIfNeeded();
+    ReattachOnPluginChangeIfNeeded();
   }
   HTMLPlugInElement::ChildrenChanged(change);
 }

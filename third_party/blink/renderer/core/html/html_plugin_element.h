@@ -134,7 +134,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   void DispatchErrorEvent();
   bool IsErrorplaceholder();
-  void LazyReattachIfNeeded();
+  void ReattachOnPluginChangeIfNeeded();
 
   void SetUrl(const String& url) {
     url_ = url;
@@ -227,6 +227,10 @@ class CORE_EXPORT HTMLPlugInElement
   Member<WebPluginContainerImpl> persisted_plugin_;
 
   bool handled_externally_ = false;
+
+  // True when the element has changed in such a way (new URL, for instance)
+  // that we cannot re-use the old view when re-attaching.
+  bool dispose_view_ = false;
 };
 
 inline bool IsHTMLPlugInElement(const HTMLElement& element) {

@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -288,6 +289,8 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
     if (!layout_object->IsFloatingOrOutOfFlowPositioned())
       context.previous_in_flow = layout_object;
   }
+
+  dispose_view_ = false;
 }
 
 void HTMLPlugInElement::IntrinsicSizingInfoChanged() {
@@ -306,14 +309,10 @@ void HTMLPlugInElement::UpdatePlugin() {
 }
 
 void HTMLPlugInElement::RemovedFrom(ContainerNode& insertion_point) {
-  // If we've persisted the plugin and we're removed from the tree then
-  // make sure we cleanup the persistance pointer.
-  if (persisted_plugin_) {
-    // TODO(dcheng): This PluginDisposeSuspendScope doesn't seem to provide
-    // much; investigate removing it.
-    HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-    SetPersistedPlugin(nullptr);
-  }
+  // Plugins can persist only through reattachment during a lifecycle
+  // update. This method shouldn't be called in that lifecycle phase.
+  DCHECK(!persisted_plugin_);
+
   HTMLFrameOwnerElement::RemovedFrom(insertion_point);
 }
 
@@ -350,7 +349,7 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
 
   // Only try to persist a plugin we actually own.
   WebPluginContainerImpl* plugin = OwnedPlugin();
-  if (plugin && context.performing_reattach) {
+  if (plugin && context.performing_reattach && !dispose_view_) {
     SetPersistedPlugin(ToWebPluginContainerImpl(ReleaseEmbeddedContentView()));
   } else {
     // Clear the plugin; will trigger disposal of it with Oilpan.
@@ -746,12 +745,18 @@ bool HTMLPlugInElement::UseFallbackContent() const {
   return false;
 }
 
-void HTMLPlugInElement::LazyReattachIfNeeded() {
-  if (!UseFallbackContent() && NeedsPluginUpdate() && GetLayoutObject() &&
-      !IsImageType()) {
-    LazyReattachIfAttached();
-    SetPersistedPlugin(nullptr);
-  }
+void HTMLPlugInElement::ReattachOnPluginChangeIfNeeded() {
+  if (UseFallbackContent() || !NeedsPluginUpdate() || !GetLayoutObject() ||
+      IsImageType())
+    return;
+
+  SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kPluginChanged));
+  SetForceReattachLayoutTree();
+
+  // Make sure that we don't attempt to re-use the view through re-attachment.
+  dispose_view_ = true;
 }
 
 void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {

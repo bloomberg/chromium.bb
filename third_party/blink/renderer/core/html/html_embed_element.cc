@@ -130,7 +130,7 @@ void HTMLEmbedElement::ParseAttribute(
       // Check if this Embed can transition from potentially-active to active
       if (FastHasAttribute(kTypeAttr)) {
         SetNeedsPluginUpdate(true);
-        LazyReattachIfNeeded();
+        ReattachOnPluginChangeIfNeeded();
       }
     }
   } else {
