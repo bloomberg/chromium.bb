@@ -4,8 +4,12 @@
 
 /** @fileoverview Tests for shared Polymer elements. */
 
+/** @const {string} Path to source root. */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for shared Polymer elements.
@@ -18,10 +22,9 @@ CrElementsBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  extraLibraries: [
-    ...PolymerTest.prototype.extraLibraries,
-    '//ui/webui/resources/js/assert.js',
-  ],
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+  ]),
 
   /** @override */
   get browsePreload() {
@@ -393,7 +396,7 @@ CrElementsToastTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '//chrome/test/data/webui/mock_timer.js',
+    ROOT_PATH + 'chrome/test/data/webui/mock_timer.js',
     'cr_toast_test.js',
   ]),
 };

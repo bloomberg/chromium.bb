@@ -4,8 +4,12 @@
 
 /** @fileoverview Runs the Polymer Settings tests. */
 
+/** @const {string} Path to source root. */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 
@@ -21,9 +25,8 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
+    return PolymerTest.getLibraries(ROOT_PATH).concat([
+      ROOT_PATH + 'ui/webui/resources/js/assert.js',
       'test_util.js',
       '../mock_controller.js',
       '../../../../../ui/webui/resources/js/promise_resolver.js',
@@ -32,7 +35,7 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'test_service.js',
-    ];
+    ]);
   }
 
   /** @override */

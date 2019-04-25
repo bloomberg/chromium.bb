@@ -7,7 +7,10 @@
  * Should be used for tests which care about focus.
  */
 
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+const ROOT_PATH = '../../../../../';
+
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
 function BookmarksFocusTest() {}
 
@@ -16,15 +19,14 @@ BookmarksFocusTest.prototype = {
 
   browsePreload: 'chrome://bookmarks',
 
-  extraLibraries: [
-    ...PolymerInteractiveUITest.prototype.extraLibraries,
-    '//ui/webui/resources/js/util.js',
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
     '../settings/test_util.js',
     '../test_store.js',
     'test_command_manager.js',
     'test_store.js',
     'test_util.js',
-  ],
+  ]),
 };
 
 // Web UI interactive tests are flaky on Win10, see https://crbug.com/711256

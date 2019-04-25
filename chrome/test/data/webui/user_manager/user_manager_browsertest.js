@@ -4,8 +4,12 @@
 
 /** @fileoverview Tests for the Material Design user manager page. */
 
+/** @const {string} Path to root from chrome/test/data/webui/user_manager/ */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
 
 /**
@@ -21,14 +25,13 @@ UserManagerBrowserTest.prototype = {
   browsePreload: 'chrome://md-user-manager/',
 
   /** @override */
-  extraLibraries: [
-    ...PolymerTest.prototype.extraLibraries,
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../test_browser_proxy.js',
     'control_bar_tests.js',
     'create_profile_tests.js',
     'test_profile_browser_proxy.js',
     'user_manager_pages_tests.js',
-  ],
+  ]),
 };
 
 GEN('#if defined(OS_WIN)');

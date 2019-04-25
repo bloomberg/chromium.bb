@@ -4,8 +4,12 @@
 
 /** @fileoverview Runs the Polymer welcome tests on onboarding-welcome UI. */
 
+/** @const {string} Path to source root. */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/welcome/nux_helper.h"');
 
 /**
@@ -18,10 +22,9 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   }
 
   get extraLibraries() {
-    return [
-      ...super.extraLibraries,
+    return PolymerTest.getLibraries(ROOT_PATH).concat([
       '../test_browser_proxy.js',
-    ];
+    ]);
   }
 
   /** @override */

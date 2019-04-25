@@ -4,10 +4,13 @@
 
 /** @fileoverview Runs the Polymer Accessibility Settings tests. */
 
+/** @const {string} Path to root from chrome/test/data/webui/settings/a11y. */
+const ROOT_PATH = '../../../../../../';
+
 // Polymer BrowserTest fixture and aXe-core accessibility audit.
 GEN_INCLUDE([
-  '//chrome/test/data/webui/a11y/accessibility_test.js',
-  '//chrome/test/data/webui/polymer_browser_test_base.js',
+  ROOT_PATH + 'chrome/test/data/webui/a11y/accessibility_test.js',
+  ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
 /**
@@ -55,10 +58,9 @@ SettingsAccessibilityTest.prototype = {
   browsePreload: 'chrome://settings/',
 
   // Include files that define the mocha tests.
-  extraLibraries: [
-    ...PolymerTest.prototype.extraLibraries,
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../ensure_lazy_loaded.js',
-  ],
+  ]),
 
   // TODO(hcarmona): Remove once ADT is not longer in the testing infrastructure
   runAccessibilityChecks: false,

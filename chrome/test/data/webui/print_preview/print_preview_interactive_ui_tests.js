@@ -4,8 +4,12 @@
 
 /** @fileoverview Runs the Polymer Print Preview interactive UI tests. */
 
+/** @const {string} Path to source root. */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
 const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
@@ -15,10 +19,9 @@ const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
 
   /** @override */
   get extraLibraries() {
-    return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
-    ];
+    return PolymerTest.getLibraries(ROOT_PATH).concat([
+      ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    ]);
   }
 
   // The name of the mocha suite. Should be overridden by subclasses.
@@ -42,7 +45,7 @@ PrintPreviewPrintHeaderInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
       'print_header_interactive_test.js',
     ]);
   }
@@ -76,7 +79,7 @@ PrintPreviewButtonStripInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
       'button_strip_interactive_test.js',
     ]);
   }
@@ -110,8 +113,8 @@ PrintPreviewDestinationDialogInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
@@ -253,7 +256,7 @@ PrintPreviewScalingSettingsInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//ui/webui/resources/js/util.js',
+      ROOT_PATH + 'ui/webui/resources/js/util.js',
       '../settings/test_util.js',
       'print_preview_test_utils.js',
       'scaling_settings_interactive_test.js',

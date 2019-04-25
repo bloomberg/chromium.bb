@@ -175,6 +175,15 @@ PolymerTest.clearBody = function() {
   }
 };
 
+/**
+ * Just an alias for PolymerTest.prototype.extraLibraries.
+ * TODO(olsen): Remove this function since it is no longer needed - since paths
+ * no longer need to be re-written in terms of the ROOT_PATH.
+ */
+PolymerTest.getLibraries = function() {
+  return PolymerTest.prototype.extraLibraries;
+};
+
 /*
  * Waits for queued up tasks to finish before proceeding. Inspired by:
  * https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L97

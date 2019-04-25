@@ -4,7 +4,10 @@
 
 /** @fileoverview Runs the Print Preview tests for the new UI. */
 
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+const ROOT_PATH = '../../../../../';
+
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 const NewPrintPreviewTest = class extends PolymerTest {
   /** @override */
@@ -14,10 +17,9 @@ const NewPrintPreviewTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
-    ];
+    return PolymerTest.getLibraries(ROOT_PATH).concat([
+      ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    ]);
   }
 
   // The name of the mocha suite. Should be overridden by subclasses.
@@ -536,7 +538,7 @@ PrintPreviewInvalidSettingsBrowserTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//ui/webui/resources/js/cr/event_target.js',
+      ROOT_PATH + 'ui/webui/resources/js/cr/event_target.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
@@ -680,8 +682,8 @@ PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '//ui/webui/resources/js/cr/event_target.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
+      ROOT_PATH + 'ui/webui/resources/js/cr/event_target.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
@@ -847,7 +849,7 @@ PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../settings/test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
@@ -1228,7 +1230,7 @@ PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
+      ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
       '../settings/test_util.js',
       'cloud_print_interface_stub.js',

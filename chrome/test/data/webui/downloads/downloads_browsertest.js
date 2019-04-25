@@ -4,8 +4,12 @@
 
 /** @fileoverview Tests for the Material Design downloads page. */
 
+/** @const {string} Path to source root. */
+const ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * @constructor
@@ -21,6 +25,9 @@ DownloadsTest.prototype = {
     PolymerTest.prototype.setUp.call(this);
     this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
   },
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 
   /** @override */
   runAccessibilityChecks: true,
@@ -40,7 +47,7 @@ DownloadsItemTest.prototype = {
 
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
-    '//ui/webui/resources/js/cr.js',
+    ROOT_PATH + 'ui/webui/resources/js/cr.js',
     '../test_browser_proxy.js',
     'test_support.js',
     'item_tests.js',
@@ -65,8 +72,8 @@ DownloadsManagerTest.prototype = {
 
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
-    '//ui/webui/resources/js/cr.js',
-    '//chrome/browser/resources/downloads/constants.js',
+    ROOT_PATH + 'ui/webui/resources/js/cr.js',
+    ROOT_PATH + 'chrome/browser/resources/downloads/constants.js',
     '../test_browser_proxy.js',
     'test_support.js',
     'manager_tests.js',

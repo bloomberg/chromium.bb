@@ -4,8 +4,12 @@
 
 /** @fileoverview Tests for MultiDevice unified setup WebUI. Chrome OS only. */
 
+/** @const {string} Path to source root. */
+var ROOT_PATH = '../../../../../';
+
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for MultiDeviceSetup elements.
@@ -19,8 +23,7 @@ MultiDeviceSetupBrowserTest.prototype = {
 
   browsePreload: 'chrome://multidevice-setup/',
 
-  extraLibraries: [
-    ...PolymerTest.prototype.extraLibraries,
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../test_browser_proxy.js',
     '../fake_chrome_event.js',  // Necessary for fake_quick_unlock_private.js
     '../settings/fake_quick_unlock_private.js',
@@ -28,7 +31,7 @@ MultiDeviceSetupBrowserTest.prototype = {
     'integration_test.js',
     'setup_succeeded_page_test.js',
     'start_setup_page_test.js',
-  ],
+  ]),
 };
 
 TEST_F('MultiDeviceSetupBrowserTest', 'Integration', function() {
