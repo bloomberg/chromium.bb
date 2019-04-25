@@ -393,17 +393,19 @@ void MakeCredentialRequestHandler::OnRetriesResponse(
     base::Optional<pin::RetriesResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
-    FidoReturnCode ret = FidoReturnCode::kAuthenticatorResponseInvalid;
-    if (status == CtapDeviceResponseCode::kCtap2ErrPinBlocked) {
-      ret = FidoReturnCode::kHardPINBlock;
-    }
-    std::move(completion_callback_).Run(ret, base::nullopt, base::nullopt);
+    std::move(completion_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
+             base::nullopt);
     return;
   }
-
+  if (response->retries == 0) {
+    state_ = State::kFinished;
+    std::move(completion_callback_)
+        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, base::nullopt);
+    return;
+  }
   state_ = State::kWaitingForPIN;
   observer()->CollectPIN(
       response->retries,

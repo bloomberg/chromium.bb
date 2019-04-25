@@ -174,6 +174,8 @@ class TokenResponse {
   // client-data hash.
   std::vector<uint8_t> PinAuth(const std::array<uint8_t, 32> client_data_hash);
 
+  const std::vector<uint8_t>& token() { return token_; }
+
  private:
   TokenResponse();
 

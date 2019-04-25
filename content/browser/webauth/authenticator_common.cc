@@ -995,6 +995,14 @@ void AuthenticatorCommon::OnRegisterResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification);
       return;
+    case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
+      NOTREACHED()
+          << "This should only be reachable from CredentialManagementHandler";
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          Focus::kDoCheck);
+      return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
@@ -1180,6 +1188,13 @@ void AuthenticatorCommon::OnSignResponse(
       SignalFailureToRequestDelegate(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification);
+      return;
+    case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
+      NOTREACHED()
+          << "This should only be reachable from CredentialManagementHandler";
+      InvokeCallbackAndCleanup(
+          std::move(get_assertion_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());

@@ -56,6 +56,10 @@ MakeCredentialManagementCommand(
 CredentialsMetadataRequest::CredentialsMetadataRequest(
     std::vector<uint8_t> pin_token_)
     : pin_token(std::move(pin_token_)) {}
+CredentialsMetadataRequest::CredentialsMetadataRequest(
+    CredentialsMetadataRequest&&) = default;
+CredentialsMetadataRequest& CredentialsMetadataRequest::operator=(
+    CredentialsMetadataRequest&&) = default;
 CredentialsMetadataRequest::~CredentialsMetadataRequest() = default;
 
 // static
@@ -241,5 +245,11 @@ EnumerateCredentialsResponse::EnumerateCredentialsResponse(
     : user(std::move(user_)),
       credential_id(std::move(credential_id_)),
       credential_count(credential_count_) {}
+
+AggregatedEnumerateCredentialsResponse::AggregatedEnumerateCredentialsResponse(
+    PublicKeyCredentialRpEntity rp_)
+    : rp(std::move(rp_)), credentials() {}
+AggregatedEnumerateCredentialsResponse::
+    ~AggregatedEnumerateCredentialsResponse() = default;
 
 }  // namespace device

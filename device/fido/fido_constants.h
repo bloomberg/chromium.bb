@@ -33,6 +33,7 @@ enum class FidoReturnCode : uint8_t {
   kSoftPINBlock,
   kHardPINBlock,
   kAuthenticatorMissingResidentKeys,
+  kAuthenticatorMissingCredentialManagement,
   // TODO(agl): kAuthenticatorMissingUserVerification can also be returned when
   // the authenticator supports UV, but there's no UI support for collecting
   // a PIN. This could be clearer.
@@ -248,6 +249,7 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorClientPin = 0x06,
   kAuthenticatorReset = 0x07,
   kAuthenticatorCredentialManagement = 0x0a,
+  kAuthenticatorCredentialManagementPreview = 0x41,
 };
 
 enum class CoseAlgorithmIdentifier : int { kCoseEs256 = -7 };

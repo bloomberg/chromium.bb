@@ -54,6 +54,8 @@ component("fido") {
     "cable/fido_cable_handshake_handler.h",
     "credential_management.cc",
     "credential_management.h",
+    "credential_management_handler.cc",
+    "credential_management_handler.h",
     "ctap2_device_operation.h",
     "ctap_empty_authenticator_request.cc",
     "ctap_empty_authenticator_request.h",

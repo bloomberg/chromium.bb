@@ -15,6 +15,7 @@
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_device.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/pin.h"
@@ -299,6 +300,48 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
     return GetAssertionPINDisposition::kUsePIN;
   }
   return GetAssertionPINDisposition::kNoPIN;
+}
+
+void FidoDeviceAuthenticator::GetCredentialsMetadata(
+    base::span<const uint8_t> pin_token,
+    GetCredentialsMetadataCallback callback) {
+  if (!Options()->supports_credential_management) {
+    DCHECK(Options()->supports_credential_management_preview);
+    operation_ = std::make_unique<Ctap2DeviceOperation<
+        CredentialManagementPreviewRequestAdapter<CredentialsMetadataRequest>,
+        CredentialsMetadataResponse>>(
+        device_.get(),
+        CredentialManagementPreviewRequestAdapter<CredentialsMetadataRequest>(
+            CredentialsMetadataRequest(
+                fido_parsing_utils::Materialize(pin_token))),
+        std::move(callback),
+        base::BindOnce(&CredentialsMetadataResponse::Parse),
+        /*string_fixup_predicate=*/nullptr);
+    operation_->Start();
+    return;
+  }
+
+  operation_ = std::make_unique<Ctap2DeviceOperation<
+      CredentialsMetadataRequest, CredentialsMetadataResponse>>(
+      device_.get(),
+      CredentialsMetadataRequest(fido_parsing_utils::Materialize(pin_token)),
+      std::move(callback), base::BindOnce(&CredentialsMetadataResponse::Parse),
+      // TODO(martinkr): implement utf-8 fixup and add a test for it.
+      /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::EnumerateCredentials(
+    base::span<const uint8_t> pin_token,
+    EnumerateCredentialsCallback callback) {
+  NOTREACHED();  // TODO: implement
+}
+
+void FidoDeviceAuthenticator::DeleteCredential(
+    base::span<const uint8_t> pin_token,
+    base::span<const uint8_t> credential_id,
+    DeleteCredentialCallback callback) {
+  NOTREACHED();  // TODO: implement
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {

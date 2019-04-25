@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,14 +57,45 @@ enum class CredentialManagementSubCommand : uint8_t {
   kDeleteCredential = 0x06,
 };
 
+// CredentialManagementPreviewRequestAdapter wraps any credential management
+// request struct in order to replace the authenticatorCredentialManagement
+// command byte returned by the static EncodeAsCBOR() method (0x0a) with its
+// vendor-specific preview equivalent (0x41).
+template <class T>
+class CredentialManagementPreviewRequestAdapter {
+ public:
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const CredentialManagementPreviewRequestAdapter<T>& request) {
+    auto result = T::EncodeAsCBOR(request.wrapped_request_);
+    DCHECK_EQ(result.first,
+              CtapRequestCommand::kAuthenticatorCredentialManagement);
+    result.first =
+        CtapRequestCommand::kAuthenticatorCredentialManagementPreview;
+    return result;
+  }
+
+  CredentialManagementPreviewRequestAdapter(T request)
+      : wrapped_request_(std::move(request)) {}
+
+ private:
+  T wrapped_request_;
+};
+
 struct CredentialsMetadataRequest {
   static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
   EncodeAsCBOR(const CredentialsMetadataRequest&);
 
   explicit CredentialsMetadataRequest(std::vector<uint8_t> pin_token);
+  CredentialsMetadataRequest(CredentialsMetadataRequest&&);
+  CredentialsMetadataRequest& operator=(CredentialsMetadataRequest&&);
   ~CredentialsMetadataRequest();
 
   std::vector<uint8_t> pin_token;
+
+ private:
+  CredentialsMetadataRequest(const CredentialsMetadataRequest&) = delete;
+  CredentialsMetadataRequest& operator=(const CredentialsMetadataRequest&) =
+      delete;
 };
 
 struct CredentialsMetadataResponse {
@@ -119,6 +150,18 @@ struct EnumerateCredentialsResponse {
   EnumerateCredentialsResponse(const EnumerateCredentialsResponse&) = delete;
   EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&) =
       delete;
+};
+
+struct COMPONENT_EXPORT(DEVICE_FIDO) AggregatedEnumerateCredentialsResponse {
+  AggregatedEnumerateCredentialsResponse(PublicKeyCredentialRpEntity rp);
+  ~AggregatedEnumerateCredentialsResponse();
+
+  PublicKeyCredentialRpEntity rp;
+  std::list<EnumerateCredentialsResponse> credentials;
+
+ private:
+  AggregatedEnumerateCredentialsResponse(
+      const AggregatedEnumerateCredentialsResponse&) = delete;
 };
 
 using DeleteCredentialResponse = pin::EmptyResponse;
