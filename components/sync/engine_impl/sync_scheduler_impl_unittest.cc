@@ -97,7 +97,7 @@ class SyncSchedulerImplTest : public testing::Test {
   SyncSchedulerImplTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
         syncer_(nullptr),
