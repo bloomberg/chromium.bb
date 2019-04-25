@@ -347,6 +347,8 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
     ListedElement& control = *controls[i];
     if (!control.ClassSupportsStateRestore())
       continue;
+    if (control.IsElementInternals())
+      continue;
     if (!OwnerFormForState(control))
       continue;
     AtomicString name = control.GetName();
@@ -359,7 +361,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
   builder.Append(']');
 }
 
-static inline String FormSignature(const HTMLFormElement& form) {
+String FormSignature(const HTMLFormElement& form) {
   KURL action_url = form.GetURLAttribute(kActionAttr);
   // Remove the query part because it might contain volatile parameters such
   // as a session key.

@@ -128,5 +128,8 @@ class CORE_EXPORT FormController final
   Member<FormKeyGenerator> form_key_generator_;
 };
 
+// Exposed for testing.
+CORE_EXPORT String FormSignature(const HTMLFormElement& form);
+
 }  // namespace blink
 #endif
