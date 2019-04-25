@@ -56,7 +56,7 @@ repack("web_engine_pak") {
     "//ui/strings",
   ]
 
-  output = "$root_out_dir/webrunner.pak"
+  output = "$root_out_dir/web_engine.pak"
   visibility = [ ":*" ]
 }
 
@@ -91,7 +91,7 @@ component("web_engine_core") {
     ":web_engine_pak",
   ]
   data = [
-    "$root_out_dir/webrunner.pak",
+    "$root_out_dir/web_engine.pak",
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [

@@ -32,7 +32,7 @@ if (host_os == "mac") {
   _gn_path = "//buildtools/linux64/gn"
 }
 
-# Produces a LICENSE file for webrunner and its transitive dependencies.
+# Produces a LICENSE file for Fuchsia packages.
 _license_path = "$_release_artifact_root/LICENSE"
 action("license") {
   script = "//tools/licenses.py"
