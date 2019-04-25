@@ -919,11 +919,8 @@ void ProfileSyncService::OnSyncCycleCompleted(
   DCHECK(!snapshot.poll_interval().is_zero());
   sync_prefs_.SetPollInterval(snapshot.poll_interval());
 
-  UserShare* user_share = GetUserShare();
-  if (user_share) {
-    sync_prefs_.SetBirthday(user_share->directory->store_birthday());
-    sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
-  }
+  sync_prefs_.SetBirthday(snapshot.birthday());
+  sync_prefs_.SetBagOfChips(snapshot.bag_of_chips());
 
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();

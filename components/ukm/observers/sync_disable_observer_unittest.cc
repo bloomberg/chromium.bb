@@ -42,6 +42,7 @@ class MockSyncService : public syncer::TestSyncService {
     // It doesn't matter what exactly we set here, it's only relevant that the
     // SyncCycleSnapshot is initialized at all.
     SetLastCycleSnapshot(syncer::SyncCycleSnapshot(
+        /*birthday=*/std::string(), /*bag_of_chips=*/std::string(),
         syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 0, 0,
         0, true, 0, base::Time::Now(), base::Time::Now(),
         std::vector<int>(syncer::ModelType::NUM_ENTRIES, 0),

@@ -70,7 +70,12 @@ class SyncCycleContext {
   }
   bool notifications_enabled() { return notifications_enabled_; }
 
-  // Account name, set once a directory has been opened.
+  void set_birthday(const std::string& birthday);
+  std::string birthday() const;
+
+  void set_bag_of_chips(const std::string& bag_of_chips);
+  std::string bag_of_chips() const;
+
   void set_account_name(const std::string& name) { account_name_ = name; }
   const std::string& account_name() const { return account_name_; }
 

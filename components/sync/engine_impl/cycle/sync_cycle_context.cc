@@ -5,6 +5,7 @@
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 
 #include "components/sync/base/extensions_activity.h"
+#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
@@ -40,6 +41,22 @@ SyncCycleContext::~SyncCycleContext() {}
 
 ModelTypeSet SyncCycleContext::GetEnabledTypes() const {
   return model_type_registry_->GetEnabledTypes();
+}
+
+void SyncCycleContext::set_birthday(const std::string& birthday) {
+  directory_->set_store_birthday(birthday);
+}
+
+std::string SyncCycleContext::birthday() const {
+  return directory_->store_birthday();
+}
+
+void SyncCycleContext::set_bag_of_chips(const std::string& bag_of_chips) {
+  directory_->set_bag_of_chips(bag_of_chips);
+}
+
+std::string SyncCycleContext::bag_of_chips() const {
+  return directory_->bag_of_chips();
 }
 
 }  // namespace syncer

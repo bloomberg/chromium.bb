@@ -18,7 +18,8 @@ namespace {
 
 SyncCycleSnapshot MakeDefaultCycleSnapshot() {
   return SyncCycleSnapshot(
-      ModelNeutralState(), ProgressMarkerMap(), /*is_silenced-*/ false,
+      /*birthday=*/"", /*bag_of_chips=*/"", ModelNeutralState(),
+      ProgressMarkerMap(), /*is_silenced-*/ false,
       /*num_encryption_conflicts=*/5, /*num_hierarchy_conflicts=*/2,
       /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
       /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
