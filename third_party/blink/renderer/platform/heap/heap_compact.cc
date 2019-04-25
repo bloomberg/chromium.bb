@@ -367,12 +367,14 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
     return force_compaction_gc_;
   }
 
-  if (reason != BlinkGC::GCReason::kPreciseGC)
-    return false;
+  if (!RuntimeEnabledFeatures::HeapCompactionWhenIncrementalMarkingEnabled()) {
+    if (reason != BlinkGC::GCReason::kPreciseGC)
+      return false;
 
-  // TODO(keishi): crbug.com/918064 Heap compaction for incremental marking
-  // needs to be disabled until this crash is fixed.
-  CHECK_NE(marking_type, BlinkGC::kIncrementalMarking);
+    // TODO(keishi): crbug.com/918064 Heap compaction for incremental marking
+    // needs to be disabled until this crash is fixed.
+    CHECK_NE(marking_type, BlinkGC::kIncrementalMarking);
+  }
 
   // Compaction enable rules:
   //  - It's been a while since the last time.
