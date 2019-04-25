@@ -498,12 +498,11 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
+  min_logical_width = scrollbar_width;
+  max_logical_width = scrollbar_width;
 
-  if (ShouldApplySizeContainment()) {
-    min_logical_width = scrollbar_width;
-    max_logical_width = scrollbar_width;
+  if (ShouldApplySizeContainment())
     return;
-  }
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
@@ -522,30 +521,22 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     }
   }
 
-  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, &min_logical_width,
-                                     &max_logical_width);
+  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns);
 
-  min_logical_width += scrollbar_width;
-  max_logical_width += scrollbar_width;
+  size_t number_of_tracks = algorithm.Tracks(kForColumns).size();
+  LayoutUnit total_gutters_size = GuttersSize(
+      algorithm.GetGrid(), kForColumns, 0, number_of_tracks, base::nullopt);
+
+  min_logical_width += algorithm.MinContentSize() + total_gutters_size;
+  max_logical_width += algorithm.MaxContentSize() + total_gutters_size;
 }
 
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     GridTrackSizingAlgorithm& algo,
-    GridTrackSizingDirection direction,
-    LayoutUnit* min_intrinsic_size,
-    LayoutUnit* max_intrinsic_size) const {
+    GridTrackSizingDirection direction) const {
   const Grid& grid = algo.GetGrid();
   algo.Setup(direction, NumTracks(direction, grid), base::nullopt);
   algo.Run();
-
-  size_t number_of_tracks = algo.Tracks(direction).size();
-  LayoutUnit total_gutters_size =
-      GuttersSize(grid, direction, 0, number_of_tracks, base::nullopt);
-
-  if (min_intrinsic_size)
-    *min_intrinsic_size = algo.MinContentSize() + total_gutters_size;
-  if (max_intrinsic_size)
-    *max_intrinsic_size = algo.MaxContentSize() + total_gutters_size;
 
 #if DCHECK_IS_ON()
   DCHECK(algo.TracksAreWiderThanMinTrackBreadth());
