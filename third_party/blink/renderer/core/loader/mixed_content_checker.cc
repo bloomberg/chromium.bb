@@ -785,4 +785,82 @@ WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
       request.GetRequestContext(), strict_mixed_content_checking_for_plugin);
 }
 
+// static
+void MixedContentChecker::UpgradeInsecureRequest(
+    ResourceRequest& resource_request,
+    const FetchClientSettingsObject* fetch_client_settings_object,
+    ExecutionContext* execution_context_for_logging,
+    network::mojom::RequestContextFrameType frame_type) {
+  // We always upgrade requests that meet any of the following criteria:
+  //  1. Are for subresources.
+  //  2. Are for nested frames.
+  //  3. Are form submissions.
+  //  4. Whose hosts are contained in the origin_context's upgrade insecure
+  //     navigations set.
+
+  // This happens for:
+  // * Browser initiated main document loading. No upgrade required.
+  // * Navigation initiated by a frame in another process. URL should have
+  //   already been upgraded in the initiator's process.
+  if (!execution_context_for_logging)
+    return;
+
+  DCHECK(fetch_client_settings_object);
+
+  if (!(fetch_client_settings_object->GetInsecureRequestsPolicy() &
+        kUpgradeInsecureRequests)) {
+    mojom::RequestContextType context = resource_request.GetRequestContext();
+    // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
+    // correctly.
+    if (context != mojom::RequestContextType::UNSPECIFIED &&
+        resource_request.Url().ProtocolIs("http") &&
+        !fetch_client_settings_object->GetMixedAutoUpgradeOptOut() &&
+        MixedContentChecker::ShouldAutoupgrade(
+            fetch_client_settings_object->GetHttpsState(),
+            WebMixedContent::ContextTypeFromRequestContext(context, false))) {
+      if (execution_context_for_logging->IsDocument()) {
+        Document* document =
+            static_cast<Document*>(execution_context_for_logging);
+        document->AddConsoleMessage(
+            MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
+                fetch_client_settings_object->GlobalObjectUrl(),
+                resource_request.Url()));
+        resource_request.SetUkmSourceId(document->UkmSourceID());
+      }
+      resource_request.SetIsAutomaticUpgrade(true);
+    } else {
+      return;
+    }
+  }
+
+  // Nested frames are always upgraded on the browser process.
+  if (frame_type == network::mojom::RequestContextFrameType::kNested)
+    return;
+
+  // We set the UpgradeIfInsecure flag even if the current request wasn't
+  // upgraded (due to already being HTTPS), since we still need to upgrade
+  // redirects if they are not to HTTPS URLs.
+  resource_request.SetUpgradeIfInsecure(true);
+
+  KURL url = resource_request.Url();
+
+  if (!url.ProtocolIs("http") ||
+      SecurityOrigin::Create(url)->IsPotentiallyTrustworthy()) {
+    return;
+  }
+
+  if (frame_type == network::mojom::RequestContextFrameType::kNone ||
+      resource_request.GetRequestContext() == mojom::RequestContextType::FORM ||
+      (!url.Host().IsNull() &&
+       fetch_client_settings_object->GetUpgradeInsecureNavigationsSet()
+           .Contains(url.Host().Impl()->GetHash()))) {
+    UseCounter::Count(execution_context_for_logging,
+                      WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
+    url.SetProtocol("https");
+    if (url.Port() == 80)
+      url.SetPort(443);
+    resource_request.SetUrl(url);
+  }
+}
+
 }  // namespace blink

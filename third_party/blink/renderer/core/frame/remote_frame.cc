@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -105,7 +106,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                                         ->GetProperties()
                                         .GetFetchClientSettingsObject();
   }
-  FrameLoader::UpgradeInsecureRequest(
+  MixedContentChecker::UpgradeInsecureRequest(
       frame_request.GetResourceRequest(), fetch_client_settings_object,
       frame_request.OriginDocument(), frame_request.GetFrameType());
 

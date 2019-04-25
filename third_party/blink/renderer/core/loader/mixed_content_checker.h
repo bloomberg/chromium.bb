@@ -45,6 +45,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ExecutionContext;
 class FetchClientSettingsObject;
 class Frame;
 class FrameFetchContext;
@@ -123,6 +124,17 @@ class CORE_EXPORT MixedContentChecker final {
   static ConsoleMessage* CreateConsoleMessageAboutWebSocketAutoupgrade(
       const KURL& main_resource_url,
       const KURL& mixed_content_url);
+
+  // Upgrade the insecure requests.
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/
+  // Upgrading itself is done based on |fetch_client_settings_object|.
+  // |execution_context_for_logging| is used only for logging, use counters,
+  // UKM-related things.
+  static void UpgradeInsecureRequest(
+      ResourceRequest&,
+      const FetchClientSettingsObject* fetch_client_settings_object,
+      ExecutionContext* execution_context_for_logging,
+      network::mojom::RequestContextFrameType);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);

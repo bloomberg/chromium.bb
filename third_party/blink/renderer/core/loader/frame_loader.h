@@ -58,7 +58,6 @@ namespace blink {
 class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
-class ExecutionContext;
 class LocalFrame;
 class Frame;
 class LocalFrameClient;
@@ -228,19 +227,6 @@ class CORE_EXPORT FrameLoader final {
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
-
-  // Upgrade the insecure requests.
-  // https://w3c.github.io/webappsec-upgrade-insecure-requests/
-  // Upgrading itself is done based on |fetch_client_settings_object|.
-  // |execution_context_for_logging| is used only for logging, use counters,
-  // UKM-related things.
-  // TODO(hiroshige): Move this outside FrameLoader. This function is also used
-  // from WorkerFetchContext, which is not related to frames.
-  static void UpgradeInsecureRequest(
-      ResourceRequest&,
-      const FetchClientSettingsObject* fetch_client_settings_object,
-      ExecutionContext* execution_context_for_logging,
-      network::mojom::RequestContextFrameType);
 
   void ClientDroppedNavigation();
   void MarkAsLoading();

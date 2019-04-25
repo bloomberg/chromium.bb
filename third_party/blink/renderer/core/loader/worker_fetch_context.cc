@@ -240,7 +240,7 @@ void WorkerFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
-  FrameLoader::UpgradeInsecureRequest(
+  MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
       global_scope_, network::mojom::RequestContextFrameType::kNone);
