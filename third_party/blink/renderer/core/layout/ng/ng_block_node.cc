@@ -208,7 +208,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     const NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout())
-    return RunOldLayout(constraint_space);
+    return RunLegacyLayout(constraint_space);
 
   auto* block_flow = DynamicTo<LayoutBlockFlow>(box_);
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled() && block_flow)
@@ -870,7 +870,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   return result;
 }
 
-scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
+scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     const NGConstraintSpace& constraint_space) {
   // This is an exit-point from LayoutNG to the legacy engine. This means that
   // we need to be at a formatting context boundary, since NG and legacy don't
@@ -925,7 +925,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
                                  writing_mode, box_->StyleRef().Direction());
     builder.SetIsNewFormattingContext(
         constraint_space.IsNewFormattingContext());
-    builder.SetIsOldLayoutRoot();
+    builder.SetIsLegacyLayoutRoot();
     builder.SetInlineSize(box_size.inline_size);
     builder.SetBlockSize(box_size.block_size);
     NGBoxStrut borders(box_->BorderStart(), box_->BorderEnd(),
@@ -935,7 +935,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
                        box_->PaddingBefore(), box_->PaddingAfter());
     builder.SetPadding(padding);
 
-    CopyBaselinesFromOldLayout(constraint_space, &builder);
+    CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();
 
     box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
@@ -947,7 +947,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
   return layout_result;
 }
 
-void NGBlockNode::CopyBaselinesFromOldLayout(
+void NGBlockNode::CopyBaselinesFromLegacyLayout(
     const NGConstraintSpace& constraint_space,
     NGBoxFragmentBuilder* builder) {
   const NGBaselineRequestList requests = constraint_space.BaselineRequests();
@@ -961,7 +961,7 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
     switch (request.AlgorithmType()) {
       case NGBaselineAlgorithmType::kAtomicInline: {
         LayoutUnit position =
-            AtomicInlineBaselineFromOldLayout(request, constraint_space);
+            AtomicInlineBaselineFromLegacyLayout(request, constraint_space);
         if (position != -1)
           builder->AddBaseline(request, position);
         break;
@@ -976,7 +976,7 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
   }
 }
 
-LayoutUnit NGBlockNode::AtomicInlineBaselineFromOldLayout(
+LayoutUnit NGBlockNode::AtomicInlineBaselineFromLegacyLayout(
     const NGBaselineRequest& request,
     const NGConstraintSpace& constraint_space) {
   LineDirectionMode line_direction = box_->IsHorizontalWritingMode()
@@ -1029,7 +1029,7 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
       percentage_resolution_inline_size);
 }
 
-void NGBlockNode::UseOldOutOfFlowPositioning() const {
+void NGBlockNode::UseLegacyOutOfFlowPositioning() const {
   DCHECK(box_->IsOutOfFlowPositioned());
   box_->ContainingBlock()->InsertPositionedObject(box_);
 }

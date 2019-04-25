@@ -30,7 +30,7 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+    descendant.node.UseLegacyOutOfFlowPositioning();
 }
 
 }  // namespace blink

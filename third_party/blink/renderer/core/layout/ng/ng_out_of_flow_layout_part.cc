@@ -413,7 +413,7 @@ void NGOutOfFlowLayoutPart::LayoutDescendantCandidates(
                                      result->OutOfFlowPositionedOffset());
         placed_objects->insert(candidate.node.GetLayoutBox());
         if (candidate.node.GetLayoutBox() != only_layout)
-          candidate.node.UseOldOutOfFlowPositioning();
+          candidate.node.UseLegacyOutOfFlowPositioning();
       } else {
         container_builder_->AddOutOfFlowDescendant(candidate);
       }

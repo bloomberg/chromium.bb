@@ -180,8 +180,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     is_fieldset_container_ = true;
     return *this;
   }
-  NGBoxFragmentBuilder& SetIsOldLayoutRoot() {
-    is_old_layout_root_ = true;
+  NGBoxFragmentBuilder& SetIsLegacyLayoutRoot() {
+    is_legacy_layout_root_ = true;
     return *this;
   }
 

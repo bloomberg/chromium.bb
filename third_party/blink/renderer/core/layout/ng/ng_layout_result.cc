@@ -119,7 +119,7 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
   // the correct result from below.
 
   if ((builder.has_child_that_depends_on_percentage_block_size_ ||
-       builder.is_old_layout_root_) &&
+       builder.is_legacy_layout_root_) &&
       node.UseParentPercentageResolutionBlockSizeForChildren()) {
     // Quirks mode has different %-block-size behaviour, than standards mode.
     // An arbitrary descendant may depend on the percentage resolution

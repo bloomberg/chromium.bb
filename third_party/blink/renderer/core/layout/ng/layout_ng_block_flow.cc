@@ -47,7 +47,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+    descendant.node.UseLegacyOutOfFlowPositioning();
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -143,7 +143,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // These are the unpositioned OOF descendants of the current OOF block.
   for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+    descendant.node.UseLegacyOutOfFlowPositioning();
 
   const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   DCHECK_GT(fragment->Children().size(), 0u);

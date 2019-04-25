@@ -65,7 +65,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                                    builder->Direction())) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   is_fieldset_container_ = builder->is_fieldset_container_;
-  is_old_layout_root_ = builder->is_old_layout_root_;
+  is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
   children_inline_ =
       builder->layout_object_ && builder->layout_object_->ChildrenInline();

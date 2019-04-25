@@ -133,7 +133,7 @@ base::Optional<PositionWithAffinity> PositionForPointInChild(
   // layout.
   // TODO(xiaochengh): Don't fallback to legacy for NG block layout.
   const bool should_fallback = child.PhysicalFragment().IsBlockFlow() ||
-                               child.PhysicalFragment().IsOldLayoutRoot();
+                               child.PhysicalFragment().IsLegacyLayoutRoot();
   const PositionWithAffinity result =
       should_fallback ? child.GetLayoutObject()->PositionForPoint(
                             child_point.ToLayoutPoint())

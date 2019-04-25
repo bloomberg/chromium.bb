@@ -71,7 +71,7 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   // NGBlockNode and called Layout on that.
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+    descendant.node.UseLegacyOutOfFlowPositioning();
 
   // The parent table sometimes changes the caption's position after laying it
   // out. So there's no point in setting the fragment's offset here;

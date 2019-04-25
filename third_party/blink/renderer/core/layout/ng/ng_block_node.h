@@ -99,11 +99,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.
-  scoped_refptr<const NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
+  scoped_refptr<const NGLayoutResult> RunLegacyLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
-  void UseOldOutOfFlowPositioning() const;
+  void UseLegacyOutOfFlowPositioning() const;
 
   // Save static position for legacy AbsPos layout.
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&,
@@ -146,10 +146,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGPhysicalOffset fragment_offset,
       const NGPhysicalOffset additional_offset = NGPhysicalOffset());
 
-  void CopyBaselinesFromOldLayout(const NGConstraintSpace&,
-                                  NGBoxFragmentBuilder*);
-  LayoutUnit AtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,
-                                               const NGConstraintSpace&);
+  void CopyBaselinesFromLegacyLayout(const NGConstraintSpace&,
+                                     NGBoxFragmentBuilder*);
+  LayoutUnit AtomicInlineBaselineFromLegacyLayout(const NGBaselineRequest&,
+                                                  const NGConstraintSpace&);
 
   void UpdateShapeOutsideInfoIfNeeded(
       const NGLayoutResult&,

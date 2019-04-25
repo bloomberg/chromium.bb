@@ -131,13 +131,13 @@ class CORE_EXPORT NGPhysicalFragment
   // inside the fieldset except the rendered legend).
   bool IsFieldsetContainer() const { return is_fieldset_container_; }
 
-  // Returns whether the fragment is old layout root.
-  bool IsOldLayoutRoot() const { return is_old_layout_root_; }
+  // Returns whether the fragment is legacy layout root.
+  bool IsLegacyLayoutRoot() const { return is_legacy_layout_root_; }
 
   bool IsBlockFormattingContextRoot() const {
     return (IsBox() &&
             BoxType() >= NGBoxType::kMinimumBlockFormattingContextRoot) ||
-           IsOldLayoutRoot();
+           IsLegacyLayoutRoot();
   }
 
   // |Offset()| is reliable only when this fragment was placed by LayoutNG
@@ -267,7 +267,7 @@ class CORE_EXPORT NGPhysicalFragment
   // defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
   unsigned is_fieldset_container_ : 1;
-  unsigned is_old_layout_root_ : 1;
+  unsigned is_legacy_layout_root_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
   // The following bitfield is only to be used by NGPhysicalTextFragment (it's

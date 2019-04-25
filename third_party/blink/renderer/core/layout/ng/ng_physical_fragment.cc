@@ -83,10 +83,10 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
       result.Append("block-flow-root");
       break;
   }
-  if (fragment.IsOldLayoutRoot()) {
+  if (fragment.IsLegacyLayoutRoot()) {
     if (result.length())
       result.Append(" ");
-    result.Append("old-layout-root");
+    result.Append("legacy-layout-root");
   }
   if (fragment.IsBlockFlow()) {
     if (result.length())
@@ -232,7 +232,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       style_variant_((unsigned)builder->style_variant_),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_old_layout_root_(false) {}
+      is_legacy_layout_root_(false) {}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
@@ -248,7 +248,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       style_variant_((unsigned)style_variant),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_old_layout_root_(false) {}
+      is_legacy_layout_root_(false) {}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.

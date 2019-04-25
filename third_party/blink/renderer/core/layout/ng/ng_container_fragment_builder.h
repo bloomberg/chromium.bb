@@ -240,7 +240,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
   bool is_pushed_by_floats_ = false;
-  bool is_old_layout_root_ = false;
+  bool is_legacy_layout_root_ = false;
 
   bool has_last_resort_break_ = false;
   bool has_floating_descendants_ = false;
