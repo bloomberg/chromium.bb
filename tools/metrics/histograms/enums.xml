@@ -38383,6 +38383,9 @@ Called by update_use_counter_css.py.-->
       label="An origin was preconnected to when tab was foregrounded"/>
   <int value="6"
       label="An origin was preconnected to when app was foregrounded"/>
+  <int value="7"
+      label="An origin was preconnected to when the user kept the tab in the
+             foreground until the previous preconnect expired."/>
 </enum>
 
 <enum name="NavigationScheme">

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -54,7 +55,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
     kPrefetch = 4,
     kPreconnectOnVisibilityChange = 5,
     kDeprecatedPreconnectOnAppForeground = 6,  // Deprecated.
-    kMaxValue = kDeprecatedPreconnectOnAppForeground,
+    kPreconnectAfterTimeout = 7,
+    kMaxValue = kPreconnectAfterTimeout,
   };
 
   // Enum describing the accuracy of actions taken by the navigation predictor.
@@ -224,6 +226,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Current visibility state of the web contents.
   content::Visibility current_visibility_;
+
+  // Used to preconnect regularly.
+  base::OneShotTimer timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
