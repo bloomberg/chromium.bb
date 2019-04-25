@@ -94,7 +94,6 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unordered_set<WrappedRequest*> active_requests_;
 
   URLRequestContext* context_ = nullptr;
-  // TODO(crbug.com/934402): Use this cache for resolves.
   std::unique_ptr<HostCache> host_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);

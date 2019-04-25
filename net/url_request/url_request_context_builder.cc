@@ -441,8 +441,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
                                                     true /* enable_caching */);
     }
   } else {
-    // TODO(crbug.com/934402): Make setting a resolver or manager required, so
-    // the builder should never have to create a standalone resolver.
     if (host_resolver_factory_) {
       host_resolver_ = host_resolver_factory_->CreateStandaloneResolver(
           context->net_log(), HostResolver::ManagerOptions(),

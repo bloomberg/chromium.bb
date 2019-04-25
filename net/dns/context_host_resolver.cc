@@ -118,7 +118,6 @@ ContextHostResolver::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
-  // TODO(crbug.com/934402): DHCECK |context_| once universally set.
   auto request = std::make_unique<WrappedRequest>(
       manager_->CreateRequest(host, source_net_log, optional_parameters,
                               context_, host_cache_.get()),

@@ -293,8 +293,6 @@ class NET_EXPORT HostResolver {
   // Set the associated URLRequestContext, generally expected to be called by
   // URLRequestContextBuilder on passing ownership of |this| to a context. May
   // only be called once.
-  //
-  // TODO(crbug.com/934402): Use |request_context| for DoH resolves.
   virtual void SetRequestContext(URLRequestContext* request_context);
 
   // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
