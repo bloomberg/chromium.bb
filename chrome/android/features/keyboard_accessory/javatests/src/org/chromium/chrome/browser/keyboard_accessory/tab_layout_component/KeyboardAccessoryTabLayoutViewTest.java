@@ -4,32 +4,19 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.tab_layout_component;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutProperties.TABS;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutProperties.TAB_SELECTION_CALLBACKS;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.support.design.widget.TabLayout;
 import android.support.test.filters.MediumTest;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +29,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -63,15 +51,10 @@ public class KeyboardAccessoryTabLayoutViewTest extends DummyUiActivityTestCase 
                 null); // Unused.
     }
 
-    /**
-     * Matches a tab with a given content description. Selecting the content description alone will
-     * match all icons of the tabs as well.
-     * @param description The description to look for.
-     * @return Returns a matcher that can be used in |onView| or within other {@link Matcher}s.
-     */
-    private static Matcher<View> isTabWithDescription(String description) {
-        return allOf(withContentDescription(description),
-                instanceOf(ImageView.class)); // Match only the image.
+    private CharSequence getTabDescriptionAt(int position) {
+        TabLayout.Tab tab = mView.getTabAt(position);
+        assert tab != null : "No tab at " + position;
+        return tab.getContentDescription();
     }
 
     @BeforeClass
@@ -103,21 +86,17 @@ public class KeyboardAccessoryTabLayoutViewTest extends DummyUiActivityTestCase 
                     createTestTab("SecondTab"), createTestTab("ThirdTab")});
         });
 
-        onView(isRoot()).check(
-                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("FirstTab")));
-        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
+        CriteriaHelper.pollUiThread(() -> mView.getTabCount() == 3);
+
+        assertThat(getTabDescriptionAt(0), is("FirstTab"));
+        assertThat(getTabDescriptionAt(1), is("SecondTab"));
+        assertThat(getTabDescriptionAt(2), is("ThirdTab"));
 
         runOnUiThreadBlocking(() -> mModel.get(TABS).remove(mModel.get(TABS).get(1)));
 
-        onView(isRoot()).check(
-                (root, e)
-                        -> waitForView((ViewGroup) root, isTabWithDescription("SecondTab"),
-                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
-        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("SecondTab")).check(doesNotExist());
-        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
+        CriteriaHelper.pollUiThread(() -> mView.getTabCount() == 2);
+        assertThat(getTabDescriptionAt(0), is("FirstTab"));
+        assertThat(getTabDescriptionAt(1), is("ThirdTab"));
     }
 
     @Test
@@ -128,18 +107,15 @@ public class KeyboardAccessoryTabLayoutViewTest extends DummyUiActivityTestCase 
                     createTestTab("FirstTab"), createTestTab("SecondTab")});
         });
 
-        onView(isRoot()).check(
-                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("FirstTab")));
-        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("ThirdTab")).check(doesNotExist());
+        CriteriaHelper.pollUiThread(() -> mView.getTabCount() == 2);
+        assertThat(getTabDescriptionAt(0), is("FirstTab"));
+        assertThat(getTabDescriptionAt(1), is("SecondTab"));
 
         runOnUiThreadBlocking(() -> mModel.get(TABS).add(createTestTab("ThirdTab")));
 
-        onView(isRoot()).check(
-                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("ThirdTab")));
-        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
-        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
+        CriteriaHelper.pollUiThread(() -> mView.getTabCount() == 3);
+        assertThat(getTabDescriptionAt(0), is("FirstTab"));
+        assertThat(getTabDescriptionAt(1), is("SecondTab"));
+        assertThat(getTabDescriptionAt(2), is("ThirdTab"));
     }
 }
