@@ -54,30 +54,30 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void ReadValue(const dbus::ObjectPath& object_path,
                  ValueCallback callback,
-                 const ErrorCallback& error_callback) override;
+                 ErrorCallback error_callback) override;
   void WriteValue(const dbus::ObjectPath& object_path,
                   const std::vector<uint8_t>& value,
                   base::OnceClosure callback,
-                  const ErrorCallback& error_callback) override;
+                  ErrorCallback error_callback) override;
   void PrepareWriteValue(const dbus::ObjectPath& object_path,
                          const std::vector<uint8_t>& value,
                          base::OnceClosure callback,
-                         const ErrorCallback& error_callback) override;
+                         ErrorCallback error_callback) override;
 #if defined(OS_CHROMEOS)
   void StartNotify(
       const dbus::ObjectPath& object_path,
       device::BluetoothGattCharacteristic::NotificationType notification_type,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 #else
   void StartNotify(const dbus::ObjectPath& object_path,
                    const base::Closure& callback,
-                   const ErrorCallback& error_callback) override;
+                   ErrorCallback error_callback) override;
 #endif
 
   void StopNotify(const dbus::ObjectPath& object_path,
                   const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
+                  ErrorCallback error_callback) override;
 
   // Makes the group of characteristics belonging to a particular GATT based
   // profile available under the GATT service with object path |service_path|.

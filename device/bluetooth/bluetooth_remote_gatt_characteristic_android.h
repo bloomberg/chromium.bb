@@ -64,10 +64,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   std::vector<BluetoothRemoteGattDescriptor*> GetDescriptorsByUUID(
       const BluetoothUUID& uuid) const override;
   void ReadRemoteCharacteristic(ValueCallback callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  base::OnceClosure callback,
-                                 const ErrorCallback& error_callback) override;
+                                 ErrorCallback error_callback) override;
 
   // Called when value changed event occurs.
   void OnChanged(JNIEnv* env,
@@ -101,11 +101,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
                                 const base::Closure& callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 
  private:
   BluetoothRemoteGattCharacteristicAndroid(

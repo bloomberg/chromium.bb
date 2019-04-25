@@ -154,7 +154,7 @@ bool BluetoothRemoteGattCharacteristicBlueZ::IsNotifying() const {
 
 void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
     ValueCallback callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   VLOG(1) << "Sending GATT characteristic read request to characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
           << ".";
@@ -166,14 +166,15 @@ void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
       ->GetBluetoothGattCharacteristicClient()
       ->ReadValue(
           object_path(), std::move(callback),
-          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnReadError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothRemoteGattCharacteristicBlueZ::OnReadError,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   VLOG(1) << "Sending GATT characteristic write request to characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
           << ", with value: " << value << ".";
@@ -182,15 +183,16 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
       ->GetBluetoothGattCharacteristicClient()
       ->WriteValue(
           object_path(), value, std::move(callback),
-          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
 }
 
 #if defined(OS_CHROMEOS)
 void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   VLOG(1) << "Sending GATT characteristic prepare write request to "
           << "characteristic: " << GetIdentifier()
           << ", UUID: " << GetUUID().canonical_value()
@@ -200,8 +202,9 @@ void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
       ->GetBluetoothGattCharacteristicClient()
       ->PrepareWriteValue(
           object_path(), value, std::move(callback),
-          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+          base::BindOnce(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
 }
 #endif
 
@@ -211,7 +214,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
     NotificationType notification_type,
 #endif
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StartNotify(
@@ -222,15 +225,15 @@ void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
           base::Bind(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),
-          base::Bind(
+          base::BindOnce(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError,
-              weak_ptr_factory_.GetWeakPtr(), error_callback));
+              weak_ptr_factory_.GetWeakPtr(), std::move(error_callback)));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::UnsubscribeFromNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StopNotify(
@@ -334,14 +337,15 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError(
-    const ErrorCallback& error_callback,
+    ErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Failed to start notifications from characteristic: "
           << object_path().value() << ": " << error_name << ", "
           << error_message;
-  error_callback.Run(
-      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
+  std::move(error_callback)
+      .Run(
+          BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess(
@@ -363,25 +367,25 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnReadError(
-    const ErrorCallback& error_callback,
+    ErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Operation failed: " << error_name
           << ", message: " << error_message;
   --num_of_characteristic_value_read_in_progress_;
   DCHECK_GE(num_of_characteristic_value_read_in_progress_, 0);
-  error_callback.Run(
-      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+  std::move(error_callback)
+      .Run(BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnWriteError(
-    const ErrorCallback& error_callback,
+    ErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Operation failed: " << error_name
           << ", message: " << error_message;
-  error_callback.Run(
-      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+  std::move(error_callback)
+      .Run(BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 }  // namespace bluez

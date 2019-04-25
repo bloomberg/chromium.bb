@@ -658,16 +658,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
       new testing::NiceMock<MockBluetoothGattNotifySession>(
           chrc2_->GetWeakPtr());
 
-  EXPECT_CALL(*chrc0_, StartNotifySession(_, _))
+  EXPECT_CALL(*chrc0_, StartNotifySession_(_, _))
       .Times(1)
-      .WillOnce(
-          InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
-              session0));
-  EXPECT_CALL(*chrc2_, StartNotifySession(_, _))
+      .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
+          session0));
+  EXPECT_CALL(*chrc2_, StartNotifySession_(_, _))
       .Times(1)
-      .WillOnce(
-          InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
-              session1));
+      .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
+          session1));
 
   ExtensionTestMessageListener listener("ready", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
@@ -1279,17 +1277,16 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
       .Times(1)
       .WillOnce(InvokeCallbackArgument<0>());
 
-  EXPECT_CALL(*chrc0_, StartNotifySession(_, _))
+  EXPECT_CALL(*chrc0_, StartNotifySession_(_, _))
       .Times(2)
       .WillOnce(InvokeCallbackArgument<1>(
           BluetoothRemoteGattService::GATT_ERROR_FAILED))
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
           session0));
-  EXPECT_CALL(*chrc1_, StartNotifySession(_, _))
+  EXPECT_CALL(*chrc1_, StartNotifySession_(_, _))
       .Times(1)
-      .WillOnce(
-          InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
-              session1));
+      .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattNotifySession>(
+          session1));
 
   ExtensionTestMessageListener listener("ready", true);
   listener.set_failure_message("fail");

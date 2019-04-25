@@ -84,15 +84,14 @@ class FakeRemoteGattCharacteristic
   const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothRemoteGattService* GetService() const override;
   void ReadRemoteCharacteristic(ValueCallback callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  base::OnceClosure callback,
-                                 const ErrorCallback& error_callback) override;
+                                 ErrorCallback error_callback) override;
 #if defined(OS_CHROMEOS)
-  void PrepareWriteRemoteCharacteristic(
-      const std::vector<uint8_t>& value,
-      base::OnceClosure callback,
-      const ErrorCallback& error_callback) override;
+  void PrepareWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback) override;
 #endif
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
@@ -103,31 +102,30 @@ class FakeRemoteGattCharacteristic
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 #else
   // device::BluetoothRemoteGattCharacteristic overrides:
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 #endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 
  private:
   void DispatchReadResponse(ValueCallback callback,
-                            const ErrorCallback& error_callback);
+                            ErrorCallback error_callback);
   void DispatchWriteResponse(base::OnceClosure callback,
-                             const ErrorCallback& error_callback,
+                             ErrorCallback error_callback,
                              const std::vector<uint8_t>& value);
-  void DispatchSubscribeToNotificationsResponse(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback);
+  void DispatchSubscribeToNotificationsResponse(const base::Closure& callback,
+                                                ErrorCallback error_callback);
   void DispatchUnsubscribeFromNotificationsResponse(
       const base::Closure& callback,
-      const ErrorCallback& error_callback);
+      ErrorCallback error_callback);
 
   const std::string characteristic_id_;
   const device::BluetoothUUID characteristic_uuid_;

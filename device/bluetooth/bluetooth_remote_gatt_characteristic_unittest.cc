@@ -2908,9 +2908,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   notify_sessions_[0]->Stop(base::Bind(
       [](BluetoothRemoteGattCharacteristic* characteristic,
          BluetoothRemoteGattCharacteristic::NotifySessionCallback
-             notifyCallback,
-         BluetoothRemoteGattCharacteristic::ErrorCallback errorCallback) {
-        characteristic->StartNotifySession(notifyCallback, errorCallback);
+             notify_callback,
+         BluetoothRemoteGattCharacteristic::ErrorCallback error_callback) {
+        characteristic->StartNotifySession(notify_callback,
+                                           std::move(error_callback));
       },
       characteristic1_, GetNotifyCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED)));
@@ -2963,9 +2964,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   notify_sessions_[0]->Stop(base::Bind(
       [](BluetoothRemoteGattCharacteristic* characteristic,
          BluetoothRemoteGattCharacteristic::NotifySessionCallback
-             notifyCallback,
-         BluetoothRemoteGattCharacteristic::ErrorCallback errorCallback) {
-        characteristic->StartNotifySession(notifyCallback, errorCallback);
+             notify_callback,
+         BluetoothRemoteGattCharacteristic::ErrorCallback error_callback) {
+        characteristic->StartNotifySession(notify_callback,
+                                           std::move(error_callback));
       },
       characteristic1_, GetNotifyCallback(Call::NOT_EXPECTED),
       GetGattErrorCallback(Call::EXPECTED)));

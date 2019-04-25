@@ -159,7 +159,7 @@ class FidoBleConnectionTest : public ::testing::Test {
     ON_CALL(*fido_service_revision_bitfield_, ReadRemoteCharacteristic_)
         .WillByDefault(Invoke(
             [=](BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-                const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
+                BluetoothRemoteGattCharacteristic::ErrorCallback&) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE, base::BindOnce(std::move(callback),
                                             std::vector<uint8_t>(
@@ -174,8 +174,10 @@ class FidoBleConnectionTest : public ::testing::Test {
                   FROM_HERE, std::move(callback));
             }));
 
-    ON_CALL(*fido_status_, StartNotifySession(_, _))
-        .WillByDefault(Invoke([this](const auto& callback, auto&&) {
+    ON_CALL(*fido_status_, StartNotifySession_(_, _))
+        .WillByDefault(Invoke([this](
+                                  const auto& callback,
+                                  BluetoothGattCharacteristic::ErrorCallback&) {
           notify_session_ = new NiceMockBluetoothGattNotifySession(
               fido_status_->GetWeakPtr());
           callback.Run(base::WrapUnique(notify_session_));
@@ -197,13 +199,15 @@ class FidoBleConnectionTest : public ::testing::Test {
   }
 
   void SimulateGattNotifySessionStartError() {
-    EXPECT_CALL(*fido_status_, StartNotifySession(_, _))
-        .WillOnce(Invoke([](auto&&, auto&& error_callback) {
-          base::ThreadTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::BindOnce(error_callback,
-                             BluetoothGattService::GATT_ERROR_FAILED));
-        }));
+    EXPECT_CALL(*fido_status_, StartNotifySession_(_, _))
+        .WillOnce(Invoke(
+            [](auto&&,
+               BluetoothGattCharacteristic::ErrorCallback& error_callback) {
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(std::move(error_callback),
+                                 BluetoothGattService::GATT_ERROR_FAILED));
+            }));
   }
 
   void NotifyStatusChanged(const std::vector<uint8_t>& value) {
@@ -231,12 +235,13 @@ class FidoBleConnectionTest : public ::testing::Test {
         .WillOnce(Invoke(
             [success, value](
                 BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-                const auto& error_callback) {
+                BluetoothRemoteGattCharacteristic::ErrorCallback&
+                    error_callback) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
                   success ? base::BindOnce(std::move(callback), value)
                           : base::BindOnce(
-                                error_callback,
+                                std::move(error_callback),
                                 BluetoothGattService::GATT_ERROR_FAILED));
             }));
   }
@@ -247,12 +252,13 @@ class FidoBleConnectionTest : public ::testing::Test {
         .WillOnce(Invoke(
             [success, value](
                 BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-                const auto& error_callback) {
+                BluetoothRemoteGattCharacteristic::ErrorCallback&
+                    error_callback) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
                   success ? base::BindOnce(std::move(callback), value)
                           : base::BindOnce(
-                                error_callback,
+                                std::move(error_callback),
                                 BluetoothGattService::GATT_ERROR_FAILED));
             }));
   }
@@ -265,12 +271,13 @@ class FidoBleConnectionTest : public ::testing::Test {
         .WillOnce(Invoke(
             [success, value](
                 BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-                const auto& error_callback) {
+                BluetoothRemoteGattCharacteristic::ErrorCallback&
+                    error_callback) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
                   success ? base::BindOnce(std::move(callback), value)
                           : base::BindOnce(
-                                error_callback,
+                                std::move(error_callback),
                                 BluetoothGattService::GATT_ERROR_FAILED));
             }));
   }
@@ -287,14 +294,15 @@ class FidoBleConnectionTest : public ::testing::Test {
 #endif  // defined(OS_MACOSX)
 
     EXPECT_CALL(*fido_control_point_, WriteRemoteCharacteristic_(_, _, _))
-        .WillOnce(Invoke([success](const auto& data,
-                                   base::OnceClosure& callback,
-                                   const auto& error_callback) {
+        .WillOnce(Invoke([success](
+                             const auto& data, base::OnceClosure& callback,
+                             BluetoothRemoteGattCharacteristic::ErrorCallback&
+                                 error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               success
                   ? std::move(callback)
-                  : base::BindOnce(error_callback,
+                  : base::BindOnce(std::move(error_callback),
                                    BluetoothGattService::GATT_ERROR_FAILED));
         }));
   }
@@ -303,14 +311,15 @@ class FidoBleConnectionTest : public ::testing::Test {
                                            bool success) {
     EXPECT_CALL(*fido_service_revision_bitfield_,
                 WriteRemoteCharacteristic_(expected_data, _, _))
-        .WillOnce(Invoke([success](const auto& data,
-                                   base::OnceClosure& callback,
-                                   const auto& error_callback) {
+        .WillOnce(Invoke([success](
+                             const auto& data, base::OnceClosure& callback,
+                             BluetoothRemoteGattCharacteristic::ErrorCallback&
+                                 error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               success
                   ? std::move(callback)
-                  : base::BindOnce(error_callback,
+                  : base::BindOnce(std::move(error_callback),
                                    BluetoothGattService::GATT_ERROR_FAILED));
         }));
   }

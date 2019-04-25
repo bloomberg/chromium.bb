@@ -117,7 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // To stop the flow of notifications, simply call the Stop method on the
   // BluetoothGattNotifySession object that you received in |callback|.
   virtual void StartNotifySession(const NotifySessionCallback& callback,
-                                  const ErrorCallback& error_callback);
+                                  ErrorCallback error_callback);
 #if defined(OS_CHROMEOS)
   // TODO(https://crbug.com/849359): This method should also be implemented on
   // Android and Windows.
@@ -127,24 +127,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // https://developer.apple.com/documentation/corebluetooth/cbperipheral/1518949-setnotifyvalue?language=objc#discussion
   virtual void StartNotifySession(NotificationType notification_type,
                                   const NotifySessionCallback& callback,
-                                  const ErrorCallback& error_callback);
+                                  ErrorCallback error_callback);
 #endif
 
   // Sends a read request to a remote characteristic to read its value.
   // |callback| is called to return the read value on success and
   // |error_callback| is called for failures.
-  virtual void ReadRemoteCharacteristic(
-      ValueCallback callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void ReadRemoteCharacteristic(ValueCallback callback,
+                                        ErrorCallback error_callback) = 0;
 
   // Sends a write request to a remote characteristic with the value |value|.
   // |callback| is called to signal success and |error_callback| for failures.
   // This method only applies to remote characteristics and will fail for those
   // that are locally hosted.
-  virtual void WriteRemoteCharacteristic(
-      const std::vector<uint8_t>& value,
-      base::OnceClosure callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) = 0;
 
 #if defined(OS_CHROMEOS)
   // Sends a prepare write request to a remote characteristic with the value
@@ -156,7 +154,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   virtual void PrepareWriteRemoteCharacteristic(
       const std::vector<uint8_t>& value,
       base::OnceClosure callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 #endif
 
   // Sends a write request to a remote characteristic with the value |value|
@@ -188,12 +186,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 #else
   virtual void SubscribeToNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 #endif
 
   // Writes to the Client Characteristic Configuration descriptor to disable
@@ -203,7 +201,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   virtual void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 
   // Utility function to add a |descriptor| to the map of |descriptors_|.
   bool AddDescriptor(std::unique_ptr<BluetoothRemoteGattDescriptor> descriptor);
@@ -258,7 +256,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   void StartNotifySessionInternal(
       const base::Optional<NotificationType>& notification_type,
       const NotifySessionCallback& callback,
-      const ErrorCallback& error_callback);
+      ErrorCallback error_callback);
   void ExecuteStartNotifySession(
       const base::Optional<NotificationType>& notification_type,
       NotifySessionCallback callback,

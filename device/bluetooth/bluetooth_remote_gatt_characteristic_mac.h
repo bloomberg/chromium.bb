@@ -42,20 +42,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   BluetoothRemoteGattService* GetService() const override;
   bool IsNotifying() const override;
   void ReadRemoteCharacteristic(ValueCallback callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  base::OnceClosure callback,
-                                 const ErrorCallback& error_callback) override;
+                                 ErrorCallback error_callback) override;
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
                                 const base::Closure& callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 
  private:
   friend class BluetoothLowEnergyDeviceMac;

@@ -83,8 +83,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   enum class NotificationType { kNotification = 1, kIndication };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Callback<void(BluetoothGattService::GattErrorCode)>
-      ErrorCallback;
+  using ErrorCallback =
+      base::OnceCallback<void(BluetoothGattService::GattErrorCode)>;
 
   // Identifier used to uniquely identify a GATT characteristic object. This is
   // different from the characteristic UUID: while multiple characteristics with

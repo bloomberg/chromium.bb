@@ -43,10 +43,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   Permissions GetPermissions() const override;
   bool IsNotifying() const override;
   void ReadRemoteCharacteristic(ValueCallback callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  base::OnceClosure callback,
-                                 const ErrorCallback& error_callback) override;
+                                 ErrorCallback error_callback) override;
 
   // Update included descriptors.
   void Update();
@@ -56,11 +56,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
                                 const base::Closure& callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void UnsubscribeFromNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 
  private:
   void OnGetIncludedDescriptorsCallback(
@@ -89,7 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   void OnGattCharacteristicValueChanged(
       std::unique_ptr<std::vector<uint8_t>> new_value);
   void GattEventRegistrationCallback(const base::Closure& callback,
-                                     const ErrorCallback& error_callback,
+                                     ErrorCallback error_callback,
                                      PVOID event_handle,
                                      HRESULT hr);
   void ClearIncludedDescriptors();
@@ -116,10 +116,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
       write_characteristic_value_callbacks_;
 
   bool characteristic_value_read_or_write_in_progress_;
-
-  // Vector stores StartNotifySession request callbacks.
-  std::vector<std::pair<NotifySessionCallback, ErrorCallback>>
-      start_notify_session_callbacks_;
 
   // GATT event handle returned by GattEventRegistrationCallback.
   PVOID gatt_event_handle_;

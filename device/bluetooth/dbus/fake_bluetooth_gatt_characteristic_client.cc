@@ -136,32 +136,35 @@ FakeBluetoothGattCharacteristicClient::GetProperties(
 void FakeBluetoothGattCharacteristicClient::ReadValue(
     const dbus::ObjectPath& object_path,
     ValueCallback callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (!authenticated_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
     return;
   }
 
   if (!authorized_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotAuthorized,
-                       "Authorize first");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotAuthorized, "Authorize first");
     return;
   }
 
   if (object_path.value() == heart_rate_control_point_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
-                       "Reads of this value are not allowed");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPermitted,
+             "Reads of this value are not allowed");
     return;
   }
 
   if (object_path.value() == heart_rate_measurement_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
-                       "Action not supported on this characteristic");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotSupported,
+             "Action not supported on this characteristic");
     return;
   }
 
   if (object_path.value() != body_sensor_location_path_) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+    std::move(error_callback).Run(kUnknownCharacteristicError, "");
     return;
   }
 
@@ -169,8 +172,9 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
       action_extra_requests_.end()) {
     DelayedCallback* delayed = action_extra_requests_["ReadValue"];
     delayed->delay_--;
-    error_callback.Run(bluetooth_gatt_service::kErrorInProgress,
-                       "Another read is currenty in progress");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorInProgress,
+             "Another read is currenty in progress");
     if (delayed->delay_ == 0) {
       std::move(delayed->callback_).Run();
       action_extra_requests_.erase("ReadValue");
@@ -181,8 +185,8 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
 
   base::OnceClosure completed_callback;
   if (!IsHeartRateVisible()) {
-    completed_callback =
-        base::Bind(error_callback, kUnknownCharacteristicError, "");
+    completed_callback = base::BindOnce(std::move(error_callback),
+                                        kUnknownCharacteristicError, "");
   } else {
     std::vector<uint8_t> value = {0x06};  // Location is "foot".
     completed_callback = base::BindOnce(
@@ -204,32 +208,35 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (!authenticated_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
     return;
   }
 
   if (!authorized_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotAuthorized,
-                       "Authorize first");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotAuthorized, "Authorize first");
     return;
   }
 
   if (!IsHeartRateVisible()) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+    std::move(error_callback).Run(kUnknownCharacteristicError, "");
     return;
   }
 
   if (object_path.value() == heart_rate_measurement_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
-                       "Action not supported on this characteristic");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotSupported,
+             "Action not supported on this characteristic");
     return;
   }
 
   if (object_path.value() != heart_rate_control_point_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
-                       "Writes of this value are not allowed");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPermitted,
+             "Writes of this value are not allowed");
     return;
   }
 
@@ -238,8 +245,9 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
       action_extra_requests_.end()) {
     DelayedCallback* delayed = action_extra_requests_["WriteValue"];
     delayed->delay_--;
-    error_callback.Run(bluetooth_gatt_service::kErrorInProgress,
-                       "Another write is in progress");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorInProgress,
+             "Another write is in progress");
     if (delayed->delay_ == 0) {
       std::move(delayed->callback_).Run();
       action_extra_requests_.erase("WriteValue");
@@ -249,13 +257,14 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   }
   base::OnceClosure completed_callback;
   if (value.size() != 1) {
-    completed_callback = base::Bind(
-        error_callback, bluetooth_gatt_service::kErrorInvalidValueLength,
-        "Invalid length for write");
-  } else if (value[0] > 1) {
     completed_callback =
-        base::Bind(error_callback, bluetooth_gatt_service::kErrorFailed,
-                   "Invalid value given for write");
+        base::BindOnce(std::move(error_callback),
+                       bluetooth_gatt_service::kErrorInvalidValueLength,
+                       "Invalid length for write");
+  } else if (value[0] > 1) {
+    completed_callback = base::BindOnce(std::move(error_callback),
+                                        bluetooth_gatt_service::kErrorFailed,
+                                        "Invalid value given for write");
   } else if (value[0] == 1) {
     // TODO(jamuraa): make this happen when the callback happens
     calories_burned_ = 0;
@@ -275,32 +284,35 @@ void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (!authenticated_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
     return;
   }
 
   if (!authorized_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotAuthorized,
-                       "Authorize first");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotAuthorized, "Authorize first");
     return;
   }
 
   if (!IsHeartRateVisible()) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+    std::move(error_callback).Run(kUnknownCharacteristicError, "");
     return;
   }
 
   if (object_path.value() == heart_rate_measurement_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
-                       "Action not supported on this characteristic");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotSupported,
+             "Action not supported on this characteristic");
     return;
   }
 
   if (object_path.value() != heart_rate_control_point_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
-                       "Writes of this value are not allowed");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotPermitted,
+             "Writes of this value are not allowed");
     return;
   }
 
@@ -317,21 +329,23 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
     device::BluetoothGattCharacteristic::NotificationType notification_type,
 #endif
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (!IsHeartRateVisible()) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+    std::move(error_callback).Run(kUnknownCharacteristicError, "");
     return;
   }
 
   if (object_path.value() != heart_rate_measurement_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
-                       "This characteristic does not support notifications");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotSupported,
+             "This characteristic does not support notifications");
     return;
   }
 
   if (heart_rate_measurement_properties_->notifying.value()) {
-    error_callback.Run(bluetooth_gatt_service::kErrorInProgress,
-                       "Characteristic already notifying");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorInProgress,
+             "Characteristic already notifying");
     return;
   }
 
@@ -347,20 +361,22 @@ void FakeBluetoothGattCharacteristicClient::StartNotify(
 void FakeBluetoothGattCharacteristicClient::StopNotify(
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (!IsHeartRateVisible()) {
-    error_callback.Run(kUnknownCharacteristicError, "");
+    std::move(error_callback).Run(kUnknownCharacteristicError, "");
     return;
   }
 
   if (object_path.value() != heart_rate_measurement_path_) {
-    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
-                       "This characteristic does not support notifications");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorNotSupported,
+             "This characteristic does not support notifications");
     return;
   }
 
   if (!heart_rate_measurement_properties_->notifying.value()) {
-    error_callback.Run(bluetooth_gatt_service::kErrorFailed, "Not notifying");
+    std::move(error_callback)
+        .Run(bluetooth_gatt_service::kErrorFailed, "Not notifying");
     return;
   }
 

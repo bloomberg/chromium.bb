@@ -659,7 +659,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
   ON_CALL(*measurement_interval, WriteRemoteCharacteristic_(_, _, _))
       .WillByDefault(RunCallback<1 /* success_callback */>());
 
-  ON_CALL(*measurement_interval, StartNotifySession(_, _))
+  ON_CALL(*measurement_interval, StartNotifySession_(_, _))
       .WillByDefault(
           RunCallbackWithResult<0 /* success_callback */>([measurement_ptr]() {
             return GetBaseGATTNotifySession(measurement_ptr->GetWeakPtr());
@@ -961,7 +961,7 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
       .WillByDefault(
           Invoke([adapter_ptr, device_ptr, disconnect, succeeds](
                      BluetoothRemoteGattCharacteristic::ValueCallback& callback,
-                     const BluetoothRemoteGattCharacteristic::ErrorCallback&
+                     BluetoothRemoteGattCharacteristic::ErrorCallback&
                          error_callback) {
             base::OnceClosure pending;
             if (succeeds) {
@@ -969,8 +969,8 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
                                        std::vector<uint8_t>({1}));
             } else {
               pending =
-                  base::Bind(error_callback,
-                             BluetoothRemoteGattService::GATT_ERROR_FAILED);
+                  base::BindOnce(std::move(error_callback),
+                                 BluetoothRemoteGattService::GATT_ERROR_FAILED);
             }
             device_ptr->PushPendingCallback(std::move(pending));
             if (disconnect) {
@@ -986,15 +986,15 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
       .WillByDefault(Invoke(
           [adapter_ptr, device_ptr, disconnect, succeeds](
               const std::vector<uint8_t>& value, base::OnceClosure& callback,
-              const BluetoothRemoteGattCharacteristic::ErrorCallback&
+              BluetoothRemoteGattCharacteristic::ErrorCallback&
                   error_callback) {
             base::OnceClosure pending;
             if (succeeds) {
               pending = std::move(callback);
             } else {
               pending =
-                  base::Bind(error_callback,
-                             BluetoothRemoteGattService::GATT_ERROR_FAILED);
+                  base::BindOnce(std::move(error_callback),
+                                 BluetoothRemoteGattService::GATT_ERROR_FAILED);
             }
             device_ptr->PushPendingCallback(std::move(pending));
             if (disconnect) {
@@ -1006,22 +1006,22 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
             }
           }));
 
-  ON_CALL(*measurement_interval, StartNotifySession(_, _))
+  ON_CALL(*measurement_interval, StartNotifySession_(_, _))
       .WillByDefault(Invoke(
           [adapter_ptr, device_ptr, measurement_ptr, disconnect, succeeds](
               const BluetoothRemoteGattCharacteristic::NotifySessionCallback&
                   callback,
-              const BluetoothRemoteGattCharacteristic::ErrorCallback&
+              BluetoothRemoteGattCharacteristic::ErrorCallback&
                   error_callback) {
-            base::Closure pending;
+            base::OnceClosure pending;
             if (succeeds) {
               pending =
                   base::Bind(callback, base::Passed(GetBaseGATTNotifySession(
                                            measurement_ptr->GetWeakPtr())));
             } else {
               pending =
-                  base::Bind(error_callback,
-                             BluetoothRemoteGattService::GATT_ERROR_FAILED);
+                  base::BindOnce(std::move(error_callback),
+                                 BluetoothRemoteGattService::GATT_ERROR_FAILED);
             }
             device_ptr->PushPendingCallback(std::move(pending));
             if (disconnect) {
@@ -1129,7 +1129,7 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
   NiceMockBluetoothGattCharacteristic* measurement_ptr =
       measurement_interval.get();
 
-  ON_CALL(*measurement_interval, StartNotifySession(_, _))
+  ON_CALL(*measurement_interval, StartNotifySession_(_, _))
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter_ptr, device_ptr, measurement_ptr, disconnect]() {
             std::unique_ptr<NiceMockBluetoothGattNotifySession> notify_session =
@@ -1396,7 +1396,7 @@ WebTestBluetoothAdapterProvider::GetBlocklistTestService(
           ReadRemoteCharacteristic_(_, _))
       .WillByDefault(
           Invoke([](BluetoothRemoteGattCharacteristic::ValueCallback&,
-                    const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
+                    BluetoothRemoteGattCharacteristic::ErrorCallback&) {
             NOTREACHED();
           }));
 
@@ -1428,7 +1428,7 @@ WebTestBluetoothAdapterProvider::GetDeviceInformationService(
   ON_CALL(*serial_number_string, ReadRemoteCharacteristic_(_, _))
       .WillByDefault(
           Invoke([](BluetoothRemoteGattCharacteristic::ValueCallback&,
-                    const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
+                    BluetoothRemoteGattCharacteristic::ErrorCallback&) {
             NOTREACHED();
           }));
 
@@ -1485,7 +1485,7 @@ WebTestBluetoothAdapterProvider::GetGenericAccessService(
     ON_CALL(*peripheral_privacy_flag, WriteRemoteCharacteristic_(_, _, _))
         .WillByDefault(
             Invoke([](const std::vector<uint8_t>&, base::OnceClosure&,
-                      const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
+                      BluetoothRemoteGattCharacteristic::ErrorCallback&) {
               NOTREACHED();
             }));
 
@@ -1510,7 +1510,7 @@ WebTestBluetoothAdapterProvider::GetHeartRateService(
   NiceMockBluetoothGattCharacteristic* measurement_ptr =
       heart_rate_measurement.get();
 
-  ON_CALL(*heart_rate_measurement, StartNotifySession(_, _))
+  ON_CALL(*heart_rate_measurement, StartNotifySession_(_, _))
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter, measurement_ptr]() {
             auto notify_session(
@@ -1571,7 +1571,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingService(
       .WillByDefault(Invoke(
           [adapter, device](
               const std::vector<uint8_t>& value, base::OnceClosure& success,
-              const BluetoothRemoteGattCharacteristic::ErrorCallback& error) {
+              BluetoothRemoteGattCharacteristic::ErrorCallback& error) {
             device->SetConnected(false);
             for (auto& observer : adapter->GetObservers())
               observer.DeviceChanged(adapter, device);
@@ -1604,7 +1604,7 @@ WebTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
       .WillByDefault(
           RunCallback<2>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
 
-  ON_CALL(*characteristic, StartNotifySession(_, _))
+  ON_CALL(*characteristic, StartNotifySession_(_, _))
       .WillByDefault(
           RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
 
@@ -1634,7 +1634,7 @@ WebTestBluetoothAdapterProvider::GetErrorCharacteristic(
       .WillByDefault(RunCallback<2 /* error_callback */>(error_code));
 
   // StartNotifySession response
-  ON_CALL(*characteristic, StartNotifySession(_, _))
+  ON_CALL(*characteristic, StartNotifySession_(_, _))
       .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
 
   // Add error descriptor to |characteristic|

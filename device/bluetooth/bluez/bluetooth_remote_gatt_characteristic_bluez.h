@@ -55,15 +55,14 @@ class BluetoothRemoteGattCharacteristicBlueZ
   device::BluetoothRemoteGattService* GetService() const override;
   bool IsNotifying() const override;
   void ReadRemoteCharacteristic(ValueCallback callback,
-                                const ErrorCallback& error_callback) override;
+                                ErrorCallback error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  base::OnceClosure callback,
-                                 const ErrorCallback& error_callback) override;
+                                 ErrorCallback error_callback) override;
 #if defined(OS_CHROMEOS)
-  void PrepareWriteRemoteCharacteristic(
-      const std::vector<uint8_t>& value,
-      base::OnceClosure callback,
-      const ErrorCallback& error_callback) override;
+  void PrepareWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback) override;
 #endif
 
  protected:
@@ -72,17 +71,17 @@ class BluetoothRemoteGattCharacteristicBlueZ
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       NotificationType notification_type,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 #else
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 #endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+      ErrorCallback error_callback) override;
 
  private:
   friend class BluetoothRemoteGattServiceBlueZ;
@@ -103,7 +102,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
 
   // Called by dbus:: on unsuccessful completion of a request to start
   // notifications.
-  void OnStartNotifyError(const ErrorCallback& error_callback,
+  void OnStartNotifyError(ErrorCallback error_callback,
                           const std::string& error_name,
                           const std::string& error_message);
 
@@ -119,13 +118,13 @@ class BluetoothRemoteGattCharacteristicBlueZ
 
   // Called by dbus:: on unsuccessful completion of a request to read
   // the characteristic value.
-  void OnReadError(const ErrorCallback& error_callback,
+  void OnReadError(ErrorCallback error_callback,
                    const std::string& error_name,
                    const std::string& error_message);
 
   // Called by dbus:: on unsuccessful completion of a request to write
   // the characteristic value.
-  void OnWriteError(const ErrorCallback& error_callback,
+  void OnWriteError(ErrorCallback error_callback,
                     const std::string& error_name,
                     const std::string& error_message);
 

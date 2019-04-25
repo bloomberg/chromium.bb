@@ -87,16 +87,18 @@ void BluetoothRemoteGattCharacteristic::NotifySessionCommand::Cancel() {
 
 void BluetoothRemoteGattCharacteristic::StartNotifySession(
     const NotifySessionCallback& callback,
-    const ErrorCallback& error_callback) {
-  StartNotifySessionInternal(base::nullopt, callback, error_callback);
+    ErrorCallback error_callback) {
+  StartNotifySessionInternal(base::nullopt, callback,
+                             std::move(error_callback));
 }
 
 #if defined(OS_CHROMEOS)
 void BluetoothRemoteGattCharacteristic::StartNotifySession(
     NotificationType notification_type,
     const NotifySessionCallback& callback,
-    const ErrorCallback& error_callback) {
-  StartNotifySessionInternal(notification_type, callback, error_callback);
+    ErrorCallback error_callback) {
+  StartNotifySessionInternal(notification_type, callback,
+                             std::move(error_callback));
 }
 #endif
 
@@ -120,13 +122,16 @@ bool BluetoothRemoteGattCharacteristic::AddDescriptor(
 void BluetoothRemoteGattCharacteristic::StartNotifySessionInternal(
     const base::Optional<NotificationType>& notification_type,
     const NotifySessionCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
+  auto repeating_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   NotifySessionCommand* command = new NotifySessionCommand(
       base::Bind(&BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession,
-                 GetWeakPtr(), notification_type, callback, error_callback),
+                 GetWeakPtr(), notification_type, callback,
+                 repeating_error_callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::CancelStartNotifySession,
                  GetWeakPtr(),
-                 base::Bind(error_callback,
+                 base::Bind(repeating_error_callback,
                             BluetoothRemoteGattService::GATT_ERROR_FAILED)));
 
   pending_notify_commands_.push(std::unique_ptr<NotifySessionCommand>(command));
@@ -157,7 +162,8 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
           FROM_HERE,
           base::BindOnce(
               &BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
-              GetWeakPtr(), error_callback, previous_command_error_code));
+              GetWeakPtr(), std::move(error_callback),
+              previous_command_error_code));
       return;
     }
   }
@@ -172,7 +178,7 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
         FROM_HERE,
         base::BindOnce(
             &BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
-            GetWeakPtr(), error_callback,
+            GetWeakPtr(), std::move(error_callback),
             BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
@@ -201,7 +207,7 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
         FROM_HERE,
         base::BindOnce(
             &BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
-            GetWeakPtr(), error_callback,
+            GetWeakPtr(), std::move(error_callback),
             (ccc_descriptor.size() == 0)
                 ? BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED
                 : BluetoothRemoteGattService::GATT_ERROR_FAILED));
@@ -221,8 +227,9 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
       base::Bind(
           &BluetoothRemoteGattCharacteristic::OnStartNotifySessionSuccess,
           GetWeakPtr(), callback),
-      base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
-                 GetWeakPtr(), error_callback));
+      base::BindOnce(
+          &BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
+          GetWeakPtr(), std::move(error_callback)));
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStartNotifySession(
@@ -258,7 +265,7 @@ void BluetoothRemoteGattCharacteristic::OnStartNotifySessionError(
   std::unique_ptr<NotifySessionCommand> command =
       std::move(pending_notify_commands_.front());
 
-  error_callback.Run(error);
+  std::move(error_callback).Run(error);
 
   pending_notify_commands_.pop();
   if (!pending_notify_commands_.empty()) {
