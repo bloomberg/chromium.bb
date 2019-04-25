@@ -312,11 +312,22 @@ class OzonePlatformGbm : public OzonePlatform {
   void AfterSandboxEntry() override {
     CHECK(drm_thread_proxy_) << "AfterSandboxEntry before InitializeForGPU is "
                                 "invalid startup order.\n";
-    // Defer the actual startup of the DRM thread to here.
-    auto safe_binding_resquest_drainer = CreateSafeOnceCallback(base::BindOnce(
-        &OzonePlatformGbm::DrainBindingRequests, weak_factory_.GetWeakPtr()));
-
-    drm_thread_proxy_->StartDrmThread(std::move(safe_binding_resquest_drainer));
+    if (using_mojo_ && single_process_) {
+      // In single process/mojo mode we need to make sure DrainBindingRequest
+      // is executed on this thread before we start the drm device.
+      base::WaitableEvent done_event;
+      drm_thread_proxy_->StartDrmThread(base::BindOnce(
+          &base::WaitableEvent::Signal, base::Unretained(&done_event)));
+      done_event.Wait();
+      DrainBindingRequests();
+    } else {
+      // Defer the actual startup of the DRM thread to here.
+      auto safe_binding_resquest_drainer = CreateSafeOnceCallback(
+          base::BindOnce(&OzonePlatformGbm::DrainBindingRequests,
+                         weak_factory_.GetWeakPtr()));
+      drm_thread_proxy_->StartDrmThread(
+          std::move(safe_binding_resquest_drainer));
+    }
   }
 
  private:
