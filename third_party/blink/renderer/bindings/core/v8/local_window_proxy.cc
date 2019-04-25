@@ -144,6 +144,7 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
 void LocalWindowProxy::Initialize() {
   TRACE_EVENT1("v8", "LocalWindowProxy::Initialize", "IsMainFrame",
                GetFrame()->IsMainFrame());
+  CHECK(!GetFrame()->IsProvisional());
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   // Inspector may request V8 interruption to process DevTools protocol
