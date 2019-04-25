@@ -75,6 +75,9 @@ const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
 const base::Feature kNotificationStackingBarRedesign{
     "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSystemTrayFeaturePodsPagination{
+    "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -138,6 +141,10 @@ bool ShouldUseShaderRoundedCorner() {
 
 bool IsNotificationStackingBarRedesignEnabled() {
   return base::FeatureList::IsEnabled(kNotificationStackingBarRedesign);
+}
+
+bool IsSystemTrayFeaturePodsPaginationEnabled() {
+  return base::FeatureList::IsEnabled(kSystemTrayFeaturePodsPagination);
 }
 
 }  // namespace features

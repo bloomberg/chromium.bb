@@ -92,6 +92,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
 // Enables the notification stacking bar redesigned UI.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
 
+// Enables pagination for feature pod buttons in the system tray
+ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -121,6 +124,8 @@ ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
 
 ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 
 }  // namespace features
 }  // namespace ash
