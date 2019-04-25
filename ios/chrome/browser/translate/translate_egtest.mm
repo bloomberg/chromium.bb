@@ -1184,7 +1184,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Translate the page by tapping the target language tab until
   // "Always Translate" is automatically triggered.
-  for (int i = 0; i <= translate::kAutoAlwaysThreshold; i++) {
+  for (int i = 0;
+       i <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+       i++) {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
         performAction:grey_tap()];
@@ -1230,10 +1232,14 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"French to English translation is whitelisted");
 
   // Trigger and refuse the auto "Always Translate".
-  for (int i = 0; i < translate::kMaxNumberOfAutoAlways; i++) {
+  for (int i = 0;
+       i < translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoAlways();
+       i++) {
     // Translate the page by tapping the target language tab until
     // "Always Translate" is automatically triggered.
-    for (int j = 0; j <= translate::kAutoAlwaysThreshold; j++) {
+    for (int j = 0;
+         j <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+         j++) {
       [[EarlGrey
           selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
           performAction:grey_tap()];
@@ -1244,7 +1250,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Translate the page by tapping the target language tab in order to
   // automatically trigger "Always Translate".
-  for (int i = 0; i <= translate::kAutoAlwaysThreshold; i++) {
+  for (int i = 0;
+       i <= translate::TranslateInfoBarDelegate::GetAutoAlwaysThreshold();
+       i++) {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
         performAction:grey_tap()];
@@ -1359,7 +1367,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Dismiss the translate infobar until "Never Translate ..." is automatically
   // triggered.
-  for (int i = 0; i < translate::kAutoNeverThreshold; i++) {
+  for (int i = 0;
+       i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
     // Reload the page.
     [ChromeEarlGrey reload];
 
@@ -1416,10 +1425,14 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"Translation from French is blocked");
 
   // Trigger and refuse the auto "Never Translate ...".
-  for (int i = 0; i < translate::kMaxNumberOfAutoNever; i++) {
+  for (int i = 0;
+       i < translate::TranslateInfoBarDelegate::GetMaximumNumberOfAutoNever();
+       i++) {
     // Dismiss the translate infobar until "Never Translate ..." is
     // automatically triggered.
-    for (int j = 0; j < translate::kAutoNeverThreshold; j++) {
+    for (int j = 0;
+         j < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold();
+         j++) {
       // Reload the page.
       [ChromeEarlGrey reload];
 
@@ -1439,7 +1452,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Dismiss the translate infobar in order to automatically trigger
   // "Never Translate ...".
-  for (int i = 0; i < translate::kAutoNeverThreshold; i++) {
+  for (int i = 0;
+       i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
     // Reload the page.
     [ChromeEarlGrey reload];
 
