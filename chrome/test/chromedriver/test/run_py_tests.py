@@ -96,6 +96,15 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
     'ChromeDownloadDirTest.testFileDownloadWithClick',
+    'ChromeDriverTest.testBackNavigationAfterClickElement',
+    'ChromeDriverTest.testCanClickInIframes',
+    'ChromeDriverTest.testClickElementAfterNavigation',
+    'ChromeDriverTest.testCloseWindow',
+    'ChromeDriverTest.testCloseWindowUsingJavascript',
+    'ChromeDriverTest.testGetLogOnClosedWindow',
+    'ChromeDriverTest.testGetWindowHandles',
+    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+    'ChromeDriverTest.testSwitchToWindow',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=932073
