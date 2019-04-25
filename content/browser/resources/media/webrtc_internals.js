@@ -4,6 +4,11 @@
 
 var USER_MEDIA_TAB_ID = 'user-media-tab-id';
 
+const OPTION_GETSTATS_STANDARD = 'Standardized (promise-based) getStats() API';
+const OPTION_GETSTATS_LEGACY =
+    'Legacy Non-Standard (callback-based) getStats() API';
+let currentGetStatsMethod = OPTION_GETSTATS_STANDARD;
+
 var tabView = null;
 var ssrcInfoManager = null;
 var peerConnectionUpdateTable = null;
@@ -13,6 +18,9 @@ var dumpCreator = null;
 var peerConnectionDataStore = {};
 /** A list of getUserMedia requests. */
 var userMediaRequests = [];
+
+/** Maps from id (see getPeerConnectionId) to StatsRatesCalculator. */
+statsRatesCalculatorById = new Map();
 
 /** A simple class to store the updates and stats data for a peer connection. */
 var PeerConnectionRecord = (function() {
@@ -44,6 +52,10 @@ var PeerConnectionRecord = (function() {
       this.record_.url = url;
       this.record_.rtcConfiguration = rtcConfiguration;
       this.record_.constraints = constraints;
+    },
+
+    resetStats: function() {
+      this.record_.stats = {};
     },
 
     /**
@@ -87,6 +99,7 @@ var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 // <include src="data_series.js">
 // <include src="ssrc_info_manager.js">
 // <include src="stats_graph_helper.js">
+// <include src="stats_rates_calculator.js">
 // <include src="stats_table.js">
 // <include src="peer_connection_update_table.js">
 // <include src="dump_creator.js">
@@ -94,6 +107,7 @@ var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
 function initialize() {
   dumpCreator = new DumpCreator($('content-root'));
+  $('content-root').appendChild(createStatsSelectionOptionElements());
   tabView = new TabView($('content-root'));
   ssrcInfoManager = new SsrcInfoManager();
   peerConnectionUpdateTable = new PeerConnectionUpdateTable();
@@ -106,16 +120,61 @@ function initialize() {
 }
 document.addEventListener('DOMContentLoaded', initialize);
 
+function createStatsSelectionOptionElements() {
+  const p = document.createElement('p');
 
-/** Sends a request to the browser to get peer connection statistics. */
+  const selectElement = document.createElement('select');
+  selectElement.onchange = () => {
+    currentGetStatsMethod = selectElement.value;
+    Object.keys(peerConnectionDataStore).forEach(id => {
+      const peerConnectionElement = $(id);
+      statsTable.nukeStatsLists(peerConnectionElement);
+      removeStatsReportGraphs(peerConnectionElement);
+      peerConnectionDataStore[id].resetStats();
+    });
+  };
+
+  [OPTION_GETSTATS_STANDARD, OPTION_GETSTATS_LEGACY].forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.setAttribute('value', option);
+    optionElement.appendChild(document.createTextNode(option));
+    selectElement.appendChild(optionElement);
+  });
+
+  selectElement.value = currentGetStatsMethod;
+
+  p.appendChild(document.createTextNode('Read Stats From: '));
+  p.appendChild(selectElement);
+  return p;
+}
+
 function requestStats() {
-  if (Object.keys(peerConnectionDataStore).length > 0) {
-    // TODO(https://crbug.com/803014): Use the getStandardStats codepath to use
-    // the standard getStats() API.
-    chrome.send('getLegacyStats');
+  if (currentGetStatsMethod == OPTION_GETSTATS_STANDARD) {
+    requestStandardStats();
+  } else if (currentGetStatsMethod == OPTION_GETSTATS_LEGACY) {
+    requestLegacyStats();
   }
 }
 
+/**
+ * Sends a request to the browser to get peer connection statistics from the
+ * standard getStats() API (promise-based).
+ */
+function requestStandardStats() {
+  if (Object.keys(peerConnectionDataStore).length > 0) {
+    chrome.send('getStandardStats');
+  }
+}
+
+/**
+ * Sends a request to the browser to get peer connection statistics from the
+ * legacy getStats() API (callback-based non-standard API with goog-stats).
+ */
+function requestLegacyStats() {
+  if (Object.keys(peerConnectionDataStore).length > 0) {
+    chrome.send('getLegacyStats');
+  }
+}
 
 /**
  * A helper function for getting a peer connection element id.
@@ -261,8 +320,27 @@ function updateAllPeerConnections(data) {
  *     stat, and the odd index entry is the value.
  */
 function addStandardStats(data) {
-  // TODO(https://crbug.com/803014): Do different processing on standard stats.
-  addLegacyStats(stats);
+  if (currentGetStatsMethod != OPTION_GETSTATS_STANDARD) {
+    return;  // Obsolete!
+  }
+  var peerConnectionElement = $(getPeerConnectionId(data));
+  if (!peerConnectionElement) {
+    return;
+  }
+  const pcId = getPeerConnectionId(data);
+  let statsRatesCalculator = statsRatesCalculatorById.get(pcId);
+  if (!statsRatesCalculator) {
+    statsRatesCalculator = new StatsRatesCalculator();
+    statsRatesCalculatorById.set(pcId, statsRatesCalculator);
+  }
+  const r = StatsReport.fromInternalsReportList(data.reports);
+  statsRatesCalculator.addStatsReport(r);
+  data.reports = statsRatesCalculator.currentReport.toInternalsReportList();
+  for (var i = 0; i < data.reports.length; ++i) {
+    var report = data.reports[i];
+    statsTable.addStatsReport(peerConnectionElement, report);
+    drawSingleReport(peerConnectionElement, report, false);
+  }
 }
 
 /**
@@ -283,7 +361,7 @@ function addLegacyStats(data) {
   for (var i = 0; i < data.reports.length; ++i) {
     var report = data.reports[i];
     statsTable.addStatsReport(peerConnectionElement, report);
-    drawSingleReport(peerConnectionElement, report);
+    drawSingleReport(peerConnectionElement, report, true);
   }
 }
 
