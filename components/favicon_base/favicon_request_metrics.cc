@@ -18,6 +18,10 @@ void favicon::RecordFaviconRequestMetric(
       UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.SYNCED_TABS",
                                 availability);
       break;
+    case favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
+      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.RECENTLY_CLOSED_TABS",
+                                availability);
+      break;
     case favicon::FaviconRequestOrigin::UNKNOWN:
       UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.UNKNOWN",
                                 availability);

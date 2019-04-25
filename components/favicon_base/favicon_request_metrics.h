@@ -16,6 +16,8 @@ enum class FaviconRequestOrigin {
   HISTORY,
   // chrome://history/syncedTabs.
   HISTORY_SYNCED_TABS,
+  // Recently closed tabs menu.
+  RECENTLY_CLOSED_TABS,
 };
 
 enum class FaviconAvailability {
