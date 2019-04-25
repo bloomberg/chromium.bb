@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/no_destructor.h"
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer_util.h"
@@ -28,6 +30,12 @@ struct Env {
                   command_line->GetSwitchValuePath("dump-to-png"))
             : base::nullopt;
 
+    // Re-initialize logging in order to pick up any command-line parameters
+    // (such as --v=1 to enable verbose logging).
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
+
     browser_process = std::make_unique<viz::FuzzerBrowserProcess>(png_dir_path);
   }
   ~Env() = default;
@@ -35,7 +43,11 @@ struct Env {
   std::unique_ptr<viz::FuzzerBrowserProcess> browser_process;
 
  private:
-  base::MessageLoop message_loop;
+  base::MessageLoop message_loop_;
+
+  // Instantiation needed to make histogram macros in the SubmitCompositorFrame
+  // flow work when verbosity is on.
+  base::AtExitManager exit_manager_;
 };
 
 }  // namespace
@@ -49,9 +61,9 @@ DEFINE_BINARY_PROTO_FUZZER(
     const content::fuzzing::proto::RenderPass& render_pass_spec) {
   static base::NoDestructor<Env> env;
 
-  viz::FuzzedData fuzzed_data =
-      viz::GenerateFuzzedCompositorFrame(render_pass_spec);
+  viz::FuzzedData fuzzed_frame =
+      viz::FuzzedCompositorFrameBuilder().Build(render_pass_spec);
 
   env->browser_process->EmbedFuzzedCompositorFrame(
-      std::move(fuzzed_data.frame), std::move(fuzzed_data.allocated_bitmaps));
+      std::move(fuzzed_frame.frame), std::move(fuzzed_frame.allocated_bitmaps));
 }

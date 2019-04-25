@@ -10,10 +10,14 @@ message RenderPass {
   required Rect output_rect = 1;
   required Rect damage_rect = 2;
   repeated DrawQuad quad_list = 3;
+  optional Transform transform_to_root_target = 4;
 }
 
 message DrawQuad {
-  required SharedQuadState sqs = 1;
+  // If not present, defaults to same dimensions as quad, with identity
+  // transform
+  optional SharedQuadState sqs = 1;
+
   required Rect rect = 2;
   required Rect visible_rect = 3;
 

@@ -5,23 +5,17 @@
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer_util.h"
 
 #include <limits>
-#include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/resources/resource_sizes.h"
-#include "components/viz/service/compositor_frame_fuzzer/fuzzer_browser_process.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace viz {
 
 namespace {
-
-// Hard limit on number of bytes of memory to allocate (e.g. for referenced
-// bitmaps) in association with a single CompositorFrame. Currently 0.5 GiB;
-// reduce this if bots are running out of memory.
-constexpr uint64_t kMaxMappedMemory = 1 << 29;
 
 // Handles inf / NaN by setting to 0.
 double MakeNormal(double x) {
@@ -94,20 +88,6 @@ void ExpandToMinSize(gfx::Rect* rect, int min_size) {
   }
 }
 
-// Allocate and map memory for a bitmap filled with |color|.
-FuzzedBitmap AllocateFuzzedBitmap(const gfx::Size& size, SkColor color) {
-  SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
-  std::unique_ptr<base::SharedMemory> shared_memory =
-      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
-
-  SkBitmap tile;
-  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  tile.installPixels(info, shared_memory->memory(), info.minRowBytes());
-  tile.eraseColor(color);
-
-  return FuzzedBitmap(shared_bitmap_id, size, std::move(shared_memory));
-}
-
 }  // namespace
 
 FuzzedBitmap::FuzzedBitmap(SharedBitmapId id,
@@ -121,21 +101,28 @@ FuzzedData::FuzzedData() = default;
 FuzzedData::~FuzzedData() = default;
 FuzzedData::FuzzedData(FuzzedData&& other) noexcept = default;
 
-FuzzedData GenerateFuzzedCompositorFrame(
-    const content::fuzzing::proto::RenderPass& render_pass_spec) {
-  FuzzedData fuzzed_data;
-  uint32_t allocated_bytes = 0;
+FuzzedCompositorFrameBuilder::FuzzedCompositorFrameBuilder() = default;
+FuzzedCompositorFrameBuilder::~FuzzedCompositorFrameBuilder() = default;
 
-  fuzzed_data.frame.metadata.begin_frame_ack.source_id =
+FuzzedData FuzzedCompositorFrameBuilder::Build(
+    const content::fuzzing::proto::RenderPass& render_pass_spec) {
+  data_.frame.metadata.begin_frame_ack.source_id =
       BeginFrameArgs::kManualSourceId;
-  fuzzed_data.frame.metadata.begin_frame_ack.sequence_number =
+  data_.frame.metadata.begin_frame_ack.sequence_number =
       BeginFrameArgs::kStartingFrameNumber;
-  fuzzed_data.frame.metadata.begin_frame_ack.has_damage = true;
-  fuzzed_data.frame.metadata.frame_token = 1;
-  fuzzed_data.frame.metadata.device_scale_factor = 1;
-  fuzzed_data.frame.metadata.local_surface_id_allocation_time =
+  data_.frame.metadata.begin_frame_ack.has_damage = true;
+  data_.frame.metadata.frame_token = 1;
+  data_.frame.metadata.device_scale_factor = 1;
+  data_.frame.metadata.local_surface_id_allocation_time =
       base::TimeTicks::Now();
 
+  AddRenderPass(render_pass_spec);
+
+  return std::move(data_);
+}
+
+void FuzzedCompositorFrameBuilder::AddRenderPass(
+    const content::fuzzing::proto::RenderPass& render_pass_spec) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   gfx::Rect rp_output_rect =
       GetRectFromProtobuf(render_pass_spec.output_rect());
@@ -143,14 +130,21 @@ FuzzedData GenerateFuzzedCompositorFrame(
       GetRectFromProtobuf(render_pass_spec.damage_rect());
 
   // Handle constraints on RenderPass:
-  // Ensure that |rp_output_rect| has non-zero area and that |rp_damage_rect| is
-  // contained in |rp_output_rect|.
+  // Ensure that |rp_output_rect| has non-zero area and that |rp_damage_rect|
+  // is contained in |rp_output_rect|.
   ExpandToMinSize(&rp_output_rect, 1);
   rp_damage_rect.AdjustToFit(rp_output_rect);
 
-  pass->SetNew(1, rp_output_rect, rp_damage_rect, gfx::Transform());
+  // Use an identity transform if |transform_to_root_target| is not defined.
+  gfx::Transform transform_to_root_target =
+      render_pass_spec.has_transform_to_root_target()
+          ? GetTransformFromProtobuf(
+                render_pass_spec.transform_to_root_target())
+          : gfx::Transform();
+  pass->SetNew(1, rp_output_rect, rp_damage_rect, transform_to_root_target);
 
-  for (const auto& quad_spec : render_pass_spec.quad_list()) {
+  for (const content::fuzzing::proto::DrawQuad& quad_spec :
+       render_pass_spec.quad_list()) {
     if (quad_spec.quad_case() ==
         content::fuzzing::proto::DrawQuad::QUAD_NOT_SET) {
       continue;
@@ -165,7 +159,79 @@ FuzzedData GenerateFuzzedCompositorFrame(
     ExpandToMinSize(&quad_rect, 1);
     quad_visible_rect.AdjustToFit(quad_rect);
 
-    auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
+    switch (quad_spec.quad_case()) {
+      case content::fuzzing::proto::DrawQuad::kSolidColorQuad: {
+        AddSolidColorDrawQuad(pass.get(), quad_rect, quad_visible_rect,
+                              quad_spec);
+        break;
+      }
+      case content::fuzzing::proto::DrawQuad::kTileQuad: {
+        TryAddTileDrawQuad(pass.get(), quad_rect, quad_visible_rect, quad_spec);
+        break;
+      }
+      case content::fuzzing::proto::DrawQuad::QUAD_NOT_SET: {
+        NOTREACHED();
+      }
+    }
+  }
+  data_.frame.render_pass_list.push_back(std::move(pass));
+}
+
+void FuzzedCompositorFrameBuilder::AddSolidColorDrawQuad(
+    RenderPass* pass,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    const content::fuzzing::proto::DrawQuad& quad_spec) {
+  auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
+  ConfigureSharedQuadState(shared_quad_state, quad_spec);
+  auto* quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  quad->SetNew(shared_quad_state, rect, visible_rect,
+               quad_spec.solid_color_quad().color(),
+               quad_spec.solid_color_quad().force_anti_aliasing_off());
+}
+
+void FuzzedCompositorFrameBuilder::TryAddTileDrawQuad(
+    RenderPass* pass,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    const content::fuzzing::proto::DrawQuad& quad_spec) {
+  gfx::Size tile_size =
+      GetSizeFromProtobuf(quad_spec.tile_quad().texture_size());
+
+  // Skip TileDrawQuads with bitmaps that cannot be allocated (size is 0
+  // or would overflow our limit on allocated memory for this
+  // CompositorFrame.)
+  if (!TryReserveBitmapBytes(tile_size)) {
+    VLOG(1) << "Skipping TileDrawQuad: bitmap of size " << tile_size.ToString()
+            << " can't be allocated.";
+    return;
+  }
+
+  FuzzedBitmap* fuzzed_bitmap =
+      AllocateFuzzedBitmap(tile_size, quad_spec.tile_quad().texture_color());
+  TransferableResource transferable_resource =
+      TransferableResource::MakeSoftware(fuzzed_bitmap->id, fuzzed_bitmap->size,
+                                         RGBA_8888);
+
+  auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
+  ConfigureSharedQuadState(shared_quad_state, quad_spec);
+  auto* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+  quad->SetNew(
+      shared_quad_state, rect, visible_rect,
+      quad_spec.tile_quad().needs_blending(), transferable_resource.id,
+      gfx::RectF(GetRectFromProtobuf(quad_spec.tile_quad().tex_coord_rect())),
+      tile_size, quad_spec.tile_quad().swizzle_contents(),
+      quad_spec.tile_quad().is_premultiplied(),
+      quad_spec.tile_quad().nearest_neighbor(),
+      quad_spec.tile_quad().force_anti_aliasing_off());
+
+  data_.frame.resource_list.push_back(transferable_resource);
+}
+
+void FuzzedCompositorFrameBuilder::ConfigureSharedQuadState(
+    SharedQuadState* shared_quad_state,
+    const content::fuzzing::proto::DrawQuad& quad_spec) {
+  if (quad_spec.has_sqs()) {
     shared_quad_state->SetAll(
         GetTransformFromProtobuf(quad_spec.sqs().transform()),
         GetRectFromProtobuf(quad_spec.sqs().layer_rect()),
@@ -174,62 +240,45 @@ FuzzedData GenerateFuzzedCompositorFrame(
         quad_spec.sqs().is_clipped(), quad_spec.sqs().are_contents_opaque(),
         Normalize(quad_spec.sqs().opacity()), SkBlendMode::kSrcOver,
         quad_spec.sqs().sorting_context_id());
+  } else {
+    shared_quad_state->SetAll(
+        gfx::Transform(), GetRectFromProtobuf(quad_spec.rect()),
+        GetRectFromProtobuf(quad_spec.visible_rect()), gfx::RRectF(),
+        gfx::Rect(), /*is_clipped=*/false,
+        /*are_contents_opaque=*/true, /*opacity=*/1.0, SkBlendMode::kSrcOver,
+        /*sorting_context_id=*/0);
+  }
+}
 
-    switch (quad_spec.quad_case()) {
-      case content::fuzzing::proto::DrawQuad::kSolidColorQuad: {
-        auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-        color_quad->SetNew(
-            shared_quad_state, quad_rect, quad_visible_rect,
-            quad_spec.solid_color_quad().color(),
-            quad_spec.solid_color_quad().force_anti_aliasing_off());
-        break;
-      }
-      case content::fuzzing::proto::DrawQuad::kTileQuad: {
-        gfx::Size tile_size =
-            GetSizeFromProtobuf(quad_spec.tile_quad().texture_size());
-
-        // Skip TileDrawQuads with bitmaps that cannot be allocated (size is 0
-        // or would overflow our limit on allocated memory for this
-        // CompositorFrame.)
-        uint64_t tile_bytes;
-        if (!ResourceSizes::MaybeSizeInBytes<uint64_t>(tile_size, RGBA_8888,
-                                                       &tile_bytes) ||
-            tile_bytes > kMaxMappedMemory - allocated_bytes) {
-          continue;
-        }
-
-        FuzzedBitmap fuzzed_bitmap = AllocateFuzzedBitmap(
-            tile_size, quad_spec.tile_quad().texture_color());
-        allocated_bytes += tile_bytes;
-
-        TransferableResource transferable_resource =
-            TransferableResource::MakeSoftware(fuzzed_bitmap.id,
-                                               fuzzed_bitmap.size, RGBA_8888);
-
-        auto* tile_quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
-        tile_quad->SetNew(
-            shared_quad_state, quad_rect, quad_visible_rect,
-            quad_spec.tile_quad().needs_blending(), transferable_resource.id,
-            gfx::RectF(
-                GetRectFromProtobuf(quad_spec.tile_quad().tex_coord_rect())),
-            tile_size, quad_spec.tile_quad().swizzle_contents(),
-            quad_spec.tile_quad().is_premultiplied(),
-            quad_spec.tile_quad().nearest_neighbor(),
-            quad_spec.tile_quad().force_anti_aliasing_off());
-
-        fuzzed_data.frame.resource_list.push_back(transferable_resource);
-        fuzzed_data.allocated_bitmaps.push_back(std::move(fuzzed_bitmap));
-
-        break;
-      }
-      case content::fuzzing::proto::DrawQuad::QUAD_NOT_SET: {
-        NOTREACHED();
-      }
-    }
+bool FuzzedCompositorFrameBuilder::TryReserveBitmapBytes(
+    const gfx::Size& size) {
+  uint64_t bitmap_bytes;
+  if (!ResourceSizes::MaybeSizeInBytes<uint64_t>(size, RGBA_8888,
+                                                 &bitmap_bytes) ||
+      bitmap_bytes > kMaxTextureMemory - reserved_bytes_) {
+    return false;
   }
 
-  fuzzed_data.frame.render_pass_list.push_back(std::move(pass));
-  return fuzzed_data;
+  reserved_bytes_ += bitmap_bytes;
+  return true;
+}
+
+FuzzedBitmap* FuzzedCompositorFrameBuilder::AllocateFuzzedBitmap(
+    const gfx::Size& size,
+    SkColor color) {
+  SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
+  std::unique_ptr<base::SharedMemory> shared_memory =
+      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
+
+  SkBitmap bitmap;
+  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
+  bitmap.installPixels(info, shared_memory->memory(), info.minRowBytes());
+  bitmap.eraseColor(color);
+
+  data_.allocated_bitmaps.push_back(
+      {shared_bitmap_id, size, std::move(shared_memory)});
+
+  return &data_.allocated_bitmaps.back();
 }
 
 }  // namespace viz
