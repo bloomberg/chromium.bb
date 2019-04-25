@@ -610,8 +610,6 @@ void BrowsingDataRemoverImpl::Notify() {
     return;
   }
 
-  slow_pending_tasks_closure_.Cancel();
-
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
@@ -633,6 +631,8 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
                          static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
+
+  slow_pending_tasks_closure_.Cancel();
 
   if (!would_complete_callback_.is_null()) {
     would_complete_callback_.Run(
