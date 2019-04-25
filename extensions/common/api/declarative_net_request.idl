@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The <code>chrome.declarativeNetRequest</code> API is used to block or
-// redirect network requests by specifying declarative rules.
+// The <code>chrome.declarativeNetRequest</code> API is used to block or modify
+// network requests by specifying declarative rules.
 [generate_error_messages]
 namespace declarativeNetRequest {
   // This describes the resource type of the network request.
@@ -34,7 +34,6 @@ namespace declarativeNetRequest {
   };
 
   // This describes the headers which can be removed from the network request.
-  [nodoc]
   enum RemoveHeaderType {
     cookie,
     referer,
@@ -51,7 +50,7 @@ namespace declarativeNetRequest {
     // is a blocking rule which matches it.
     allow,
     // Remove request/response headers from the network request.
-    [nodoc] removeHeaders
+    removeHeaders
   };
 
   dictionary RuleCondition {
@@ -98,8 +97,8 @@ namespace declarativeNetRequest {
     DOMString[]? domains;
 
     // The rule will not match network requests originating from the list of
-    // <code>excludedDomains</code>. If the list is empty or omitted, no domains
-    // are excluded. This takes precedence over <code>domains</code>.
+    // <code> excludedDomains</code>. If the list is empty or omitted, no domains
+    // are excluded. This takes precedence over <code> domains</code>.
     //
     // Note: sub-domains like "a.example.com" are also allowed.
     // The entries must consist of only ascii characters. Use punycode encoding
@@ -131,7 +130,7 @@ namespace declarativeNetRequest {
 
     // The headers to remove from the request. Only valid if RuleActionType is
     // "removeHeaders".
-    [nodoc] RemoveHeaderType[]? removeHeadersList;
+    RemoveHeaderType[]? removeHeadersList;
   };
 
   dictionary Rule {
