@@ -102,6 +102,11 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
         advanced_battery_charge_mode_day_configs;
     bool boot_on_ac = false;
     bool usb_power_share = true;
+    power_manager::PowerManagementPolicy::BatteryChargeMode::Mode
+        battery_charge_mode =
+            power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD;
+    int custom_charge_start = -1;
+    int custom_charge_stop = -1;
   };
 
   // Converts |base::DictionaryValue| to |std::vector<PeakShiftDayConfig>| and
@@ -116,6 +121,12 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
   static bool GetAdvancedBatteryChargeModeDayConfigs(
       const base::DictionaryValue& value,
       std::vector<AdvancedBatteryChargeModeDayConfig>* configs_out);
+
+  // Saves appropriate value to |mode_out| and returns true if there is mapping
+  // between battery charge mode int and enum value.
+  static bool GetBatteryChargeModeFromInteger(
+      int mode,
+      power_manager::PowerManagementPolicy::BatteryChargeMode::Mode* mode_out);
 
   // Returns a string describing |policy|.  Useful for comparisons in tests.
   static std::string GetPolicyDebugString(

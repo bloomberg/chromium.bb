@@ -116,6 +116,8 @@ std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity));
 
   // Device-level prefs do not exist in the user-level |prefs|.
+  expected_policy.mutable_battery_charge_mode()->set_mode(
+      power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD);
   expected_policy.set_boot_on_ac(false);
   expected_policy.set_usb_power_share(true);
 
@@ -489,6 +491,24 @@ TEST_F(PowerPrefsTest, AdvancedBatteryChargeMode) {
                 GetAdvancedBatteryChargeModePolicyDebugString(
                     power_manager_client()->policy()),
             GetExpectedAdvancedBatteryChargeModePolicyForPrefs(local_state()));
+}
+
+TEST_F(PowerPrefsTest, BatteryChargeMode) {
+  const auto& battery_charge_mode =
+      power_manager_client()->policy().battery_charge_mode();
+
+  managed_pref_store_->SetInteger(prefs::kBatteryChargeMode, 2);
+  EXPECT_EQ(
+      battery_charge_mode.mode(),
+      power_manager::PowerManagementPolicy::BatteryChargeMode::EXPRESS_CHARGE);
+
+  managed_pref_store_->SetInteger(prefs::kBatteryChargeMode, 5);
+  managed_pref_store_->SetInteger(prefs::kBatteryChargeCustomStartCharging, 55);
+  managed_pref_store_->SetInteger(prefs::kBatteryChargeCustomStopCharging, 87);
+  EXPECT_EQ(battery_charge_mode.mode(),
+            power_manager::PowerManagementPolicy::BatteryChargeMode::CUSTOM);
+  EXPECT_EQ(battery_charge_mode.custom_charge_start(), 55);
+  EXPECT_EQ(battery_charge_mode.custom_charge_stop(), 87);
 }
 
 TEST_F(PowerPrefsTest, BootOnAc) {

@@ -377,6 +377,25 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     }
   }
 
+  if (local_state_->IsManagedPreference(prefs::kBatteryChargeMode)) {
+    if (chromeos::PowerPolicyController::GetBatteryChargeModeFromInteger(
+            local_state_->GetInteger(prefs::kBatteryChargeMode),
+            &values.battery_charge_mode)) {
+      if (local_state_->IsManagedPreference(
+              prefs::kBatteryChargeCustomStartCharging) &&
+          local_state_->IsManagedPreference(
+              prefs::kBatteryChargeCustomStopCharging)) {
+        values.custom_charge_start =
+            local_state_->GetInteger(prefs::kBatteryChargeCustomStartCharging);
+        values.custom_charge_stop =
+            local_state_->GetInteger(prefs::kBatteryChargeCustomStopCharging);
+      }
+    } else {
+      LOG(WARNING) << "Invalid Battery Charge Mode value: "
+                   << local_state_->GetInteger(prefs::kBatteryChargeMode);
+    }
+  }
+
   if (local_state_->IsManagedPreference(prefs::kBootOnAcEnabled)) {
     values.boot_on_ac = local_state_->GetBoolean(prefs::kBootOnAcEnabled);
   }
@@ -455,6 +474,12 @@ void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
   local_state_registrar_->Add(prefs::kAdvancedBatteryChargeModeEnabled,
                               update_callback);
   local_state_registrar_->Add(prefs::kAdvancedBatteryChargeModeDayConfig,
+                              update_callback);
+
+  local_state_registrar_->Add(prefs::kBatteryChargeMode, update_callback);
+  local_state_registrar_->Add(prefs::kBatteryChargeCustomStartCharging,
+                              update_callback);
+  local_state_registrar_->Add(prefs::kBatteryChargeCustomStopCharging,
                               update_callback);
 
   local_state_registrar_->Add(prefs::kBootOnAcEnabled, update_callback);
