@@ -36,7 +36,8 @@ DEFAULT_REVIEWERS = ['perezju@chromium.org']
 
 
 def _GetBranchName():
-  return subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+  return subprocess.check_output(
+      ['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
 
 
 def _OpenBrowser(url):
@@ -275,12 +276,13 @@ class WprUpdater(object):
     with open(output_file, 'r') as output_fd:
       return json.load(output_fd)['issue_url']
 
+  def _SanitizedBranchPrefix(self):
+    return 'update-wpr-%s' % re.sub(r'[^A-Za-z0-9-_.]', r'-', self.story)
+
   def _CreateBranch(self):
-    sanitized_story = re.sub(r'[^A-Za-z0-9-_.]', r'-', self.story)
-    subprocess.check_call([
-      'git', 'new-branch',
-      'update-wpr-%s-%d' % (sanitized_story, random.randint(0, 10000)),
-    ])
+    new_branch_name = '%s-%d' % (
+        self._SanitizedBranchPrefix(), random.randint(0, 10000))
+    cli_helpers.Run(['git', 'new-branch', new_branch_name])
 
   def _FilterLogForDiff(self, log_filename):
     """Removes unimportant details from console logs for cleaner diffs.
@@ -464,10 +466,12 @@ class WprUpdater(object):
           'You are on a branch {branch} {issue_message}. Please commit or '
           'stash any changes unrelated to the updated story before '
           'proceeding.', branch=branch, issue_message=issue_message)
+      is_update_wpr_branch = re.match(
+          r'%s-\d+' % self._SanitizedBranchPrefix(), branch)
       ans = cli_helpers.Ask(
           'Should the script create a new branch automatically, reuse '
           'existing one or exit?', answers=['create', 'reuse', 'exit'],
-          default='create')
+          default='reuse' if is_update_wpr_branch else 'create')
       if ans == 'create':
         self._CreateBranch()
       elif ans == 'reuse':
@@ -606,21 +610,23 @@ def Main(argv):
   args = parser.parse_args(argv)
 
   updater = WprUpdater(args)
-  if args.command == 'auto':
-    _EnsureEditor()
-    luci_auth.CheckLoggedIn()
-    updater.AutoRun()
-  elif args.command =='live':
-    updater.LiveRun()
-  elif args.command == 'record':
-    updater.RecordWpr()
-  elif args.command == 'replay':
-    updater.ReplayWpr()
-  elif args.command == 'upload':
-    updater.UploadWpr()
-  elif args.command == 'review':
-    updater.UploadCL()
-  elif args.command == 'pinpoint':
-    luci_auth.CheckLoggedIn()
-    updater.StartPinpointJobs()
-  updater.Cleanup()
+  try:
+    if args.command == 'auto':
+      _EnsureEditor()
+      luci_auth.CheckLoggedIn()
+      updater.AutoRun()
+    elif args.command =='live':
+      updater.LiveRun()
+    elif args.command == 'record':
+      updater.RecordWpr()
+    elif args.command == 'replay':
+      updater.ReplayWpr()
+    elif args.command == 'upload':
+      updater.UploadWpr()
+    elif args.command == 'review':
+      updater.UploadCL()
+    elif args.command == 'pinpoint':
+      luci_auth.CheckLoggedIn()
+      updater.StartPinpointJobs()
+  finally:
+    updater.Cleanup()

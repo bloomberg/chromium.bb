@@ -87,18 +87,19 @@ class UpdateWprTest(unittest.TestCase):
   @mock.patch('core.cli_helpers.Ask', return_value=True)
   def testCleanupAutomatic(self, ask, rmtree):
     del ask  # Unused.
+    self.wpr_updater.created_branch = 'foo'
     self.wpr_updater.Cleanup()
     rmtree.assert_called_once_with('/tmp/dir', ignore_errors=True)
 
   def testGetBranchName(self):
-    self._check_output.return_value = 'master'
+    self._check_output.return_value = 'master\n'
     self.assertEqual(update_wpr._GetBranchName(), 'master')
     self._check_output.assert_called_once_with(
         ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
   def testCreateBranch(self):
     self.wpr_updater._CreateBranch()
-    self._check_call.assert_called_once_with(
+    self._run.assert_called_once_with(
         ['git', 'new-branch', 'update-wpr--story--1234'])
 
   def testSendCLForReview(self):
