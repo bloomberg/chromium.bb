@@ -36,7 +36,7 @@ def BuildForArch(arch):
   Run('scripts/fx', '--dir', build_dir, 'set', 'sdk_image.' + arch,
       '--with=//topaz/packages/sdk:topaz', '--args=is_debug=false',
       '--args=build_sdk_archives=true')
-  Run('scripts/fx', 'build', 'topaz/public/sdk:topaz')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:topaz', 'sdk:images_archive')
 
 
 def main(args):
@@ -60,8 +60,12 @@ def main(args):
   BuildForArch(arch)
 
   tempdir = tempfile.mkdtemp()
-  sdk_tar = os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk',
-                         'archive', 'topaz.tar.gz')
+  sdk_tars = [
+      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                   'images.tar.gz'),
+      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                   'topaz.tar.gz')
+  ]
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
@@ -69,7 +73,8 @@ def main(args):
   output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk',
                             'sdk')
   EnsureEmptyDir(output_dir)
-  tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
+  for sdk_tar in sdk_tars:
+    tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
 
   print 'Hashing sysroot...'
   # Hash the sysroot to catch updates to the headers, but don't hash the whole
