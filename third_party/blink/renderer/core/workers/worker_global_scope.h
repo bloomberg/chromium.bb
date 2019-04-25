@@ -123,8 +123,6 @@ class CORE_EXPORT WorkerGlobalScope
     return agent_cluster_id_;
   }
 
-  void InitializeURL(const KURL& url);
-
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   void AddConsoleMessage(ConsoleMessage*) final;
@@ -138,6 +136,16 @@ class CORE_EXPORT WorkerGlobalScope
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
   bool IsWindowOrWorkerGlobalScope() const final { return true; }
+
+  // Initializes this global scope. This must be called after worker script
+  // fetch, and before initiali script evaluation.
+  //
+  // This corresponds to following specs:
+  // - For dedicated/shared workers, step 12.3-12.6 (a custom perform the fetch
+  //   hook) in https://html.spec.whatwg.org/C/#run-a-worker
+  // - For service workers, step 4.5-4.11 in
+  //   https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+  virtual void Initialize(const KURL& response_url) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
@@ -196,6 +204,8 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& script_url,
       String source_code,
       std::unique_ptr<Vector<uint8_t>> cached_meta_data);
+
+  void InitializeURL(const KURL& url);
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 

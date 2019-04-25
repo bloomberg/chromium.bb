@@ -57,6 +57,9 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
+  void Initialize(const KURL& response_url) override {
+    InitializeURL(response_url);
+  }
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,

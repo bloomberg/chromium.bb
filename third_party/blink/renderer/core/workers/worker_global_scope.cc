@@ -113,18 +113,6 @@ const KURL& WorkerGlobalScope::BaseURL() const {
   return Url();
 }
 
-NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
-  CHECK(url_.IsNull());
-  DCHECK(url.IsValid());
-  if (GetSecurityOrigin()->IsOpaque()) {
-    DCHECK(SecurityOrigin::Create(url)->IsOpaque());
-  } else {
-    DCHECK(GetSecurityOrigin()->IsSameSchemeHostPort(
-        SecurityOrigin::Create(url).get()));
-  }
-  url_ = url;
-}
-
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;
@@ -475,7 +463,6 @@ WorkerGlobalScope::WorkerGlobalScope(
   // after the script is fetched.
   if (creation_params->off_main_thread_fetch_option ==
       OffMainThreadWorkerScriptFetchOption::kDisabled) {
-    InitializeURL(creation_params->script_url);
     SetReferrerPolicy(creation_params->referrer_policy);
   }
 
@@ -509,6 +496,18 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
                           TaskType::kNetworking),
                       FROM_HERE,
                       CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+}
+
+NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
+  CHECK(url_.IsNull());
+  DCHECK(url.IsValid());
+  if (GetSecurityOrigin()->IsOpaque()) {
+    DCHECK(SecurityOrigin::Create(url)->IsOpaque());
+  } else {
+    DCHECK(GetSecurityOrigin()->IsSameSchemeHostPort(
+        SecurityOrigin::Create(url).get()));
+  }
+  url_ = url;
 }
 
 void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {

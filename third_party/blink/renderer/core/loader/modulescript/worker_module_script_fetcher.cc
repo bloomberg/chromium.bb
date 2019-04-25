@@ -28,12 +28,12 @@ void WorkerModuleScriptFetcher::Fetch(
   client_ = client;
   level_ = level;
 
-  // Step 13. "In both cases, to perform the fetch given request, perform the
+  // Step 12. "In both cases, to perform the fetch given request, perform the
   // following steps if the is top-level flag is set:" [spec text]
-  // Step 13.1. "Set request's reserved client to inside settings." [spec text]
+  // Step 12.1. "Set request's reserved client to inside settings." [spec text]
   // This is implemented in the browser process.
 
-  // Step 13.2. "Fetch request, and asynchronously wait to run the remaining
+  // Step 12.2. "Fetch request, and asynchronously wait to run the remaining
   // steps as part of fetch's process response for the response response." [spec
   // text]
   ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
@@ -80,13 +80,10 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
       return;
     }
 
-    // Step 13.3. "Set worker global scope's url to response's url." [spec text]
-    global_scope_->InitializeURL(response_url);
+    // Step 12.3-12.4 are implemented in Initialize().
+    global_scope_->Initialize(response_url);
 
-    // Step 13.4. "Set worker global scope's HTTPS state to response's HTTPS
-    // state." [spec text]
-
-    // Step 13.5. "Set worker global scope's referrer policy to the result of
+    // Step 12.5. "Set worker global scope's referrer policy to the result of
     // parsing the `Referrer-Policy` header of response." [spec text]
     const String referrer_policy_header =
         resource->GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
@@ -99,7 +96,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
       global_scope_->SetReferrerPolicy(referrer_policy);
     }
 
-    // Step 13.6. "Execute the Initialize a global object's CSP list algorithm
+    // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
     // on worker global scope and response. [CSP]" [spec text]
     // This is done in the constructor of WorkerGlobalScope.
   }
@@ -109,7 +106,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
       script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
 
-  // Step 13.7. "Asynchronously complete the perform the fetch steps with
+  // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response." [spec text]
   client_->NotifyFetchFinished(params, error_messages);
 }

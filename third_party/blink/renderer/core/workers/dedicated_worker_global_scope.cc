@@ -56,6 +56,27 @@
 
 namespace blink {
 
+// static
+DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
+    DedicatedWorkerThread* thread,
+    base::TimeTicks time_origin) {
+  // Off-the-main-thread worker script fetch:
+  // Initialize() is called after script fetch.
+  if (creation_params->off_main_thread_fetch_option ==
+      OffMainThreadWorkerScriptFetchOption::kEnabled) {
+    return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+        std::move(creation_params), thread, time_origin);
+  }
+
+  // Legacy on-the-main-thread worker script fetch (to be removed):
+  KURL response_script_url = creation_params->script_url;
+  auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+      std::move(creation_params), thread, time_origin);
+  global_scope->Initialize(response_script_url);
+  return global_scope;
+}
+
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
@@ -66,6 +87,19 @@ DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
 const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kDedicatedWorkerGlobalScope;
+}
+
+// https://html.spec.whatwg.org/C/#worker-processing-model
+void DedicatedWorkerGlobalScope::Initialize(const KURL& response_url) {
+  // Step 12.3. "Set worker global scope's url to response's url."
+  InitializeURL(response_url);
+
+  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
+  // state."
+  // This is done in the constructor of WorkerGlobalScope.
+
+  // TODO(nhiroki): Move the step 12.5-12.6 from DidFetchClassicScript() to this
+  // function.
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -193,12 +227,8 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
-  // Step 12.3. "Set worker global scope's url to response's url."
-  InitializeURL(classic_script_loader->ResponseURL());
-
-  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
-  // state."
-  // This is done in the constructor of WorkerGlobalScope.
+  // Step 12.3-12.4 are implemented in Initialize().
+  Initialize(classic_script_loader->ResponseURL());
 
   // Step 12.5. "Set worker global scope's referrer policy to the result of
   // parsing the `Referrer-Policy` header of response."

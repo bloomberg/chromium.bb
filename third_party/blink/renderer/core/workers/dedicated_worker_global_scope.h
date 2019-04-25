@@ -51,9 +51,19 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // TODO(nhiroki): Merge Create() into the constructor after
+  // off-the-main-thread worker script fetch is enabled by default.
+  static DedicatedWorkerGlobalScope* Create(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      DedicatedWorkerThread*,
+      base::TimeTicks time_origin);
+
+  // Do not call this. Use Create() instead. This is public only for
+  // MakeGarbageCollected.
   DedicatedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                              DedicatedWorkerThread*,
                              base::TimeTicks time_origin);
+
   ~DedicatedWorkerGlobalScope() override;
 
   // Implements ExecutionContext.
@@ -64,6 +74,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // Implements WorkerGlobalScope.
+  void Initialize(const KURL& response_url) override;
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,

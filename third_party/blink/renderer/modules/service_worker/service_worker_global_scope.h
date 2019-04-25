@@ -81,6 +81,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope:
+  void Initialize(const KURL& response_url) override;
   // Fetches and runs the top-level classic worker script for the 'new' or
   // 'update' service worker cases.
   void FetchAndRunClassicScript(

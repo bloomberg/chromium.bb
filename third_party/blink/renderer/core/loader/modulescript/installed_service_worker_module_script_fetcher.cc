@@ -27,10 +27,10 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
   DCHECK(installed_scripts_manager);
   DCHECK(installed_scripts_manager->IsScriptInstalled(fetch_params.Url()));
 
-  std::unique_ptr<InstalledScriptsManager::ScriptData> script =
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
       installed_scripts_manager->GetScriptData(fetch_params.Url());
 
-  if (!script) {
+  if (!script_data) {
     HeapVector<Member<ConsoleMessage>> error_messages;
     error_messages.push_back(ConsoleMessage::CreateForRequest(
         mojom::ConsoleMessageSource::kJavaScript,
@@ -41,8 +41,17 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     return;
   }
 
+  if (level == ModuleGraphLevel::kTopLevelModuleFetch) {
+    // |fetch_params.Url()| is always equal to the response URL because service
+    // worker script fetch disallows redirect.
+    // https://w3c.github.io/ServiceWorker/#ref-for-concept-request-redirect-mode
+    global_scope_->Initialize(fetch_params.Url());
+
+    // TODO(nhiroki): Set ReferrerPolicy, CSP etc (https://crbug.com/937757).
+  }
+
   ModuleScriptCreationParams params(
-      fetch_params.Url(), ParkableString(script->TakeSourceText().Impl()),
+      fetch_params.Url(), ParkableString(script_data->TakeSourceText().Impl()),
       nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());

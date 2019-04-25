@@ -115,9 +115,24 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
               creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
   }
-  return MakeGarbageCollected<ServiceWorkerGlobalScope>(
+
+  // Off-the-main-thread worker script fetch (including installed service worker
+  // case):
+  // Initialize() is called after script fetch.
+  if (creation_params->off_main_thread_fetch_option ==
+      OffMainThreadWorkerScriptFetchOption::kEnabled) {
+    return MakeGarbageCollected<ServiceWorkerGlobalScope>(
+        std::move(creation_params), thread, std::move(cache_storage_info),
+        time_origin);
+  }
+
+  // Legacy on-the-main-thread worker script fetch (to be removed):
+  KURL response_url = creation_params->script_url;
+  auto* global_scope = MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
+  global_scope->Initialize(response_url);
+  return global_scope;
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
@@ -394,13 +409,7 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
 }
 
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
-void ServiceWorkerGlobalScope::RunClassicScript(
-    const KURL& response_url,
-    network::mojom::ReferrerPolicy referrer_policy,
-    const Vector<CSPHeaderAndType> csp_headers,
-    const String& source_code,
-    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
-    const v8_inspector::V8StackTraceId& stack_id) {
+void ServiceWorkerGlobalScope::Initialize(const KURL& response_url) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -408,9 +417,23 @@ void ServiceWorkerGlobalScope::RunClassicScript(
   // resource's HTTPS state."
   // This is done in the constructor of WorkerGlobalScope.
 
+  // TODO(nhiroki): Move the step 4.7-4.12 from RunClassicScript() to this
+  // function.
+}
+
+// https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+void ServiceWorkerGlobalScope::RunClassicScript(
+    const KURL& response_url,
+    network::mojom::ReferrerPolicy response_referrer_policy,
+    const Vector<CSPHeaderAndType> response_csp_headers,
+    const String& source_code,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  Initialize(response_url);
+
   // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
   // script resource's referrer policy."
-  SetReferrerPolicy(referrer_policy);
+  SetReferrerPolicy(response_referrer_policy);
 
   // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
   // implementation.
@@ -424,7 +447,7 @@ void ServiceWorkerGlobalScope::RunClassicScript(
   // - If serviceWorker's script resource was delivered with a
   //   Content-Security-Policy-Report-Only HTTP header containing the value
   //   policy, the user agent must monitor policy for serviceWorker."
-  InitContentSecurityPolicyFromVector(csp_headers);
+  InitContentSecurityPolicyFromVector(response_csp_headers);
   BindContentSecurityPolicyToExecutionContext();
 
   // Step 4.12. "Let evaluationStatus be the result of running the classic
