@@ -86,7 +86,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
 bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
   // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
   // still be used for a normal web site.
-  if (url == url::kAboutBlankURL)
+  if (url.IsAboutBlank())
     return false;
 
   // The embedder will then have the opportunity to determine if the URL
@@ -453,8 +453,7 @@ bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
 
   // If the destination url is just a blank page, we treat them as part of the
   // same site.
-  GURL blank_page(url::kAboutBlankURL);
-  if (dest_url == blank_page)
+  if (dest_url.IsAboutBlank())
     return true;
 
   // If the source and destination URLs are equal excluding the hash, they have
