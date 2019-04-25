@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Buscando dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth inhabilitado</translation>
 <translation id="2268813581635650749">Cerrar todas las sesiones</translation>
+<translation id="2277103315734023688">Ir hacia delante</translation>
 <translation id="2292698582925480719">Escala de pantalla</translation>
 <translation id="2302092602801625023">Esta cuenta se gestiona con Family Link</translation>
 <translation id="2303600792989757991">Activar descripción general de ventanas</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Dispositivo USB tipo C (puerto frontal derecho)</translation>
 <translation id="3400357268283240774">Configuración adicional</translation>
 <translation id="3413817803639110246">Aún no hay contenido</translation>
+<translation id="343571671045587506">Editar recordatorio</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">La conexión ha cambiado a una red más segura</translation>
 <translation id="3465223694362104965">Se ha conectado otro teclado a este dispositivo desde la última vez que iniciaste sesión. Antes de usarlo, asegúrate de que sea de confianza.</translation>
@@ -199,12 +201,14 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="3900355044994618856">Tu sesión terminará en <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configuración de audio</translation>
+<translation id="3962859241508114581">Pista anterior</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
 <translation id="4042660782729322247">Estás compartiendo tu pantalla</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una aplicación}other{Desactivadas para # aplicaciones}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
+<translation id="4112140312785995938">Ir hacia atrás</translation>
 <translation id="4129129681837227511">Para poder ver las notificaciones desde la pantalla de bloqueo, desbloquea el dispositivo para cambiar este ajuste</translation>
 <translation id="4146833061457621061">Pon música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -228,6 +232,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
+<translation id="4477350412780666475">Pista siguiente</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos desvinculados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
@@ -393,6 +398,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7222902781030499995">Detener temporizador</translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
+<translation id="7262906531272962081">Crear recordatorio</translation>
 <translation id="7303365578352795231">Se está respondiendo en otro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
