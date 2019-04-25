@@ -219,9 +219,7 @@ cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
     // TODO(yuli): Update min-width for resizing at portrait orientation.
     var inner = chrome.app.window.current().innerBounds;
     var innerW = inner.minWidth;
-    var innerH = cca.state.get('square-mode') ?
-        innerW :
-        Math.round(innerW / this.aspectRatio_);
+    var innerH = Math.round(innerW * 9 / 16);
 
     // Limit window resizing capability by setting min-height. Don't limit
     // max-height here as it may disable maximize/fullscreen capabilities.
