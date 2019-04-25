@@ -450,7 +450,10 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   }
 
   if (!BrowserContextEnabled(browser_context_id)) {
-    *error_message = kStartRemoteLoggingFailureGeneric;
+    // Remote-bound event logging has either not yet been enabled for this
+    // BrowserContext, or has been recently disabled. This error should not
+    // really be reached, barring a timing issue.
+    *error_message = kStartRemoteLoggingFailureLoggingDisabledBrowserContext;
     UmaRecordWebRtcEventLoggingApi(
         WebRtcEventLoggingApiUma::kDisabledBrowserContext);
     return false;
@@ -478,10 +481,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   PrunePendingLogs();
 
   if (!AdditionalActiveLogAllowed(key.browser_context_id)) {
-    // Intentionally use a generic error, so as to not leak information such
-    // as there being too many other peer connections on other tabs that might
-    // also be logging.
-    *error_message = kStartRemoteLoggingFailureGeneric;
+    *error_message = kStartRemoteLoggingFailureNoAdditionalActiveLogsAllowed;
     UmaRecordWebRtcEventLoggingApi(
         WebRtcEventLoggingApiUma::kNoAdditionalLogsAllowed);
     return false;
@@ -1006,7 +1006,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
 
   if (base::PathExists(log_path)) {
     LOG(ERROR) << "Previously used ID selected.";
-    *error_message_out = kStartRemoteLoggingFailureGeneric;
+    *error_message_out = kStartRemoteLoggingFailureFilePathUsedLog;
     UmaRecordWebRtcEventLoggingApi(
         WebRtcEventLoggingApiUma::kLogPathNotAvailable);
     return false;
@@ -1016,7 +1016,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
       GetWebRtcEventLogHistoryFilePath(log_path);
   if (base::PathExists(history_file_path)) {
     LOG(ERROR) << "Previously used ID selected.";
-    *error_message_out = kStartRemoteLoggingFailureGeneric;
+    *error_message_out = kStartRemoteLoggingFailureFilePathUsedHistory;
     UmaRecordWebRtcEventLoggingApi(
         WebRtcEventLoggingApiUma::kHistoryPathNotAvailable);
     return false;
@@ -1027,9 +1027,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   auto log_file =
       log_file_writer_factory_->Create(log_path, max_file_size_bytes);
   if (!log_file) {
-    // TODO(crbug.com/775415): Add UMA for exact failure type.
     LOG(ERROR) << "Failed to initialize remote-bound WebRTC event log file.";
-    *error_message_out = kStartRemoteLoggingFailureGeneric;
+    *error_message_out = kStartRemoteLoggingFailureFileCreationError;
     UmaRecordWebRtcEventLoggingApi(
         WebRtcEventLoggingApiUma::kFileCreationError);
     return false;
