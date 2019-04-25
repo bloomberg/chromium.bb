@@ -1394,6 +1394,7 @@ void Layer::SetStickyPositionConstraint(
   if (inputs_.sticky_position_constraint == constraint)
     return;
   inputs_.sticky_position_constraint = constraint;
+  SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
