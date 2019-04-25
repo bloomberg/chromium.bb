@@ -292,12 +292,13 @@ CGFloat ToolbarHeight() {
     self.fakeLocationBarTrailingConstraint.constant = 0;
     self.fakeLocationBarTopConstraint.constant = 0;
 
+    self.separator.alpha = 0;
+
     return;
   } else {
     self.alpha = 1;
+    self.separator.alpha = percent;
   }
-
-  self.separator.alpha = percent;
 
   // Grow the blur to cover the safeArea top.
   self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
