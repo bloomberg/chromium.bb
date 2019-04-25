@@ -225,7 +225,7 @@ struct macroblock {
   INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];
   int interp_filter_stats_idx[2];
 
-  // prune_comp_search_by_single_result (3:MAX_REF_MV_SERCH)
+  // prune_comp_search_by_single_result (3:MAX_REF_MV_SEARCH)
   SimpleRDState simple_rd_state[SINGLE_REF_MODES][3];
 
   // Activate constrained coding block partition search range.

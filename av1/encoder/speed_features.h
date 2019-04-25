@@ -711,6 +711,11 @@ typedef struct SPEED_FEATURES {
 
   // Perform coarse ME before calculating variance in variance-based partition
   int estimate_motion_for_var_based_partition;
+
+  // Instead of performing a full MV search, do a simple translation first
+  // and only perform a full MV search on the motion vectors that performed
+  // well.
+  int prune_mode_search_simple_translation;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
