@@ -1473,8 +1473,8 @@ TEST_F(ClientSocketPoolBaseTest, ResetAndCloseSocket) {
   EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
 }
 
-// This test will start up a RequestSocket() and then immediately Cancel() it.
-// The pending ConnectJob will not be cancelled.
+// This test will start up a socket request and then call Reset() on the handle.
+// The pending ConnectJob should not be destroyed.
 TEST_F(ClientSocketPoolBaseTest, CancelRequestKeepsConnectJob) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
@@ -1492,68 +1492,110 @@ TEST_F(ClientSocketPoolBaseTest, CancelRequestKeepsConnectJob) {
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
 }
 
-// This test will start up a RequestSocket() and then immediately Cancel() it
-// and kill the ConnectJob. The pending ConnectJob should be destroyed.
+// This test will start up a socket request and then call ResetAndCloseSocket()
+// on the handle. The pending ConnectJob or connected socket should be
+// destroyed.
 TEST_F(ClientSocketPoolBaseTest, CancelRequestAndCloseSocket) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
-  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
-  ClientSocketHandle handle;
-  TestCompletionCallback callback;
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      handle.Init(TestGroupId("a"), params_, base::nullopt, DEFAULT_PRIORITY,
-                  SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                  callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-                  pool_.get(), NetLogWithSource()));
-  handle.ResetAndCloseSocket();
-  ASSERT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
+  // When true, the socket connects before it's canceled.
+  for (bool cancel_when_callback_pending : {false, true}) {
+    if (cancel_when_callback_pending) {
+      connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+    } else {
+      connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+    }
+    ClientSocketHandle handle;
+    TestCompletionCallback callback;
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        handle.Init(TestGroupId("a"), params_, base::nullopt, DEFAULT_PRIORITY,
+                    SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                    pool_.get(), NetLogWithSource()));
+    ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
+    EXPECT_EQ(1u, pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
+
+    if (cancel_when_callback_pending) {
+      client_socket_factory_.SignalJobs();
+      ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
+      EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
+    }
+
+    handle.ResetAndCloseSocket();
+    ASSERT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
+  }
 }
 
 TEST_F(ClientSocketPoolBaseTest,
        CancelRequestAndCloseSocketWhenMoreRequestsThanConnectJobs) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
-  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+  // When true, the sockets connect before they're canceled.
+  for (bool cancel_when_callback_pending : {false, true}) {
+    if (cancel_when_callback_pending) {
+      connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+    } else {
+      connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+    }
 
-  std::vector<std::unique_ptr<ClientSocketHandle>> handles;
-  TestCompletionCallback callback;
-  // Make |kDefaultMaxSockets + 1| socket requests.
-  for (int i = 0; i < kDefaultMaxSocketsPerGroup + 1; ++i) {
-    std::unique_ptr<ClientSocketHandle> handle =
-        std::make_unique<ClientSocketHandle>();
-    EXPECT_EQ(
-        ERR_IO_PENDING,
-        handle->Init(TestGroupId("a"), params_, base::nullopt, DEFAULT_PRIORITY,
-                     SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                     callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-                     pool_.get(), NetLogWithSource()));
-    handles.push_back(std::move(handle));
-    if (i < kDefaultMaxSocketsPerGroup) {
+    std::vector<std::unique_ptr<ClientSocketHandle>> handles;
+    TestCompletionCallback callback;
+    // Make |kDefaultMaxSockets + 1| socket requests.
+    for (int i = 0; i < kDefaultMaxSocketsPerGroup + 1; ++i) {
+      std::unique_ptr<ClientSocketHandle> handle =
+          std::make_unique<ClientSocketHandle>();
+      EXPECT_EQ(ERR_IO_PENDING,
+                handle->Init(
+                    TestGroupId("a"), params_, base::nullopt, DEFAULT_PRIORITY,
+                    SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                    pool_.get(), NetLogWithSource()));
+      handles.push_back(std::move(handle));
       ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
-      EXPECT_EQ(static_cast<size_t>(i + 1),
+      EXPECT_EQ(
+          static_cast<size_t>(std::min(i + 1, kDefaultMaxSocketsPerGroup)),
+          pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
+    }
+
+    if (cancel_when_callback_pending) {
+      client_socket_factory_.SignalJobs();
+      ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
+      EXPECT_EQ(kDefaultMaxSocketsPerGroup,
+                pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
+    }
+
+    // Calling ResetAndCloseSocket() on a handle should not cancel a ConnectJob
+    // or close a socket, since there are more requests than ConnectJobs or
+    // sockets.
+    handles[kDefaultMaxSocketsPerGroup]->ResetAndCloseSocket();
+    ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
+    if (cancel_when_callback_pending) {
+      EXPECT_EQ(kDefaultMaxSocketsPerGroup,
+                pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
+    } else {
+      EXPECT_EQ(static_cast<size_t>(kDefaultMaxSocketsPerGroup),
                 pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
     }
+
+    // Calling ResetAndCloseSocket() on other handles should cancel a ConnectJob
+    // or close a socket.
+    for (int i = kDefaultMaxSocketsPerGroup - 1; i >= 0; --i) {
+      handles[i]->ResetAndCloseSocket();
+      if (i > 0) {
+        ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
+        if (cancel_when_callback_pending) {
+          EXPECT_EQ(i,
+                    pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
+        } else {
+          EXPECT_EQ(static_cast<size_t>(i),
+                    pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
+        }
+      } else {
+        EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
+      }
+    }
   }
-
-  // There should now be exactly |kDefaultMaxSockets| sockets.
-  ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
-  EXPECT_EQ(static_cast<size_t>(kDefaultMaxSocketsPerGroup),
-            pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
-
-  // Calling ResetAndCloseSocket() on a handle should not cancel a ConnectJob,
-  // since there are more requests than ConnectJobs.
-  handles[0]->ResetAndCloseSocket();
-  ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
-  EXPECT_EQ(static_cast<size_t>(kDefaultMaxSocketsPerGroup),
-            pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
-
-  // Calling ResetAndCloseSocket() on another handle should cancel a ConnectJob,
-  // since there are just as many requests as ConnectJobs.
-  handles[1]->ResetAndCloseSocket();
-  ASSERT_TRUE(pool_->HasGroupForTesting(TestGroupId("a")));
-  EXPECT_EQ(static_cast<size_t>(kDefaultMaxSocketsPerGroup - 1),
-            pool_->NumConnectJobsInGroupForTesting(TestGroupId("a")));
 }
 
 TEST_F(ClientSocketPoolBaseTest, ConnectCancelConnect) {

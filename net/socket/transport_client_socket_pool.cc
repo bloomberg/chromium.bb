@@ -566,8 +566,15 @@ void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
     pending_callback_map_.erase(callback_it);
     std::unique_ptr<StreamSocket> socket = handle->PassSocket();
     if (socket) {
-      if (result != OK)
+      if (result != OK) {
         socket->Disconnect();
+      } else if (cancel_connect_job) {
+        // Close the socket if |cancel_connect_job| is true and there are no
+        // other pending requests.
+        Group* group = GetOrCreateGroup(group_id);
+        if (group->unbound_request_count() == 0)
+          socket->Disconnect();
+      }
       ReleaseSocket(handle->group_id(), std::move(socket),
                     handle->group_generation());
     }
