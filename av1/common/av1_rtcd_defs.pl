@@ -115,9 +115,7 @@ add_proto qw/void av1_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, i
 specialize qw/av1_inv_txfm_add ssse3 avx2/; # neon/;
 
 add_proto qw/void av1_highbd_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
-# TODO(http://crbug.com/aomedia/2350): avx2 is disabled due to test vector
-# mismatches.
-specialize qw/av1_highbd_inv_txfm_add sse4_1/;
+specialize qw/av1_highbd_inv_txfm_add sse4_1 avx2/;
 
 add_proto qw/void av1_highbd_inv_txfm_add_4x4/,  "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
 specialize qw/av1_highbd_inv_txfm_add_4x4 sse4_1/;
