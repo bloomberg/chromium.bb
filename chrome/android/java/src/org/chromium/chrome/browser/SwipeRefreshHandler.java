@@ -16,6 +16,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
+import org.chromium.chrome.browser.gesturenav.TabbedActionDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -196,7 +197,8 @@ public class SwipeRefreshHandler
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
             if (mNavigationHandler == null) {
-                mNavigationHandler = new NavigationHandler(mContainerView, () -> mTab);
+                mNavigationHandler =
+                        new NavigationHandler(mContainerView, new TabbedActionDelegate(mTab));
             }
             boolean navigable = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
             boolean shouldStart = navigable || !navigateForward;

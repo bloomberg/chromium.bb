@@ -284,12 +284,12 @@ public class FeedNewTabPage extends NewTabPage {
     }
 
     @Override
-    protected void initializeMainView(Context context) {
+    protected void initializeMainView(Context context, NativePageHost host) {
         int topPadding = context.getResources().getDimensionPixelOffset(R.dimen.tab_strip_height);
 
         mRootView = new RootView(context, mConstructedTimeNs);
         mRootView.setPadding(0, topPadding, 0, 0);
-        mRootView.setTab(mTab);
+        mRootView.setNavigationDelegate(host.createHistoryNavigationDelegate());
         mUiConfig = new UiConfig(mRootView);
     }
 

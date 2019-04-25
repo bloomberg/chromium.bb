@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.NativePage;
+import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -48,6 +49,7 @@ public class RecentTabsPage
 
     private RecentTabsManager mRecentTabsManager;
     private RecentTabsRowAdapter mAdapter;
+    private NativePageHost mPageHost;
 
     private boolean mSnapshotContentChanged;
     private int mSnapshotListPosition;
@@ -77,10 +79,13 @@ public class RecentTabsPage
      *
      * @param activity The activity this view belongs to.
      * @param recentTabsManager The RecentTabsManager which provides the model data.
+     * @param pageHost The NativePageHost used to provide a history navigation delegate object.
      */
-    public RecentTabsPage(ChromeActivity activity, RecentTabsManager recentTabsManager) {
+    public RecentTabsPage(
+            ChromeActivity activity, RecentTabsManager recentTabsManager, NativePageHost pageHost) {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
+        mPageHost = pageHost;
         Resources resources = activity.getResources();
 
         mTitle = resources.getString(R.string.recent_tabs);
@@ -108,7 +113,7 @@ public class RecentTabsPage
             mFullscreenManager = null;
         }
 
-        mView.setTab(recentTabsManager.activeTab());
+        mView.setNavigationDelegate(mPageHost.createHistoryNavigationDelegate());
         onUpdated();
     }
 
@@ -171,6 +176,7 @@ public class RecentTabsPage
         assert !mIsAttachedToWindow : "Destroy called before removed from window";
         mRecentTabsManager.destroy();
         mRecentTabsManager = null;
+        mPageHost = null;
         mAdapter.notifyDataSetInvalidated();
         mAdapter = null;
         mListView.setAdapter((RecentTabsRowAdapter) null);

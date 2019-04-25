@@ -10,10 +10,7 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,7 +40,6 @@ public class NavigationHandler {
     }
 
     private final ViewGroup mParentView;
-    private final Supplier<Tab> mCurrentTab;
 
     private @GestureState int mState = GestureState.NONE;
 
@@ -58,9 +54,32 @@ public class NavigationHandler {
     // it does not conflict with pending Android draws.
     private Runnable mDetachLayoutRunnable;
 
-    public NavigationHandler(ViewGroup parentView, Supplier<Tab> tabProvider) {
+    /**
+     * Interface to perform actions for navigating.
+     */
+    public interface ActionDelegate {
+        /**
+         * @param forward Direction to navigate. {@code true} if forward.
+         * @return {@code true} if navigation toward the given direction is possible.
+         */
+        boolean canNavigate(boolean forward);
+
+        /**
+         * Execute navigation toward the given direction.
+         * @param forward Direction to navigate. {@code true} if forward.
+         */
+        void navigate(boolean forward);
+
+        /**
+         * @return {@code true} if back action will cause the app to exit.
+         */
+        boolean willBackExitApp();
+    }
+    private final ActionDelegate mDelegate;
+
+    public NavigationHandler(ViewGroup parentView, ActionDelegate delegate) {
         mParentView = parentView;
-        mCurrentTab = tabProvider;
+        mDelegate = delegate;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
     }
 
@@ -69,13 +88,7 @@ public class NavigationHandler {
         mSideSlideLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mSideSlideLayout.setOnNavigationListener((forward) -> {
-            Tab tab = mCurrentTab.get();
-            if (forward) {
-                tab.goForward();
-            } else {
-                // TODO(jinsukkim): Consider removing the direct dependency on Tab/Activity.
-                tab.getActivity().onBackPressed();
-            }
+            mDelegate.navigate(forward);
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
         });
@@ -125,7 +138,7 @@ public class NavigationHandler {
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
                 boolean forward = distanceX > 0;
-                if (canNavigate(forward) || !forward) {
+                if (mDelegate.canNavigate(forward)) {
                     showArrowWidget(forward);
                     mState = GestureState.DRAGGED;
                 }
@@ -141,11 +154,6 @@ public class NavigationHandler {
                 && (sX < mEdgeWidthPx || (mParentView.getWidth() - mEdgeWidthPx) < sX);
     }
 
-    private boolean canNavigate(boolean forward) {
-        Tab tab = mCurrentTab.get();
-        return forward ? tab.canGoForward() : tab.canGoBack();
-    }
-
     public void showArrowWidget(boolean forward) {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
@@ -158,13 +166,7 @@ public class NavigationHandler {
     private boolean shouldShowCloseIndicator(boolean forward) {
         // Some tabs, upon back at the beginning of the history stack, should be just closed
         // than closing the entire app. In such case we do not show the close indicator.
-        final boolean back = false;
-        return !forward && !canNavigate(back) && willBackExitApp();
-    }
-
-    private boolean willBackExitApp() {
-        boolean inTabbedMode = mCurrentTab.get().getActivity() instanceof ChromeTabbedActivity;
-        return inTabbedMode ? !ChromeTabbedActivity.backShouldCloseTab(mCurrentTab.get()) : true;
+        return !forward && mDelegate.willBackExitApp();
     }
 
     /**

@@ -88,7 +88,7 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
-        mIncognitoNewTabPageView.setTab(host.getActiveTab());
+        mIncognitoNewTabPageView.setNavigationDelegate(host.createHistoryNavigationDelegate());
 
         boolean useAlternateIncognitoStrings =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);

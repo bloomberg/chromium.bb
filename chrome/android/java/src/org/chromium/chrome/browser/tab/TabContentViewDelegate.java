@@ -8,6 +8,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
+import org.chromium.chrome.browser.gesturenav.TabbedActionDelegate;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 
@@ -55,7 +56,7 @@ public class TabContentViewDelegate
         ContentView parent = (ContentView) mTab.getContentView();
         parent.setTouchEventDelegate(this);
         mGestureDetector = new GestureDetector(parent.getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(parent, () -> mTab);
+        mNavigationHandler = new NavigationHandler(parent, new TabbedActionDelegate(mTab));
     }
 
     @Override

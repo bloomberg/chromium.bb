@@ -1935,6 +1935,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected abstract boolean handleBackPressed();
 
+    /**
+     * @return If no higher priority back actions occur, whether pressing the back button
+     *         would result in closing the tab. A true return value does not guarantee that
+     *         a subsequent call to {@link #handleBackPressed()} will close the tab.
+     */
+    public boolean backShouldCloseTab(Tab tab) {
+        return false;
+    }
+
     @Override
     public void onOrientationChange(int orientation) {
         if (mToolbarManager != null) mToolbarManager.onOrientationChange();

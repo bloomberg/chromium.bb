@@ -1989,7 +1989,8 @@ public class ChromeTabbedActivity
      *
      * @return Whether pressing the back button on the provided Tab should close the Tab.
      */
-    public static boolean backShouldCloseTab(Tab tab) {
+    @Override
+    public boolean backShouldCloseTab(Tab tab) {
         @TabLaunchType
         int type = tab.getLaunchType();
 

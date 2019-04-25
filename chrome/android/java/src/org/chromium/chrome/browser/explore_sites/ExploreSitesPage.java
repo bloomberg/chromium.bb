@@ -159,7 +159,7 @@ public class ExploreSitesPage extends BasicNativePage {
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
-        mView.setTab(mTab);
+        mView.setNavigationDelegate(host.createHistoryNavigationDelegate());
         mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
 
         CategoryCardViewHolderFactory factory = FeatureUtilities.isNoTouchModeEnabled()
