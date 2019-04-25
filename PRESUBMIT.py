@@ -1250,8 +1250,12 @@ def _CheckValidHostsInDEPS(input_api, output_api):
     return []
   # Outsource work to gclient verify
   try:
-    input_api.subprocess.check_output(['gclient', 'verify'],
-                                      stderr=input_api.subprocess.STDOUT)
+    gclient_path = input_api.os_path.join(
+        input_api.PresubmitLocalPath(),
+        'third_party', 'depot_tools', 'gclient.py')
+    input_api.subprocess.check_output(
+        [input_api.python_executable, gclient_path, 'verify'],
+        stderr=input_api.subprocess.STDOUT)
     return []
   except input_api.subprocess.CalledProcessError as error:
     return [output_api.PresubmitError(
