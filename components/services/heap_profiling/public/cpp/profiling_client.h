@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
-#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
+#ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_PROFILING_CLIENT_H_
+#define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_PROFILING_CLIENT_H_
 
-#include "base/memory/weak_ptr.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace heap_profiling {
 
-class SamplingProfilerWrapper;
-
 // The Client listens on the interface for a StartProfiling message. On
 // receiving the message, it begins profiling the current process.
 //
 // The owner of this object is responsible for binding it to the BinderRegistry.
-class Client : public mojom::ProfilingClient {
+class ProfilingClient : public mojom::ProfilingClient {
  public:
-  Client();
-  ~Client() override;
+  ProfilingClient();
 
   // mojom::ProfilingClient overrides:
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
@@ -29,6 +25,8 @@ class Client : public mojom::ProfilingClient {
   void BindToInterface(mojom::ProfilingClientRequest request);
 
  private:
+  ~ProfilingClient() override;
+
   void StartProfilingInternal(mojom::ProfilingParamsPtr params);
 
   // Ideally, this would be a mojo::Binding that would only keep alive one
@@ -40,10 +38,21 @@ class Client : public mojom::ProfilingClient {
   mojo::BindingSet<mojom::ProfilingClient> bindings_;
 
   bool started_profiling_{false};
-  std::unique_ptr<SamplingProfilerWrapper> sampling_profiler_;
-  base::WeakPtrFactory<Client> weak_factory_{this};
 };
+
+// Initializes the TLS slot globally. This will be called early in Chrome's
+// lifecycle to prevent re-entrancy from occurring while trying to set up the
+// TLS slot, which is the entity that's supposed to prevent re-entrancy.
+void InitTLSSlot();
+
+// Exists for testing only.
+// A return value of |true| means that the allocator shim was already
+// initialized and |callback| will never be called. Otherwise, |callback| will
+// be called on |task_runner| after the allocator shim is initialized.
+bool SetOnInitAllocatorShimCallbackForTesting(
+    base::OnceClosure callback,
+    scoped_refptr<base::TaskRunner> task_runner);
 
 }  // namespace heap_profiling
 
-#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
+#endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_PROFILING_CLIENT_H_

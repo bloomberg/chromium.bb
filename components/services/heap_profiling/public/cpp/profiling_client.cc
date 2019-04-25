@@ -1,24 +1,71 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 
+#include <string>
 #include <unordered_set>
-#include <utility>
+#include <vector>
 
+#include "base/allocator/allocator_interception_mac.h"
+#include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
+#include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 
-using base::trace_event::AllocationContext;
-using base::trace_event::AllocationContextTracker;
-using CaptureMode = base::trace_event::AllocationContextTracker::CaptureMode;
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+#include "base/trace_event/cfi_backtrace_android.h"
+#endif
 
 namespace heap_profiling {
+
+ProfilingClient::ProfilingClient() = default;
+ProfilingClient::~ProfilingClient() = default;
+
+void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
+  if (started_profiling_)
+    return;
+  started_profiling_ = true;
+  base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
+
+#if defined(OS_MACOSX)
+  // On macOS, this call is necessary to shim malloc zones that were created
+  // after startup. This cannot be done during shim initialization because the
+  // task scheduler has not yet been initialized.
+  base::allocator::PeriodicallyShimNewMallocZones();
+#endif
+
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+  // On Android the unwinder initialization requires file reading before
+  // initializing shim. So, post task on background thread.
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce([]() {
+        bool can_unwind =
+            base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
+                ->can_unwind_stack_frames();
+        DCHECK(can_unwind);
+      }),
+      base::BindOnce(&ProfilingClient::StartProfilingInternal,
+                     base::Unretained(this), std::move(params)));
+#else
+  StartProfilingInternal(std::move(params));
+#endif
+}
 
 namespace {
 
@@ -30,12 +77,6 @@ base::LazyInstance<scoped_refptr<base::TaskRunner>>::Leaky
 
 // In NATIVE stack mode, whether to insert stack names into the backtraces.
 bool g_include_thread_names = false;
-
-}  // namespace
-
-void InitTLSSlot() {
-  base::SamplingHeapProfiler::Init();
-}
 
 // In order for pseudo stacks to work, trace event filtering must be enabled.
 void EnableTraceEventFiltering() {
@@ -60,6 +101,9 @@ void EnableTraceEventFiltering() {
 }
 
 void InitAllocationRecorder(mojom::ProfilingParamsPtr params) {
+  using base::trace_event::AllocationContextTracker;
+  using CaptureMode = base::trace_event::AllocationContextTracker::CaptureMode;
+
   // Must be done before hooking any functions that make stack traces.
   base::debug::EnableInProcessStackDumping();
 
@@ -85,8 +129,6 @@ void InitAllocationRecorder(mojom::ProfilingParamsPtr params) {
   }
 }
 
-namespace {
-
 // Notifies the test clients that allocation hooks have been initialized.
 void AllocatorHooksHaveBeenInitialized() {
   base::AutoLock lock(g_on_init_allocator_shim_lock_.Get());
@@ -111,6 +153,10 @@ mojom::AllocatorType ConvertType(
 
 }  // namespace
 
+void InitTLSSlot() {
+  base::SamplingHeapProfiler::Init();
+}
+
 bool SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner) {
@@ -122,7 +168,7 @@ bool SetOnInitAllocatorShimCallbackForTesting(
   return false;
 }
 
-void SamplingProfilerWrapper::StartProfiling(mojom::ProfilingParamsPtr params) {
+void ProfilingClient::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
   size_t sampling_rate = params->sampling_rate;
   InitAllocationRecorder(std::move(params));
   auto* profiler = base::SamplingHeapProfiler::Get();
@@ -131,11 +177,8 @@ void SamplingProfilerWrapper::StartProfiling(mojom::ProfilingParamsPtr params) {
   AllocatorHooksHaveBeenInitialized();
 }
 
-void SamplingProfilerWrapper::StopProfiling() {
-  base::SamplingHeapProfiler::Get()->Stop();
-}
-
-mojom::HeapProfilePtr SamplingProfilerWrapper::RetrieveHeapProfile() {
+void ProfilingClient::RetrieveHeapProfile(
+    RetrieveHeapProfileCallback callback) {
   auto* profiler = base::SamplingHeapProfiler::Get();
   std::vector<base::SamplingHeapProfiler::Sample> samples =
       profiler->GetSamples(/*profile_id=*/0);
@@ -169,7 +212,8 @@ mojom::HeapProfilePtr SamplingProfilerWrapper::RetrieveHeapProfile() {
     profile->strings.emplace(reinterpret_cast<uintptr_t>(string), string);
   for (const char* string : thread_names)
     profile->strings.emplace(reinterpret_cast<uintptr_t>(string), string);
-  return profile;
+
+  std::move(callback).Run(std::move(profile));
 }
 
 }  // namespace heap_profiling

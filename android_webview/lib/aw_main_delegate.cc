@@ -37,7 +37,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
-#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"

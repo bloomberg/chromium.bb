@@ -21,7 +21,7 @@
 #include "build/build_config.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"
-#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

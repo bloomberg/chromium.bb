@@ -8,7 +8,7 @@
 #include "base/json/string_escape.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/services/heap_profiling/json_exporter.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 
 namespace heap_profiling {
 

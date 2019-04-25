@@ -16,8 +16,8 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/native_library.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,7 +39,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -732,14 +732,12 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  static base::LazyInstance<heap_profiling::Client>::Leaky profiling_client =
-      LAZY_INSTANCE_INITIALIZER;
+  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
 
-  std::unique_ptr<service_manager::BinderRegistry> registry(
-      new service_manager::BinderRegistry);
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::BindRepeating(&heap_profiling::Client::BindToInterface,
-                          base::Unretained(&profiling_client.Get())));
+      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
+                          base::Unretained(profiling_client.get())));
   connection->AddConnectionFilter(
       std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 }
