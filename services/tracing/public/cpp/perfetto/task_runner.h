@@ -11,12 +11,20 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
 #include "base/timer/timer.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/base/task_runner.h"
 
 namespace tracing {
+
+class ScopedPerfettoPostTaskBlocker {
+ public:
+  explicit ScopedPerfettoPostTaskBlocker(bool enable);
+  ~ScopedPerfettoPostTaskBlocker();
+
+ private:
+  const bool enabled_;
+};
 
 // This wraps a base::TaskRunner implementation to be able
 // to provide it to Perfetto.
@@ -37,6 +45,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   // use case.
   bool RunsTasksOnCurrentThread() const override;
 
+  void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
   scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
 
   // Not used in Chrome.
@@ -56,14 +65,13 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   void StartDeferredTasksDrainTimer();
   void StopDeferredTasksDrainTimer();
 
-  void BlockPostTaskForThread();
-  void UnblockPostTaskForThread();
+  static void BlockPostTaskForThread();
+  static void UnblockPostTaskForThread();
 
  private:
   void OnDeferredTasksDrainTimer();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::ThreadLocalBoolean posttask_is_blocked_for_thread_;
 
   base::Lock lock_;  // Protects deferred_tasks_;
   std::list<std::function<void()>> deferred_tasks_;

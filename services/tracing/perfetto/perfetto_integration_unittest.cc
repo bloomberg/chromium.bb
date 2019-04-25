@@ -22,7 +22,7 @@ namespace {
 
 const char kPerfettoTestDataSourceName[] =
     "org.chromium.chrome_integration_unittest";
-const char kPerfettoProducerName[] = "chrome_producer_test";
+const char kPerfettoProducerName[] = "org.chromium.perfetto_producer.123";
 
 class PerfettoIntegrationTest : public testing::Test {
  public:

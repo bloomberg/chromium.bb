@@ -208,8 +208,8 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
       // Attempt to parse the PID out of the producer name.
       base::ProcessId pid;
-      if (!ConsumerHost::ParsePidFromProducerName(state_change.producer_name(),
-                                                  &pid)) {
+      if (!PerfettoService::ParsePidFromProducerName(
+              state_change.producer_name(), &pid)) {
         continue;
       }
 

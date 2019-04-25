@@ -150,31 +150,11 @@ void TraceEventMetadataSource::Flush(
 
 namespace {
 
-class AutoThreadLocalBoolean {
- public:
-  explicit AutoThreadLocalBoolean(
-      base::ThreadLocalBoolean* thread_local_boolean)
-      : thread_local_boolean_(thread_local_boolean) {
-    DCHECK(!thread_local_boolean_->Get());
-    thread_local_boolean_->Set(true);
-  }
-  ~AutoThreadLocalBoolean() { thread_local_boolean_->Set(false); }
-
- private:
-  base::ThreadLocalBoolean* thread_local_boolean_;
-  DISALLOW_COPY_AND_ASSIGN(AutoThreadLocalBoolean);
-};
-
-base::ThreadLocalBoolean* GetThreadIsInTraceEventTLS() {
-  static base::NoDestructor<base::ThreadLocalBoolean> thread_is_in_trace_event;
-  return thread_is_in_trace_event.get();
-}
-
 base::ThreadLocalStorage::Slot* ThreadLocalEventSinkSlot() {
   static base::NoDestructor<base::ThreadLocalStorage::Slot>
       thread_local_event_sink_tls([](void* event_sink) {
         AutoThreadLocalBoolean thread_is_in_trace_event(
-            GetThreadIsInTraceEventTLS());
+            TraceEventDataSource::GetThreadIsInTraceEventTLS());
         delete static_cast<ThreadLocalEventSink*>(event_sink);
       });
 
@@ -189,6 +169,12 @@ TraceEventDataSource* g_trace_event_data_source_for_testing = nullptr;
 TraceEventDataSource* TraceEventDataSource::GetInstance() {
   static base::NoDestructor<TraceEventDataSource> instance;
   return instance.get();
+}
+
+// static
+base::ThreadLocalBoolean* TraceEventDataSource::GetThreadIsInTraceEventTLS() {
+  static base::NoDestructor<base::ThreadLocalBoolean> thread_is_in_trace_event;
+  return thread_is_in_trace_event.get();
 }
 
 // static

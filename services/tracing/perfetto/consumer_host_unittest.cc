@@ -66,8 +66,6 @@ class ThreadedPerfettoService : public mojom::TracingSession {
       task_runner_->DeleteSoon(FROM_HERE, std::move(consumer_));
     }
 
-    task_runner_->DeleteSoon(FROM_HERE, std::move(perfetto_service_));
-
     {
       base::RunLoop wait_for_destruction;
       task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),

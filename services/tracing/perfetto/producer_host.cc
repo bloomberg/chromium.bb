@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/process/process.h"
+#include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
@@ -30,11 +33,29 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
 
   producer_client_ = std::move(producer_client);
 
+  // Attempt to parse the PID out of the producer name.
+  // If the Producer is in-process, we:
+  // * Signal Perfetto that it should create and manage its own
+  // SharedMemoryArbiter
+  //   when we call ConnectProducer.
+  // * Set the local ProducerClient instance to use this SMA instead of passing
+  //   an SMB handle over Mojo and letting it create its own.
+  // * After that point, any TraceWriter created by TraceEventDataSource will
+  //   use this in-process SMA, and hence be able to synchronously flush full
+  //   SMB chunks if we're running on the same sequence as the Perfetto service,
+  //   hence we avoid any deadlocking occurring from trace events emitted from
+  //   the Perfetto sequence filling up the SMB and stalling while waiting for
+  //   Perfetto to free the chunks.
+  base::ProcessId pid;
+  if (PerfettoService::ParsePidFromProducerName(name, &pid)) {
+    is_in_process_ = (pid == base::Process::Current().Pid());
+  }
+
   // TODO(oysteine): Figure out an uid once we need it.
   // TODO(oysteine): Figure out a good buffer size.
   producer_endpoint_ = service->ConnectProducer(
       this, 0 /* uid */, name,
-      4 * 1024 * 1024 /* shared_memory_size_hint_bytes */);
+      4 * 1024 * 1024 /* shared_memory_size_hint_bytes */, is_in_process_);
   DCHECK(producer_endpoint_);
 }
 
@@ -47,6 +68,12 @@ void ProducerHost::OnDisconnect() {
 }
 
 void ProducerHost::OnTracingSetup() {
+  if (is_in_process_) {
+    ProducerClient::Get()->set_in_process_shmem_arbiter(
+        producer_endpoint_->GetInProcessShmemArbiter());
+    return;
+  }
+
   MojoSharedMemory* shared_memory =
       static_cast<MojoSharedMemory*>(producer_endpoint_->shared_memory());
   DCHECK(shared_memory);

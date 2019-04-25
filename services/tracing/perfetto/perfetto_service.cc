@@ -19,6 +19,33 @@
 
 namespace tracing {
 
+namespace {
+
+bool StringToProcessId(const std::string& input, base::ProcessId* output) {
+  // Pid is encoded as uint in the string.
+  return base::StringToUint(input, reinterpret_cast<uint32_t*>(output));
+}
+
+}  // namespace
+
+// static
+bool PerfettoService::ParsePidFromProducerName(const std::string& producer_name,
+                                               base::ProcessId* pid) {
+  if (!base::StartsWith(producer_name, mojom::kPerfettoProducerNamePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
+    return false;
+  }
+
+  static const size_t kPrefixLength =
+      strlen(mojom::kPerfettoProducerNamePrefix);
+  if (!StringToProcessId(producer_name.substr(kPrefixLength), pid)) {
+    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
+    return false;
+  }
+  return true;
+}
+
 // static
 PerfettoService* PerfettoService::GetInstance() {
   static base::NoDestructor<PerfettoService> perfetto_service;
@@ -36,6 +63,15 @@ PerfettoService::PerfettoService(
   // from threads without a MessageLoop doesn't get lost.
   service_->SetSMBScrapingEnabled(true);
   DCHECK(service_);
+
+  // Trace events emitted from the taskqueue and other places can cause the
+  // Perfetto task runner to queue tasks instead of directly posting them to the
+  // taskrunner; we start a timer to periodically flush these (rare) tasks.
+  // This is needed in addition to the timer we start in
+  // TraceEventDataSource::BeginTracing as the SharedMemoryArbiter will post
+  // tasks to the taskrunner used by the Perfetto service rather than the
+  // taskrunner used by the ProducerClient, when running in in-process mode.
+  perfetto_task_runner_.StartDeferredTasksDrainTimer();
 }
 
 PerfettoService::~PerfettoService() = default;

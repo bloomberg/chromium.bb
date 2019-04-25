@@ -36,11 +36,6 @@ namespace {
 
 const int32_t kEnableTracingTimeoutSeconds = 10;
 
-bool StringToProcessId(const std::string& input, base::ProcessId* output) {
-  // Pid is encoded as uint in the string.
-  return base::StringToUint(input, reinterpret_cast<uint32_t*>(output));
-}
-
 }  // namespace
 
 class ConsumerHost::StreamWriter {
@@ -108,24 +103,6 @@ class ConsumerHost::StreamWriter {
 };
 
 // static
-bool ConsumerHost::ParsePidFromProducerName(const std::string& producer_name,
-                                            base::ProcessId* pid) {
-  if (!base::StartsWith(producer_name, mojom::kPerfettoProducerNamePrefix,
-                        base::CompareCase::SENSITIVE)) {
-    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
-    return false;
-  }
-
-  static const size_t kPrefixLength =
-      strlen(mojom::kPerfettoProducerNamePrefix);
-  if (!StringToProcessId(producer_name.substr(kPrefixLength), pid)) {
-    LOG(DFATAL) << "Unexpected producer name: " << producer_name;
-    return false;
-  }
-  return true;
-}
-
-// static
 void ConsumerHost::BindConsumerRequest(
     PerfettoService* service,
     mojom::ConsumerHostRequest request,
@@ -169,7 +146,7 @@ void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
     if (ds_config.config().name() == mojom::kTraceEventDataSourceName) {
       for (const auto& filter : ds_config.producer_name_filter()) {
         base::ProcessId pid;
-        if (ParsePidFromProducerName(filter, &pid)) {
+        if (PerfettoService::ParsePidFromProducerName(filter, &pid)) {
           filtered_pids_.insert(pid);
         }
       }
@@ -373,7 +350,8 @@ void ConsumerHost::OnObservableEvents(
 
     // Attempt to parse the PID out of the producer name.
     base::ProcessId pid;
-    if (!ParsePidFromProducerName(state_change.producer_name(), &pid)) {
+    if (!PerfettoService::ParsePidFromProducerName(state_change.producer_name(),
+                                                   &pid)) {
       continue;
     }
 

@@ -34,6 +34,8 @@ class PerfettoService : public mojom::PerfettoService {
   ~PerfettoService() override;
 
   static PerfettoService* GetInstance();
+  static bool ParsePidFromProducerName(const std::string& producer_name,
+                                       base::ProcessId* pid);
 
   void BindRequest(mojom::PerfettoServiceRequest request, uint32_t pid);
 

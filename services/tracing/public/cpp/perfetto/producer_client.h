@@ -30,15 +30,6 @@ namespace tracing {
 
 class MojoSharedMemory;
 
-class ScopedPerfettoPostTaskBlocker {
- public:
-  explicit ScopedPerfettoPostTaskBlocker(bool enable);
-  ~ScopedPerfettoPostTaskBlocker();
-
- private:
-  const bool enabled_;
-};
-
 // This class is the per-process client side of the Perfetto
 // producer, and is responsible for creating specific kinds
 // of DataSources (like ChromeTracing) on demand, and provide
@@ -109,6 +100,11 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
       perfetto::BufferID target_buffer);
 
+  void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
+    DCHECK(!in_process_arbiter_);
+    in_process_arbiter_ = arbiter;
+  }
+
   // Add a new data source to the ProducerClient; the caller
   // retains ownership and is responsible for making sure
   // the data source outlives the ProducerClient.
@@ -163,6 +159,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void CommitDataOnSequence(const perfetto::CommitDataRequest& request);
   void AddDataSourceOnSequence(DataSourceBase*);
   void RegisterDataSourceWithHost(DataSourceBase* data_source);
+  perfetto::SharedMemoryArbiter* GetSharedMemoryArbiterInUse();
 
   // The callback will be run on the |origin_task_runner|, meaning
   // the same sequence as CreateMojoMessagePipes() got called on.
@@ -174,6 +171,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
+  perfetto::SharedMemoryArbiter* in_process_arbiter_ = nullptr;
   mojom::ProducerHostPtr producer_host_;
   std::unique_ptr<MojoSharedMemory> shared_memory_;
   std::set<DataSourceBase*> data_sources_;

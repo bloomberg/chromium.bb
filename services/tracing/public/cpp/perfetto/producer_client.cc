@@ -8,9 +8,10 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/process/process.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_lock_impl.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
@@ -18,21 +19,6 @@
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 
 namespace tracing {
-
-ScopedPerfettoPostTaskBlocker::ScopedPerfettoPostTaskBlocker(bool enable)
-    : enabled_(enable) {
-  if (enabled_) {
-    ProducerClient::GetTaskRunner()->BlockPostTaskForThread();
-  } else {
-    base::internal::SchedulerLockImpl::AssertNoLockHeldOnCurrentThread();
-  }
-}
-
-ScopedPerfettoPostTaskBlocker::~ScopedPerfettoPostTaskBlocker() {
-  if (enabled_) {
-    ProducerClient::GetTaskRunner()->UnblockPostTaskForThread();
-  }
-}
 
 ProducerClient::DataSourceBase::DataSourceBase(const std::string& name)
     : name_(name) {
@@ -112,8 +98,9 @@ void ProducerClient::CreateMojoMessagepipes(
 void ProducerClient::BindStartupTraceWriterRegistry(
     std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
     perfetto::BufferID target_buffer) {
-  shared_memory_arbiter_->BindStartupTraceWriterRegistry(std::move(registry),
-                                                         target_buffer);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  GetSharedMemoryArbiterInUse()->BindStartupTraceWriterRegistry(
+      std::move(registry), target_buffer);
 }
 
 // The Mojo binding should run on the same sequence as the one we get
@@ -176,6 +163,9 @@ void ProducerClient::RegisterDataSourceWithHost(DataSourceBase* data_source) {
 
 void ProducerClient::OnTracingStart(
     mojo::ScopedSharedBufferHandle shared_memory) {
+  // If we're using in-process mode, we don't need to set up our
+  // own SharedMemoryArbiter.
+  DCHECK(!in_process_arbiter_);
   // TODO(oysteine): In next CLs plumb this through the service.
   const size_t kShmemBufferPageSize = 4096;
 
@@ -269,6 +259,17 @@ void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
+  // We need to make sure the CommitData IPC is sent off without triggering any
+  // trace events, as that could stall waiting for SMB chunks to be freed up
+  // which requires the tracing service to receive the IPC.
+  if (!TraceEventDataSource::GetThreadIsInTraceEventTLS()->Get()) {
+    AutoThreadLocalBoolean thread_is_in_trace_event(
+        TraceEventDataSource::GetThreadIsInTraceEventTLS());
+
+    producer_host_->CommitData(commit);
+    return;
+  }
+
   producer_host_->CommitData(commit);
 }
 
@@ -287,6 +288,11 @@ size_t ProducerClient::shared_buffer_page_size_kb() const {
   return 0;
 }
 
+perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiterInUse() {
+  return in_process_arbiter_ ? in_process_arbiter_
+                             : shared_memory_arbiter_.get();
+}
+
 perfetto::SharedMemoryArbiter* ProducerClient::GetInProcessShmemArbiter() {
   NOTREACHED();
   return nullptr;
@@ -301,13 +307,13 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
 
   DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
   if (--pending_replies_for_latest_flush_.second == 0) {
-    shared_memory_arbiter_->NotifyFlushComplete(id);
+    GetSharedMemoryArbiterInUse()->NotifyFlushComplete(id);
   }
 }
 
 std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
     perfetto::BufferID target_buffer) {
-  return shared_memory_arbiter_->CreateTraceWriter(target_buffer);
+  return GetSharedMemoryArbiterInUse()->CreateTraceWriter(target_buffer);
 }
 
 void ProducerClient::RegisterTraceWriter(uint32_t writer_id,

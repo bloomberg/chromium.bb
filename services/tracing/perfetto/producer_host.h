@@ -85,6 +85,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
 
  private:
   mojom::ProducerClientPtr producer_client_;
+  bool is_in_process_ = false;
 
  protected:
   // Perfetto guarantees that no OnXX callbacks are invoked on |this|
