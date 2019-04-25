@@ -25,10 +25,6 @@
         text-decoration: none;
       }
 
-      .page-subtitle a {
-        margin-inline-end: 32px;
-      }
-
       a iron-icon {
         color: var(--cr-primary-text-color);
       }
@@ -39,25 +35,7 @@
 
       main {
         height: 100%;
-        margin: 0 3px;
         overflow: overlay;
-      }
-
-      .header {
-        font-weight: 500;
-      }
-
-      h2 {
-        @apply --cr-title-text;
-        font-weight: 600;
-      }
-
-      .subtitle {
-        margin: 1em 0;
-      }
-
-      section {
-        @apply --cr-section;
       }
 
       .sections-container {
@@ -68,32 +46,30 @@
       .card {
         @apply --cr-card-elevation;
         background-color: var(--cr-card-background-color);
-        margin: 0 3px;
+        margin: 0 .1875em;
         min-height: 100%;
       }
 
-      .browser-report iron-icon {
-        margin-inline-end: 20px;
+      .page-subtitle {
+        align-items: center;
+        flex-direction: row;
+        justify-content: start;
+        padding-bottom: 0;
+        padding-top: 0;
       }
 
-      .browser-report {
-        align-items: start;
-        display: flex;
-        margin: 12px 0;
+      .page-subtitle a {
+        margin-inline-end: 2em;
       }
 
-      .single-column {
-        align-items: flex-start;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .content-indented {
-        margin-inline-start: 20px;
+      .page-subtitle iron-icon {
+        color: var(--cr-title-text-color);
+        padding-bottom: 0;
+        padding-top: 0;
       }
 
       .overview-section {
-        padding-top: 10px;
+        padding-inline-start: 2em;
       }
 
       .overview-section div + div {
@@ -105,66 +81,91 @@
       }
 
       .overview-messages li {
-        margin-top: 8px;
+        margin-top: .5em;
       }
 
-<if expr="chromeos">
-      .device-reporting-section {
-        padding-bottom: 13px;
+      th {
+        font-weight: 400;
       }
 
-      .device-reporting-section ul {
-        list-style: none;
-        padding: 0;
+      h2 {
+        @apply --cr-title-text;
+        font-size: .8125em;
+      }
+
+      .page-subtitle h2 {
+        font-size: .875em;
+      }
+
+      .subtitle {
+        margin-top: 1em;
+      }
+
+      section {
+        @apply --cr-section;
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1.5em;
+      }
+
+      section:not(.page-subtitle):not(.overview-section) {
+        padding-inline-start: 2em;
+      }
+
+      section:not(.page-subtitle) h2 {
         margin: 0;
       }
 
-      .device-reporting-section li + li {
-        margin-top: 2em;
+      .report iron-icon {
+        height: 1.25em;
+        margin-inline-end: 1em;
+        width: 1.25em;
       }
 
-      .device-reporting iron-icon {
-        margin-inline-end: 10px;
-        width: 24px;
+      .report {
+        align-items: start;
+        display: flex;
+        margin-top: 1em;
       }
-</if>
+
+      .content-indented {
+        margin-inline-start: 1.5em;
+      }
+
+      table {
+        border-spacing: 0 1em;
+      }
+
+      th,
+      td {
+        text-align: start;
+      }
+
+      td > div {
+        align-items: center;
+        display: flex;
+      }
 
       .extension-name {
-        align-items: center;
-        display: flex;
-        flex: 2;
-      }
-
-      .extension-name > div {
-        align-items: center;
-        display: flex;
-      }
-
-      .extension-name img {
-        margin-inline-end: 20px;
+        width: 40%;
       }
 
       .extension-permissions {
-        flex: 3;
+        width: 60%;
       }
 
-      .extensions-list .list-item {
-        display: flex;
+      .extension-name img {
+        height: 1.25em;
+        margin-inline-end: 0.75em;
+        width: 1.25em;
       }
 
-      .browser-report li,
-      .extensions-list li {
-        padding: 2px;
-      }
-
-      .browser-report ul,
-      .extensions-list ul {
+      .extension-permissions ul,
+      .report ul {
         list-style: none;
-        padding: 0;
-      }
-
-      .browser-report ul {
         margin: 0;
+        padding: 0;
       }
     </style>
 
@@ -179,12 +180,14 @@
             <a href="chrome://settings/help" aria-label="$i18n{backButton}">
               <iron-icon icon="cr:arrow-back"></iron-icon>
             </a>
-            [[subtitle_]]
+            <h2>
+              [[subtitle_]]
+            </h2>
           </section>
-          <section class="single-column overview-section">
-              <if expr="not chromeos">
-                  <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
-      </if>
+          <section class="overview-section">
+<if expr="not chromeos">
+            <div inner-h-t-m-l="[[managementNoticeHtml_]]"></div>
+</if>
 <if expr="chromeos">
             <div>[[managementOverview_]]</div>
             <div>[[deviceManagedInfo_.overview]]</div>
@@ -214,7 +217,7 @@
           </section>
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">
-            <section class="single-column">
+            <section>
               <h2>$i18n{localTrustRoots}</h2>
               <div class="subtitle" id="trust-roots-configuration">
                 [[localTrustRoots_]]</div>
@@ -222,72 +225,79 @@
           </div>
           <template is="dom-if"
               if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
-            <section class="single-column device-reporting-section">
+            <section>
               <h2>$i18n{deviceReporting}</h2>
-              <div class="subtitle">$i18n{deviceConfiguration}</div>
-              <ul>
+              <div class="subtitle content-indented">
+                $i18n{deviceConfiguration}
+              </div>
+              <div class="content-indented">
                 <template is="dom-repeat" items="[[deviceReportingInfo_]]">
-                  <li class="device-reporting">
-                    <span>
-                      <iron-icon icon="[[getIconForDeviceReportingType_(
-                          item.reportingType)]]"></iron-icon>
-                      [[i18n(item.messageId)]]
-                    </span>
-                  </li>
+                  <div class="report">
+                    <iron-icon icon="[[getIconForDeviceReportingType_(
+                        item.reportingType)]]"></iron-icon>
+                    [[i18n(item.messageId)]]
+                  </div>
                 </template>
-              </ul>
+              </div>
             </section>
           </template>
 </if>
 
           <template is="dom-if"
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
-            <section class="single-column">
+            <section>
               <h2>$i18n{browserReporting}</h2>
-              <div class="subtitle">
+              <div class="subtitle content-indented">
                 $i18n{browserReportingExplanation}
               </div>
-              <template is="dom-repeat" items="[[browserReportingInfo_]]">
-                <div class="browser-report">
-                  <iron-icon icon="[[item.icon]]"></iron-icon>
-                  <ul>
-                    <template is="dom-repeat" items="[[item.messageIds]]"
-                        as="messageId">
-                      <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
-                    </template>
-                  </ul>
-                </div>
-              </template>
+              <div class="content-indented">
+                <template is="dom-repeat" items="[[browserReportingInfo_]]">
+                  <div class="report">
+                    <iron-icon icon="[[item.icon]]"></iron-icon>
+                    <ul>
+                      <template is="dom-repeat" items="[[item.messageIds]]"
+                          as="messageId">
+                        <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
+                      </template>
+                    </ul>
+                  </div>
+                </template>
+              </div>
             </section>
           </template>
           <template is="dom-if"
               if="[[showExtensionReportingInfo_(extensions_)]]">
-            <section class="single-column">
+            <section>
               <h2>$i18n{extensionReporting}</h2>
-              <div class="subtitle">[[extensionReportingSubtitle_]]</div>
-              <div class="extensions-list">
-                <div class="list-item header">
-                  <div class="extension-name">$i18n{extensionName}</div>
-                  <div class="extension-permissions">
+              <div class="subtitle content-indented">
+                [[extensionReportingSubtitle_]]
+              </div>
+              <table class="content-indented">
+                <tr>
+                  <th class="extension-name">$i18n{extensionName}</td>
+                  <th class="extension-permissions">
                     $i18n{extensionPermissions}
-                  </div>
-                </div>
+                  </td>
+                </tr>
                 <template is="dom-repeat" items="[[extensions_]]">
-                  <div class="list-item">
-                    <div class="extension-name">
-                      <img src="[[item.icon]]" alt="">
-                      <span>[[item.name]]</span>
-                    </div>
-                    <div class="extension-permissions">
+                  <tr>
+                    <td class="extension-name">
+                      <div>
+                        <img src="[[item.icon]]" alt="">
+                        <span>[[item.name]]</span>
+                      </div>
+                    </td>
+                    <td class="extension-permissions">
                       <ul>
                         <template is="dom-repeat" items="[[item.permissions]]"
                             as="permission">
                           <li>[[permission]]</li>
                         </template>
                       </ul>
-                    </div>
+                    </td>
+                  </tr>
                 </template>
-              </div>
+              </table>
             </section>
           </template>
         </div>
