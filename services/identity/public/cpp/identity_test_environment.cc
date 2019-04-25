@@ -149,13 +149,17 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
   owned_identity_manager_ = BuildIdentityManagerForTests(
       test_signin_client, test_pref_service, base::FilePath(),
-#if defined(OS_IOS)
-      std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>(),
-#endif
       account_consistency, test_url_loader_factory);
 
   Initialize();
 }
+
+IdentityTestEnvironment::ExtraParams::ExtraParams() = default;
+IdentityTestEnvironment::ExtraParams::~ExtraParams() = default;
+IdentityTestEnvironment::ExtraParams::ExtraParams(
+    IdentityTestEnvironment::ExtraParams&& other) = default;
+IdentityTestEnvironment::ExtraParams& IdentityTestEnvironment::ExtraParams::
+operator=(ExtraParams&& other) = default;
 
 // static
 std::unique_ptr<IdentityManagerWrapper>
@@ -163,22 +167,20 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
     SigninClient* signin_client,
     PrefService* pref_service,
     base::FilePath user_data_dir,
-#if defined(OS_IOS)
-    std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
-        token_service_ios_provider,
-#endif
     signin::AccountConsistencyMethod account_consistency,
-    network::TestURLLoaderFactory* test_url_loader_factory) {
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    ExtraParams extra_params) {
   auto account_tracker_service = std::make_unique<AccountTrackerService>();
   account_tracker_service->Initialize(pref_service, user_data_dir);
 
 #if defined(OS_IOS)
   std::unique_ptr<ProfileOAuth2TokenService> token_service;
-  if (token_service_ios_provider) {
+  if (extra_params.token_service_provider) {
     token_service = std::make_unique<FakeProfileOAuth2TokenService>(
-        pref_service, std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
-                          signin_client, std::move(token_service_ios_provider),
-                          account_tracker_service.get()));
+        pref_service,
+        std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
+            signin_client, std::move(extra_params.token_service_provider),
+            account_tracker_service.get()));
   } else {
     token_service =
         std::make_unique<FakeProfileOAuth2TokenService>(pref_service);

@@ -93,7 +93,6 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::BuildIdentityManagerForTests(
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->GetPrefs(), base::FilePath(),
-      std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>(),
       signin::AccountConsistencyMethod::kMirror);
 }
 
@@ -104,11 +103,15 @@ std::unique_ptr<KeyedService> IdentityTestEnvironmentChromeBrowserStateAdaptor::
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
+  identity::IdentityTestEnvironment::ExtraParams extra_params;
+  extra_params.token_service_provider =
+      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>();
+
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->GetPrefs(), base::FilePath(),
-      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-      signin::AccountConsistencyMethod::kMirror);
+      signin::AccountConsistencyMethod::kMirror,
+      /*test_url_loader_factory=*/nullptr, std::move(extra_params));
 }
 
 // static
