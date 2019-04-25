@@ -17,7 +17,7 @@ namespace audio {
 
 InputIPC::InputIPC(std::unique_ptr<service_manager::Connector> connector,
                    const std::string& device_id,
-                   media::mojom::AudioLogPtr log)
+                   mojo::PendingRemote<media::mojom::AudioLog> log)
     : stream_(),
       stream_client_binding_(this),
       device_id_(device_id),
@@ -60,10 +60,13 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
   // For now we don't care about key presses, so we pass a invalid buffer.
   mojo::ScopedSharedBufferHandle invalid_key_press_count_buffer;
 
+  mojo::PendingRemote<media::mojom::AudioLog> log;
+  if (log_)
+    log = log_.Unbind();
   stream_factory_->CreateInputStream(
-      std::move(stream_request), std::move(client), nullptr,
-      log_ ? std::move(log_) : nullptr, device_id_, params, total_segments,
-      automatic_gain_control, std::move(invalid_key_press_count_buffer),
+      std::move(stream_request), client.PassInterface(), {}, std::move(log),
+      device_id_, params, total_segments, automatic_gain_control,
+      std::move(invalid_key_press_count_buffer),
       /*processing config*/ nullptr,
       base::BindOnce(&InputIPC::StreamCreated, weak_factory_.GetWeakPtr()));
 }

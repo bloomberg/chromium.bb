@@ -106,10 +106,10 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     ~MockStreamFactory() override {}
 
     void CreateInputStream(
-        media::mojom::AudioInputStreamRequest stream_request,
-        media::mojom::AudioInputStreamClientPtr client,
-        media::mojom::AudioInputStreamObserverPtr observer,
-        media::mojom::AudioLogPtr log,
+        mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver,
+        mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+        mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
+        mojo::PendingRemote<media::mojom::AudioLog> log,
         const std::string& device_id,
         const media::AudioParameters& params,
         uint32_t shared_memory_count,

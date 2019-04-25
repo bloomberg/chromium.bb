@@ -13,7 +13,7 @@
 #include "media/audio/audio_sync_reader.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -67,36 +67,38 @@ class MockStream : public media::mojom::AudioOutputStream {
 
 class FakeOutputStreamFactory : public audio::FakeStreamFactory {
  public:
-  FakeOutputStreamFactory() : stream_(), stream_binding_(&stream_) {}
+  FakeOutputStreamFactory() : stream_(), stream_receiver_(&stream_) {}
   ~FakeOutputStreamFactory() final {}
 
   void CreateOutputStream(
-      media::mojom::AudioOutputStreamRequest stream_request,
-      media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
-      media::mojom::AudioLogPtr log,
+      mojo::PendingReceiver<media::mojom::AudioOutputStream> stream_receiver,
+      mojo::PendingAssociatedRemote<media::mojom::AudioOutputStreamObserver>
+          observer,
+      mojo::PendingRemote<media::mojom::AudioLog> log,
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final {
-    EXPECT_FALSE(observer_info);
+    EXPECT_FALSE(observer);
     EXPECT_FALSE(log);
     created_callback_ = std::move(created_callback);
 
-    if (stream_binding_.is_bound())
-      stream_binding_.Unbind();
-    stream_binding_.Bind(std::move(stream_request));
+    if (stream_receiver_.is_bound())
+      stream_receiver_.reset();
+    stream_receiver_.Bind(std::move(stream_receiver));
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(audio::mojom::StreamFactoryRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(std::move(handle)));
   }
 
   StrictMock<MockStream> stream_;
   CreateOutputStreamCallback created_callback_;
 
  private:
-  mojo::Binding<media::mojom::AudioOutputStream> stream_binding_;
+  mojo::Receiver<media::mojom::AudioOutputStream> stream_receiver_;
   DISALLOW_COPY_AND_ASSIGN(FakeOutputStreamFactory);
 };
 
@@ -162,9 +164,10 @@ class AudioServiceOutputDeviceTest : public testing::Test {
   std::unique_ptr<FakeOutputStreamFactory> stream_factory_;
 
  private:
-  void BindStreamFactory(mojo::ScopedMessagePipeHandle factory_request) {
-    stream_factory_->binding_.Bind(
-        audio::mojom::StreamFactoryRequest(std::move(factory_request)));
+  void BindStreamFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
+    stream_factory_->receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(
+            std::move(factory_receiver)));
   }
   DISALLOW_COPY_AND_ASSIGN(AudioServiceOutputDeviceTest);
 };

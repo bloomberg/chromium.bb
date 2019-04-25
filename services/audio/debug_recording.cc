@@ -13,11 +13,12 @@
 
 namespace audio {
 
-DebugRecording::DebugRecording(mojom::DebugRecordingRequest request,
-                               media::AudioManager* audio_manager,
-                               TracedServiceRef service_ref)
+DebugRecording::DebugRecording(
+    mojo::PendingReceiver<mojom::DebugRecording> receiver,
+    media::AudioManager* audio_manager,
+    TracedServiceRef service_ref)
     : audio_manager_(audio_manager),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       service_ref_(std::move(service_ref)),
       weak_factory_(this) {
   DCHECK(audio_manager_ != nullptr);
@@ -26,7 +27,7 @@ DebugRecording::DebugRecording(mojom::DebugRecordingRequest request,
   // On connection error debug recording is disabled, but the object is not
   // destroyed. It will be cleaned-up by service either on next bind request
   // or when service is shut down.
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&DebugRecording::Disable, base::Unretained(this)));
 }
 
@@ -35,10 +36,11 @@ DebugRecording::~DebugRecording() {
 }
 
 void DebugRecording::Enable(
-    mojom::DebugRecordingFileProviderPtr recording_file_provider) {
+    mojo::PendingRemote<mojom::DebugRecordingFileProvider>
+        recording_file_provider) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(!IsEnabled());
-  file_provider_ = std::move(recording_file_provider);
+  file_provider_.Bind(std::move(recording_file_provider));
   media::AudioDebugRecordingManager* debug_recording_manager =
       audio_manager_->GetAudioDebugRecordingManager();
   if (debug_recording_manager == nullptr)
@@ -54,7 +56,7 @@ void DebugRecording::Disable() {
   if (!IsEnabled())
     return;
   file_provider_.reset();
-  binding_.Close();
+  receiver_.reset();
 
   media::AudioDebugRecordingManager* debug_recording_manager =
       audio_manager_->GetAudioDebugRecordingManager();

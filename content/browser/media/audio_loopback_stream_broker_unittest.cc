@@ -171,7 +171,7 @@ struct TestEnvironment {
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   std::unique_ptr<AudioLoopbackStreamBroker> broker;
   MockStreamFactory stream_factory;
-  audio::mojom::StreamFactoryPtr factory_ptr = stream_factory.MakePtr();
+  audio::mojom::StreamFactoryPtr factory_ptr{stream_factory.MakeRemote()};
 };
 
 }  // namespace

@@ -17,6 +17,8 @@
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -30,7 +32,7 @@ class InputIPC : public media::AudioInputIPC,
  public:
   InputIPC(std::unique_ptr<service_manager::Connector> connector,
            const std::string& device_id,
-           media::mojom::AudioLogPtr log);
+           mojo::PendingRemote<media::mojom::AudioLog> log);
   ~InputIPC() override;
 
   // AudioInputIPC implementation
@@ -67,7 +69,7 @@ class InputIPC : public media::AudioInputIPC,
   audio::mojom::StreamFactoryPtr stream_factory_;
   audio::mojom::StreamFactoryPtrInfo stream_factory_info_;
 
-  media::mojom::AudioLogPtr log_;
+  mojo::Remote<media::mojom::AudioLog> log_;
 
   base::WeakPtrFactory<InputIPC> weak_factory_;
 

@@ -45,10 +45,8 @@ class MockStreamFactory : public audio::FakeStreamFactory,
   MockStreamFactory() : muter_binding_(this) {}
   ~MockStreamFactory() final {}
 
-  bool IsConnected() {
-    return binding_ && !binding_.handle().QuerySignalsState().peer_closed();
-  }
-  bool IsMuterConnected() { return muter_binding_.is_bound(); }
+  bool IsConnected() const { return receiver_.is_bound(); }
+  bool IsMuterConnected() const { return muter_binding_.is_bound(); }
 
  private:
   void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
@@ -206,9 +204,13 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
         RenderFrameHostTester::For(main_rfh())->AppendChild("other_rfh");
   }
 
-  void BindFactory(mojo::ScopedMessagePipeHandle factory_request) {
-    stream_factory_.binding_.Bind(
-        audio::mojom::StreamFactoryRequest(std::move(factory_request)));
+  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
+    stream_factory_.receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(
+            std::move(factory_receiver)));
+    stream_factory_.receiver_.set_disconnect_handler(
+        base::BindRepeating(&audio::FakeStreamFactory::CloseBinding,
+                            base::Unretained(&stream_factory_)));
   }
 
   base::WeakPtr<MockBroker> ExpectLoopbackBrokerConstruction(
@@ -639,7 +641,8 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
   // Connection should still be open, since there's still a stream left.
   EXPECT_TRUE(stream_factory_.IsConnected());
   std::move(main_rfh_output_broker->deleter).Run(&*main_rfh_output_broker);
-  base::RunLoop().RunUntilIdle();
+  stream_factory_.WaitForDisconnect();
+
   // Now there are no streams left, connection should be broken.
   EXPECT_FALSE(stream_factory_.IsConnected());
 }

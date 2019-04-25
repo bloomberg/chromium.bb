@@ -17,7 +17,8 @@
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace content {
@@ -47,8 +48,9 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   using DisconnectReason =
       media::mojom::AudioOutputStreamObserver::DisconnectReason;
 
-  void StreamCreated(media::mojom::AudioOutputStreamPtr stream,
-                     media::mojom::ReadWriteAudioDataPipePtr data_pipe);
+  void StreamCreated(
+      mojo::PendingRemote<media::mojom::AudioOutputStream> stream,
+      media::mojom::ReadWriteAudioDataPipePtr data_pipe);
   void ObserverBindingLost(uint32_t reason, const std::string& description);
   void Cleanup(DisconnectReason reason);
   bool AwaitingCreated() const;
@@ -68,8 +70,8 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   media::mojom::AudioOutputStreamProviderClientPtr client_;
 
   AudioOutputStreamObserverImpl observer_;
-  mojo::AssociatedBinding<media::mojom::AudioOutputStreamObserver>
-      observer_binding_;
+  mojo::AssociatedReceiver<media::mojom::AudioOutputStreamObserver>
+      observer_receiver_;
 
   DisconnectReason disconnect_reason_ = DisconnectReason::kDocumentDestroyed;
 

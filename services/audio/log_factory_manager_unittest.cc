@@ -128,8 +128,9 @@ TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
   log1->OnClosed();
 
   // Set the factory.
-  media::mojom::AudioLogFactoryPtr log_factory_ptr;
-  MockAudioLogFactory mock_factory(mojo::MakeRequest(&log_factory_ptr), 2);
+  mojo::PendingRemote<media::mojom::AudioLogFactory> remote_log_factory;
+  MockAudioLogFactory mock_factory(
+      remote_log_factory.InitWithNewPipeAndPassReceiver(), 2);
   MockAudioLog* mock_log1 = mock_factory.GetMockLog(0);
   testing::InSequence s;
 
@@ -141,7 +142,7 @@ TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
   EXPECT_CALL(*mock_log1, OnSetVolume(kVolume1));
   EXPECT_CALL(*mock_log1, OnStopped());
   EXPECT_CALL(*mock_log1, OnClosed());
-  log_factory_manager_ptr_->SetLogFactory(std::move(log_factory_ptr));
+  log_factory_manager_ptr_->SetLogFactory(std::move(remote_log_factory));
   scoped_task_environment_.RunUntilIdle();
 
   // Create another log after the factory is already set.

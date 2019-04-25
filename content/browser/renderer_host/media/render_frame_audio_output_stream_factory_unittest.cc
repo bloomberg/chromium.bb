@@ -88,9 +88,10 @@ class RenderFrameAudioOutputStreamFactoryTest
     RenderViewHostTestHarness::TearDown();
   }
 
-  void BindFactory(mojo::ScopedMessagePipeHandle factory_request) {
-    audio_service_stream_factory_.binding_.Bind(
-        audio::mojom::StreamFactoryRequest(std::move(factory_request)));
+  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
+    audio_service_stream_factory_.receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(
+            std::move(factory_receiver)));
   }
 
   class MockStreamFactory : public audio::FakeStreamFactory {
@@ -99,9 +100,10 @@ class RenderFrameAudioOutputStreamFactoryTest
     ~MockStreamFactory() override {}
 
     void CreateOutputStream(
-        media::mojom::AudioOutputStreamRequest stream_request,
-        media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
-        media::mojom::AudioLogPtr log,
+        mojo::PendingReceiver<media::mojom::AudioOutputStream> stream_receiver,
+        mojo::PendingAssociatedRemote<media::mojom::AudioOutputStreamObserver>
+            observer,
+        mojo::PendingRemote<media::mojom::AudioLog> log,
         const std::string& output_device_id,
         const media::AudioParameters& params,
         const base::UnguessableToken& group_id,

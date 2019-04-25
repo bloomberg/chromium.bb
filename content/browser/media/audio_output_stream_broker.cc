@@ -78,7 +78,7 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
       deleter_(std::move(deleter)),
       client_(std::move(client)),
       observer_(render_process_id, render_frame_id, stream_id),
-      observer_binding_(&observer_),
+      observer_receiver_(&observer_),
       weak_ptr_factory_(this) {
   DCHECK(client_);
   DCHECK(deleter_);
@@ -126,38 +126,40 @@ AudioOutputStreamBroker::~AudioOutputStreamBroker() {
 void AudioOutputStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  DCHECK(!observer_binding_.is_bound());
+  DCHECK(!observer_receiver_.is_bound());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("audio", "CreateStream", this, "device id",
                                     output_device_id_);
   stream_creation_start_time_ = base::TimeTicks::Now();
 
   // Set up observer ptr. Unretained is safe because |this| owns
-  // |observer_binding_|.
-  media::mojom::AudioOutputStreamObserverAssociatedPtrInfo ptr_info;
-  observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-  observer_binding_.set_connection_error_with_reason_handler(base::BindOnce(
+  // |observer_receiver_|.
+  mojo::PendingAssociatedRemote<media::mojom::AudioOutputStreamObserver>
+      observer;
+  observer_receiver_.Bind(observer.InitWithNewEndpointAndPassReceiver());
+  observer_receiver_.set_disconnect_with_reason_handler(base::BindOnce(
       &AudioOutputStreamBroker::ObserverBindingLost, base::Unretained(this)));
 
-  media::mojom::AudioOutputStreamPtr stream;
-  media::mojom::AudioOutputStreamRequest stream_request =
-      mojo::MakeRequest(&stream);
+  mojo::PendingRemote<media::mojom::AudioOutputStream> stream;
+  auto stream_receiver = stream.InitWithNewPipeAndPassReceiver();
 
   // Note that the component id for AudioLog is used to differentiate between
   // several users of the same audio log. Since this audio log is for a single
   // stream, the component id used doesn't matter.
   constexpr int log_component_id = 0;
   factory->CreateOutputStream(
-      std::move(stream_request), std::move(ptr_info),
-      MediaInternals::GetInstance()->CreateMojoAudioLog(
-          media::AudioLogFactory::AudioComponent::AUDIO_OUTPUT_CONTROLLER,
-          log_component_id, render_process_id(), render_frame_id()),
+      std::move(stream_receiver), std::move(observer),
+      MediaInternals::GetInstance()
+          ->CreateMojoAudioLog(
+              media::AudioLogFactory::AudioComponent::AUDIO_OUTPUT_CONTROLLER,
+              log_component_id, render_process_id(), render_frame_id())
+          .PassInterface(),
       output_device_id_, params_, group_id_, processing_id_,
       base::BindOnce(&AudioOutputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }
 
 void AudioOutputStreamBroker::StreamCreated(
-    media::mojom::AudioOutputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioOutputStream> stream,
     media::mojom::ReadWriteAudioDataPipePtr data_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
@@ -174,7 +176,8 @@ void AudioOutputStreamBroker::StreamCreated(
     return;
   }
 
-  client_->Created(std::move(stream), std::move(data_pipe));
+  client_->Created(media::mojom::AudioOutputStreamPtr(std::move(stream)),
+                   std::move(data_pipe));
 }
 
 void AudioOutputStreamBroker::ObserverBindingLost(
