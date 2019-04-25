@@ -616,15 +616,14 @@ bool FieldTrialList::IsTrialActive(const std::string& trial_name) {
 void FieldTrialList::StatesToString(std::string* output) {
   FieldTrial::ActiveGroups active_groups;
   GetActiveFieldTrialGroups(&active_groups);
-  for (FieldTrial::ActiveGroups::const_iterator it = active_groups.begin();
-       it != active_groups.end(); ++it) {
+  for (const auto& active_group : active_groups) {
     DCHECK_EQ(std::string::npos,
-              it->trial_name.find(kPersistentStringSeparator));
+              active_group.trial_name.find(kPersistentStringSeparator));
     DCHECK_EQ(std::string::npos,
-              it->group_name.find(kPersistentStringSeparator));
-    output->append(it->trial_name);
+              active_group.group_name.find(kPersistentStringSeparator));
+    output->append(active_group.trial_name);
     output->append(1, kPersistentStringSeparator);
-    output->append(it->group_name);
+    output->append(active_group.group_name);
     output->append(1, kPersistentStringSeparator);
   }
 }
@@ -705,10 +704,9 @@ void FieldTrialList::GetActiveFieldTrialGroups(
     return;
   AutoLock auto_lock(global_->lock_);
 
-  for (auto it = global_->registered_.begin(); it != global_->registered_.end();
-       ++it) {
+  for (const auto& registered : global_->registered_) {
     FieldTrial::ActiveGroup active_group;
-    if (it->second->GetActiveGroup(&active_group))
+    if (registered.second->GetActiveGroup(&active_group))
       active_groups->push_back(active_group);
   }
 }
