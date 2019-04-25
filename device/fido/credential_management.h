@@ -6,8 +6,20 @@
 #define DEVICE_FIDO_CREDENTIAL_MANAGEMENT_H_
 
 #include "base/component_export.h"
+#include "base/optional.h"
+#include "device/fido/fido_constants.h"
+#include "device/fido/public_key_credential_rp_entity.h"
+#include "device/fido/public_key_credential_user_entity.h"
+
+namespace cbor {
+class Value;
+}
 
 namespace device {
+
+namespace pin {
+struct EmptyResponse;
+}
 
 // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20190409.html#authenticatorCredentialManagement
 
@@ -44,6 +56,72 @@ enum class CredentialManagementSubCommand : uint8_t {
   kEnumerateCredentialsGetNextCredential = 0x05,
   kDeleteCredential = 0x06,
 };
+
+struct CredentialsMetadataRequest {
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const CredentialsMetadataRequest&);
+
+  explicit CredentialsMetadataRequest(std::vector<uint8_t> pin_token);
+  ~CredentialsMetadataRequest();
+
+  std::vector<uint8_t> pin_token;
+};
+
+struct CredentialsMetadataResponse {
+  static base::Optional<CredentialsMetadataResponse> Parse(
+      const base::Optional<cbor::Value>& cbor_response);
+
+  size_t num_existing_credentials;
+  size_t num_estimated_remaining_credentials;
+
+ private:
+  CredentialsMetadataResponse() = default;
+};
+
+struct EnumerateRPsResponse {
+  static base::Optional<EnumerateRPsResponse> Parse(
+      const base::Optional<cbor::Value>& cbor_response,
+      bool expect_rp_count);
+
+  EnumerateRPsResponse(EnumerateRPsResponse&&);
+  EnumerateRPsResponse& operator=(EnumerateRPsResponse&&);
+  ~EnumerateRPsResponse();
+
+  PublicKeyCredentialRpEntity rp;
+  std::array<uint8_t, kRpIdHashLength> rp_id_hash;
+  size_t rp_count;
+
+ private:
+  EnumerateRPsResponse(PublicKeyCredentialRpEntity rp,
+                       std::array<uint8_t, kRpIdHashLength> rp_id_hash,
+                       size_t rp_count);
+  EnumerateRPsResponse(const EnumerateRPsResponse&) = delete;
+  EnumerateRPsResponse& operator=(const EnumerateRPsResponse&) = delete;
+};
+
+struct EnumerateCredentialsResponse {
+  static base::Optional<EnumerateCredentialsResponse> Parse(
+      const base::Optional<cbor::Value>& cbor_response,
+      bool expect_credential_count);
+
+  EnumerateCredentialsResponse(EnumerateCredentialsResponse&&);
+  EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&&);
+  ~EnumerateCredentialsResponse();
+
+  PublicKeyCredentialUserEntity user;
+  std::vector<uint8_t> credential_id;
+  size_t credential_count;
+
+ private:
+  EnumerateCredentialsResponse(PublicKeyCredentialUserEntity user,
+                               std::vector<uint8_t> credential_id,
+                               size_t credential_count);
+  EnumerateCredentialsResponse(const EnumerateCredentialsResponse&) = delete;
+  EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&) =
+      delete;
+};
+
+using DeleteCredentialResponse = pin::EmptyResponse;
 
 }  // namespace device
 
