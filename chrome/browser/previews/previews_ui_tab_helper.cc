@@ -329,8 +329,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
   if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
     DCHECK_EQ(previews::PreviewsType::OFFLINE,
               previews_user_data_->committed_previews_type());
+    UMA_HISTOGRAM_BOOLEAN("Previews.Offline.CommittedErrorPage",
+                          navigation_handle->IsErrorPage());
     if (navigation_handle->IsErrorPage()) {
-      // TODO(ryansturm): Add UMA for errors.
       return;
     }
     data_reduction_proxy::DataReductionProxySettings*
