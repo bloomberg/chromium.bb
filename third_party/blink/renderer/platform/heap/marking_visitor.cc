@@ -80,8 +80,15 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   Address* payload = reinterpret_cast<Address*>(header->Payload());
   const size_t payload_size = header->PayloadSize();
   for (size_t i = 0; i < (payload_size / sizeof(Address)); ++i) {
-    if (payload[i])
-      Heap().CheckAndMarkPointer(this, payload[i]);
+    Address maybe_ptr = payload[i];
+#if defined(MEMORY_SANITIZER)
+    // |payload| may be uninitialized by design or just contain padding bytes.
+    // Copy into a local variable that is unpoisoned for conservative marking.
+    // Copy into a temporary variable to maintain the original MSAN state.
+    __msan_unpoison(&maybe_ptr, sizeof(maybe_ptr));
+#endif
+    if (maybe_ptr)
+      Heap().CheckAndMarkPointer(this, maybe_ptr);
   }
 }
 
