@@ -94,6 +94,9 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
+extern const char kAutofillRejectCompanyBirthyearName[];
+extern const char kAutofillRejectCompanyBirthyearDescription[];
+
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
 extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 

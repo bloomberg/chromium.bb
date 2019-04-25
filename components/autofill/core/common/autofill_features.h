@@ -21,6 +21,7 @@ namespace autofill {
 namespace features {
 
 // All features in alphabetical order.
+extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutocompleteRetentionPolicyEnabled;
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAddressNormalizer;
@@ -32,6 +33,7 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
+extern const base::Feature kAutofillRejectCompanyBirthyear;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
