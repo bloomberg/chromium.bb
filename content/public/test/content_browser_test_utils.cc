@@ -90,7 +90,8 @@ bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
   if (!ExecJs(rfh, JsReplace("location = $1", url)))
     return false;
   nav_observer.Wait();
-  return nav_observer.last_committed_url() == url;
+  return nav_observer.last_committed_url() == url &&
+         nav_observer.last_navigation_succeeded();
 }
 
 bool NavigateToURLFromRendererWithoutUserGesture(
