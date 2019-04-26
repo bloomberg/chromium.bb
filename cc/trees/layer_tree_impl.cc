@@ -861,10 +861,9 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
                                                                   list_type);
       if (node->has_potential_animation != has_potential_animation) {
         node->has_potential_animation = has_potential_animation;
-        node->maximum_animation_scale =
-            mutator_host()->MaximumTargetScale(element_id, list_type);
-        node->starting_animation_scale =
-            mutator_host()->AnimationStartScale(element_id, list_type);
+        mutator_host()->GetAnimationScales(element_id, list_type,
+                                           &node->maximum_animation_scale,
+                                           &node->starting_animation_scale);
         transform_tree.set_needs_update(true);
         set_needs_update_draw_properties();
       }

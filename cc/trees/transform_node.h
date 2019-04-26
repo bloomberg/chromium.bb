@@ -136,8 +136,8 @@ struct CC_EXPORT TransformNode {
   gfx::Vector2dF source_offset;
   gfx::Vector2dF source_to_parent;
 
-  // See ElementAnimations::MaximumTargetScale() and AnimationStartScale() for
-  // their meanings. Updated by PropertyTrees::AnimationScalesChanged().
+  // See MutatorHost::GetAnimationScales() for their meanings. Updated by
+  // PropertyTrees::AnimationScalesChanged().
   float maximum_animation_scale;
   float starting_animation_scale;
 

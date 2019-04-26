@@ -286,21 +286,13 @@ bool HasPotentiallyRunningTransformAnimation(const MutatorHost& host,
 }
 
 template <typename LayerType>
-bool HasOnlyTranslationTransforms(const MutatorHost& host, LayerType* layer) {
-  return host.HasOnlyTranslationTransforms(layer->element_id(),
-                                           layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
-float MaximumAnimationScale(const MutatorHost& host, LayerType* layer) {
-  return host.MaximumTargetScale(layer->element_id(),
-                                 layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
-float StartingAnimationScale(const MutatorHost& host, LayerType* layer) {
-  return host.AnimationStartScale(layer->element_id(),
-                                  layer->GetElementTypeForAnimation());
+void GetAnimationScales(const MutatorHost& host,
+                        LayerType* layer,
+                        float* maximum_scale,
+                        float* starting_scale) {
+  return host.GetAnimationScales(layer->element_id(),
+                                 layer->GetElementTypeForAnimation(),
+                                 maximum_scale, starting_scale);
 }
 
 template <typename LayerType>
@@ -576,8 +568,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
 
   node->has_potential_animation = has_potentially_animated_transform;
   node->is_currently_animating = TransformIsAnimating(mutator_host_, layer);
-  node->maximum_animation_scale = MaximumAnimationScale(mutator_host_, layer);
-  node->starting_animation_scale = StartingAnimationScale(mutator_host_, layer);
+  GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
+                     &node->starting_animation_scale);
 
   float post_local_scale_factor = 1.0f;
 

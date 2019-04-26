@@ -460,27 +460,6 @@ bool KeyframeEffect::HasNonDeletedKeyframeModel() const {
   return false;
 }
 
-bool KeyframeEffect::HasOnlyTranslationTransforms(
-    ElementListType list_type) const {
-  for (const auto& keyframe_model : keyframe_models_) {
-    if (keyframe_model->is_finished() ||
-        keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
-      continue;
-
-    if ((list_type == ElementListType::ACTIVE &&
-         !keyframe_model->affects_active_elements()) ||
-        (list_type == ElementListType::PENDING &&
-         !keyframe_model->affects_pending_elements()))
-      continue;
-
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    if (!transform_animation_curve->IsTranslation())
-      return false;
-  }
-  return true;
-}
-
 bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->is_finished() ||
@@ -495,9 +474,13 @@ bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
-                                         float* start_scale) const {
-  *start_scale = 0.f;
+bool KeyframeEffect::GetAnimationScales(ElementListType list_type,
+                                        float* maximum_scale,
+                                        float* starting_scale) const {
+  *maximum_scale = kNotScaled;
+  *starting_scale = kNotScaled;
+  bool maximum_scale_valid = true;
+  bool starting_scale_valid = true;
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->is_finished() ||
         keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
@@ -507,6 +490,11 @@ bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
          !keyframe_model->affects_active_elements()) ||
         (list_type == ElementListType::PENDING &&
          !keyframe_model->affects_pending_elements()))
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        keyframe_model->curve()->ToTransformAnimationCurve();
+    if (transform_animation_curve->IsTranslation())
       continue;
 
     bool forward_direction = true;
@@ -521,52 +509,32 @@ bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
         break;
     }
 
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    float keyframe_model_start_scale = 0.f;
-    if (!transform_animation_curve->AnimationStartScale(
-            forward_direction, &keyframe_model_start_scale))
-      return false;
-    *start_scale = std::max(*start_scale, keyframe_model_start_scale);
-  }
-  return true;
-}
-
-bool KeyframeEffect::MaximumTargetScale(ElementListType list_type,
-                                        float* max_scale) const {
-  *max_scale = 0.f;
-  for (const auto& keyframe_model : keyframe_models_) {
-    if (keyframe_model->is_finished() ||
-        keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
-      continue;
-
-    if ((list_type == ElementListType::ACTIVE &&
-         !keyframe_model->affects_active_elements()) ||
-        (list_type == ElementListType::PENDING &&
-         !keyframe_model->affects_pending_elements()))
-      continue;
-
-    bool forward_direction = true;
-    switch (keyframe_model->direction()) {
-      case KeyframeModel::Direction::NORMAL:
-      case KeyframeModel::Direction::ALTERNATE_NORMAL:
-        forward_direction = keyframe_model->playback_rate() >= 0.0;
-        break;
-      case KeyframeModel::Direction::REVERSE:
-      case KeyframeModel::Direction::ALTERNATE_REVERSE:
-        forward_direction = keyframe_model->playback_rate() < 0.0;
-        break;
+    if (maximum_scale_valid) {
+      float keyframe_model_maximum_scale = kNotScaled;
+      if (transform_animation_curve->MaximumTargetScale(
+              forward_direction, &keyframe_model_maximum_scale)) {
+        *maximum_scale = std::max(*maximum_scale, keyframe_model_maximum_scale);
+      } else {
+        maximum_scale_valid = false;
+        *maximum_scale = kNotScaled;
+      }
     }
 
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    float keyframe_model_scale = 0.f;
-    if (!transform_animation_curve->MaximumTargetScale(forward_direction,
-                                                       &keyframe_model_scale))
-      return false;
-    *max_scale = std::max(*max_scale, keyframe_model_scale);
-  }
+    if (starting_scale_valid) {
+      float keyframe_model_starting_scale = kNotScaled;
+      if (transform_animation_curve->AnimationStartScale(
+              forward_direction, &keyframe_model_starting_scale)) {
+        *starting_scale =
+            std::max(*starting_scale, keyframe_model_starting_scale);
+      } else {
+        starting_scale_valid = false;
+        *starting_scale = kNotScaled;
+      }
+    }
 
+    if (!maximum_scale_valid && !starting_scale_valid)
+      return false;
+  }
   return true;
 }
 

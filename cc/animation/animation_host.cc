@@ -578,15 +578,6 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   return element_animations->HasAnyAnimationTargetingProperty(property);
 }
 
-bool AnimationHost::HasOnlyTranslationTransforms(
-    ElementId element_id,
-    ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->HasOnlyTranslationTransforms(list_type)
-             : true;
-}
-
 bool AnimationHost::AnimationsPreserveAxisAlignment(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
@@ -595,18 +586,17 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(
              : true;
 }
 
-float AnimationHost::MaximumTargetScale(ElementId element_id,
-                                        ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations ? element_animations->MaximumTargetScale(list_type)
-                            : kNotScaled;
-}
-
-float AnimationHost::AnimationStartScale(ElementId element_id,
-                                         ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations ? element_animations->AnimationStartScale(list_type)
-                            : kNotScaled;
+void AnimationHost::GetAnimationScales(ElementId element_id,
+                                       ElementListType list_type,
+                                       float* maximum_scale,
+                                       float* starting_scale) const {
+  if (auto element_animations = GetElementAnimationsForElementId(element_id)) {
+    element_animations->GetAnimationScales(list_type, maximum_scale,
+                                           starting_scale);
+    return;
+  }
+  *maximum_scale = kNotScaled;
+  *starting_scale = kNotScaled;
 }
 
 bool AnimationHost::IsElementAnimating(ElementId element_id) const {

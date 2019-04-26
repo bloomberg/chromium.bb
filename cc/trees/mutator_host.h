@@ -26,9 +26,8 @@ class MutatorHostClient;
 class LayerTreeMutator;
 class ScrollTree;
 
-// Used as the return value of MaximumTargetScale() and AnimationStartScale() to
-// indicate that there is no active scale animation or the scale cannot be
-// computed.
+// Used as the return value of GetAnimationScales() to indicate that there is
+// no active scale animation or the scale cannot be computed.
 const float kNotScaled = 0;
 
 // A MutatorHost owns all the animation and mutation effects.
@@ -108,22 +107,18 @@ class MutatorHost {
       ElementId element_id,
       TargetProperty::Type property) const = 0;
 
-  virtual bool HasOnlyTranslationTransforms(
-      ElementId element_id,
-      ElementListType list_type) const = 0;
   virtual bool AnimationsPreserveAxisAlignment(ElementId element_id) const = 0;
 
-  // Returns the maximum scale along any dimension at any destination in active
-  // scale animations, or kNotScaled if there is no active scale animation or
-  // the maximum scale cannot be computed.
-  virtual float MaximumTargetScale(ElementId element_id,
-                                   ElementListType list_type) const = 0;
-
-  // Returns the maximum of starting animation scale along any dimension at any
-  // destination in active scale animations, or kNotScaled if there is no active
-  // scale animation or the starting scale cannot be computed.
-  virtual float AnimationStartScale(ElementId element_id,
-                                    ElementListType list_type) const = 0;
+  // Gets scales transform animations. On return, |maximum_scale| is the maximum
+  // scale along any dimension at any destination in active scale animations,
+  // and |starting_scale| is the maximum of starting animation scale along any
+  // dimension at any destination in active scale animations. They are set to
+  // kNotScaled if there is no active scale animation or the scales cannot be
+  // computed.
+  virtual void GetAnimationScales(ElementId element_id,
+                                  ElementListType list_type,
+                                  float* maximum_scale,
+                                  float* starting_scale) const = 0;
 
   virtual bool IsElementAnimating(ElementId element_id) const = 0;
   virtual bool HasTickingKeyframeModelForTesting(

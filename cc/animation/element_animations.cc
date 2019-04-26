@@ -212,15 +212,6 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   UpdateClientAnimationState();
 }
 
-bool ElementAnimations::HasOnlyTranslationTransforms(
-    ElementListType list_type) const {
-  for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (!keyframe_effect.HasOnlyTranslationTransforms(list_type))
-      return false;
-  }
-  return true;
-}
-
 bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   for (auto& keyframe_effect : keyframe_effects_list_) {
     if (!keyframe_effect.AnimationsPreserveAxisAlignment())
@@ -229,40 +220,25 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-float ElementAnimations::AnimationStartScale(ElementListType list_type) const {
-  float start_scale = kNotScaled;
-
+void ElementAnimations::GetAnimationScales(ElementListType list_type,
+                                           float* maximum_scale,
+                                           float* starting_scale) const {
+  *maximum_scale = kNotScaled;
+  *starting_scale = kNotScaled;
   for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (keyframe_effect.HasOnlyTranslationTransforms(list_type))
-      continue;
-    float keyframe_effect_start_scale = kNotScaled;
-    bool success = keyframe_effect.AnimationStartScale(
-        list_type, &keyframe_effect_start_scale);
-    if (!success)
-      return kNotScaled;
-    // Union: a maximum.
-    start_scale = std::max(start_scale, keyframe_effect_start_scale);
+    float keyframe_effect_maximum_scale = kNotScaled;
+    float keyframe_effect_starting_scale = kNotScaled;
+    bool success = keyframe_effect.GetAnimationScales(
+        list_type, &keyframe_effect_maximum_scale,
+        &keyframe_effect_starting_scale);
+    if (!success) {
+      *maximum_scale = kNotScaled;
+      *starting_scale = kNotScaled;
+      return;
+    }
+    *maximum_scale = std::max(*maximum_scale, keyframe_effect_maximum_scale);
+    *starting_scale = std::max(*starting_scale, keyframe_effect_starting_scale);
   }
-
-  return start_scale;
-}
-
-float ElementAnimations::MaximumTargetScale(ElementListType list_type) const {
-  float max_scale = kNotScaled;
-
-  for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (keyframe_effect.HasOnlyTranslationTransforms(list_type))
-      continue;
-    float keyframe_effect_max_scale = kNotScaled;
-    bool success = keyframe_effect.MaximumTargetScale(
-        list_type, &keyframe_effect_max_scale);
-    if (!success)
-      return kNotScaled;
-    // Union: a maximum.
-    max_scale = std::max(max_scale, keyframe_effect_max_scale);
-  }
-
-  return max_scale;
 }
 
 bool ElementAnimations::ScrollOffsetAnimationWasInterrupted() const {
@@ -369,8 +345,12 @@ void ElementAnimations::UpdateClientAnimationState() {
           element_id_map, ElementListType::ACTIVE, diff_active, active_state_);
     }
 
-    float maximum_scale = MaximumTargetScale(ElementListType::ACTIVE);
-    float starting_scale = AnimationStartScale(ElementListType::ACTIVE);
+    float maximum_scale = kNotScaled;
+    float starting_scale = kNotScaled;
+    if (transform_element_id) {
+      GetAnimationScales(ElementListType::ACTIVE, &maximum_scale,
+                         &starting_scale);
+    }
     if (maximum_scale != active_maximum_scale_ ||
         starting_scale != active_starting_scale_) {
       animation_host_->mutator_host_client()->AnimationScalesChanged(
@@ -389,8 +369,12 @@ void ElementAnimations::UpdateClientAnimationState() {
           pending_state_);
     }
 
-    float maximum_scale = MaximumTargetScale(ElementListType::PENDING);
-    float starting_scale = AnimationStartScale(ElementListType::PENDING);
+    float maximum_scale = kNotScaled;
+    float starting_scale = kNotScaled;
+    if (transform_element_id) {
+      GetAnimationScales(ElementListType::PENDING, &maximum_scale,
+                         &starting_scale);
+    }
     if (maximum_scale != pending_maximum_scale_ ||
         starting_scale != pending_starting_scale_) {
       animation_host_->mutator_host_client()->AnimationScalesChanged(
