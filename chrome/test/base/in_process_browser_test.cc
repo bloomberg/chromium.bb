@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -414,7 +416,7 @@ void InProcessBrowserTest::CloseAllBrowsers() {
 }
 
 void InProcessBrowserTest::RunUntilBrowserProcessQuits() {
-  std::move(run_loop_)->Run();
+  std::exchange(run_loop_, nullptr)->Run();
 }
 
 // TODO(alexmos): This function should expose success of the underlying
@@ -623,8 +625,8 @@ void InProcessBrowserTest::PostRunTestOnMainThread() {
 
   // Sometimes tests leave Quit tasks in the MessageLoop (for shame), so let's
   // run all pending messages here to avoid preempting the QuitBrowsers tasks.
-  // TODO(jbates) Once crbug.com/134753 is fixed, this can be removed because it
-  // will not be possible to post Quit tasks.
+  // TODO(https://crbug.com/922118): Remove this once it is no longer possible
+  // to post QuitCurrent* tasks.
   content::RunAllPendingInMessageLoop();
 
   QuitBrowsers();
