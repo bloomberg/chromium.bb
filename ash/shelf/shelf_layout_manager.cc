@@ -40,6 +40,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/work_area_insets.h"
+#include "ash/wm/workspace/workspace_types.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -793,9 +794,12 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   //   in tablet mode.
   // - Going from an auto hidden shelf in tablet mode to a visible shelf in
   //   tablet mode.
-  if (state.visibility_state == SHELF_VISIBLE &&
-      state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
-      old_state.visibility_state != SHELF_VISIBLE) {
+  // - Doing so would result in animating the opacity of the shelf while it is
+  //   showing blur.
+  if (state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
+      ((state.visibility_state == SHELF_VISIBLE &&
+        old_state.visibility_state != SHELF_VISIBLE) ||
+       is_background_blur_enabled_)) {
     change_type = AnimationChangeType::IMMEDIATE;
   } else {
     // Delay the animation when the shelf was hidden, and has just been made

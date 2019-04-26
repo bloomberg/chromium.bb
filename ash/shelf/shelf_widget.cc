@@ -401,11 +401,6 @@ void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
   status_container->SetLayoutManager(new StatusAreaLayoutManager(this));
 }
 
-void ShelfWidget::SetPaintsBackground(ShelfBackgroundType background_type,
-                                      AnimationChangeType change_type) {
-  background_animator_.PaintBackground(background_type, change_type);
-}
-
 ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
   return background_animator_.target_background_type();
 }
