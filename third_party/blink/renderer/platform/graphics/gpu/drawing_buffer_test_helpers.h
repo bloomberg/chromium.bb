@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "cc/test/stub_decode_cache.h"
 #include "components/viz/test/test_context_provider.h"
+#include "gpu/command_buffer/client/webgpu_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,12 +38,15 @@ class WebGraphicsContext3DProviderForTests
   WebGraphicsContext3DProviderForTests(
       std::unique_ptr<gpu::gles2::GLES2Interface> gl)
       : gl_(std::move(gl)) {}
+  WebGraphicsContext3DProviderForTests(
+      std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu)
+      : webgpu_(std::move(webgpu)) {}
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
-
-  // Not used by WebGL code.
   GrContext* GetGrContext() override { return nullptr; }
-  gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
+  gpu::webgpu::WebGPUInterface* WebGPUInterface() override {
+    return webgpu_.get();
+  }
   bool BindToCurrentThread() override { return false; }
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
@@ -66,26 +70,11 @@ class WebGraphicsContext3DProviderForTests
  private:
   cc::StubDecodeCache image_decode_cache_;
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
+  std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
   viz::TestSharedImageInterface test_shared_image_interface_;
 };
-
-// The target to use when binding a texture to a Chromium image.
-GLenum ImageCHROMIUMTextureTarget() {
-#if defined(OS_MACOSX)
-  return GC3D_TEXTURE_RECTANGLE_ARB;
-#else
-  return GL_TEXTURE_2D;
-#endif
-}
-
-// The target to use when preparing a mailbox texture.
-GLenum DrawingBufferTextureTarget() {
-  if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
-    return ImageCHROMIUMTextureTarget();
-  return GL_TEXTURE_2D;
-}
 
 class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
                                public DrawingBuffer::Client {
@@ -243,7 +232,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
   MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
   void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
-    if (target == ImageCHROMIUMTextureTarget()) {
+    if (target == kImageCHROMIUMTarget) {
       texture_sizes_.Set(bound_textures_[target],
                          image_sizes_.find(image_id)->value);
       image_to_texture_map_.Set(image_id, bound_textures_[target]);
@@ -253,7 +242,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
   MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
   void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
-    if (target == ImageCHROMIUMTextureTarget()) {
+    if (target == kImageCHROMIUMTarget) {
       image_sizes_.Set(current_image_id_, IntSize());
       image_to_texture_map_.erase(image_id);
       ReleaseTexImage2DMock(image_id);
@@ -377,6 +366,13 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
  private:
+  // The target to use when binding a texture to a Chromium image.
+#if defined(OS_MACOSX)
+  static constexpr GLuint kImageCHROMIUMTarget = GC3D_TEXTURE_RECTANGLE_ARB;
+#else
+  static constexpr GLuint kImageCHROMIUMTarget = GL_TEXTURE_2D;
+#endif
+
   std::map<GLenum, GLuint> bound_textures_;
 
   // State tracked to verify that it is restored correctly.

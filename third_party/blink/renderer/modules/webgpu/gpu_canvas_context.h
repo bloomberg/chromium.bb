@@ -7,14 +7,17 @@
 
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_swap_chain.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 namespace blink {
 
+class GPUSwapChain;
+class GPUSwapChainDescriptor;
+
 // A GPUCanvasContext does little by itself and basically just binds a canvas
-// and a GPUSwapChain together and forwards calls from one to the other. The
-// logic that are in other CanvasRenderingContext is in GPUSwapChain instead.
+// and a GPUSwapChain together and forwards calls from one to the other.
 class GPUCanvasContext : public CanvasRenderingContext {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -36,6 +39,9 @@ class GPUCanvasContext : public CanvasRenderingContext {
                    const CanvasContextCreationAttributesCore&);
   ~GPUCanvasContext() override;
 
+  void Trace(blink::Visitor*) override;
+  const IntSize& CanvasSize() const;
+
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override;
   void SetCanvasGetContextResult(RenderingContext&) final;
@@ -51,14 +57,16 @@ class GPUCanvasContext : public CanvasRenderingContext {
   void SetFilterQuality(SkFilterQuality) final {}
   bool IsPaintable() const final { return true; }
   int ExternallyAllocatedBufferCountPerPixel() final { return 1; }
-  void Stop() override {}
-  cc::Layer* CcLayer() const final { return nullptr; }
+  void Stop() final;
+  cc::Layer* CcLayer() const final;
 
   // gpu_canvas_context.idl
-  // TODO(crbug.com/877147): implement GPUCanvasContext.
+  GPUSwapChain* configureSwapChain(const GPUSwapChainDescriptor* descriptor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUCanvasContext);
+  Member<GPUSwapChain> swapchain_;
+  bool stopped_ = false;
 };
 
 DEFINE_TYPE_CASTS(GPUCanvasContext,

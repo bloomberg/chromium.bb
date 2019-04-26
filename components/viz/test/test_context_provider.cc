@@ -160,6 +160,7 @@ void TestSharedImageInterface::DestroySharedImage(
     const gpu::SyncToken& sync_token,
     const gpu::Mailbox& mailbox) {
   shared_images_.erase(mailbox);
+  most_recent_destroy_token_ = sync_token;
 }
 
 #if defined(OS_WIN)
@@ -180,15 +181,18 @@ void TestSharedImageInterface::PresentSwapChain(
 #endif  // OS_WIN
 
 gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
-                            gpu::CommandBufferId(), ++release_id_);
-  sync_token.SetVerifyFlush();
-  return sync_token;
+  most_recent_generated_token_ =
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
+                     gpu::CommandBufferId(), ++release_id_);
+  most_recent_generated_token_.SetVerifyFlush();
+  return most_recent_generated_token_;
 }
 
 gpu::SyncToken TestSharedImageInterface::GenUnverifiedSyncToken() {
-  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
-                        gpu::CommandBufferId(), ++release_id_);
+  most_recent_generated_token_ =
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
+                     gpu::CommandBufferId(), ++release_id_);
+  return most_recent_generated_token_;
 }
 
 bool TestSharedImageInterface::CheckSharedImageExists(

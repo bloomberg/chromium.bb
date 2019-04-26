@@ -9,9 +9,6 @@
 
 #include "gpu/command_buffer/client/interface_base.h"
 
-extern "C" typedef struct _ClientBuffer* ClientBuffer;
-extern "C" typedef struct _GLColorSpace* GLColorSpace;
-
 namespace gpu {
 namespace webgpu {
 

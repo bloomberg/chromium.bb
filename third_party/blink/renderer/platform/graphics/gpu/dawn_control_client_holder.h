@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONTROL_CLIENT_HOLDER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONTROL_CLIENT_HOLDER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DAWN_CONTROL_CLIENT_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DAWN_CONTROL_CLIENT_HOLDER_H_
 
 #include <dawn/dawn.h>
 
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace gpu {
@@ -23,7 +24,8 @@ namespace blink {
 // This class holds the WebGPUInterface and a |destroyed_| flag.
 // DawnControlClientHolder::MarkDestroyed() should be called if the
 // backing WebGPUInterface has been destroyed.
-class DawnControlClientHolder : public RefCounted<DawnControlClientHolder> {
+class PLATFORM_EXPORT DawnControlClientHolder
+    : public RefCounted<DawnControlClientHolder> {
  public:
   DawnControlClientHolder(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider);
@@ -46,4 +48,4 @@ class DawnControlClientHolder : public RefCounted<DawnControlClientHolder> {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONTROL_CLIENT_HOLDER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DAWN_CONTROL_CLIENT_HOLDER_H_

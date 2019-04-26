@@ -153,6 +153,12 @@ jumbo_static_library("test_support") {
     "command_buffer/client/client_test_helper.h",
     "command_buffer/client/gles2_interface_stub.cc",
     "command_buffer/client/gles2_interface_stub.h",
+    "command_buffer/client/gles2_interface_stub_autogen.h",
+    "command_buffer/client/gles2_interface_stub_impl_autogen.h",
+    "command_buffer/client/webgpu_interface_stub.cc",
+    "command_buffer/client/webgpu_interface_stub.h",
+    "command_buffer/client/webgpu_interface_stub_autogen.h",
+    "command_buffer/client/webgpu_interface_stub_impl_autogen.h",
     "command_buffer/service/copy_texture_chromium_mock.cc",
     "command_buffer/service/copy_texture_chromium_mock.h",
     "command_buffer/service/error_state_mock.cc",
@@ -171,6 +177,7 @@ jumbo_static_library("test_support") {
     ":gpu",
     ":webgpu",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/client:webgpu_interface",
     "//gpu/ipc:gpu_thread_holder",
   ]
   deps = [

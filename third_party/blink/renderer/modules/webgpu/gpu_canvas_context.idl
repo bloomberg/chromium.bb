@@ -7,4 +7,5 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUCanvasContext {
+    GPUSwapChain configureSwapChain(GPUSwapChainDescriptor descriptor);
 };

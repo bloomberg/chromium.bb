@@ -77,11 +77,19 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   size_t shared_image_count() const { return shared_images_.size(); }
   const gfx::Size& MostRecentSize() const { return most_recent_size_; }
+  const gpu::SyncToken& MostRecentGeneratedToken() const {
+    return most_recent_generated_token_;
+  }
+  const gpu::SyncToken& MostRecentDestroyToken() const {
+    return most_recent_destroy_token_;
+  }
   bool CheckSharedImageExists(const gpu::Mailbox& mailbox) const;
 
  private:
   uint64_t release_id_ = 0;
   gfx::Size most_recent_size_;
+  gpu::SyncToken most_recent_generated_token_;
+  gpu::SyncToken most_recent_destroy_token_;
   base::flat_set<gpu::Mailbox> shared_images_;
 };
 
