@@ -1148,6 +1148,17 @@ HttpHandler::PrepareStandardResponse(
     inner_params->SetString("error", StatusCodeToString(status.code()));
     inner_params->SetString("message", status.message());
     inner_params->SetString("stacktrace", status.stack_trace());
+    // According to
+    // https://www.w3.org/TR/2018/REC-webdriver1-20180605/#dfn-annotated-unexpected-alert-open-error
+    // error UnexpectedAlertOpen should contain 'data.text' with alert text
+    if (status.code() == kUnexpectedAlertOpen) {
+      const std::string& message = status.message();
+      unsigned first = message.find("{");
+      unsigned last = message.find_last_of("}");
+      std::string alertText = message.substr(first, last-first);
+      alertText = alertText.substr(alertText.find(":") + 2);
+      inner_params->SetString("data.text", alertText);
+    }
     body_params.SetDictionary("value", std::move(inner_params));
   } else {
     body_params.Set("value", std::move(value));
