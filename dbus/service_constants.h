@@ -885,6 +885,7 @@ const char kGetDefaultOutputBufferSize[] = "GetDefaultOutputBufferSize";
 const char kGetNodes[] = "GetNodes";
 const char kSetActiveOutputNode[] = "SetActiveOutputNode";
 const char kSetActiveInputNode[] = "SetActiveInputNode";
+const char kSetHotwordModel[] = "SetHotwordModel";
 const char kAddActiveOutputNode[] = "AddActiveOutputNode";
 const char kAddActiveInputNode[] = "AddActiveInputNode";
 const char kRemoveActiveOutputNode[] = "RemoveActiveOutputNode";
