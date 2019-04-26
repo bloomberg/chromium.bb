@@ -115,17 +115,22 @@ TEST_F(SystemMonitorTest, AddAndUpdateObservers) {
 
   // Add a second observer that observes the amount of free memory at the
   // default frequency.
-  MetricsRefreshFrequencies obs2_metrics_frequencies = {
-      .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency};
+  MetricsRefreshFrequencies obs2_metrics_frequencies =
+      MetricsRefreshFrequencies::Builder()
+          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
+          .Build();
+
   system_monitor_->AddOrUpdateObserver(&obs2, obs2_metrics_frequencies);
   EnsureMetricsAreObservedAtExpectedFrequency(
       SamplingFrequency::kDefaultFrequency);
 
   // Add a third observer that observes the amount of free memory and the disk
   // idle time at the default frequency.
-  MetricsRefreshFrequencies obs3_metrics_frequencies = {
-      .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency,
-      .disk_idle_time_percent_frequency = SamplingFrequency::kDefaultFrequency};
+  MetricsRefreshFrequencies obs3_metrics_frequencies =
+      MetricsRefreshFrequencies::Builder()
+          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
+          .SetDiskIdleTimePercentFrequency(SamplingFrequency::kDefaultFrequency)
+          .Build();
   system_monitor_->AddOrUpdateObserver(&obs3, obs3_metrics_frequencies);
   EnsureMetricsAreObservedAtExpectedFrequency(
       SamplingFrequency::kDefaultFrequency,
@@ -150,16 +155,18 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
   ::testing::StrictMock<MockMetricsMonitorObserver> mock_observer_1;
   system_monitor_->AddOrUpdateObserver(
       &mock_observer_1,
-      {.free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency});
+      MetricsRefreshFrequencies::Builder()
+          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
+          .Build());
 
   ::testing::StrictMock<MockMetricsMonitorObserver> mock_observer_2;
   system_monitor_->AddOrUpdateObserver(
-      &mock_observer_2, {
-                            .disk_idle_time_percent_frequency =
-                                SamplingFrequency::kDefaultFrequency,
-                            .system_metrics_sampling_frequency =
-                                SamplingFrequency::kDefaultFrequency,
-                        });
+      &mock_observer_2,
+      MetricsRefreshFrequencies::Builder()
+          .SetDiskIdleTimePercentFrequency(SamplingFrequency::kDefaultFrequency)
+          .SetSystemMetricsSamplingFrequency(
+              SamplingFrequency::kDefaultFrequency)
+          .Build());
 
   EnsureMetricsAreObservedAtExpectedFrequency(
       SamplingFrequency::kDefaultFrequency,

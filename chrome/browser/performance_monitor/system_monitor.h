@@ -76,6 +76,9 @@ class SystemMonitor {
 
       SamplingFrequency system_metrics_sampling_frequency =
           SamplingFrequency::kNoSampling;
+
+      // A builder used to create instances of this object.
+      class Builder;
     };
 
     ~SystemObserver() override;
@@ -295,6 +298,25 @@ class SystemMonitor {
   base::WeakPtrFactory<SystemMonitor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
+};
+
+// A builder class used to easily create a MetricRefreshFrequencies object.
+class SystemMonitor::SystemObserver::MetricRefreshFrequencies::Builder {
+ public:
+  Builder() = default;
+  ~Builder() = default;
+
+  Builder& SetFreePhysMemoryMbFrequency(SamplingFrequency freq);
+  Builder& SetDiskIdleTimePercentFrequency(SamplingFrequency freq);
+  Builder& SetSystemMetricsSamplingFrequency(SamplingFrequency freq);
+
+  // Returns the initialized MetricRefreshFrequencies instance.
+  MetricRefreshFrequencies Build();
+
+ private:
+  MetricRefreshFrequencies metrics_and_frequencies_ = {};
+
+  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 // An helper class used by the MetricEvaluator object to retrieve the info

@@ -17,6 +17,8 @@ namespace tracing {
 namespace {
 
 using SamplingFrequency = performance_monitor::SystemMonitor::SamplingFrequency;
+using MetricsRefreshFrequencies = performance_monitor::SystemMonitor::
+    SystemObserver::MetricRefreshFrequencies;
 
 /////////////////////////////////////////////////////////////////////////////
 // Holds profiled system stats until the tracing system needs to serialize it.
@@ -84,8 +86,10 @@ void TraceEventSystemStatsMonitor::StartProfiling() {
   is_profiling_ = true;
   DCHECK(performance_monitor::SystemMonitor::Get());
   performance_monitor::SystemMonitor::Get()->AddOrUpdateObserver(
-      this, {.system_metrics_sampling_frequency =
-                 SamplingFrequency::kDefaultFrequency});
+      this, MetricsRefreshFrequencies::Builder()
+                .SetSystemMetricsSamplingFrequency(
+                    SamplingFrequency::kDefaultFrequency)
+                .Build());
 }
 
 void TraceEventSystemStatsMonitor::OnSystemMetricsStruct(
