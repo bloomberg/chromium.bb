@@ -155,6 +155,11 @@ void PowerManagerMojoClient::KeyboardBrightnessChanged(
     observer.KeyboardBrightnessChanged(change);
 }
 
+void PowerManagerMojoClient::SuspendDone(base::TimeDelta sleep_duration) {
+  for (auto& observer : observers_)
+    observer.SuspendDone(sleep_duration);
+}
+
 void PowerManagerMojoClient::InitAfterInterfaceBound() {
   DCHECK(controller_.is_bound());
   power::mojom::PowerManagerObserverAssociatedPtrInfo ptr_info;

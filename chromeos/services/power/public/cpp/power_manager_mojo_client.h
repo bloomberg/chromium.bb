@@ -79,6 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CLIENT) PowerManagerMojoClient
       const power_manager::BacklightBrightnessChange& change) override;
   void KeyboardBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   power::mojom::PowerManagerControllerPtr* interface_ptr() {
     return &controller_;

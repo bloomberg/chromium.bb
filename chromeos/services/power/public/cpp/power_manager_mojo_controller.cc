@@ -68,4 +68,9 @@ void PowerManagerMojoController::KeyboardBrightnessChanged(
   client_->KeyboardBrightnessChanged(change);
 }
 
+void PowerManagerMojoController::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
+  client_->SuspendDone(sleep_duration);
+}
+
 }  // namespace chromeos
