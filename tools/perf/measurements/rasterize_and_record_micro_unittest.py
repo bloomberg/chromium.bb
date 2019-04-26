@@ -25,7 +25,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  @decorators.Disabled('win', 'chromeos')
+  @decorators.Disabled('win', 'chromeos', 'linux')
   def testRasterizeAndRecordMicro(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro(
