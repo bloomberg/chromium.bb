@@ -347,6 +347,10 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
     ListedElement& control = *controls[i];
     if (!control.ClassSupportsStateRestore())
       continue;
+    // The resultant string will be fragile if it contains a name of a
+    // form-associated custom element. It's associated to the |form| only if its
+    // custom element definition is available.  It's not associated if the
+    // definition is unavailable though the element structure is identical.
     if (control.IsElementInternals())
       continue;
     if (!OwnerFormForState(control))
