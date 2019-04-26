@@ -912,6 +912,7 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
+extern const char kUserTriggeredIsolatedOrigins[];
 extern const char kWebDriverOverridesIncompatiblePolicies[];
 
 #if !defined(OS_ANDROID)

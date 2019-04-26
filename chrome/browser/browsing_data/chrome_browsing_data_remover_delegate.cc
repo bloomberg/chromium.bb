@@ -1096,6 +1096,28 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                                         TracingDataType::kDomainReliability));
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Persisted isolated origins.
+  // Clear persisted isolated origins when cookies and other site data are
+  // cleared (DATA_TYPE_ISOLATED_ORIGINS is part of DATA_TYPE_SITE_DATA), or
+  // when history is cleared.  This is because (1) clearing cookies implies
+  // forgetting that the user has logged into sites, which also implies
+  // forgetting that a user has typed a password on them, and (2) saved
+  // isolated origins are a form of history, since the user has visited them in
+  // the past and triggered isolation via heuristics like typing a password on
+  // them.  Note that the Clear-Site-Data header should not clear isolated
+  // origins: they should only be cleared by user-driven actions.
+  //
+  // TODO(alexmos): Support finer-grained filtering based on time ranges and
+  // |filter|. For now, conservatively delete all saved isolated origins.
+  if (remove_mask & (DATA_TYPE_ISOLATED_ORIGINS | DATA_TYPE_HISTORY)) {
+    prefs->ClearPref(prefs::kUserTriggeredIsolatedOrigins);
+    // Note that this does not clear these sites from the in-memory map in
+    // ChildProcessSecurityPolicy, since that is not supported at runtime. That
+    // list of isolated sites is not directly exposed to users, though, and
+    // will be cleared on next restart.
+  }
+
 #if BUILDFLAG(ENABLE_REPORTING)
   if (remove_mask & DATA_TYPE_HISTORY) {
     network::mojom::NetworkContext* network_context =

@@ -54,7 +54,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+
+using ::testing::IsEmpty;
+using ::testing::UnorderedElementsAre;
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  public:
@@ -1374,6 +1378,19 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
 class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
  public:
+  std::vector<std::string> GetSavedIsolatedSites() {
+    return GetSavedIsolatedSites(browser()->profile());
+  }
+
+  std::vector<std::string> GetSavedIsolatedSites(Profile* profile) {
+    PrefService* prefs = profile->GetPrefs();
+    auto* list = prefs->GetList(prefs::kUserTriggeredIsolatedOrigins);
+    std::vector<std::string> sites;
+    for (const base::Value& value : list->GetList())
+      sites.push_back(value.GetString());
+    return sites;
+  }
+
   bool HasSyntheticTrial(const std::string& trial_name) {
     std::vector<std::string> synthetic_trials;
     variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
@@ -1417,6 +1434,9 @@ class SiteIsolationForPasswordSitesBrowserTest
         embedded_test_server()->GetURL("isolated1.com", "/").spec() + "," +
         embedded_test_server()->GetURL("isolated2.com", "/").spec();
     command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+
+    // Allow HTTPS server to be used on sites other than localhost.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
  private:
@@ -1535,4 +1555,144 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), isolated_url);
   EXPECT_TRUE(
       IsInSyntheticTrialGroup(kSyntheticTrialName, kSyntheticTrialGroup));
+}
+
+// Verifies that persistent isolated sites survive restarts.  Part 1.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       PRE_IsolatedSitesPersistAcrossRestarts) {
+  // There shouldn't be any saved isolated origins to start with.
+  EXPECT_THAT(GetSavedIsolatedSites(), IsEmpty());
+
+  // Isolate saved.com and saved2.com persistently.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  GURL saved2_url(embedded_test_server()->GetURL("saved2.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved2_url);
+
+  // Check that saved.com utilizes a dedicated process in future navigations.
+  // Open a new tab to force creation of a new BrowsingInstance.
+  AddBlankTabAndShow(browser());
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Check that saved.com and saved2.com were saved to disk.
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com", "http://saved2.com"));
+}
+
+// Verifies that process-isolated sites persist across restarts.  Part 2.
+// This runs after Part 1 above and in the same profile.  Part 1 has already
+// added "saved.com" as a persisted isolated origin, so this part verifies that
+// it requires a dedicated process after restart.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IsolatedSitesPersistAcrossRestarts) {
+  // Check that saved.com and saved2.com are still saved to disk.
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com", "http://saved2.com"));
+
+  // Check that these sites utilize a dedicated process after restarting, but a
+  // non-isolated foo.com URL does not.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  GURL saved2_url(embedded_test_server()->GetURL("saved2.com", "/title2.html"));
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  ui_test_utils::NavigateToURL(browser(), saved2_url);
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+}
+
+// Verify that trying to isolate a site multiple times will only save it to
+// disk once.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IsolatedSiteIsSavedOnlyOnce) {
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com"));
+}
+
+// Check that Incognito doesn't inherit saved isolated origins from its
+// original profile, and that any isolated origins added in Incognito don't
+// affect the original profile.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IncognitoWithIsolatedSites) {
+  // Isolate saved.com and verify it's been saved to disk.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com"));
+
+  // Create an incognito browser and browse to saved.com.  Verify that it's
+  // *not* isolated in incognito.
+  //
+  // TODO(alexmos): This might change in the future if we decide to inherit
+  // main profile's isolated origins in incognito. See
+  // https://crbug.com/905513.
+  Browser* incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito, saved_url);
+  content::WebContents* contents =
+      incognito->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Add an isolated site in incognito, and verify that while future
+  // navigations to this site in incognito require a dedicated process,
+  // navigations to this site in the main profile do not require a dedicated
+  // process, and the site is not persisted for either the main or incognito
+  // profiles.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(incognito->profile(), foo_url);
+
+  AddBlankTabAndShow(incognito);
+  ui_test_utils::NavigateToURL(incognito, foo_url);
+  contents = incognito->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  AddBlankTabAndShow(browser());
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              testing::Not(testing::Contains("http://foo.com")));
+  EXPECT_THAT(GetSavedIsolatedSites(incognito->profile()),
+              testing::Not(testing::Contains("http://foo.com")));
+}
+
+// Verify that serving a Clear-Site-Data header does not clear saved isolated
+// sites.  Saved isolated sites should only be cleared by user-initiated
+// actions.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       ClearSiteDataDoesNotClearSavedIsolatedSites) {
+  // Start an HTTPS server, as Clear-Site-Data is only available on HTTPS URLs.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+
+  // Isolate saved.com and verify it's been saved to disk.
+  GURL saved_url(https_server.GetURL("saved.com", "/clear_site_data.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("https://saved.com"));
+
+  // Navigate to a URL that serves a Clear-Site-Data header for cache, cookies,
+  // and DOM storage. This is the most that a Clear-Site-Data header could
+  // clear, and this should not clear saved isolated sites.
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("https://saved.com"));
 }

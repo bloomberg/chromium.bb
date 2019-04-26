@@ -192,6 +192,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldEnableStrictSiteIsolation() override;
   bool ShouldDisableSiteIsolation() override;
   std::vector<std::string> GetAdditionalSiteIsolationModes() override;
+  void PersistIsolatedOrigin(content::BrowserContext* context,
+                             const url::Origin& origin) override;
   bool IsFileAccessAllowed(const base::FilePath& path,
                            const base::FilePath& absolute_path,
                            const base::FilePath& profile_path) override;
