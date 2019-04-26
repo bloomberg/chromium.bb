@@ -218,6 +218,13 @@ public class NativeUiUtils {
         performActionAndWaitForUiQuiescence(() -> {
             for (int i = 0; i < numClicks; ++i) {
                 clickElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
+                // Rarely, sending clicks back to back can cause the web contents to miss a click.
+                // So, if we're going to be sending more, introduce a couple of input-less frames
+                // to avoid this issue.
+                if (i < numClicks - 1) {
+                    hoverElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
+                    hoverElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
+                }
             }
         });
     }
