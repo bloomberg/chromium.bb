@@ -966,7 +966,7 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_CONTROL)
     return true;
 
-  if (IsArrowKeyEvent(event) && event.IsControlDown()) {
+  if (selected_view_ && IsArrowKeyEvent(event) && event.IsControlDown()) {
     HandleKeyboardAppOperations(event.key_code(), event.IsShiftDown());
     return true;
   }
