@@ -278,6 +278,12 @@ void PasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());
 
+  for (auto blacklisted_iterator = blacklisted_matches_.begin();
+       blacklisted_iterator != blacklisted_matches_.end();) {
+    form_saver_->Remove(**blacklisted_iterator);
+    blacklisted_iterator = blacklisted_matches_.erase(blacklisted_iterator);
+  }
+
   metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
       submitted_form_->submission_event);
   metrics_recorder_->SetSubmissionIndicatorEvent(

@@ -476,15 +476,7 @@ bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
 }
 
 void ManagePasswordsUIController::SavePasswordInternal() {
-  password_manager::PasswordStore* password_store =
-      GetPasswordStore(web_contents());
-  password_manager::PasswordFormManagerForUI* form_manager =
-      passwords_data_.form_manager();
-  for (auto* form : form_manager->GetBlacklistedMatches()) {
-    password_store->RemoveLogin(*form);
-  }
-
-  form_manager->Save();
+  passwords_data_.form_manager()->Save();
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {
