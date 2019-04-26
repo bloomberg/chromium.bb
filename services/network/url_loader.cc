@@ -638,14 +638,6 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
     return;
   }
 
-  if (new_url &&
-      (new_url->GetOrigin() != deferred_redirect_url_->GetOrigin())) {
-    NOTREACHED() << "Can only change the URL within the same origin.";
-    NotifyCompleted(net::ERR_UNEXPECTED);
-    // |this| may have been deleted.
-    return;
-  }
-
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 

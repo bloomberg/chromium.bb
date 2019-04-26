@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {
@@ -325,17 +326,13 @@ void ThrottlingURLLoader::Start(
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        // Only do this sanity check if the schemes are both http[s], as this
-        // generated-redirect functionality is also used by
-        // registerProtocolHandler to map non-web to web schemes and that is
-        // safe.
         if (original_url.SchemeIsHTTPOrHTTPS() &&
-            url_request->url.SchemeIsHTTPOrHTTPS()) {
-          CHECK_EQ(original_url.GetOrigin(), url_request->url.GetOrigin())
-              << "ThrottlingURLLoader doesn't support a throttle making a "
-              << "cross-origin redirect.";
+            !url_request->url.SchemeIsHTTPOrHTTPS()) {
+          NOTREACHED() << "A URLLoaderThrottle can't redirect from http(s) to "
+                       << "a non http(s) scheme.";
+        } else {
+          throttle_will_start_redirect_url_ = url_request->url;
         }
-        throttle_will_start_redirect_url_ = url_request->url;
         // Restore the original URL so that all throttles see the same original
         // URL.
         url_request->url = original_url;
@@ -343,11 +340,6 @@ void ThrottlingURLLoader::Start(
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
     }
-
-    // If a throttle had changed the URL, set it in the ResourceRequest struct
-    // so that it is the URL that's requested.
-    if (!throttle_will_start_redirect_url_.is_empty())
-      url_request->url = throttle_will_start_redirect_url_;
   }
 
   start_info_ =
@@ -362,13 +354,35 @@ void ThrottlingURLLoader::Start(
 void ThrottlingURLLoader::StartNow() {
   DCHECK(start_info_);
   if (!throttle_will_start_redirect_url_.is_empty()) {
-    net::RedirectInfo redirect_info;
-    redirect_info.status_code = net::HTTP_TEMPORARY_REDIRECT;
-    redirect_info.new_method = start_info_->url_request.method;
-    redirect_info.new_url = throttle_will_start_redirect_url_;
-    redirect_info.new_site_for_cookies = throttle_will_start_redirect_url_;
-    redirect_info.new_top_frame_origin =
-        url::Origin::Create(throttle_will_start_redirect_url_);
+    auto first_party_url_policy =
+        start_info_->url_request.update_first_party_url_on_redirect
+            ? net::URLRequest::FirstPartyURLPolicy::
+                  UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+            : net::URLRequest::FirstPartyURLPolicy::
+                  NEVER_CHANGE_FIRST_PARTY_URL;
+
+    net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
+        start_info_->url_request.method, start_info_->url_request.url,
+        start_info_->url_request.site_for_cookies,
+        start_info_->url_request.top_frame_origin, first_party_url_policy,
+        start_info_->url_request.referrer_policy,
+        start_info_->url_request.referrer.spec(),
+        // Use status code 307 to preserve the method, so POST requests work.
+        net::HTTP_TEMPORARY_REDIRECT, throttle_will_start_redirect_url_,
+        base::nullopt, false, false, false);
+
+    bool should_clear_upload = false;
+    net::RedirectUtil::UpdateHttpRequest(
+        start_info_->url_request.url, start_info_->url_request.method,
+        redirect_info, base::nullopt, base::nullopt,
+        &start_info_->url_request.headers, &should_clear_upload);
+
+    if (should_clear_upload)
+      start_info_->url_request.request_body = nullptr;
+
+    // Set the new URL in the ResourceRequest struct so that it is the URL
+    // that's requested.
+    start_info_->url_request.url = throttle_will_start_redirect_url_;
 
     network::ResourceResponseHead response_head;
     std::string header_string = base::StringPrintf(
@@ -530,17 +544,6 @@ void ThrottlingURLLoader::OnReceiveRedirect(
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        // Only do this sanity check if the schemes are both http[s], as this
-        // generated-redirect functionality is also used by
-        // registerProtocolHandler to map non-web to web schemes and that is
-        // safe.
-        if (redirect_info_copy.new_url.SchemeIsHTTPOrHTTPS() &&
-            redirect_info.new_url.SchemeIsHTTPOrHTTPS()) {
-          CHECK_EQ(redirect_info_copy.new_url.GetOrigin(),
-                   redirect_info.new_url.GetOrigin())
-              << "ThrottlingURLLoader doesn't support a throttle making a "
-              << "cross-origin redirect.";
-        }
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
       } else {
         CHECK_EQ(redirect_info_copy.new_url, redirect_info.new_url)
