@@ -114,10 +114,11 @@ void PowerManagerMojoClient::GetInactivityDelays(
     DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback) {
 }
 
-base::OnceClosure PowerManagerMojoClient::GetSuspendReadinessCallback(
-    const base::Location& from_where) {
-  return base::OnceClosure();
-}
+void PowerManagerMojoClient::BlockSuspend(const base::UnguessableToken& token,
+                                          const std::string& debug_info) {}
+
+void PowerManagerMojoClient::UnblockSuspend(
+    const base::UnguessableToken& token) {}
 
 void PowerManagerMojoClient::CreateArcTimers(
     const std::string& tag,

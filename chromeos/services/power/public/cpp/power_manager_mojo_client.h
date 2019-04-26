@@ -59,8 +59,9 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CLIENT) PowerManagerMojoClient
   void GetInactivityDelays(
       DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
       override;
-  base::OnceClosure GetSuspendReadinessCallback(
-      const base::Location& from_where) override;
+  void BlockSuspend(const base::UnguessableToken& token,
+                    const std::string& debug_info) override;
+  void UnblockSuspend(const base::UnguessableToken& token) override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,

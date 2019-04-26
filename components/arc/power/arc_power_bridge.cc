@@ -174,9 +174,13 @@ void ArcPowerBridge::SuspendImminent(
   if (!power_instance)
     return;
 
-  power_instance->Suspend(
-      chromeos::PowerManagerClient::Get()->GetSuspendReadinessCallback(
-          FROM_HERE));
+  auto token = base::UnguessableToken::Create();
+  chromeos::PowerManagerClient::Get()->BlockSuspend(token, "ArcPowerBridge");
+  power_instance->Suspend(base::BindOnce(
+      [](base::UnguessableToken token) {
+        chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
+      },
+      token));
 }
 
 void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {

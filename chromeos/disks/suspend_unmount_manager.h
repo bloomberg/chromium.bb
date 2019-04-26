@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
@@ -40,7 +41,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) SuspendUnmountManager
   // The paths that the manager currently tries to unmount for suspend.
   std::set<std::string> unmounting_paths_;
 
-  base::OnceClosure suspend_readiness_callback_;
+  base::UnguessableToken block_suspend_token_;
 
   base::WeakPtrFactory<SuspendUnmountManager> weak_ptr_factory_;
 

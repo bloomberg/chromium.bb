@@ -249,11 +249,16 @@ void FakePowerManagerClient::GetInactivityDelays(
       FROM_HERE, base::BindOnce(std::move(callback), inactivity_delays_));
 }
 
-base::OnceClosure FakePowerManagerClient::GetSuspendReadinessCallback(
-    const base::Location& from_where) {
+void FakePowerManagerClient::BlockSuspend(const base::UnguessableToken& token,
+                                          const std::string& debug_info) {
   ++num_pending_suspend_readiness_callbacks_;
-  return base::BindOnce(&FakePowerManagerClient::HandleSuspendReadiness,
-                        base::Unretained(this));
+}
+
+void FakePowerManagerClient::UnblockSuspend(
+    const base::UnguessableToken& token) {
+  CHECK_GT(num_pending_suspend_readiness_callbacks_, 0);
+
+  --num_pending_suspend_readiness_callbacks_;
 }
 
 void FakePowerManagerClient::CreateArcTimers(
@@ -421,12 +426,6 @@ void FakePowerManagerClient::UpdatePowerProperties(
 void FakePowerManagerClient::NotifyObservers() {
   for (auto& observer : observers_)
     observer.PowerChanged(*props_);
-}
-
-void FakePowerManagerClient::HandleSuspendReadiness() {
-  CHECK_GT(num_pending_suspend_readiness_callbacks_, 0);
-
-  --num_pending_suspend_readiness_callbacks_;
 }
 
 void FakePowerManagerClient::DeleteArcTimersInternal(const std::string& tag) {

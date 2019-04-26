@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -452,17 +453,30 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  base::OnceClosure GetSuspendReadinessCallback(
-      const base::Location& from_where) override {
+  void BlockSuspend(const base::UnguessableToken& token,
+                    const std::string& debug_info) override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
+    DCHECK(token);
 
-    const int callback_id = next_suspend_readiness_callback_id_++;
-    pending_suspend_readiness_callbacks_[callback_id] = from_where;
-    return base::BindOnce(
-        &PowerManagerClientImpl::HandleObserverSuspendReadiness,
-        weak_ptr_factory_.GetWeakPtr(), pending_suspend_id_,
-        suspending_from_dark_resume_, callback_id);
+    suspend_readiness_registry_[token.ToString()] = {
+        pending_suspend_id_, suspending_from_dark_resume_, debug_info};
+  }
+
+  void UnblockSuspend(const base::UnguessableToken& token) override {
+    DCHECK(OnOriginThread());
+    auto registration = suspend_readiness_registry_.find(token.ToString());
+
+    if (registration == suspend_readiness_registry_.end() ||
+        registration->second.suspend_id != pending_suspend_id_ ||
+        registration->second.suspending_from_dark_resume !=
+            suspending_from_dark_resume_ ||
+        !suspend_is_pending_) {
+      return;
+    }
+
+    suspend_readiness_registry_.erase(registration);
+    MaybeReportSuspendReadiness();
   }
 
   void CreateArcTimers(
@@ -843,12 +857,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     pending_suspend_id_ = proto.suspend_id();
     suspend_is_pending_ = true;
     suspending_from_dark_resume_ = in_dark_resume;
-    pending_suspend_readiness_callbacks_.clear();
+    suspend_readiness_registry_.clear();
 
     // Record the fact that observers are being notified to ensure that we don't
-    // report readiness prematurely if one of them calls
-    // GetSuspendReadinessCallback() and then runs the callback synchonously
-    // instead of asynchronously.
+    // report readiness prematurely if one of them calls BlockSuspend() and then
+    // runs UnblockSuspend() synchonously instead of asynchronously.
     notifying_observers_about_suspend_imminent_ = true;
     if (suspending_from_dark_resume_) {
       for (auto& observer : observers_)
@@ -897,11 +910,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     // powerd gives clients a limited amount of time to report suspend
     // readiness. Log the stragglers within Chrome to aid in debugging.
-    for (const auto it : pending_suspend_readiness_callbacks_) {
+    for (const auto it : suspend_readiness_registry_) {
       LOG(WARNING) << "Didn't report suspend readiness due to "
-                   << it.second.ToString();
+                   << it.second.debug_info;
     }
-    pending_suspend_readiness_callbacks_.clear();
+    suspend_readiness_registry_.clear();
 
     for (auto& observer : observers_)
       observer.SuspendDone(duration);
@@ -1032,22 +1045,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        power_manager::kRegisterDarkSuspendDelayMethod));
   }
 
-  // Records the fact that an observer has finished doing asynchronous work
-  // that was blocking a pending suspend attempt and possibly reports
-  // suspend readiness to powerd.  Called by callbacks returned via
-  // GetSuspendReadinessCallback().
-  void HandleObserverSuspendReadiness(int32_t suspend_id,
-                                      bool in_dark_resume,
-                                      int callback_id) {
-    DCHECK(OnOriginThread());
-    if (!suspend_is_pending_ || suspend_id != pending_suspend_id_ ||
-        in_dark_resume != suspending_from_dark_resume_)
-      return;
-
-    pending_suspend_readiness_callbacks_.erase(callback_id);
-    MaybeReportSuspendReadiness();
-  }
-
   // Reports suspend readiness to powerd if no observers are still holding
   // suspend readiness callbacks.
   void MaybeReportSuspendReadiness() {
@@ -1058,7 +1055,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (notifying_observers_about_suspend_imminent_)
       return;
 
-    if (!pending_suspend_readiness_callbacks_.empty())
+    if (!suspend_readiness_registry_.empty())
       return;
 
     std::string method_name;
@@ -1123,13 +1120,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // helps distinguish the context within which these variables are being used.
   bool suspending_from_dark_resume_ = false;
 
-  // Next ID to be assigned to a callback returned via
-  // GetSuspendReadinessCallback().
-  int next_suspend_readiness_callback_id_ = 1;
+  struct SuspendInfo {
+    int32_t suspend_id;
+    bool suspending_from_dark_resume;
+    std::string debug_info;
+  };
 
-  // Map from suspend readiness callback ID to the location of the code that
-  // requested the callback.
-  std::map<int, base::Location> pending_suspend_readiness_callbacks_;
+  // A map that holds BlockSuspend() registrations. It maps from the token (in
+  // string form) to details about the suspend.
+  std::unordered_map<std::string, SuspendInfo> suspend_readiness_registry_;
 
   // Inspected by MaybeReportSuspendReadiness() to avoid prematurely notifying
   // powerd about suspend readiness while |observers_|' SuspendImminent()

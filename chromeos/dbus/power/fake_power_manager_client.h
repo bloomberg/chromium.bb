@@ -111,8 +111,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void GetInactivityDelays(
       DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
       override;
-  base::OnceClosure GetSuspendReadinessCallback(
-      const base::Location& from_where) override;
+  void BlockSuspend(const base::UnguessableToken& token,
+                    const std::string& debug_info) override;
+  void UnblockSuspend(const base::UnguessableToken& token) override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -186,10 +187,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   }
 
  private:
-  // Callback that will be run by asynchronous suspend delays to report
-  // readiness.
-  void HandleSuspendReadiness();
-
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
 

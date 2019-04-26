@@ -86,7 +86,7 @@ void VideoCaptureDeviceChromeOSHalv3::StopAndDeAllocate() {
   if (!camera_device_delegate_) {
     return;
   }
-  CloseDevice(base::OnceClosure());
+  CloseDevice(base::UnguessableToken());
   camera_device_ipc_thread_.Stop();
   camera_device_delegate_.reset();
   device_context_.reset();
@@ -123,13 +123,12 @@ void VideoCaptureDeviceChromeOSHalv3::SetPhotoOptions(
 
 void VideoCaptureDeviceChromeOSHalv3::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
+  auto token = base::UnguessableToken::Create();
+  chromeos::PowerManagerClient::Get()->BlockSuspend(
+      token, "VideoCaptureDeviceChromeOSHalv3");
   capture_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &VideoCaptureDeviceChromeOSHalv3::CloseDevice,
-          weak_ptr_factory_.GetWeakPtr(),
-          BindToCurrentLoop(chromeos::PowerManagerClient::Get()
-                                ->GetSuspendReadinessCallback(FROM_HERE))));
+      FROM_HERE, base::BindOnce(&VideoCaptureDeviceChromeOSHalv3::CloseDevice,
+                                weak_ptr_factory_.GetWeakPtr(), token));
 }
 
 void VideoCaptureDeviceChromeOSHalv3::SuspendDone(
@@ -159,7 +158,8 @@ void VideoCaptureDeviceChromeOSHalv3::OpenDevice() {
                      camera_device_delegate_->GetWeakPtr(), rotation_));
 }
 
-void VideoCaptureDeviceChromeOSHalv3::CloseDevice(base::OnceClosure callback) {
+void VideoCaptureDeviceChromeOSHalv3::CloseDevice(
+    base::UnguessableToken unblock_suspend_token) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!camera_device_delegate_) {
@@ -182,8 +182,8 @@ void VideoCaptureDeviceChromeOSHalv3::CloseDevice(base::OnceClosure callback) {
                                     base::Unretained(&device_closed))));
   base::TimeDelta kWaitTimeoutSecs = base::TimeDelta::FromSeconds(3);
   device_closed.TimedWait(kWaitTimeoutSecs);
-  if (callback) {
-    std::move(callback).Run();
+  if (!unblock_suspend_token.is_empty()) {
+    chromeos::PowerManagerClient::Get()->UnblockSuspend(unblock_suspend_token);
   }
 }
 

@@ -63,7 +63,6 @@ struct ExtensionEventObserver::KeepaliveSources {
 
 ExtensionEventObserver::ExtensionEventObserver()
     : should_delay_suspend_(true),
-      suspend_is_pending_(false),
       suspend_keepalive_count_(0),
       weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
@@ -95,11 +94,11 @@ ExtensionEventObserver::CreateTestApi() {
 
 void ExtensionEventObserver::SetShouldDelaySuspend(bool should_delay) {
   should_delay_suspend_ = should_delay;
-  if (!should_delay_suspend_ && suspend_is_pending_) {
+  if (!should_delay_suspend_ && block_suspend_token_) {
     // There is a suspend attempt pending but this class should no longer be
     // delaying it.  Immediately report readiness.
-    suspend_is_pending_ = false;
-    std::move(power_manager_callback_).Run();
+    PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
+    block_suspend_token_ = {};
     suspend_readiness_callback_.Cancel();
   }
 }
@@ -216,8 +215,7 @@ void ExtensionEventObserver::DarkSuspendImminent() {
 }
 
 void ExtensionEventObserver::SuspendDone(const base::TimeDelta& duration) {
-  suspend_is_pending_ = false;
-  power_manager_callback_.Reset();
+  block_suspend_token_ = {};
   suspend_readiness_callback_.Cancel();
 }
 
@@ -236,14 +234,13 @@ void ExtensionEventObserver::OnProfileDestroyed(Profile* profile) {
 }
 
 void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
-  if (suspend_is_pending_) {
-    LOG(WARNING) << "OnSuspendImminent called while previous suspend attempt "
-                 << "is still pending.";
-  }
+  DCHECK(block_suspend_token_.is_empty())
+      << "OnSuspendImminent called while previous suspend attempt "
+      << "is still pending.";
 
-  suspend_is_pending_ = true;
-  power_manager_callback_ =
-      PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
+  block_suspend_token_ = base::UnguessableToken::Create();
+  PowerManagerClient::Get()->BlockSuspend(block_suspend_token_,
+                                          "ExtensionEventObserver");
 
   suspend_readiness_callback_.Reset(
       base::Bind(&ExtensionEventObserver::MaybeReportSuspendReadiness,
@@ -263,12 +260,11 @@ void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
 }
 
 void ExtensionEventObserver::MaybeReportSuspendReadiness() {
-  if (!suspend_is_pending_ || suspend_keepalive_count_ > 0 ||
-      power_manager_callback_.is_null())
+  if (suspend_keepalive_count_ > 0 || block_suspend_token_.is_empty())
     return;
 
-  suspend_is_pending_ = false;
-  std::move(power_manager_callback_).Run();
+  PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
+  block_suspend_token_ = {};
 }
 
 }  // namespace chromeos

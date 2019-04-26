@@ -25,8 +25,8 @@ SuspendUnmountManager::SuspendUnmountManager(
 
 SuspendUnmountManager::~SuspendUnmountManager() {
   PowerManagerClient::Get()->RemoveObserver(this);
-  if (!suspend_readiness_callback_.is_null())
-    std::move(suspend_readiness_callback_).Run();
+  if (block_suspend_token_)
+    PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
 }
 
 void SuspendUnmountManager::SuspendImminent(
@@ -43,9 +43,10 @@ void SuspendUnmountManager::SuspendImminent(
     }
   }
   for (const auto& mount_path : mount_paths) {
-    if (suspend_readiness_callback_.is_null()) {
-      suspend_readiness_callback_ =
-          PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
+    if (block_suspend_token_.is_empty()) {
+      block_suspend_token_ = base::UnguessableToken::Create();
+      PowerManagerClient::Get()->BlockSuspend(block_suspend_token_,
+                                              "SuspendUnmountManager");
     }
     disk_mount_manager_->UnmountPath(
         mount_path, UNMOUNT_OPTIONS_NONE,
@@ -61,7 +62,7 @@ void SuspendUnmountManager::SuspendDone(const base::TimeDelta& sleep_duration) {
   unmounting_paths_.clear();
   disk_mount_manager_->EnsureMountInfoRefreshed(
       base::BindOnce(&OnRefreshCompleted), true /* force */);
-  suspend_readiness_callback_.Reset();
+  block_suspend_token_ = {};
 }
 
 void SuspendUnmountManager::OnUnmountComplete(const std::string& mount_path,
@@ -69,8 +70,10 @@ void SuspendUnmountManager::OnUnmountComplete(const std::string& mount_path,
   // This can happen when unmount completes after suspend done is called.
   if (unmounting_paths_.erase(mount_path) != 1)
     return;
-  if (unmounting_paths_.empty() && !suspend_readiness_callback_.is_null())
-    std::move(suspend_readiness_callback_).Run();
+  if (unmounting_paths_.empty() && block_suspend_token_) {
+    PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
+    block_suspend_token_ = {};
+  }
 }
 
 }  // namespace disks
