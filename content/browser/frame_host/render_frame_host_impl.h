@@ -140,6 +140,7 @@ class NavigationEntryImpl;
 class NavigationHandleImpl;
 class NavigationRequest;
 class PermissionServiceContext;
+class PrefetchedSignedExchangeCache;
 class PresentationServiceImpl;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
@@ -920,6 +921,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   uint64_t scheduler_tracked_features() const {
     return scheduler_tracked_features_;
   }
+
+  // Returns a PrefetchedSignedExchangeCache which is attached to |this| iff
+  // SignedExchangeSubresourcePrefetch feature is enabled.
+  scoped_refptr<PrefetchedSignedExchangeCache>
+  EnsurePrefetchedSignedExchangeCache();
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2060,6 +2066,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See blink::SchedulingPolicy::Feature for the meaning.
   // This value should be cleared on document commit.
   uint64_t scheduler_tracked_features_ = 0;
+
+  // Holds prefetched signed exchanges for SignedExchangeSubresourcePrefetch.
+  // They will be passed to the next navigation.
+  scoped_refptr<PrefetchedSignedExchangeCache>
+      prefetched_signed_exchange_cache_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

@@ -368,4 +368,13 @@ void SignedExchangeEnvelope::set_cbor_header(base::span<const uint8_t> data) {
   cbor_header_ = std::vector<uint8_t>(data.begin(), data.end());
 }
 
+net::SHA256HashValue SignedExchangeEnvelope::ComputeHeaderIntegrity() const {
+  net::SHA256HashValue hash;
+  crypto::SHA256HashString(
+      base::StringPiece(reinterpret_cast<const char*>(cbor_header().data()),
+                        cbor_header().size()),
+      &hash, sizeof(net::SHA256HashValue));
+  return hash;
+}
+
 }  // namespace content

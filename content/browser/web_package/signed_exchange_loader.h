@@ -22,6 +22,7 @@
 #include "url/origin.h"
 
 namespace net {
+struct SHA256HashValue;
 class SourceStream;
 }  // namespace net
 
@@ -104,6 +105,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const base::Optional<GURL>& inner_request_url() const {
     return inner_request_url_;
   }
+
+  // Returns the header integrity value of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called. Otherwise returns nullopt.
+  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
 
   // Set nullptr to reset the mocking.
   static void SetSignedExchangeHandlerFactoryForTest(

@@ -168,7 +168,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
       resource_request.url, SignedExchangeLoadResult::kSuccess, net::OK,
-      GURL("https://publisher.example.com/"), "text/html", {})});
+      GURL("https://publisher.example.com/"), "text/html", {},
+      net::SHA256HashValue({{0x00}}))});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =

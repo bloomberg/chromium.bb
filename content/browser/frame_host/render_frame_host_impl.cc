@@ -68,6 +68,7 @@
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -4809,7 +4810,8 @@ void RenderFrameHostImpl::CommitNavigation(
                          storage_partition->GetPrefetchURLLoaderService(),
                          mojo::MakeRequest(&prefetch_loader_factory),
                          frame_tree_node_->frame_tree_node_id(),
-                         std::move(factory_bundle_for_prefetch)));
+                         std::move(factory_bundle_for_prefetch),
+                         EnsurePrefetchedSignedExchangeCache()));
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
@@ -6815,6 +6817,19 @@ void RenderFrameHostImpl::PostMessageEvent(int32_t source_routing_id,
 
 bool RenderFrameHostImpl::IsTestRenderFrameHost() const {
   return false;
+}
+
+scoped_refptr<PrefetchedSignedExchangeCache>
+RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
+  if (!base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch)) {
+    return nullptr;
+  }
+  if (!prefetched_signed_exchange_cache_) {
+    prefetched_signed_exchange_cache_ =
+        base::MakeRefCounted<PrefetchedSignedExchangeCache>();
+  }
+  return prefetched_signed_exchange_cache_;
 }
 
 }  // namespace content

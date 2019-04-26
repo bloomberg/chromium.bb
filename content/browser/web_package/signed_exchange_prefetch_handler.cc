@@ -77,6 +77,13 @@ SignedExchangePrefetchHandler::FollowRedirect(
   return pending_request;
 }
 
+base::Optional<net::SHA256HashValue>
+SignedExchangePrefetchHandler::ComputeHeaderIntegrity() const {
+  if (!signed_exchange_loader_)
+    return base::nullopt;
+  return signed_exchange_loader_->ComputeHeaderIntegrity();
+}
+
 void SignedExchangePrefetchHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   NOTREACHED();

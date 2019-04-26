@@ -295,6 +295,13 @@ void SignedExchangeLoader::ConnectToClient(
                       client.PassInterface());
 }
 
+base::Optional<net::SHA256HashValue>
+SignedExchangeLoader::ComputeHeaderIntegrity() const {
+  if (!signed_exchange_handler_)
+    return base::nullopt;
+  return signed_exchange_handler_->ComputeHeaderIntegrity();
+}
+
 void SignedExchangeLoader::OnHTTPExchangeFound(
     SignedExchangeLoadResult result,
     net::Error error,

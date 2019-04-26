@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace net {
+struct SHA256HashValue;
 class URLRequestContextGetter;
 }
 
@@ -63,6 +64,12 @@ class SignedExchangePrefetchHandler final
   // After this point |this| can be destructed.
   network::mojom::URLLoaderClientRequest FollowRedirect(
       network::mojom::URLLoaderRequest loader_request);
+
+  // Returns the header integrity value of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called and before FollowRedirect() of |this| is
+  // called. Otherwise returns nullopt.
+  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
 
  private:
   // network::mojom::URLLoaderClient overrides:
