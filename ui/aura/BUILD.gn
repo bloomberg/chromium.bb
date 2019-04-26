@@ -395,6 +395,7 @@ test("aura_unittests") {
     "gestures/gesture_recognizer_unittest.cc",
     "mouse_location_manager_unittest.cc",
     "mus/client_side_window_move_handler_unittest.cc",
+    "mus/client_surface_embedder_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
     "mus/focus_synchronizer_unittest.cc",
     "mus/gesture_synchronizer_unittest.cc",

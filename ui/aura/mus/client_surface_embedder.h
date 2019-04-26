@@ -13,6 +13,7 @@
 
 namespace ui {
 class LayerOwner;
+class Layer;
 }
 
 namespace viz {
@@ -38,9 +39,12 @@ class AURA_EXPORT ClientSurfaceEmbedder : public WindowObserver {
   // Returns the SurfaceId, empty if SetSurfaceId() has not been called yet.
   viz::SurfaceId GetSurfaceId() const;
 
+  ui::Layer* GetSurfaceLayerForTesting() const;
+
  private:
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(Window* window, bool visible) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
   // The window which embeds the client.
   Window* window_;

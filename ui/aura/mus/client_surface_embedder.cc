@@ -67,9 +67,21 @@ viz::SurfaceId ClientSurfaceEmbedder::GetSurfaceId() const {
   return id ? *id : viz::SurfaceId();
 }
 
+ui::Layer* ClientSurfaceEmbedder::GetSurfaceLayerForTesting() const {
+  return surface_layer_owner_->layer();
+}
+
 void ClientSurfaceEmbedder::OnWindowVisibilityChanged(Window* window,
                                                       bool visible) {
   if (window->Contains(window_))
+    surface_layer_owner_->layer()->SetVisible(GetTargetVisibility(window_));
+}
+
+void ClientSurfaceEmbedder::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  // Window may change visibility as a result of being reparented to a different
+  // parent window with different visibility.
+  if (params.target == window_)
     surface_layer_owner_->layer()->SetVisible(GetTargetVisibility(window_));
 }
 
