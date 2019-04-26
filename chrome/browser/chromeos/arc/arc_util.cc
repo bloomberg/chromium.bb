@@ -443,15 +443,16 @@ bool IsArcOobeOptInConfigurationBased() {
 
 bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
   DCHECK(profile);
-
+  // Don't show in session ARC OptIn dialog for managed user.
+  // For more info see crbug/950013.
   // Skip to show UI asking users to set up ARC OptIn preferences, if all of
   // them are managed by the admin policy. Note that the ToS agreement is anyway
   // not shown in the case of the managed ARC.
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile) &&
+  if (ShouldStartArcSilentlyForManagedProfile(profile) &&
       !ShouldShowOptInForTesting()) {
-    VLOG(1) << "All opt-in preferences are under managed. "
-            << "Skip ARC Terms of Service negotiation.";
+    VLOG(1) << "Skip ARC Terms of Service negotiation for managed user. "
+            << "Don't record B&R and GLS if admin leave it as user to decide "
+            << "and user sikps the opt-in dialog.";
     return false;
   }
 
@@ -601,6 +602,12 @@ bool IsPlayStoreAvailable() {
   // Demo Mode is the only public session scenario that can launch Play.
   return chromeos::DemoSession::IsDeviceInDemoMode() &&
          chromeos::switches::ShouldShowPlayStoreInDemoMode();
+}
+
+bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {
+  return IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
+         (AreArcAllOptInPreferencesIgnorableForProfile(profile) ||
+          !IsArcOobeOptInActive());
 }
 
 }  // namespace arc

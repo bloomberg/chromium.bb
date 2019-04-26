@@ -169,6 +169,13 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);
 // session.
 bool IsPlayStoreAvailable();
 
+// Skip to show OOBE/in sesion UI asking users to set up ARC OptIn preferences,
+// iff all of them are managed by the admin policy.
+// Skips in session play terms of service for managed user and starts ARC
+// directly. Leaves B&R/GLS off if not set by admin since users don't see
+// the Tos page.
+bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_
