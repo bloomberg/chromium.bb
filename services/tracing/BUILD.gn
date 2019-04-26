@@ -58,6 +58,22 @@ source_set("manifest") {
   ]
 }
 
+source_set("privacy_check") {
+  testonly = true
+
+  sources = [
+    "perfetto/privacy_filtering_check.cc",
+    "perfetto/privacy_filtering_check.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/perfetto/include/perfetto/protozero:protozero",
+    "//third_party/perfetto/protos/perfetto/common:lite",
+    "//third_party/perfetto/protos/perfetto/trace:lite",
+  ]
+}
+
 source_set("tests") {
   testonly = true
 

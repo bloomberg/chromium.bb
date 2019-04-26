@@ -33,6 +33,8 @@ class PerfettoFileTracer : public tracing::mojom::TracingSession {
   // tracing::mojom::TracingSession implementation:
   void OnTracingEnabled() override;
 
+  bool is_finished_for_testing() const { return !background_drainer_; }
+
  private:
   void OnNoMorePackets(bool queued_after_disable);
   void ReadBuffers();
