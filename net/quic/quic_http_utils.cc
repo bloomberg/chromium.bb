@@ -49,6 +49,19 @@ std::unique_ptr<base::Value> QuicRequestNetLogCallback(
   return std::move(dict);
 }
 
+std::unique_ptr<base::Value> QuicResponseNetLogCallback(
+    quic::QuicStreamId stream_id,
+    bool fin_received,
+    const spdy::SpdyHeaderBlock* headers,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(
+      static_cast<base::DictionaryValue*>(
+          SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));
+  dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
+  dict->SetBoolean("fin", fin_received);
+  return std::move(dict);
+}
+
 quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(
     const spdy::SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
     const quic::QuicTransportVersionVector& supported_versions,

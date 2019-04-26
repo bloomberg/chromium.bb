@@ -21,11 +21,19 @@ NET_EXPORT_PRIVATE spdy::SpdyPriority ConvertRequestPriorityToQuicPriority(
 NET_EXPORT_PRIVATE RequestPriority
 ConvertQuicPriorityToRequestPriority(spdy::SpdyPriority priority);
 
-// Converts a spdy::SpdyHeaderBlock and priority into NetLog event parameters.
+// Converts a spdy::SpdyHeaderBlock, stream_id and priority into NetLog event
+// parameters.
 NET_EXPORT std::unique_ptr<base::Value> QuicRequestNetLogCallback(
     quic::QuicStreamId stream_id,
     const spdy::SpdyHeaderBlock* headers,
     spdy::SpdyPriority priority,
+    NetLogCaptureMode capture_mode);
+
+// Converts a spdy::SpdyHeaderBlock and stream into NetLog event parameters.
+NET_EXPORT std::unique_ptr<base::Value> QuicResponseNetLogCallback(
+    quic::QuicStreamId stream_id,
+    bool fin_received,
+    const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode);
 
 // Parses |alt_svc_versions| into a quic::QuicTransportVersionVector and removes

@@ -661,7 +661,8 @@ bool QuicChromiumClientStream::DeliverInitialHeaders(
   headers_delivered_ = true;
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, &initial_headers_));
+      base::BindRepeating(&QuicResponseNetLogCallback, id(), fin_received(),
+                          &initial_headers_));
 
   *headers = std::move(initial_headers_);
   *frame_len = initial_headers_frame_len_;
@@ -676,7 +677,8 @@ bool QuicChromiumClientStream::DeliverTrailingHeaders(
 
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, &received_trailers()));
+      base::BindRepeating(&QuicResponseNetLogCallback, id(), fin_received(),
+                          &received_trailers()));
 
   *headers = received_trailers().Clone();
   *frame_len = trailing_headers_frame_len_;
