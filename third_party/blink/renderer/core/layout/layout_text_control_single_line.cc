@@ -161,7 +161,10 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
       if (container->GetLayoutBox())
         point_in_parent -= ToLayoutSize(container->GetLayoutBox()->Location());
     }
-    HitInnerEditorElement(result, point_in_parent, accumulated_offset);
+    const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
+    if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {
+      HitInnerEditorElement(result, point_in_parent, accumulated_offset);
+    }
   }
   return true;
 }
