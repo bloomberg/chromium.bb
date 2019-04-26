@@ -84,8 +84,6 @@ void ImagePaintTimingDetector::PopulateTraceValue(
 #endif
   value.SetInteger("size", static_cast<int>(first_image_paint.first_size));
   value.SetInteger("candidateIndex", candidate_index);
-  value.SetString("frame",
-                  IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
   value.SetBoolean("isOOPIF",
                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
@@ -98,9 +96,10 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
   largest_image_paint_ = largest_image_record;
   auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, *largest_image_record, ++count_candidates_);
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-      "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-      largest_image_record->paint_time, "data", std::move(value));
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestImagePaint::Candidate",
+                                   largest_image_record->paint_time, "data",
+                                   std::move(value), "frame",
+                                   ToTraceValue(&frame_view_->GetFrame()));
 }
 
 void ImagePaintTimingDetector::UpdateCandidate() {
