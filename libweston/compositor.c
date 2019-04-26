@@ -7020,8 +7020,9 @@ weston_compositor_read_presentation_clock(
 
 		if (!warned)
 			weston_log("Error: failure to read "
-				   "the presentation clock %#x: '%m' (%d)\n",
-				   compositor->presentation_clock, errno);
+				   "the presentation clock %#x: '%s' (%d)\n",
+				   compositor->presentation_clock,
+				   strerror(errno), errno);
 		warned = true;
 	}
 }

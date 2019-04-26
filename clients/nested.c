@@ -34,6 +34,7 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -330,8 +331,8 @@ launch_client(struct nested *nested, const char *path)
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
 		fprintf(stderr, "launch_client: "
-			"socketpair failed while launching '%s': %m\n",
-			path);
+			"socketpair failed while launching '%s': %s\n",
+			path, strerror(errno));
 		free(client);
 		return NULL;
 	}
@@ -342,7 +343,8 @@ launch_client(struct nested *nested, const char *path)
 		close(sv[1]);
 		free(client);
 		fprintf(stderr, "launch_client: "
-			"fork failed while launching '%s': %m\n", path);
+			"fork failed while launching '%s': %s\n", path,
+			strerror(errno));
 		return NULL;
 	}
 
@@ -354,7 +356,8 @@ launch_client(struct nested *nested, const char *path)
 		 * get a non-CLOEXEC fd to pass through exec. */
 		clientfd = dup(sv[1]);
 		if (clientfd == -1) {
-			fprintf(stderr, "compositor: dup failed: %m\n");
+			fprintf(stderr, "compositor: dup failed: %s\n",
+				strerror(errno));
 			exit(-1);
 		}
 
@@ -363,8 +366,8 @@ launch_client(struct nested *nested, const char *path)
 
 		execl(path, path, NULL);
 
-		fprintf(stderr, "compositor: executing '%s' failed: %m\n",
-			path);
+		fprintf(stderr, "compositor: executing '%s' failed: %s\n",
+			path, strerror(errno));
 		exit(-1);
 	}
 
@@ -1116,7 +1119,8 @@ main(int argc, char *argv[])
 
 	display = display_create(&argc, argv);
 	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

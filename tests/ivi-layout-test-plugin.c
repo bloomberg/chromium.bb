@@ -33,6 +33,7 @@
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
+#include <errno.h>
 
 #include <libweston/libweston.h>
 #include "compositor/weston.h"
@@ -198,7 +199,8 @@ idle_launch_client(void *data)
 
 	pid = fork();
 	if (pid == -1) {
-		weston_log("fatal: failed to fork '%s': %m\n", launcher->exe);
+		weston_log("fatal: failed to fork '%s': %s\n", launcher->exe,
+			   strerror(errno));
 		weston_compositor_exit_with_code(launcher->compositor,
 						 EXIT_FAILURE);
 		return;
@@ -208,8 +210,8 @@ idle_launch_client(void *data)
 		sigfillset(&allsigs);
 		sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 		execl(launcher->exe, launcher->exe, NULL);
-		weston_log("compositor: executing '%s' failed: %m\n",
-			   launcher->exe);
+		weston_log("compositor: executing '%s' failed: %s\n",
+			   launcher->exe, strerror(errno));
 		_exit(EXIT_FAILURE);
 	}
 

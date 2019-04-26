@@ -365,7 +365,7 @@ sigchld_handler(int signal_number, void *data)
 	}
 
 	if (pid < 0 && errno != ECHILD)
-		weston_log("waitpid error %m\n");
+		weston_log("waitpid error %s\n", strerror(errno));
 
 	return 1;
 }
@@ -391,7 +391,7 @@ child_client_exec(int sockfd, const char *path)
 	 * non-CLOEXEC fd to pass through exec. */
 	clientfd = dup(sockfd);
 	if (clientfd == -1) {
-		weston_log("compositor: dup failed: %m\n");
+		weston_log("compositor: dup failed: %s\n", strerror(errno));
 		return;
 	}
 
@@ -399,8 +399,8 @@ child_client_exec(int sockfd, const char *path)
 	setenv("WAYLAND_SOCKET", s, 1);
 
 	if (execl(path, path, NULL) < 0)
-		weston_log("compositor: executing '%s' failed: %m\n",
-			path);
+		weston_log("compositor: executing '%s' failed: %s\n",
+			   path, strerror(errno));
 }
 
 WL_EXPORT struct wl_client *
@@ -417,8 +417,8 @@ weston_client_launch(struct weston_compositor *compositor,
 
 	if (os_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		weston_log("weston_client_launch: "
-			"socketpair failed while launching '%s': %m\n",
-			path);
+			   "socketpair failed while launching '%s': %s\n",
+			   path, strerror(errno));
 		return NULL;
 	}
 
@@ -427,7 +427,8 @@ weston_client_launch(struct weston_compositor *compositor,
 		close(sv[0]);
 		close(sv[1]);
 		weston_log("weston_client_launch: "
-			"fork failed while launching '%s': %m\n", path);
+			   "fork failed while launching '%s': %s\n", path,
+			   strerror(errno));
 		return NULL;
 	}
 
@@ -812,13 +813,15 @@ weston_create_listening_socket(struct wl_display *display, const char *socket_na
 {
 	if (socket_name) {
 		if (wl_display_add_socket(display, socket_name)) {
-			weston_log("fatal: failed to add socket: %m\n");
+			weston_log("fatal: failed to add socket: %s\n",
+				   strerror(errno));
 			return -1;
 		}
 	} else {
 		socket_name = wl_display_add_socket_auto(display);
 		if (!socket_name) {
-			weston_log("fatal: failed to add socket: %m\n");
+			weston_log("fatal: failed to add socket: %s\n",
+				   strerror(errno));
 			return -1;
 		}
 	}
@@ -3083,7 +3086,8 @@ int main(int argc, char *argv[])
 	if (fd != -1) {
 		primary_client = wl_client_create(display, fd);
 		if (!primary_client) {
-			weston_log("fatal: failed to add client: %m\n");
+			weston_log("fatal: failed to add client: %s\n",
+				   strerror(errno));
 			goto out;
 		}
 		primary_client_destroyed.notify =

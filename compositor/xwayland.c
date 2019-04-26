@@ -27,6 +27,8 @@
 #include "config.h"
 
 #include <signal.h>
+#include <string.h>
+#include <errno.h>
 #include <sys/socket.h>
 
 #include <libweston/libweston.h>
@@ -128,9 +130,10 @@ spawn_xserver(void *user_data, const char *display, int abstract_fd, int unix_fd
 			  NULL) < 0)
 			weston_log("exec of '%s %s -rootless "
 				   "-listen %s -listen %s -wm %s "
-				   "-terminate' failed: %m\n",
+				   "-terminate' failed: %s\n",
 				   xserver, display,
-				   abstract_fd_str, unix_fd_str, wm_fd_str);
+				   abstract_fd_str, unix_fd_str, wm_fd_str,
+				   strerror(errno));
 	fail:
 		_exit(EXIT_FAILURE);
 

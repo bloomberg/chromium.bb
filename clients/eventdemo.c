@@ -37,6 +37,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <errno.h>
 
 #include <cairo.h>
 
@@ -515,14 +517,16 @@ main(int argc, char *argv[])
 	/* Connect to the display and have the arguments parsed */
 	d = display_create(&argc, argv);
 	if (d == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 
 	/* Create new eventdemo window */
 	e = eventdemo_create(d);
 	if (e == NULL) {
-		fprintf(stderr, "failed to create eventdemo: %m\n");
+		fprintf(stderr, "failed to create eventdemo: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

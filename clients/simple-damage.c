@@ -35,6 +35,7 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <errno.h>
 
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
@@ -123,14 +124,14 @@ create_shm_buffer(struct display *display, struct buffer *buffer,
 
 	fd = os_create_anonymous_file(size);
 	if (fd < 0) {
-		fprintf(stderr, "creating a buffer file for %d B failed: %m\n",
-			size);
+		fprintf(stderr, "creating a buffer file for %d B failed: %s\n",
+			size, strerror(errno));
 		return -1;
 	}
 
 	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
-		fprintf(stderr, "mmap failed: %m\n");
+		fprintf(stderr, "mmap failed: %s\n", strerror(errno));
 		close(fd);
 		return -1;
 	}

@@ -32,6 +32,7 @@
 #include <linux/input.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/uio.h>
 
 #include <libweston/libweston.h>
@@ -431,7 +432,8 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 			    O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
 
 	if (recorder->fd < 0) {
-		weston_log("problem opening output file %s: %m\n", filename);
+		weston_log("problem opening output file %s: %s\n", filename,
+			   strerror(errno));
 		goto err_recorder;
 	}
 

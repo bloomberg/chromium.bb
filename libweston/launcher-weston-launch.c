@@ -169,10 +169,12 @@ launcher_weston_launch_restore(struct weston_launcher *launcher_base)
 
 	if (ioctl(launcher->tty, KDSKBMUTE, 0) &&
 	    ioctl(launcher->tty, KDSKBMODE, launcher->kb_mode))
-		weston_log("failed to restore kb mode: %m\n");
+		weston_log("failed to restore kb mode: %s\n",
+			   strerror(errno));
 
 	if (ioctl(launcher->tty, KDSETMODE, KD_TEXT))
-		weston_log("failed to set KD_TEXT mode on tty: %m\n");
+		weston_log("failed to set KD_TEXT mode on tty: %s\n",
+			   strerror(errno));
 
 	/* We have to drop master before we switch the VT back in
 	 * VT_AUTO, so we don't risk switching to a VT with another

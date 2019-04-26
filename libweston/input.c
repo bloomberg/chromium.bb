@@ -37,6 +37,7 @@
 #include <values.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <errno.h>
 
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
@@ -2089,8 +2090,9 @@ weston_keyboard_send_keymap(struct weston_keyboard *kbd, struct wl_resource *res
 
 	fd = os_create_anonymous_file(xkb_info->keymap_size);
 	if (fd < 0) {
-		weston_log("creating a keymap file for %lu bytes failed: %m\n",
-			   (unsigned long) xkb_info->keymap_size);
+		weston_log("creating a keymap file for %lu bytes failed: %s\n",
+			   (unsigned long) xkb_info->keymap_size,
+			   strerror(errno));
 		return;
 	}
 

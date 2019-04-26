@@ -225,7 +225,7 @@ launcher_logind_close(struct weston_launcher *launcher, int fd)
 	r = fstat(fd, &st);
 	close(fd);
 	if (r < 0) {
-		weston_log("logind: cannot fstat fd: %m\n");
+		weston_log("logind: cannot fstat fd: %s\n", strerror(errno));
 		return;
 	}
 

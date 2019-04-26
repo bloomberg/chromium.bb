@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 
 #include <linux/input.h>
@@ -490,7 +491,8 @@ main(int argc, char *argv[])
 
 	simple_im.display = wl_display_connect(NULL);
 	if (simple_im.display == NULL) {
-		fprintf(stderr, "Failed to connect to server: %m\n");
+		fprintf(stderr, "Failed to connect to server: %s\n",
+			strerror(errno));
 		return -1;
 	}
 
@@ -516,7 +518,7 @@ main(int argc, char *argv[])
 		ret = wl_display_dispatch(simple_im.display);
 
 	if (ret == -1) {
-		fprintf(stderr, "Dispatch error: %m\n");
+		fprintf(stderr, "Dispatch error: %s\n", strerror(errno));
 		return -1;
 	}
 

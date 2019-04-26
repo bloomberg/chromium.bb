@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 
 #include <wayland-client.h>
@@ -70,15 +71,15 @@ create_shm_buffer(struct touch *touch)
 
 	fd = os_create_anonymous_file(size);
 	if (fd < 0) {
-		fprintf(stderr, "creating a buffer file for %d B failed: %m\n",
-			size);
+		fprintf(stderr, "creating a buffer file for %d B failed: %s\n",
+			size, strerror(errno));
 		exit(1);
 	}
 
 	touch->data =
 		mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (touch->data == MAP_FAILED) {
-		fprintf(stderr, "mmap failed: %m\n");
+		fprintf(stderr, "mmap failed: %s\n", strerror(errno));
 		close(fd);
 		exit(1);
 	}

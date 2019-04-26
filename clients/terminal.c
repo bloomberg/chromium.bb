@@ -3087,11 +3087,12 @@ terminal_run(struct terminal *terminal, const char *path)
 		setenv("TERM", option_term, 1);
 		setenv("COLORTERM", option_term, 1);
 		if (execl(path, path, NULL)) {
-			printf("exec failed: %m\n");
+			printf("exec failed: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	} else if (pid < 0) {
-		fprintf(stderr, "failed to fork and create pty (%m).\n");
+		fprintf(stderr, "failed to fork and create pty (%s).\n",
+			strerror(errno));
 		return -1;
 	}
 
@@ -3158,7 +3159,8 @@ int main(int argc, char *argv[])
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

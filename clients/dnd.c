@@ -35,6 +35,7 @@
 #include <cairo.h>
 #include <sys/epoll.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include <wayland-client.h>
 #include <wayland-cursor.h>
@@ -848,7 +849,8 @@ main(int argc, char *argv[])
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

@@ -30,6 +30,7 @@
 #include <time.h>
 #include <math.h>
 #include <cairo.h>
+#include <errno.h>
 #include <sys/time.h>
 
 #include <linux/input.h>
@@ -172,7 +173,8 @@ int main(int argc, char *argv[])
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

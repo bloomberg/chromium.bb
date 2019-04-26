@@ -212,7 +212,7 @@ panel_launcher_activate(struct panel_launcher *widget)
 
 	pid = fork();
 	if (pid < 0) {
-		fprintf(stderr, "fork failed: %m\n");
+		fprintf(stderr, "fork failed: %s\n", strerror(errno));
 		return;
 	}
 
@@ -225,7 +225,8 @@ panel_launcher_activate(struct panel_launcher *widget)
 		exit(EXIT_FAILURE);
 
 	if (execve(argv[0], argv, widget->envp.data) < 0) {
-		fprintf(stderr, "execl '%s' failed: %m\n", argv[0]);
+		fprintf(stderr, "execl '%s' failed: %s\n", argv[0],
+			strerror(errno));
 		exit(1);
 	}
 }
@@ -1519,7 +1520,8 @@ int main(int argc, char *argv[])
 
 	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

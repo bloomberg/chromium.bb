@@ -104,7 +104,7 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 		run_test(t, test_data, iteration); /* never returns */
 
 	if (waitid(P_ALL, 0, &info, WEXITED)) {
-		fprintf(stderr, "waitid failed: %m\n");
+		fprintf(stderr, "waitid failed: %s\n", strerror(errno));
 		abort();
 	}
 

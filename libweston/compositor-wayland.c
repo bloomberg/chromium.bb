@@ -34,6 +34,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 #include <linux/input.h>
 
@@ -302,20 +303,23 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 
 	fd = os_create_anonymous_file(height * stride);
 	if (fd < 0) {
-		weston_log("could not create an anonymous file buffer: %m\n");
+		weston_log("could not create an anonymous file buffer: %s\n",
+			   strerror(errno));
 		return NULL;
 	}
 
 	data = mmap(NULL, height * stride, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
-		weston_log("could not mmap %d memory for data: %m\n", height * stride);
+		weston_log("could not mmap %d memory for data: %s\n", height * stride,
+			   strerror(errno));
 		close(fd);
 		return NULL;
 	}
 
 	sb = zalloc(sizeof *sb);
 	if (sb == NULL) {
-		weston_log("could not zalloc %zu memory for sb: %m\n", sizeof *sb);
+		weston_log("could not zalloc %zu memory for sb: %s\n", sizeof *sb,
+			   strerror(errno));
 		close(fd);
 		munmap(data, height * stride);
 		return NULL;
@@ -1917,7 +1921,7 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 	if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
 		map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
 		if (map_str == MAP_FAILED) {
-			weston_log("mmap failed: %m\n");
+			weston_log("mmap failed: %s\n", strerror(errno));
 			goto error;
 		}
 
@@ -2729,7 +2733,8 @@ wayland_backend_create(struct weston_compositor *compositor,
 
 	b->parent.wl_display = wl_display_connect(new_config->display_name);
 	if (b->parent.wl_display == NULL) {
-		weston_log("Error: Failed to connect to parent Wayland compositor: %m\n");
+		weston_log("Error: Failed to connect to parent Wayland compositor: %s\n",
+			   strerror(errno));
 		weston_log_continue(STAMP_SPACE "display option: %s, WAYLAND_DISPLAY=%s\n",
 				    new_config->display_name ?: "(none)",
 				    getenv("WAYLAND_DISPLAY") ?: "(not set)");

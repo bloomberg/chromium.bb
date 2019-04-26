@@ -31,6 +31,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include <libweston/libweston.h>
 #include "compositor/weston.h"
@@ -649,7 +650,8 @@ idle_launch_client(void *data)
 		sigfillset(&allsigs);
 		sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 		execl(path, path, NULL);
-		weston_log("compositor: executing '%s' failed: %m\n", path);
+		weston_log("compositor: executing '%s' failed: %s\n", path,
+			   strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

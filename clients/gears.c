@@ -30,6 +30,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <errno.h>
 
 #include <GL/gl.h>
 #include <EGL/egl.h>
@@ -488,7 +489,8 @@ int main(int argc, char *argv[])
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 	gears = gears_create(d);

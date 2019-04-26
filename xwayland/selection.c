@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "xwayland.h"
 #include "shared/helpers.h"
@@ -59,7 +60,7 @@ writable_callback(int fd, uint32_t mask, void *data)
 			wl_event_source_remove(wm->property_source);
 		wm->property_source = NULL;
 		close(fd);
-		weston_log("write error to target fd: %m\n");
+		weston_log("write error to target fd: %s\n", strerror(errno));
 		return 1;
 	}
 
@@ -401,7 +402,8 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 
 	len = read(fd, p, available);
 	if (len == -1) {
-		weston_log("read error from data source: %m\n");
+		weston_log("read error from data source: %s\n",
+			   strerror(errno));
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		if (wm->property_source)
 			wl_event_source_remove(wm->property_source);
@@ -494,7 +496,7 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
-		weston_log("pipe2 failed: %m\n");
+		weston_log("pipe2 failed: %s\n", strerror(errno));
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		return;
 	}

@@ -665,7 +665,8 @@ drm_output_pageflip_timer_create(struct drm_output *output)
 	                                                 output);
 
 	if (output->pageflip_timer == NULL) {
-		weston_log("creating drm pageflip timer failed: %m\n");
+		weston_log("creating drm pageflip timer failed: %s\n",
+			   strerror(errno));
 		return -1;
 	}
 
@@ -1083,7 +1084,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	fb->fd = b->drm.fd;
 
 	if (drm_fb_addfb(b, fb) != 0) {
-		weston_log("failed to create kms fb: %m\n");
+		weston_log("failed to create kms fb: %s\n", strerror(errno));
 		goto err_bo;
 	}
 
@@ -1333,7 +1334,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 
 	if (drm_fb_addfb(backend, fb) != 0) {
 		if (type == BUFFER_GBM_SURFACE)
-			weston_log("failed to create kms fb: %m\n");
+			weston_log("failed to create kms fb: %s\n",
+				   strerror(errno));
 		goto err_free;
 	}
 
@@ -2104,7 +2106,8 @@ drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
 
 	bo = gbm_surface_lock_front_buffer(output->gbm_surface);
 	if (!bo) {
-		weston_log("failed to lock front buffer: %m\n");
+		weston_log("failed to lock front buffer: %s\n",
+			   strerror(errno));
 		return NULL;
 	}
 
@@ -2228,7 +2231,7 @@ drm_output_set_gamma(struct weston_output *output_base,
 				 output->crtc_id,
 				 size, r, g, b);
 	if (rc)
-		weston_log("set gamma failed: %m\n");
+		weston_log("set gamma failed: %s\n", strerror(errno));
 }
 
 /* Determine the type of vblank synchronization to use for the output.
@@ -2302,20 +2305,23 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 			ret = drmModeSetPlane(backend->drm.fd, p->plane_id,
 					      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			if (ret)
-				weston_log("drmModeSetPlane failed disable: %m\n");
+				weston_log("drmModeSetPlane failed disable: %s\n",
+					   strerror(errno));
 		}
 
 		if (output->cursor_plane) {
 			ret = drmModeSetCursor(backend->drm.fd, output->crtc_id,
 					       0, 0, 0);
 			if (ret)
-				weston_log("drmModeSetCursor failed disable: %m\n");
+				weston_log("drmModeSetCursor failed disable: %s\n",
+					   strerror(errno));
 		}
 
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id, 0, 0, 0,
 				     NULL, 0, NULL);
 		if (ret)
-			weston_log("drmModeSetCrtc failed disabling: %m\n");
+			weston_log("drmModeSetCrtc failed disabling: %s\n",
+				   strerror(errno));
 
 		drm_output_assign_state(state, DRM_STATE_APPLY_SYNC);
 		weston_compositor_read_presentation_clock(output->base.compositor, &now);
@@ -2356,7 +2362,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 				     connectors, n_conn,
 				     &mode->mode_info);
 		if (ret) {
-			weston_log("set mode failed: %m\n");
+			weston_log("set mode failed: %s\n", strerror(errno));
 			goto err;
 		}
 	}
@@ -2369,7 +2375,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id,
 			    scanout_state->fb->fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
-		weston_log("queueing pageflip failed: %m\n");
+		weston_log("queueing pageflip failed: %s\n", strerror(errno));
 		goto err;
 	}
 
@@ -2529,7 +2535,8 @@ drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode)
 					sizeof(mode->mode_info),
 					&mode->blob_id);
 	if (ret != 0)
-		weston_log("failed to create mode property blob: %m\n");
+		weston_log("failed to create mode property blob: %s\n",
+			   strerror(errno));
 
 	drm_debug(backend, "\t\t\t[atomic] created new mode blob %lu for %s\n",
 		  (unsigned long) mode->blob_id, mode->mode_info.name);
@@ -2828,7 +2835,8 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 	}
 
 	if (ret != 0) {
-		weston_log("atomic: couldn't commit new state: %m\n");
+		weston_log("atomic: couldn't commit new state: %s\n",
+			   strerror(errno));
 		goto out;
 	}
 
@@ -3104,7 +3112,8 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 	ret = drm_pending_state_apply(pending_state);
 	if (ret != 0) {
-		weston_log("applying repaint-start state failed: %m\n");
+		weston_log("applying repaint-start state failed: %s\n",
+			   strerror(errno));
 		goto finish_frame;
 	}
 
@@ -3462,7 +3471,7 @@ cursor_bo_update(struct drm_plane_state *plane_state, struct weston_view *ev)
 	wl_shm_buffer_end_access(buffer->shm_buffer);
 
 	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-		weston_log("failed update cursor: %m\n");
+		weston_log("failed update cursor: %s\n", strerror(errno));
 }
 
 static struct drm_plane_state *
@@ -3608,7 +3617,8 @@ drm_output_set_cursor(struct drm_output_state *output_state)
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(b->drm.fd, output->crtc_id, handle,
 				     b->cursor_width, b->cursor_height)) {
-			weston_log("failed to set cursor: %m\n");
+			weston_log("failed to set cursor: %s\n",
+				   strerror(errno));
 			goto err;
 		}
 	}
@@ -3618,7 +3628,7 @@ drm_output_set_cursor(struct drm_output_state *output_state)
 
 	if (drmModeMoveCursor(b->drm.fd, output->crtc_id,
 	                      state->dest_x, state->dest_y)) {
-		weston_log("failed to move cursor: %m\n");
+		weston_log("failed to move cursor: %s\n", strerror(errno));
 		goto err;
 	}
 
@@ -7057,7 +7067,7 @@ recorder_frame_notify(struct wl_listener *listener, void *data)
 	ret = vaapi_recorder_frame(output->recorder, fd,
 				   output->scanout_plane->state_cur->fb->strides[0]);
 	if (ret < 0) {
-		weston_log("[libva recorder] aborted: %m\n");
+		weston_log("[libva recorder] aborted: %s\n", strerror(errno));
 		recorder_destroy(output);
 	}
 }

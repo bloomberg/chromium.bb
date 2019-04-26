@@ -276,8 +276,8 @@ setup_out_fd(const char *output, const char *outfd)
 				  O_WRONLY | O_APPEND | O_CREAT, 0644);
 			if (fd < 0) {
 				fprintf(stderr,
-					"Error: opening file '%s' failed: %m\n",
-					output);
+					"Error: opening file '%s' failed: %s\n",
+					output, strerror(errno));
 			}
 			return fd;
 		}
@@ -290,7 +290,8 @@ setup_out_fd(const char *output, const char *outfd)
 	flags = fcntl(fd, F_GETFL);
 	if (flags == -1) {
 		fprintf(stderr,
-			"Error: cannot use file descriptor %d: %m\n", fd);
+			"Error: cannot use file descriptor %d: %s\n", fd,
+			strerror(errno));
 		return -1;
 	}
 
@@ -432,7 +433,8 @@ main(int argc, char **argv)
 
 	app.dpy = wl_display_connect(NULL);
 	if (!app.dpy) {
-		fprintf(stderr, "Error: Could not connect to Wayland display: %m\n");
+		fprintf(stderr, "Error: Could not connect to Wayland display: %s\n",
+			strerror(errno));
 		ret = 1;
 		goto out_parse;
 	}

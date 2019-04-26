@@ -1856,7 +1856,8 @@ main(int argc, char **argv)
 
 	info.display = wl_display_connect(NULL);
 	if (!info.display) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		return -1;
 	}
 

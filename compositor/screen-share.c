@@ -207,7 +207,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *wl_keyboard,
 	if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
 		map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
 		if (map_str == MAP_FAILED) {
-			weston_log("mmap failed: %m\n");
+			weston_log("mmap failed: %s\n", strerror(errno));
 			goto error;
 		}
 
@@ -462,13 +462,13 @@ shared_output_get_shm_buffer(struct shared_output *so)
 
 	fd = os_create_anonymous_file(height * stride);
 	if (fd < 0) {
-		weston_log("os_create_anonymous_file: %m\n");
+		weston_log("os_create_anonymous_file: %s\n", strerror(errno));
 		return NULL;
 	}
 
 	data = mmap(NULL, height * stride, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
-		weston_log("mmap: %m\n");
+		weston_log("mmap: %s\n", strerror(errno));
 		goto out_close;
 	}
 
@@ -940,7 +940,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 	so->parent.surface =
 		wl_compositor_create_surface(so->parent.compositor);
 	if (!so->parent.surface) {
-		weston_log("Screen share failed: %m\n");
+		weston_log("Screen share failed: %s\n", strerror(errno));
 		goto err_display;
 	}
 
@@ -950,7 +950,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 								 so->parent.output,
 								 output->current_mode->refresh);
 	if (!so->parent.mode_feedback) {
-		weston_log("Screen share failed: %m\n");
+		weston_log("Screen share failed: %s\n", strerror(errno));
 		goto err_display;
 	}
 	zwp_fullscreen_shell_mode_feedback_v1_add_listener(so->parent.mode_feedback,
@@ -964,7 +964,7 @@ shared_output_create(struct weston_output *output, int parent_fd)
 		wl_event_loop_add_fd(loop, epoll_fd, WL_EVENT_READABLE,
 				     shared_output_handle_event, so);
 	if (!so->event_source) {
-		weston_log("Screen share failed: %m\n");
+		weston_log("Screen share failed: %s\n", strerror(errno));
 		goto err_display;
 	}
 
@@ -1033,7 +1033,8 @@ weston_output_share(struct weston_output *output, const char* command)
 	};
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		weston_log("weston_output_share: socketpair failed: %m\n");
+		weston_log("weston_output_share: socketpair failed: %s\n",
+			   strerror(errno));
 		return NULL;
 	}
 
@@ -1042,7 +1043,8 @@ weston_output_share(struct weston_output *output, const char* command)
 	if (pid == -1) {
 		close(sv[0]);
 		close(sv[1]);
-		weston_log("weston_output_share: fork failed: %m\n");
+		weston_log("weston_output_share: fork failed: %s\n",
+			   strerror(errno));
 		return NULL;
 	}
 
@@ -1054,13 +1056,15 @@ weston_output_share(struct weston_output *output, const char* command)
 		/* Launch clients as the user. Do not launch clients with
 		 * wrong euid. */
 		if (seteuid(getuid()) == -1) {
-			weston_log("weston_output_share: setuid failed: %m\n");
+			weston_log("weston_output_share: setuid failed: %s\n",
+				   strerror(errno));
 			abort();
 		}
 
 		sv[1] = dup(sv[1]);
 		if (sv[1] == -1) {
-			weston_log("weston_output_share: dup failed: %m\n");
+			weston_log("weston_output_share: dup failed: %s\n",
+				   strerror(errno));
 			abort();
 		}
 
@@ -1068,7 +1072,8 @@ weston_output_share(struct weston_output *output, const char* command)
 		setenv("WAYLAND_SERVER_SOCKET", str, 1);
 
 		execv(argv[0], argv);
-		weston_log("weston_output_share: exec failed: %m\n");
+		weston_log("weston_output_share: exec failed: %s\n",
+			   strerror(errno));
 		abort();
 	} else {
 		close(sv[1]);

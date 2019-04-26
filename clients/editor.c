@@ -580,7 +580,7 @@ data_source_send(void *data,
 	struct editor *editor = data;
 
 	if (write(fd, editor->selected_text, strlen(editor->selected_text) + 1) < 0)
-		fprintf(stderr, "write failed: %m\n");
+		fprintf(stderr, "write failed: %s\n", strerror(errno));
 
 	close(fd);
 }
@@ -1609,7 +1609,8 @@ main(int argc, char *argv[])
 
 		text_buffer = read_file(argv[1]);
 		if (text_buffer == NULL) {
-			fprintf(stderr, "could not read file '%s': %m\n", argv[1]);
+			fprintf(stderr, "could not read file '%s': %s\n",
+				argv[1], strerror(errno));
 			return -1;
 		}
 	}
@@ -1618,7 +1619,8 @@ main(int argc, char *argv[])
 
 	editor.display = display_create(&argc, argv);
 	if (editor.display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to create display: %s\n",
+			strerror(errno));
 		free(text_buffer);
 		return -1;
 	}
