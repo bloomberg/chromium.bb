@@ -244,10 +244,14 @@ bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
 void CodecImage::EnsureBoundIfNeeded(BindingsMode mode) {
   DCHECK(texture_owner_);
 
-  if (texture_owner_->binds_texture_on_update() ||
-      mode != BindingsMode::kEnsureTexImageBound)
+  if (texture_owner_->binds_texture_on_update()) {
+    was_tex_image_bound_ = true;
+    return;
+  }
+  if (mode != BindingsMode::kEnsureTexImageBound)
     return;
   texture_owner_->EnsureTexImageBound();
+  was_tex_image_bound_ = true;
 }
 
 bool CodecImage::RenderToOverlay() {

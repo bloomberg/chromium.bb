@@ -70,6 +70,12 @@ bool SharedImageVideo::ProduceLegacyMailbox(
 
 void SharedImageVideo::Destroy() {}
 
+size_t SharedImageVideo::EstimatedSizeForMemTracking() const {
+  // This backing contributes to gpu memory only if its bound to the texture and
+  // not when the backing is created.
+  return codec_image_->was_tex_image_bound() ? estimated_size() : 0;
+}
+
 void SharedImageVideo::OnContextLost() {
   // We release codec buffers when shared image context is lost. This is because
   // texture owner's texture was created on shared context. Once shared context
