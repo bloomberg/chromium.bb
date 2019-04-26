@@ -46,7 +46,7 @@ void VirtualFidoDiscovery::StartInternal() {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&VirtualFidoDiscovery::NotifyDiscoveryStarted,
-                                base::Unretained(this), true /* success */));
+                                AsWeakPtr(), true /* success */));
 }
 
 }  // namespace content
