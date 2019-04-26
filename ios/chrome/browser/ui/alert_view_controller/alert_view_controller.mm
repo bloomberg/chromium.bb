@@ -25,7 +25,7 @@ constexpr float kShadowOpacity = 0.12;
 
 // Properties of the alert view.
 constexpr CGFloat kCornerRadius = 14;
-constexpr CGFloat kMinimumWidth = 30;
+constexpr CGFloat kAlertWidth = 270;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
 
@@ -131,9 +131,10 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
     [self.contentView.centerYAnchor
         constraintEqualToAnchor:self.view.centerYAnchor],
 
+    // Width
+    [self.contentView.widthAnchor constraintEqualToConstant:kAlertWidth],
+
     // Minimum Size
-    [self.contentView.widthAnchor
-        constraintGreaterThanOrEqualToConstant:kMinimumWidth],
     [self.contentView.heightAnchor
         constraintGreaterThanOrEqualToConstant:kMinimumHeight],
 
