@@ -286,6 +286,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
 #if defined(OS_CHROMEOS)
   // Used only on ChromeOS for now.
+  // TODO(https://crbug.com/93417): Remove this function when incognito file
+  // system is active.
   void EnableTemporaryFileSystemInIncognito();
 #endif
 

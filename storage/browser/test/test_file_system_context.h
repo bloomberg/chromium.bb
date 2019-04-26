@@ -49,6 +49,14 @@ storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
     storage::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
+storage::FileSystemContext*
+CreateIncognitoFileSystemContextWithAdditionalProvidersForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+    storage::QuotaManagerProxy* quota_manager_proxy,
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers,
+    const base::FilePath& base_path);
 }  // namespace content
 
 #endif  // STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
