@@ -65,7 +65,7 @@ SourceHandedness WMRInputSource::Handedness() const {
   return val;
 }
 
-ComPtr<ISpatialInteractionSource> WMRInputSource::GetComPtr() const {
-  return source_;
+ISpatialInteractionSource* WMRInputSource::GetRawPtr() const {
+  return source_.Get();
 }
 }  // namespace device

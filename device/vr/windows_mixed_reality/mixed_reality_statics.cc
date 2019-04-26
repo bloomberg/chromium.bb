@@ -15,6 +15,7 @@
 
 namespace device {
 
+// TODO(crbug.com/941546): Remove namespaces to comply with coding standard.
 using namespace ABI::Windows::Graphics::Holographic;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;

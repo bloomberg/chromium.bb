@@ -29,9 +29,8 @@ class WMRInputSource {
   ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness
   Handedness() const;
 
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource>
-  GetComPtr() const;
+  ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource* GetRawPtr()
+      const;
 
  private:
   Microsoft::WRL::ComPtr<

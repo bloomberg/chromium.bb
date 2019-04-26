@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_pose.h"
 
-using ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionControllerProperties;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceLocation;
@@ -45,11 +45,11 @@ WMRInputSourceState::~WMRInputSourceState() = default;
 
 // ISpatialInteractionSourceState
 bool WMRInputSourceState::TryGetPointerPose(
-    ComPtr<ISpatialCoordinateSystem> origin,
+    const WMRCoordinateSystem* origin,
     WMRPointerPose* pointer_pose) const {
   ComPtr<ISpatialPointerPose> pointer_pose_wmr;
   HRESULT hr =
-      source_state_->TryGetPointerPose(origin.Get(), &pointer_pose_wmr);
+      source_state_->TryGetPointerPose(origin->GetRawPtr(), &pointer_pose_wmr);
 
   if (SUCCEEDED(hr) && pointer_pose_wmr) {
     *pointer_pose = WMRPointerPose(pointer_pose_wmr);
@@ -147,12 +147,11 @@ double WMRInputSourceState::TouchpadY() const {
   return val;
 }
 
-bool WMRInputSourceState::TryGetLocation(
-    ComPtr<ISpatialCoordinateSystem> origin,
-    WMRInputLocation* location) const {
+bool WMRInputSourceState::TryGetLocation(const WMRCoordinateSystem* origin,
+                                         WMRInputLocation* location) const {
   DCHECK(location);
   ComPtr<ISpatialInteractionSourceLocation> location_wmr;
-  if (FAILED(properties_->TryGetLocation(origin.Get(), &location_wmr)) ||
+  if (FAILED(properties_->TryGetLocation(origin->GetRawPtr(), &location_wmr)) ||
       !location_wmr)
     return false;
 

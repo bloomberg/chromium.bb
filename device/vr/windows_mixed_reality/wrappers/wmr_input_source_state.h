@@ -9,6 +9,7 @@
 #include <wrl.h>
 
 namespace device {
+class WMRCoordinateSystem;
 class WMRInputLocation;
 class WMRInputSource;
 class WMRPointerPose;
@@ -22,10 +23,8 @@ class WMRInputSourceState {
   virtual ~WMRInputSourceState();
 
   // Uses ISpatialInteractionSourceState.
-  bool TryGetPointerPose(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      WMRPointerPose* pointer_pose) const;
+  bool TryGetPointerPose(const WMRCoordinateSystem* origin,
+                         WMRPointerPose* pointer_pose) const;
   WMRInputSource GetSource() const;
 
   // Uses ISpatialInteractionSourceState2.
@@ -45,10 +44,8 @@ class WMRInputSourceState {
   double TouchpadY() const;
 
   // Uses SpatialInteractionSourceProperties.
-  bool TryGetLocation(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      WMRInputLocation* location) const;
+  bool TryGetLocation(const WMRCoordinateSystem* origin,
+                      WMRInputLocation* location) const;
 
  private:
   Microsoft::WRL::ComPtr<

@@ -46,8 +46,8 @@ bool WMRPointerPose::TryGetInteractionSourcePose(
     return false;
 
   ComPtr<ISpatialPointerInteractionSourcePose> psp_wmr;
-  HRESULT hr = pointer_pose2_->TryGetInteractionSourcePose(
-      source.GetComPtr().Get(), &psp_wmr);
+  HRESULT hr =
+      pointer_pose2_->TryGetInteractionSourcePose(source.GetRawPtr(), &psp_wmr);
   if (SUCCEEDED(hr) && psp_wmr) {
     *pointer_source_pose = WMRPointerSourcePose(psp_wmr);
     return true;

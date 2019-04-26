@@ -43,23 +43,20 @@ struct ParsedInputState {
   ParsedInputState(ParsedInputState&& other);
 };
 
+class WMRCoordinateSystem;
 class WMRInputManager;
 class WMRInputSourceState;
+class WMRTimestamp;
 class MixedRealityInputHelper {
  public:
   MixedRealityInputHelper(HWND hwnd);
   virtual ~MixedRealityInputHelper();
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp);
+      const WMRCoordinateSystem* origin,
+      const WMRTimestamp* timestamp);
 
-  mojom::XRGamepadDataPtr GetWebVRGamepadData(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp);
+  mojom::XRGamepadDataPtr GetWebVRGamepadData(const WMRCoordinateSystem* origin,
+                                              const WMRTimestamp* timestamp);
 
   void Dispose();
 
@@ -68,8 +65,7 @@ class MixedRealityInputHelper {
 
   ParsedInputState LockedParseWindowsSourceState(
       const WMRInputSourceState& state,
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin);
+      const WMRCoordinateSystem* origin);
 
   HRESULT OnSourcePressed(
       ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,

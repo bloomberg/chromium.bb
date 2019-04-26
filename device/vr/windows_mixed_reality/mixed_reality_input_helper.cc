@@ -4,7 +4,6 @@
 
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
 
-#include <windows.perception.h>
 #include <windows.perception.spatial.h>
 #include <windows.ui.input.spatial.h>
 
@@ -20,8 +19,10 @@
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source_state.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_pose.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_source_pose.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_timestamp.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -38,8 +39,6 @@ using SourceKind =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind;
 
 using ABI::Windows::Foundation::ITypedEventHandler;
-using ABI::Windows::Perception::IPerceptionTimestamp;
-using ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs2;
@@ -255,7 +254,7 @@ gfx::Transform CreateTransform(GamepadVector position,
 
 bool TryGetPointerOffset(const WMRInputSourceState& state,
                          const WMRInputSource& source,
-                         ComPtr<ISpatialCoordinateSystem> origin,
+                         const WMRCoordinateSystem* origin,
                          gfx::Transform origin_from_grip,
                          gfx::Transform* grip_from_pointer) {
   DCHECK(grip_from_pointer);
@@ -353,15 +352,16 @@ bool MixedRealityInputHelper::EnsureSpatialInteractionManager() {
 }
 
 std::vector<mojom::XRInputSourceStatePtr>
-MixedRealityInputHelper::GetInputState(ComPtr<ISpatialCoordinateSystem> origin,
-                                       ComPtr<IPerceptionTimestamp> timestamp) {
+MixedRealityInputHelper::GetInputState(const WMRCoordinateSystem* origin,
+                                       const WMRTimestamp* timestamp) {
   std::vector<mojom::XRInputSourceStatePtr> input_states;
 
   if (!timestamp || !origin || !EnsureSpatialInteractionManager())
     return input_states;
 
   base::AutoLock scoped_lock(lock_);
-  auto source_states = input_manager_->GetDetectedSourcesAtTimestamp(timestamp);
+  auto source_states =
+      input_manager_->GetDetectedSourcesAtTimestamp(timestamp->GetRawPtr());
   for (auto state : source_states) {
     auto parsed_source_state = LockedParseWindowsSourceState(state, origin);
 
@@ -383,15 +383,16 @@ MixedRealityInputHelper::GetInputState(ComPtr<ISpatialCoordinateSystem> origin,
 }
 
 mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
-    ComPtr<ISpatialCoordinateSystem> origin,
-    ComPtr<IPerceptionTimestamp> timestamp) {
+    const WMRCoordinateSystem* origin,
+    const WMRTimestamp* timestamp) {
   auto ret = mojom::XRGamepadData::New();
 
   if (!timestamp || !origin || !EnsureSpatialInteractionManager())
     return ret;
 
   base::AutoLock scoped_lock(lock_);
-  auto source_states = input_manager_->GetDetectedSourcesAtTimestamp(timestamp);
+  auto source_states =
+      input_manager_->GetDetectedSourcesAtTimestamp(timestamp->GetRawPtr());
   for (auto state : source_states) {
     auto parsed_source_state = LockedParseWindowsSourceState(state, origin);
 
@@ -406,7 +407,7 @@ mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
 
 ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
     const WMRInputSourceState& state,
-    ComPtr<ISpatialCoordinateSystem> origin) {
+    const WMRCoordinateSystem* origin) {
   ParsedInputState input_state;
   if (!origin)
     return input_state;
