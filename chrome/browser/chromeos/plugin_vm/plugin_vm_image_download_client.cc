@@ -43,22 +43,21 @@ void PluginVmImageDownloadClient::OnServiceUnavailable() {
   VLOG(1) << __func__ << " called";
 }
 
-download::Client::ShouldDownload PluginVmImageDownloadClient::OnDownloadStarted(
+void PluginVmImageDownloadClient::OnDownloadStarted(
     const std::string& guid,
     const std::vector<GURL>& url_chain,
     const scoped_refptr<const net::HttpResponseHeaders>& headers) {
   VLOG(1) << __func__ << " called";
   // We do not want downloads that are tracked by download service from its
   // initialization to proceed.
-  if (old_downloads_.find(guid) != old_downloads_.end())
-    return download::Client::ShouldDownload::ABORT;
+  if (old_downloads_.find(guid) != old_downloads_.end()) {
+    DownloadServiceFactory::GetForBrowserContext(profile_)->CancelDownload(
+        guid);
+    return;
+  }
 
-  if (headers)
-    content_length_ = headers->GetContentLength();
-  else
-    content_length_ = -1;
+  content_length_ = headers ? headers->GetContentLength() : -1;
   GetManager()->OnDownloadStarted();
-  return download::Client::ShouldDownload::CONTINUE;
 }
 
 void PluginVmImageDownloadClient::OnDownloadUpdated(const std::string& guid,

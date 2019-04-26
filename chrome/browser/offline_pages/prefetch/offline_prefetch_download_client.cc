@@ -61,19 +61,6 @@ void OfflinePrefetchDownloadClient::OnServiceUnavailable() {
     downloader->OnDownloadServiceUnavailable();
 }
 
-download::Client::ShouldDownload
-OfflinePrefetchDownloadClient::OnDownloadStarted(
-    const std::string& guid,
-    const std::vector<GURL>& url_chain,
-    const scoped_refptr<const net::HttpResponseHeaders>& headers) {
-  return download::Client::ShouldDownload::CONTINUE;
-}
-
-void OfflinePrefetchDownloadClient::OnDownloadUpdated(
-    const std::string& guid,
-    uint64_t bytes_uploaded,
-    uint64_t bytes_downloaded) {}
-
 void OfflinePrefetchDownloadClient::OnDownloadFailed(
     const std::string& guid,
     const download::CompletionInfo& completion_info,

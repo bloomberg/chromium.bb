@@ -159,10 +159,6 @@ void LogServiceApiAction(DownloadClient client, ServiceApiAction action);
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result);
 
-// Logs the client response to StartDownload() attempt on the service.
-void LogStartDownloadResponse(DownloadClient client,
-                              download::Client::ShouldDownload should_download);
-
 // Logs the download parameters when StartDownload() is called.
 void LogDownloadParams(const DownloadParams& params);
 

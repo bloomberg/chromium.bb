@@ -438,13 +438,8 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
 
   download::Client* client = clients_->GetClient(entry->client);
   DCHECK(client);
-  using ShouldDownload = download::Client::ShouldDownload;
-  ShouldDownload should_download = client->OnDownloadStarted(
-      download.guid, download.url_chain, download.response_headers);
-  stats::LogStartDownloadResponse(entry->client, should_download);
-  if (should_download == ShouldDownload::ABORT) {
-    HandleCompleteDownload(CompletionType::ABORT, entry->guid);
-  }
+  client->OnDownloadStarted(download.guid, download.url_chain,
+                            download.response_headers);
 }
 
 void ControllerImpl::OnDownloadFailed(const DriverEntry& download,

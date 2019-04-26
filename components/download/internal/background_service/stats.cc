@@ -221,19 +221,6 @@ void LogStartDownloadResult(DownloadClient client,
                                 DownloadParams::StartResult::COUNT);
 }
 
-void LogStartDownloadResponse(DownloadClient client,
-                              Client::ShouldDownload should_download) {
-  // Total count for each start response.
-  std::string name("Download.Service.Request.StartResponse");
-  base::UmaHistogramEnumeration(name, should_download,
-                                Client::ShouldDownload::COUNT);
-
-  // Total count for each client response with client suffix.
-  name.append(".").append(ClientToHistogramSuffix(client));
-  base::UmaHistogramEnumeration(name, should_download,
-                                Client::ShouldDownload::COUNT);
-}
-
 void LogDownloadParams(const DownloadParams& params) {
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.BatteryRequirement",
                             params.scheduling_params.battery_requirements,

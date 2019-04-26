@@ -89,17 +89,15 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
 
 void BackgroundFetchDownloadClient::OnServiceUnavailable() {}
 
-download::Client::ShouldDownload
-BackgroundFetchDownloadClient::OnDownloadStarted(
+void BackgroundFetchDownloadClient::OnDownloadStarted(
     const std::string& guid,
     const std::vector<GURL>& url_chain,
     const scoped_refptr<const net::HttpResponseHeaders>& headers) {
+  // TODO(crbug.com/884672): Validate the chain/headers and cancel the download
+  // if invalid.
   auto response =
       std::make_unique<content::BackgroundFetchResponse>(url_chain, headers);
   GetDelegate()->OnDownloadStarted(guid, std::move(response));
-
-  // TODO(crbug.com/884672): Validate the chain/headers before continuing.
-  return download::Client::ShouldDownload::CONTINUE;
 }
 
 void BackgroundFetchDownloadClient::OnDownloadUpdated(

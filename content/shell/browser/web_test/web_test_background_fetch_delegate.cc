@@ -60,13 +60,13 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
 
   void OnServiceUnavailable() override {}
 
-  download::Client::ShouldDownload OnDownloadStarted(
+  void OnDownloadStarted(
       const std::string& guid,
       const std::vector<GURL>& url_chain,
       const scoped_refptr<const net::HttpResponseHeaders>& headers) override {
     DCHECK(guid_to_unique_job_id_mapping_.count(guid));
     if (!client_)
-      return download::Client::ShouldDownload::ABORT;
+      return;
 
     guid_to_response_[guid] =
         std::make_unique<content::BackgroundFetchResponse>(url_chain,
@@ -77,8 +77,6 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
         std::make_unique<content::BackgroundFetchResponse>(
             guid_to_response_[guid]->url_chain,
             guid_to_response_[guid]->headers));
-
-    return download::Client::ShouldDownload::CONTINUE;
   }
 
   void OnDownloadUpdated(const std::string& guid,
