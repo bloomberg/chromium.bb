@@ -166,6 +166,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
@@ -218,7 +219,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/page_transition_types.h"
-#import "ui/gfx/image/image_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -3338,61 +3338,26 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Performs a search using |data| and |imageURL| as inputs. Opens the results in
 // a new tab based on |inNewTab|.
 - (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
-  NSData* imageData = data;
-  UIImage* image = [UIImage imageWithData:data];
-  gfx::Image gfxImage(image);
-  // Converting to gfx::Image creates an empty image if UIImage is nil. However,
-  // we still want to do the image search with nil data because that gives
-  // the user the best error experience.
-  if (gfxImage.IsEmpty()) {
-    [self searchByResizedImageData:imageData atURL:&imageURL inNewTab:YES];
-    return;
-  }
-  UIImage* resizedImage =
-      gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
-  if (![image isEqual:resizedImage]) {
-    imageData = UIImageJPEGRepresentation(resizedImage, 1.0);
-  }
-  [self searchByResizedImageData:imageData atURL:&imageURL inNewTab:YES];
+  web::NavigationManager::WebLoadParams loadParams =
+      ImageSearchParamGenerator::LoadParamsForImageData(
+          data, imageURL,
+          ios::TemplateURLServiceFactory::GetForBrowserState(_browserState));
+  [self searchByImageWithWebLoadParams:loadParams inNewTab:YES];
 }
 
 // Performs a search with the given image data. The data should alread have
 // been scaled down in |ResizedImageForSearchByImage|.
-- (void)searchByResizedImageData:(NSData*)data
-                           atURL:(const GURL*)imageURL
-                        inNewTab:(BOOL)inNewTab {
-  char const* bytes = reinterpret_cast<const char*>([data bytes]);
-  std::string byteString(bytes, [data length]);
-
-  TemplateURLService* templateUrlService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-  const TemplateURL* defaultURL =
-      templateUrlService->GetDefaultSearchProvider();
-  DCHECK(!defaultURL->image_url().empty());
-  DCHECK(defaultURL->image_url_ref().IsValid(
-      templateUrlService->search_terms_data()));
-  TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
-  if (imageURL) {
-    search_args.image_url = *imageURL;
-  }
-  search_args.image_thumbnail_content = byteString;
-
-  // Generate the URL and populate |post_content| with the content type and
-  // HTTP body for the request.
-  TemplateURLRef::PostContent postContent;
-  GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
-      search_args, templateUrlService->search_terms_data(), &postContent));
-  web::NavigationManager::WebLoadParams loadParams =
-      web_navigation_util::CreateWebLoadParams(
-          result, ui::PAGE_TRANSITION_TYPED, &postContent);
+- (void)searchByImageWithWebLoadParams:
+            (web::NavigationManager::WebLoadParams)webParams
+                              inNewTab:(BOOL)inNewTab {
   if (inNewTab) {
-    UrlLoadParams params = UrlLoadParams::InNewTab(loadParams);
+    UrlLoadParams params = UrlLoadParams::InNewTab(webParams);
     params.in_incognito = self.isOffTheRecord;
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
         ->Load(params);
   } else {
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InCurrentTab(loadParams));
+        ->Load(UrlLoadParams::InCurrentTab(webParams));
   }
 }
 
@@ -4297,11 +4262,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)searchByImage:(UIImage*)image {
-  gfx::Image gfxImage(image);
-  UIImage* resizedImage =
-      gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
-  NSData* data = UIImageJPEGRepresentation(resizedImage, 1.0);
-  [self searchByResizedImageData:data atURL:nil inNewTab:NO];
+  [self searchByImageWithWebLoadParams:
+            ImageSearchParamGenerator::LoadParamsForImage(
+                image, ios::TemplateURLServiceFactory::GetForBrowserState(
+                           _browserState))
+                              inNewTab:NO];
 }
 
 #pragma mark - FindInPageResponseDelegate
