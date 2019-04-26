@@ -125,8 +125,14 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile_);
-  install_manager_ =
-      std::make_unique<extensions::BookmarkAppInstallManager>(profile);
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
+    install_manager_ = std::make_unique<WebAppInstallManager>(
+        profile, install_finalizer_.get());
+  } else {
+    install_manager_ =
+        std::make_unique<extensions::BookmarkAppInstallManager>(profile);
+  }
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(
