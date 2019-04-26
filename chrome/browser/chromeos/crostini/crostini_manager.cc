@@ -651,6 +651,8 @@ void CrostiniManager::MaybeUpgradeCrostiniAfterChecks() {
   InstallTerminaComponent(base::DoNothing());
 }
 
+using UpdatePolicy = component_updater::CrOSComponentManager::UpdatePolicy;
+
 void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
   auto* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
@@ -685,7 +687,6 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
     }
   }
 
-  using UpdatePolicy = component_updater::CrOSComponentManager::UpdatePolicy;
   UpdatePolicy update_policy;
   if (termina_update_check_needed_ && !is_offline) {
     // Don't use kForce all the time because it generates traffic to
@@ -719,6 +720,30 @@ void CrostiniManager::OnInstallTerminaComponent(
     LOG(ERROR)
         << "Failed to install the cros-termina component with error code: "
         << static_cast<int>(error);
+    if (is_cros_termina_registered_ && is_update_checked) {
+      auto* cros_component_manager =
+          g_browser_process->platform_part()->cros_component_manager();
+      if (cros_component_manager) {
+        // Try again, this time with no update checking. The reason we do this
+        // is that we may still be offline even when is_offline above was false.
+        // It's notoriously difficult to know when you're really connected to
+        // the Internet, and it's also possible to be unable to connect to a
+        // service like ComponentUpdaterService even when you are connected to
+        // the rest of the Internet.
+        UpdatePolicy update_policy = UpdatePolicy::kDontForce;
+
+        LOG(ERROR) << "Retrying cros-termina component load, no update check";
+        // Load the existing component on disk.
+        cros_component_manager->Load(
+            imageloader::kTerminaComponentName,
+            component_updater::CrOSComponentManager::MountPolicy::kMount,
+            update_policy,
+            base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           false));
+        return;
+      }
+    }
   }
 
   if (is_successful && is_update_checked) {
