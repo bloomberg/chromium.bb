@@ -6,7 +6,7 @@ from core.services import dashboard_service
 from cli_tools.soundwave.tables import timeseries
 
 
-CLOUD_PATH = 'gs://chome-health-tvdata/datasets/v8_report.csv'
+CLOUD_PATH = 'gs://chrome-health-tvdata/datasets/v8_report.csv'
 
 ANDROID_GO = 'ChromiumPerf:android-go-perf'
 V8_EFFECTIVE_SIZE = (

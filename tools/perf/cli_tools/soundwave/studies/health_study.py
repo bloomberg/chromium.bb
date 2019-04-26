@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-CLOUD_PATH = 'gs://chome-health-tvdata/datasets/health_study.csv'
+CLOUD_PATH = 'gs://chrome-health-tvdata/datasets/health_study.csv'
 
 OVERALL_PSS = ('memory:{browser}:all_processes:reported_by_os:system_memory'
                ':proportional_resident_size_avg')
@@ -28,7 +28,7 @@ STARTUP_BY_BROWSER = {
 
 def IterSystemHealthBots():
   yield 'ChromiumPerf/android-go-perf'
-  yield 'ChromiumPerfFyi/android-go_webview-perf'
+  yield 'ChromiumPerf/android-go_webview-perf'
 
 
 def GetBrowserFromBot(bot):
