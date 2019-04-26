@@ -545,6 +545,12 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
               metadata_change_list.get());
           break;
         case syncer::EntityChange::ACTION_UPDATE:
+          // TODO(mamir): This had been added to mitigate some potential issues
+          // in the login database. Once the underlying cause is verified, we
+          // should remove this check.
+          if (entity_change->storage_key().empty()) {
+            continue;
+          }
           changes = password_store_sync_->UpdateLoginSync(
               PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
           if (changes.empty()) {
@@ -558,6 +564,12 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
                  ParsePrimaryKey(entity_change->storage_key()));
           break;
         case syncer::EntityChange::ACTION_DELETE: {
+          // TODO(mamir): This had been added to mitigate some potential issues
+          // in the login database. Once the underlying cause is verified, we
+          // should remove this check.
+          if (entity_change->storage_key().empty()) {
+            continue;
+          }
           int primary_key = ParsePrimaryKey(entity_change->storage_key());
           changes =
               password_store_sync_->RemoveLoginByPrimaryKeySync(primary_key);
