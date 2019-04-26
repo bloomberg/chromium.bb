@@ -46,6 +46,7 @@ struct WebDeviceEmulationParams;
 namespace content {
 
 class DevToolsAgentHostImpl;
+class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
 class WebContentsImpl;
@@ -68,6 +69,7 @@ class PageHandler : public DevToolsDomainHandler,
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderer(int process_host_id,
                    RenderFrameHostImpl* frame_host) override;
+  // Instrumentation signals.
   void OnSynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
   void DidAttachInterstitialPage();
@@ -86,6 +88,8 @@ class PageHandler : public DevToolsDomainHandler,
                                  JavaScriptDialogCallback callback);
   void DidCloseJavaScriptDialog(bool success, const base::string16& user_input);
   void NavigationReset(NavigationRequest* navigation_request);
+  void DownloadWillBegin(FrameTreeNode* ftn, const GURL& url);
+
   WebContentsImpl* GetWebContents();
 
   Response Enable() override;

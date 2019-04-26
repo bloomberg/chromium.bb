@@ -560,15 +560,17 @@ bool DownloadManagerImpl::InterceptDownload(
     }
   }
 
-  if (!delegate_ ||
-      !delegate_->InterceptDownloadIfApplicable(
+  if (delegate_ &&
+      delegate_->InterceptDownloadIfApplicable(
           info.url(), user_agent, info.content_disposition, info.mime_type,
           info.request_origin, info.total_bytes, web_contents)) {
-    return false;
+    if (info.request_handle)
+      info.request_handle->CancelRequest(false);
+    return true;
   }
-  if (info.request_handle)
-    info.request_handle->CancelRequest(false);
-  return true;
+  content::devtools_instrumentation::WillBeginDownload(
+      info.render_process_id, info.render_frame_id, info.url());
+  return false;
 }
 
 base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {

@@ -74,6 +74,10 @@ void OnNavigationRequestFailed(
     const NavigationRequest& nav_request,
     const network::URLLoaderCompletionStatus& status);
 
+void WillBeginDownload(int render_process_id,
+                       int render_frame_id,
+                       const GURL& url);
+
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,

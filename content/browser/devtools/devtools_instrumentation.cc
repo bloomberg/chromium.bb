@@ -81,6 +81,19 @@ void OnNavigationRequestFailed(
                    protocol::Network::ResourceTypeEnum::Document, status);
 }
 
+void WillBeginDownload(int render_process_id,
+                       int render_frame_id,
+                       const GURL& url) {
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      RenderFrameHost::FromID(render_process_id, render_frame_id));
+  FrameTreeNode* ftn =
+      rfh ? FrameTreeNode::GloballyFindByID(rfh->GetFrameTreeNodeId())
+          : nullptr;
+  if (!ftn)
+    return;
+  DispatchToAgents(ftn, &protocol::PageHandler::DownloadWillBegin, ftn, url);
+}
+
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,

@@ -521,6 +521,13 @@ void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
   navigate_callbacks_.erase(navigate_callback);
 }
 
+void PageHandler::DownloadWillBegin(FrameTreeNode* ftn, const GURL& url) {
+  if (!enabled_)
+    return;
+  frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
+                               url.spec());
+}
+
 static const char* TransitionTypeName(ui::PageTransition type) {
   int32_t t = type & ~ui::PAGE_TRANSITION_QUALIFIER_MASK;
   switch (t) {
