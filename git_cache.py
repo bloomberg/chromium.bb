@@ -624,11 +624,11 @@ class Mirror(object):
     # might not exist yet, so it will error no matter what
     if ls_err:
       print('Failed to check GS:\n%s' % (ls_err))
-
     if ls_err_ready:
       print('Failed to check GS:\n%s' % (ls_err_ready))
 
     if not (ls_out == '' and ls_out_ready == ''):
+      print('Cache %s already exists' % dest_name)
       return
 
     gsutil.call('-m', 'cp', '-r', src_name, dest_name)
