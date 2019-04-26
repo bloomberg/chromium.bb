@@ -68,11 +68,13 @@ class MetricsCollectorTest(unittest.TestCase):
     mock.patch('metrics_utils.get_git_version',
                lambda: '2.18.1').start()
 
+    self.maxDiff = None
     self.default_metrics = {
+        "metrics_version": 0,
         "python_version": "2.7.13",
         "git_version": "2.18.1",
         "execution_time": 1000,
-        "timestamp": 0,
+        "timestamp": 3000,
         "exit_code": 0,
         "command": "fun",
         "depot_tools_age": 1234,

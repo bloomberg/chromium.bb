@@ -34,8 +34,8 @@ First, some words about what data we are **NOT** collecting:
 
 The metrics we're collecting are:
 
-- A timestamp, with a week resolution.
-- The age of your depot\_tools checkout, with a week resolution.
+- The time when the command was run.
+- The age of your depot\_tools checkout.
 - Your version of Python (in the format major.minor.micro).
 - Your version of Git (in the format major.minor.micro).
 - The OS of your machine (i.e. win, linux or mac).
@@ -47,7 +47,7 @@ The metrics we're collecting are:
 - The exit code.
 - The project you're working on. We only record data about projects you can
   fetch using depot\_tools' fetch command (e.g. Chromium, WebRTC, V8, etc)
-- The age of your project checkout, with a week resolution.
+- The age of your project checkout.
 - What features are you using in your DEPS and .gclient files. For example:
   - Are you setting `use_relative_paths=True`?
   - Are you using `recursedeps`?
