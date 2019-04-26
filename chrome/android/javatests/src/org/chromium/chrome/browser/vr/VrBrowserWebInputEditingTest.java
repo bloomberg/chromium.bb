@@ -44,7 +44,8 @@ import java.util.concurrent.TimeoutException;
  * End-to-end tests for interacting with HTML input elements on a webpage.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserWebInputEditingTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class

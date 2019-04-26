@@ -43,7 +43,8 @@ import java.util.concurrent.TimeoutException;
  * End-to-End test for capturing and comparing screen images for VR Browsering Dialogs
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserDialogTest {
     // We need to make sure the port is constant, otherwise the URL changes between test runs, which

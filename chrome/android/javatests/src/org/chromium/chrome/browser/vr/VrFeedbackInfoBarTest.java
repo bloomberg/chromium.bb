@@ -35,7 +35,8 @@ import java.util.concurrent.TimeoutException;
  * Tests for the infobar that prompts the user to enter feedback on their VR browsing experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=LogJsConsoleMessages", "enable-webvr"})
 @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_SVR})
 public class VrFeedbackInfoBarTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class

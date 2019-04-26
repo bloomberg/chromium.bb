@@ -38,7 +38,8 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.N) // Daydream is only supported on N+.
 public class VrDaydreamReadyModuleInstallTest {
     @ClassParameter

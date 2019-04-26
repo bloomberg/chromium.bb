@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -47,7 +48,9 @@ const std::vector<std::pair<std::string, std::string>>
     XrBrowserTestBase::kRequiredTestSwitchesWithValues{
         std::pair<std::string, std::string>("test-launcher-jobs", "1")};
 
-XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {}
+XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {
+  enable_features_.push_back(features::kLogJsConsoleMessages);
+}
 
 XrBrowserTestBase::~XrBrowserTestBase() = default;
 
