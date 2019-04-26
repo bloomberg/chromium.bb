@@ -545,6 +545,12 @@ class BBJSONGenerator(object):
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
                            test_name, test_config):
+    # TODO(https://crbug.com/953072): Remove this check whenever a better
+    # long-term solution is implemented.
+    if (waterfall.get('forbid_script_tests', False) or
+        waterfall['machines'][tester_name].get('forbid_script_tests', False)):
+      raise BBGenErr('Attempted to generate a script test on tester ' +
+                     tester_name + ', which explicitly forbids script tests')
     if not self.should_run_on_tester(waterfall, tester_name, test_name,
                                      test_config):
       return None

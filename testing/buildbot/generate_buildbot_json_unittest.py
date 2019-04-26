@@ -226,6 +226,38 @@ FOO_SCRIPT_WATERFALL = """\
 ]
 """
 
+FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'forbid_script_tests': True,
+        'test_suites': {
+          'scripts': 'foo_scripts',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS = """\
+[
+  {
+    'name': 'chromium.test',
+    'forbid_script_tests': True,
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'scripts': 'foo_scripts',
+        },
+      },
+    },
+  },
+]
+"""
+
 FOO_JUNIT_WATERFALL = """\
 [
   {
@@ -1961,6 +1993,26 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
+
+  def test_script_machine_forbids_scripts(self):
+    fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS,
+                    FOO_SCRIPT_SUITE,
+                    NO_BAR_TEST_EXCEPTIONS,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'Attempted to generate a script test on tester.*'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_script_waterfall_forbids_scripts(self):
+    fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS,
+                    FOO_SCRIPT_SUITE,
+                    NO_BAR_TEST_EXCEPTIONS,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'Attempted to generate a script test on tester.*'):
+      fbb.check_output_file_consistency(verbose=True)
 
   def test_junit_tests(self):
     fbb = FakeBBGen(FOO_JUNIT_WATERFALL,
