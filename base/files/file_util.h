@@ -375,6 +375,14 @@ BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
 // Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff
 // |size| bytes of |data| were written to |fd|.
 BASE_EXPORT bool WriteFileDescriptor(const int fd, const char* data, int size);
+
+// Allocates disk space for the file referred to by |fd| for the byte range
+// starting at |offset| and continuing for |size| bytes. The file size will be
+// changed if |offset|+|len| is greater than the file size. Zeros will fill the
+// new space.
+// After a successful call, subsequent writes into the specified range are
+// guaranteed not to fail because of lack of disk space.
+BASE_EXPORT bool AllocateFileRegion(File* file, int64_t offset, size_t size);
 #endif
 
 // Appends |data| to |filename|.  Returns true iff |size| bytes of |data| were
