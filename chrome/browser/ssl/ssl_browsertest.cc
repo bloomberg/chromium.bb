@@ -4082,8 +4082,15 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // blocked regardless of the settings in WebPreferences when
 // block-all-mixed-content CSP is set.
 // TODO(crbug.com/890372): This test is flaky.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MixedContentSettingsWithBlockingCSP \
+  DISABLED_MixedContentSettingsWithBlockingCSP
+#else
+#define MAYBE_MixedContentSettingsWithBlockingCSP \
+  MixedContentSettingsWithBlockingCSP
+#endif
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
-                       MixedContentSettingsWithBlockingCSP) {
+                       MAYBE_MixedContentSettingsWithBlockingCSP) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
