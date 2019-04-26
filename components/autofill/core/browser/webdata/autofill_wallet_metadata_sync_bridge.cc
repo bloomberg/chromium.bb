@@ -660,9 +660,15 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
         break;
       }
       case EntityChange::ACTION_DELETE: {
-        cache_.erase(change->storage_key());
-        is_any_local_modified |= RemoveServerMetadata(
-            table, parsed_storage_key.type, parsed_storage_key.metadata_id);
+        // We intentionally ignore remote deletions in order to avoid
+        // delete-create ping pongs (if we delete metadata for address data
+        // entity that still locally exists, PDM will think the server address
+        // has not been converted to a local address yet and will trigger
+        // conversion that in turn triggers creating and committing the metadata
+        // entity again).
+        // This is safe because this client will delete the wallet_metadata
+        // entity locally as soon as the wallet_data entity gets deleted.
+        // Corner cases are handled by DeleteOldOrphanMetadata().
         break;
       }
     }
