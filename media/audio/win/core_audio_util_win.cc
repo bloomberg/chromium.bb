@@ -413,13 +413,13 @@ ChannelLayout GetChannelLayout(
   return channel_layout;
 }
 
-bool IsSupportedInternal() {
+IMMDeviceEnumerator* IsSupportedInternal() {
   // It is possible to force usage of WaveXxx APIs by using a command line
   // flag.
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
     DVLOG(1) << "Forcing usage of Windows WaveXxx APIs";
-    return false;
+    return nullptr;
   }
 
   // Verify that it is possible to a create the IMMDeviceEnumerator interface.
@@ -430,10 +430,10 @@ bool IsSupportedInternal() {
     LOG(ERROR)
         << "Failed to create Core Audio device enumerator on thread with ID "
         << GetCurrentThreadId();
-    return false;
+    return nullptr;
   }
 
-  return true;
+  return device_enumerator.Detach();
 }
 
 // Retrieve an audio device specified by |device_id| or a default device
@@ -647,8 +647,10 @@ size_t CoreAudioUtil::WaveFormatWrapper::size() const {
 }
 
 bool CoreAudioUtil::IsSupported() {
-  static bool g_is_supported = IsSupportedInternal();
-  return g_is_supported;
+  // Hold on to the device enumerator throughout, to avoid multiple
+  // de-/initializations of CoreAudio. See: crbug.com/955434
+  static IMMDeviceEnumerator* g_enumerator = IsSupportedInternal();
+  return g_enumerator != nullptr;
 }
 
 // CoreAudioUtil implementation.
