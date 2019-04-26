@@ -10,7 +10,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/window_occlusion_tracker.h"

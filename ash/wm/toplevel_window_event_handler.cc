@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"

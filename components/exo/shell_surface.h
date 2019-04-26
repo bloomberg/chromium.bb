@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_EXO_SHELL_SURFACE_H_
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
