@@ -1632,7 +1632,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 60m interval',
   )
 
-  _pi_no_hwtest_boards = frozenset([])
+  _pi_no_hwtest_boards = frozenset([
+      'coral',
+  ])
   _pi_no_hwtest_experimental_boards = frozenset([])
   _pi_hwtest_boards = frozenset([
       'caroline-arcnext',
@@ -1689,7 +1691,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _nyc_no_hwtest_boards = frozenset([
       'bob',
       'caroline',
-      'coral',
       'hana',
       'reef',
   ])
