@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/payments/content/icon/icon_size.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -249,11 +250,11 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
     float ratio = 1;
     if (width && height)
       ratio = width / height;
-    // Other instrument icons should be 32 pixels high while preserving the
-    // image ratio.
-    constexpr int kPaymentHandlerIconHeight = 32;
-    icon_view->SetImageSize(gfx::Size(ratio * kPaymentHandlerIconHeight,
-                                      kPaymentHandlerIconHeight));
+    // We should set image size in density indepent pixels here, since
+    // views::ImageView objects are rastered at the device scale factor.
+    icon_view->SetImageSize(gfx::Size(
+        ratio * IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight,
+        IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
   } else {
     icon_view->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(icon_resource_id)

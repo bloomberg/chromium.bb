@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/content/icon/icon_size.h"
 #include "components/payments/content/origin_security_checker.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -114,18 +115,19 @@ class ReadOnlyOriginView : public views::View {
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,
                                  views::GridLayout::USE_PREF, 0, 0);
-    // Payment handler icon should be 32 pixels tall.
-    constexpr int kPaymentHandlerIconHeight = 32;
     const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
     float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
     if (has_icon) {
       adjusted_width =
-          adjusted_width * kPaymentHandlerIconHeight / icon_image_skia.height();
+          adjusted_width *
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
+          icon_image_skia.height();
       // A column for the instrument icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
           views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-          adjusted_width, kPaymentHandlerIconHeight);
+          adjusted_width,
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);
     }
 
@@ -135,8 +137,11 @@ class ReadOnlyOriginView : public views::View {
       std::unique_ptr<views::ImageView> instrument_icon_view =
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
                                    /*label=*/page_title);
-      instrument_icon_view->SetImageSize(
-          gfx::Size(adjusted_width, kPaymentHandlerIconHeight));
+      // We should set image size in density independent pixels here, since
+      // views::ImageView objects are rastered at the device scale factor.
+      instrument_icon_view->SetImageSize(gfx::Size(
+          adjusted_width,
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
       top_level_layout->AddView(instrument_icon_view.release());
     }
   }

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "components/payments/content/icon/icon_size.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -372,22 +373,6 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     return;
   }
 
-  // TODO(crbug.com/782270): Choose appropriate icon size dynamically on
-  // different platforms.
-  const int kPaymentAppIdealIconSize = 32;
-  const int kPaymentAppMinimumIconSize = 0;
-  GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
-      manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      content::ManifestIconDownloader::kMaxWidthToHeightRatio,
-      blink::Manifest::ImageResource::Purpose::ANY);
-  if (!best_icon_url.is_valid()) {
-    log_.Error("No suitable icon found in web app manifest \"" +
-               web_app_manifest_url.spec() +
-               "\" for payment handler manifest \"" +
-               method_manifest_url.spec() + "\".");
-    return;
-  }
-
   // Stop if the web_contents is gone.
   if (web_contents() == nullptr) {
     log_.Error(
@@ -398,10 +383,25 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     return;
   }
 
+  gfx::NativeView native_view = web_contents()->GetNativeView();
+  GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
+      manifest_icons, IconSizeCalculator::IdealIconHeight(native_view),
+      IconSizeCalculator::MinimumIconHeight(),
+      content::ManifestIconDownloader::kMaxWidthToHeightRatio,
+      blink::Manifest::ImageResource::Purpose::ANY);
+  if (!best_icon_url.is_valid()) {
+    log_.Error("No suitable icon found in web app manifest \"" +
+               web_app_manifest_url.spec() +
+               "\" for payment handler manifest \"" +
+               method_manifest_url.spec() + "\".");
+    return;
+  }
+
   number_of_web_app_icons_to_download_and_decode_++;
   bool can_download_icon = content::ManifestIconDownloader::Download(
-      web_contents(), best_icon_url, kPaymentAppIdealIconSize,
-      kPaymentAppMinimumIconSize,
+      web_contents(), best_icon_url,
+      IconSizeCalculator::IdealIconHeight(native_view),
+      IconSizeCalculator::MinimumIconHeight(),
       base::BindOnce(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,

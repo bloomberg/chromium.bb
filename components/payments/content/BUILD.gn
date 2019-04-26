@@ -83,6 +83,7 @@ jumbo_static_library("utils") {
   deps = [
     ":content_common",
     "//components/autofill/core/browser",
+    "//components/payments/content/icon",
     "//components/payments/content/utility",
     "//components/payments/core",
     "//components/strings",

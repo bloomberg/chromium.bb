@@ -59,6 +59,7 @@ jumbo_source_set("browser") {
     "//components/network_session_configurator/browser",
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core/request_header",
+    "//components/payments/content/icon",
     "//components/rappor",
     "//components/services/filesystem:lib",
     "//components/services/leveldb:lib",
