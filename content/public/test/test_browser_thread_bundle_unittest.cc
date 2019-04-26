@@ -135,7 +135,7 @@ TEST(TestBrowserThreadBundleTest, MultipleTestBrowserThreadBundle) {
 TEST(TestBrowserThreadBundleTest, TraitsConstructor) {
   TestBrowserThreadBundle test_browser_thread_bundle(
       TestBrowserThreadBundle::Options::REAL_IO_THREAD,
-      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
   // Should set up a UI main thread.
   EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
   EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
