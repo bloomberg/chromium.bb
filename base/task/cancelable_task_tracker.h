@@ -44,6 +44,7 @@
 #include "base/base_export.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -79,11 +80,19 @@ class BASE_EXPORT CancelableTaskTracker {
                           OnceClosure task,
                           OnceClosure reply);
 
-  template <typename TaskReturnType, typename ReplyArgType>
+  // Though RepeatingCallback is convertible to OnceCallback, we need a
+  // CallbackType template since we can not use template deduction and object
+  // conversion at once on the overload resolution.
+  // TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
+  // to use OnceCallback and remove the CallbackType template.
+  template <template <typename> class CallbackType,
+            typename TaskReturnType,
+            typename ReplyArgType,
+            typename = EnableIfIsBaseCallback<CallbackType>>
   TaskId PostTaskAndReplyWithResult(TaskRunner* task_runner,
                                     const Location& from_here,
-                                    OnceCallback<TaskReturnType()> task,
-                                    OnceCallback<void(ReplyArgType)> reply) {
+                                    CallbackType<TaskReturnType()> task,
+                                    CallbackType<void(ReplyArgType)> reply) {
     auto* result = new std::unique_ptr<TaskReturnType>();
     return PostTaskAndReply(
         task_runner, from_here,
@@ -91,24 +100,6 @@ class BASE_EXPORT CancelableTaskTracker {
                  std::move(task), Unretained(result)),
         BindOnce(&internal::ReplyAdapter<TaskReturnType, ReplyArgType>,
                  std::move(reply), Owned(result)));
-  }
-
-  // RepeatingCallback version of PostTaskWithTraitsAndReplyWithResult above.
-  // Though RepeatingCallback is convertible to OnceCallback, we need this since
-  // we can not use template deduction and object conversion at once on the
-  // overload resolution.
-  // TODO(tzik): Update all callers of the RepeatingCallback version to use
-  // OnceCallback.
-  template <typename TaskReturnType, typename ReplyArgType>
-  TaskId PostTaskAndReplyWithResult(
-      TaskRunner* task_runner,
-      const Location& from_here,
-      RepeatingCallback<TaskReturnType()> task,
-      RepeatingCallback<void(ReplyArgType)> reply) {
-    return PostTaskAndReplyWithResult(
-        task_runner, from_here,
-        static_cast<OnceCallback<TaskReturnType()>>(std::move(task)),
-        static_cast<OnceCallback<void(ReplyArgType)>>(std::move(reply)));
   }
 
   // Creates a tracked TaskId and an associated IsCanceledCallback. Client can

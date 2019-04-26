@@ -10,6 +10,7 @@
 #ifndef BASE_CALLBACK_HELPERS_H_
 #define BASE_CALLBACK_HELPERS_H_
 
+#include <type_traits>
 #include <utility>
 
 #include "base/atomicops.h"
@@ -21,16 +22,39 @@
 
 namespace base {
 
-// Prefer std::move() over ResetAndReturn().
-template <typename Functor>
-OnceCallback<Functor> ResetAndReturn(OnceCallback<Functor>* cb) {
-  auto ret = std::move(*cb);
-  DCHECK(!*cb);
-  return ret;
-}
+namespace internal {
 
-template <typename Functor>
-RepeatingCallback<Functor> ResetAndReturn(RepeatingCallback<Functor>* cb) {
+template <typename T>
+struct IsBaseCallbackImpl : std::false_type {};
+
+template <typename R, typename... Args>
+struct IsBaseCallbackImpl<OnceCallback<R(Args...)>> : std::true_type {};
+
+template <typename R, typename... Args>
+struct IsBaseCallbackImpl<RepeatingCallback<R(Args...)>> : std::true_type {};
+
+}  // namespace internal
+
+template <typename T>
+using IsBaseCallback = internal::IsBaseCallbackImpl<std::decay_t<T>>;
+
+// SFINAE friendly enabler allowing to overload methods for both Repeating and
+// OnceCallbacks.
+//
+// Usage:
+// template <template <typename> class CallbackType,
+//           ... other template args ...,
+//           typename = EnableIfIsBaseCallback<CallbackType>>
+// void DoStuff(CallbackType<...> cb, ...);
+template <template <typename> class CallbackType>
+using EnableIfIsBaseCallback =
+    std::enable_if_t<IsBaseCallback<CallbackType<void()>>::value>;
+
+// Prefer std::move() over ResetAndReturn().
+template <template <typename> class CallbackType,
+          typename RunType,
+          typename = EnableIfIsBaseCallback<CallbackType>>
+CallbackType<RunType> ResetAndReturn(CallbackType<RunType>* cb) {
   auto ret = std::move(*cb);
   DCHECK(!*cb);
   return ret;

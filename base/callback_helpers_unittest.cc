@@ -4,11 +4,44 @@
 
 #include "base/callback_helpers.h"
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+TEST(CallbackHelpersTest, IsBaseCallback) {
+  // Check that base::Closures and references to them are considered
+  // base::Callbacks.
+  static_assert(base::IsBaseCallback<base::OnceClosure>::value, "");
+  static_assert(base::IsBaseCallback<base::RepeatingClosure>::value, "");
+  static_assert(base::IsBaseCallback<base::OnceClosure&&>::value, "");
+  static_assert(base::IsBaseCallback<const base::RepeatingClosure&>::value, "");
+
+  // Check that base::Callbacks with a given RunType and references to them are
+  // considered base::Callbacks.
+  static_assert(base::IsBaseCallback<base::OnceCallback<int(int)>>::value, "");
+  static_assert(base::IsBaseCallback<base::RepeatingCallback<int(int)>>::value,
+                "");
+  static_assert(base::IsBaseCallback<base::OnceCallback<int(int)>&&>::value,
+                "");
+  static_assert(
+      base::IsBaseCallback<const base::RepeatingCallback<int(int)>&>::value,
+      "");
+
+  // Check that POD types are not considered base::Callbacks.
+  static_assert(!base::IsBaseCallback<bool>::value, "");
+  static_assert(!base::IsBaseCallback<int>::value, "");
+  static_assert(!base::IsBaseCallback<double>::value, "");
+
+  // Check that the closely related std::function is not considered a
+  // base::Callback.
+  static_assert(!base::IsBaseCallback<std::function<void()>>::value, "");
+  static_assert(!base::IsBaseCallback<const std::function<void()>&>::value, "");
+  static_assert(!base::IsBaseCallback<std::function<void()>&&>::value, "");
+}
 
 void Increment(int* value) {
   (*value)++;
