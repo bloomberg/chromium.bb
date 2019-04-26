@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -113,7 +114,7 @@ void AndroidManagementClient::OnAndroidManagementChecked(
   }
 
   request_job_.reset();
-  base::ResetAndReturn(&callback_).Run(result);
+  std::move(callback_).Run(result);
 }
 
 std::ostream& operator<<(std::ostream& os,

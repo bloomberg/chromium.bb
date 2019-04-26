@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -2900,14 +2899,14 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
     stored_downloads_.insert(item);
     if (!quit_closure_.is_null() &&
         stored_downloads_.size() >= stored_download_target_) {
-      base::ResetAndReturn(&quit_closure_).Run();
+      std::move(quit_closure_).Run();
     }
   }
 
   void OnHistoryQueryComplete() override {
     history_query_complete_ = true;
     if (!quit_closure_.is_null())
-      base::ResetAndReturn(&quit_closure_).Run();
+      std::move(quit_closure_).Run();
   }
 
   std::unordered_set<download::DownloadItem*> stored_downloads_;

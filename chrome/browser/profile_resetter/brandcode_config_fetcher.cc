@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -208,12 +207,12 @@ void BrandcodeConfigFetcher::OnSimpleLoaderComplete(
   }
   simple_url_loader_.reset();
   download_timer_.Stop();
-  base::ResetAndReturn(&fetch_callback_).Run();
+  std::move(fetch_callback_).Run();
 }
 
 void BrandcodeConfigFetcher::OnDownloadTimeout() {
   if (simple_url_loader_) {
     simple_url_loader_.reset();
-    base::ResetAndReturn(&fetch_callback_).Run();
+    std::move(fetch_callback_).Run();
   }
 }

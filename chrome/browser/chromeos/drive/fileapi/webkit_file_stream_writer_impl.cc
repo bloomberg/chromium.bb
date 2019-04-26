@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "components/drive/file_system_core_util.h"
@@ -148,7 +147,7 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
                                close_callback_on_ui_thread);
     }
 
-    base::ResetAndReturn(&pending_cancel_callback_).Run(net::OK);
+    std::move(pending_cancel_callback_).Run(net::OK);
     return;
   }
 

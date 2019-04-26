@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ssl_errors/error_classification.h"
@@ -143,7 +144,7 @@ void CommonNameMismatchHandler::OnSimpleLoaderHandler(
     result = SUGGESTED_URL_AVAILABLE;
   }
   simple_url_loader_.reset();
-  base::ResetAndReturn(&check_url_callback_).Run(result, check_url_);
+  std::move(check_url_callback_).Run(result, check_url_);
 }
 
 void CommonNameMismatchHandler::OnSimpleLoaderRedirect(

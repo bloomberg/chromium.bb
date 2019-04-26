@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -300,13 +299,13 @@ void CastSessionDelegate::OnOperationalStatusChange(
       // successfully re-initialized.
       if (is_for_audio) {
         if (!audio_frame_input_available_callback_.is_null()) {
-          base::ResetAndReturn(&audio_frame_input_available_callback_).Run(
-              cast_sender_->audio_frame_input());
+          std::move(audio_frame_input_available_callback_)
+              .Run(cast_sender_->audio_frame_input());
         }
       } else {
         if (!video_frame_input_available_callback_.is_null()) {
-          base::ResetAndReturn(&video_frame_input_available_callback_).Run(
-              cast_sender_->video_frame_input());
+          std::move(video_frame_input_available_callback_)
+              .Run(cast_sender_->video_frame_input());
         }
       }
       break;

@@ -87,8 +87,8 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
 
  private:
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
-    base::ResetAndReturn(&callback_).Run(
-        result == ExtensionInstallPrompt::Result::ACCEPTED);
+    std::move(callback_).Run(result ==
+                             ExtensionInstallPrompt::Result::ACCEPTED);
   }
 
   // Used for prompting to re-enable items with permissions escalation updates.

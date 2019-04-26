@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/android/jni_array.h"
-#include "base/callback_helpers.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -182,10 +181,10 @@ bool PermissionUpdateInfoBarDelegate::Accept() {
 }
 
 bool PermissionUpdateInfoBarDelegate::Cancel() {
-  base::ResetAndReturn(&callback_).Run(false);
+  std::move(callback_).Run(false);
   return true;
 }
 
 void PermissionUpdateInfoBarDelegate::InfoBarDismissed() {
-  base::ResetAndReturn(&callback_).Run(false);
+  std::move(callback_).Run(false);
 }

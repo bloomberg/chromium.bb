@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -295,7 +297,7 @@ void PPAPIDownloadRequest::Finish(RequestOutcome reason,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << __func__ << " response: " << static_cast<int>(response);
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(response);
+    std::move(callback_).Run(response);
   loader_.reset();
   weakptr_factory_.InvalidateWeakPtrs();
 

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/android/vr/vr_input_connection.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -63,8 +64,7 @@ void VrInputConnection::UpdateTextState(
   auto text_state_update_callback =
       std::move(text_state_update_callbacks_.front());
   text_state_update_callbacks_.pop();
-  base::ResetAndReturn(&text_state_update_callback)
-      .Run(base::UTF8ToUTF16(text));
+  std::move(text_state_update_callback).Run(base::UTF8ToUTF16(text));
 }
 
 base::android::ScopedJavaLocalRef<jobject> VrInputConnection::GetJavaObject() {

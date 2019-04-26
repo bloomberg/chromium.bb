@@ -18,7 +18,6 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -2168,7 +2167,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   if (login_host) {
     login_host->Finalize(std::move(login_host_finalized_callback));
   } else {
-    base::ResetAndReturn(&login_host_finalized_callback).Run();
+    std::move(login_host_finalized_callback).Run();
   }
 
   chromeos::BootTimesRecorder::Get()->LoginDone(

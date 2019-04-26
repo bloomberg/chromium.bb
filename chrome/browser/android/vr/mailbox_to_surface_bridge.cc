@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -182,7 +183,7 @@ void MailboxToSurfaceBridge::OnContextAvailableOnUiThread(
     // The client is responsible for running BindContextProviderToCurrentThread
     // before use.
     constructor_thread_task_runner_->PostTask(
-        FROM_HERE, base::ResetAndReturn(&on_context_provider_ready_));
+        FROM_HERE, std::move(on_context_provider_ready_));
   } else {
     DCHECK(on_context_bound_);
     constructor_thread_task_runner_->PostTask(
@@ -215,7 +216,7 @@ void MailboxToSurfaceBridge::BindContextProviderToCurrentThread() {
 
   DVLOG(1) << __FUNCTION__ << ": Context ready";
   if (on_context_bound_) {
-    base::ResetAndReturn(&on_context_bound_).Run();
+    std::move(on_context_bound_).Run();
   }
 }
 

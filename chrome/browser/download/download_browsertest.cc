@@ -220,7 +220,7 @@ class OnCanDownloadDecidedObserver {
     // It is possible this is called before Wait(), so the result needs to
     // be stored in that case.
     if (!completion_closure_.is_null()) {
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
       EXPECT_EQ(allow, expectation_);
     } else {
       on_decided_called_ = true;

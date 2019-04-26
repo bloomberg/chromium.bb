@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_shell.h"
@@ -69,7 +68,7 @@ VrShellDelegate::~VrShellDelegate() {
   if (gvr_device)
     gvr_device->OnExitPresent();
   if (!on_present_result_callback_.is_null())
-    base::ResetAndReturn(&on_present_result_callback_).Run(false);
+    std::move(on_present_result_callback_).Run(false);
 }
 
 device::GvrDelegateProvider* VrShellDelegate::CreateVrShellDelegate() {
@@ -98,7 +97,7 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
   if (pending_successful_present_request_) {
     CHECK(!on_present_result_callback_.is_null());
     pending_successful_present_request_ = false;
-    base::ResetAndReturn(&on_present_result_callback_).Run(true);
+    std::move(on_present_result_callback_).Run(true);
   }
 
   if (pending_vr_start_action_) {
@@ -116,7 +115,7 @@ void VrShellDelegate::RemoveDelegate() {
   if (pending_successful_present_request_) {
     CHECK(!on_present_result_callback_.is_null());
     pending_successful_present_request_ = false;
-    base::ResetAndReturn(&on_present_result_callback_).Run(false);
+    std::move(on_present_result_callback_).Run(false);
   }
   SetInlineVrEnabled(true);
   device::GvrDevice* gvr_device = GetGvrDevice();
@@ -128,8 +127,7 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        jboolean success) {
   CHECK(!on_present_result_callback_.is_null());
-  base::ResetAndReturn(&on_present_result_callback_)
-      .Run(static_cast<bool>(success));
+  std::move(on_present_result_callback_).Run(static_cast<bool>(success));
 }
 
 void VrShellDelegate::RecordVrStartAction(
@@ -207,8 +205,7 @@ void VrShellDelegate::SendRequestPresentReply(
     return;
   }
 
-  base::ResetAndReturn(&request_present_response_callback_)
-      .Run(std::move(session));
+  std::move(request_present_response_callback_).Run(std::move(session));
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,

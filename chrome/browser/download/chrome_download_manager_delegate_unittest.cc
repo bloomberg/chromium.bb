@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -743,7 +744,7 @@ void VerifyFilePickerConfirmation(DownloadConfirmationResult expected_result,
                                   DownloadConfirmationResult result,
                                   const base::FilePath& virtual_path) {
   ASSERT_EQ(result, expected_result);
-  base::ResetAndReturn(&completion_closure).Run();
+  std::move(completion_closure).Run();
 }
 }  // namespace
 
