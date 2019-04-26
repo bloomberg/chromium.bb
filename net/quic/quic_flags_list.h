@@ -298,7 +298,7 @@ QUIC_FLAG(
 // received packet manager instead of the single received packet manager.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_uber_received_packet_manager,
-          false)
+          true)
 
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
