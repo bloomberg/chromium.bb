@@ -207,14 +207,20 @@ class FakePpdProvider : public PpdProvider {
                            ResolvePpdReferenceCallback cb) override {
     if (search_data.make_and_model.empty()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::NOT_FOUND,
-                                    Printer::PpdReference()));
+          FROM_HERE,
+          base::BindOnce(std::move(cb), PpdProvider::NOT_FOUND,
+                         Printer::PpdReference(), usb_manufacturer_));
     } else {
       Printer::PpdReference ret;
       ret.effective_make_and_model = search_data.make_and_model[0];
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ret));
+          FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ret,
+                                    "" /* usb_manufacturer */));
     }
+  }
+
+  void SetUsbManufacturer(const std::string& manufacturer) {
+    usb_manufacturer_ = manufacturer;
   }
 
   // These three functions are not used by CupsPrintersManager.
@@ -228,6 +234,7 @@ class FakePpdProvider : public PpdProvider {
 
  private:
   ~FakePpdProvider() override {}
+  std::string usb_manufacturer_;
 };
 
 // Expect that the printers in printers have the given ids, without
@@ -318,10 +325,23 @@ class CupsPrintersManagerTest : public testing::Test,
 // this test) be handled as a Discovered printer (because it has no make and
 // model information, and that's now the FakePpdProvider is set up to determine
 // whether or not something has a Ppd available).
-PrinterDetector::DetectedPrinter MakeDiscoveredPrinter(const std::string& id) {
+PrinterDetector::DetectedPrinter MakeDiscoveredPrinter(const std::string& id,
+                                                       const std::string& uri) {
   PrinterDetector::DetectedPrinter ret;
   ret.printer.set_id(id);
+  ret.printer.set_uri(uri);
   return ret;
+}
+
+// Calls MakeDiscoveredPrinter with empty uri.
+PrinterDetector::DetectedPrinter MakeDiscoveredPrinter(const std::string& id) {
+  return MakeDiscoveredPrinter(id, "" /* uri */);
+}
+
+// Calls MakeDiscoveredPrinter with the USB protocol as the uri.
+PrinterDetector::DetectedPrinter MakeUsbDiscoveredPrinter(
+    const std::string& id) {
+  return MakeDiscoveredPrinter(id, "usb:");
 }
 
 // Pseudo-constructor for inline creation of a DetectedPrinter that should (in
@@ -584,6 +604,30 @@ TEST_F(CupsPrintersManagerTest, GetPrinterUserNativePrintersDisabled) {
       manager_->GetPrinter("Enterprise");
   ASSERT_TRUE(enterprise_printer);
   EXPECT_EQ(enterprise_printer->id(), "Enterprise");
+}
+
+TEST_F(CupsPrintersManagerTest, SetUsbManufacturer) {
+  const std::string& expected_manufacturer = "HP";
+  ppd_provider_->SetUsbManufacturer(expected_manufacturer);
+  usb_detector_->AddDetections({MakeUsbDiscoveredPrinter("DiscoveredPrinter")});
+  scoped_task_environment_.RunUntilIdle();
+
+  ExpectPrintersInClassAre(CupsPrintersManager::kDiscovered,
+                           {"DiscoveredPrinter"});
+
+  EXPECT_EQ(expected_manufacturer,
+            manager_->GetPrinter("DiscoveredPrinter")->manufacturer());
+}
+
+TEST_F(CupsPrintersManagerTest, EmptyUsbManufacturer) {
+  usb_detector_->AddDetections({MakeUsbDiscoveredPrinter("DiscoveredPrinter")});
+  scoped_task_environment_.RunUntilIdle();
+
+  ExpectPrintersInClassAre(CupsPrintersManager::kDiscovered,
+                           {"DiscoveredPrinter"});
+
+  EXPECT_TRUE(
+      manager_->GetPrinter("DiscoveredPrinter")->manufacturer().empty());
 }
 
 }  // namespace

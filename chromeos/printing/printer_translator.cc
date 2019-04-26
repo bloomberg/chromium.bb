@@ -199,6 +199,7 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
     // entire host/path/query block is the printer address for USB.
     printer_info->SetString("printerAddress",
                             printer.uri().substr(strlen("usb://")));
+    printer_info->SetString("ppdManufacturer", printer.manufacturer());
   } else {
     printer_info->SetString("printerAddress",
                             PrinterAddress(uri.host(), uri.port()));

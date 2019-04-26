@@ -100,7 +100,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void OnPpdResolved(const std::string& callback_id,
                      base::Value info,
                      PpdProvider::CallbackResultCode res,
-                     const Printer::PpdReference& ppd_ref);
+                     const Printer::PpdReference& ppd_ref,
+                     const std::string& usb_manufacturer);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
 

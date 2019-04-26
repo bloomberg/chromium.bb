@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/printing/ppd_provider.h"
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -22,7 +24,6 @@
 #include "base/version.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/printing/ppd_cache.h"
-#include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_test_util.h"
@@ -152,8 +153,9 @@ class PpdProviderTest : public ::testing::Test {
 
   // Capture the result of a ResolveUsbIds() call.
   void CaptureResolvePpdReference(PpdProvider::CallbackResultCode code,
-                                  const Printer::PpdReference& ref) {
-    captured_resolve_ppd_references_.push_back({code, ref});
+                                  const Printer::PpdReference& ref,
+                                  const std::string& usb_manufacturer) {
+    captured_resolve_ppd_references_.push_back({code, ref, usb_manufacturer});
   }
 
   void CaptureReverseLookup(PpdProvider::CallbackResultCode code,
@@ -239,6 +241,7 @@ class PpdProviderTest : public ::testing::Test {
              [1592, "Some canonical reference"],
              [6535, "Some other canonical reference"]
             ])"},
+            {"metadata_v2/usb-03f0.json", ""},
             {"metadata_v2/usb-1234.json", ""},
             {"metadata_v2/manufacturers-en.json",
              R"([
@@ -315,7 +318,13 @@ class PpdProviderTest : public ::testing::Test {
   };
   std::vector<CapturedResolvePpdResults> captured_resolve_ppd_;
 
-  std::vector<std::pair<PpdProvider::CallbackResultCode, Printer::PpdReference>>
+  struct CapturedResolvePpdReferenceResults {
+    PpdProvider::CallbackResultCode code;
+    Printer::PpdReference ref;
+    std::string usb_manufacturer;
+  };
+
+  std::vector<CapturedResolvePpdReferenceResults>
       captured_resolve_ppd_references_;
 
   struct CapturedReverseLookup {
@@ -416,15 +425,13 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(static_cast<size_t>(3), captured_resolve_ppd_references_.size());
-  EXPECT_EQ(PpdProvider::NOT_FOUND, captured_resolve_ppd_references_[0].first);
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[1].first);
-  EXPECT_EQ(
-      "printer_a_ref",
-      captured_resolve_ppd_references_[1].second.effective_make_and_model);
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[2].first);
-  EXPECT_EQ(
-      "printer_a_ref",
-      captured_resolve_ppd_references_[2].second.effective_make_and_model);
+  EXPECT_EQ(PpdProvider::NOT_FOUND, captured_resolve_ppd_references_[0].code);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[1].code);
+  EXPECT_EQ("printer_a_ref",
+            captured_resolve_ppd_references_[1].ref.effective_make_and_model);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[2].code);
+  EXPECT_EQ("printer_a_ref",
+            captured_resolve_ppd_references_[2].ref.effective_make_and_model);
 }
 
 // Test successful and unsuccessful usb resolutions.
@@ -447,15 +454,15 @@ TEST_F(PpdProviderTest, UsbResolution) {
       search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
                                   base::Unretained(this)));
 
-  // Extant vendor id, nonexistant device id, should get a NOT_FOUND
+  // Vendor id that exists, nonexistent device id, should get a NOT_FOUND.
   search_data.usb_vendor_id = 0x031f;
   search_data.usb_product_id = 8162;
   provider->ResolvePpdReference(
       search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
                                   base::Unretained(this)));
 
-  // Nonexistant vendor id, should get a NOT_FOUND in the real world, but
-  // the URL interceptor we're using considers all nonexistant files to
+  // Nonexistent vendor id, should get a NOT_FOUND in the real world, but
+  // the URL interceptor we're using considers all nonexistent files to
   // be effectively CONNECTION REFUSED, so we just check for non-success
   // on this one.
   search_data.usb_vendor_id = 0x1234;
@@ -466,14 +473,14 @@ TEST_F(PpdProviderTest, UsbResolution) {
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(captured_resolve_ppd_references_.size(), static_cast<size_t>(4));
-  EXPECT_EQ(captured_resolve_ppd_references_[0].first, PpdProvider::SUCCESS);
-  EXPECT_EQ(captured_resolve_ppd_references_[0].second.effective_make_and_model,
+  EXPECT_EQ(captured_resolve_ppd_references_[0].code, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_ppd_references_[0].ref.effective_make_and_model,
             "Some canonical reference");
-  EXPECT_EQ(captured_resolve_ppd_references_[1].first, PpdProvider::SUCCESS);
-  EXPECT_EQ(captured_resolve_ppd_references_[1].second.effective_make_and_model,
+  EXPECT_EQ(captured_resolve_ppd_references_[1].code, PpdProvider::SUCCESS);
+  EXPECT_EQ(captured_resolve_ppd_references_[1].ref.effective_make_and_model,
             "Some other canonical reference");
-  EXPECT_EQ(captured_resolve_ppd_references_[2].first, PpdProvider::NOT_FOUND);
-  EXPECT_FALSE(captured_resolve_ppd_references_[3].first ==
+  EXPECT_EQ(captured_resolve_ppd_references_[2].code, PpdProvider::NOT_FOUND);
+  EXPECT_FALSE(captured_resolve_ppd_references_[3].code ==
                PpdProvider::SUCCESS);
 }
 
@@ -751,10 +758,9 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
 
   // Check PpdProvider::ResolvePpdReference
   ASSERT_EQ(1UL, captured_resolve_ppd_references_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[0].first);
-  EXPECT_EQ(
-      "printer_a_ref",
-      captured_resolve_ppd_references_[0].second.effective_make_and_model);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[0].code);
+  EXPECT_EQ("printer_a_ref",
+            captured_resolve_ppd_references_[0].ref.effective_make_and_model);
 }
 
 // Verifies that we can extract the Manufacturer and Model selectison for a
@@ -940,6 +946,49 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_result.success, true);
   EXPECT_EQ(captured_find_result.contents, disk_ppd_contents);
+}
+
+// Test resolving usb manufacturer when failed to resolve PpdReference.
+TEST_F(PpdProviderTest, ResolveUsbManufacturer) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en", false);
+
+  PrinterSearchData search_data;
+
+  // Vendor id that exists, nonexistent device id, should get a NOT_FOUND.
+  // Although this is an unsupported printer model, we can still expect to get
+  // the manufacturer name.
+  search_data.usb_vendor_id = 0x03f0;
+  search_data.usb_product_id = 9999;
+  provider->ResolvePpdReference(
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
+
+  // Nonexistent vendor id, should get a NOT_FOUND in the real world, but
+  // the URL interceptor we're using considers all nonexistent files to
+  // be effectively CONNECTION REFUSED, so we just check for non-success
+  // on this one. We should also not be able to get a manufacturer name from a
+  // nonexistent vendor id.
+  search_data.usb_vendor_id = 0x1234;
+  search_data.usb_product_id = 1782;
+  provider->ResolvePpdReference(
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(static_cast<size_t>(2), captured_resolve_ppd_references_.size());
+  // Was able to find the printer manufactuer but unable to find the printer
+  // model should result in a NOT_FOUND.
+  EXPECT_EQ(PpdProvider::NOT_FOUND, captured_resolve_ppd_references_[0].code);
+  // Failed to grab the PPD for a USB printer, but should still be able to grab
+  // its manufacturer name.
+  EXPECT_EQ("HP", captured_resolve_ppd_references_[0].usb_manufacturer);
+
+  // Unable to find the PPD file should result in a failure.
+  EXPECT_FALSE(captured_resolve_ppd_references_[1].code ==
+               PpdProvider::SUCCESS);
+  // Unknown vendor id should result in an empty manufacturer string.
+  EXPECT_TRUE(captured_resolve_ppd_references_[1].usb_manufacturer.empty());
 }
 
 }  // namespace

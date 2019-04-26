@@ -573,7 +573,8 @@ void CupsPrintersHandler::OnAutoconfQueried(
 void CupsPrintersHandler::OnPpdResolved(const std::string& callback_id,
                                         base::Value info,
                                         PpdProvider::CallbackResultCode res,
-                                        const Printer::PpdReference& ppd_ref) {
+                                        const Printer::PpdReference& ppd_ref,
+                                        const std::string& usb_manufacturer) {
   if (res != PpdProvider::CallbackResultCode::SUCCESS) {
     info.SetKey("ppdReferenceResolved", base::Value(false));
     ResolveJavascriptCallback(base::Value(callback_id), info);

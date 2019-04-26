@@ -379,6 +379,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
           if (!printer.supports_ippusb()) {
             // We couldn't figure out this printer, so it's in the discovered
             // class.
+            if (printer.IsUsbProtocol()) {
+              printer.set_manufacturer(
+                  ppd_resolution_tracker_.GetManufacturer(detected_printer_id));
+            }
             printers_[kDiscovered].push_back(printer);
             continue;
           }
@@ -404,7 +408,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         // PpdReference.  If there's not already an outstanding request for one,
         // start one.  When the request comes back, we'll rerun classification
         // and then should be able to figure out where this printer belongs.
-
         if (!ppd_resolution_tracker_.IsResolutionPending(detected_printer_id)) {
           ppd_resolution_tracker_.MarkResolutionPending(detected_printer_id);
           ppd_provider_->ResolvePpdReference(
@@ -449,12 +452,16 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Callback invoked on completion of PpdProvider::ResolvePpdReference.
   void ResolvePpdReferenceDone(const std::string& printer_id,
                                PpdProvider::CallbackResultCode code,
-                               const Printer::PpdReference& ref) {
+                               const Printer::PpdReference& ref,
+                               const std::string& usb_manufacturer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (code == PpdProvider::SUCCESS) {
       ppd_resolution_tracker_.MarkResolutionSuccessful(printer_id, ref);
     } else {
       ppd_resolution_tracker_.MarkResolutionFailed(printer_id);
+      if (!usb_manufacturer.empty()) {
+        ppd_resolution_tracker_.SetManufacturer(printer_id, usb_manufacturer);
+      }
     }
     RebuildDetectedLists();
   }
