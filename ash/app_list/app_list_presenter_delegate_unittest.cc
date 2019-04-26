@@ -101,26 +101,23 @@ void FlingUpOrDown(ui::test::EventGenerator* generator,
 
 }  // namespace
 
-class AppListPresenterDelegateTest : public AshTestBase,
-                                     public testing::WithParamInterface<bool> {
+class AppListPresenterDelegateZeroStateTest
+    : public AshTestBase,
+      public testing::WithParamInterface<bool> {
  public:
-  AppListPresenterDelegateTest() = default;
-  ~AppListPresenterDelegateTest() override = default;
+  AppListPresenterDelegateZeroStateTest() = default;
+  ~AppListPresenterDelegateZeroStateTest() override = default;
 
   // testing::Test:
   void SetUp() override {
     app_list::AppListView::SetShortAnimationForTesting(true);
     AshTestBase::SetUp();
 
-    // Zeros state changes expected UI behavior. Most test cases in this suite
-    // are the expected UI behavior with zero state being disabled.
-    // TODO(jennyz): Add new test cases for zero state, crbug.com/925195.
-    scoped_feature_list_.InitAndDisableFeature(
-        app_list_features::kEnableZeroStateSuggestions);
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
   }
 
+  // testing::Test:
   void TearDown() override {
     AshTestBase::TearDown();
     app_list::AppListView::SetShortAnimationForTesting(false);
@@ -142,6 +139,27 @@ class AppListPresenterDelegateTest : public AshTestBase,
 
   app_list::AppListView* GetAppListView() {
     return GetAppListTestHelper()->GetAppListView();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateZeroStateTest);
+};
+
+class AppListPresenterDelegateTest
+    : public AppListPresenterDelegateZeroStateTest {
+ public:
+  AppListPresenterDelegateTest() = default;
+  ~AppListPresenterDelegateTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    AppListPresenterDelegateZeroStateTest::SetUp();
+
+    // Zeros state changes expected UI behavior. Most test cases in this suite
+    // are the expected UI behavior with zero state being disabled.
+    // TODO(jennyz): Add new test cases for zero state, crbug.com/925195.
+    scoped_feature_list_.InitAndDisableFeature(
+        app_list_features::kEnableZeroStateSuggestions);
   }
 
  private:
@@ -212,6 +230,24 @@ class PopulatedAppListTest : public AshTestBase,
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
 INSTANTIATE_TEST_SUITE_P(, AppListPresenterDelegateTest, testing::Bool());
+
+// Verifies that context menu click should not activate the search box
+// (see https://crbug.com/941428).
+TEST_F(AppListPresenterDelegateZeroStateTest, RightClickSearchBoxInPeeking) {
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  app_list::AppListView* app_list_view = GetAppListView();
+  gfx::Rect app_list_bounds = app_list_view->GetBoundsInScreen();
+  ASSERT_EQ(mojom::AppListViewState::kPeeking, app_list_view->app_list_state());
+
+  // Right click the search box and checks the following things:
+  // (1) AppListView's bounds in screen does not change.
+  // (2) AppListView is still in Peeking state.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetPointInsideSearchbox());
+  generator->PressRightButton();
+  EXPECT_EQ(app_list_bounds, app_list_view->GetBoundsInScreen());
+  EXPECT_EQ(mojom::AppListViewState::kPeeking, app_list_view->app_list_state());
+}
 
 TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
   InitializeAppsGrid();
