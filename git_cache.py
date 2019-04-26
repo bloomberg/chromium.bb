@@ -607,9 +607,6 @@ class Mirror(object):
     # The folder is <git number>
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
-    # Run Garbage Collect to compress packfile.
-    self.RunGit(['gc', '--prune=all'])
-
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
     src_name = self.mirror_path
@@ -630,6 +627,9 @@ class Mirror(object):
     if not (ls_out == '' and ls_out_ready == ''):
       print('Cache %s already exists' % dest_name)
       return
+
+    # Run Garbage Collect to compress packfile.
+    self.RunGit(['gc', '--prune=all'])
 
     gsutil.call('-m', 'cp', '-r', src_name, dest_name)
 
