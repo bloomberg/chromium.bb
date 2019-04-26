@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/rounded_label_widget.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -34,10 +35,12 @@ class RoundedLabelView : public views::View {
     layer()->SetColor(background_color);
     layer()->SetFillsBoundsOpaquely(false);
 
-    const std::array<uint32_t, 4> kRadii = {rounding_dp, rounding_dp,
-                                            rounding_dp, rounding_dp};
-    layer()->SetRoundedCornerRadius(kRadii);
-    layer()->SetIsFastRoundedCorner(true);
+    if (ash::features::ShouldUseShaderRoundedCorner()) {
+      const std::array<uint32_t, 4> kRadii = {rounding_dp, rounding_dp,
+                                              rounding_dp, rounding_dp};
+      layer()->SetRoundedCornerRadius(kRadii);
+      layer()->SetIsFastRoundedCorner(true);
+    }
 
     label_ = new views::Label(l10n_util::GetStringUTF16(message_id),
                               views::style::CONTEXT_LABEL);
