@@ -153,10 +153,10 @@ def wasm_llvm(c):
 @config_ctx()
 def emscripten_releases(c):
   s = c.solutions.add()
-  s.name = 'emscripten_releases'
+  s.name = 'emscripten-releases'
   s.url = ChromiumGitURL(c, 'emscripten-releases.git')
   m = c.got_revision_mapping
-  m['emscripten_releases'] = 'got_revision'
+  m['emscripten-releases'] = 'got_revision'
 
 @config_ctx()
 def gyp(c):
