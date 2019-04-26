@@ -20,7 +20,7 @@ class SwitchAccessPreferences {
      * User preferences, initially set to the default preference values.
      * @private
      */
-    this.preferences_ = Object.assign({}, DEFAULT_PREFERENCES);
+    this.preferences_ = Object.assign({}, SAConstants.DEFAULT_PREFERENCES);
 
     this.init_();
   }
@@ -85,8 +85,8 @@ class SwitchAccessPreferences {
    * Set the value of the preference |key| to |value| in |chrome.storage.sync|.
    * |this.preferences_| is not set until |handleStorageChange_|.
    *
-   * @param {string} key
-   * @param {boolean|string|number} value
+   * @param {SAConstants.Preference} key
+   * @param {boolean|number} value
    */
   setPreference(key, value) {
     let preference = {};
@@ -95,10 +95,10 @@ class SwitchAccessPreferences {
   }
 
   /**
-   * Get the value of type 'boolean' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'boolean'.
+   * Get the boolean value for the given key. Will throw a type error if the
+   * value associated with |key| is not a boolean.
    *
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {boolean}
    */
   getBooleanPreference(key) {
@@ -110,10 +110,10 @@ class SwitchAccessPreferences {
   }
 
   /**
-   * Get the value of type 'number' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'number'.
+   * Get the number value for the given key. Will throw a type error if the
+   * value associated with |key| is not a number.
    *
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {number}
    */
   getNumberPreference(key) {
@@ -140,11 +140,3 @@ class SwitchAccessPreferences {
   }
 }
 
-/**
- * The default value of all preferences besides command keyboard bindings.
- * All preferences should be primitives to prevent changes to default values.
- */
-const DEFAULT_PREFERENCES = {
-  'enableAutoScan': false,
-  'autoScanTime': 800
-};

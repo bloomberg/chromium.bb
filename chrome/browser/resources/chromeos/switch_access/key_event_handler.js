@@ -92,10 +92,12 @@ class KeyEventHandler {
   /**
    * Return the key code that |command| maps to.
    *
-   * @param {string} command
+   * @param {SAConstants.Command} command
    * @return {number}
    */
   keyCodeFor_(command) {
-    return this.switchAccess_.getNumberPreference(command);
+    // All commands are preferences (see switch_access_constants.js).
+    const preference = /** @type {SAConstants.Preference} */ (command);
+    return this.switchAccess_.getNumberPreference(preference);
   }
 }

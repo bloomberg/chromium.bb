@@ -27,13 +27,18 @@ class SwitchAccessOptions {
     chrome.storage.onChanged.addListener(this.handleStorageChange_.bind(this));
 
     document.getElementById('enableAutoScan').checked =
-        this.switchAccess_.getBooleanPreference('enableAutoScan');
+        this.switchAccess_.getBooleanPreference(
+            SAConstants.Preference.ENABLE_AUTO_SCAN);
     document.getElementById('autoScanTime').value =
-        this.switchAccess_.getNumberPreference('autoScanTime') / 1000;
+        this.switchAccess_.getNumberPreference(
+            SAConstants.Preference.AUTO_SCAN_TIME) /
+        1000;
 
     for (const command of this.switchAccess_.getCommands()) {
+      // All commands are preferences (see switch_access_constants.js).
+      const pref = /** @type {SAConstants.Preference} */ (command);
       document.getElementById(command).value =
-          String.fromCharCode(this.switchAccess_.getNumberPreference(command));
+          String.fromCharCode(this.switchAccess_.getNumberPreference(pref));
     }
   }
 

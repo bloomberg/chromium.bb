@@ -94,6 +94,30 @@ SAConstants.Command = {
 };
 
 /**
+ * Preferences that are configurable in Switch Access.
+ * @enum {string}
+ */
+SAConstants.Preference = {
+  AUTO_SCAN_TIME: 'autoScanTime',
+  ENABLE_AUTO_SCAN: 'enableAutoScan'
+};
+// Every available command is also a preference, to store the switch assigned.
+Object.assign(SAConstants.Preference, SAConstants.Command);
+
+/**
+ * The default value, for preferences with a default.
+ * All preferences should be primitives to prevent changes to default values.
+ *
+ * Note: All preferences set below should be in the Preference enum (above).
+ * @type {Object}
+ * @const
+ */
+SAConstants.DEFAULT_PREFERENCES = {
+  'autoScanTime': 800,
+  'enableAutoScan': false
+};
+
+/**
  * Actions available in the Switch Access Menu.
  * @enum {string}
  * @const
