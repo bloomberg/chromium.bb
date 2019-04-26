@@ -958,6 +958,7 @@ class SyncManagerTest : public testing::Test,
     args.change_delegate = this;
     if (!enable_local_sync_backend)
       args.authenticated_account_id = "foo@bar.com";
+    args.cache_guid = "fake_cache_guid";
     args.invalidator_client_id = "fake_invalidator_client_id";
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();

@@ -31,6 +31,8 @@ namespace syncer {
 namespace syncable {
 namespace {
 
+const char kTestCacheGuid[] = "test_cache_guid";
+
 // A handler that simply sets |catastrophic_error_handler_was_called| to true.
 void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
   *catastrophic_error_handler_was_called = true;
@@ -3584,7 +3586,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
   ASSERT_TRUE(chip_bag.SerializeToString(&serialized_chip_bag));
-  EXPECT_EQ(serialized_chip_bag, load_info.kernel_info.bag_of_chips);
+  EXPECT_EQ(serialized_chip_bag, load_info.kernel_info.legacy_bag_of_chips);
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
@@ -3959,7 +3961,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   MetahandleSet metahandles_to_purge;
 
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+                                    GetDatabasePath());
     ASSERT_EQ(OPENED_EXISTING, dbs.Load(&handles_map, &delete_journals,
                                         &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
@@ -4258,9 +4261,9 @@ class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
 
 OnDiskDirectoryBackingStoreForTest::OnDiskDirectoryBackingStoreForTest(
     const std::string& dir_name,
-    const base::FilePath& backing_filepath) :
-  OnDiskDirectoryBackingStore(dir_name, backing_filepath),
-  first_open_failed_(false) { }
+    const base::FilePath& backing_filepath)
+    : OnDiskDirectoryBackingStore(dir_name, kTestCacheGuid, backing_filepath),
+      first_open_failed_(false) {}
 
 OnDiskDirectoryBackingStoreForTest::~OnDiskDirectoryBackingStoreForTest() { }
 
@@ -4283,7 +4286,8 @@ bool OnDiskDirectoryBackingStoreForTest::DidFailFirstOpenAttempt() {
 // due to read-only file system), is not tested here.
 TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+                                    GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
 
@@ -4305,7 +4309,8 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
 
 TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+                                    GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
 
@@ -4376,16 +4381,6 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   metahandles_to_purge.clear();
   dbs.LoadEntries(&handles_map, &metahandles_to_purge);
   EXPECT_EQ(0U, handles_map.size());
-}
-
-TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
-  const std::string& guid1 = TestDirectoryBackingStore::GenerateCacheGUID();
-  const std::string& guid2 = TestDirectoryBackingStore::GenerateCacheGUID();
-  EXPECT_EQ(24U, guid1.size());
-  EXPECT_EQ(24U, guid2.size());
-  // In theory this test can fail, but it won't before the universe
-  // dies of heat death.
-  EXPECT_NE(guid1, guid2);
 }
 
 TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {

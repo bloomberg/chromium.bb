@@ -248,9 +248,7 @@ class SyncManager {
     // Define the polling interval. Must not be zero.
     base::TimeDelta poll_interval;
 
-    // Non-authoritative values from prefs, to be compared with the Directory's
-    // counterparts.
-    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    // Initial authoritative values (usually read from prefs).
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;

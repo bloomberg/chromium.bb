@@ -65,7 +65,9 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
 
 TestBackingStore::TestBackingStore(const std::string& dir_name,
                                    const base::FilePath& backing_filepath)
-    : OnDiskDirectoryBackingStore(dir_name, backing_filepath),
+    : OnDiskDirectoryBackingStore(dir_name,
+                                  "test_cache_guid",
+                                  backing_filepath),
       fail_save_changes_(false) {}
 
 TestBackingStore::~TestBackingStore() {}
@@ -288,41 +290,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, false);
 }
 
-TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
-  dir()->set_store_birthday("Jan 31st");
-  const char* const bag_of_chips_array = "\0bag of chips";
-  const std::string bag_of_chips_string =
-      std::string(bag_of_chips_array, sizeof(bag_of_chips_array));
-  dir()->set_bag_of_chips(bag_of_chips_string);
-  {
-    ReadTransaction trans(FROM_HERE, dir().get());
-    EXPECT_EQ("Jan 31st", dir()->store_birthday());
-    EXPECT_EQ(bag_of_chips_string, dir()->bag_of_chips());
-  }
-  dir()->set_store_birthday("April 10th");
-  const char* const bag_of_chips2_array = "\0bag of chips2";
-  const std::string bag_of_chips2_string =
-      std::string(bag_of_chips2_array, sizeof(bag_of_chips2_array));
-  dir()->set_bag_of_chips(bag_of_chips2_string);
-  dir()->SaveChanges();
-  {
-    ReadTransaction trans(FROM_HERE, dir().get());
-    EXPECT_EQ("April 10th", dir()->store_birthday());
-    EXPECT_EQ(bag_of_chips2_string, dir()->bag_of_chips());
-  }
-  const char* const bag_of_chips3_array = "\0bag of chips3";
-  const std::string bag_of_chips3_string =
-      std::string(bag_of_chips3_array, sizeof(bag_of_chips3_array));
-  dir()->set_bag_of_chips(bag_of_chips3_string);
-  // Restore the directory from disk.  Make sure that nothing's changed.
-  SaveAndReloadDir();
-  {
-    ReadTransaction trans(FROM_HERE, dir().get());
-    EXPECT_EQ("April 10th", dir()->store_birthday());
-    EXPECT_EQ(bag_of_chips3_string, dir()->bag_of_chips());
-  }
-}
-
 TEST_F(OnDiskSyncableDirectoryTest,
        TestSimpleFieldsPreservedDuringSaveChanges) {
   Id update_id = TestIdFactory::FromNumber(1);
@@ -350,7 +317,8 @@ TEST_F(OnDiskSyncableDirectoryTest,
 
   dir()->SaveChanges();
   dir() = std::make_unique<Directory>(
-      std::make_unique<OnDiskDirectoryBackingStore>(kDirectoryName, file_path_),
+      std::make_unique<OnDiskDirectoryBackingStore>(
+          kDirectoryName, "test_cache_guid", file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
       base::Closure(), nullptr, nullptr);
 
@@ -562,10 +530,10 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
       temp_dir_.GetPath().Append(Directory::kSyncDatabaseFilename);
 
   {
-    Directory dir(
-        std::make_unique<OnDiskDirectoryBackingStore>("ScopeTest", path),
-        MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr,
-        nullptr);
+    Directory dir(std::make_unique<OnDiskDirectoryBackingStore>(
+                      "ScopeTest", "test_cache_guid", path),
+                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
+                  nullptr, nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED_NEW);

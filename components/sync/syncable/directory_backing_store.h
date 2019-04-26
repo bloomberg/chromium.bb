@@ -53,7 +53,8 @@ extern const int32_t kCurrentPageSizeKB;
 // OnDiskDirectoryBackingStore.
 class DirectoryBackingStore {
  public:
-  explicit DirectoryBackingStore(const std::string& dir_name);
+  DirectoryBackingStore(const std::string& dir_name,
+                        const std::string& cache_guid);
   virtual ~DirectoryBackingStore();
 
   // Loads and drops all currently persisted meta entries into |handles_map|
@@ -107,6 +108,8 @@ class DirectoryBackingStore {
   bool ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
                          const std::string& dump_name);
 
+  const std::string& cache_guid() const { return cache_guid_; }
+
  protected:
   // For test classes.
   DirectoryBackingStore(const std::string& dir_name, sql::Database* connection);
@@ -153,8 +156,6 @@ class DirectoryBackingStore {
   // ID, rather than the enum value.
   static ModelType ModelIdToModelTypeEnum(const void* data, int length);
   static std::string ModelTypeEnumToModelId(ModelType model_type);
-
-  static std::string GenerateCacheGUID();
 
   // Checks that the references between sync nodes is consistent.
   static bool VerifyReferenceIntegrity(
@@ -259,6 +260,7 @@ class DirectoryBackingStore {
                                  sql::Statement* save_statement);
 
   const std::string dir_name_;
+  const std::string cache_guid_;
   const int database_page_size_;
 
   std::unique_ptr<sql::Database> db_;

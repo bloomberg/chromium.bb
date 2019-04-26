@@ -77,9 +77,7 @@ class SyncEngine : public ModelTypeConfigurer {
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
     std::map<ModelType, int64_t> invalidation_versions;
 
-    // Non-authoritative values from prefs, to be compared with the Directory's
-    // counterparts.
-    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    // Initial authoritative values (usually read from prefs).
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;

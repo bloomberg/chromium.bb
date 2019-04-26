@@ -30,7 +30,8 @@ void TestDirectorySetterUpper::SetUp() {
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
   directory_ = std::make_unique<syncable::Directory>(
-      std::make_unique<syncable::InMemoryDirectoryBackingStore>(name_),
+      std::make_unique<syncable::InMemoryDirectoryBackingStore>(
+          name_, "kTestCacheGuid"),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
       &encryption_handler_, encryption_handler_.cryptographer());
   ASSERT_EQ(syncable::OPENED_NEW,

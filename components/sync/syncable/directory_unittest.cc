@@ -1825,10 +1825,10 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 // DirectoryBackingStore error is detected.
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
-  Directory dir(
-      std::make_unique<InMemoryDirectoryBackingStore>("catastrophic_error"),
-      MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()), base::Closure(),
-      nullptr, nullptr);
+  Directory dir(std::make_unique<InMemoryDirectoryBackingStore>(
+                    "catastrophic_error", "test_cache_guid"),
+                MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
+                base::Closure(), nullptr, nullptr);
   ASSERT_EQ(OPENED_NEW, dir.Open(kDirectoryName, directory_change_delegate(),
                                  NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

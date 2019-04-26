@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -14,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -38,8 +40,7 @@
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/syncable/base_transaction.h"
-#include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -120,6 +121,14 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
     type_map[type] = std::move(controller);
   }
   return type_map;
+}
+
+std::string GenerateCacheGUID() {
+  // Generate a GUID with 128 bits of randomness.
+  const int kGuidBytes = 128 / 8;
+  std::string guid;
+  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
+  return guid;
 }
 
 }  // namespace
@@ -486,6 +495,10 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.restored_keystore_key_for_bootstrapping =
       sync_prefs_.GetKeystoreEncryptionBootstrapToken();
   params.cache_guid = sync_prefs_.GetCacheGuid();
+  if (params.cache_guid.empty()) {
+    params.cache_guid = GenerateCacheGUID();
+    sync_prefs_.SetCacheGuid(params.cache_guid);
+  }
   params.birthday = sync_prefs_.GetBirthday();
   params.bag_of_chips = sync_prefs_.GetBagOfChips();
   params.engine_components_factory =
@@ -841,15 +854,6 @@ void ProfileSyncService::OnEngineInitialized(
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
-  // Copy some data to preferences to be able to one day migrate away from the
-  // directory.
-  UserShare* user_share = GetUserShare();
-  if (user_share && user_share->directory.get()) {
-    sync_prefs_.SetCacheGuid(user_share->directory->cache_guid());
-    sync_prefs_.SetBirthday(user_share->directory->store_birthday());
-    sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
-  }
-
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
@@ -1191,6 +1195,11 @@ SyncClient* ProfileSyncService::GetSyncClientForTest() {
   return sync_client_.get();
 }
 
+// static
+std::string ProfileSyncService::GenerateCacheGUIDForTest() {
+  return GenerateCacheGUID();
+}
+
 void ProfileSyncService::AddObserver(SyncServiceObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
@@ -1252,6 +1261,8 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   configure_context.reason = reason;
   configure_context.configuration_start_time = base::Time::Now();
 
+  DCHECK(!configure_context.cache_guid.empty());
+
   if (!migrator_) {
     // We create the migrator at the same time.
     migrator_ = std::make_unique<BackendMigrator>(
@@ -1269,6 +1280,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
 
   DCHECK(!configure_context.authenticated_account_id.empty() ||
          IsLocalSyncEnabled());
+  DCHECK(!configure_context.cache_guid.empty());
   DCHECK_NE(configure_context.reason, CONFIGURE_REASON_UNKNOWN);
 
   // Note: When local Sync is enabled, then we want full-sync mode (not just
@@ -1816,11 +1828,8 @@ void ProfileSyncService::RemoveClientFromServer() const {
     return;
   }
   const std::string cache_guid = sync_prefs_.GetCacheGuid();
-  std::string birthday;
-  UserShare* user_share = GetUserShare();
-  if (user_share && user_share->directory.get()) {
-    birthday = user_share->directory->store_birthday();
-  }
+  const std::string birthday = sync_prefs_.GetBirthday();
+  DCHECK(!cache_guid.empty());
   const std::string& access_token = auth_manager_->access_token();
   if (!access_token.empty() && !birthday.empty()) {
     sync_stopped_reporter_->ReportSyncStopped(access_token, cache_guid,

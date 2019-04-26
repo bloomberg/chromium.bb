@@ -118,8 +118,8 @@ void RecordConsistencyBetweenDirectoryAndPrefs(
   DCHECK(open_result == syncable::OPENED_EXISTING ||
          open_result == syncable::OPENED_NEW);
   if (open_result == syncable::OPENED_EXISTING) {
-    directory_cache_guid = directory->cache_guid();
-    directory_birthday = directory->store_birthday();
+    directory_cache_guid = directory->legacy_cache_guid_for_uma();
+    directory_birthday = directory->legacy_store_birthday_for_uma();
   }
 
   const StringConsistency cache_guid_consistency =
@@ -260,6 +260,7 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
 void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!initialized_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!args->cache_guid.empty());
   DCHECK(args->post_factory);
   DCHECK(!args->poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
@@ -298,7 +299,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->engine_components_factory->BuildDirectoryBackingStore(
           EngineComponentsFactory::STORAGE_ON_DISK,
-          args->authenticated_account_id, absolute_db_path);
+          args->authenticated_account_id, args->cache_guid, absolute_db_path);
 
   DCHECK(backing_store);
   share_.directory = std::make_unique<syncable::Directory>(
@@ -356,7 +357,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   cycle_context_ = args->engine_components_factory->BuildContext(
       connection_manager_.get(), directory(), args->extensions_activity,
       listeners, &debug_info_event_listener_, model_type_registry_.get(),
-      args->invalidator_client_id, args->poll_interval);
+      args->invalidator_client_id, args->birthday, args->bag_of_chips,
+      args->poll_interval);
   scheduler_ = args->engine_components_factory->BuildScheduler(
       name_, cycle_context_.get(), args->cancelation_signal,
       args->enable_local_sync_backend);

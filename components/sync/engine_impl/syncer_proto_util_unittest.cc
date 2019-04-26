@@ -122,6 +122,8 @@ class SyncerProtoUtilTest : public testing::Test {
         /*model_type_registry=*/nullptr,
         /*keystore_encryption_enabled=*/false,
         /*invalidator_client_id=*/"",
+        /*birthday=*/"",
+        /*bag_of_chips=*/"",
         /*poll_internal=*/base::TimeDelta::FromSeconds(1));
   }
 

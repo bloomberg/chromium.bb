@@ -8,7 +8,7 @@ namespace syncer {
 namespace syncable {
 
 InvalidDirectoryBackingStore::InvalidDirectoryBackingStore()
-    : DirectoryBackingStore("some_fake_user") {}
+    : DirectoryBackingStore("some_fake_user", "some_fake_cache_guid") {}
 
 InvalidDirectoryBackingStore::~InvalidDirectoryBackingStore() {}
 

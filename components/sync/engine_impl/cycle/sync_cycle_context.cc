@@ -18,11 +18,15 @@ SyncCycleContext::SyncCycleContext(
     ModelTypeRegistry* model_type_registry,
     bool keystore_encryption_enabled,
     const std::string& invalidator_client_id,
+    const std::string& birthday,
+    const std::string& bag_of_chips,
     base::TimeDelta poll_interval)
     : connection_manager_(connection_manager),
       directory_(directory),
       extensions_activity_(extensions_activity),
       notifications_enabled_(false),
+      birthday_(birthday),
+      bag_of_chips_(bag_of_chips),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       debug_info_getter_(debug_info_getter),
       model_type_registry_(model_type_registry),
@@ -44,19 +48,18 @@ ModelTypeSet SyncCycleContext::GetEnabledTypes() const {
 }
 
 void SyncCycleContext::set_birthday(const std::string& birthday) {
-  directory_->set_store_birthday(birthday);
-}
-
-std::string SyncCycleContext::birthday() const {
-  return directory_->store_birthday();
+  DCHECK(birthday_.empty());
+  birthday_ = birthday;
+  // Persist the value in Directory as well, in case recent code changes are
+  // reverted and we start reading from Directory again.
+  directory_->set_legacy_store_birthday(birthday);
 }
 
 void SyncCycleContext::set_bag_of_chips(const std::string& bag_of_chips) {
-  directory_->set_bag_of_chips(bag_of_chips);
-}
-
-std::string SyncCycleContext::bag_of_chips() const {
-  return directory_->bag_of_chips();
+  bag_of_chips_ = bag_of_chips;
+  // Persist the value in Directory as well, in case recent code changes are
+  // reverted and we start reading from Directory again.
+  directory_->set_legacy_bag_of_chips(bag_of_chips);
 }
 
 }  // namespace syncer

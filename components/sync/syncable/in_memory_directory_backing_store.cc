@@ -8,8 +8,9 @@ namespace syncer {
 namespace syncable {
 
 InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
-    const std::string& dir_name)
-    : DirectoryBackingStore(dir_name) {}
+    const std::string& dir_name,
+    const std::string& cache_guid)
+    : DirectoryBackingStore(dir_name, cache_guid) {}
 
 DirOpenResult InMemoryDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,
