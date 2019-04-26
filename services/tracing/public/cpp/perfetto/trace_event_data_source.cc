@@ -83,9 +83,6 @@ TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
 
 void TraceEventMetadataSource::GenerateMetadata(
     std::unique_ptr<perfetto::TraceWriter> trace_writer) {
-  if (privacy_filtering_enabled_) {
-    return;
-  }
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
   auto trace_packet = trace_writer->NewTracePacket();
@@ -210,17 +207,15 @@ void TraceEventDataSource::UnregisterFromTraceLog() {
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
 }
 
-void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
+void TraceEventDataSource::SetupStartupTracing() {
   {
     base::AutoLock lock(lock_);
     // No need to do anything if startup tracing has already been set,
     // or we know Perfetto has already been setup.
     if (startup_writer_registry_ || producer_client_) {
-      DCHECK(!privacy_filtering_enabled || privacy_filtering_enabled_);
       return;
     }
 
-    privacy_filtering_enabled_ = privacy_filtering_enabled;
     startup_writer_registry_ =
         std::make_unique<perfetto::StartupTraceWriterRegistry>();
   }
@@ -230,18 +225,12 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
 void TraceEventDataSource::StartTracing(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
+  privacy_filtering_enabled_ =
+      data_source_config.chrome_config().privacy_filtering_enabled();
+
   std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
-
-    bool should_enable_filtering =
-        data_source_config.chrome_config().privacy_filtering_enabled();
-    if (should_enable_filtering) {
-      CHECK(!startup_writer_registry_ || privacy_filtering_enabled_)
-          << "Unexpected StartTracing received when startup tracing is "
-             "running.";
-    }
-    privacy_filtering_enabled_ = should_enable_filtering;
 
     DCHECK(!producer_client_);
     producer_client_ = producer;
@@ -253,6 +242,9 @@ void TraceEventDataSource::StartTracing(
   session_id_.fetch_add(1u, std::memory_order_relaxed);
 
   if (unbound_writer_registry) {
+    // TODO(ssid): Startup tracing should know about filtering output.
+    CHECK(!privacy_filtering_enabled_);
+
     // TODO(oysteine): Investigate why trace events emitted by something in
     // BindStartupTraceWriterRegistry() causes deadlocks.
     AutoThreadLocalBoolean thread_is_in_trace_event(

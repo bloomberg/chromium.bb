@@ -147,12 +147,7 @@ void BackgroundTracingActiveScenario::StartTracing(
   // Perfetto-related deadlocks are resolved.
   if (!TracingControllerImpl::GetInstance()->IsTracing() &&
       tracing::TracingUsesPerfettoBackend()) {
-    // TODO(oysteine): This should pass in |requires_anonymized_data_| instead
-    // of false only when using consumer API with proto output. But, for JSON
-    // output we still need this to be false since filtering happens in the JSON
-    // exporter.
-    tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
-        /*privacy_filtering_enabled=*/false);
+    tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing();
   }
 #endif
 

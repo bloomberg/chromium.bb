@@ -139,14 +139,6 @@ void ConsumerHost::EnableTracing(mojom::TracingSessionPtr tracing_session,
       privacy_filtering_enabled_ = true;
     }
   }
-#if DCHECK_IS_ON()
-  if (privacy_filtering_enabled_) {
-    // If enabled, filtering must be enabled for all data sources.
-    for (const auto& data_source : trace_config.data_sources()) {
-      DCHECK(data_source.config().chrome_config().privacy_filtering_enabled());
-    }
-  }
-#endif
   perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
 
   filtered_pids_.clear();

@@ -17,8 +17,7 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace content {
-class CommandlineStartupTracingTest;
-class BackgroundStartupTracingTest;
+class StartupTracingControllerTest;
 }
 
 namespace tracing {
@@ -140,8 +139,7 @@ class TRACING_EXPORT TraceStartupConfig {
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
   friend struct base::DefaultSingletonTraits<TraceStartupConfig>;
-  friend class content::CommandlineStartupTracingTest;
-  friend class content::BackgroundStartupTracingTest;
+  friend class content::StartupTracingControllerTest;
 
   TraceStartupConfig();
   ~TraceStartupConfig();

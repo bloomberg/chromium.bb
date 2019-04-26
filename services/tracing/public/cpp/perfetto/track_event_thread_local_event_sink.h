@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;
 
-  const bool privacy_filtering_enabled_;
+  bool privacy_filtering_enabled_;
 };
 
 }  // namespace tracing

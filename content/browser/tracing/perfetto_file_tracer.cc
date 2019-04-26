@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/tracing/common/trace_startup_config.h"
@@ -17,7 +16,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
@@ -91,27 +89,36 @@ PerfettoFileTracer::PerfettoFileTracer()
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       tracing::mojom::kServiceName, &consumer_host_);
 
-  const auto& chrome_config =
-      tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
-  perfetto::TraceConfig trace_config =
-      tracing::GetDefaultPerfettoConfig(chrome_config);
-
-  // TODO(ssid): This should be moved to GetDefaultPerfettoConfig(). But,
-  // currently we only require this for proto output since JSON exporter still
-  // needs sensitive fields in trace, which will later be stripped.
-  for (auto& source : *trace_config.mutable_data_sources()) {
-    source.mutable_config()
-        ->mutable_chrome_config()
-        ->set_privacy_filtering_enabled(
-            chrome_config.IsArgumentFilterEnabled());
-  }
-
+  perfetto::TraceConfig trace_config;
   int duration_in_seconds =
       tracing::TraceStartupConfig::GetInstance()->GetStartupDuration();
   trace_config.set_duration_ms(duration_in_seconds * 1000);
 
   // We just need a single global trace buffer, for our data.
-  trace_config.mutable_buffers()->front().set_size_kb(32 * 1024);
+  trace_config.add_buffers()->set_size_kb(32 * 1024);
+
+  // We need data from two different sources to get the complete trace
+  // we're interested in both, written into the single buffer we
+  // configure above.
+
+  // This source is the actual trace events themselves coming
+  // from the base::TraceLog
+  auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
+  trace_event_config->set_name(tracing::mojom::kTraceEventDataSourceName);
+  trace_event_config->set_target_buffer(0);
+  auto* chrome_config = trace_event_config->mutable_chrome_config();
+
+  // The Chrome config string is passed straight through to base::TraceLog
+  // and defines which tracing categories should be enabled.
+  auto chrome_raw_config =
+      tracing::TraceStartupConfig::GetInstance()->GetTraceConfig().ToString();
+  chrome_config->set_trace_config(chrome_raw_config);
+
+  // The second data source we're interested in is the global metadata.
+  auto* trace_metadata_config =
+      trace_config.add_data_sources()->mutable_config();
+  trace_metadata_config->set_name(tracing::mojom::kMetaDataSourceName);
+  trace_metadata_config->set_target_buffer(0);
 
   tracing::mojom::TracingSessionPtr tracing_session;
   binding_.Bind(mojo::MakeRequest(&tracing_session));
