@@ -738,8 +738,15 @@ void AutocompleteMatch::LogSearchEngineUsed(
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
-  stripped_destination_url =
-      GURLToStrippedGURL(destination_url, input, template_url_service, keyword);
+  // Other than document suggestions, computing |stripped_destination_url| will
+  // have the same result during a match's lifecycle, so it's safe to skip
+  // re-computing it if it's already computed. Document suggestions'
+  // |stripped_url|s are pre-computed by the document provider, and overwriting
+  // them here would prevent potential deduping.
+  if (stripped_destination_url.is_empty()) {
+    stripped_destination_url = GURLToStrippedGURL(
+        destination_url, input, template_url_service, keyword);
+  }
 }
 
 void AutocompleteMatch::GetKeywordUIState(
