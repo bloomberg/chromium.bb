@@ -192,6 +192,19 @@ const int kCellHighlightColorRgb = 0x4285F4;
   }
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  // Write the browsing data selection states back to the browser state.
+  NSArray* dataTypeItems = [self.tableViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
+  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
+    self.browserState->GetPrefs()->SetBoolean(dataTypeItem.prefName,
+                                              dataTypeItem.checked);
+  }
+}
+
 - (void)loadModel {
   [super loadModel];
   [self.dataManager loadModel:self.tableViewModel];
@@ -511,8 +524,6 @@ const int kCellHighlightColorRgb = 0x4285F4;
   TableViewClearBrowsingDataItem* clearBrowsingDataItem =
       base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
   clearBrowsingDataItem.checked = flag;
-  self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
-                                            clearBrowsingDataItem.checked);
   [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
 }
 
