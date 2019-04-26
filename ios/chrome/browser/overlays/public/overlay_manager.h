@@ -11,6 +11,7 @@
 
 class Browser;
 class OverlayManagerObserver;
+class OverlayUIDelegate;
 namespace web {
 class WebState;
 }
@@ -25,6 +26,11 @@ class OverlayManager {
   // |modality|, creating one if necessary.
   static OverlayManager* FromBrowser(Browser* browser,
                                      OverlayModality modality);
+
+  // Sets the UI delegate for the manager.  Upon being set, the OverlayManager
+  // will attempt to begin presenting overlay UI for the active WebState in its
+  // Browser.
+  virtual void SetUIDelegate(OverlayUIDelegate* ui_delegate) = 0;
 
   // Adds and removes observers.
   virtual void AddObserver(OverlayManagerObserver* observer) = 0;

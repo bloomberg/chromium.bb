@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -51,6 +52,12 @@ OverlayManagerImpl::OverlayManagerImpl(WebStateList* web_state_list)
 }
 
 OverlayManagerImpl::~OverlayManagerImpl() = default;
+
+void OverlayManagerImpl::SetUIDelegate(OverlayUIDelegate* ui_delegate) {
+  ui_delegate_ = ui_delegate;
+  // TODO(crbug.com/941745): Trigger the scheduling of the overlay UI
+  // presentation.
+}
 
 void OverlayManagerImpl::AddObserver(OverlayManagerObserver* observer) {
   observers_.AddObserver(observer);

@@ -38,6 +38,7 @@ class OverlayManagerImpl : public OverlayManager {
   };
 
   // OverlayManager:
+  void SetUIDelegate(OverlayUIDelegate* ui_delegate) override;
   void AddObserver(OverlayManagerObserver* observer) override;
   void RemoveObserver(OverlayManagerObserver* observer) override;
 
@@ -49,6 +50,8 @@ class OverlayManagerImpl : public OverlayManager {
   // The Browser's WebStateList.  Used to update overlay scheduling for when
   // WebStates are removed from the Browser.
   WebStateList* web_state_list_ = nullptr;
+  // The UI delegate provided to the manager.
+  OverlayUIDelegate* ui_delegate_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_IMPL_H_

@@ -10,6 +10,7 @@ source_set("overlays") {
     "public/overlay_request.h",
     "public/overlay_request_queue.h",
     "public/overlay_response.h",
+    "public/overlay_ui_delegate.h",
     "public/overlay_user_data.h",
   ]
   sources = [
