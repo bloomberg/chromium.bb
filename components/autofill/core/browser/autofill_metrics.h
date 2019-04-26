@@ -1257,7 +1257,8 @@ class AutofillMetrics {
 
   // Records the reason for why (or why not) card upload was enabled for the
   // user.
-  static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric);
+  static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric,
+                                         AutofillSyncSigninState sync_state);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);
