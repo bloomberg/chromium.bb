@@ -41,8 +41,7 @@ XRView& XRView::operator=(const XRView& other) {
   AssignMatrices(other);
   offset_ = other.offset_;
 
-  transform_ =
-      MakeGarbageCollected<XRRigidTransform>(*(other.transform_.Get()));
+  transform_ = other.transform_;
 
   // Don't copy the inverse projection matrix because it is rarely used.
   // Just set this flag so that if UnprojectPointer is called, this matrix

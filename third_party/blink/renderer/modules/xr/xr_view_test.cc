@@ -24,8 +24,9 @@ TEST(XRViewTest, UpdatePoseMatrix) {
   DOMPointInit* orientation =
       MakePointForTest(0.3701005885691383, -0.5678993882056005,
                        0.31680366148754113, 0.663438979322567);
-  XRRigidTransform initial_transform(position, orientation);
-  TransformationMatrix pose_matrix = initial_transform.TransformMatrix();
+  XRRigidTransform* initial_transform =
+      MakeGarbageCollected<XRRigidTransform>(position, orientation);
+  TransformationMatrix pose_matrix = initial_transform->TransformMatrix();
 
   view.UpdatePoseMatrix(pose_matrix);
   TransformationMatrix view_transform_matrix =
