@@ -2105,6 +2105,7 @@ test("content_unittests") {
       "../renderer/media_recorder/media_recorder_handler_unittest.cc",
       "../renderer/media_recorder/video_track_recorder_unittest.cc",
     ]
+    defines += [ "IS_CHROMECAST" ]
   }
 
   # Screen capture unit tests.

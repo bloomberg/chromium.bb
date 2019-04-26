@@ -681,7 +681,13 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // convert at output) or ideally, have a backchannel from the sink to know
   // what format it would prefer.
   const int output_sample_rate = audio_processing_
-                                     ? blink::kAudioProcessingSampleRate
+                                     ?
+#if defined(IS_CHROMECAST)
+                                     std::min(blink::kAudioProcessingSampleRate,
+                                              input_format.sample_rate())
+#else
+                                     blink::kAudioProcessingSampleRate
+#endif  // defined(IS_CHROMECAST)
                                      : input_format.sample_rate();
   media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
