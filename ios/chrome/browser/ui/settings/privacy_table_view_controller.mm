@@ -327,7 +327,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIView* footerView =
       [super tableView:tableView viewForFooterInSection:section];
   if (SectionIdentifierWebServices ==
-      [self.tableViewModel sectionIdentifierForSection:section]) {
+          [self.tableViewModel sectionIdentifierForSection:section] &&
+      !unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // The footer view is only shown when Unified consent flag is off.
     TableViewLinkHeaderFooterView* footer =
         base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(footerView);
     footer.delegate = self;
