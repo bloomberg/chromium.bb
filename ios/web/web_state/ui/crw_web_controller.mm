@@ -52,6 +52,7 @@
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
+#import "ios/web/navigation/crw_pending_navigation_info.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
@@ -226,42 +227,6 @@ bool RequiresContentFilterBlockingWorkaround() {
 
 }  // namespace
 
-#pragma mark -
-
-// A container object for any navigation information that is only available
-// during pre-commit delegate callbacks, and thus must be held until the
-// navigation commits and the informatino can be used.
-@interface CRWWebControllerPendingNavigationInfo : NSObject {
-}
-// The referrer for the page.
-@property(nonatomic, copy) NSString* referrer;
-// The MIME type for the page.
-@property(nonatomic, copy) NSString* MIMEType;
-// The navigation type for the load.
-@property(nonatomic, assign) WKNavigationType navigationType;
-// HTTP request method for the load.
-@property(nonatomic, copy) NSString* HTTPMethod;
-// Whether the pending navigation has been directly cancelled before the
-// navigation is committed.
-// Cancelled navigations should be simply discarded without handling any
-// specific error.
-@property(nonatomic, assign) BOOL cancelled;
-// Whether the navigation was initiated by a user gesture.
-@property(nonatomic, assign) BOOL hasUserGesture;
-
-@end
-
-@implementation CRWWebControllerPendingNavigationInfo
-
-- (instancetype)init {
-  if ((self = [super init])) {
-    _navigationType = WKNavigationTypeOther;
-  }
-  return self;
-}
-
-@end
-
 @interface CRWWebController () <BrowsingDataRemoverObserver,
                                 CRWContextMenuDelegate,
                                 CRWNativeContentDelegate,
@@ -347,7 +312,7 @@ bool RequiresContentFilterBlockingWorkaround() {
   // this object starts at |decidePolicyForNavigationAction| where the info is
   // extracted from the request, and ends at either |didCommitNavigation| or
   // |didFailProvisionalNavigation|.
-  CRWWebControllerPendingNavigationInfo* _pendingNavigationInfo;
+  CRWPendingNavigationInfo* _pendingNavigationInfo;
 
   // Holds all WKNavigation objects and their states which are currently in
   // flight.
@@ -5440,8 +5405,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)updatePendingNavigationInfoFromNavigationAction:
     (WKNavigationAction*)action {
   if (action.targetFrame.mainFrame) {
-    _pendingNavigationInfo =
-        [[CRWWebControllerPendingNavigationInfo alloc] init];
+    _pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
     [_pendingNavigationInfo
         setReferrer:[self referrerFromNavigationAction:action]];
     [_pendingNavigationInfo setNavigationType:action.navigationType];
@@ -5460,8 +5424,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (WKNavigationResponse*)response {
   if (response.isForMainFrame) {
     if (!_pendingNavigationInfo) {
-      _pendingNavigationInfo =
-          [[CRWWebControllerPendingNavigationInfo alloc] init];
+      _pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
     }
     [_pendingNavigationInfo setMIMEType:response.response.MIMEType];
   }
