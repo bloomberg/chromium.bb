@@ -224,10 +224,42 @@ class NET_EXPORT ReportingCache {
 // Persistent storage for Reporting reports and clients.
 class NET_EXPORT ReportingCache::PersistentReportingStore {
  public:
+  using ReportingClientsLoadedCallback =
+      base::OnceCallback<void(std::vector<ReportingClient>,
+                              std::vector<CachedReportingEndpointGroup>)>;
+
   PersistentReportingStore() = default;
   virtual ~PersistentReportingStore() = default;
 
-  // TODO(chlily): methods to load, add, update, delete, etc. will be added.
+  // Initializes the store and retrieves stored endpoints and endpoint groups.
+  // Called only once at startup.
+  virtual void LoadReportingClients(
+      ReportingClientsLoadedCallback loaded_callback) = 0;
+
+  // Adds an endpoint to the store.
+  virtual void AddReportingEndpoint(const ReportingClient& endpoint) = 0;
+  // Adds an endpoint group to the store.
+  virtual void AddReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) = 0;
+
+  // Updates the access time of an endpoint group in the store.
+  virtual void UpdateReportingEndpointGroupAccessTime(
+      const CachedReportingEndpointGroup& group) = 0;
+
+  // Updates the details of an endpoint in the store.
+  virtual void UpdateReportingEndpointDetails(
+      const ReportingClient& endpoint) = 0;
+  // Updates the details of an endpoint group in the store.
+  virtual void UpdateReportingEndpointGroupDetails(
+      const CachedReportingEndpointGroup& group) = 0;
+
+  // Deletes an endpoint from the store.
+  virtual void DeleteReportingEndpoint(const ReportingClient& endpoint) = 0;
+  // Deletes an endpoint group from the store.
+  virtual void DeleteReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) = 0;
+
+  // TODO(chlily): methods to load, add, and delete reports will be added.
 
   // Flushes the store.
   virtual void Flush() = 0;

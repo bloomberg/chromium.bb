@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/persistent_reporting_and_nel_store.h"
+#include "net/reporting/reporting_cache.h"
 
 namespace base {
 class FilePath;
@@ -39,6 +40,22 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
       const NetworkErrorLoggingService::NELPolicy& policy) override;
   void DeleteNELPolicy(
       const NetworkErrorLoggingService::NELPolicy& policy) override;
+
+  // ReportingCache::PersistentReportingStore implementation
+  void LoadReportingClients(
+      ReportingClientsLoadedCallback loaded_callback) override;
+  void AddReportingEndpoint(const ReportingClient& endpoint) override;
+  void AddReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) override;
+  void UpdateReportingEndpointGroupAccessTime(
+      const CachedReportingEndpointGroup& group) override;
+  void UpdateReportingEndpointDetails(const ReportingClient& endpoint) override;
+  void UpdateReportingEndpointGroupDetails(
+      const CachedReportingEndpointGroup& group) override;
+  void DeleteReportingEndpoint(const ReportingClient& endpoint) override;
+  void DeleteReportingEndpointGroup(
+      const CachedReportingEndpointGroup& group) override;
+
   void Flush() override;
 
   size_t GetQueueLengthForTesting() const;
@@ -50,6 +67,12 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
   void CompleteLoadNELPolicies(
       NELPoliciesLoadedCallback callback,
       std::vector<NetworkErrorLoggingService::NELPolicy> policies);
+
+  // Calls |callback| with the loaded |endpoints| and |endpoint_groups|.
+  void CompleteLoadReportingClients(
+      ReportingClientsLoadedCallback callback,
+      std::vector<ReportingClient> endpoints,
+      std::vector<CachedReportingEndpointGroup> endpoint_groups);
 
   const scoped_refptr<Backend> backend_;
 
