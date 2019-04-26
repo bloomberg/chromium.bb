@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/main/test_browser.h"
 
+#include "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,4 +33,12 @@ TabModel* TestBrowser::GetTabModel() const {
 
 WebStateList* TestBrowser::GetWebStateList() const {
   return web_state_list_;
+}
+
+void TestBrowser::AddObserver(BrowserObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TestBrowser::RemoveObserver(BrowserObserver* observer) {
+  observers_.RemoveObserver(observer);
 }

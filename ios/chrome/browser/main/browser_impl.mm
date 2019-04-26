@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 
@@ -31,7 +32,11 @@ BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state,
   web_state_list_ = tab_model_.webStateList;
 }
 
-BrowserImpl::~BrowserImpl() = default;
+BrowserImpl::~BrowserImpl() {
+  for (auto& observer : observers_) {
+    observer.BrowserDestroyed(this);
+  }
+}
 
 ios::ChromeBrowserState* BrowserImpl::GetBrowserState() const {
   return browser_state_;
@@ -43,6 +48,14 @@ TabModel* BrowserImpl::GetTabModel() const {
 
 WebStateList* BrowserImpl::GetWebStateList() const {
   return web_state_list_;
+}
+
+void BrowserImpl::AddObserver(BrowserObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // static
