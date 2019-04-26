@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -22,7 +21,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/cookie_options.h"
-#include "services/device/public/cpp/device_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -128,11 +126,6 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
 }
 
 TEST_F(ContentSettingImageModelTest, SensorAccessed) {
-  // Enable all sensors just to avoid hardcoding the expected messages to the
-  // motion sensor-specific ones.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
-
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -202,11 +195,6 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingBubbleModelTest.SensorAccessPermissionsChanged
 TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
-  // Enable all sensors just to avoid hardcoding the expected messages to the
-  // motion sensor-specific ones.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
-
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
