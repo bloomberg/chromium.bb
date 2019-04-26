@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -132,8 +133,10 @@ public class LanguageListBaseAdapter
         mLanguageList = new ArrayList<>();
 
         Resources resource = context.getResources();
-        mDraggedBackgroundColor =
-                ApiCompatibilityUtils.getColor(resource, R.color.pref_dragged_row_background);
+        // Set the alpha to 90% when dragging which is 230/255
+        mDraggedBackgroundColor = ColorUtils.setAlphaComponent(
+                ApiCompatibilityUtils.getColor(resource, R.color.default_bg_color_elev_1),
+                resource.getInteger(R.integer.pref_languages_item_dragged_alpha));
         mDraggedElevation = resource.getDimension(R.dimen.pref_languages_item_dragged_elevation);
     }
 
