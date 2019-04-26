@@ -120,8 +120,8 @@ The following commands will build a sample executable and run it.
 ``` bash
   mkdir out/Default
   gn gen out/Default          # Creates the build directory and necessary ninja files
-  ninja -C out/Default hello  # Builds the executable with ninja
-  ./out/Default/hello         # Runs the executable
+  ninja -C out/Default demo   # Builds the executable with ninja
+  ./out/Default/demo          # Runs the executable
 ```
 
 The `-C` argument to `ninja` works just like it does for GNU Make: it specifies
@@ -131,13 +131,13 @@ the working directory for the build.  So the same could be done as follows:
   ./gn gen out/Default
   cd out/Default
   ninja
-  ./hello
+  ./demo
 ```
 
 After editing a file, only `ninja` needs to be rerun, not `gn`.  If you have
 edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
-TODO(issue/34): Document the demo program, and update this README to run it.
+For details on running `demo`, see its [README.md](demo/README.md).
 
 ### Building other targets
 
