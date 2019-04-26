@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -743,6 +744,16 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(
                         container.allow_kiosk_app_control_chrome_version()),
                     nullptr);
+    }
+  }
+
+  if (policy.has_device_scheduled_update_check()) {
+    const em::DeviceScheduledUpdateCheckProto& container(
+        policy.device_scheduled_update_check());
+    if (container.has_device_scheduled_update_check_settings()) {
+      SetJsonDevicePolicy(key::kDeviceScheduledUpdateCheck,
+                          container.device_scheduled_update_check_settings(),
+                          policies);
     }
   }
 }

@@ -219,6 +219,9 @@ extern const char kDeviceWilcoDtcAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceDockMacAddressSource[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceScheduledUpdateCheck[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
