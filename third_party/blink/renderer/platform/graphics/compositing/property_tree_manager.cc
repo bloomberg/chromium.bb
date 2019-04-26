@@ -85,8 +85,13 @@ bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
   if (it == effect_node_map_.end())
     return false;
   auto* cc_effect = property_trees->effect_tree.Node(it->value);
-  if (!cc_effect || cc_effect->is_currently_animating_opacity)
+  if (!cc_effect)
     return false;
+
+  // We directly update opacity only when it's not animating in compositor. If
+  // the compositor has not cleared is_currently_animating_opacity, we should
+  // clear it now to let the compositor respect the new value.
+  cc_effect->is_currently_animating_opacity = false;
 
   cc_effect->opacity = effect.Opacity();
   cc_effect->effect_changed = true;
@@ -112,8 +117,10 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
     return false;
   auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
 
-  if (!cc_scroll_node || !cc_transform || cc_transform->is_currently_animating)
+  if (!cc_scroll_node || !cc_transform)
     return false;
+
+  DCHECK(!cc_transform->is_currently_animating);
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
   SetCcTransformNodeScrollToTransformTranslation(*cc_transform, transform);
@@ -137,10 +144,15 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
   if (transform_it == transform_node_map_.end())
     return false;
   auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
-  if (!cc_transform || cc_transform->is_currently_animating)
+  if (!cc_transform)
     return false;
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
+
+  // We directly update transform only when the transform is not animating in
+  // compositor. If the compositor has not cleared the is_currently_animating
+  // flag, we should clear it to let the compositor respect the new value.
+  cc_transform->is_currently_animating = false;
 
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
