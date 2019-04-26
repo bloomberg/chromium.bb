@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -118,9 +119,8 @@ IN_PROC_BROWSER_TEST_F(
       "UnifiedConsent.SyncAndGoogleServicesSettings", 1);
 }
 
-// Flakes on all platforms. http://crbug.com/954167
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
-                       DISABLED_SettingsOptInTakeOverServicePrefChanges) {
+                       SettingsOptInTakeOverServicePrefChanges) {
   std::string pref_A = prefs::kSearchSuggestEnabled;
   std::string pref_B = prefs::kAlternateErrorPagesEnabled;
 
@@ -130,6 +130,8 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
   // both prefs will be "off".
   GetProfile(0)->GetPrefs()->SetBoolean(pref_A, false);
   GetProfile(0)->GetPrefs()->SetBoolean(pref_B, false);
+  // Make sure the updates are committed before proceeding with the test.
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // Second client: Turn off both prefs while sync is off.
   GetProfile(1)->GetPrefs()->SetBoolean(pref_A, false);
