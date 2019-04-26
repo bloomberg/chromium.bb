@@ -55,6 +55,25 @@ class ExtractHistogramsTest(unittest.TestCase):
         histogram_with_owner_placeholder, {})
     self.assertFalse(have_errors)
 
+  def testHistogramWithEscapeCharacters(self):
+    histogram_with_owner_placeholder = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="things">
+  <owner> Please list the metric's owners. Add more owner tags as needed.
+  </owner>
+  <summary>This is a summary with &amp; and &quot; and &apos;</summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    (hists, have_errors) = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_owner_placeholder, {})
+    self.assertFalse(have_errors)
+    self.assertIn('Test.Histogram', hists)
+    self.assertIn('summary', hists['Test.Histogram'])
+    self.assertEquals('This is a summary with & and " and \'',
+                      hists['Test.Histogram']['summary'])
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.ERROR + 1)

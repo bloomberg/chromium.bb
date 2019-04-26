@@ -53,6 +53,7 @@ XML below will generate the following five histograms:
 
 """
 
+import HTMLParser
 import bisect
 import copy
 import datetime
@@ -90,9 +91,9 @@ def _JoinChildNodes(tag):
 
 
 def _NormalizeString(s):
-  """Replaces all whitespace sequences with a single space.
+  r"""Replaces all whitespace sequences with a single space.
 
-  The function properly handles multi-line strings.
+  The function properly handles multi-line strings and XML escaped characters.
 
   Args:
     s: The string to normalize, ('  \\n a  b c\\n d  ').
@@ -100,7 +101,11 @@ def _NormalizeString(s):
   Returns:
     The normalized string (a b c d).
   """
-  return ' '.join(s.split())
+  singleline_value = ' '.join(s.split())
+
+  # Unescape using default ASCII encoding. Unescapes any HTML escaped character
+  # like &quot; etc.
+  return HTMLParser.HTMLParser().unescape(singleline_value)
 
 
 def _NormalizeAllAttributeValues(node):
