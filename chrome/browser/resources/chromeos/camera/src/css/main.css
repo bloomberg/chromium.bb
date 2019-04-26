@@ -230,18 +230,20 @@ body.tablet-landscape .actions-group {
 }
 
 .mode-item {
-  margin: 4px 0;
+  flex: 0 0 48px;
   position: relative;
 }
 
-label.mode-item>span {
+div.mode-item>span {
   border-radius: 13px / 50%;
   color: white;
   display: inline-block;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 12px;
+  line-height: 32px;
+  margin: 8px 0;
+  padding: 0 12px;
   text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.3);
 }
 
@@ -492,7 +494,7 @@ body.timersettings #settings {
 #camera {
   --big-icon: 48px;
   --bottom-line: 56px;
-  --modes-height: 130px;
+  --modes-height: 140px;
   --modes-bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 24px);
   --small-icon: 40px;
 }
