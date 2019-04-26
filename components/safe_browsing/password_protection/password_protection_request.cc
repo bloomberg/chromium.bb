@@ -16,6 +16,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/visual_utils.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -440,24 +441,29 @@ void PasswordProtectionRequest::Finish(
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
-  if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    LogPasswordOnFocusRequestOutcome(outcome);
-  } else {
-    LogPasswordEntryRequestOutcome(
-        outcome, reused_password_type_,
-        password_protection_service_->GetSyncAccountType());
-    if (reused_password_type_ ==
-        LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD) {
-      password_protection_service_->MaybeLogPasswordReuseLookupEvent(
-          web_contents_, outcome, response.get());
-    }
-  }
 
-  if (outcome == RequestOutcome::SUCCEEDED && response) {
-    LogPasswordProtectionVerdict(
-        trigger_type_, reused_password_type_,
-        password_protection_service_->GetSyncAccountType(),
-        response->verdict_type());
+  // If the request is canceled, the PasswordProtectionService is already
+  // partially destroyed, and we won't be able to log accurate metrics.
+  if (outcome != RequestOutcome::CANCELED) {
+    if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
+      LogPasswordOnFocusRequestOutcome(outcome);
+    } else {
+      LogPasswordEntryRequestOutcome(
+          outcome, reused_password_type_,
+          password_protection_service_->GetSyncAccountType());
+      if (reused_password_type_ ==
+          LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD) {
+        password_protection_service_->MaybeLogPasswordReuseLookupEvent(
+            web_contents_, outcome, response.get());
+      }
+    }
+
+    if (outcome == RequestOutcome::SUCCEEDED && response) {
+      LogPasswordProtectionVerdict(
+          trigger_type_, reused_password_type_,
+          password_protection_service_->GetSyncAccountType(),
+          response->verdict_type());
+    }
   }
 
   password_protection_service_->RequestFinished(

@@ -36,6 +36,7 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::Return;
 
 namespace {
@@ -985,9 +986,11 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   password_protection_service_.reset();
   base::RunLoop().RunUntilIdle();
 
+  // We should not log on TearDown, since that can dispatch calls to pure
+  // virtual methods.
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
-      ElementsAre(base::Bucket(2 /* CANCELED */, 1)));
+      IsEmpty());
 }
 
 TEST_P(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {
