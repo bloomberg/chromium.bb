@@ -96,6 +96,10 @@ class APP_LIST_EXPORT PagedViewStructure {
   const Pages& pages() const { return pages_; }
 
  private:
+  // Skips the item view being dragged if it exists in the specified
+  // |page|.
+  int CalculateTargetSlot(const Page& page) const;
+
   // Clear overflowing item views by moving them to the next page. Returns true
   // if view structure is changed.
   bool ClearOverflow();

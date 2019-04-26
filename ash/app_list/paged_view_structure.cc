@@ -9,6 +9,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "base/stl_util.h"
 #include "ui/views/view_model.h"
 
 namespace app_list {
@@ -185,14 +186,7 @@ GridIndex PagedViewStructure::GetLastTargetIndex() const {
     return GridIndex(0, 0);
 
   int last_page_index = total_pages() - 1;
-  int target_slot = 0;
-  auto& last_page = pages_.back();
-  for (size_t i = 0; i < last_page.size(); ++i) {
-    // Skip the item view being dragged if it exists in the last page.
-    if (last_page[i] != apps_grid_view_->drag_view_)
-      ++target_slot;
-  }
-
+  int target_slot = CalculateTargetSlot(pages_.back());
   if (target_slot == apps_grid_view_->TilesPerPage(last_page_index)) {
     // The last page is full, so the last target visual index is the first slot
     // in the next new page.
@@ -210,15 +204,7 @@ GridIndex PagedViewStructure::GetLastTargetIndexOfPage(int page_index) const {
   if (page_index == page_size)
     return GridIndex(page_index, 0);
 
-  int target_slot = 0;
-  auto& page = pages_[page_index];
-  for (size_t i = 0; i < page.size(); ++i) {
-    // Skip the item view being dragged if it exists in the specified
-    // page_index.
-    if (page[i] != apps_grid_view_->drag_view())
-      ++target_slot;
-  }
-
+  int target_slot = CalculateTargetSlot(pages_[page_index]);
   if (target_slot == apps_grid_view_->TilesPerPage(page_index)) {
     // The specified page is full, so the last target visual index is the last
     // slot in the page_index.
@@ -318,6 +304,13 @@ bool PagedViewStructure::IsFullPage(int page_index) const {
     return false;
   return static_cast<int>(pages_[page_index].size()) ==
          apps_grid_view_->TilesPerPage(page_index);
+}
+
+int PagedViewStructure::CalculateTargetSlot(const Page& page) const {
+  size_t target_slot = page.size();
+  if (base::ContainsValue(page, apps_grid_view_->drag_view()))
+    --target_slot;
+  return static_cast<int>(target_slot);
 }
 
 bool PagedViewStructure::ClearOverflow() {
