@@ -3963,10 +3963,18 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowPlaceholderWhenCaretShowing)},
 
+#if !defined(OS_ANDROID)
+    {"enterprise-reporting-in-browser",
+     flag_descriptions::kEnterpriseReportingInBrowserName,
+     flag_descriptions::kEnterpriseReportingInBrowserDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kEnterpriseReportingInBrowser)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
     // AboutFlagsHistogramTest unit test to verify this process).
+
 };
 
 class FlagsStateSingleton {

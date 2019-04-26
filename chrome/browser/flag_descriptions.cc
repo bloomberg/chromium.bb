@@ -2723,6 +2723,13 @@ const char kEnableWebAuthenticationTestingAPIDescription[] =
     "implementation from the real world, and allows configuring virtual "
     "authenticator devices for testing";
 
+const char kEnterpriseReportingInBrowserName[] =
+    "Enterprise cloud reporting in browser";
+const char kEnterpriseReportingInBrowserDescription[] =
+    "Enable the enterprise cloud reporting in browser without installing the "
+    "reporting companion extension. This feautre requires device level cloud "
+    "mangement.";
+
 const char kHappinessTrackingSurveysForDesktopName[] =
     "Happiness Tracking Surveys";
 const char kHappinessTrackingSurveysForDesktopDescription[] =

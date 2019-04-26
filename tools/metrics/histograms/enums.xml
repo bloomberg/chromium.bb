@@ -32669,6 +32669,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1488744539" label="QuickUnlockFingerprint:enabled"/>
   <int value="-1487243228" label="NewUsbBackend:disabled"/>
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
+  <int value="-1485461805" label="EnterpriseReportingInBrowser:enabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1481990501" label="Windows10CustomTitlebar:disabled"/>
@@ -33666,6 +33667,7 @@ from previous Chrome versions.
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="29212695" label="OfflineIndicator:enabled"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
+  <int value="32057053" label="EnterpriseReportingInBrowser:disabled"/>
   <int value="32488630" label="EphemeralTab:enabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
   <int value="36422284"

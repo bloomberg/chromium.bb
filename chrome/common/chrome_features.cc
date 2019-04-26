@@ -255,6 +255,12 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
 const base::Feature kEnableIncognitoWindowCounter{
     "EnableIncognitoWindowCounter", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Upload enterprise cloud reporting without the extension.
+const base::Feature kEnterpriseReportingInBrowser{
+    "EnterpriseReportingInBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 // Enables event-based status reporting for child accounts in Chrome OS.
 const base::Feature kEventBasedStatusReporting{

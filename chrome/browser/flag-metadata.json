@@ -1964,6 +1964,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enterprise-reporting-in-browser",
+    "owners": [ "pastarmovj", "zmin" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "expensive-background-timer-throttling",
     "owners": [ "altimin" ],
     "expiry_milestone": 76
