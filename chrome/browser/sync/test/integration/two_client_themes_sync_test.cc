@@ -27,7 +27,8 @@ class TwoClientThemesSyncTest : public FeatureToggler, public SyncTest {
       : FeatureToggler(switches::kSyncPseudoUSSThemes), SyncTest(TWO_CLIENT) {}
   ~TwoClientThemesSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Needed for AwaitQuiescence().
+  bool TestUsesSelfNotifications() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientThemesSyncTest);
@@ -39,6 +40,8 @@ class TwoClientThemesSyncTest : public FeatureToggler, public SyncTest {
 IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
                        E2E_ENABLED(DefaultThenSyncCustom)) {
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles before we override the theme below.
+  AwaitQuiescence();
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));
@@ -66,6 +69,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
   SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles before we override the theme below.
+  AwaitQuiescence();
 
   UseSystemTheme(GetProfile(0));
   ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
@@ -86,6 +91,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
   SetCustomTheme(GetProfile(1));
 
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles before we override the theme below.
+  AwaitQuiescence();
 
   UseDefaultTheme(GetProfile(0));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
@@ -101,6 +108,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest,
 // is intended to test steady-state scenarios.
 IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Wait until sync settles before we override the theme below.
+  AwaitQuiescence();
 
   SetCustomTheme(GetProfile(0));
 
