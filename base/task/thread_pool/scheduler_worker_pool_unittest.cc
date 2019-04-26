@@ -437,6 +437,31 @@ TEST_P(ThreadPoolWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
   task_tracker_.FlushForTesting();
 }
 
+// Regression test for crbug.com/955953.
+TEST_P(ThreadPoolWorkerPoolTest, ScopedBlockingCallTwice) {
+  StartWorkerPool();
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_,
+      {MayBlock()});
+
+  WaitableEvent task_ran;
+  task_runner->PostTask(FROM_HERE,
+                        BindOnce(
+                            [](WaitableEvent* task_ran) {
+                              {
+                                ScopedBlockingCall scoped_blocking_call(
+                                    FROM_HERE, BlockingType::MAY_BLOCK);
+                              }
+                              {
+                                ScopedBlockingCall scoped_blocking_call(
+                                    FROM_HERE, BlockingType::MAY_BLOCK);
+                              }
+                              task_ran->Signal();
+                            },
+                            Unretained(&task_ran)));
+  task_ran.Wait();
+}
+
 #if defined(OS_WIN)
 TEST_P(ThreadPoolWorkerPoolTest, COMMTAWorkerEnvironment) {
   StartWorkerPool(SchedulerWorkerPool::WorkerEnvironment::COM_MTA);
