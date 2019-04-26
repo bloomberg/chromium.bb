@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -247,7 +247,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {
   if (!handled_result_ && !done_callback_.is_null()) {
-    base::ResetAndReturn(&done_callback_)
+    std::move(done_callback_)
         .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
   }
 }
@@ -373,8 +373,7 @@ bool ExtensionInstallDialogView::Cancel() {
 
   handled_result_ = true;
   UpdateInstallResultHistogram(false);
-  base::ResetAndReturn(&done_callback_)
-      .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
+  std::move(done_callback_).Run(ExtensionInstallPrompt::Result::USER_CANCELED);
   return true;
 }
 
@@ -383,8 +382,7 @@ bool ExtensionInstallDialogView::Accept() {
 
   handled_result_ = true;
   UpdateInstallResultHistogram(true);
-  base::ResetAndReturn(&done_callback_)
-      .Run(ExtensionInstallPrompt::Result::ACCEPTED);
+  std::move(done_callback_).Run(ExtensionInstallPrompt::Result::ACCEPTED);
   return true;
 }
 

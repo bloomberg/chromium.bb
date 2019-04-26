@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -91,7 +92,7 @@ class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
     ++update_image_count_;
     if (update_image_count_ == expected_update_image_count_ &&
         !icon_updated_callback_.is_null()) {
-      base::ResetAndReturn(&icon_updated_callback_).Run();
+      std::move(icon_updated_callback_).Run();
     }
   }
 

@@ -323,7 +323,7 @@ class TestShelfController : public ash::mojom::ShelfController {
     last_item_ = item;
     if (updated_count_ == expected_updated_count_ &&
         !updated_callback_.is_null()) {
-      base::ResetAndReturn(&updated_callback_).Run();
+      std::move(updated_callback_).Run();
     }
   }
 
