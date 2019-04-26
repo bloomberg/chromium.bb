@@ -149,7 +149,7 @@ cast_source_set("browser") {
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
     "//chromecast/base",
-    "//chromecast/base:cast_sys_info",
+    "//chromecast/base:cast_sys_info_util",
     "//chromecast/base:cast_version",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",

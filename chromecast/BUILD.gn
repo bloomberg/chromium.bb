@@ -463,6 +463,7 @@ group("cast_shell_lib") {
 
   deps = [
     "//chromecast/app",
+    "//chromecast/base:default_create_sys_info",
     "//chromecast/browser",
     "//chromecast/common",
     "//chromecast/renderer",

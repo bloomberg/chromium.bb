@@ -29,7 +29,7 @@ cast_source_set("net") {
   deps = [
     "//base",
     "//chromecast:chromecast_buildflags",
-    "//chromecast/base:cast_sys_info",
+    "//chromecast/base:cast_sys_info_util",
     "//chromecast/base/metrics",
     "//chromecast/public",
     "//components/proxy_config",

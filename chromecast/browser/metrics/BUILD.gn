@@ -18,7 +18,7 @@ cast_source_set("metrics") {
     "//base",
     "//base:i18n",
     "//chromecast/base",
-    "//chromecast/base:cast_sys_info",
+    "//chromecast/base:cast_sys_info_util",
     "//chromecast/base:cast_version",
     "//components/metrics",
     "//components/metrics:gpu",
