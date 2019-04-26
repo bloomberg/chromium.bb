@@ -63,6 +63,8 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       clock_(base::DefaultClock::GetInstance()),
       next_state_timer_(std::make_unique<base::OneShotTimer>()),
       usage_time_limit_warning_timer_(std::make_unique<base::OneShotTimer>()),
+      last_policy_(pref_service_->GetDictionary(prefs::kUsageTimeLimit)
+                       ->CreateDeepCopy()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
@@ -190,33 +192,36 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
     }
   } else {
     OnScreenLockByPolicyEnd();
-    base::Optional<TimeLimitNotifier::LimitType> notification_type;
-    switch (state.next_state_active_policy) {
-      case usage_time_limit::ActivePolicies::kFixedLimit:
-        notification_type = TimeLimitNotifier::LimitType::kBedTime;
-        break;
-      case usage_time_limit::ActivePolicies::kUsageLimit:
-      case usage_time_limit::ActivePolicies::kOverride:
-        notification_type = TimeLimitNotifier::LimitType::kScreenTime;
-        break;
-      case usage_time_limit::ActivePolicies::kNoActivePolicy:
-        break;
-      default:
-        NOTREACHED();
-    }
-
+    base::Optional<TimeLimitNotifier::LimitType> notification_type =
+        ConvertPolicyType(state.next_state_active_policy);
     if (notification_type.has_value()) {
       // Schedule notification based on the remaining screen time until lock.
       // TODO(crbug.com/898000): Dismiss a shown notification when it no longer
       // applies.
       const base::TimeDelta remaining_time = state.next_state_change_time - now;
-      time_limit_notifier_.MaybeScheduleNotifications(notification_type.value(),
-                                                      remaining_time);
+      time_limit_notifier_.MaybeScheduleLockNotifications(
+          notification_type.value(), remaining_time);
     }
 
     if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
       ScheduleUsageTimeLimitWarning(state);
   }
+
+  // Trigger policy update notifications.
+  auto updated_policy_types = usage_time_limit::UpdatedPolicyTypes(
+      last_policy_, time_limit->CreateDeepCopy());
+  for (const auto& policy_type : updated_policy_types) {
+    base::Optional<base::Time> lock_time;
+    if (policy_type == usage_time_limit::PolicyType::kOverride)
+      lock_time = state.next_state_change_time;
+
+    base::Optional<TimeLimitNotifier::LimitType> notification_type =
+        ConvertPolicyType(policy_type);
+    DCHECK(notification_type);
+    time_limit_notifier_.ShowPolicyUpdateNotification(notification_type.value(),
+                                                      lock_time);
+  }
+  last_policy_ = time_limit->CreateDeepCopy();
 
   // TODO(agawronska): We are creating UsageTimeLimitProcessor second time in
   // this method. Could expected reset time be returned as a part of the state?
@@ -251,7 +256,7 @@ void ScreenTimeController::ForceScreenLockByPolicy() {
 }
 
 void ScreenTimeController::OnScreenLockByPolicy(
-    usage_time_limit::ActivePolicies active_policy,
+    usage_time_limit::PolicyType active_policy,
     base::Time next_unlock_time) {
   if (!session_manager::SessionManager::Get()->IsScreenLocked())
     return;
@@ -292,16 +297,16 @@ void ScreenTimeController::OnScreenLockByPolicyEnd() {
 
 base::Optional<ash::mojom::AuthDisabledReason>
 ScreenTimeController::ConvertLockReason(
-    usage_time_limit::ActivePolicies active_policy) {
+    usage_time_limit::PolicyType active_policy) {
   base::Optional<ash::mojom::AuthDisabledReason> disabled_reason;
   switch (active_policy) {
-    case usage_time_limit::ActivePolicies::kFixedLimit:
+    case usage_time_limit::PolicyType::kFixedLimit:
       disabled_reason = ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT;
       break;
-    case usage_time_limit::ActivePolicies::kUsageLimit:
+    case usage_time_limit::PolicyType::kUsageLimit:
       disabled_reason = ash::mojom::AuthDisabledReason::TIME_USAGE_LIMIT;
       break;
-    case usage_time_limit::ActivePolicies::kOverride:
+    case usage_time_limit::PolicyType::kOverride:
       disabled_reason = ash::mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
       break;
     default:
@@ -332,7 +337,7 @@ void ScreenTimeController::ResetInSessionTimers() {
 void ScreenTimeController::ScheduleUsageTimeLimitWarning(
     const usage_time_limit::State& state) {
   if (state.next_state_active_policy ==
-          usage_time_limit::ActivePolicies::kUsageLimit &&
+          usage_time_limit::PolicyType::kUsageLimit &&
       UsageTimeStateNotifier::GetInstance()->GetState() ==
           UsageTimeStateNotifier::UsageTimeState::ACTIVE) {
     base::Time now = clock_->Now();
@@ -392,19 +397,19 @@ ScreenTimeController::GetLastStateFromPref() {
     return base::nullopt;
   result.is_locked = is_locked->GetBool();
 
-  // Verify active policy type is a value of usage_time_limit::ActivePolicies.
+  // Verify active policy type is a value of usage_time_limit::PolicyType.
   const base::Value* active_policy =
       last_state->FindKey(kScreenStateCurrentPolicyType);
-  // TODO(crbug.com/823536): Add kCount in usage_time_limit::ActivePolicies
+  // TODO(crbug.com/823536): Add kCount in usage_time_limit::PolicyType
   // instead of checking kUsageLimit here.
   if (!active_policy || !active_policy->is_int() ||
       active_policy->GetInt() < 0 ||
       active_policy->GetInt() >
-          static_cast<int>(usage_time_limit::ActivePolicies::kUsageLimit)) {
+          static_cast<int>(usage_time_limit::PolicyType::kUsageLimit)) {
     return base::nullopt;
   }
   result.active_policy =
-      static_cast<usage_time_limit::ActivePolicies>(active_policy->GetInt());
+      static_cast<usage_time_limit::PolicyType>(active_policy->GetInt());
 
   // Verify time_usage_limit_enabled from the pref is a boolean value.
   const base::Value* time_usage_limit_enabled =
@@ -437,18 +442,17 @@ ScreenTimeController::GetLastStateFromPref() {
   result.next_state_change_time =
       base::Time::FromDoubleT(next_state_change_time->GetDouble());
 
-  // Verify next policy type is a value of usage_time_limit::ActivePolicies.
+  // Verify next policy type is a value of usage_time_limit::PolicyType.
   const base::Value* next_active_policy =
       last_state->FindKey(kScreenStateNextPolicyType);
   if (!next_active_policy || !next_active_policy->is_int() ||
       next_active_policy->GetInt() < 0 ||
       next_active_policy->GetInt() >
-          static_cast<int>(usage_time_limit::ActivePolicies::kUsageLimit)) {
+          static_cast<int>(usage_time_limit::PolicyType::kUsageLimit)) {
     return base::nullopt;
   }
   result.next_state_active_policy =
-      static_cast<usage_time_limit::ActivePolicies>(
-          next_active_policy->GetInt());
+      static_cast<usage_time_limit::PolicyType>(next_active_policy->GetInt());
 
   // Verify next_unlock_time from the pref is a double value.
   const base::Value* next_unlock_time =
@@ -483,6 +487,24 @@ void ScreenTimeController::UsageTimeLimitWarning() {
       observer.UsageTimeLimitWarning();
   } else {
     CheckTimeLimit("UsageTimeLimitWarning");
+  }
+}
+
+base::Optional<TimeLimitNotifier::LimitType>
+ScreenTimeController::ConvertPolicyType(
+    usage_time_limit::PolicyType policy_type) {
+  switch (policy_type) {
+    case usage_time_limit::PolicyType::kFixedLimit:
+      return base::make_optional(TimeLimitNotifier::LimitType::kBedTime);
+      break;
+    case usage_time_limit::PolicyType::kUsageLimit:
+      return base::make_optional(TimeLimitNotifier::LimitType::kScreenTime);
+      break;
+    case usage_time_limit::PolicyType::kOverride:
+      return base::make_optional(TimeLimitNotifier::LimitType::kOverride);
+      break;
+    case usage_time_limit::PolicyType::kNoPolicy:
+      return base::nullopt;
   }
 }
 

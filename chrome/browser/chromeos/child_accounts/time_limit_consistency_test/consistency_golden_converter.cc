@@ -18,18 +18,18 @@ namespace {
 // The default resets_at value is 6AM.
 constexpr base::TimeDelta kDefaultResetsAt = base::TimeDelta::FromHours(6);
 
-// Converts a ActivePolicies object from the time limit processor to a
+// Converts a PolicyType object from the time limit processor to a
 // ConsistencyGoldenPolicy used by the goldens.
 ConsistencyGoldenPolicy ConvertProcessorPolicyToGoldenPolicy(
-    usage_time_limit::ActivePolicies processor_policy) {
+    usage_time_limit::PolicyType processor_policy) {
   switch (processor_policy) {
-    case usage_time_limit::ActivePolicies::kOverride:
+    case usage_time_limit::PolicyType::kOverride:
       return OVERRIDE;
-    case usage_time_limit::ActivePolicies::kFixedLimit:
+    case usage_time_limit::PolicyType::kFixedLimit:
       return FIXED_LIMIT;
-    case usage_time_limit::ActivePolicies::kUsageLimit:
+    case usage_time_limit::PolicyType::kUsageLimit:
       return USAGE_LIMIT;
-    case usage_time_limit::ActivePolicies::kNoActivePolicy:
+    case usage_time_limit::PolicyType::kNoPolicy:
       return NO_ACTIVE_POLICY;
   }
 
@@ -174,7 +174,7 @@ GenerateUnlockUsageLimitOverrideStateFromInput(
 
   usage_time_limit::State previous_state;
   previous_state.is_locked = true;
-  previous_state.active_policy = usage_time_limit::ActivePolicies::kUsageLimit;
+  previous_state.active_policy = usage_time_limit::PolicyType::kUsageLimit;
   previous_state.is_time_usage_limit_enabled = true;
   previous_state.remaining_usage = base::TimeDelta::FromMinutes(0);
 
