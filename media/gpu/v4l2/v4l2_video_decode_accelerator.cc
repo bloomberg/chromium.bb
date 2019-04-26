@@ -262,11 +262,14 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
   TRACE_EVENT0("media,gpu", "V4L2VDA::InitializeTask");
 
   // The client can keep going as soon as the configuration is checked.
-  *result = CheckConfig(config);
+  // Store the result to the local value to see the result even after |*result|
+  // is released.
+  bool config_result = CheckConfig(config);
+  *result = config_result;
   done->Signal();
 
   // No need to keep going is configuration is not supported.
-  if (*result == false)
+  if (!config_result)
     return;
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
