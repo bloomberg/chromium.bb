@@ -45,6 +45,7 @@ class TabGroupHeader;
 class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
+class TabStripLayoutHelper;
 class ViewObserver;
 
 namespace gfx {
@@ -184,6 +185,13 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Returns the NewTabButton.
   NewTabButton* new_tab_button() { return new_tab_button_; }
+
+  // Returns the current width of the active tab.
+  int ActiveTabWidth() const;
+
+  // Returns the current width of inactive tabs. An individual inactive tab may
+  // differ from this width slightly due to rounding.
+  int InactiveTabWidth() const;
 
   // Returns the index of the specified tab in the model coordinate system, or
   // -1 if tab is closing or not valid.
@@ -359,7 +367,7 @@ class TabStrip : public views::AccessiblePaneView,
   void StartMoveTabAnimation();
 
   // Animates all the views to their ideal bounds.
-  // NOTE: this does *not* invoke GenerateIdealBounds, it uses the bounds
+  // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   void AnimateToIdealBounds();
 
@@ -500,12 +508,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // -- Tab Resize Layout -----------------------------------------------------
 
-  // Returns the current width of each tab. If the space for tabs is not evenly
-  // divisible into these widths, the initial tabs in the strip will be 1 px
-  // larger.
-  int current_inactive_width() const { return current_inactive_width_; }
-  int current_active_width() const { return current_active_width_; }
-
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
 
@@ -544,14 +546,14 @@ class TabStrip : public views::AccessiblePaneView,
   // Invoked prior to starting a new animation.
   void PrepareForAnimation();
 
-  // Generates the ideal bounds for each of the tabs as well as the new tab
-  // button.
-  void GenerateIdealBounds();
+  // Generates and sets the ideal bounds for each of the tabs as well as the new
+  // tab button.
+  void UpdateIdealBounds();
 
-  // Generates the ideal bounds for the pinned tabs. Returns the index to
-  // position the first non-pinned tab and sets |first_non_pinned_index| to the
-  // index of the first non-pinned tab.
-  int GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
+  // Generates and sets the ideal bounds for the pinned tabs. Returns the index
+  // to position the first non-pinned tab and sets |first_non_pinned_index| to
+  // the index of the first non-pinned tab.
+  int UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
 
   // Returns the width of the area that contains tabs. This does not include
   // the width of the new tab button.
@@ -658,17 +660,13 @@ class TabStrip : public views::AccessiblePaneView,
 
   std::unique_ptr<TabStripController> controller_;
 
+  std::unique_ptr<TabStripLayoutHelper> layout_helper_;
+
   // The "New Tab" button.
   NewTabButton* new_tab_button_ = nullptr;
 
   // Ideal bounds of the new tab button.
   gfx::Rect new_tab_button_bounds_;
-
-  // Returns the current widths of each type of tab.  If the tabstrip width is
-  // not evenly divisible into these widths, the initial tabs in the strip will
-  // be 1 px larger.
-  int current_inactive_width_;
-  int current_active_width_;
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while

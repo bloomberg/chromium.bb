@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "content/public/browser/notification_service.h"
@@ -944,9 +945,8 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   // the threshold.
   int threshold = kHorizontalMoveThreshold;
   if (!attached_tabstrip_->touch_layout_.get()) {
-    double ratio =
-        static_cast<double>(attached_tabstrip_->current_inactive_width()) /
-        TabStyle::GetStandardWidth();
+    double ratio = static_cast<double>(attached_tabstrip_->InactiveTabWidth()) /
+                   TabStyle::GetStandardWidth();
     threshold = gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.
@@ -1446,7 +1446,7 @@ gfx::Rect TabDragController::GetDraggedViewTabStripBounds(
   }
 
   return gfx::Rect(tab_strip_point.x(), tab_strip_point.y(),
-                   attached_tabstrip_->current_active_width(),
+                   attached_tabstrip_->ActiveTabWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 

@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
@@ -238,20 +239,6 @@ TabDragController::EventSource EventSourceFromEvent(
                                 : TabDragController::EVENT_SOURCE_MOUSE;
 }
 
-const TabSizeInfo& GetTabSizeInfo() {
-  static TabSizeInfo tab_size_info, touch_tab_size_info;
-  TabSizeInfo* info = MD::touch_ui() ? &touch_tab_size_info : &tab_size_info;
-  if (info->standard_size.IsEmpty()) {
-    info->pinned_tab_width = TabStyle::GetPinnedWidth();
-    info->min_active_width = TabStyleViews::GetMinimumActiveWidth();
-    info->min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-    info->standard_size =
-        gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
-    info->tab_overlap = TabStyle::GetTabOverlap();
-  }
-  return *info;
-}
-
 int GetStackableTabWidth() {
   return TabStyle::GetTabOverlap() + (MD::touch_ui() ? 136 : 102);
 }
@@ -306,8 +293,7 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 
 TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
     : controller_(std::move(controller)),
-      current_inactive_width_(TabStyle::GetStandardWidth()),
-      current_active_width_(TabStyle::GetStandardWidth()) {
+      layout_helper_(std::make_unique<TabStripLayoutHelper>()) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   md_observer_.Add(MD::GetInstance());
@@ -469,7 +455,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     if (is_active)
       add_types |= StackedTabStripLayout::kAddTypeActive;
     touch_layout_->AddTab(model_index, add_types,
-                          GenerateIdealBoundsForPinnedTabs(nullptr));
+                          UpdateIdealBoundsForPinnedTabs(nullptr));
   }
 
   // Don't animate the first tab, it looks weird, and don't animate anything
@@ -515,7 +501,7 @@ void TabStrip::MoveTab(int from_model_index,
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
     int pinned_count = 0;
-    const int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_count);
+    const int start_x = UpdateIdealBoundsForPinnedTabs(&pinned_count);
     touch_layout_->MoveTab(from_model_index, to_model_index,
                            controller_->GetActiveIndex(), start_x,
                            pinned_count);
@@ -560,7 +546,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
     int size_delta = tab_being_removed->width();
     if (!tab_being_removed->data().pinned && was_active &&
-        current_active_width_ > current_inactive_width_) {
+        ActiveTabWidth() > InactiveTabWidth()) {
       // When removing an active, non-pinned tab, an inactive tab will be made
       // active and thus given the active width. Thus the width being removed
       // from the strip is really the current width of whichever inactive tab
@@ -583,10 +569,10 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
   if (touch_layout_) {
     touch_layout_->RemoveTab(model_index,
-                             GenerateIdealBoundsForPinnedTabs(nullptr), old_x);
+                             UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  GenerateIdealBounds();
+  UpdateIdealBounds();
   AnimateToIdealBounds();
 
   // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
@@ -658,7 +644,7 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   if (pinned_state_changed) {
     if (touch_layout_) {
       int pinned_tab_count = 0;
-      int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_tab_count);
+      int start_x = UpdateIdealBoundsForPinnedTabs(&pinned_tab_count);
       touch_layout_->SetXAndPinnedCount(start_x, pinned_tab_count);
     }
     if (GetWidget() && GetWidget()->IsVisible())
@@ -726,8 +712,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
 
   // We need to check what would happen if the active tab were to move to this
   // tab or before.
-  return (right_edge + current_active_width_ - current_inactive_width_) <=
-         tabstrip_right;
+  return (right_edge + ActiveTabWidth() - InactiveTabWidth()) <= tabstrip_right;
 }
 
 bool TabStrip::ShouldDrawStrokes() const {
@@ -764,7 +749,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       AnimateToIdealBounds();
     SchedulePaint();
   } else {
-    if (current_inactive_width_ == current_active_width_) {
+    if (ActiveTabWidth() == InactiveTabWidth()) {
       // When tabs are wide enough, selecting a new tab cannot change the
       // ideal bounds, so only a repaint is necessary.
       SchedulePaint();
@@ -775,7 +760,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       // closure--we won't expand the tabstrip back to the full window
       // width--because PrepareForCloseAt() will have set
       // |available_width_for_tabs_| already.
-      GenerateIdealBounds();
+      UpdateIdealBounds();
       AnimateToIdealBounds();
     } else {
       // As in the animating case above, the selection change will have
@@ -820,6 +805,14 @@ void TabStrip::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 
 void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {
   tab_at(model_index)->SetTabNeedsAttention(attention);
+}
+
+int TabStrip::ActiveTabWidth() const {
+  return layout_helper_->active_tab_width();
+}
+
+int TabStrip::InactiveTabWidth() const {
+  return layout_helper_->inactive_tab_width();
 }
 
 int TabStrip::GetModelIndexOfTab(const Tab* tab) const {
@@ -887,12 +880,12 @@ bool TabStrip::ShouldDragToNextStackedTab(
     const gfx::Rect& dragged_bounds,
     int index,
     bool mouse_has_ever_moved_right) const {
-  if (index + 1 >= this->tab_count() ||
-      !this->touch_layout_->IsStacked(index + 1) || !mouse_has_ever_moved_right)
+  if (index + 1 >= tab_count() || !touch_layout_->IsStacked(index + 1) ||
+      !mouse_has_ever_moved_right)
     return false;
 
-  int active_x = this->ideal_bounds(index).x();
-  int next_x = this->ideal_bounds(index + 1).x();
+  int active_x = ideal_bounds(index).x();
+  int next_x = ideal_bounds(index + 1).x();
   int mid_x =
       std::min(next_x - kStackedDistance, active_x + (next_x - active_x) / 4);
   return GetDraggedX(dragged_bounds) >= mid_x;
@@ -902,12 +895,12 @@ bool TabStrip::ShouldDragToPreviousStackedTab(
     const gfx::Rect& dragged_bounds,
     int index,
     bool mouse_has_ever_moved_left) const {
-  if (index - 1 < this->GetPinnedTabCount() ||
-      !this->touch_layout_->IsStacked(index - 1) || !mouse_has_ever_moved_left)
+  if (index - 1 < GetPinnedTabCount() || !touch_layout_->IsStacked(index - 1) ||
+      !mouse_has_ever_moved_left)
     return false;
 
-  int active_x = this->ideal_bounds(index).x();
-  int previous_x = this->ideal_bounds(index - 1).x();
+  int active_x = ideal_bounds(index).x();
+  int previous_x = ideal_bounds(index - 1).x();
   int mid_x = std::max(previous_x + kStackedDistance,
                        active_x - (active_x - previous_x) / 4);
   return GetDraggedX(dragged_bounds) <= mid_x;
@@ -1619,9 +1612,6 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 
-  current_active_width_ = TabStyle::GetStandardWidth();
-  current_inactive_width_ = current_active_width_;
-
   new_tab_button_ = new NewTabButton(this, this);
   new_tab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
@@ -1656,7 +1646,7 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
   in_tab_close_ = false;
   available_width_for_tabs_ = -1;
 
-  GenerateIdealBounds();
+  UpdateIdealBounds();
 
   // Insert the tab just after the current right edge of the previous tab, if
   // any.
@@ -1677,7 +1667,7 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
 
 void TabStrip::StartMoveTabAnimation() {
   PrepareForAnimation();
-  GenerateIdealBounds();
+  UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
@@ -1750,7 +1740,7 @@ void TabStrip::DoLayout() {
   if (touch_layout_)
     touch_layout_->SetWidth(GetTabAreaWidth());
 
-  GenerateIdealBounds();
+  UpdateIdealBounds();
 
   views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
   SetTabVisibility();
@@ -1943,10 +1933,7 @@ int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
 }
 
 int TabStrip::GetPinnedTabCount() const {
-  int pinned_count = 0;
-  while (pinned_count < tab_count() && tab_at(pinned_count)->data().pinned)
-    pinned_count++;
-  return pinned_count;
+  return layout_helper_->GetPinnedTabCount(&tabs_);
 }
 
 const Tab* TabStrip::GetLastVisibleTab() const {
@@ -2024,7 +2011,7 @@ void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
   }
 
   // Move the dragged tabs to their ideal bounds.
-  GenerateIdealBounds();
+  UpdateIdealBounds();
 
   // Sets the bounds of the dragged tabs.
   for (size_t i = 0; i < tabs.size(); ++i) {
@@ -2074,7 +2061,7 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
     PrepareForAnimation();
 
     // Animate the view back to its correct position.
-    GenerateIdealBounds();
+    UpdateIdealBounds();
     AnimateToIdealBounds();
   }
 
@@ -2416,7 +2403,7 @@ void TabStrip::PrepareForAnimation() {
   }
 }
 
-void TabStrip::GenerateIdealBounds() {
+void TabStrip::UpdateIdealBounds() {
   if (tab_count() == 0)
     return;  // Should only happen during creation/destruction, ignore.
 
@@ -2424,34 +2411,18 @@ void TabStrip::GenerateIdealBounds() {
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
                                     : available_width_for_tabs_;
-    const std::vector<gfx::Rect> tab_bounds =
-        CalculateTabBounds(GetTabSizeInfo(), GetPinnedTabCount(), tab_count(),
-                           controller_->GetActiveIndex(), available_width,
-                           &current_active_width_, &current_inactive_width_);
-    DCHECK_EQ(static_cast<size_t>(tab_count()), tab_bounds.size());
-
-    for (size_t i = 0; i < tab_bounds.size(); ++i)
-      tabs_.set_ideal_bounds(i, tab_bounds[i]);
+    layout_helper_->UpdateIdealBounds(&tabs_, available_width,
+                                      controller_->GetActiveIndex());
   }
 
   new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonIdealX(), 0));
 }
 
-int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
-  const int num_pinned_tabs = GetPinnedTabCount();
-
+int TabStrip::UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
+  layout_helper_->UpdateIdealBoundsForPinnedTabs(&tabs_);
   if (first_non_pinned_index)
-    *first_non_pinned_index = num_pinned_tabs;
-
-  if (num_pinned_tabs == 0)
-    return 0;
-
-  std::vector<gfx::Rect> tab_bounds(tab_count());
-  int non_pinned_x = CalculateBoundsForPinnedTabs(
-      GetTabSizeInfo(), num_pinned_tabs, tab_count(), &tab_bounds);
-  for (int i = 0; i < num_pinned_tabs; ++i)
-    tabs_.set_ideal_bounds(i, tab_bounds[i]);
-  return non_pinned_x;
+    *first_non_pinned_index = layout_helper_->first_non_pinned_tab_index();
+  return layout_helper_->first_non_pinned_tab_x();
 }
 
 int TabStrip::GetTabAreaWidth() const {
@@ -2461,7 +2432,7 @@ int TabStrip::GetTabAreaWidth() const {
 
 void TabStrip::StartResizeLayoutAnimation() {
   PrepareForAnimation();
-  GenerateIdealBounds();
+  UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
@@ -2471,7 +2442,7 @@ void TabStrip::StartPinnedTabAnimation() {
 
   PrepareForAnimation();
 
-  GenerateIdealBounds();
+  UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
@@ -2565,7 +2536,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     // This has to be after SetWidth() as SetWidth() is going to reset the
     // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know
     // how many pinned tabs there are).
-    touch_layout_->SetXAndPinnedCount(GenerateIdealBoundsForPinnedTabs(nullptr),
+    touch_layout_->SetXAndPinnedCount(UpdateIdealBoundsForPinnedTabs(nullptr),
                                       GetPinnedTabCount());
     touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
 
@@ -2575,7 +2546,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     touch_layout_.reset();
   }
   PrepareForAnimation();
-  GenerateIdealBounds();
+  UpdateIdealBounds();
   SetTabVisibility();
   AnimateToIdealBounds();
 }

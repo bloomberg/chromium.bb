@@ -208,10 +208,6 @@ class TabStripTest : public ChromeViewsTestBase,
 
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
-  int current_inactive_width() const {
-    return tab_strip_->current_inactive_width_;
-  }
-
   const StackedTabStripLayout* touch_layout() const {
     return tab_strip_->touch_layout_.get();
   }
@@ -801,7 +797,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (current_inactive_width() != min_inactive_width)
+  while (tab_strip_->InactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   int active_index = controller_->GetActiveIndex();
@@ -811,12 +807,12 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
             tab_strip_->ideal_bounds(active_index).width());
 
   // During mouse-based tab closure, the active tab should remain at least as
-  // wide as it's minium width.
+  // wide as it's minimum width.
   controller_->SelectTab(0, dummy_event_);
-  for (const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
-       tab_strip_->tab_count();) {
+  while (tab_strip_->tab_count() > 0) {
     const int active_index = controller_->GetActiveIndex();
-    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
+    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(),
+              TabStyleViews::GetMinimumActiveWidth());
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
   }
@@ -831,18 +827,20 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // tab but not the minimum.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
-  while (current_inactive_width() >=
-         (min_inactive_width + min_active_width) / 2)
+  while (tab_strip_->InactiveTabWidth() >=
+         (min_inactive_width + min_active_width) / 2) {
     controller_->CreateNewTab();
+  }
 
   // During mouse-based tab closure, inactive tabs shouldn't shrink
   // so that users can close tabs continuously without moving mouse.
   controller_->SelectTab(0, dummy_event_);
-  for (int old_inactive_width = current_inactive_width();
-       tab_strip_->tab_count(); old_inactive_width = current_inactive_width()) {
+  int last_inactive_width = tab_strip_->InactiveTabWidth();
+  while (tab_strip_->tab_count() > 0) {
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
-    EXPECT_GE(current_inactive_width(), old_inactive_width);
+    EXPECT_GE(tab_strip_->InactiveTabWidth(), last_inactive_width);
+    last_inactive_width = tab_strip_->InactiveTabWidth();
   }
 }
 
@@ -853,7 +851,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (current_inactive_width() != min_inactive_width)
+  while (tab_strip_->InactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
