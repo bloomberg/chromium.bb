@@ -118,8 +118,7 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   rvh->SyncRendererPrefs();
 
-  // This function could be called for non Hosted Apps.
-  if (!controller || !controller->IsHostedApp())
+  if (!controller)
     return;
 
   // All hosted apps should specify an app ID.
@@ -132,6 +131,20 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
   web_contents->NotifyPreferencesChanged();
 }
 
+// static
+void HostedAppBrowserController::ClearAppPrefsForWebContents(
+    content::WebContents* web_contents) {
+  auto* rvh = web_contents->GetRenderViewHost();
+
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
+  rvh->SyncRendererPrefs();
+
+  extensions::TabHelper::FromWebContents(web_contents)
+      ->SetExtensionApp(nullptr);
+
+  web_contents->NotifyPreferencesChanged();
+}
+
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : WebAppBrowserController(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
@@ -140,13 +153,9 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
       // indicator of a Bookmark App for an installable website.
       created_for_installed_pwa_(
           base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-          UrlHandlers::GetUrlHandlers(GetExtension())) {
-  WebAppBrowserController::browser()->tab_strip_model()->AddObserver(this);
-}
+          UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
-HostedAppBrowserController::~HostedAppBrowserController() {
-  browser()->tab_strip_model()->RemoveObserver(this);
-}
+HostedAppBrowserController::~HostedAppBrowserController() = default;
 
 base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
   return extension_id_;
@@ -257,27 +266,21 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
 }
 
 base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
-  base::Optional<SkColor> result;
+  base::Optional<SkColor> web_theme_color =
+      WebAppBrowserController::GetThemeColor();
+  if (web_theme_color)
+    return web_theme_color;
 
   const Extension* extension = GetExtension();
-  if (extension)
-    result = AppThemeColorInfo::GetThemeColor(extension);
-
-  // HTML meta theme-color tag overrides manifest theme_color, see spec:
-  // https://www.w3.org/TR/appmanifest/#theme_color-member
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (web_contents) {
-    base::Optional<SkColor> color = web_contents->GetThemeColor();
-    if (color)
-      result = color;
-  }
-
-  if (!result)
+  if (!extension)
     return base::nullopt;
 
-  // The frame/tabstrip code expects an opaque color.
-  return SkColorSetA(*result, SK_AlphaOPAQUE);
+  base::Optional<SkColor> extension_theme_color =
+      AppThemeColorInfo::GetThemeColor(extension);
+  if (extension_theme_color)
+    return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
+
+  return base::nullopt;
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
@@ -345,37 +348,15 @@ bool HostedAppBrowserController::IsInstalled() const {
   return GetExtension();
 }
 
-void HostedAppBrowserController::OnTabStripModelChanged(
-    TabStripModel* tab_strip_model,
-    const TabStripModelChange& change,
-    const TabStripSelectionChange& selection) {
-  if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& delta : change.deltas())
-      OnTabInserted(delta.insert.contents);
-  } else if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas())
-      OnTabRemoved(delta.remove.contents);
-  }
-}
-
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
-  DCHECK(!web_contents()) << "Hosted app windows are single tabbed only";
-  HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
-  content::WebContentsObserver::Observe(contents);
+  WebAppBrowserController::OnTabInserted(contents);
+  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(this,
+                                                                    contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
-  DCHECK_EQ(contents, web_contents());
-  content::WebContentsObserver::Observe(nullptr);
-
-  auto* rvh = contents->GetRenderViewHost();
-
-  contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
-  rvh->SyncRendererPrefs();
-
-  extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(nullptr);
-
-  contents->NotifyPreferencesChanged();
+  WebAppBrowserController::OnTabRemoved(contents);
+  extensions::HostedAppBrowserController::ClearAppPrefsForWebContents(contents);
 }
 
 }  // namespace extensions

@@ -57,12 +57,17 @@ base::string16 WebAppBrowserController::FormatUrlOrigin(const GURL& url) {
 }
 
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
-    : content::WebContentsObserver(nullptr), browser_(browser) {}
+    : content::WebContentsObserver(nullptr), browser_(browser) {
+  browser->tab_strip_model()->AddObserver(this);
+}
 
-WebAppBrowserController::~WebAppBrowserController() = default;
+WebAppBrowserController::~WebAppBrowserController() {
+  browser()->tab_strip_model()->RemoveObserver(this);
+}
 
 bool WebAppBrowserController::IsForExperimentalWebAppBrowser() const {
-  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) ||
+         base::FeatureList::IsEnabled(::features::kFocusMode);
 }
 
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
@@ -93,4 +98,47 @@ void WebAppBrowserController::UpdateToolbarVisibility(bool animate) const {
 void WebAppBrowserController::DidChangeThemeColor(
     base::Optional<SkColor> theme_color) {
   browser_->window()->UpdateFrameColor();
+}
+
+base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
+  base::Optional<SkColor> result;
+  // HTML meta theme-color tag overrides manifest theme_color, see spec:
+  // https://www.w3.org/TR/appmanifest/#theme_color-member
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    base::Optional<SkColor> color = web_contents->GetThemeColor();
+    if (color)
+      result = color;
+  }
+
+  if (!result)
+    return base::nullopt;
+
+  // The frame/tabstrip code expects an opaque color.
+  return SkColorSetA(*result, SK_AlphaOPAQUE);
+}
+
+void WebAppBrowserController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas())
+      OnTabInserted(delta.insert.contents);
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& delta : change.deltas())
+      OnTabRemoved(delta.remove.contents);
+  }
+}
+
+void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
+  DCHECK(!web_contents()) << " App windows are single tabbed only";
+  content::WebContentsObserver::Observe(contents);
+  DidChangeThemeColor(GetThemeColor());
+}
+
+void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
+  DCHECK_EQ(contents, web_contents());
+  content::WebContentsObserver::Observe(nullptr);
 }

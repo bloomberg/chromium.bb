@@ -46,26 +46,6 @@ gfx::ImageSkia ManifestWebAppBrowserController::GetWindowIcon() const {
   return browser()->GetCurrentPageIcon().AsImageSkia();
 }
 
-base::Optional<SkColor> ManifestWebAppBrowserController::GetThemeColor() const {
-  base::Optional<SkColor> result;
-
-  // HTML meta theme-color tag overrides manifest theme_color, see spec:
-  // https://www.w3.org/TR/appmanifest/#theme_color-member
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (web_contents) {
-    base::Optional<SkColor> color = web_contents->GetThemeColor();
-    if (color)
-      result = color;
-  }
-
-  if (!result)
-    return base::nullopt;
-
-  // The frame/tabstrip code expects an opaque color.
-  return SkColorSetA(*result, SK_AlphaOPAQUE);
-}
-
 base::string16 ManifestWebAppBrowserController::GetTitle() const {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

@@ -35,13 +35,15 @@ class Extension;
 
 // Class to encapsulate logic to control the browser UI for extension based web
 // apps.
-class HostedAppBrowserController : public TabStripModelObserver,
-                                   public ExtensionUninstallDialog::Delegate,
+class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
                                    public WebAppBrowserController {
  public:
   // Functions to set preferences that are unique to app windows.
   static void SetAppPrefsForWebContents(WebAppBrowserController* controller,
                                         content::WebContents* web_contents);
+
+  // Clear preferences that are unique to app windows.
+  static void ClearAppPrefsForWebContents(content::WebContents* web_contents);
 
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
@@ -95,19 +97,13 @@ class HostedAppBrowserController : public TabStripModelObserver,
   // the lifetime of HostedAppBrowserController).
   bool IsInstalled() const override;
 
-  // TabStripModelObserver overrides.
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
-
   bool IsHostedApp() const override;
 
- private:
-  // Called by OnTabstripModelChanged().
-  void OnTabInserted(content::WebContents* contents);
-  void OnTabRemoved(content::WebContents* contents);
+ protected:
+  void OnTabInserted(content::WebContents* contents) override;
+  void OnTabRemoved(content::WebContents* contents) override;
 
+ private:
   // Will return nullptr if the extension has been uninstalled.
   const Extension* GetExtension() const;
 

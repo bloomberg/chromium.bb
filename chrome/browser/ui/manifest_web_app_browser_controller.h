@@ -39,8 +39,6 @@ class ManifestWebAppBrowserController : public WebAppBrowserController {
 
   gfx::ImageSkia GetWindowIcon() const override;
 
-  base::Optional<SkColor> GetThemeColor() const override;
-
   base::string16 GetTitle() const override;
 
   std::string GetAppShortName() const override;

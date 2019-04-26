@@ -21,7 +21,8 @@ class ImageSkia;
 }
 
 // Class to encapsulate logic to control the browser UI for web apps.
-class WebAppBrowserController : public content::WebContentsObserver {
+class WebAppBrowserController : public TabStripModelObserver,
+                                public content::WebContentsObserver {
  public:
   ~WebAppBrowserController() override;
 
@@ -59,7 +60,7 @@ class WebAppBrowserController : public content::WebContentsObserver {
   virtual gfx::ImageSkia GetWindowIcon() const = 0;
 
   // Returns the color of the title bar.
-  virtual base::Optional<SkColor> GetThemeColor() const = 0;
+  virtual base::Optional<SkColor> GetThemeColor() const;
 
   // Returns the title to be displayed in the window title bar.
   virtual base::string16 GetTitle() const = 0;
@@ -92,8 +93,17 @@ class WebAppBrowserController : public content::WebContentsObserver {
   // content::WebContentsObserver:
   void DidChangeThemeColor(base::Optional<SkColor> theme_color) override;
 
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
  protected:
   explicit WebAppBrowserController(Browser* browser);
+  // Called by OnTabstripModelChanged().
+  virtual void OnTabInserted(content::WebContents* contents);
+  virtual void OnTabRemoved(content::WebContents* contents);
 
  private:
   Browser* const browser_;
