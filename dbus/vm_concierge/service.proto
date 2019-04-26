@@ -330,6 +330,9 @@ message ExportDiskImageResponse {
 
   // The failure reason if the disk image could not be exported.
   string failure_reason = 2;
+
+  // Command identifier if status is DISK_STATUS_IN_PROGRESS.
+  string command_uuid = 3;
 }
 
 // Request to concierge to import a disk image.
