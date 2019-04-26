@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -39,7 +38,7 @@ void FakeDatagramSocket::AppendInputPacket(const std::string& data) {
     int result = CopyReadData(read_buffer_.get(), read_buffer_size_);
     read_buffer_ = nullptr;
 
-    base::ResetAndReturn(&read_callback_).Run(result);
+    std::move(read_callback_).Run(result);
   }
 }
 

@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -155,11 +154,10 @@ class CreateSessionDescriptionObserver
         result_callback);
   }
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
-    base::ResetAndReturn(&result_callback_)
-        .Run(base::WrapUnique(desc), std::string());
+    std::move(result_callback_).Run(base::WrapUnique(desc), std::string());
   }
   void OnFailure(const std::string& error) override {
-    base::ResetAndReturn(&result_callback_).Run(nullptr, error);
+    std::move(result_callback_).Run(nullptr, error);
   }
 
  protected:
@@ -189,11 +187,11 @@ class SetSessionDescriptionObserver
   }
 
   void OnSuccess() override {
-    base::ResetAndReturn(&result_callback_).Run(true, std::string());
+    std::move(result_callback_).Run(true, std::string());
   }
 
   void OnFailure(const std::string& error) override {
-    base::ResetAndReturn(&result_callback_).Run(false, error);
+    std::move(result_callback_).Run(false, error);
   }
 
  protected:
@@ -221,7 +219,7 @@ class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
 
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
-    base::ResetAndReturn(&result_callback_).Run(report);
+    std::move(result_callback_).Run(report);
   }
 
  protected:

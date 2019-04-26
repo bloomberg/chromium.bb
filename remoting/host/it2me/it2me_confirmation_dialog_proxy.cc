@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -105,7 +104,7 @@ void It2MeConfirmationDialogProxy::Show(
 void It2MeConfirmationDialogProxy::ReportResult(
     It2MeConfirmationDialog::Result result) {
   DCHECK(core_->caller_task_runner()->BelongsToCurrentThread());
-  base::ResetAndReturn(&callback_).Run(result);
+  std::move(callback_).Run(result);
 }
 
 }  // namespace remoting

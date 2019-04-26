@@ -4,8 +4,9 @@
 
 #include "remoting/test/host_list_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -104,7 +105,7 @@ void HostListFetcher::OnURLFetchComplete(
   if (!ProcessResponse(&hostlist)) {
     hostlist.clear();
   }
-  base::ResetAndReturn(&hostlist_callback_).Run(hostlist);
+  std::move(hostlist_callback_).Run(hostlist);
 }
 
 }  // namespace test

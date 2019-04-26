@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -188,7 +187,7 @@ void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
     service_client_->UnregisterHost(host_id_, access_token_, this);
     return;
   }
-  base::ResetAndReturn(&on_done_).Run(START_COMPLETE);
+  std::move(on_done_).Run(START_COMPLETE);
 }
 
 void HostStarter::OnOAuthError() {
@@ -201,8 +200,7 @@ void HostStarter::OnOAuthError() {
     LOG(ERROR) << "OAuth error occurred when unregistering host.";
   }
 
-  base::ResetAndReturn(&on_done_)
-      .Run(unregistering_host_ ? START_ERROR : OAUTH_ERROR);
+  std::move(on_done_).Run(unregistering_host_ ? START_ERROR : OAUTH_ERROR);
 }
 
 void HostStarter::OnNetworkError(int response_code) {
@@ -216,8 +214,7 @@ void HostStarter::OnNetworkError(int response_code) {
     LOG(ERROR) << "Network error occurred when unregistering host.";
   }
 
-  base::ResetAndReturn(&on_done_)
-      .Run(unregistering_host_ ? START_ERROR : NETWORK_ERROR);
+  std::move(on_done_).Run(unregistering_host_ ? START_ERROR : NETWORK_ERROR);
 }
 
 void HostStarter::OnHostUnregistered() {
@@ -226,7 +223,7 @@ void HostStarter::OnHostUnregistered() {
         FROM_HERE, base::BindOnce(&HostStarter::OnHostUnregistered, weak_ptr_));
     return;
   }
-  base::ResetAndReturn(&on_done_).Run(START_ERROR);
+  std::move(on_done_).Run(START_ERROR);
 }
 
 }  // namespace remoting

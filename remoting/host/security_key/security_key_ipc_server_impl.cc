@@ -7,10 +7,10 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -147,7 +147,7 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!connect_callback_.is_null()) {
-    base::ResetAndReturn(&connect_callback_).Run();
+    std::move(connect_callback_).Run();
   }
 
 #if defined(OS_WIN)
@@ -186,11 +186,11 @@ void SecurityKeyIpcServerImpl::OnChannelError() {
   CloseChannel();
 
   if (!connect_callback_.is_null()) {
-    base::ResetAndReturn(&connect_callback_).Run();
+    std::move(connect_callback_).Run();
   }
   if (!done_callback_.is_null()) {
     // Note: This callback may result in this object being torn down.
-    base::ResetAndReturn(&done_callback_).Run();
+    std::move(done_callback_).Run();
   }
 }
 

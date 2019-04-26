@@ -6,10 +6,10 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -287,7 +287,7 @@ void DaemonProcess::Stop() {
   OnWorkerProcessStopped();
 
   if (!stopped_callback_.is_null()) {
-    base::ResetAndReturn(&stopped_callback_).Run();
+    std::move(stopped_callback_).Run();
   }
 }
 

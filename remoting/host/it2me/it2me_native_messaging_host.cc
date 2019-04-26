@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/single_thread_task_runner.h"
@@ -488,7 +487,7 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
     // may not be ideal, but is still functional.
     needs_elevation_ = needs_elevation_ && allow_elevated_host;
     if (pending_connect_) {
-      base::ResetAndReturn(&pending_connect_).Run();
+      std::move(pending_connect_).Run();
     }
   }
 
@@ -515,7 +514,7 @@ void It2MeNativeMessagingHost::OnPolicyError() {
     // is one, but otherwise do nothing. The policy error will be sent when a
     // connection is made; doing so beforehand would break assumptions made by
     // the Chrome app.
-    base::ResetAndReturn(&pending_connect_).Run();
+    std::move(pending_connect_).Run();
   }
 }
 

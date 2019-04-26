@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -340,7 +339,7 @@ void It2MeHostTest::OnStateChanged(It2MeHostState state, ErrorCode error_code) {
 
   if (state_change_callback_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::ResetAndReturn(&state_change_callback_));
+        FROM_HERE, std::move(state_change_callback_));
   }
 }
 

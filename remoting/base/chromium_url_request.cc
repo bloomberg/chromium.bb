@@ -5,9 +5,9 @@
 #include "remoting/base/chromium_url_request.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -83,7 +83,7 @@ void ChromiumUrlRequest::OnURLLoadComplete(
   }
 
   DCHECK(!on_result_callback_.is_null());
-  base::ResetAndReturn(&on_result_callback_).Run(result);
+  std::move(on_result_callback_).Run(result);
 }
 
 ChromiumUrlRequestFactory::ChromiumUrlRequestFactory(

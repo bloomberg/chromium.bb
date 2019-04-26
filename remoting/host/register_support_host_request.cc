@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -242,7 +243,7 @@ void RegisterSupportHostRequest::CallCallback(const std::string& support_id,
   signal_strategy_->RemoveListener(this);
   signal_strategy_ = nullptr;
 
-  base::ResetAndReturn(&callback_).Run(support_id, lifetime, error_code);
+  std::move(callback_).Run(support_id, lifetime, error_code);
 }
 
 }  // namespace remoting

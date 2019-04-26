@@ -4,8 +4,9 @@
 
 #include "remoting/protocol/http_ice_config_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/values.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/ice_config.h"
@@ -87,7 +88,7 @@ void HttpIceConfigRequest::OnOAuthToken(OAuthTokenGetter::Status status,
                                         const std::string& access_token) {
   if (status != OAuthTokenGetter::SUCCESS) {
     LOG(ERROR) << "Failed to get OAuth token for IceConfig request.";
-    base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
+    std::move(on_ice_config_callback_).Run(IceConfig());
     return;
   }
 
@@ -106,13 +107,13 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
   if (result.status != -1 && result.status != 200) {
     LOG(ERROR) << "Received status code " << result.status << " from " << url_
                << ": " << result.response_body;
-    base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
+    std::move(on_ice_config_callback_).Run(IceConfig());
     return;
   }
 
   if (!result.success) {
     LOG(ERROR) << "Failed to fetch " << url_;
-    base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
+    std::move(on_ice_config_callback_).Run(IceConfig());
     return;
   }
 
@@ -122,7 +123,7 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
                << result.response_body;
   }
 
-  base::ResetAndReturn(&on_ice_config_callback_).Run(ice_config);
+  std::move(on_ice_config_callback_).Run(ice_config);
 }
 
 }  // namespace protocol
