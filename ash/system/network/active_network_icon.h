@@ -10,20 +10,21 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/network/network_icon.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chromeos/network/network_state_handler_observer.h"
-
-namespace chromeos {
-class NetworkState;
-class NetworkStateHandler;
-}  // namespace chromeos
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
+
+namespace service_manager {
+class Connector;
+}
 
 namespace ash {
 
@@ -40,9 +41,9 @@ namespace ash {
 // TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
 // test Dual icon methods.
 class ASH_EXPORT ActiveNetworkIcon
-    : public chromeos::NetworkStateHandlerObserver {
+    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
-  ActiveNetworkIcon();
+  explicit ActiveNetworkIcon(service_manager::Connector* connector);
   ~ActiveNetworkIcon() override;
 
   // Returns the label for the primary active network..
@@ -63,12 +64,8 @@ class ASH_EXPORT ActiveNetworkIcon
   gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
                                       bool* animating);
 
-  void InitForTesting(chromeos::NetworkStateHandler* network_state_handler);
-
  private:
-  void InitializeNetworkStateHandler(chromeos::NetworkStateHandler* handler);
-  void ShutdownNetworkStateHandler();
-
+  void BindCrosNetworkConfig(service_manager::Connector* connector);
   gfx::ImageSkia GetDefaultImageImpl(
       const base::Optional<network_icon::NetworkIconState>& default_network,
       network_icon::IconType icon_type,
@@ -82,14 +79,27 @@ class ASH_EXPORT ActiveNetworkIcon
   void UpdateActiveNetworks();
   void SetCellularUninitializedMsg();
 
-  // chromeos::NetworkStateHandlerObserver
-  void DeviceListChanged() override;
-  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
-  void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
-                                 active_networks) override;
-  void OnShuttingDown() override;
+  // CrosNetworkConfigObserver
+  void OnActiveNetworksChanged(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks) override;
+  void OnNetworkStateListChanged() override;
+  void OnDeviceStateListChanged() override;
 
-  chromeos::NetworkStateHandler* network_state_handler_ = nullptr;
+  void OnGetDeviceStateList(
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+          devices);
+  chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
+      chromeos::network_config::mojom::NetworkType type);
+
+  chromeos::network_config::mojom::CrosNetworkConfigPtr
+      cros_network_config_ptr_;
+  mojo::Binding<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_binding_{this};
+
+  base::flat_map<chromeos::network_config::mojom::NetworkType,
+                 chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+      devices_;
   base::Optional<network_icon::NetworkIconState> default_network_;
   base::Optional<network_icon::NetworkIconState> active_non_cellular_;
   base::Optional<network_icon::NetworkIconState> active_cellular_;

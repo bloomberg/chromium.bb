@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,39 +22,25 @@ class NetworkState;
 namespace ash {
 namespace network_icon {
 
-// TODO(stevenjb): Replace with mojo enum once available.
-enum class NetworkType : int32_t {
-  kCellular,
-  kEthernet,
-  kTether,
-  kVPN,
-  kWiFi,
-};
-
-// TODO(stevenjb): Replace with mojo enum once available.
-enum class ConnectionStateType : int32_t {
-  kNotConnected,
-  kConnecting,
-  kConnected,
-  kPortal,
-};
-
-// TODO(stevenjb): Replace with mojo type once available.
+// TODO(stevenjb): Replace with network_config::mojom::NetworkStateProperties.
 struct ASH_EXPORT NetworkIconState {
   // Constructs a NetworkIconState from a NetworkState.
   explicit NetworkIconState(const chromeos::NetworkState* network);
+  // Constructs a NetworkIconState from mojom::NetworkStateProperties.
+  explicit NetworkIconState(
+      const chromeos::network_config::mojom::NetworkStateProperties* network);
   NetworkIconState(const NetworkIconState& other);
   NetworkIconState& operator=(const NetworkIconState& other);
   ~NetworkIconState();
 
   std::string guid;
   std::string name;
-  NetworkType type;
-  ConnectionStateType connection_state;
-  std::string security;            // ONC security type
+  chromeos::network_config::mojom::NetworkType type;
+  chromeos::network_config::mojom::ConnectionStateType connection_state;
+  chromeos::network_config::mojom::SecurityType security;  // ONC security type
   std::string network_technology;  // ONC network technology type
-  std::string activation_state;    // ONC activation state
-  int signal_strength = 0;         // 0-100.
+  chromeos::network_config::mojom::ActivationStateType activation_state;
+  int signal_strength = 0;  // 0-100.
   bool is_roaming = false;
 };
 
@@ -77,9 +64,10 @@ bool IsConnecting(const NetworkIconState& icon_state);
 
 // Returns an image to represent either a fully connected network or a
 // disconnected network.
-const gfx::ImageSkia GetBasicImage(IconType icon_type,
-                                   NetworkType network_type,
-                                   bool connected);
+const gfx::ImageSkia GetBasicImage(
+    IconType icon_type,
+    chromeos::network_config::mojom::NetworkType network_type,
+    bool connected);
 
 // Returns and caches an image for non VPN |network| which must not be null.
 // Use this for non virtual networks and for the default (tray) icon.
@@ -106,8 +94,9 @@ ASH_EXPORT gfx::ImageSkia GetImageForWiFiEnabledState(
     IconType = ICON_TYPE_DEFAULT_VIEW);
 
 // Returns the connecting image for a shill network non-VPN type.
-gfx::ImageSkia GetConnectingImageForNetworkType(NetworkType network_type,
-                                                IconType icon_type);
+gfx::ImageSkia GetConnectingImageForNetworkType(
+    chromeos::network_config::mojom::NetworkType network_type,
+    IconType icon_type);
 
 // Returns the connected image for |connected_network| and |network_type| with a
 // connecting VPN badge.
@@ -116,7 +105,8 @@ gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
     IconType icon_type);
 
 // Returns the disconnected image for a shill network type.
-gfx::ImageSkia GetDisconnectedImageForNetworkType(NetworkType network_type);
+gfx::ImageSkia GetDisconnectedImageForNetworkType(
+    chromeos::network_config::mojom::NetworkType network_type);
 
 // Returns the full strength image for a Wi-Fi network using |icon_color| for
 // the main icon and |badge_color| for the badge.

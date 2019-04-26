@@ -18,6 +18,7 @@ component("network") {
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/shill",
     "//chromeos/login/login_state",
+    "//chromeos/services/network_config/public/mojom",
     "//components/account_id",
     "//components/certificate_matching",
     "//components/device_event_log",

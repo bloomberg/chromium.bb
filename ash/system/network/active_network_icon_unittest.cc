@@ -13,6 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,16 +35,16 @@ class ActiveNetworkIconTest : public testing::Test {
   ~ActiveNetworkIconTest() override = default;
 
   void SetUp() override {
-    active_network_icon_ = std::make_unique<ActiveNetworkIcon>();
-    active_network_icon_->InitForTesting(helper().network_state_handler());
+    active_network_icon_ =
+        std::make_unique<ActiveNetworkIcon>(network_config_helper_.connector());
   }
 
   void TearDown() override { active_network_icon_.reset(); }
 
   void SetupEthernet() {
     if (eth_path_.empty()) {
-      helper().device_test()->AddDevice("/device/stub_eth_device",
-                                        shill::kTypeWifi, "stub_eth_device");
+      network_state_helper().device_test()->AddDevice(
+          "/device/stub_eth_device", shill::kTypeWifi, "stub_eth_device");
       eth_path_ = ConfigureService(
           R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
     }
@@ -63,11 +65,11 @@ class ActiveNetworkIconTest : public testing::Test {
 
   void SetupCellular(const char* state) {
     if (cellular_path_.empty()) {
-      helper_.manager_test()->AddTechnology(shill::kTypeCellular,
-                                            true /* enabled */);
-      helper().device_test()->AddDevice(kShillManagerClientStubCellularDevice,
-                                        shill::kTypeCellular,
-                                        "stub_cellular_device");
+      network_state_helper().manager_test()->AddTechnology(shill::kTypeCellular,
+                                                           true /* enabled */);
+      network_state_helper().device_test()->AddDevice(
+          kShillManagerClientStubCellularDevice, shill::kTypeCellular,
+          "stub_cellular_device");
       cellular_path_ = ConfigureService(
           R"({"GUID": "cellular_guid", "Type": "cellular", "Technology": "LTE",
             "State": "idle"})");
@@ -76,22 +78,25 @@ class ActiveNetworkIconTest : public testing::Test {
                        base::Value(state));
     SetServiceProperty(cellular_path_, shill::kSignalStrengthProperty,
                        base::Value(100));
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetCellularUninitialized(bool scanning) {
     const bool enabled = scanning;
-    helper_.manager_test()->RemoveTechnology(shill::kTypeCellular);
-    helper_.manager_test()->AddTechnology(shill::kTypeCellular, enabled);
-    helper().device_test()->AddDevice(kShillManagerClientStubCellularDevice,
-                                      shill::kTypeCellular,
-                                      "stub_cellular_device");
+    network_state_helper().manager_test()->RemoveTechnology(
+        shill::kTypeCellular);
+    network_state_helper().manager_test()->AddTechnology(shill::kTypeCellular,
+                                                         enabled);
+    network_state_helper().device_test()->AddDevice(
+        kShillManagerClientStubCellularDevice, shill::kTypeCellular,
+        "stub_cellular_device");
     if (scanning) {
-      helper().device_test()->SetDeviceProperty(
+      network_state_helper().device_test()->SetDeviceProperty(
           kShillManagerClientStubCellularDevice, shill::kScanningProperty,
           base::Value(true), true /* notify_changed */);
     } else {
-      helper_.manager_test()->SetTechnologyInitializing(shill::kTypeCellular,
-                                                        true);
+      network_state_helper().manager_test()->SetTechnologyInitializing(
+          shill::kTypeCellular, true);
     }
     base::RunLoop().RunUntilIdle();
   }
@@ -108,13 +113,13 @@ class ActiveNetworkIconTest : public testing::Test {
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
-    return helper_.ConfigureService(shill_json_string);
+    return network_state_helper().ConfigureService(shill_json_string);
   }
 
   void SetServiceProperty(const std::string& service_path,
                           const std::string& key,
                           const base::Value& value) {
-    helper_.SetServiceProperty(service_path, key, value);
+    network_state_helper().SetServiceProperty(service_path, key, value);
   }
 
   std::unique_ptr<chromeos::NetworkState> CreateStandaloneNetworkState(
@@ -125,12 +130,16 @@ class ActiveNetworkIconTest : public testing::Test {
     VLOG(1) << "CreateStandaloneNetworkState: " << id << " type: " << type
             << " State: " << connection_state
             << " Strength: " << signal_strength;
-    return helper_.CreateStandaloneNetworkState(id, type, connection_state,
-                                                signal_strength);
+    return network_state_helper().CreateStandaloneNetworkState(
+        id, type, connection_state, signal_strength);
   }
 
-  chromeos::NetworkStateTestHelper& helper() { return helper_; }
-
+  chromeos::NetworkStateTestHelper& network_state_helper() {
+    return network_config_helper_.network_state_helper();
+  }
+  chromeos::NetworkStateHandler* network_state_handler() {
+    return network_state_helper().network_state_handler();
+  }
   ActiveNetworkIcon* active_network_icon() {
     return active_network_icon_.get();
   }
@@ -143,8 +152,7 @@ class ActiveNetworkIconTest : public testing::Test {
 
  private:
   const base::MessageLoop message_loop_;
-  chromeos::NetworkStateTestHelper helper_{
-      false /* use_default_devices_and_services */};
+  chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
   std::string eth_path_;
@@ -167,8 +175,7 @@ TEST_F(ActiveNetworkIconTest, GetDefaultLabel) {
             label);
 
   SetupWiFi(shill::kStateIdle);
-  helper().network_state_handler()->SetNetworkConnectRequested(wifi_path(),
-                                                               true);
+  network_state_handler()->SetNetworkConnectRequested(wifi_path(), true);
   base::RunLoop().RunUntilIdle();
   label = active_network_icon()->GetDefaultLabel(icon_type());
   // Note: The guid is used for the name in ConfigureService.
@@ -198,8 +205,7 @@ TEST_F(ActiveNetworkIconTest, GetSingleImage) {
 
   // Cellular + WiFi connecting = WiFi connecting icon
   SetupWiFi(shill::kStateAssociation);
-  helper().network_state_handler()->SetNetworkConnectRequested(wifi_path(),
-                                                               true);
+  network_state_handler()->SetNetworkConnectRequested(wifi_path(), true);
   SetServiceProperty(wifi_path(), shill::kSignalStrengthProperty,
                      base::Value(50));
   base::RunLoop().RunUntilIdle();
@@ -217,8 +223,7 @@ TEST_F(ActiveNetworkIconTest, GetSingleImage) {
 
   // Cellular + WiFi connected + Ethernet = No icon
   SetupWiFi(shill::kStateOnline);
-  helper().network_state_handler()->SetNetworkConnectRequested(wifi_path(),
-                                                               false);
+  network_state_handler()->SetNetworkConnectRequested(wifi_path(), false);
   image = active_network_icon()->GetSingleImage(icon_type(), &animating);
   EXPECT_TRUE(image.isNull());
   EXPECT_FALSE(animating);
@@ -245,7 +250,7 @@ TEST_F(ActiveNetworkIconTest, CellularUninitialized) {
 TEST_F(ActiveNetworkIconTest, CellularScanning) {
   SetCellularUninitialized(true /* scanning */);
 
-  ASSERT_TRUE(helper().network_state_handler()->GetScanningByType(
+  ASSERT_TRUE(network_state_handler()->GetScanningByType(
       chromeos::NetworkTypePattern::Cellular()));
 
   base::string16 label = active_network_icon()->GetDefaultLabel(icon_type());

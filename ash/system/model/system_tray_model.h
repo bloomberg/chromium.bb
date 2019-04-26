@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ash {
 
 class ActiveNetworkIcon;
@@ -25,7 +29,7 @@ class VirtualKeyboardModel;
 // Top level model of SystemTray.
 class SystemTrayModel : public mojom::SystemTray {
  public:
-  SystemTrayModel();
+  explicit SystemTrayModel(service_manager::Connector* connector);
   ~SystemTrayModel() override;
 
   // Binds the mojom::SystemTray interface to this object.
