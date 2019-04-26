@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.support.v4.graphics.drawable.DrawableCompat;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,15 +13,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ButtonCompat;
+
+import java.lang.ref.WeakReference;
 
 /**
  * {@link RecyclerView.ViewHolder} for tab grid. Owns the tab info card
  * and the associated view hierarchy.
  */
 class TabGridViewHolder extends RecyclerView.ViewHolder {
+    private static WeakReference<Bitmap> sCloseButtonBitmapWeakRef;
+
     public final ImageView favicon;
     public final TextView title;
     public final ImageView thumbnail;
@@ -35,11 +39,19 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         this.title = itemView.findViewById(R.id.tab_title);
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.closeButton = itemView.findViewById(R.id.close_button);
-        DrawableCompat.setTint(this.closeButton.getDrawable(),
-                ApiCompatibilityUtils.getColor(
-                        itemView.getResources(), org.chromium.chrome.R.color.light_icon_color));
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);
         this.backgroundView = itemView.findViewById(R.id.background_view);
+
+        if (sCloseButtonBitmapWeakRef == null || sCloseButtonBitmapWeakRef.get() == null) {
+            int closeButtonSize =
+                    (int) itemView.getResources().getDimension(R.dimen.tab_grid_close_button_size);
+            Bitmap bitmap =
+                    BitmapFactory.decodeResource(itemView.getResources(), R.drawable.btn_close);
+            sCloseButtonBitmapWeakRef = new WeakReference<>(
+                    Bitmap.createScaledBitmap(bitmap, closeButtonSize, closeButtonSize, true));
+            bitmap.recycle();
+        }
+        this.closeButton.setImageBitmap(sCloseButtonBitmapWeakRef.get());
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {
