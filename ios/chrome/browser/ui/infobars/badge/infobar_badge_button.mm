@@ -15,12 +15,12 @@ namespace {
 const CGFloat kButtonAnimationDuration = 0.2;
 // Edge insets of button.
 const CGFloat kButtonEdgeInset = 6;
-// Corner radius of button.
-const CGFloat kButtonCornerRadius = 15;
 // White value of the button background in a selected state.
 const CGFloat kSelectedWhiteValue = 0.80;
 // Tint color of the button in an active state.
 const CGFloat kActiveTintColor = 0x1A73E8;
+// To achieve a circular corner radius, divide length of a side by 2.
+const CGFloat kCircularCornerRadiusDivisor = 2.0;
 }  // namespace
 
 @interface InfobarBadgeButton ()
@@ -40,9 +40,14 @@ const CGFloat kActiveTintColor = 0x1A73E8;
     self.imageView.contentMode = UIViewContentModeScaleToFill;
     self.imageEdgeInsets = UIEdgeInsetsMake(kButtonEdgeInset, kButtonEdgeInset,
                                             kButtonEdgeInset, kButtonEdgeInset);
-    self.layer.cornerRadius = kButtonCornerRadius;
   }
   [super willMoveToSuperview:newSuperview];
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  self.layer.cornerRadius =
+      self.bounds.size.height / kCircularCornerRadiusDivisor;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
