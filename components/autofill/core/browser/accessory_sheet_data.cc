@@ -85,7 +85,8 @@ AccessorySheetData& AccessorySheetData::operator=(AccessorySheetData&& data) =
     default;
 
 bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
-  return title_ == data.title_ && user_info_list_ == data.user_info_list_ &&
+  return sheet_type_ == data.sheet_type_ && title_ == data.title_ &&
+         user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
 }
 

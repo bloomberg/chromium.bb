@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.ui.modelutil.ListModel;
 
 /**
@@ -39,7 +40,7 @@ class AccessorySheetTabMetricsRecorder {
         for (int i = 0; i < suggestionList.size(); ++i) {
             if (getType(suggestionList.get(i)) == PASSWORD_INFO) {
                 UserInfo info = (UserInfo) suggestionList.get(i).getDataPiece();
-                for (UserInfo.Field field : info.getFields()) {
+                for (UserInfoField field : info.getFields()) {
                     if (field.isSelectable()) ++interactiveSuggestions;
                 }
             }

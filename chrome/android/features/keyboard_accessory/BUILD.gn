@@ -8,6 +8,7 @@ generate_jni("jni_headers") {
   sources = [
     "internal/java/src/org/chromium/chrome/browser/keyboard_accessory/AutofillKeyboardAccessoryViewBridge.java",
     "internal/java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponentBridge.java",
+    "public/java/src/org/chromium/chrome/browser/keyboard_accessory/data/UserInfoField.java",
   ]
   jni_package = "chrome"
 }

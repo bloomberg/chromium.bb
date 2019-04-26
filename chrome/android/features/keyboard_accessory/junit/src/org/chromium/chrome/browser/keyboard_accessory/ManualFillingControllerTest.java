@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
@@ -189,8 +190,8 @@ public class ManualFillingControllerTest {
             AccessorySheetData sheetData =
                     new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords");
             UserInfo userInfo = new UserInfo(null);
-            userInfo.addField(new UserInfo.Field("(No username)", "No username", false, null));
-            userInfo.addField(new UserInfo.Field(passwordString, "Password", true, null));
+            userInfo.addField(new UserInfoField("(No username)", "No username", false, null));
+            userInfo.addField(new UserInfoField(passwordString, "Password", true, null));
             sheetData.getUserInfoList().add(userInfo);
             mAccessorySheetDataProvider.notifyObservers(sheetData);
         }

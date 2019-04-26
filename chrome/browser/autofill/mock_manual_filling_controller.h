@@ -24,8 +24,7 @@ class MockManualFillingController
   MOCK_METHOD1(Hide, void(ManualFillingController::FillingSource));
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
-  MOCK_METHOD2(OnFillingTriggered,
-               void(bool is_password, const base::string16&));
+  MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_CONST_METHOD1(OnOptionSelected, void(const base::string16&));
   MOCK_METHOD0(OnGenerationRequested, void());
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());

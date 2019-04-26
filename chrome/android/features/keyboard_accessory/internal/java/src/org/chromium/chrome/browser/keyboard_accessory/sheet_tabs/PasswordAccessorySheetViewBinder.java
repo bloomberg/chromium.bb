@@ -23,6 +23,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
+import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabViewBinder.ElementViewHolder;
 import org.chromium.ui.modelutil.ListModel;
@@ -113,7 +114,7 @@ class PasswordAccessorySheetViewBinder {
             ViewCompat.setPaddingRelative(password, 2 * mPadding + mIconSize, 0, mPadding, 0);
         }
 
-        private void bindTextView(TextView text, KeyboardAccessoryData.UserInfo.Field field) {
+        private void bindTextView(TextView text, UserInfoField field) {
             text.setTransformationMethod(
                     field.isObfuscated() ? new PasswordTransformationMethod() : null);
             // With transformation, the character set forces a LTR gravity. Therefore, invert it:

@@ -13,9 +13,10 @@ android_library("java") {
   ]
   java_files = [
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponent.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/data/KeyboardAccessoryData.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/data/Provider.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/data/PropertyProvider.java",
-    "java/src/org/chromium/chrome/browser/keyboard_accessory/data/KeyboardAccessoryData.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/data/UserInfoField.java",
   ]
   srcjar_deps = [ ":java_enums_srcjar" ]
 }

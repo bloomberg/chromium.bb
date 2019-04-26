@@ -98,10 +98,9 @@ void ManualFillingControllerImpl::Hide(FillingSource source) {
 }
 
 void ManualFillingControllerImpl::OnFillingTriggered(
-    bool is_password,
-    const base::string16& text_to_fill) {
+    const autofill::UserInfo::Field& selection) {
   DCHECK(pwd_controller_);
-  pwd_controller_->OnFillingTriggered(is_password, text_to_fill);
+  pwd_controller_->OnFillingTriggered(selection);
 }
 
 void ManualFillingControllerImpl::OnOptionSelected(

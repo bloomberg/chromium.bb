@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -115,19 +116,19 @@ class ManualFillingComponentBridge {
     @CalledByNative
     private void addFieldToUserInfo(Object objUserInfo, String displayText, String a11yDescription,
             boolean isObfuscated, boolean selectable) {
-        Callback<UserInfo.Field> callback = null;
+        Callback<UserInfoField> callback = null;
         if (selectable) {
             callback = (field) -> {
                 assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
                 ManualFillingMetricsRecorder.recordSuggestionSelected(AccessoryTabType.PASSWORDS,
                         field.isObfuscated() ? AccessorySuggestionType.PASSWORD
                                              : AccessorySuggestionType.USERNAME);
-                nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field.getDisplayText());
+                nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field);
             };
         }
         ((UserInfo) objUserInfo)
                 .getFields()
-                .add(new UserInfo.Field(displayText, a11yDescription, isObfuscated, callback));
+                .add(new UserInfoField(displayText, a11yDescription, isObfuscated, callback));
     }
 
     @CalledByNative
@@ -155,7 +156,7 @@ class ManualFillingComponentBridge {
     private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
             int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
-            long nativeManualFillingViewAndroid, boolean isObfuscated, String textToFill);
+            long nativeManualFillingViewAndroid, boolean isObfuscated, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, String selectedOption);
     private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);

@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
+#include "components/autofill/core/browser/accessory_sheet_data.h"
 
 namespace gfx {
 class Image;
@@ -43,7 +44,7 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean isPassword,
-      const base::android::JavaParamRef<jstring>& textToFill);
+      const base::android::JavaParamRef<jobject>& j_user_info_field);
   void OnOptionSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -60,6 +61,10 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   ConvertAccessorySheetDataToJavaObject(
       JNIEnv* env,
       const autofill::AccessorySheetData& tab_data);
+
+  autofill::UserInfo::Field ConvertJavaUserInfoField(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_field_to_convert);
 
   // The controller provides data for this view and owns it.
   ManualFillingController* controller_;

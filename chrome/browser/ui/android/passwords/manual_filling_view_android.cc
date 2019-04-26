@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "jni/ManualFillingComponentBridge_jni.h"
+#include "jni/UserInfoField_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -31,7 +32,9 @@
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
 using autofill::UserInfo;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 ManualFillingViewAndroid::ManualFillingViewAndroid(
@@ -107,9 +110,9 @@ void ManualFillingViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jboolean isPassword,
-    const base::android::JavaParamRef<_jstring*>& textToFill) {
+    const base::android::JavaParamRef<jobject>& j_user_info_field) {
   controller_->OnFillingTriggered(
-      isPassword, base::android::ConvertJavaStringToUTF16(textToFill));
+      ConvertJavaUserInfoField(env, j_user_info_field));
 }
 
 void ManualFillingViewAndroid::OnOptionSelected(
@@ -164,6 +167,19 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
         ConvertUTF16ToJavaString(env, footer_command.display_text()));
   }
   return j_tab_data;
+}
+
+UserInfo::Field ManualFillingViewAndroid::ConvertJavaUserInfoField(
+    JNIEnv* env,
+    const JavaRef<jobject>& j_field_to_convert) {
+  base::string16 display_text = ConvertJavaStringToUTF16(
+      env, Java_UserInfoField_getDisplayText(env, j_field_to_convert));
+  base::string16 a11y_description = ConvertJavaStringToUTF16(
+      env, Java_UserInfoField_getA11yDescription(env, j_field_to_convert));
+  bool is_obfuscated = Java_UserInfoField_isObfuscated(env, j_field_to_convert);
+  bool selectable = Java_UserInfoField_isSelectable(env, j_field_to_convert);
+  return UserInfo::Field(display_text, a11y_description, is_obfuscated,
+                         selectable);
 }
 
 // static

@@ -176,7 +176,7 @@ public class KeyboardAccessoryData {
      * (username + password), to be shown on the manual fallback UI.
      */
     public final static class UserInfo {
-        private final List<Field> mFields = new ArrayList<>();
+        private final List<UserInfoField> mFields = new ArrayList<>();
         private final @Nullable FaviconProvider mFaviconProvider;
 
         /**
@@ -191,69 +191,6 @@ public class KeyboardAccessoryData {
             void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
         }
 
-        /**
-         * Represents an item (either selectable or not) presented on the UI, such as the username
-         * or a credit card number.
-         */
-        public final static class Field {
-            private final String mDisplayText;
-            private final String mA11yDescription;
-            private final boolean mIsObfuscated;
-            private final Callback<Field> mCallback;
-
-            /**
-             * Creates a new Field.
-             * @param displayText The text to display. Plain text if |isObfuscated| is false.
-             * @param a11yDescription The description used for accessibility.
-             * @param isObfuscated If true, the displayed caption is transformed into stars.
-             * @param callback Called when the user taps the suggestions.
-             */
-            public Field(String displayText, String a11yDescription, boolean isObfuscated,
-                    Callback<Field> callback) {
-                mDisplayText = displayText;
-                mA11yDescription = a11yDescription;
-                mIsObfuscated = isObfuscated;
-                mCallback = callback;
-            }
-
-            /**
-             * Returns the text to be displayed on the UI.
-             */
-            public String getDisplayText() {
-                return mDisplayText;
-            }
-
-            /**
-             * Returns a translated description that can be used for accessibility.
-             */
-            public String getA11yDescription() {
-                return mA11yDescription;
-            }
-
-            /**
-             * Returns whether the user can interact with the selected suggestion. For example,
-             * this is false if this is a password suggestion on a non-password input field.
-             */
-            public boolean isSelectable() {
-                return mCallback != null;
-            }
-
-            /**
-             * Returns true if obfuscation should be applied to the item's caption, for example to
-             * hide passwords.
-             */
-            public boolean isObfuscated() {
-                return mIsObfuscated;
-            }
-
-            /**
-             * The delegate is called when the Item is selected by a user.
-             */
-            public void triggerSelection() {
-                if (mCallback != null) mCallback.onResult(this);
-            }
-        }
-
         public UserInfo(@Nullable FaviconProvider faviconProvider) {
             mFaviconProvider = faviconProvider;
         }
@@ -262,14 +199,14 @@ public class KeyboardAccessoryData {
          * Adds a new field to the group.
          * @param field The field to be added.
          */
-        public void addField(Field field) {
+        public void addField(UserInfoField field) {
             mFields.add(field);
         }
 
         /**
          * Returns the list of fields in this group.
          */
-        public List<Field> getFields() {
+        public List<UserInfoField> getFields() {
             return mFields;
         }
 

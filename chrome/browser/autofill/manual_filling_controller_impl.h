@@ -32,8 +32,7 @@ class ManualFillingControllerImpl
   void ShowWhenKeyboardIsVisible(FillingSource source) override;
   void Hide(FillingSource source) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
-  void OnFillingTriggered(bool is_password,
-                          const base::string16& text_to_fill) override;
+  void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(const base::string16& selected_option) const override;
   void OnGenerationRequested() override;
   void GetFavicon(

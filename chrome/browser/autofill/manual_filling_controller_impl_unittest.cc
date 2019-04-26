@@ -41,7 +41,7 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD0(DidNavigateMainFrame, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
-  MOCK_METHOD2(OnFillingTriggered, void(bool, const base::string16&));
+  MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_CONST_METHOD1(OnOptionSelected, void(const base::string16&));
 };
 
@@ -68,7 +68,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
   MockPasswordAccessoryView() = default;
 
   MOCK_METHOD1(OnItemsAvailable, void(const autofill::AccessorySheetData&));
-  MOCK_METHOD1(OnFillingTriggered, void(const base::string16&));
+  MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_METHOD0(OnViewDestroyed, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD0(CloseAccessorySheet, void());
@@ -202,12 +202,11 @@ TEST_F(ManualFillingControllerTest, OnAutomaticGenerationStatusChanged) {
 TEST_F(ManualFillingControllerTest, OnFillingTriggered) {
   const char kTextToFill[] = "TextToFill";
   const base::string16 text_to_fill(base::ASCIIToUTF16(kTextToFill));
+  const autofill::UserInfo::Field field(text_to_fill, text_to_fill, false,
+                                        true);
 
-  EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(true, text_to_fill));
-  controller()->OnFillingTriggered(true, text_to_fill);
-
-  EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(false, text_to_fill));
-  controller()->OnFillingTriggered(false, text_to_fill);
+  EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(field));
+  controller()->OnFillingTriggered(field);
 }
 
 TEST_F(ManualFillingControllerTest, OnGenerationRequested) {

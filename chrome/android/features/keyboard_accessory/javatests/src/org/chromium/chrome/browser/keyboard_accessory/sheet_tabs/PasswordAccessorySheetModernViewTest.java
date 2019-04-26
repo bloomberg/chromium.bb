@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -112,9 +113,9 @@ public class PasswordAccessorySheetModernViewTest {
         assertThat(mView.get().getChildCount(), is(0));
 
         UserInfo testInfo = new UserInfo(null);
-        testInfo.addField(new UserInfo.Field(
+        testInfo.addField(new UserInfoField(
                 "Name Suggestion", "Name Suggestion", false, item -> clicked.set(true)));
-        testInfo.addField(new UserInfo.Field(
+        testInfo.addField(new UserInfoField(
                 "Password Suggestion", "Password Suggestion", true, item -> clicked.set(true)));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(

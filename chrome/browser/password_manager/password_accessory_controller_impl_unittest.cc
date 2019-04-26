@@ -205,6 +205,12 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     NavigateAndCommit(GURL(kExampleSite));
+    FocusWebContentsOnMainFrame();
+
+    ASSERT_TRUE(web_contents()->GetFocusedFrame());
+    ASSERT_EQ(url::Origin::Create(GURL(kExampleSite)),
+              web_contents()->GetFocusedFrame()->GetLastCommittedOrigin());
+
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
         favicon_service());
@@ -663,12 +669,21 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)), true, false);
 
-  // Right after starting the favicon request for example.com, another frame on
-  // the same site is focused. Even if the request is completed, the callback
-  // should not be called because the origin of the suggestions has changed.
+  // Right after starting the favicon request for example.com, a navigation
+  // changes the URL of the focused frame. Even if the request is completed,
+  // the callback should not be called because the origin of the suggestions
+  // has changed.
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
+      .WillOnce(testing::DoAll(
+          // Triggering a navigation at this moment ensures that the focused
+          // frame origin changes after the original origin has been sent to the
+          // favicon service, but before checking whether the origins match (and
+          // maybe invoking the callback).
+          testing::InvokeWithoutArgs([this]() {
+            this->NavigateAndCommit(GURL("https://other.frame.com/"));
+          }),
+          favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult())));
   EXPECT_CALL(mock_callback, Run).Times(0);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   EXPECT_CALL(mock_manual_filling_controller_,

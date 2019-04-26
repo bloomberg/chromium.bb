@@ -91,8 +91,8 @@ class ManualFillingController {
   // Called by the UI code to request that |text_to_fill| is to be filled into
   // the currently focused field. Forwards the request to a type-specific
   // accessory controller.
-  virtual void OnFillingTriggered(bool is_password,
-                                  const base::string16& text_to_fill) = 0;
+  virtual void OnFillingTriggered(
+      const autofill::UserInfo::Field& selection) = 0;
 
   // Called by the UI code because a user triggered the |selected_option|,
   // such as "Manage passwords..."

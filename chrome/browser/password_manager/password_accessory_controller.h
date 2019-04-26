@@ -7,11 +7,13 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/autofill/accessory_controller.h"
 #include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -30,10 +32,11 @@ struct PasswordForm;
 // On the first call, an instance is attached to |web_contents|, so it can be
 // returned by subsequent calls.
 class PasswordAccessoryController
-    : public base::SupportsWeakPtr<PasswordAccessoryController> {
+    : public base::SupportsWeakPtr<PasswordAccessoryController>,
+      public AccessoryController {
  public:
   PasswordAccessoryController() = default;
-  virtual ~PasswordAccessoryController() = default;
+  ~PasswordAccessoryController() override = default;
 
   // Returns true if the accessory controller may exist for |web_contents|.
   // Otherwise (e.g. if VR is enabled), it returns false.
@@ -87,11 +90,6 @@ class PasswordAccessoryController
   virtual void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) = 0;
-
-  // Called by the UI code to request that |text_to_fill| is to be filled into
-  // the currently focused field.
-  virtual void OnFillingTriggered(bool is_password,
-                                  const base::string16& text_to_fill) = 0;
 
   // Called by the UI code because a user triggered the |selected_option|,
   // such as "Manage passwords..."
