@@ -40,7 +40,8 @@ class TwoClientPreferencesSyncTest : public FeatureToggler, public SyncTest {
         SyncTest(TWO_CLIENT) {}
   ~TwoClientPreferencesSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Needed for AwaitQuiescence().
+  bool TestUsesSelfNotifications() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);
@@ -49,6 +50,8 @@ class TwoClientPreferencesSyncTest : public FeatureToggler, public SyncTest {
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   DisableVerifier();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Wait until sync settles before we override the prefs below.
+  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
   const std::string new_home_page = base::StringPrintf(
       "https://example.com/%s", base::GenerateGUID().c_str());
