@@ -4,6 +4,7 @@
 
 #include "components/exo/test/exo_test_base_aura.h"
 
+#include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -16,10 +17,10 @@ namespace test {
 
 namespace {
 
-class WMHelperTester : public WMHelper {
+class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
  public:
   WMHelperTester(aura::Env* env, aura::Window* root_window)
-      : env_(env), root_window_(root_window) {}
+      : env_(env), root_window_(root_window), vsync_timing_manager_(this) {}
   ~WMHelperTester() override {}
 
   // Overridden from WMHelper
@@ -34,10 +35,9 @@ class WMHelperTester : public WMHelper {
   void RemoveDragDropObserver(DragDropObserver* observer) override {}
   void SetDragDropDelegate(aura::Window*) override {}
   void ResetDragDropDelegate(aura::Window*) override {}
-  void AddVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override {}
-  void RemoveVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override {}
+  VSyncTimingManager& GetVSyncTimingManager() override {
+    return vsync_timing_manager_;
+  }
 
   const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override {
@@ -76,10 +76,15 @@ class WMHelperTester : public WMHelper {
   void OnDragExited() override {}
   int OnPerformDrop(const ui::DropTargetEvent& event) override { return 0; }
 
+  // Overridden from VSyncTimingManager::Delegate:
+  void AddVSyncParameterObserver(
+      viz::mojom::VSyncParameterObserverPtr observer) override {}
+
  private:
   aura::Env* const env_;
   aura::Window* root_window_;
   LifetimeManager lifetime_manager_;
+  VSyncTimingManager vsync_timing_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperTester);
 };

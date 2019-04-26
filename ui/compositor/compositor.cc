@@ -39,12 +39,12 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer.h"
@@ -76,7 +76,6 @@ Compositor::Compositor(
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
-      vsync_manager_(new CompositorVSyncManager()),
       external_begin_frame_client_(external_begin_frame_client),
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
@@ -546,7 +545,14 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
     context_factory_private_->SetDisplayVSyncParameters(this, timebase,
                                                         interval);
   }
-  vsync_manager_->UpdateVSyncParameters(timebase, interval);
+}
+
+void Compositor::AddVSyncParameterObserver(
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  if (context_factory_private_) {
+    context_factory_private_->AddVSyncParameterObserver(this,
+                                                        std::move(observer));
+  }
 }
 
 void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
@@ -574,10 +580,6 @@ gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
 gfx::AcceleratedWidget Compositor::widget() const {
   DCHECK(widget_valid_);
   return widget_;
-}
-
-scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
-  return vsync_manager_;
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {

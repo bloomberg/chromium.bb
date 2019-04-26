@@ -48,6 +48,8 @@ source_set("exo") {
     "touch.cc",
     "touch.h",
     "touch_delegate.h",
+    "vsync_timing_manager.cc",
+    "vsync_timing_manager.h",
     "wm_helper.cc",
     "wm_helper.h",
   ]
@@ -60,6 +62,7 @@ source_set("exo") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
     "//gpu/command_buffer/client:raster_interface",
+    "//services/viz/privileged/interfaces/compositing",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",

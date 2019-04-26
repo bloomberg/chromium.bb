@@ -12,6 +12,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/display_provider.h"
+#include "components/viz/service/display_embedder/vsync_parameter_listener.h"
 #include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
@@ -150,8 +151,11 @@ void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
 void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (synthetic_begin_frame_source_)
+  if (synthetic_begin_frame_source_) {
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
+    if (vsync_listener_)
+      vsync_listener_->OnVSyncParametersUpdated(timebase, interval);
+  }
 }
 
 void RootCompositorFrameSinkImpl::ForceImmediateDrawAndSwapIfPossible() {
@@ -182,6 +186,12 @@ void RootCompositorFrameSinkImpl::SetSupportedRefreshRates(
 }
 
 #endif  // defined(OS_ANDROID)
+
+void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
+    mojom::VSyncParameterObserverPtr observer) {
+  vsync_listener_ =
+      std::make_unique<VSyncParameterListener>(std::move(observer));
+}
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);

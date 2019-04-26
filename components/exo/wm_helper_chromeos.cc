@@ -15,8 +15,8 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/wm/public/activation_client.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace exo {
 namespace {
@@ -31,9 +31,7 @@ aura::Window* GetPrimaryRoot() {
 // WMHelperChromeOS, public:
 
 WMHelperChromeOS::WMHelperChromeOS(aura::Env* env)
-    : vsync_manager_(
-          GetPrimaryRoot()->layer()->GetCompositor()->vsync_manager()),
-      env_(env) {}
+    : env_(env), vsync_timing_manager_(this) {}
 
 WMHelperChromeOS::~WMHelperChromeOS() {}
 
@@ -101,14 +99,8 @@ void WMHelperChromeOS::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
-void WMHelperChromeOS::AddVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->AddObserver(observer);
-}
-
-void WMHelperChromeOS::RemoveVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->RemoveObserver(observer);
+VSyncTimingManager& WMHelperChromeOS::GetVSyncTimingManager() {
+  return vsync_timing_manager_;
 }
 
 void WMHelperChromeOS::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -134,6 +126,12 @@ int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event) {
   // TODO(hirono): Return the correct result instead of always returning
   // DRAG_MOVE.
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+void WMHelperChromeOS::AddVSyncParameterObserver(
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  GetPrimaryRoot()->layer()->GetCompositor()->AddVSyncParameterObserver(
+      std::move(observer));
 }
 
 const display::ManagedDisplayInfo& WMHelperChromeOS::GetDisplayInfo(

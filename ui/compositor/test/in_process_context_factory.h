@@ -18,6 +18,7 @@
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace cc {
@@ -89,6 +90,9 @@ class InProcessContextFactory : public ContextFactory,
   void IssueExternalBeginFrame(ui::Compositor* compositor,
                                const viz::BeginFrameArgs& args) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
+  void AddVSyncParameterObserver(
+      ui::Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   bool SyncTokensRequiredForDisplayCompositor() override;

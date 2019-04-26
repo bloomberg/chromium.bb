@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -24,6 +25,7 @@ class DisplayProvider;
 class ExternalBeginFrameSource;
 class FrameSinkManagerImpl;
 class SyntheticBeginFrameSource;
+class VSyncParameterListener;
 
 // The viz portion of a root CompositorFrameSink. Holds the Binding/InterfacePtr
 // for the mojom::CompositorFrameSink interface and owns the Display.
@@ -56,6 +58,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void SetSupportedRefreshRates(
       const std::vector<float>& supported_refresh_rates) override;
 #endif
+  void AddVSyncParameterObserver(
+      mojom::VSyncParameterObserverPtr observer) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -110,6 +114,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // |display_client_| may be nullptr on platforms that do not use it.
   mojom::DisplayClientPtr display_client_;
   mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
+
+  std::unique_ptr<VSyncParameterListener> vsync_listener_;
 
   // Must be destroyed before |compositor_frame_sink_client_|. This must never
   // change for the lifetime of RootCompositorFrameSinkImpl.

@@ -25,6 +25,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_client.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/compositor/compositor_animation_observer.h"
@@ -73,7 +74,6 @@ class RasterContextProvider;
 namespace ui {
 
 class Compositor;
-class CompositorVSyncManager;
 class ExternalBeginFrameClient;
 class LatencyInfo;
 class Layer;
@@ -154,6 +154,11 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
                                        const viz::BeginFrameArgs& args) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
+
+  // Adds an observer for vsync parameter changes.
+  virtual void AddVSyncParameterObserver(
+      Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -318,11 +323,12 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                gfx::ScrollOffset* offset) const;
   bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
 
-  // Most platforms set their vsync info via
-  // BrowerCompositorLayerTreeFrameSink::OnUpdateVSyncParametersFromGpu(), but
-  // Mac routes vsync info via the browser compositor instead through this path.
+  // Mac sets vsync parameters through the browser compositor rather than from
+  // the GPU.
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
+  void AddVSyncParameterObserver(
+      viz::mojom::VSyncParameterObserverPtr observer);
 
   // Sets the widget for the compositor to render into.
   void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
@@ -331,9 +337,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // The compositor must be set to invisible when taking away a widget.
   gfx::AcceleratedWidget ReleaseAcceleratedWidget();
   gfx::AcceleratedWidget widget() const;
-
-  // Returns the vsync manager for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager() const;
 
   // This flag is used to force a compositor into software compositing even tho
   // in general chrome is using gpu compositing. This allows the compositor to
@@ -484,9 +487,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // The manager of vsync parameters for this compositor.
-  scoped_refptr<CompositorVSyncManager> vsync_manager_;
 
   // Snapshot of last set vsync parameters, to avoid redundant IPCs.
   base::TimeTicks vsync_timebase_;

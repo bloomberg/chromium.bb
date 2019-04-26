@@ -36,6 +36,7 @@
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/vsync_parameter_listener.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -156,6 +157,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   std::unique_ptr<viz::Display> display;
   std::unique_ptr<viz::mojom::DisplayClient> display_client;
   bool output_is_secure = false;
+  std::unique_ptr<viz::VSyncParameterListener> vsync_listener;
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory(
@@ -807,6 +809,8 @@ void GpuProcessTransportFactory::SetDisplayVSyncParameters(
   if (data->synthetic_begin_frame_source) {
     data->synthetic_begin_frame_source->OnUpdateVSyncParameters(timebase,
                                                                 interval);
+    if (data->vsync_listener)
+      data->vsync_listener->OnVSyncParametersUpdated(timebase, interval);
   }
 }
 
@@ -832,6 +836,18 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
   data->output_is_secure = secure;
   if (data->display)
     data->display->SetOutputIsSecure(secure);
+}
+
+void GpuProcessTransportFactory::AddVSyncParameterObserver(
+    ui::Compositor* compositor,
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  auto it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second.get();
+  DCHECK(data);
+  data->vsync_listener =
+      std::make_unique<viz::VSyncParameterListener>(std::move(observer));
 }
 
 void GpuProcessTransportFactory::AddObserver(

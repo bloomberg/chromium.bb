@@ -16,6 +16,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/reflector.h"
@@ -252,6 +253,19 @@ void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,
 
   if (iter->second.display_private)
     iter->second.display_private->SetOutputIsSecure(secure);
+}
+
+void HostContextFactoryPrivate::AddVSyncParameterObserver(
+    Compositor* compositor,
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end())
+    return;
+
+  if (iter->second.display_private) {
+    iter->second.display_private->AddVSyncParameterObserver(
+        std::move(observer));
+  }
 }
 
 viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {

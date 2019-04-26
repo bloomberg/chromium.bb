@@ -117,6 +117,7 @@ source_set("wayland") {
     "//components/exo",
     "//components/exo/wayland/protocol:aura_shell_protocol",
     "//device/gamepad",
+    "//services/viz/privileged/interfaces/compositing",
     "//services/viz/public/interfaces",
     "//skia",
     "//third_party/libsync",

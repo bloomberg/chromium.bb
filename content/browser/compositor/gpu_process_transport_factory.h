@@ -101,6 +101,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void IssueExternalBeginFrame(ui::Compositor* compositor,
                                const viz::BeginFrameArgs& args) override;
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;
+  void AddVSyncParameterObserver(
+      ui::Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

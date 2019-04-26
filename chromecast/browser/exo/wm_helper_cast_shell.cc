@@ -27,10 +27,7 @@ WMHelperCastShell::WMHelperCastShell(
     : cast_window_manager_aura_(cast_window_manager_aura),
       env_(env),
       cast_screen_(cast_screen),
-      vsync_manager_(cast_window_manager_aura->GetRootWindow()
-                         ->layer()
-                         ->GetCompositor()
-                         ->vsync_manager()) {
+      vsync_timing_manager_(this) {
   cast_screen_->AddObserver(&display_observer_);
 }
 
@@ -78,14 +75,8 @@ void WMHelperCastShell::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
-void WMHelperCastShell::AddVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->AddObserver(observer);
-}
-
-void WMHelperCastShell::RemoveVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->RemoveObserver(observer);
+VSyncTimingManager& WMHelperCastShell::GetVSyncTimingManager() {
+  return vsync_timing_manager_;
 }
 
 void WMHelperCastShell::OnDragEntered(const ui::DropTargetEvent& event) {}
@@ -100,6 +91,14 @@ void WMHelperCastShell::OnDragExited() {}
 int WMHelperCastShell::OnPerformDrop(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+void WMHelperCastShell::AddVSyncParameterObserver(
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  cast_window_manager_aura_->GetRootWindow()
+      ->layer()
+      ->GetCompositor()
+      ->AddVSyncObserver(std::move(observer));
 }
 
 const display::ManagedDisplayInfo& WMHelperCastShell::GetDisplayInfo(

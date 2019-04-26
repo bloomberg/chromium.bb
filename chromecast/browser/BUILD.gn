@@ -383,6 +383,7 @@ cast_source_set("browser") {
     deps += [
       "//components/exo",
       "//components/exo/wayland",
+      "//services/viz/privileged/interfaces/compositing",
       "//ui/display/manager",
     ]
   }

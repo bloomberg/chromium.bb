@@ -7,6 +7,7 @@ include_rules = [
   "+device/gamepad",
   "+gpu",
   "+mojo/public/cpp",
+  "+services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h",
   "+services/ws/public/mojom",
   "+third_party/khronos",
   "+third_party/skia",
