@@ -231,6 +231,29 @@ cr.define('offlineInternals', function() {
     browserProxy.getLoggingState().then(updateLogStatus);
   }
 
+  /**
+   * Calls scheduleNwake and indicates how long the scheduled delay will be.
+   */
+  function ensureBackgroundTaskScheduledWithDelay() {
+    browserProxy.scheduleNwake()
+        .then((result) => {
+          // The delays in these messages should correspond to the scheduling
+          // delays defined in PrefetchBackgroundTaskScheduler.java.
+          if ($('limitless-prefetching-checkbox').checked) {
+            setPrefetchResult(
+                result +
+                ' (Limitless mode enabled; background task scheduled to run' +
+                ' in a few seconds.)');
+          } else {
+            setPrefetchResult(
+                result +
+                ' (Limitless mode disabled; background task scheduled to run' +
+                ' in several minutes.)');
+          }
+        })
+        .catch(prefetchResultError);
+  }
+
   function initialize() {
     const incognito = loadTimeData.getBoolean('isIncognito');
     ['delete-selected-pages', 'delete-selected-requests', 'model-checkbox',
@@ -314,10 +337,14 @@ cr.define('offlineInternals', function() {
     };
     $('limitless-prefetching-checkbox').onchange = (evt) => {
       browserProxy.setLimitlessPrefetchingEnabled(evt.target.checked);
+      if (evt.target.checked) {
+        ensureBackgroundTaskScheduledWithDelay();
+      }
     };
     // Helper for setting prefetch testing header from a radio button.
     const setPrefetchTestingHeader = function(evt) {
       browserProxy.setPrefetchTestingHeaderValue(evt.target.value);
+      ensureBackgroundTaskScheduledWithDelay();
     };
     $('testing-header-default').onchange = setPrefetchTestingHeader;
     $('testing-header-enable').onchange = setPrefetchTestingHeader;
