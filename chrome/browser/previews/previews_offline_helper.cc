@@ -51,7 +51,7 @@ base::Optional<base::Time> TimeFromDictionaryValue(std::string value) {
 
 // Cleans up the given dictionary by removing all stale (expiry has passed)
 // entries.
-void RemoveStaleEntries(base::DictionaryValue* dict) {
+void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
   base::Time earliest_expiry = base::Time::Max();
   std::string earliest_key;
   std::vector<std::string> keys_to_delete;
@@ -85,8 +85,8 @@ void RemoveStaleEntries(base::DictionaryValue* dict) {
   for (const std::string& key : keys_to_delete)
     dict->RemoveKey(key);
 
-  // RemoveStaleEntries is called for every new added page, so it's fine to just
-  // remove one at a time to keep the pref size below a threshold.
+  // RemoveStaleOfflinePageEntries is called for every new added page, so it's
+  // fine to just remove one at a time to keep the pref size below a threshold.
   if (dict->DictSize() > previews::params::OfflinePreviewsHelperMaxPrefSize()) {
     dict->RemoveKey(earliest_key);
   }
@@ -109,7 +109,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
 
   // Tidy up the pref in case it's been a while since the last stale item
   // removal.
-  RemoveStaleEntries(available_pages_.get());
+  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -196,7 +196,7 @@ void PreviewsOfflineHelper::OfflinePageAdded(
         base::Value(TimeToDictionaryValue(added_page.creation_time)));
   }
 
-  RemoveStaleEntries(available_pages_.get());
+  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 }
 
@@ -207,7 +207,7 @@ void PreviewsOfflineHelper::OfflinePageDeleted(
   // Has no effect if the url was never in the dictionary.
   available_pages_->RemoveKey(HashURL(page_info.url));
 
-  RemoveStaleEntries(available_pages_.get());
+  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 }
 

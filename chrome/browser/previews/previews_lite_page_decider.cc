@@ -50,7 +50,7 @@ const size_t kMaxBlacklistEntries = 30;
 // Cleans up the given host blacklist by removing all stale (expiry has passed)
 // entries. If after removing all stale entries, the blacklist is still over
 // capacity, then remove the entry with the closest expiration.
-void RemoveStaleEntries(base::DictionaryValue* dict) {
+void RemoveStaleBlacklistEntries(base::DictionaryValue* dict) {
   std::vector<std::string> keys_to_delete;
 
   base::Time min_value = base::Time::Max();
@@ -405,7 +405,7 @@ void PreviewsLitePageDecider::BlacklistBypassedHost(const std::string& host,
   host_bypass_blacklist_->SetKey(
       host, base::Value((base::Time::Now() + duration).ToDoubleT()));
 
-  RemoveStaleEntries(host_bypass_blacklist_.get());
+  RemoveStaleBlacklistEntries(host_bypass_blacklist_.get());
   if (pref_service_)
     pref_service_->Set(kHostBlacklist, *host_bypass_blacklist_);
 }
