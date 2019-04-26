@@ -14,6 +14,7 @@ namespace notifications {
 namespace {
 
 const char kUuid[] = "123";
+const char kGuid[] = "testGuid";
 const char kData[] = "bitmapdata";
 
 void TestClientStateConversion(ClientState* client_state) {
@@ -80,9 +81,9 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   base::Time create_time;
   bool success = base::Time::FromString("03/25/19 00:00:00 AM", &create_time);
   DCHECK(success);
-  Impression impression{create_time, UserFeedback::kHelpful,
-                        ImpressionResult::kPositive, true,
-                        SchedulerTaskTime::kMorning};
+  Impression impression{
+      create_time, UserFeedback::kHelpful,      ImpressionResult::kPositive,
+      true,        SchedulerTaskTime::kMorning, kGuid};
   client_state.impressions.emplace_back(impression);
   TestClientStateConversion(&client_state);
 

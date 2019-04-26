@@ -11,7 +11,7 @@ package notifications.proto;
 // Contains data to determine when a notification should be shown to the user
 // and the user impression towards this notification. Should match Impression in
 // impression_types.h.
-// Next tag: 6
+// Next tag: 7
 message Impression {
   // The type of user feedback from a displayed notification. Should match
   // UserFeedback in notification_scheduler_types.h.
@@ -56,4 +56,7 @@ message Impression {
 
   // The task start time when the notification is shown.
   optional SchedulerTaskTime task_start_time = 5;
+
+  // The unique identifier of the notification.
+  optional string guid = 6;
 }

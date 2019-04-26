@@ -29,6 +29,7 @@ source_set("public") {
     "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
+    "user_action_handler.h",
   ]
 
   deps = [

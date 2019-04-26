@@ -13,7 +13,8 @@ namespace notifications {
 
 bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
-         impression == other.impression && integrated == other.integrated;
+         impression == other.impression && integrated == other.integrated &&
+         task_start_time == other.task_start_time && guid == other.guid;
 }
 
 SuppressionInfo::SuppressionInfo(const base::Time& last_trigger,
@@ -56,7 +57,8 @@ std::string ClientState::DebugPrint() const {
            << " \n"
            << "integrated: " << impression.integrated << " \n"
            << "task start time: "
-           << static_cast<int>(impression.task_start_time) << "\n";
+           << static_cast<int>(impression.task_start_time) << "\n"
+           << "guid: " << impression.guid << "\n";
     log += stream.str();
   }
 

@@ -194,6 +194,7 @@ void ClientStateToProto(ClientState* client_state,
     impression_ptr->set_integrated(impression.integrated);
     impression_ptr->set_task_start_time(
         ToSchedulerTaskTime(impression.task_start_time));
+    impression_ptr->set_guid(impression.guid);
   }
 
   if (client_state->suppression_info.has_value()) {
@@ -223,6 +224,7 @@ void ClientStateFromProto(proto::ClientState* proto,
     impression.integrated = proto_impression.integrated();
     impression.task_start_time =
         FromSchedulerTaskTime(proto_impression.task_start_time());
+    impression.guid = proto_impression.guid();
     client_state->impressions.emplace_back(std::move(impression));
   }
 
