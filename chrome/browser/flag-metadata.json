@@ -2524,6 +2524,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-ui-show-placeholder-when-caret-showing",
+    "owners": [ "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-ui-show-suggestion-favicons",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80

@@ -892,6 +892,9 @@ extern const char kOmniboxUIOneClickUnelideDescription[];
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
+extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
+extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
+
 extern const char kOmniboxUIShowSuffixOnAllSearchSuggestionsName[];
 extern const char kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription[];
 

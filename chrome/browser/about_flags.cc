@@ -3954,6 +3954,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
 
+    {"omnibox-ui-show-placeholder-when-caret-showing",
+     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingName,
+     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowPlaceholderWhenCaretShowing)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

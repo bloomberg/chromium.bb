@@ -1465,10 +1465,15 @@ const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[] =
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
-
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
+
+const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
+    "Omnibox UI Show Placeholder When Caret Showing";
+const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
+    "Shows the \"Search Google or type a URL\" placeholder text in the "
+    "omnibox when it's focused / the caret cursor is showing.";
 
 const char kOmniboxUIShowSuffixOnAllSearchSuggestionsName[] =
     "Omnibox UI Show Suffix On All Search Suggestions";
