@@ -161,11 +161,6 @@ bool ContextHostResolver::GetNoIPv6OnWifi() {
   return manager_->GetNoIPv6OnWifi();
 }
 
-void ContextHostResolver::SetDnsConfigOverrides(
-    const DnsConfigOverrides& overrides) {
-  manager_->SetDnsConfigOverrides(overrides);
-}
-
 void ContextHostResolver::SetRequestContext(
     URLRequestContext* request_context) {
   DCHECK(request_context);

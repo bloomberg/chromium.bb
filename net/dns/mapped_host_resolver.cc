@@ -94,11 +94,6 @@ bool MappedHostResolver::GetNoIPv6OnWifi() {
   return impl_->GetNoIPv6OnWifi();
 }
 
-void MappedHostResolver::SetDnsConfigOverrides(
-    const DnsConfigOverrides& overrides) {
-  impl_->SetDnsConfigOverrides(overrides);
-}
-
 void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
   impl_->SetRequestContext(request_context);
 }

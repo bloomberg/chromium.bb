@@ -125,7 +125,6 @@ class MockHostResolverBase
                  HostCache::Entry::Source* source_out,
                  HostCache::EntryStaleness* stale_out,
                  bool* secure_out) const override;
-  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
   void SetRequestContext(URLRequestContext* request_context) override {}
 
   // Preloads the cache with what would currently be the result of a request

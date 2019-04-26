@@ -61,7 +61,6 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;
-  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override;
   void SetRequestContext(URLRequestContext* request_context) override;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const override;
