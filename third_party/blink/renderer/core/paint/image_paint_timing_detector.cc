@@ -460,7 +460,7 @@ bool ImagePaintTimingDetector::IsBackgroundImageContentful(
     const Image& image) {
   // Background images attached to <body> or <html> are likely for background
   // purpose, so we rule them out.
-  if (object.IsLayoutView()) {
+  if (object.IsLayoutView() || object.IsBody() || object.IsDocumentElement()) {
     return false;
   }
   // Generated images are excluded here, as they are likely to serve for
