@@ -36,8 +36,11 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void Initialize(const KURL& response_url) override {
+  void Initialize(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy) override {
     InitializeURL(response_url);
+    SetReferrerPolicy(response_referrer_policy);
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

@@ -81,21 +81,17 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
       return;
     }
 
-    // Step 12.3-12.4 are implemented in Initialize().
-    global_scope_->Initialize(response_url);
-
-    // Step 12.5. "Set worker global scope's referrer policy to the result of
-    // parsing the `Referrer-Policy` header of response." [spec text]
-    const String referrer_policy_header =
+    auto response_referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+    const String response_referrer_policy_header =
         resource->GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
-    if (!referrer_policy_header.IsNull()) {
-      network::mojom::ReferrerPolicy referrer_policy =
-          network::mojom::ReferrerPolicy::kDefault;
+    if (!response_referrer_policy_header.IsNull()) {
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
-          referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
-          &referrer_policy);
-      global_scope_->SetReferrerPolicy(referrer_policy);
+          response_referrer_policy_header,
+          kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
     }
+
+    // Step 12.3-12.5 are implemented in Initialize().
+    global_scope_->Initialize(response_url, response_referrer_policy);
 
     // Calculate an address space from worker script's response url according to
     // the "CORS and RFC1918" spec:

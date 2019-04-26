@@ -71,9 +71,11 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
 
   // Legacy on-the-main-thread worker script fetch (to be removed):
   KURL response_script_url = creation_params->script_url;
+  network::mojom::ReferrerPolicy response_referrer_policy =
+      creation_params->referrer_policy;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin);
-  global_scope->Initialize(response_script_url);
+  global_scope->Initialize(response_script_url, response_referrer_policy);
   return global_scope;
 }
 
@@ -90,7 +92,9 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
-void DedicatedWorkerGlobalScope::Initialize(const KURL& response_url) {
+void DedicatedWorkerGlobalScope::Initialize(
+    const KURL& response_url,
+    network::mojom::ReferrerPolicy response_referrer_policy) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -98,7 +102,11 @@ void DedicatedWorkerGlobalScope::Initialize(const KURL& response_url) {
   // state."
   // This is done in the constructor of WorkerGlobalScope.
 
-  // TODO(nhiroki): Move the step 12.5-12.6 from DidFetchClassicScript() to this
+  // Step 12.5. "Set worker global scope's referrer policy to the result of
+  // parsing the `Referrer-Policy` header of response."
+  SetReferrerPolicy(response_referrer_policy);
+
+  // TODO(nhiroki): Move the step 12.6 from DidFetchClassicScript() to this
   // function.
 }
 
@@ -229,18 +237,15 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
-  // Step 12.3-12.4 are implemented in Initialize().
-  Initialize(classic_script_loader->ResponseURL());
-
-  // Step 12.5. "Set worker global scope's referrer policy to the result of
-  // parsing the `Referrer-Policy` header of response."
-  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  auto response_referrer_policy = network::mojom::ReferrerPolicy::kDefault;
   if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
         classic_script_loader->GetReferrerPolicy(),
-        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
-    SetReferrerPolicy(referrer_policy);
+        kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
   }
+
+  // Step 12.3-12.5 are implemented in Initialize().
+  Initialize(classic_script_loader->ResponseURL(), response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
   SetAddressSpace(classic_script_loader->ResponseAddressSpace());

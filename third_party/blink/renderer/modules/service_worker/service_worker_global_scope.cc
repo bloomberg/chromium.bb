@@ -129,10 +129,12 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
 
   // Legacy on-the-main-thread worker script fetch (to be removed):
   KURL response_url = creation_params->script_url;
+  network::mojom::ReferrerPolicy response_referrer_policy =
+      creation_params->referrer_policy;
   auto* global_scope = MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
-  global_scope->Initialize(response_url);
+  global_scope->Initialize(response_url, response_referrer_policy);
   return global_scope;
 }
 
@@ -420,7 +422,9 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
 }
 
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
-void ServiceWorkerGlobalScope::Initialize(const KURL& response_url) {
+void ServiceWorkerGlobalScope::Initialize(
+    const KURL& response_url,
+    network::mojom::ReferrerPolicy response_referrer_policy) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -428,7 +432,11 @@ void ServiceWorkerGlobalScope::Initialize(const KURL& response_url) {
   // resource's HTTPS state."
   // This is done in the constructor of WorkerGlobalScope.
 
-  // TODO(nhiroki): Move the step 4.7-4.12 from RunClassicScript() to this
+  // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
+  // script resource's referrer policy."
+  SetReferrerPolicy(response_referrer_policy);
+
+  // TODO(nhiroki): Move the step 4.8-4.12 from RunClassicScript() to this
   // function.
 }
 
@@ -441,11 +449,8 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     const String& source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  Initialize(response_url);
-
-  // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
-  // script resource's referrer policy."
-  SetReferrerPolicy(response_referrer_policy);
+  // Step 4.5-4.7 are implemented in Initialize().
+  Initialize(response_url, response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
   SetAddressSpace(response_address_space);

@@ -458,12 +458,11 @@ WorkerGlobalScope::WorkerGlobalScope(
 
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
-  // Set the URL, referrer policy and address space here for workers whose
-  // script is fetched on the main thread. For off-the-main-thread fetches, they
-  // are instead set after the script is fetched.
+  // Set address space here for workers whose script is fetched on the main
+  // thread. For off-the-main-thread fetches, this is instead set after the
+  // script is fetched.
   if (creation_params->off_main_thread_fetch_option ==
       OffMainThreadWorkerScriptFetchOption::kDisabled) {
-    SetReferrerPolicy(creation_params->referrer_policy);
     SetAddressSpace(*creation_params->response_address_space);
   } else {
     DCHECK(!creation_params->response_address_space);

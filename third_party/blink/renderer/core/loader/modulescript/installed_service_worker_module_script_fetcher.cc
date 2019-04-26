@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -45,12 +46,21 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     // |fetch_params.Url()| is always equal to the response URL because service
     // worker script fetch disallows redirect.
     // https://w3c.github.io/ServiceWorker/#ref-for-concept-request-redirect-mode
-    global_scope_->Initialize(fetch_params.Url());
+    KURL response_url = fetch_params.Url();
+
+    auto response_referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+    if (!script_data->GetReferrerPolicy().IsNull()) {
+      SecurityPolicy::ReferrerPolicyFromHeaderValue(
+          script_data->GetReferrerPolicy(),
+          kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
+    }
+
+    global_scope_->Initialize(response_url, response_referrer_policy);
 
     // TODO(nhiroki): Move this call into WorkerGlobalScope::Initialize().
     global_scope_->SetAddressSpace(script_data->GetResponseAddressSpace());
 
-    // TODO(nhiroki): Set ReferrerPolicy, CSP etc (https://crbug.com/937757).
+    // TODO(nhiroki): Set CSP etc (https://crbug.com/937757).
   }
 
   ModuleScriptCreationParams params(

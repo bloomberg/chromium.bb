@@ -145,7 +145,9 @@ class CORE_EXPORT WorkerGlobalScope
   //   hook) in https://html.spec.whatwg.org/C/#run-a-worker
   // - For service workers, step 4.5-4.11 in
   //   https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
-  virtual void Initialize(const KURL& response_url) = 0;
+  virtual void Initialize(
+      const KURL& response_url,
+      network::mojom::ReferrerPolicy response_referrer_policy) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
