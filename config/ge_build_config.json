@@ -1452,6 +1452,18 @@
           "arch": "X86_INTERNAL"
         }
       ]
+    },
+    {
+      "name": "zork",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
     }
   ],
   "release_branch": false,

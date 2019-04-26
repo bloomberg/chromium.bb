@@ -698,6 +698,7 @@
     wolf-release
     wooten-release
     zako-release
+    zork-release
 
 == toolchain ==
   amd64-llvm-pgo-generate-toolchain
@@ -2976,6 +2977,7 @@
     wolf-release-tryjob
     wooten-release-tryjob
     zako-release-tryjob
+    zork-release-tryjob
   master-toolchain-tryjob
     amd64-llvm-next-toolchain-tryjob
     arm-llvm-next-toolchain-tryjob
@@ -4209,4 +4211,16 @@
   zako-tot-chrome-pfq-informational-tryjob
   zako-tot-chromium-pfq-informational-tryjob
   zako-unittest-stress
+  zork-chromium-pfq-tryjob
+  zork-compile-only-pre-cq
+  zork-full-tryjob
+  zork-llvm-next-toolchain-tryjob
+  zork-llvm-toolchain-tryjob
+  zork-no-vmtest-pre-cq
+  zork-paladin-tryjob
+  zork-postsubmit-tryjob
+  zork-pre-cq
+  zork-release-tryjob
+  zork-tot-chromium-pfq-informational-tryjob
+  zork-unittest-stress
 
