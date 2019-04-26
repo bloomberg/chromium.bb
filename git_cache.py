@@ -258,6 +258,10 @@ class Mirror(object):
     # Not recognized.
     return None
 
+  @property
+  def gs_folder(self):
+    return 'gs://%s/v2/%s' % (self.bootstrap_bucket, self.basedir)
+
   @classmethod
   def FromPath(cls, path):
     return cls(cls.CacheDirToUrl(path))
@@ -600,28 +604,43 @@ class Mirror(object):
         lockfile.unlock()
 
   def update_bootstrap(self, prune=False):
-    # The files are named <git number>.zip
+    # The folder is <git number>
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
     # Run Garbage Collect to compress packfile.
     self.RunGit(['gc', '--prune=all'])
-    # Creating a temp file and then deleting it ensures we can use this name.
-    _, tmp_zipfile = tempfile.mkstemp(suffix='.zip')
-    os.remove(tmp_zipfile)
-    subprocess.call(['zip', '-r', tmp_zipfile, '.'], cwd=self.mirror_path)
-    gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
-    gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
-    dest_name = '%s/%s.zip' % (gs_folder, gen_number)
-    gsutil.call('cp', tmp_zipfile, dest_name)
-    os.remove(tmp_zipfile)
 
-    # Remove all other files in the same directory.
-    if prune:
-      _, ls_out, _ = gsutil.check_call('ls', gs_folder)
-      for filename in ls_out.splitlines():
-        if filename == dest_name:
-          continue
-        gsutil.call('rm', filename)
+    gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
+
+    src_name = self.mirror_path
+    dest_name = '%s/%s' % (self.gs_folder, gen_number)
+
+    # check to see if folder already exists in gs
+    _, ls_out, ls_err = gsutil.check_call('ls', dest_name)
+    _, ls_out_ready, ls_err_ready = (
+      gsutil.check_call('ls', dest_name + '.ready'))
+    
+    if ls_err:
+      print('Failed to check GS:\n%s' % (ls_err))
+      return
+
+    if ls_err_ready:
+      print('Failed to check GS:\n%s' % (ls_err_ready))
+      return
+
+    if not (ls_out == '' and ls_out_ready == ''):
+      return
+
+    gsutil.call('-m', 'cp', '-r', src_name, dest_name)
+
+    #TODO(karenqian): prune old caches
+
+    # create .ready file and upload
+    _, ready_file_name =  tempfile.mkstemp(suffix='.ready')
+    try:
+      gsutil.call('cp', ready_file_name, '%s.ready' % (dest_name))
+    finally:
+      os.remove(ready_file_name)
 
   @staticmethod
   def DeleteTmpPackFiles(path):
