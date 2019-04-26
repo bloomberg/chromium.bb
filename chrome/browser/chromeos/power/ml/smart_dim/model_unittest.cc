@@ -120,7 +120,8 @@ class SmartDimModelImplTest : public testing::TestWithParam<bool> {
   SmartDimModelImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {}
 
   ~SmartDimModelImplTest() override = default;
 

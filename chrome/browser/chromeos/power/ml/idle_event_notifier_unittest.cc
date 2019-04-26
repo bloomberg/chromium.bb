@@ -81,7 +81,8 @@ class IdleEventNotifierTest : public testing::Test {
   IdleEventNotifierTest()
       : scoped_task_env_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {}
 
   ~IdleEventNotifierTest() override = default;
 

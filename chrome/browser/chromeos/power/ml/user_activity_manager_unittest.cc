@@ -172,7 +172,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   UserActivityManagerTest()
       : ChromeRenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         model_(thread_bundle()->GetMainThreadTaskRunner()) {}
 
   ~UserActivityManagerTest() override = default;
