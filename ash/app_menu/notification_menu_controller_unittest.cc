@@ -40,7 +40,8 @@ class TestAppMenuModelAdapter : public AppMenuModelAdapter {
                             std::move(model),
                             nullptr,
                             ui::MENU_SOURCE_TYPE_LAST,
-                            base::OnceClosure()) {}
+                            base::OnceClosure(),
+                            false /* is_tablet_mode */) {}
 
  private:
   // AppMenuModelAdapter overrides:

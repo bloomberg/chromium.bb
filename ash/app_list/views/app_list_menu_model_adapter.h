@@ -44,11 +44,12 @@ class APP_LIST_EXPORT AppListMenuModelAdapter
   };
 
   AppListMenuModelAdapter(const std::string& app_id,
-                          views::View* menu_owner,
+                          views::Widget* widget_owner,
                           ui::MenuSourceType source_type,
                           Delegate* delegate,
                           AppListViewAppType type,
-                          base::OnceClosure on_menu_closed_callback);
+                          base::OnceClosure on_menu_closed_callback,
+                          bool is_tablet_mode);
   ~AppListMenuModelAdapter() override;
 
   // Builds the menu model from |items|.
