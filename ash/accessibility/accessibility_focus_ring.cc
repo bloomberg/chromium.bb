@@ -93,7 +93,12 @@ AccessibilityFocusRing CreateFromThreeRects(const gfx::Rect& top,
   return ring;
 }
 
+constexpr int kScreenPaddingDip = 2;
 }  // namespace
+
+int AccessibilityFocusRing::GetScreenPaddingForTesting() {
+  return kScreenPaddingDip;
+}
 
 // static
 gfx::Rect AccessibilityFocusRing::screen_bounds_for_testing_;
@@ -163,26 +168,28 @@ AccessibilityFocusRing AccessibilityFocusRing::CreateWithParagraphShape(
   gfx::Rect top = orig_top_line;
   gfx::Rect middle = orig_body;
   gfx::Rect bottom = orig_bottom_line;
-  gfx::Rect display = GetScreenBoundsForRect(middle);
+
+  gfx::Rect screen_bounds = GetScreenBoundsForRect(middle);
+  screen_bounds.Inset(kScreenPaddingDip, kScreenPaddingDip);
 
   // Don't force a focus ring that is entirely offscreen to display.
-  if (IsFocusRingOffscreen(top, middle, bottom, display))
+  if (IsFocusRingOffscreen(top, middle, bottom, screen_bounds))
     return CreateFromThreeRects(top, middle, bottom, margin);
 
-  if (top.Intersects(display))
-    top.Intersect(display);
+  if (top.Intersects(screen_bounds))
+    top.Intersect(screen_bounds);
   else
-    ClipToBounds(&top, display);
+    ClipToBounds(&top, screen_bounds);
 
-  if (middle.Intersects(display))
-    middle.Intersect(display);
+  if (middle.Intersects(screen_bounds))
+    middle.Intersect(screen_bounds);
   else
-    ClipToBounds(&middle, display);
+    ClipToBounds(&middle, screen_bounds);
 
-  if (bottom.Intersects(display))
-    bottom.Intersect(display);
+  if (bottom.Intersects(screen_bounds))
+    bottom.Intersect(screen_bounds);
   else
-    ClipToBounds(&bottom, display);
+    ClipToBounds(&bottom, screen_bounds);
 
   int min_height = std::min(top.height(), bottom.height());
   margin = std::min(margin, min_height / 2);

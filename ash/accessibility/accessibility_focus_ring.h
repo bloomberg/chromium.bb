@@ -94,6 +94,7 @@ struct ASH_EXPORT AccessibilityFocusRing {
   static void set_screen_bounds_for_testing(const gfx::Rect& bounds) {
     screen_bounds_for_testing_ = bounds;
   }
+  static int GetScreenPaddingForTesting();
 
   gfx::Point points[36];
   static gfx::Rect screen_bounds_for_testing_;
