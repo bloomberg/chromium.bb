@@ -581,7 +581,7 @@ class PolicyProvidedTrustAnchorsOnUserSessionInitTest
   void TriggerLogIn() {
     chromeos::LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<chromeos::GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
   }
 

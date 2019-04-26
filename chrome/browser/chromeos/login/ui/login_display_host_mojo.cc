@@ -192,7 +192,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     // If we already have a signin screen instance, just reset the state of the
     // oobe dialog.
     HideOobeDialog();
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(base::nullopt);
     return;
   }
 
@@ -221,7 +221,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     dialog_->Hide();
     // Reset accelerator will not work properly if OOBE UI stays in reset
     // dialog state, so make sure the curren dialog screen changes.
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(base::nullopt);
     start_delayed_for_oobe_dialog_ = false;
   }
 
@@ -286,7 +286,7 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   // The dialog can not be hidden if there are no users on the login screen.
   // Reload it instead.
   if (!login_display_->IsSigninInProgress() && users_.empty()) {
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(base::nullopt);
     return;
   }
 

@@ -69,6 +69,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
                           public GaiaView,
                           public NetworkPortalDetector::Observer {
  public:
+  using TView = GaiaView;
+
   // The possible modes that the Gaia signin screen can be in.
   enum GaiaScreenMode {
     // Default Gaia authentication will be used.

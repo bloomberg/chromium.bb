@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
   test::OobeGaiaPageWaiter().WaitUntilReady();
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kNewUserEmail, kNewUserGaiaId,
                                 FakeGaiaMixin::kEmptyUserServices);
 

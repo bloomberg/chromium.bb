@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
   session_start_waiter.Wait();
@@ -209,7 +209,7 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
     session_start_waiter.Wait();

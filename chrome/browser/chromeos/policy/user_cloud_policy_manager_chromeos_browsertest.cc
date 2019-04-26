@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
       content::NotificationService::AllSources());
   chromeos::LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
   RunUntilBrowserProcessQuits();
   // Should not receive a SESSION_STARTED notification.

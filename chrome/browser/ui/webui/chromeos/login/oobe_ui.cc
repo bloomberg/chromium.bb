@@ -344,7 +344,8 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<ErrorScreenHandler>(js_calls_container_.get()));
 
-  error_screen_ = std::make_unique<ErrorScreen>(GetView<ErrorScreenHandler>());
+  error_screen_ =
+      std::make_unique<ErrorScreen>(GetHandler<ErrorScreenHandler>());
   ErrorScreen* error_screen = error_screen_.get();
 
   AddScreenHandler(std::make_unique<EnrollmentScreenHandler>(
@@ -401,7 +402,7 @@ void OobeUI::ConfigureOobeDisplay() {
 
   auto signin_screen_handler = std::make_unique<SigninScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen,
-      core_handler_, GetView<GaiaScreenHandler>());
+      core_handler_, GetHandler<GaiaScreenHandler>());
   signin_screen_handler_ = signin_screen_handler.get();
   AddWebUIHandler(std::move(signin_screen_handler));
 
@@ -527,135 +528,127 @@ CoreOobeView* OobeUI::GetCoreOobeView() {
 }
 
 WelcomeView* OobeUI::GetWelcomeView() {
-  return GetView<WelcomeScreenHandler>();
+  return GetHandler<WelcomeScreenHandler>();
 }
 
 EulaView* OobeUI::GetEulaView() {
-  return GetView<EulaScreenHandler>();
+  return GetHandler<EulaScreenHandler>();
 }
 
 UpdateView* OobeUI::GetUpdateView() {
-  return GetView<UpdateScreenHandler>();
+  return GetHandler<UpdateScreenHandler>();
 }
 
 EnableDebuggingScreenView* OobeUI::GetEnableDebuggingScreenView() {
-  return GetView<EnableDebuggingScreenHandler>();
+  return GetHandler<EnableDebuggingScreenHandler>();
 }
 
 EnrollmentScreenView* OobeUI::GetEnrollmentScreenView() {
-  return GetView<EnrollmentScreenHandler>();
+  return GetHandler<EnrollmentScreenHandler>();
 }
 
 ResetView* OobeUI::GetResetView() {
-  return GetView<ResetScreenHandler>();
+  return GetHandler<ResetScreenHandler>();
 }
 
 DemoSetupScreenView* OobeUI::GetDemoSetupScreenView() {
-  return GetView<DemoSetupScreenHandler>();
+  return GetHandler<DemoSetupScreenHandler>();
 }
 
 DemoPreferencesScreenView* OobeUI::GetDemoPreferencesScreenView() {
-  return GetView<DemoPreferencesScreenHandler>();
+  return GetHandler<DemoPreferencesScreenHandler>();
 }
 
 FingerprintSetupScreenView* OobeUI::GetFingerprintSetupScreenView() {
-  return GetView<FingerprintSetupScreenHandler>();
+  return GetHandler<FingerprintSetupScreenHandler>();
 }
 
 KioskAutolaunchScreenView* OobeUI::GetKioskAutolaunchScreenView() {
-  return GetView<KioskAutolaunchScreenHandler>();
+  return GetHandler<KioskAutolaunchScreenHandler>();
 }
 
 KioskEnableScreenView* OobeUI::GetKioskEnableScreenView() {
-  return GetView<KioskEnableScreenHandler>();
+  return GetHandler<KioskEnableScreenHandler>();
 }
 
 TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
-  return GetView<TermsOfServiceScreenHandler>();
+  return GetHandler<TermsOfServiceScreenHandler>();
 }
 
 SyncConsentScreenView* OobeUI::GetSyncConsentScreenView() {
-  return GetView<SyncConsentScreenHandler>();
+  return GetHandler<SyncConsentScreenHandler>();
 }
 
 MarketingOptInScreenView* OobeUI::GetMarketingOptInScreenView() {
-  return GetView<MarketingOptInScreenHandler>();
+  return GetHandler<MarketingOptInScreenHandler>();
 }
 
 ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
-  return GetView<ArcTermsOfServiceScreenHandler>();
+  return GetHandler<ArcTermsOfServiceScreenHandler>();
 }
 
 RecommendAppsScreenView* OobeUI::GetRecommendAppsScreenView() {
-  return GetView<RecommendAppsScreenHandler>();
+  return GetHandler<RecommendAppsScreenHandler>();
 }
 
 AppDownloadingScreenView* OobeUI::GetAppDownloadingScreenView() {
-  return GetView<AppDownloadingScreenHandler>();
+  return GetHandler<AppDownloadingScreenHandler>();
 }
 
 WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {
-  return GetView<WrongHWIDScreenHandler>();
+  return GetHandler<WrongHWIDScreenHandler>();
 }
 
 AutoEnrollmentCheckScreenView* OobeUI::GetAutoEnrollmentCheckScreenView() {
-  return GetView<AutoEnrollmentCheckScreenHandler>();
+  return GetHandler<AutoEnrollmentCheckScreenHandler>();
 }
 
 HIDDetectionView* OobeUI::GetHIDDetectionView() {
-  return GetView<HIDDetectionScreenHandler>();
+  return GetHandler<HIDDetectionScreenHandler>();
 }
 
 DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
-  return GetView<DeviceDisabledScreenHandler>();
+  return GetHandler<DeviceDisabledScreenHandler>();
 }
 
 EncryptionMigrationScreenView* OobeUI::GetEncryptionMigrationScreenView() {
-  return GetView<EncryptionMigrationScreenHandler>();
+  return GetHandler<EncryptionMigrationScreenHandler>();
 }
 
 SupervisionTransitionScreenView* OobeUI::GetSupervisionTransitionScreenView() {
-  return GetView<SupervisionTransitionScreenHandler>();
+  return GetHandler<SupervisionTransitionScreenHandler>();
 }
 
 UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
-  return GetView<UpdateRequiredScreenHandler>();
+  return GetHandler<UpdateRequiredScreenHandler>();
 }
 
 AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
-  return GetView<AssistantOptInFlowScreenHandler>();
+  return GetHandler<AssistantOptInFlowScreenHandler>();
 }
 
 MultiDeviceSetupScreenView* OobeUI::GetMultiDeviceSetupScreenView() {
-  return GetView<MultiDeviceSetupScreenHandler>();
+  return GetHandler<MultiDeviceSetupScreenHandler>();
 }
 
 ErrorScreen* OobeUI::GetErrorScreen() {
   return error_screen_.get();
 }
 
-GaiaView* OobeUI::GetGaiaScreenView() {
-  return GetView<GaiaScreenHandler>();
-}
-
-UserBoardView* OobeUI::GetUserBoardView() {
-  return GetView<UserBoardScreenHandler>();
-}
-
 NetworkScreenView* OobeUI::GetNetworkScreenView() {
-  return GetView<NetworkScreenHandler>();
+  return GetHandler<NetworkScreenHandler>();
 }
 
 AppLaunchSplashScreenView* OobeUI::GetAppLaunchSplashScreenView() {
-  return GetView<AppLaunchSplashScreenHandler>();
+  return GetHandler<AppLaunchSplashScreenHandler>();
 }
 
 ArcKioskSplashScreenView* OobeUI::GetArcKioskSplashScreenView() {
-  return GetView<ArcKioskSplashScreenHandler>();
+  return GetHandler<ArcKioskSplashScreenHandler>();
 }
 
 DiscoverScreenView* OobeUI::GetDiscoverScreenView() {
-  return GetView<DiscoverScreenHandler>();
+  return GetHandler<DiscoverScreenHandler>();
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {

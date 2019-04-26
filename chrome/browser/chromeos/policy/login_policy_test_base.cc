@@ -116,7 +116,7 @@ void LoginPolicyTestBase::LogIn(const std::string& user_id,
                                 const std::string& services) {
   chromeos::LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(user_id, password, services);
 
   content::WindowedNotificationObserver(

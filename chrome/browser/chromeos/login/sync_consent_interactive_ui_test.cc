@@ -133,7 +133,7 @@ class SyncConsentTest : public OobeBaseTest {
     WaitForGaiaPageEvent("ready");
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
                                   FakeGaiaMixin::kFakeUserPassword,
                                   FakeGaiaMixin::kEmptyUserServices);

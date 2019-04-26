@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   SkipToLoginScreen();
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
 
   // Wait for either the user session to start, or for restart to be requested

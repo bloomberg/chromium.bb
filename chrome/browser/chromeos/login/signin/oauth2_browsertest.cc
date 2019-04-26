@@ -437,7 +437,7 @@ class OAuth2Test : public OobeBaseTest {
     // our email normalization kicks in.
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                   kTestAccountServices);
     session_start_waiter.Wait();
@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   // Simulate an online sign-in.
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                 kTestAccountServices);
 

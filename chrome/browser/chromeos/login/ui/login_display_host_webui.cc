@@ -1072,7 +1072,7 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
   if (default_host() && default_host()->GetOobeUI()) {
     default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->DisableRestrictiveProxyCheckForTest();
     disable_restrictive_proxy_check_for_test_ = false;
   } else {

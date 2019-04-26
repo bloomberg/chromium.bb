@@ -47,7 +47,6 @@ class EulaView;
 class ErrorScreen;
 class DiscoverScreenView;
 class FingerprintSetupScreenView;
-class GaiaView;
 class HIDDetectionView;
 class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
@@ -64,7 +63,6 @@ class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
-class UserBoardView;
 class UpdateView;
 class UpdateRequiredView;
 class SupervisionTransitionScreenView;
@@ -133,8 +131,6 @@ class OobeUI : public ui::MojoWebUIController {
   UpdateRequiredView* GetUpdateRequiredScreenView();
   AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
   MultiDeviceSetupScreenView* GetMultiDeviceSetupScreenView();
-  GaiaView* GetGaiaScreenView();
-  UserBoardView* GetUserBoardView();
   DiscoverScreenView* GetDiscoverScreenView();
   NetworkScreenView* GetNetworkScreenView();
   MarketingOptInScreenView* GetMarketingOptInScreenView();
@@ -190,14 +186,23 @@ class OobeUI : public ui::MojoWebUIController {
   // Notify WebUI of the user count on the views login screen.
   void SetLoginUserCount(int user_count);
 
+  // Find a *View instance provided by a given *Handler type.
+  //
+  // This is the same as GetHandler() except the return type is limited to the
+  // view.
+  template <typename THandler>
+  typename THandler::TView* GetView() {
+    return GetHandler<THandler>();
+  }
+
  private:
-  // Lookup a view by its statically registered OobeScreen.
-  template <typename TView>
-  TView* GetView() {
-    OobeScreen expected_screen = TView::kScreenId;
+  // Find a handler instance.
+  template <typename THandler>
+  THandler* GetHandler() {
+    OobeScreen expected_screen = THandler::kScreenId;
     for (BaseScreenHandler* handler : screen_handlers_) {
       if (expected_screen == handler->oobe_screen())
-        return static_cast<TView*>(handler);
+        return static_cast<THandler*>(handler);
     }
 
     NOTREACHED() << "Unable to find handler for screen "

@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
                                 FakeGaiaMixin::kFakeUserPassword,
                                 FakeGaiaMixin::kEmptyUserServices);

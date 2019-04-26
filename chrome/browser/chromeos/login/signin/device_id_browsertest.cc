@@ -117,7 +117,7 @@ class DeviceIDTest : public OobeBaseTest,
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(user_id, password, "[]");
 
     WaitForSessionStart();
