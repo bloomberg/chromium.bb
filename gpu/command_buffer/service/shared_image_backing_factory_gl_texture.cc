@@ -809,8 +809,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       const char* error_message = "unspecified";
       if (!gles2::ValidateCompressedTexDimensions(
               target, 0 /* level */, size.width(), size.height(), 1 /* depth */,
-              format_info.image_internal_format, false /* restrict_for_webgl */,
-              &error_message)) {
+              format_info.image_internal_format, &error_message)) {
         LOG(ERROR) << "CreateSharedImage: "
                       "ValidateCompressedTexDimensionsFailed with error: "
                    << error_message;

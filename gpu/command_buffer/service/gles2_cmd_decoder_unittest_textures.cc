@@ -1886,9 +1886,9 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
 
     // test non-block-size width.
     bucket->SetSize(test.block_size * 2);
-    DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 5, 4, 0, test.block_size * 2, kBucketId);
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 5, 4, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
     // test small height.
     DoCompressedTexImage2D(
@@ -1896,10 +1896,10 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test non-block-size height.
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 5, kBucketId);
     bucket->SetSize(test.block_size * 2);
-    DoCompressedTexImage2D(
-        GL_TEXTURE_2D, 0, test.format, 4, 5, 0, test.block_size * 2, kBucketId);
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
     // test small for level 0.
     DoCompressedTexImage2D(
@@ -2003,77 +2003,6 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
           }
         }
       }
-    }
-
-    // Test a 13x13
-    DoCompressedTexImage2D(GL_TEXTURE_2D,
-                           0,
-                           test.format,
-                           13,
-                           13,
-                           0,
-                           test.block_size * 4 * 4,
-                           kBucketId);
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-    {
-      // Accept non-multiple-of-4 width sub image if it aligns to the right
-      GLint xoffset = 12;
-      GLint width = 1;
-      GLint yoffset = 0;
-      GLint height = 4;
-      bucket->SetSize(test.block_size);
-
-      EXPECT_CALL(*gl_,
-                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
-                                          width, height, test.format, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
-                   test.format, kBucketId);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
-      EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    }
-    {
-      // Accept non-multiple-of-4 height sub image if it aligns to the bottom
-      GLint xoffset = 0;
-      GLint width = 4;
-      GLint yoffset = 12;
-      GLint height = 1;
-      bucket->SetSize(test.block_size);
-
-      EXPECT_CALL(*gl_,
-                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
-                                          width, height, test.format, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
-                   test.format, kBucketId);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
-      EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    }
-    {
-      // Check that partial blocks are still fully counted.
-      // Those 25 pixels still need to use 4 blocks.
-      GLint xoffset = 8;
-      GLint width = 5;
-      GLint yoffset = 8;
-      GLint height = 5;
-      bucket->SetSize(test.block_size * 3);
-
-      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
-                   test.format, kBucketId);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
-      EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-
-      bucket->SetSize(test.block_size * 4);
-      EXPECT_CALL(*gl_,
-                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
-                                          width, height, test.format, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
-      EXPECT_EQ(GL_NO_ERROR, GetGLError());
     }
   }
 }

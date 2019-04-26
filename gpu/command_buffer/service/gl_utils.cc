@@ -43,9 +43,10 @@ bool IsValidPVRTCSize(GLint level, GLsizei size) {
   return GLES2Util::IsPOT(size);
 }
 
-bool IsValidS3TCSizeForWebGL(GLint level, GLsizei size) {
-  // WebGL only allows multiple-of-4 sizes, except for levels > 0 where it also
-  // allows 1 or 2. See WEBGL_compressed_texture_s3tc.
+bool IsValidS3TCSizeForWebGLAndANGLE(GLint level, GLsizei size) {
+  // WebGL and ANGLE only allow multiple-of-4 sizes, except for levels > 0 where
+  // it also allows 1 or 2. See WEBGL_compressed_texture_s3tc and
+  // ANGLE_compressed_texture_dxt*
   return (level && size == 1) || (level && size == 2) ||
          !(size % kS3TCBlockWidth);
 }
@@ -532,7 +533,6 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
                                         GLsizei depth,
                                         GLenum format,
                                         Texture* texture,
-                                        bool restrict_for_webgl,
                                         const char** error_message) {
   if (xoffset < 0 || yoffset < 0 || zoffset < 0) {
     *error_message = "x/y/z offset < 0";
@@ -655,8 +655,7 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
         return false;
       }
       return ValidateCompressedTexDimensions(target, level, width, height, 1,
-                                             format, restrict_for_webgl,
-                                             error_message);
+                                             format, error_message);
     }
 
     // ES3 formats
@@ -696,7 +695,6 @@ bool ValidateCompressedTexDimensions(GLenum target,
                                      GLsizei height,
                                      GLsizei depth,
                                      GLenum format,
-                                     bool restrict_for_webgl,
                                      const char** error_message) {
   switch (format) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -708,8 +706,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
       DCHECK_EQ(1, depth);  // 2D formats.
-      if (restrict_for_webgl && (!IsValidS3TCSizeForWebGL(level, width) ||
-                                 !IsValidS3TCSizeForWebGL(level, height))) {
+      if (!IsValidS3TCSizeForWebGLAndANGLE(level, width) ||
+          !IsValidS3TCSizeForWebGLAndANGLE(level, height)) {
         *error_message = "width or height invalid for level";
         return false;
       }

@@ -14499,8 +14499,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
     GLsizei width, GLsizei height, GLsizei depth, GLenum format) {
   const char* error_message = "";
   if (!::gpu::gles2::ValidateCompressedTexDimensions(
-          target, level, width, height, depth, format,
-          feature_info_->IsWebGLContext(), &error_message)) {
+          target, level, width, height, depth, format, &error_message)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
     return false;
   }
@@ -14515,7 +14514,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
   const char* error_message = "";
   if (!::gpu::gles2::ValidateCompressedTexSubDimensions(
           target, level, xoffset, yoffset, zoffset, width, height, depth,
-          format, texture, feature_info_->IsWebGLContext(), &error_message)) {
+          format, texture, &error_message)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, error_message);
     return false;
   }

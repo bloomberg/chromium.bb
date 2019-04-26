@@ -116,7 +116,6 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
                                         GLsizei depth,
                                         GLenum format,
                                         Texture* texture,
-                                        bool restrict_for_webgl,
                                         const char** error_message);
 
 bool ValidateCompressedTexDimensions(GLenum target,
@@ -125,7 +124,6 @@ bool ValidateCompressedTexDimensions(GLenum target,
                                      GLsizei height,
                                      GLsizei depth,
                                      GLenum format,
-                                     bool restrict_for_webgl,
                                      const char** error_message);
 
 bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,

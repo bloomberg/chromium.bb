@@ -300,23 +300,23 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 #endif
 #endif  /* GL_CHROMIUM_framebuffer_multisample */
 
-/* GL_CHROMIUM_texture_compression_dxt3 */
-#ifndef GL_CHROMIUM_texture_compression_dxt3
-#define GL_CHROMIUM_texture_compression_dxt3 1
+/* GL_ANGLE_texture_compression_dxt3 */
+#ifndef GL_ANGLE_texture_compression_dxt3
+#define GL_ANGLE_texture_compression_dxt3 1
 
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #endif
-#endif  /* GL_CHROMIUM_texture_compression_dxt3 */
+#endif /* GL_ANGLE_texture_compression_dxt3 */
 
-/* GL_CHROMIUM_texture_compression_dxt5 */
-#ifndef GL_CHROMIUM_texture_compression_dxt5
-#define GL_CHROMIUM_texture_compression_dxt5 1
+/* GL_ANGLE_texture_compression_dxt5 */
+#ifndef GL_ANGLE_texture_compression_dxt5
+#define GL_ANGLE_texture_compression_dxt5 1
 
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 #endif
-#endif  /* GL_CHROMIUM_texture_compression_dxt5 */
+#endif /* GL_ANGLE_texture_compression_dxt5 */
 
 /* GL_CHROMIUM_async_pixel_transfers */
 #ifndef GL_CHROMIUM_async_pixel_transfers
