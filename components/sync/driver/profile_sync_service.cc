@@ -816,12 +816,8 @@ void ProfileSyncService::OnEngineInitialized(
     ModelTypeSet initial_types,
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    const std::string& cache_guid,
-    const std::string& birthday,
-    const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!cache_guid.empty());
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
@@ -847,9 +843,12 @@ void ProfileSyncService::OnEngineInitialized(
 
   // Copy some data to preferences to be able to one day migrate away from the
   // directory.
-  sync_prefs_.SetCacheGuid(cache_guid);
-  sync_prefs_.SetBirthday(birthday);
-  sync_prefs_.SetBagOfChips(bag_of_chips);
+  UserShare* user_share = GetUserShare();
+  if (user_share && user_share->directory.get()) {
+    sync_prefs_.SetCacheGuid(user_share->directory->cache_guid());
+    sync_prefs_.SetBirthday(user_share->directory->store_birthday());
+    sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
+  }
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -1253,8 +1252,6 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   configure_context.reason = reason;
   configure_context.configuration_start_time = base::Time::Now();
 
-  DCHECK(!configure_context.cache_guid.empty());
-
   if (!migrator_) {
     // We create the migrator at the same time.
     migrator_ = std::make_unique<BackendMigrator>(
@@ -1272,7 +1269,6 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
 
   DCHECK(!configure_context.authenticated_account_id.empty() ||
          IsLocalSyncEnabled());
-  DCHECK(!configure_context.cache_guid.empty());
   DCHECK_NE(configure_context.reason, CONFIGURE_REASON_UNKNOWN);
 
   // Note: When local Sync is enabled, then we want full-sync mode (not just
@@ -1820,7 +1816,6 @@ void ProfileSyncService::RemoveClientFromServer() const {
     return;
   }
   const std::string cache_guid = sync_prefs_.GetCacheGuid();
-  DCHECK(!cache_guid.empty());
   std::string birthday;
   UserShare* user_share = GetUserShare();
   if (user_share && user_share->directory.get()) {

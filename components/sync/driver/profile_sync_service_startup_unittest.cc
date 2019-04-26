@@ -634,8 +634,6 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   ON_CALL(*sync_engine, IsInitialized()).WillByDefault(Return(true));
   sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                       WeakHandle<DataTypeDebugInfoListener>(),
-                                      "test-guid", "test-birthday",
-                                      "test-bag-of-chips",
                                       /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
@@ -714,8 +712,6 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
   ON_CALL(*sync_engine, IsInitialized()).WillByDefault(Return(true));
   sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                       WeakHandle<DataTypeDebugInfoListener>(),
-                                      "test-guid", "test-birthday",
-                                      "test-bag-of-chips",
                                       /*success=*/true);
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURING));

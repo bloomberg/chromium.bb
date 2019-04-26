@@ -9,12 +9,6 @@
 #include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
-namespace {
-
-const char kTestCacheGuid[] = "test-guid";
-const char kTestBirthday[] = "1";
-
-}  // namespace
 
 FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
@@ -24,8 +18,7 @@ void FakeSyncEngine::Initialize(InitParams params) {
   initialized_ = success;
   params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                    WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestBirthday,
-                                   /*bag_of_chips=*/"", success);
+                                   success);
 }
 
 bool FakeSyncEngine::IsInitialized() const {
