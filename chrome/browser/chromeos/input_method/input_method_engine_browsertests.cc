@@ -10,8 +10,11 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -19,16 +22,20 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
@@ -52,6 +59,7 @@ enum TestType {
   kTestTypeNormal = 0,
   kTestTypeIncognito = 1,
   kTestTypeComponent = 2,
+  kTestTypeMojoImf = 3,
 };
 
 class InputMethodEngineBrowserTest
@@ -62,6 +70,10 @@ class InputMethodEngineBrowserTest
   virtual ~InputMethodEngineBrowserTest() {}
 
   void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam() == kTestTypeMojoImf) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kSingleProcessMash, features::kMojoIMF}, {});
+    }
     extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -110,6 +122,7 @@ class InputMethodEngineBrowserTest
       const std::string& extension_name, TestType type) {
     switch (type) {
       case kTestTypeNormal:
+      case kTestTypeMojoImf:
         return LoadExtension(test_data_dir_.AppendASCII(extension_name));
       case kTestTypeIncognito:
         return LoadExtensionIncognito(
@@ -123,6 +136,10 @@ class InputMethodEngineBrowserTest
   }
 
   const extensions::Extension* extension_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputMethodEngineBrowserTest);
 };
 
 class KeyEventDoneCallback {
@@ -145,6 +162,30 @@ class KeyEventDoneCallback {
   DISALLOW_COPY_AND_ASSIGN(KeyEventDoneCallback);
 };
 
+class TestTextInputClient : public ui::DummyTextInputClient {
+ public:
+  explicit TestTextInputClient(ui::TextInputType type)
+      : ui::DummyTextInputClient(type) {}
+  ~TestTextInputClient() override = default;
+
+  void WaitUntilCalled() { run_loop_.Run(); }
+
+  const base::string16& inserted_text() const { return inserted_text_; }
+
+ private:
+  // ui::DummyTextInputClient:
+  bool ShouldDoLearning() override { return true; }
+  void InsertText(const base::string16& text) override {
+    inserted_text_ = text;
+    run_loop_.Quit();
+  }
+
+  base::string16 inserted_text_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
+};
+
 INSTANTIATE_TEST_SUITE_P(InputMethodEngineBrowserTest,
                          InputMethodEngineBrowserTest,
                          ::testing::Values(kTestTypeNormal));
@@ -154,6 +195,9 @@ INSTANTIATE_TEST_SUITE_P(InputMethodEngineIncognitoBrowserTest,
 INSTANTIATE_TEST_SUITE_P(InputMethodEngineComponentExtensionBrowserTest,
                          InputMethodEngineBrowserTest,
                          ::testing::Values(kTestTypeComponent));
+INSTANTIATE_TEST_SUITE_P(MojoImfBrowserTest,
+                         InputMethodEngineBrowserTest,
+                         ::testing::Values(kTestTypeMojoImf));
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        BasicScenarioTest) {
@@ -1169,6 +1213,69 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
 
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
   ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, MojoInteractionTest) {
+  LoadTestInputMethod();
+
+  InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+      kAPIArgumentIMEID, false /* show_message */);
+
+  ui::InputMethod* im =
+      browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod();
+  TestTextInputClient tic(ui::TEXT_INPUT_TYPE_TEXT);
+
+  {
+    SCOPED_TRACE("Verifies onFocus event.");
+    ExtensionTestMessageListener focus_listener(
+        "onFocus:text:true:true:true:true", false);
+
+    im->SetFocusedTextInputClient(&tic);
+
+    ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
+    ASSERT_TRUE(focus_listener.was_satisfied());
+  }
+
+  {
+    SCOPED_TRACE("Verifies onKeyEvent event.");
+    ExtensionTestMessageListener keydown_listener(
+        "onKeyEvent::keydown:a:KeyA:false:false:false:false", false);
+
+    EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_A, false,
+                                                false, false, false));
+
+    ASSERT_TRUE(keydown_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keydown_listener.was_satisfied());
+  }
+
+  {
+    SCOPED_TRACE("Verifies commitText call.");
+    extensions::ExtensionHost* host =
+        extensions::ProcessManager::Get(profile())
+            ->GetBackgroundHostForExtension(extension_->id());
+    const char commit_text_test_script[] =
+        "chrome.input.ime.commitText({"
+        "  contextID: engineBridge.getFocusedContextID().contextID,"
+        "  text:'COMMIT_TEXT'"
+        "});";
+    ASSERT_TRUE(
+        content::ExecuteScript(host->host_contents(), commit_text_test_script));
+    tic.WaitUntilCalled();
+    EXPECT_EQ(base::UTF8ToUTF16("COMMIT_TEXT"), tic.inserted_text());
+  }
+
+  {
+    SCOPED_TRACE("Verifies onBlur event");
+    ExtensionTestMessageListener blur_listener("onBlur", false);
+
+    ui::DummyTextInputClient dtic;
+    im->SetFocusedTextInputClient(&dtic);
+
+    ASSERT_TRUE(blur_listener.WaitUntilSatisfied());
+    ASSERT_TRUE(blur_listener.was_satisfied());
+
+    im->DetachTextInputClient(&dtic);
+  }
 }
 
 }  // namespace
