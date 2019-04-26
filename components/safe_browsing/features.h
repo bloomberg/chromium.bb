@@ -62,10 +62,6 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;
 
-// Controls whether we inspect the content of RAR files, or just report the
-// filenames contained in the archive.
-extern const base::Feature kInspectRarContentFeature;
-
 // Controls whether we use AP download protection.
 extern const base::Feature kUseAPDownloadProtection;
 

@@ -271,9 +271,6 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarContainingAssortmentOfFiles) {
 
 TEST_F(SandboxedRarAnalyzerTest,
        AnalyzeRarContainingExecutableWithContentInspection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kInspectRarContentFeature);
-
   // Can detect when .rar contains executable files.
   // has_exe.rar contains 1 file: signed.exe
   base::FilePath path;
