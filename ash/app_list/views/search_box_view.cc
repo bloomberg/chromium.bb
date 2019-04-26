@@ -254,6 +254,13 @@ void SearchBoxView::RecordSearchBoxActivationHistogram(
   }
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated", activation_type);
+  if (is_tablet_mode()) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated.TabletMode",
+                              activation_type);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated.ClamshellMode",
+                              activation_type);
+  }
 }
 
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
