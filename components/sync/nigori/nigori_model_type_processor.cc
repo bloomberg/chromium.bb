@@ -5,11 +5,14 @@
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 
 namespace syncer {
 
@@ -231,18 +234,58 @@ void NigoriModelTypeProcessor::OnSyncStopping(
 void NigoriModelTypeProcessor::GetAllNodesForDebugging(
     AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+
+  std::unique_ptr<base::DictionaryValue> root_node;
+  std::unique_ptr<EntityData> entity_data = bridge_->GetData();
+  if (entity_data) {
+    if (entity_) {
+      const sync_pb::EntityMetadata& metadata = entity_->metadata();
+      // Set id value as directory, "s" means server.
+      entity_data->id = "s" + metadata.server_id();
+      entity_data->creation_time = ProtoTimeToTime(metadata.creation_time());
+      entity_data->modification_time =
+          ProtoTimeToTime(metadata.modification_time());
+    }
+    root_node = entity_data->ToDictionaryValue();
+    if (entity_) {
+      root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
+    }
+  } else {
+    root_node = std::make_unique<base::DictionaryValue>();
+  }
+
+  // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
+  // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
+  // sync_node_browser.js uses modelType to check if root node is parent of real
+  // data node. NON_UNIQUE_NAME will be the name of node to display.
+  root_node->SetString("ID", "NIGORI_ROOT");
+  root_node->SetString("PARENT_ID", "r");
+  root_node->SetString("UNIQUE_SERVER_TAG", "Nigori");
+  root_node->SetBoolean("IS_DIR", false);
+  root_node->SetString("modelType", "Nigori");
+  root_node->SetString("NON_UNIQUE_NAME", "Nigori");
+
+  auto all_nodes = std::make_unique<base::ListValue>();
+  all_nodes->Append(std::move(root_node));
+  std::move(callback).Run(syncer::NIGORI, std::move(all_nodes));
 }
 
 void NigoriModelTypeProcessor::GetStatusCountersForDebugging(
     StatusCountersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  StatusCounters counters;
+  counters.num_entries = entity_ ? 1 : 0;
+  counters.num_entries_and_tombstones = counters.num_entries;
+  std::move(callback).Run(syncer::NIGORI, counters);
 }
 
 void NigoriModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(model_type_state_);
+  memory_usage += entity_ ? entity_->EstimateMemoryUsage() : 0;
+  SyncRecordModelTypeMemoryHistogram(ModelType::NIGORI, memory_usage);
+  SyncRecordModelTypeCountHistogram(ModelType::NIGORI, entity_ ? 1 : 0);
 }
 
 void NigoriModelTypeProcessor::ModelReadyToSync(
