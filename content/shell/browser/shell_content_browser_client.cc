@@ -342,7 +342,7 @@ void ShellContentBrowserClient::HandleServiceRequest(
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   if (should_terminate_on_service_quit_callback_)
-    return should_terminate_on_service_quit_callback_.Run(id);
+    return std::move(should_terminate_on_service_quit_callback_).Run(id);
   return false;
 }
 
@@ -454,8 +454,8 @@ void ShellContentBrowserClient::SelectClientCertificate(
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {
-  if (!select_client_certificate_callback_.is_null())
-    select_client_certificate_callback_.Run();
+  if (select_client_certificate_callback_)
+    std::move(select_client_certificate_callback_).Run();
 }
 
 SpeechRecognitionManagerDelegate*

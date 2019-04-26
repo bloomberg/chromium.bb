@@ -37,7 +37,6 @@ TestMediaStreamRendererFactory::~TestMediaStreamRendererFactory() {}
 scoped_refptr<blink::WebMediaStreamVideoRenderer>
 TestMediaStreamRendererFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
-    const base::Closure& error_cb,
     const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
@@ -47,7 +46,7 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
   return new TestMediaStreamVideoRenderer(
       std::move(io_task_runner),
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
-      base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs), error_cb,
+      base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
       repaint_cb);
 }
 

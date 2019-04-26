@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
                        MANUAL_TerminateOnServiceQuit) {
   ShellContentBrowserClient::Get()
       ->set_should_terminate_on_service_quit_callback(
-          base::Bind(&ShouldTerminateOnServiceQuit));
+          base::BindOnce(&ShouldTerminateOnServiceQuit));
 
   // Launch a test service.
   echo::mojom::EchoPtr echo_ptr;

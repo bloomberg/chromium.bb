@@ -23,7 +23,6 @@ class TestMediaStreamRendererFactory
   // MediaStreamRendererFactory implementation.
   scoped_refptr<blink::WebMediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
-      const base::Closure& error_cb,
       const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)

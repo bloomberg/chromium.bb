@@ -64,14 +64,9 @@ class WorkerTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
-        base::Bind(&WorkerTest::OnSelectClientCertificate,
-                   base::Unretained(this)));
+        base::BindOnce(&WorkerTest::OnSelectClientCertificate,
+                       base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
-  void TearDownOnMainThread() override {
-    ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
-        base::Closure());
   }
 
   int select_certificate_count() const { return select_certificate_count_; }
@@ -113,7 +108,7 @@ class WorkerTest : public ContentBrowserTest {
         ShellContentBrowserClient::Get();
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
     browser_client->set_login_request_callback(
-        base::Bind(&QuitUIMessageLoop, runner->QuitClosure()));
+        base::BindOnce(&QuitUIMessageLoop, runner->QuitClosure()));
     shell()->LoadURL(url);
     runner->Run();
   }

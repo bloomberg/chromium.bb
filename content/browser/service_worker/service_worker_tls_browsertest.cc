@@ -25,14 +25,9 @@ class ServiceWorkerTlsTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
-        base::BindRepeating(&ServiceWorkerTlsTest::OnSelectClientCertificate,
-                            base::Unretained(this)));
+        base::BindOnce(&ServiceWorkerTlsTest::OnSelectClientCertificate,
+                       base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
-  void TearDownOnMainThread() override {
-    ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
-        base::RepeatingClosure());
   }
 
   int select_certificate_count() const { return select_certificate_count_; }

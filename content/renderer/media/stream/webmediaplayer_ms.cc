@@ -340,8 +340,6 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       media_task_runner_, worker_task_runner_, gpu_factories_));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream_,
-      media::BindToCurrentLoop(
-          base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
       frame_deliverer_->GetRepaintCallback(), io_task_runner_,
       main_render_task_runner_);
 
@@ -502,8 +500,6 @@ void WebMediaPlayerMS::ReloadVideo() {
       SetNetworkState(kNetworkStateLoading);
       video_frame_provider_ = renderer_factory_->GetVideoRenderer(
           web_stream_,
-          media::BindToCurrentLoop(
-              base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
           frame_deliverer_->GetRepaintCallback(), io_task_runner_,
           main_render_task_runner_);
       DCHECK(video_frame_provider_);
@@ -1137,12 +1133,6 @@ void WebMediaPlayerMS::RepaintInternal() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   get_client()->Repaint();
-}
-
-void WebMediaPlayerMS::OnSourceError() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
-  RepaintInternal();
 }
 
 void WebMediaPlayerMS::SetNetworkState(WebMediaPlayer::NetworkState state) {

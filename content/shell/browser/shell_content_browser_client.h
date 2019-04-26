@@ -119,16 +119,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   // Used for content_browsertests.
   void set_select_client_certificate_callback(
-      base::Closure select_client_certificate_callback) {
+      base::OnceClosure select_client_certificate_callback) {
     select_client_certificate_callback_ =
         std::move(select_client_certificate_callback);
   }
   void set_should_terminate_on_service_quit_callback(
-      base::Callback<bool(const service_manager::Identity&)> callback) {
+      base::OnceCallback<bool(const service_manager::Identity&)> callback) {
     should_terminate_on_service_quit_callback_ = std::move(callback);
   }
-  void set_login_request_callback(
-      base::Callback<void()> login_request_callback) {
+  void set_login_request_callback(base::OnceClosure login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
 
@@ -145,10 +144,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<ResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  base::Closure select_client_certificate_callback_;
-  base::Callback<bool(const service_manager::Identity&)>
+  base::OnceClosure select_client_certificate_callback_;
+  base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;
-  base::Callback<void()> login_request_callback_;
+  base::OnceClosure login_request_callback_;
 
   std::unique_ptr<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>

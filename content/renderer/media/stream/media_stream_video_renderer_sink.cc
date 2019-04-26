@@ -136,12 +136,10 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
-    const base::Closure& error_cb,
     const RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
-    : error_cb_(error_cb),
-      repaint_cb_(repaint_cb),
+    : repaint_cb_(repaint_cb),
       video_track_(video_track),
       io_task_runner_(std::move(io_task_runner)),
       main_render_task_runner_(std::move(main_render_task_runner)),

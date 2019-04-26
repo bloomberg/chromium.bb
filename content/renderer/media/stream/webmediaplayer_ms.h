@@ -253,9 +253,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Need repaint due to state change.
   void RepaintInternal();
 
-  // The callback for source to report error.
-  void OnSourceError();
-
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state);

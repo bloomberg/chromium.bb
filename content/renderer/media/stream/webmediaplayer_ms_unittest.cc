@@ -202,13 +202,11 @@ class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
   MockMediaStreamVideoRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ReusableMessageLoopEvent* message_loop_controller,
-      const base::Closure& error_cb,
       const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb)
       : started_(false),
         standard_size_(kStandardWidth, kStandardHeight),
         task_runner_(task_runner),
         message_loop_controller_(message_loop_controller),
-        error_cb_(error_cb),
         repaint_cb_(repaint_cb),
         delay_till_next_generated_frame_(
             base::TimeDelta::FromSecondsD(1.0 / 30.0)) {}
@@ -247,7 +245,6 @@ class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReusableMessageLoopEvent* const message_loop_controller_;
-  const base::Closure error_cb_;
   const blink::WebMediaStreamVideoRenderer::RepaintCB repaint_cb_;
 
   base::circular_deque<TestFrame> frames_;
@@ -365,10 +362,8 @@ void MockMediaStreamVideoRenderer::InjectFrame() {
   auto frame = frames_.front();
   frames_.pop_front();
 
-  if (frame.first == FrameType::BROKEN_FRAME) {
-    error_cb_.Run();
+  if (frame.first == FrameType::BROKEN_FRAME)
     return;
-  }
 
   // For pause case, the provider will still let the stream continue, but
   // not send the frames to the player. As is the same case in reality.
@@ -435,7 +430,6 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
 
   scoped_refptr<blink::WebMediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
-      const base::Closure& error_cb,
       const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
@@ -475,15 +469,14 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
 scoped_refptr<blink::WebMediaStreamVideoRenderer>
 MockRenderFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
-    const base::Closure& error_cb,
     const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!support_video_renderer_)
     return nullptr;
 
-  provider_ = new MockMediaStreamVideoRenderer(task_runner_,
-      message_loop_controller_, error_cb, repaint_cb);
+  provider_ = new MockMediaStreamVideoRenderer(
+      task_runner_, message_loop_controller_, repaint_cb);
 
   return provider_;
 }
@@ -890,45 +883,6 @@ TEST_P(WebMediaPlayerMSTest, Playing_Normal) {
   const blink::WebSize& natural_size = player_->NaturalSize();
   EXPECT_EQ(kStandardWidth, natural_size.width);
   EXPECT_EQ(kStandardHeight, natural_size.height);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  EXPECT_CALL(*this, DoSetCcLayer(false));
-  if (enable_surface_layer_for_video_)
-    EXPECT_CALL(*submitter_ptr_, StopUsingProvider());
-  else
-    EXPECT_CALL(*this, DoStopRendering());
-}
-
-TEST_P(WebMediaPlayerMSTest, Playing_ErrorFrame) {
-  // This tests sends a broken frame to WebMediaPlayerMS, and verifies
-  // OnSourceError function works as expected.
-
-  InitializeWebMediaPlayerMS();
-
-  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
-
-  const int kBrokenFrame = static_cast<int>(FrameType::BROKEN_FRAME);
-  int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
-                  333, 366, 400, 433, 466, 500, 533, 566, 600, kBrokenFrame};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
-  provider->QueueFrames(timestamps);
-
-  if (enable_surface_layer_for_video_) {
-    EXPECT_CALL(*submitter_ptr_, StartRendering());
-  } else {
-    EXPECT_CALL(*this, DoSetCcLayer(true));
-    EXPECT_CALL(*this, DoStartRendering());
-  }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
-  EXPECT_CALL(*this, DoNetworkStateChanged(
-                         blink::WebMediaPlayer::kNetworkStateFormatError));
-  EXPECT_CALL(*this,
-              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_ERROR_NETWORK);
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetCcLayer(false));

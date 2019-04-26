@@ -40,7 +40,6 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
  public:
   MediaStreamVideoRendererSink(
       const blink::WebMediaStreamTrack& video_track,
-      const base::Closure& error_cb,
       const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner);
@@ -70,7 +69,6 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   // Helper method used for testing.
   State GetStateForTesting();
 
-  const base::Closure error_cb_;
   const RepaintCB repaint_cb_;
   const blink::WebMediaStreamTrack video_track_;
 

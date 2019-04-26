@@ -217,7 +217,7 @@ void WebTestPermissionManager::ResetPermissions() {
 void WebTestPermissionManager::OnPermissionChanged(
     const PermissionDescription& permission,
     blink::mojom::PermissionStatus status) {
-  std::list<base::Closure> callbacks;
+  std::list<base::OnceClosure> callbacks;
 
   for (SubscriptionsMap::iterator iter(&subscriptions_); !iter.IsAtEnd();
        iter.Advance()) {
@@ -232,11 +232,11 @@ void WebTestPermissionManager::OnPermissionChanged(
 
     // Add the callback to |callbacks| which will be run after the loop to
     // prevent re-entrance issues.
-    callbacks.push_back(base::Bind(subscription->callback, status));
+    callbacks.push_back(base::BindOnce(subscription->callback, status));
   }
 
-  for (const auto& callback : callbacks)
-    callback.Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 }  // namespace content
