@@ -1134,18 +1134,13 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
 #define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED"
 #endif
 
-#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
-#define NOTIMPLEMENTED() EAT_STREAM_PARAMETERS
-#define NOTIMPLEMENTED_LOG_ONCE() EAT_STREAM_PARAMETERS
-#else
-#define NOTIMPLEMENTED() LOG(ERROR) << NOTIMPLEMENTED_MSG
-#define NOTIMPLEMENTED_LOG_ONCE()                      \
-  do {                                                 \
-    static bool logged_once = false;                   \
-    LOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG; \
-    logged_once = true;                                \
-  } while (0);                                         \
+#define NOTIMPLEMENTED() DLOG(ERROR) << NOTIMPLEMENTED_MSG
+#define NOTIMPLEMENTED_LOG_ONCE()                       \
+  do {                                                  \
+    static bool logged_once = false;                    \
+    DLOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG; \
+    logged_once = true;                                 \
+  } while (0);                                          \
   EAT_STREAM_PARAMETERS
-#endif
 
 #endif  // BASE_LOGGING_H_
