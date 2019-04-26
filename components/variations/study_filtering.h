@@ -57,6 +57,10 @@ bool CheckStudyEndDate(const Study::Filter& filter,
 bool CheckStudyVersion(const Study::Filter& filter,
                        const base::Version& version);
 
+// checks whether a study is applicable for the given OS version per |filter|.
+bool CheckStudyOSVersion(const Study::Filter& filter,
+                         const base::Version& os_version);
+
 // Checks whether a study is applicable for the given |country| per |filter|.
 bool CheckStudyCountry(const Study::Filter& filter, const std::string& country);
 

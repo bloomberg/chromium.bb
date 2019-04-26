@@ -30,6 +30,10 @@ struct ClientFilterableState {
   // The Chrome version to filter on.
   base::Version version;
 
+  // The OS version to filter on. See |min_os_version| in study.proto for
+  // details.
+  base::Version os_version;
+
   // The Channel for this Chrome installation.
   Study::Channel channel;
 
