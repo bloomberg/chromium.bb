@@ -1473,6 +1473,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             getComponent().resolveContextualSuggestionsCoordinator();
         }
         AppHooks.get().startMonitoringNetworkQuality();
+        AppHooks.get().startSystemSettingsObserver();
     }
 
     /**
