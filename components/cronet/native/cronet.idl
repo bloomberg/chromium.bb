@@ -884,10 +884,11 @@ interface UrlRequestCallback {
    * UrlRequestCallback methods will be invoked.
    *
    * Implementations of {@link #OnSucceeded} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info}.
    *
    * @param request Request that succeeded.
-   * @param info Response information.
+   * @param info Response information. NOTE: this is owned by {@code request}.
    */
   OnSucceeded(UrlRequest request, UrlResponseInfo info);
 
@@ -897,12 +898,14 @@ interface UrlRequestCallback {
    * |error| provides information about the failure.
    *
    * Implementations of {@link #OnFailed} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info} and {@code error}.
    *
    * @param request Request that failed.
    * @param info Response information. May be null if no response was
-   *         received.
-   * @param error information about error.
+   *         received. NOTE: this is owned by {@code request}.
+   * @param error information about error. NOTE: this is owned by {@code
+   *         request}.
    */
   OnFailed(UrlRequest request, UrlResponseInfo info, Error error);
 
@@ -911,11 +914,12 @@ interface UrlRequestCallback {
    * invoked, no other UrlRequestCallback methods will be invoked.
    *
    * Implementations of {@link #OnCanceled} are allowed to call {@code
-   * Cronet_UrlRequest_Destroy(request)}.
+   * Cronet_UrlRequest_Destroy(request)}, but note that destroying {@code
+   * request} destroys {@code info}.
    *
    * @param request Request that was canceled.
    * @param info Response information. May be null if no response was
-   *         received.
+   *         received. NOTE: this is owned by {@code request}.
    */
   OnCanceled(UrlRequest request, UrlResponseInfo info);
 };

@@ -127,8 +127,18 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
 
   // Response info updated by callback with number of bytes received. May be
   // nullptr, if no response has been received.
+  //
+  // NOTE: the synchronization of this field is complex -- it can't be
+  // completely protected by |lock_| since we pass this field as a unowned
+  // pointer to OnSucceed(), OnFailed(), and OnCanceled(). The pointee of this
+  // field cannot be updated after one of those callback calls is made.
   std::unique_ptr<Cronet_UrlResponseInfo> response_info_;
   // The error reported by request. May be nullptr if no error has occurred.
+  //
+  // NOTE: the synchronization of this field is complex -- it can't be
+  // completely protected by |lock_| since we pass this field as a unowned
+  // pointer to OnSucceed(), OnFailed(), and OnCanceled(). The pointee of this
+  // field cannot be updated after one of those callback calls is made.
   std::unique_ptr<Cronet_Error> error_;
 
   // The upload data stream if specified.
