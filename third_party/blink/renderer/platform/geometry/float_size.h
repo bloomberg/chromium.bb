@@ -81,7 +81,10 @@ class PLATFORM_EXPORT FloatSize {
            -std::numeric_limits<float>::epsilon() < height_ &&
            height_ < std::numeric_limits<float>::epsilon();
   }
-  bool IsValid() const { return !std::isnan(width_) && !std::isnan(height_); }
+  bool IsValid() const {
+    return width_ != -std::numeric_limits<float>::infinity() &&
+           height_ != -std::numeric_limits<float>::infinity();
+  }
   bool IsExpressibleAsIntSize() const;
 
   float AspectRatio() const { return width_ / height_; }
@@ -232,11 +235,14 @@ struct DefaultHash<blink::FloatSize> {
   STATIC_ONLY(DefaultHash);
   struct Hash {
     STATIC_ONLY(Hash);
+    typedef typename IntTypes<sizeof(float)>::UnsignedType Bits;
     static unsigned GetHash(const blink::FloatSize& key) {
-      return HashInts(key.Width(), key.Height());
+      return HashInts(bit_cast<Bits>(key.Width()),
+                      bit_cast<Bits>(key.Height()));
     }
     static bool Equal(const blink::FloatSize& a, const blink::FloatSize& b) {
-      return a == b;
+      return bit_cast<Bits>(a.Width()) == bit_cast<Bits>(b.Width()) &&
+             bit_cast<Bits>(a.Height()) == bit_cast<Bits>(b.Height());
     }
     static const bool safe_to_compare_to_empty_or_deleted = true;
   };
@@ -245,11 +251,14 @@ struct DefaultHash<blink::FloatSize> {
 template <>
 struct HashTraits<blink::FloatSize> : GenericHashTraits<blink::FloatSize> {
   STATIC_ONLY(HashTraits);
-  static const bool kEmptyValueIsZero = true;
-  static blink::FloatSize EmptyValue() { return blink::FloatSize(); }
+  static const bool kEmptyValueIsZero = false;
+  static blink::FloatSize EmptyValue() {
+    return blink::FloatSize(std::numeric_limits<float>::infinity(),
+                            std::numeric_limits<float>::infinity());
+  }
   static void ConstructDeletedValue(blink::FloatSize& slot, bool) {
-    float quiet_nan = std::numeric_limits<float>::quiet_NaN();
-    slot = blink::FloatSize(quiet_nan, quiet_nan);
+    slot = blink::FloatSize(-std::numeric_limits<float>::infinity(),
+                            -std::numeric_limits<float>::infinity());
   }
   static bool IsDeletedValue(const blink::FloatSize& value) {
     return !value.IsValid();
