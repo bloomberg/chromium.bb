@@ -2012,6 +2012,7 @@
 <translation id="409579654357498729">Додати в Cloud Print</translation>
 <translation id="4096508467498758490">Вимкнути розширення в режимі розробника</translation>
 <translation id="4096824249111507322">Готується модуль безпеки. Зачекайте (це може зайняти кілька хвилин)…</translation>
+<translation id="4097560579602855702">Пошук у Google</translation>
 <translation id="4099060993766194518">Відновити пошукову систему за умовчанням?</translation>
 <translation id="4099874310852108874">Сталася помилка мережі.</translation>
 <translation id="4100733287846229632">На пристрої дуже мало вільного місця</translation>
@@ -2077,7 +2078,6 @@
 <translation id="42126664696688958">Експортувати</translation>
 <translation id="42137655013211669">Сервер заборонив доступ до цього ресурсу.</translation>
 <translation id="4215350869199060536">Помилка. Заборонені символи в імені.</translation>
-<translation id="4222932583846282852">Скасування…</translation>
 <translation id="4225397296022057997">На всіх сайтах</translation>
 <translation id="4235200303672858594">Увесь екран</translation>
 <translation id="4235965441080806197">Скасувати вхід</translation>
@@ -3830,7 +3830,6 @@
 <translation id="7017480957358237747">дозволяти чи забороняти певні веб-сайти;</translation>
 <translation id="7018275672629230621">Читати й змінювати історію веб-перегляду</translation>
 <translation id="7019805045859631636">Швидка</translation>
-<translation id="702252130983202758">Ваші додатки</translation>
 <translation id="7022562585984256452">Вашу домашню сторінку налаштовано.</translation>
 <translation id="7025190659207909717">Керування службою пересилання мобільних даних</translation>
 <translation id="7029809446516969842">Паролі</translation>

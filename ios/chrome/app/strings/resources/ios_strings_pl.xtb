@@ -271,7 +271,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Włącz synchronizację</translation>
-<translation id="5244474230056479698">Synchronizowanie z <ph name="EMAIL" /></translation>
+<translation id="5244474230056479698">Synchronizacja z <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Anuluj synchronizację</translation>
 <translation id="5271549068863921519">Zapisz hasło</translation>
 <translation id="5300589172476337783">Pokaż</translation>
@@ -382,7 +382,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914583639806229067">Wyszukaj skopiowany obraz</translation>
 <translation id="6914783257214138813">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik.</translation>
-<translation id="692898627499215142">Nie ukończono początkowej konfiguracji synchronizacji. Aby rozpocząć synchronizację, włącz przełącznik Synchronizuj.</translation>
 <translation id="6944369514868857500">Wybierz inne konto</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6973630695168034713">Foldery</translation>

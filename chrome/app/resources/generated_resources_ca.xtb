@@ -2071,7 +2071,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="42126664696688958">Exporta</translation>
 <translation id="42137655013211669">El servidor ha prohibit l'accés a aquest recurs.</translation>
 <translation id="4215350869199060536">El nom conté símbols no permesos.</translation>
-<translation id="4222932583846282852">S'està cancel·lant...</translation>
 <translation id="4225397296022057997">En tots els llocs web</translation>
 <translation id="4235200303672858594">Tota la pantalla</translation>
 <translation id="4235965441080806197">Cancel·la l'inici de sessió</translation>
@@ -3826,7 +3825,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7017480957358237747">permet o prohibeix llocs web determinats,</translation>
 <translation id="7018275672629230621">Llegir i canviar l'historial de navegació</translation>
 <translation id="7019805045859631636">Ràpid</translation>
-<translation id="702252130983202758">Les teves aplicacions</translation>
 <translation id="7022562585984256452">S'ha definit la pàgina d'inici.</translation>
 <translation id="7025190659207909717">Gestió de serveis de dades mòbils</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>

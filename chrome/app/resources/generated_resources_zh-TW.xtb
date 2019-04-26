@@ -2010,6 +2010,7 @@
 <translation id="409579654357498729">新增至雲端列印</translation>
 <translation id="4096508467498758490">停用開發人員模式擴充功能</translation>
 <translation id="4096824249111507322">正在準備安全模組，請稍候 (這可能需要幾分鐘的時間)...</translation>
+<translation id="4097560579602855702">搜尋 Google</translation>
 <translation id="4099060993766194518">要還原預設搜尋引擎嗎？</translation>
 <translation id="4099874310852108874">網路發生錯誤。</translation>
 <translation id="4100733287846229632">裝置空間嚴重不足</translation>
@@ -2075,7 +2076,6 @@
 <translation id="42126664696688958">匯出</translation>
 <translation id="42137655013211669">伺服器禁止存取這個資源。</translation>
 <translation id="4215350869199060536">糟糕，名稱中有非法符號！</translation>
-<translation id="4222932583846282852">取消中…</translation>
 <translation id="4225397296022057997">在所有網站上</translation>
 <translation id="4235200303672858594">整個畫面</translation>
 <translation id="4235965441080806197">取消登入</translation>
@@ -3828,7 +3828,6 @@
 <translation id="7017480957358237747">允許/禁止特定網站；</translation>
 <translation id="7018275672629230621">讀取及變更你的瀏覽記錄</translation>
 <translation id="7019805045859631636">快</translation>
-<translation id="702252130983202758">你的應用程式</translation>
 <translation id="7022562585984256452">首頁已設定完成。</translation>
 <translation id="7025190659207909717">行動數據服務管理</translation>
 <translation id="7029809446516969842">密碼</translation>

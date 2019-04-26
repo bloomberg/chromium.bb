@@ -2012,6 +2012,7 @@
 <translation id="409579654357498729">Adicionar ao Google Cloud Print</translation>
 <translation id="4096508467498758490">Desativar extensões no modo de desenvolvedor</translation>
 <translation id="4096824249111507322">O módulo de segurança está sendo preparado. Aguarde. Esse processo pode demorar alguns minutos…</translation>
+<translation id="4097560579602855702">Pesquisar no Google</translation>
 <translation id="4099060993766194518">Restaurar mecanismo de pesquisa padrão?</translation>
 <translation id="4099874310852108874">Ocorreu um erro de rede.</translation>
 <translation id="4100733287846229632">Espaço em disco do dispositivo criticamente baixo</translation>
@@ -2077,7 +2078,6 @@
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">O acesso a este recurso foi proibido pelo servidor.</translation>
 <translation id="4215350869199060536">Ops, o nome contém símbolos inválidos.</translation>
-<translation id="4222932583846282852">Cancelando…</translation>
 <translation id="4225397296022057997">Em todos os sites</translation>
 <translation id="4235200303672858594">Tela cheia</translation>
 <translation id="4235965441080806197">Cancelar login</translation>
@@ -3832,7 +3832,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7017480957358237747">permitir ou proibir determinados websites,</translation>
 <translation id="7018275672629230621">Ler e alterar seu histórico de navegação</translation>
 <translation id="7019805045859631636">Rápido</translation>
-<translation id="702252130983202758">Seus apps</translation>
 <translation id="7022562585984256452">Sua página inicial foi definida.</translation>
 <translation id="7025190659207909717">Gerenciamento dos serviços de dados móveis</translation>
 <translation id="7029809446516969842">Senhas</translation>

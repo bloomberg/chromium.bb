@@ -2012,6 +2012,7 @@
 <translation id="409579654357498729">Toevoegen aan Cloudprinter</translation>
 <translation id="4096508467498758490">Extensies van ontwikkelaarsmodus uitschakelen</translation>
 <translation id="4096824249111507322">Beveiligde module wordt voorbereid, even geduld (dit kan enkele minuten duren)...</translation>
+<translation id="4097560579602855702">Zoeken op Google</translation>
 <translation id="4099060993766194518">Standaardzoekmachine herstellen?</translation>
 <translation id="4099874310852108874">Er is een netwerkfout opgetreden.</translation>
 <translation id="4100733287846229632">Er is zeer weinig ruimte beschikbaar op het apparaat</translation>
@@ -2077,7 +2078,6 @@
 <translation id="42126664696688958">Exporteren</translation>
 <translation id="42137655013211669">De toegang tot deze bron is verboden door de server.</translation>
 <translation id="4215350869199060536">Er staan niet-toegestane gegevens in de naam.</translation>
-<translation id="4222932583846282852">Annuleren…</translation>
 <translation id="4225397296022057997">Op alle sites</translation>
 <translation id="4235200303672858594">Volledig scherm</translation>
 <translation id="4235965441080806197">Inloggen annuleren</translation>
@@ -3830,7 +3830,6 @@
 <translation id="7017480957358237747">bepaalde websites toestaan of verbieden,</translation>
 <translation id="7018275672629230621">Je browsegeschiedenis lezen en wijzigen</translation>
 <translation id="7019805045859631636">Snel</translation>
-<translation id="702252130983202758">Je apps</translation>
 <translation id="7022562585984256452">Je homepage is ingesteld.</translation>
 <translation id="7025190659207909717">Beheer van mobiele netwerken</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>

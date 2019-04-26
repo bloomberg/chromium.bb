@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1001338328714563407">Как администратор устройства и аккаунта домен <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Не сейчас</translation>
 <translation id="1010200102790553230">Загрузить страницу позже</translation>
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
@@ -300,6 +301,7 @@
 <translation id="2586657967955657006">Буфер обмена</translation>
 <translation id="2587730715158995865">Источник: <ph name="ARTICLE_PUBLISHER" />. Доступно ещё несколько статей (<ph name="OTHER_ARTICLE_COUNT" />).</translation>
 <translation id="2587841377698384444">Идентификатор Directory API:</translation>
+<translation id="2595719060046994702">Это устройство и аккаунт не находятся под управлением компании или организации.</translation>
 <translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
 <translation id="2609632851001447353">Варианты</translation>
 <translation id="2618023639789766142">C10 (конверт)</translation>
@@ -334,6 +336,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Соединение сброшено.</translation>
 <translation id="2788784517760473862">Кредитные карты, которые принимаются к оплате</translation>
+<translation id="2792012897584536778">Администраторы этого устройства настроили сертификаты безопасности, которые дают возможность просматривать контент посещаемых вами сайтов.</translation>
 <translation id="2794233252405721443">Сайт заблокирован</translation>
 <translation id="2799020568854403057">Сайт содержит вредоносные приложения</translation>
 <translation id="2799223571221894425">Перезапустить</translation>
@@ -350,6 +353,7 @@
 <translation id="2903493209154104877">Адреса</translation>
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
+<translation id="2910133103376701357">Ваше устройство и аккаунт находятся под управлением домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">Закройте другие программы.</translation>
 <translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
 <translation id="2925673989565098301">Способ доставки</translation>
@@ -360,6 +364,7 @@
 <translation id="2948083400971632585">Прокси-серверы, используемые для соединения, можно отключить на странице настроек.</translation>
 <translation id="2955913368246107853">Закрыть панель поиска</translation>
 <translation id="2969319727213777354">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chrome не может проверить актуальность этих сертификатов.</translation>
+<translation id="2970515157925768593">может удаленно менять конфигурацию устройства и аккаунта;</translation>
 <translation id="2972581237482394796">&amp;Повторить</translation>
 <translation id="2977665033722899841">Сейчас выбрано – <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" />.</translation>
 <translation id="2982481275546140226">Удалить данные</translation>
@@ -371,6 +376,7 @@
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
 <translation id="3008447029300691911">Введите CVC-код карты <ph name="CREDIT_CARD" />. После этого ее данные будут переданы сайту.</translation>
 <translation id="3010559122411665027">Элемент списка "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">Как администратор этого устройства домен <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Заблокировано автоматически</translation>
 <translation id="3023071826883856138">You4 (конверт)</translation>
 <translation id="3024663005179499861">Неверный тип политики</translation>
@@ -415,6 +421,7 @@
 <translation id="3287510313208355388">Скачать при подключении к Интернету</translation>
 <translation id="3293642807462928945">Подробнее о политике <ph name="POLICY_NAME" />…</translation>
 <translation id="3303855915957856445">Ничего не найдено</translation>
+<translation id="3311730110465560799">Может удаленно менять конфигурацию устройства.</translation>
 <translation id="3320021301628644560">Добавьте платежный адрес</translation>
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338095232262050444">Защищено</translation>
@@ -509,6 +516,7 @@
 <translation id="3761718714832595332">Скрыть статус</translation>
 <translation id="3765032636089507299">Страница безопасного просмотра находится в разработке.</translation>
 <translation id="3778403066972421603">Хотите сохранить карту в аккаунте Google и на этом устройстве?</translation>
+<translation id="3779973883630527594">Компания, организация или учебное заведение, которое управляет этим аккаунтом:</translation>
 <translation id="3781428340399460090">Ярко-розовый</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Срок действия: до <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -548,6 +556,7 @@
 <translation id="4072486802667267160">При обработке заказа произошла ошибка. Повторите попытку.</translation>
 <translation id="4075732493274867456">Клиент и сервер поддерживают разные версии протокола SSL или набора шифров.</translation>
 <translation id="4079302484614802869">Конфигурация прокси-сервера предусматривает использование URL PAC-скриптов вместо фиксированных прокси-серверов.</translation>
+<translation id="4082393374666368382">Настройки – Управление</translation>
 <translation id="4092411512356034591">Открыть <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Осторожно, поддельный сайт!</translation>
 <translation id="4103249731201008433">Серийный номер устройства недействителен</translation>
@@ -678,6 +687,7 @@
 <translation id="4758311279753947758">Добавить контактные данные</translation>
 <translation id="4764776831041365478">Веб-страница по адресу <ph name="URL" />, возможно, временно недоступна или постоянно перемещена по новому адресу.</translation>
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
+<translation id="4780900888022378816">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, а аккаунт – <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Переключиться на эту вкладку</translation>
 <translation id="4798078619018708837">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее реквизиты из аккаунта Google будут переданы сайту.</translation>
 <translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>
@@ -703,6 +713,7 @@
 <translation id="4926159001844873046">Подтвердите действие на странице <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Нет результатов</translation>
+<translation id="4945672369594656571">определяет, как обрабатываются данные вашего аккаунта и устройства (Google обрабатывает данные вашего аккаунта и устройства только под руководством управляющего ими администратора и только в указанных им целях);</translation>
 <translation id="4950898438188848926">Кнопка переключения между вкладками. Чтобы переключиться на открытую вкладку (<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />), нажмите клавишу "Ввод".</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -716,6 +727,7 @@
 <translation id="5017554619425969104">Скопированный текст</translation>
 <translation id="5018422839182700155">Не удалось открыть страницу</translation>
 <translation id="5019198164206649151">Данные в хранилище повреждены</translation>
+<translation id="5020154601324912079">определяет, как обрабатываются данные вашего устройства (Google обрабатывает данные вашего устройства только под руководством администратора и только в указанных им целях);</translation>
 <translation id="5023310440958281426">Проверьте правила, установленные администратором</translation>
 <translation id="5029568752722684782">Удалить данные</translation>
 <translation id="503069730517007720">Необходимый корневой сертификат для программы "<ph name="SOFTWARE_NAME" />" не установлен. Чтобы устранить проблему, попросите системного администратора ознакомиться с инструкциями по настройке программы "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
@@ -873,6 +885,7 @@
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
+<translation id="5865951947699094510">может удаленно менять конфигурацию вашего аккаунта;</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
@@ -892,6 +905,7 @@
 <translation id="5975083100439434680">Уменьшить</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Не удалось открыть Payments</translation>
+<translation id="5988826871883769516">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="5990559369517809815">Расширение заблокировало отправку запроса на сервер.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -909,6 +923,7 @@
 <translation id="6047233362582046994">Если вы осознаете, что можете подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносных приложений.</translation>
 <translation id="6047927260846328439">Посещение этой страницы может привести к установке вредоносной программы или хищению вашей личной информации. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Веб-сайт <ph name="SITE" /> использует механизм Certificate Pinning, поэтому на нем могла произойти подмена сертификата. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Хотите использовать карты на всех устройствах?</translation>
 <translation id="6059925163896151826">USB-устройства</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
@@ -978,6 +993,7 @@
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
+<translation id="6554795675067793129">Ваш аккаунт принадлежит домену <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Повторить</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
@@ -1060,6 +1076,7 @@
 <translation id="7062635574500127092">Бирюзовый</translation>
 <translation id="7064851114919012435">Контактные данные</translation>
 <translation id="7079718277001814089">Этот сайт содержит вредоносное ПО</translation>
+<translation id="7081564429925484109">Внимание! Это правило не объединено в соответствии с правилом PolicyListMultipleSourceMergeList, так как оно не является списком.</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7090678807593890770">Выполните поиск по запросу <ph name="LINK" /> в Google</translation>
 <translation id="7108338896283013870">Скрыть</translation>
@@ -1133,6 +1150,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Управление паролями</translation>
 <translation id="7419106976560586862">Путь к профилю</translation>
+<translation id="7424427397225027541">определяет, как обрабатываются данные вашего аккаунта (Google обрабатывает данные вашего аккаунта только под руководством администратора аккаунта и только в указанных им целях);</translation>
 <translation id="7437289804838430631">Добавить контактные данные</translation>
 <translation id="7440140511386898319">Почитать офлайн</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>
@@ -1219,6 +1237,7 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7806344367022510803">Изменить настройки поисковой системы в Chrome</translation>
+<translation id="7810209002420871817">Как администратор вашего аккаунта домен <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Мир</translation>
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />)</translation>

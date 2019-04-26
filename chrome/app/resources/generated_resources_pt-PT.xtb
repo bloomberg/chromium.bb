@@ -2012,6 +2012,7 @@ Pretende pará-lo?</translation>
 <translation id="409579654357498729">Adicionar ao Google Cloud Print</translation>
 <translation id="4096508467498758490">Desativar extensões de modo de programador</translation>
 <translation id="4096824249111507322">O módulo seguro está a ser preparado. Aguarde (esta operação pode demorar alguns minutos)...</translation>
+<translation id="4097560579602855702">Pesquise no Google</translation>
 <translation id="4099060993766194518">Pretende restaurar o motor de pesquisa predefinido?</translation>
 <translation id="4099874310852108874">Ocorreu um erro de rede.</translation>
 <translation id="4100733287846229632">Espaço do dispositivo criticamente baixo</translation>
@@ -2077,7 +2078,6 @@ Pretende pará-lo?</translation>
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">O acesso a este recurso foi proibido pelo servidor.</translation>
 <translation id="4215350869199060536">Existem símbolos ilegais no nome.</translation>
-<translation id="4222932583846282852">A cancelar…</translation>
 <translation id="4225397296022057997">Em todos os sites</translation>
 <translation id="4235200303672858594">Ecrã inteiro</translation>
 <translation id="4235965441080806197">Cancelar início de sessão</translation>
@@ -3831,7 +3831,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7017480957358237747">permitir ou proibir determinados Sites,</translation>
 <translation id="7018275672629230621">Ler e alterar o histórico de navegação</translation>
 <translation id="7019805045859631636">Rápido</translation>
-<translation id="702252130983202758">As suas aplicações</translation>
 <translation id="7022562585984256452">A sua página inicial foi definida.</translation>
 <translation id="7025190659207909717">Gestão de serviços de dados móveis</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
