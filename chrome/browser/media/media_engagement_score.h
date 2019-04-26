@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 class HostContentSettingsMap;
 
@@ -54,7 +54,7 @@ class MediaEngagementScore final {
   static double GetHighScoreUpperThreshold();
 
   MediaEngagementScore(base::Clock* clock,
-                       const GURL& origin,
+                       const url::Origin& origin,
                        HostContentSettingsMap* settings);
   ~MediaEngagementScore();
 
@@ -71,7 +71,7 @@ class MediaEngagementScore final {
   int high_score_changes() const { return high_score_changes_; }
 
   // Returns the origin associated with this score.
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
 
   // Writes the values in this score into |settings_map_|. If there are multiple
   // instances of a score object for an origin, this could result in stale data
@@ -137,7 +137,7 @@ class MediaEngagementScore final {
 
   // Only used by the Media Engagement service when bulk loading data.
   MediaEngagementScore(base::Clock* clock,
-                       const GURL& origin,
+                       const url::Origin& origin,
                        std::unique_ptr<base::DictionaryValue> score_dict,
                        HostContentSettingsMap* settings);
 
@@ -209,7 +209,7 @@ class MediaEngagementScore final {
   int audio_context_playbacks_ = 0;
 
   // The origin this score represents.
-  GURL origin_;
+  url::Origin origin_;
 
   // A clock that can be used for testing, owned by the service.
   base::Clock* clock_;

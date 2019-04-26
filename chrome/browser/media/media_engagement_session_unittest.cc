@@ -131,19 +131,16 @@ class MediaEngagementSessionTest : public testing::Test {
   base::SimpleTestClock* test_clock() { return &test_clock_; }
 
   void SetVisitsAndPlaybacks(int visits, int media_playbacks) {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     score.SetVisits(visits);
     score.SetMediaPlaybacks(media_playbacks);
     score.Commit();
   }
 
-  bool ScoreIsHigh() const {
-    return service()->HasHighEngagement(origin().GetURL());
-  }
+  bool ScoreIsHigh() const { return service()->HasHighEngagement(origin()); }
 
-  void RecordPlayback(GURL url) {
-    MediaEngagementScore score = service_->CreateEngagementScore(url);
+  void RecordPlayback(const url::Origin& origin) {
+    MediaEngagementScore score = service_->CreateEngagementScore(origin);
     score.IncrementMediaPlaybacks();
     score.set_last_media_playback_time(service_->clock()->Now());
     score.Commit();
@@ -337,8 +334,7 @@ TEST_F(MediaEngagementSessionTest,
   int expected_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_visits = score.visits() + 1;
     expected_playbacks = score.media_playbacks() + 1;
   }
@@ -353,8 +349,7 @@ TEST_F(MediaEngagementSessionTest,
   EXPECT_FALSE(HasPendingDataToCommitForSession(session.get()));
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
@@ -372,8 +367,7 @@ TEST_F(MediaEngagementSessionTest,
   int expected_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_visits = score.visits() + 1;
     expected_playbacks = score.media_playbacks() + 1;
   }
@@ -388,8 +382,7 @@ TEST_F(MediaEngagementSessionTest,
   EXPECT_FALSE(HasPendingDataToCommitForSession(session.get()));
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
@@ -408,8 +401,7 @@ TEST_F(MediaEngagementSessionTest,
   int expected_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_visits = score.visits() + 1;
     expected_playbacks = score.media_playbacks() + 1;
   }
@@ -426,8 +418,7 @@ TEST_F(MediaEngagementSessionTest,
   EXPECT_FALSE(HasPendingDataToCommitForSession(session.get()));
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
@@ -462,8 +453,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdateVisitsAsNeeded) {
   int expected_visits = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_visits = score.visits();
   }
 
@@ -472,8 +462,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdateVisitsAsNeeded) {
 
   ++expected_visits;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
   }
 
@@ -483,8 +472,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdateVisitsAsNeeded) {
 
   ++expected_visits;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
   }
 
@@ -494,8 +482,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdateVisitsAsNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
   }
 }
@@ -507,8 +494,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   int expected_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_playbacks = score.media_playbacks();
   }
 
@@ -516,8 +502,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -528,8 +513,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
 
   ++expected_playbacks;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -542,8 +526,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
 
   ++expected_playbacks;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -555,8 +538,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -568,8 +550,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -579,8 +560,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 
@@ -590,8 +570,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlaybackWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }
 }
@@ -604,8 +583,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   int expected_significant_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_audible_playbacks = score.audible_playbacks();
     expected_significant_playbacks = score.significant_playbacks();
   }
@@ -614,8 +592,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -626,8 +603,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -638,8 +614,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -650,8 +625,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -664,8 +638,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   ++expected_audible_playbacks;
   ++expected_significant_playbacks;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -678,8 +651,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
   ++expected_audible_playbacks;
   ++expected_significant_playbacks;
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
@@ -888,8 +860,7 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   int expected_significant_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
 
     expected_visits = score.visits();
     expected_playbacks = score.media_playbacks();
@@ -907,8 +878,7 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   ++expected_visits;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
@@ -928,8 +898,7 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   ++expected_playbacks;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
@@ -950,8 +919,7 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   expected_significant_playbacks += 2;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
@@ -969,8 +937,7 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   }
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
     EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
@@ -1003,7 +970,7 @@ TEST_F(MediaEngagementSessionTest, TimeSinceLastPlayback_PreviousRecord) {
 
   // Advance in time and play.
   test_clock()->Advance(base::TimeDelta::FromSeconds(42));
-  RecordPlayback(origin().GetURL());
+  RecordPlayback(origin());
 
   test_clock()->Advance(base::TimeDelta::FromSeconds(42));
   session->RecordSignificantMediaElementPlayback();
@@ -1028,8 +995,7 @@ TEST_F(MediaEngagementSessionTest, RestoredSession_PlaybackRecordsVisits) {
   int expected_playbacks = 0;
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     expected_visits = score.visits() + 1;
     expected_playbacks = score.media_playbacks() + 1;
   }
@@ -1038,8 +1004,7 @@ TEST_F(MediaEngagementSessionTest, RestoredSession_PlaybackRecordsVisits) {
   CommitPendingDataForSession(session.get());
 
   {
-    MediaEngagementScore score =
-        service()->CreateEngagementScore(origin().GetURL());
+    MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
   }

@@ -93,6 +93,8 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
 const std::map<int, std::string> CreateContentResourceIdToAliasMap() {
   return std::map<int, std::string>{
       {IDR_URL_MOJO_JS, "js/url.mojom-lite.js"},
+      {IDR_ORIGIN_MOJO_JS, "js/origin.mojom-lite.js"},
+      {IDR_UNGUESSABLE_TOKEN_MOJO_JS, "js/unguessable_token.mojom-lite.js"},
   };
 }
 

@@ -234,7 +234,7 @@ void MediaEngagementContentsObserver::
   }
 
   int percentage =
-      round(service_->GetEngagementScore(session_->origin().GetURL()) * 100);
+      round(service_->GetEngagementScore(session_->origin()) * 100);
   UMA_HISTOGRAM_PERCENTAGE(
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName,
       percentage);
@@ -571,14 +571,14 @@ void MediaEngagementContentsObserver::SetTaskRunnerForTest(
 
 void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
-  // TODO(beccahughes): Convert MEI API to using origin.
   // If the navigation is occuring in the main frame we should use the URL
   // provided by |handle| as the navigation has not committed yet. If the
   // navigation is in a sub frame then use the URL from the main frame.
-  GURL url = handle->IsInMainFrame()
-                 ? handle->GetURL()
-                 : handle->GetWebContents()->GetLastCommittedURL();
-  MediaEngagementScore score = service_->CreateEngagementScore(url);
+  url::Origin origin = url::Origin::Create(
+      handle->IsInMainFrame()
+          ? handle->GetURL()
+          : handle->GetWebContents()->GetLastCommittedURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin);
   bool has_high_engagement = score.high_score();
 
   // If the preloaded feature flag is enabled and the number of visits is less
@@ -589,7 +589,7 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
       base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData)) {
     has_high_engagement =
         MediaEngagementPreloadedList::GetInstance()->CheckOriginIsPresent(
-            url::Origin::Create(url));
+            origin);
   }
 
   // If we have high media engagement then we should send that to Blink.
@@ -626,11 +626,10 @@ MediaEngagementContentsObserver::GetOrCreateSession(
     const url::Origin& origin,
     content::WebContents* opener,
     bool was_restored) const {
-  GURL url = origin.GetURL();
-  if (!url.is_valid())
+  if (origin.opaque())
     return nullptr;
 
-  if (!service_->ShouldRecordEngagement(url))
+  if (!service_->ShouldRecordEngagement(origin))
     return nullptr;
 
   MediaEngagementContentsObserver* opener_observer =

@@ -159,10 +159,10 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     history->AddObserver(service());
   }
 
-  void RecordVisitAndPlaybackAndAdvanceClock(GURL url) {
-    RecordVisit(url);
+  void RecordVisitAndPlaybackAndAdvanceClock(const url::Origin& origin) {
+    RecordVisit(origin);
     AdvanceClock();
-    RecordPlayback(url);
+    RecordPlayback(origin);
   }
 
   void TearDown() override {
@@ -175,63 +175,64 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     test_clock_.SetNow(Now() + base::TimeDelta::FromHours(1));
   }
 
-  void RecordVisit(GURL url) { service_->RecordVisit(url); }
+  void RecordVisit(const url::Origin& origin) { service_->RecordVisit(origin); }
 
-  void RecordPlayback(GURL url) {
-    RecordPlaybackForService(service_.get(), url);
+  void RecordPlayback(const url::Origin& origin) {
+    RecordPlaybackForService(service_.get(), origin);
   }
 
-  void RecordPlaybackForService(MediaEngagementService* service, GURL url) {
-    MediaEngagementScore score = service->CreateEngagementScore(url);
+  void RecordPlaybackForService(MediaEngagementService* service,
+                                const url::Origin& origin) {
+    MediaEngagementScore score = service->CreateEngagementScore(origin);
     score.IncrementMediaPlaybacks();
     score.set_last_media_playback_time(service->clock()->Now());
     score.Commit();
   }
 
   void ExpectScores(MediaEngagementService* service,
-                    GURL url,
+                    const url::Origin& origin,
                     double expected_score,
                     int expected_visits,
                     int expected_media_playbacks,
                     base::Time expected_last_media_playback_time) {
-    EXPECT_EQ(service->GetEngagementScore(url), expected_score);
-    EXPECT_EQ(service->GetScoreMapForTesting()[url], expected_score);
+    EXPECT_EQ(service->GetEngagementScore(origin), expected_score);
+    EXPECT_EQ(service->GetScoreMapForTesting()[origin], expected_score);
 
-    MediaEngagementScore score = service->CreateEngagementScore(url);
+    MediaEngagementScore score = service->CreateEngagementScore(origin);
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
     EXPECT_EQ(expected_last_media_playback_time,
               score.last_media_playback_time());
   }
 
-  void ExpectScores(GURL url,
+  void ExpectScores(const url::Origin& origin,
                     double expected_score,
                     int expected_visits,
                     int expected_media_playbacks,
                     base::Time expected_last_media_playback_time) {
-    ExpectScores(service_.get(), url, expected_score, expected_visits,
+    ExpectScores(service_.get(), origin, expected_score, expected_visits,
                  expected_media_playbacks, expected_last_media_playback_time);
   }
 
-  void SetScores(GURL url, int visits, int media_playbacks) {
-    MediaEngagementScore score = service_->CreateEngagementScore(url);
+  void SetScores(const url::Origin& origin, int visits, int media_playbacks) {
+    MediaEngagementScore score = service_->CreateEngagementScore(origin);
     score.SetVisits(visits);
     score.SetMediaPlaybacks(media_playbacks);
     score.Commit();
   }
 
-  void SetLastMediaPlaybackTime(const GURL& url,
+  void SetLastMediaPlaybackTime(const url::Origin& origin,
                                 base::Time last_media_playback_time) {
-    MediaEngagementScore score = service_->CreateEngagementScore(url);
+    MediaEngagementScore score = service_->CreateEngagementScore(origin);
     score.last_media_playback_time_ = last_media_playback_time;
     score.Commit();
   }
 
-  double GetActualScore(GURL url) {
-    return service_->CreateEngagementScore(url).actual_score();
+  double GetActualScore(const url::Origin& origin) {
+    return service_->CreateEngagementScore(origin).actual_score();
   }
 
-  std::map<GURL, double> GetScoreMapForTesting() const {
+  std::map<url::Origin, double> GetScoreMapForTesting() const {
     return service_->GetScoreMapForTesting();
   }
 
@@ -250,8 +251,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     return service_->GetAllScoreDetails();
   }
 
-  bool HasHighEngagement(const GURL& url) const {
-    return service_->HasHighEngagement(url);
+  bool HasHighEngagement(const url::Origin& origin) const {
+    return service_->HasHighEngagement(origin);
   }
 
   void SetSchemaVersion(int version) { service_->SetSchemaVersion(version); }
@@ -281,104 +282,106 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 TEST_F(MediaEngagementServiceTest, MojoSerialization) {
   EXPECT_EQ(0u, GetAllScoreDetails().size());
 
-  RecordVisitAndPlaybackAndAdvanceClock(GURL("https://www.google.com"));
+  RecordVisitAndPlaybackAndAdvanceClock(
+      url::Origin::Create(GURL("https://www.google.com")));
   EXPECT_EQ(1u, GetAllScoreDetails().size());
 }
 
 TEST_F(MediaEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
-  GURL url1("ftp://www.google.com/");
-  GURL url2("file://blah");
-  GURL url3("chrome://");
-  GURL url4("about://config");
+  url::Origin origin1 = url::Origin::Create(GURL("ftp://www.google.com/"));
+  url::Origin origin2 = url::Origin::Create(GURL("file://blah"));
+  url::Origin origin3 = url::Origin::Create(GURL("chrome://"));
+  url::Origin origin4 = url::Origin::Create(GURL("about://config"));
 
-  RecordVisitAndPlaybackAndAdvanceClock(url1);
-  ExpectScores(url1, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin1);
+  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
 
-  RecordVisitAndPlaybackAndAdvanceClock(url2);
-  ExpectScores(url2, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin2);
+  ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
 
-  RecordVisitAndPlaybackAndAdvanceClock(url3);
-  ExpectScores(url3, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin4);
+  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
 
-  RecordVisitAndPlaybackAndAdvanceClock(url4);
-  ExpectScores(url4, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin4);
+  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
 }
 
 TEST_F(MediaEngagementServiceTest,
        HandleRecordVisitAndPlaybackAndAdvanceClockion) {
-  GURL url1("https://www.google.com");
-  ExpectScores(url1, 0.0, 0, 0, TimeNotSet());
-  RecordVisitAndPlaybackAndAdvanceClock(url1);
-  ExpectScores(url1, 0.05, 1, 1, Now());
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
+  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin1);
+  ExpectScores(origin1, 0.05, 1, 1, Now());
 
-  RecordVisit(url1);
-  ExpectScores(url1, 0.05, 2, 1, Now());
+  RecordVisit(origin1);
+  ExpectScores(origin1, 0.05, 2, 1, Now());
 
-  RecordPlayback(url1);
-  ExpectScores(url1, 0.1, 2, 2, Now());
-  base::Time url1_time = Now();
+  RecordPlayback(origin1);
+  ExpectScores(origin1, 0.1, 2, 2, Now());
+  base::Time origin1_time = Now();
 
-  GURL url2("https://www.google.co.uk");
-  RecordVisitAndPlaybackAndAdvanceClock(url2);
-  ExpectScores(url2, 0.05, 1, 1, Now());
-  ExpectScores(url1, 0.1, 2, 2, url1_time);
+  url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
+  RecordVisitAndPlaybackAndAdvanceClock(origin2);
+  ExpectScores(origin2, 0.05, 1, 1, Now());
+  ExpectScores(origin1, 0.1, 2, 2, origin1_time);
 }
 
 TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
-  GURL url1("http://www.google.com/");
-  GURL url2("https://www.google.com/");
-  GURL url3("https://drive.google.com/");
-  GURL url4("https://maps.google.com/");
+  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://www.google.com/"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://drive.google.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("https://maps.google.com/"));
 
-  RecordVisitAndPlaybackAndAdvanceClock(url1);
-  base::Time url1_time = Now();
-  RecordVisitAndPlaybackAndAdvanceClock(url2);
+  RecordVisitAndPlaybackAndAdvanceClock(origin1);
+  base::Time origin1_time = Now();
+  RecordVisitAndPlaybackAndAdvanceClock(origin2);
 
   MediaEngagementService* incognito_service =
       MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
-  ExpectScores(incognito_service, url1, 0.05, 1, 1, url1_time);
-  ExpectScores(incognito_service, url2, 0.05, 1, 1, Now());
-  ExpectScores(incognito_service, url3, 0.0, 0, 0, TimeNotSet());
+  ExpectScores(incognito_service, origin1, 0.05, 1, 1, origin1_time);
+  ExpectScores(incognito_service, origin2, 0.05, 1, 1, Now());
+  ExpectScores(incognito_service, origin3, 0.0, 0, 0, TimeNotSet());
 
-  incognito_service->RecordVisit(url3);
-  ExpectScores(incognito_service, url3, 0.0, 1, 0, TimeNotSet());
-  ExpectScores(url3, 0.0, 0, 0, TimeNotSet());
+  incognito_service->RecordVisit(origin3);
+  ExpectScores(incognito_service, origin3, 0.0, 1, 0, TimeNotSet());
+  ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
 
-  incognito_service->RecordVisit(url2);
-  ExpectScores(incognito_service, url2, 0.05, 2, 1, Now());
-  ExpectScores(url2, 0.05, 1, 1, Now());
+  incognito_service->RecordVisit(origin2);
+  ExpectScores(incognito_service, origin2, 0.05, 2, 1, Now());
+  ExpectScores(origin2, 0.05, 1, 1, Now());
 
-  RecordVisitAndPlaybackAndAdvanceClock(url3);
-  ExpectScores(incognito_service, url3, 0.0, 1, 0, TimeNotSet());
-  ExpectScores(url3, 0.05, 1, 1, Now());
+  RecordVisitAndPlaybackAndAdvanceClock(origin3);
+  ExpectScores(incognito_service, origin3, 0.0, 1, 0, TimeNotSet());
+  ExpectScores(origin3, 0.05, 1, 1, Now());
 
-  ExpectScores(incognito_service, url4, 0.0, 0, 0, TimeNotSet());
-  RecordVisitAndPlaybackAndAdvanceClock(url4);
-  ExpectScores(incognito_service, url4, 0.05, 1, 1, Now());
-  ExpectScores(url4, 0.05, 1, 1, Now());
+  ExpectScores(incognito_service, origin4, 0.0, 0, 0, TimeNotSet());
+  RecordVisitAndPlaybackAndAdvanceClock(origin4);
+  ExpectScores(incognito_service, origin4, 0.05, 1, 1, Now());
+  ExpectScores(origin4, 0.05, 1, 1, Now());
 }
 
 TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
-  const GURL kUrl1("https://example.org");
-  const GURL kUrl2("https://example.com");
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://example.org"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://example.com"));
 
-  SetScores(kUrl1, MediaEngagementScore::GetScoreMinVisits(), 1);
-  SetScores(kUrl2, 1, 0);
+  SetScores(kOrigin1, MediaEngagementScore::GetScoreMinVisits(), 1);
+  SetScores(kOrigin2, 1, 0);
 
-  ExpectScores(kUrl1, 0.05, MediaEngagementScore::GetScoreMinVisits(), 1,
+  ExpectScores(kOrigin1, 0.05, MediaEngagementScore::GetScoreMinVisits(), 1,
                TimeNotSet());
-  ExpectScores(kUrl2, 0.0, 1, 0, TimeNotSet());
+  ExpectScores(kOrigin2, 0.0, 1, 0, TimeNotSet());
 
   MediaEngagementService* incognito_service =
       MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
-  ExpectScores(incognito_service, kUrl1, 0.05,
+  ExpectScores(incognito_service, kOrigin1, 0.05,
                MediaEngagementScore::GetScoreMinVisits(), 1, TimeNotSet());
-  ExpectScores(incognito_service, kUrl2, 0.0, 1, 0, TimeNotSet());
+  ExpectScores(incognito_service, kOrigin2, 0.0, 1, 0, TimeNotSet());
 
   // Scores should be the same in incognito and regular profile.
   {
-    std::vector<std::pair<GURL, double>> kExpectedResults = {
-        {kUrl2, 0.0}, {kUrl1, 0.05},
+    std::vector<std::pair<url::Origin, double>> kExpectedResults = {
+        {kOrigin2, 0.0},
+        {kOrigin1, 0.05},
     };
 
     const auto& scores = GetAllStoredScores();
@@ -396,13 +399,14 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
     }
   }
 
-  incognito_service->RecordVisit(kUrl1);
-  RecordPlaybackForService(incognito_service, kUrl2);
+  incognito_service->RecordVisit(kOrigin1);
+  RecordPlaybackForService(incognito_service, kOrigin2);
 
   // Score shouldn't have changed in regular profile.
   {
-    std::vector<std::pair<GURL, double>> kExpectedResults = {
-        {kUrl2, 0.0}, {kUrl1, 0.05},
+    std::vector<std::pair<url::Origin, double>> kExpectedResults = {
+        {kOrigin2, 0.0},
+        {kOrigin1, 0.05},
     };
 
     const auto& scores = GetAllStoredScores();
@@ -417,8 +421,9 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   // Incognito scores should have the same number of entries but have new
   // values.
   {
-    std::vector<std::pair<GURL, double>> kExpectedResults = {
-        {kUrl2, 0.05}, {kUrl1, 1.0 / 21.0},
+    std::vector<std::pair<url::Origin, double>> kExpectedResults = {
+        {kOrigin2, 0.05},
+        {kOrigin1, 1.0 / 21.0},
     };
 
     const auto& scores = GetAllStoredScores(incognito_service);
@@ -432,13 +437,14 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
-  GURL origin1("http://www.google.com/");
-  GURL origin1a("http://www.google.com/search?q=asdf");
-  GURL origin1b("http://www.google.com/maps/search?q=asdf");
-  GURL origin2("https://drive.google.com/");
-  GURL origin3("http://deleted.com/");
-  GURL origin3a("http://deleted.com/test");
-  GURL origin4("http://notdeleted.com");
+  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
+  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+
+  GURL url1a = GURL("http://www.google.com/search?q=asdf");
+  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("http://deleted.com/test");
 
   // origin1 will have a score that is high enough to not return zero
   // and we will ensure it has the same score. origin2 will have a score
@@ -460,12 +466,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
-  history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin1a, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin1b, yesterday_week, history::SOURCE_BROWSED);
-  history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin3, yesterday_week, history::SOURCE_BROWSED);
-  history->AddPage(origin3a, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin1.GetURL(), yesterday_afternoon,
+                   history::SOURCE_BROWSED);
+  history->AddPage(url1a, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(url1b, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin2.GetURL(), yesterday_afternoon,
+                   history::SOURCE_BROWSED);
+  history->AddPage(origin3.GetURL(), yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(url3a, yesterday_afternoon, history::SOURCE_BROWSED);
 
   // Check that the scores are valid at the beginning.
   ExpectScores(origin1, 7.0 / 11.0,
@@ -484,7 +492,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     MediaEngagementChangeWaiter waiter(profile());
 
     base::CancelableTaskTracker task_tracker;
-    // Expire origin1, origin1a, origin2, and origin3a's most recent visit.
+    // Expire origin1, url1a, origin2, and url3a's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
                                   /*user_initiated*/ true, base::DoNothing(),
                                   &task_tracker);
@@ -521,10 +529,10 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::HistogramTester histogram_tester;
     MediaEngagementChangeWaiter waiter(profile());
 
-    // Expire origin1b.
+    // Expire url1b.
     std::vector<history::ExpireHistoryArgs> expire_list;
     history::ExpireHistoryArgs args;
-    args.urls.insert(origin1b);
+    args.urls.insert(url1b);
     args.SetTimeRangeForOneDay(yesterday_week);
     expire_list.push_back(args);
 
@@ -558,7 +566,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // Expire origin3.
     std::vector<history::ExpireHistoryArgs> expire_list;
     history::ExpireHistoryArgs args;
-    args.urls.insert(origin3);
+    args.urls.insert(origin3.GetURL());
     args.SetTimeRangeForOneDay(yesterday_week);
     expire_list.push_back(args);
 
@@ -567,7 +575,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin3's score should be removed but the rest should remain the same.
-    std::map<GURL, double> scores = GetScoreMapForTesting();
+    std::map<url::Origin, double> scores = GetScoreMapForTesting();
     EXPECT_TRUE(scores.find(origin3) == scores.end());
     ExpectScores(origin1, 0.55, MediaEngagementScore::GetScoreMinVisits() - 1,
                  11, TimeNotSet());
@@ -595,9 +603,9 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   // not be deleted. |origin2| will have history either side of the threshold
   // and should also not be deleted. |origin3| will have history before the
   // threshold and should be deleted.
-  GURL origin1("http://www.google.com/");
-  GURL origin2("https://drive.google.com/");
-  GURL origin3("http://deleted.com/");
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com"));
+  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com"));
 
   // Populate test MEI data.
   SetScores(origin1, 20, 20);
@@ -612,10 +620,10 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
-  history->AddPage(origin1, today, history::SOURCE_BROWSED);
-  history->AddPage(origin2, today, history::SOURCE_BROWSED);
-  history->AddPage(origin2, before_threshold, history::SOURCE_BROWSED);
-  history->AddPage(origin3, before_threshold, history::SOURCE_BROWSED);
+  history->AddPage(origin1.GetURL(), today, history::SOURCE_BROWSED);
+  history->AddPage(origin2.GetURL(), today, history::SOURCE_BROWSED);
+  history->AddPage(origin2.GetURL(), before_threshold, history::SOURCE_BROWSED);
+  history->AddPage(origin3.GetURL(), before_threshold, history::SOURCE_BROWSED);
 
   // Expire history older than |threshold|.
   MediaEngagementChangeWaiter waiter(profile());
@@ -640,13 +648,14 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
 }
 
 TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
-  GURL origin1("http://www.google.com/");
-  GURL origin1a("http://www.google.com/search?q=asdf");
-  GURL origin1b("http://www.google.com/maps/search?q=asdf");
-  GURL origin2("https://drive.google.com/");
-  GURL origin3("http://deleted.com/");
-  GURL origin3a("http://deleted.com/test");
-  GURL origin4("http://notdeleted.com");
+  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
+  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+
+  GURL url1a = GURL("http://www.google.com/search?q=asdf");
+  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("http://deleted.com/test");
 
   // origin1 will have a score that is high enough to not return zero
   // and we will ensure it has the same score. origin2 will have a score
@@ -667,12 +676,14 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
-  history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin1a, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin1b, yesterday_week, history::SOURCE_BROWSED);
-  history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
-  history->AddPage(origin3, yesterday_week, history::SOURCE_BROWSED);
-  history->AddPage(origin3a, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin1.GetURL(), yesterday_afternoon,
+                   history::SOURCE_BROWSED);
+  history->AddPage(url1a, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(url1b, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin2.GetURL(), yesterday_afternoon,
+                   history::SOURCE_BROWSED);
+  history->AddPage(origin3.GetURL(), yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(url3a, yesterday_afternoon, history::SOURCE_BROWSED);
 
   // Check that the scores are valid at the beginning.
   ExpectScores(origin1, 7.0 / 11.0,
@@ -720,13 +731,14 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
 }
 
 TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
-  GURL origin1("http://www.google.com/");
-  GURL origin1a("http://www.google.com/search?q=asdf");
-  GURL origin1b("http://www.google.com/maps/search?q=asdf");
-  GURL origin2("https://drive.google.com/");
-  GURL origin3("http://deleted.com/");
-  GURL origin3a("http://deleted.com/test");
-  GURL origin4("http://notdeleted.com");
+  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
+  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+
+  GURL url1a = GURL("http://www.google.com/search?q=asdf");
+  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("http://deleted.com/test");
 
   SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 14);
   SetScores(origin2, 2, 1);
@@ -777,7 +789,7 @@ TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
 
 TEST_F(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_OutsideBoundary) {
-  GURL origin("https://www.google.com");
+  url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
@@ -798,8 +810,8 @@ TEST_F(MediaEngagementServiceTest,
 
 TEST_F(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_WithinBoundary) {
-  GURL origin1("https://www.google.com");
-  GURL origin2("https://www.google.co.uk");
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
   base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
@@ -823,7 +835,7 @@ TEST_F(MediaEngagementServiceTest,
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
-  GURL origin("https://www.google.com");
+  url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
@@ -842,8 +854,8 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
-  GURL origin1("https://www.google.com");
-  GURL origin2("https://www.google.co.uk");
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
   base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
@@ -867,40 +879,40 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
 }
 
 TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
-  GURL url1("https://www.google.com");
-  GURL url2("https://www.google.co.uk");
-  GURL url3("https://www.example.com");
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
+  url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://www.example.com"));
 
-  SetScores(url1, 20, 15);
-  SetScores(url2, 20, 4);
+  SetScores(origin1, 20, 15);
+  SetScores(origin2, 20, 4);
 
-  EXPECT_TRUE(HasHighEngagement(url1));
-  EXPECT_FALSE(HasHighEngagement(url2));
-  EXPECT_FALSE(HasHighEngagement(url3));
+  EXPECT_TRUE(HasHighEngagement(origin1));
+  EXPECT_FALSE(HasHighEngagement(origin2));
+  EXPECT_FALSE(HasHighEngagement(origin3));
 }
 
 TEST_F(MediaEngagementServiceTest, SchemaVersion_Changed) {
-  GURL url("https://www.google.com");
-  SetScores(url, 1, 2);
+  url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
+  SetScores(origin, 1, 2);
 
   SetSchemaVersion(0);
   std::unique_ptr<MediaEngagementService> new_service =
       base::WrapUnique<MediaEngagementService>(
           StartNewMediaEngagementService());
 
-  ExpectScores(new_service.get(), url, 0.0, 0, 0, TimeNotSet());
+  ExpectScores(new_service.get(), origin, 0.0, 0, 0, TimeNotSet());
   new_service->Shutdown();
 }
 
 TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
-  GURL url("https://www.google.com");
-  SetScores(url, 1, 2);
+  url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
+  SetScores(origin, 1, 2);
 
   std::unique_ptr<MediaEngagementService> new_service =
       base::WrapUnique<MediaEngagementService>(
           StartNewMediaEngagementService());
 
-  ExpectScores(new_service.get(), url, 0.1, 1, 2, TimeNotSet());
+  ExpectScores(new_service.get(), origin, 0.1, 1, 2, TimeNotSet());
   new_service->Shutdown();
 }
 

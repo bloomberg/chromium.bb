@@ -43,13 +43,14 @@ const double kHighScoreUpperThresholdParamDefault = 0.3;
 
 std::unique_ptr<base::DictionaryValue> GetMediaEngagementScoreDictForSettings(
     const HostContentSettingsMap* settings,
-    const GURL& origin_url) {
+    const url::Origin& origin) {
   if (!settings)
     return std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, origin_url, CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+          origin.GetURL(), origin.GetURL(),
+          CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
           content_settings::ResourceIdentifier(), nullptr));
 
   if (value.get())
@@ -88,7 +89,7 @@ int MediaEngagementScore::GetScoreMinVisits() {
 }
 
 MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
-                                           const GURL& origin,
+                                           const url::Origin& origin,
                                            HostContentSettingsMap* settings)
     : MediaEngagementScore(
           clock,
@@ -98,7 +99,7 @@ MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
 
 MediaEngagementScore::MediaEngagementScore(
     base::Clock* clock,
-    const GURL& origin,
+    const url::Origin& origin,
     std::unique_ptr<base::DictionaryValue> score_dict,
     HostContentSettingsMap* settings)
     : origin_(origin),
@@ -176,11 +177,15 @@ MediaEngagementScore& MediaEngagementScore::operator=(MediaEngagementScore&&) =
 
 void MediaEngagementScore::Commit() {
   DCHECK(settings_map_);
+
+  if (origin_.opaque())
+    return;
+
   if (!UpdateScoreDict())
     return;
 
   settings_map_->SetWebsiteSettingDefaultScope(
-      origin_, GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+      origin_.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
       content_settings::ResourceIdentifier(), std::move(score_dict_));
 }
 

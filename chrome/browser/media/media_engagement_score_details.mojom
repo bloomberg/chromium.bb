@@ -4,10 +4,10 @@
 
 module media.mojom;
 
-import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 
 struct MediaEngagementScoreDetails {
-  url.mojom.Url origin;
+  url.mojom.Origin origin;
   double total_score;
 
   // Details of the components which make up |score|.

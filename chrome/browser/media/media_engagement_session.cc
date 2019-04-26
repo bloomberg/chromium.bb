@@ -163,8 +163,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
             origin_);
   }
 
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(origin_.GetURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin_);
   ukm::builders::Media_Engagement_SessionFinished(ukm_source_id_)
       .SetPlaybacks_AudioContextTotal(score.audio_context_playbacks())
       .SetPlaybacks_MediaElementTotal(score.media_element_playbacks())
@@ -214,8 +213,7 @@ void MediaEngagementSession::CommitPendingData() {
 
   RecordStatusHistograms();
 
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(origin_.GetURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin_);
   bool previous_high_value = score.high_score();
 
   if (pending_data_to_commit_.visit)
