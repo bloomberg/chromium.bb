@@ -583,14 +583,16 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
-  if (itemType == ShowPassphraseDialogErrorItemType) {
+  syncErrorItem.detailText =
+      GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
+  if (itemType == SyncSettingsNotCofirmedErrorItemType) {
+    // Special case for the sync error title.
+    syncErrorItem.text = GetNSString(IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE);
+  } else if (itemType == ShowPassphraseDialogErrorItemType) {
     // Special case only for the sync passphrase error message. The regular
     // error message should be still be displayed in the first settings screen.
     syncErrorItem.detailText = GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
-  } else {
-    syncErrorItem.detailText =
-        GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
   }
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
