@@ -723,6 +723,14 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       SetJsonDevicePolicy(key::kDeviceUpdateStagingSchedule,
                           container.staging_schedule(), policies);
     }
+
+    if (container.has_device_quick_fix_build_token()) {
+      policies->Set(key::kDeviceQuickFixBuildToken, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(
+                        container.device_quick_fix_build_token()),
+                    nullptr);
+    }
   }
 
   if (policy.has_allow_kiosk_app_control_chrome_version()) {
