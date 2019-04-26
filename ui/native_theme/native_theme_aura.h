@@ -52,6 +52,14 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   void PaintScrollbarCorner(cc::PaintCanvas* canvas,
                             State state,
                             const gfx::Rect& rect) const override;
+  void PaintCheckbox(cc::PaintCanvas* canvas,
+                     State state,
+                     const gfx::Rect& rect,
+                     const ButtonExtraParams& button) const override;
+  void PaintRadio(cc::PaintCanvas* canvas,
+                  State state,
+                  const gfx::Rect& rect,
+                  const ButtonExtraParams& button) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
@@ -60,6 +68,13 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   gfx::Rect GetNinePatchAperture(Part part) const override;
 
  private:
+  // Paint the common parts of the checkboxes and radio buttons.
+  // borderRadius specifies how rounded the corners should be.
+  SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const SkScalar borderRadius) const;
+
   bool use_overlay_scrollbars_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);

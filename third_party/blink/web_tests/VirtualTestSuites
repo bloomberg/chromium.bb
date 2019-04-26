@@ -1060,5 +1060,10 @@
     "prefix": "native-file-system",
     "base": "external/wpt/native-file-system",
     "args": ["--enable-features=NativeFileSystemAPI"]
+  },
+  {
+    "prefix": "controls-refresh",
+    "base": "forms/controls",
+    "args": ["--enable-features=FormControlsRefresh"]
   }
 ]
