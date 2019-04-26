@@ -58,6 +58,12 @@ struct PLATFORM_EXPORT
 template <>
 struct PLATFORM_EXPORT StructTraits<network::mojom::URLRequestBodyDataView,
                                     scoped_refptr<blink::EncodedFormData>> {
+  static bool IsNull(const scoped_refptr<blink::EncodedFormData>& data) {
+    return !data;
+  }
+  static void SetToNull(scoped_refptr<blink::EncodedFormData>* out) {
+    *out = nullptr;
+  }
   static const WTF::Vector<blink::FormDataElement>& elements(
       const scoped_refptr<blink::EncodedFormData>& data) {
     return data->elements_;

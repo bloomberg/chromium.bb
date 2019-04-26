@@ -8,6 +8,6 @@ public_headers =
 traits_headers = [ "//third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h" ]
 
 type_mappings = [
-  "network.mojom.DataElement = blink::FormDataElement[move_only]",
-  "network.mojom.URLRequestBody = scoped_refptr<blink::EncodedFormData>[nullable_is_same_type,copyable_pass_by_value]",
+  "network.mojom.DataElement=::blink::FormDataElement[move_only]",
+  "network.mojom.URLRequestBody=scoped_refptr<::blink::EncodedFormData>[nullable_is_same_type,copyable_pass_by_value]",
 ]

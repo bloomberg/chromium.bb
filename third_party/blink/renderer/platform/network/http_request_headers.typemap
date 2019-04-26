@@ -5,5 +5,5 @@
 mojom = "//services/network/public/mojom/http_request_headers.mojom"
 public_headers =
     [ "//third_party/blink/renderer/platform/network/http_header_map.h" ]
-traits_headers = [ "third_party/blink/renderer/platform/network/http_request_headers_mojom_traits.h" ]
-type_mappings = [ "network.mojom.HttpRequestHeaders = blink::HTTPHeaderMap" ]
+traits_headers = [ "//third_party/blink/renderer/platform/network/http_request_headers_mojom_traits.h" ]
+type_mappings = [ "network.mojom.HttpRequestHeaders=::blink::HTTPHeaderMap" ]

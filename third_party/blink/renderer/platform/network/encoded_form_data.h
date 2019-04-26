@@ -31,7 +31,12 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
-#include "services/network/public/mojom/url_loader.mojom-blink.h"
+
+namespace network {
+namespace mojom {
+class URLRequestBodyDataView;
+}
+}  // namespace network
 
 namespace blink {
 
