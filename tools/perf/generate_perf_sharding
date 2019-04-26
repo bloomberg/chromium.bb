@@ -4,8 +4,10 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import multiprocessing
+import os
 import sys
 import textwrap
 
@@ -47,11 +49,12 @@ def GetParser():
             'when they need to fix the timing data to debug sharding '
             'generation.'),
       default=False)
-  parser_update.add_argument(
+  builder_selection = parser_update.add_mutually_exclusive_group()
+  builder_selection.add_argument(
       '--builders', '-b', action='append',
       help=('The builder names to reshard.'), default=[],
       choices=bot_platforms.ALL_PLATFORM_NAMES)
-  parser_update.add_argument(
+  builder_selection.add_argument(
       '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
       help=('The name of waterfall whose builders to be resharded. If not '
             'specified, use all perf builders by default'))
@@ -79,7 +82,20 @@ def GetParser():
       '--output-path', default='new_shard_map.json',
       help='Output file path for the shard map, default is `%(default)s`')
   parser_create.set_defaults(func=_CreateShardMapForBenchmark)
+
+  parser_deschedule = subparsers.add_parser(
+      'deschedule',
+      help=('After you deschedule one or more '
+            'benchmarks by deleting from tools/perf/benchmarks or by editing '
+            'bot_platforms.py, use this script to deschedule the '
+            'benchmark(s) without impacting the sharding for other benchmarks.'))
+  parser_deschedule.set_defaults(func=_DescheduleBenchmark)
   return parser
+
+
+def _DumpJson(data, output_path):
+  with open(output_path, 'w') as output_file:
+    json.dump(data, output_file, indent=4, separators=(',', ': '))
 
 
 def _GenerateBenchmarksToShardsList(benchmarks):
@@ -118,8 +134,7 @@ def _LoadTimingData(args):
   builder_name, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStortyTimingData(
       configurations=[builder_name], num_last_days=5)
-  with open(timing_file_path, 'w') as output_file:
-    json.dump(data, output_file, indent=4, separators=(',', ': '))
+  _DumpJson(data, timing_file_path)
   print 'Finish retrieve story timing data for %s' % repr(builder_name)
 
 
@@ -135,8 +150,7 @@ def _GenerateShardMap(
   sharding_map = sharding_map_generator.generate_sharding_map(
       benchmarks_to_shard, timing_data, num_shards=num_of_shards,
       debug=debug)
-  with open(output_path, 'w') as output_file:
-    json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
+  _DumpJson(sharding_map, output_path)
 
 
 def _PromptWarning():
@@ -160,6 +174,9 @@ def _PromptWarning():
 
 
 def _UpdateShardsForBuilders(args):
+  if options.builders and options.waterfall:
+    parser.error('Cannot specify both --builders and --waterfall '
+                 'at the same time')
   if args.builders:
     builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in
                 args.builders}
@@ -206,13 +223,31 @@ def _CreateShardMapForBenchmark(args):
       builder, args.shards_num, args.output_path, args.debug, args.benchmark)
 
 
+def _DescheduleBenchmark(args):
+  """Remove benchmarks from the shard maps without re-sharding."""
+  builders = bot_platforms.ALL_PLATFORMS
+  for b in builders:
+    benchmarks_to_keep = set(
+        benchmark.Name() for benchmark in b.benchmarks_to_run)
+    with open(b.shards_map_file_path, 'r') as f:
+      if not os.path.exists(b.shards_map_file_path):
+        continue
+      shards_map = json.load(f, object_pairs_hook=collections.OrderedDict)
+      for shard, shard_map in shards_map.items():
+        if shard == 'extra_infos':
+          break
+        benchmarks = shard_map['benchmarks']
+        for benchmark in benchmarks.keys():
+          if benchmark not in benchmarks_to_keep:
+            del benchmarks[benchmark]
+    os.remove(b.shards_map_file_path)
+    _DumpJson(shards_map, b.shards_map_file_path)
+  print 'done.'
+
+
 def main():
   parser = GetParser()
   options = parser.parse_args()
-  if options.builders and options.waterfall:
-    parser.error('Cannot specify both --builders and --waterfall '
-                 'at the same time')
-
   options.func(options)
 
 if __name__ == '__main__':
