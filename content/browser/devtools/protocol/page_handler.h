@@ -18,7 +18,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "content/browser/devtools/devtools_frame_metadata.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
@@ -71,7 +71,7 @@ class PageHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
   // Instrumentation signals.
   void OnSynchronousSwapCompositorFrame(
-      viz::CompositorFrameMetadata frame_metadata);
+      const DevToolsFrameMetadata& frame_metadata);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
@@ -202,9 +202,7 @@ class PageHandler : public DevToolsDomainHandler,
   int screencast_max_height_;
   int capture_every_nth_frame_;
   int capture_retry_count_;
-  bool has_compositor_frame_metadata_;
-  viz::CompositorFrameMetadata next_compositor_frame_metadata_;
-  viz::CompositorFrameMetadata last_compositor_frame_metadata_;
+  base::Optional<DevToolsFrameMetadata> frame_metadata_;
   int session_id_;
   int frame_counter_;
   int frames_in_flight_;

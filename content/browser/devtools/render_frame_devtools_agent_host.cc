@@ -717,7 +717,7 @@ base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
 
 void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
     RenderFrameHost* frame_host,
-    viz::CompositorFrameMetadata frame_metadata) {
+    const DevToolsFrameMetadata& frame_metadata) {
   scoped_refptr<RenderFrameDevToolsAgentHost> dtah(FindAgentHost(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
@@ -726,14 +726,14 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
-            dtah.get(), std::move(frame_metadata)));
+            dtah.get(), frame_metadata));
   }
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
-    viz::CompositorFrameMetadata frame_metadata) {
+    const DevToolsFrameMetadata& frame_metadata) {
   for (auto* page : protocol::PageHandler::ForAgentHost(this))
-    page->OnSynchronousSwapCompositorFrame(frame_metadata.Clone());
+    page->OnSynchronousSwapCompositorFrame(frame_metadata);
 
   if (!frame_trace_recorder_)
     return;

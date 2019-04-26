@@ -24,6 +24,7 @@
 #include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "content/browser/devtools/devtools_frame_metadata.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -303,7 +304,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 int end_adjust);
 
   void SynchronousFrameMetadata(viz::CompositorFrameMetadata frame_metadata);
-  void FrameTokenChangedForSynchronousCompositor(uint32_t frame_token);
+  // TODO(ericrk): Ideally we'd reemove |root_scroll_offset| from this function
+  // once we have a reliable way to get it through RenderFrameMetadata.
+  void FrameTokenChangedForSynchronousCompositor(
+      uint32_t frame_token,
+      const gfx::ScrollOffset& root_scroll_offset);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 
@@ -527,6 +532,15 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool navigation_while_hidden_ = false;
 
   viz::PresentationFeedbackMap presentation_feedbacks_;
+
+  // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
+  // into DevTools capture logic.
+  // TODO(ericrk): Make this more robust.
+  bool in_sync_copy_contents_ = false;
+
+  // A cached copy of the most up to date DevToolsFrameMetadata, computed from
+  // either RenderFrameMetadata or CompositorFrameMetadata.
+  base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

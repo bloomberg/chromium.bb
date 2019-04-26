@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/android/build_info.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -353,6 +354,11 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {
   if (!features::IsSurfaceSynchronizationEnabled())
     return;
+
+  if (!using_browser_compositor_) {
+    // DevTools ScreenCast support for Android WebView.
+    last_devtools_frame_metadata_.emplace(metadata);
+  }
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(
       metadata.page_scale_factor, metadata.min_page_scale_factor,
@@ -1040,14 +1046,14 @@ bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     viz::CompositorFrameMetadata metadata) {
+  // TODO(ericrk): Remove this function once surface synchronization feature is
+  // no longer optional.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   if (!view_.parent())
     return;
 
-  // With SurfaceSynchronization, this logic happens during RenderFrameMetadata
-  // processing.
-  // TODO(ericrk): Remove this once surface synchronization feature is no
-  // longer optional.
-  if (!features::IsSurfaceSynchronizationEnabled()) {
     bool is_mobile_optimized = IsMobileOptimizedFrame(
         metadata.page_scale_factor, metadata.min_page_scale_factor,
         metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
@@ -1059,20 +1065,35 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     // This is a subset of OnSwapCompositorFrame() used in the synchronous
     // compositor flow.
     OnFrameMetadataUpdated(metadata.Clone(), false);
-  }
 
-  // DevTools ScreenCast support for Android WebView.
-  RenderFrameHost* frame_host = RenderViewHost::From(host())->GetMainFrame();
-  if (frame_host) {
-    RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
-        frame_host, std::move(metadata));
-  }
+    // DevTools ScreenCast support for Android WebView.
+    last_devtools_frame_metadata_.emplace(metadata);
 }
 
 void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
-    uint32_t frame_token) {
-  if (host() && frame_token)
+    uint32_t frame_token,
+    const gfx::ScrollOffset& root_scroll_offset) {
+  if (host() && frame_token) {
     host()->DidProcessFrame(frame_token);
+
+    // DevTools ScreenCast support for Android WebView. Don't call this if
+    // we're currently in SynchronousCopyContents, as this can lead to
+    // redundant copies.
+    if (!in_sync_copy_contents_) {
+      RenderFrameHost* frame_host =
+          RenderViewHost::From(host())->GetMainFrame();
+      if (frame_host && last_devtools_frame_metadata_) {
+        // Update our |root_scroll_offset|, as changes to this value do not
+        // trigger a new RenderFrameMetadata, and it may be out of date. This
+        // is needed for devtools DOM node selection.
+        DevToolsFrameMetadata updated_metadata = *last_devtools_frame_metadata_;
+        updated_metadata.root_scroll_offset =
+            gfx::ScrollOffsetToVector2dF(root_scroll_offset);
+        RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
+            frame_host, updated_metadata);
+      }
+    }
+  }
 }
 
 void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
@@ -1174,6 +1195,10 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_dip,
     const gfx::Size& dst_size_in_pixel,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  // Track that we're in this function to avoid repeatedly calling DevTools
+  // capture logic.
+  base::AutoReset<bool> in_sync_copy_contents(&in_sync_copy_contents_, true);
+
   // Note: When |src_subrect| is empty, a conversion from the view size must
   // be made instead of using |current_frame_size_|. The latter sometimes also
   // includes extra height for the toolbar UI, which is not intended for
