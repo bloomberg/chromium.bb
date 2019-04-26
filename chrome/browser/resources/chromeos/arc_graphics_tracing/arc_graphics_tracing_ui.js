@@ -917,9 +917,19 @@ class CpuDetailedInfoView extends DetailedInfoView {
       var activeEvents = new Events(
           overviewBand.model.system.cpu[cpuId], 3 /* kActive */,
           3 /* kActive */);
+      // Assume we have an idle before minTimestamp.
       var activeTid = 0;
       var index = activeEvents.getFirstAfter(minTimestamp);
       var activeStartTimestamp = minTimestamp;
+      // Check if previous event goes over minTimestamp, in that case extract
+      // the active thread.
+      if (index > 0) {
+        var lastBefore = activeEvents.getNextEvent(index, -1 /* direction */);
+        if (lastBefore >= 0) {
+          // This may be idle (tid=0) or real thread.
+          activeTid = activeEvents.events[lastBefore][2];
+        }
+      }
       while (index >= 0 && activeEvents.events[index][1] < maxTimestamp) {
         this.addActivityTime_(
             eventsPerTid, activeTid, activeStartTimestamp,
@@ -1027,6 +1037,9 @@ class CpuDetailedInfoView extends DetailedInfoView {
     this.bandSelection = SVG.addRect(
         overviewBand.svg, overviewX, 0, overviewWidth, overviewBand.height,
         '#000' /* color */, 0.1 /* opacity */);
+    // Prevent band selection to capture mouse events that would lead to
+    // incorrect anchor position computation for detailed view.
+    this.bandSelection.classList.add('arc-no-mouse-events');
 
     // Align position in overview and middle line here if possible.
     var left = Math.max(
@@ -1046,7 +1059,7 @@ class CpuDetailedInfoView extends DetailedInfoView {
   }
 
   /**
-   * Helper that adds kIdleIn/kIdle events into the dictionary.
+   * Helper that adds kIdleIn/kIdleOut events into the dictionary.
    *
    * @param {Object} eventsPerTid dictionary to fill. Key is thread id and
    *     value is object that contains all events for thread with related
