@@ -232,9 +232,9 @@ static INLINE uint64_t mse_4x4_16bit(uint16_t *dst, int dstride, uint16_t *src,
 }
 
 /* Compute MSE only on the blocks we filtered. */
-uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
-                           cdef_list *dlist, int cdef_count, BLOCK_SIZE bsize,
-                           int coeff_shift, int pli) {
+static uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
+                                  cdef_list *dlist, int cdef_count,
+                                  BLOCK_SIZE bsize, int coeff_shift, int pli) {
   uint64_t sum = 0;
   int bi, bx, by;
   if (bsize == BLOCK_8X8) {
@@ -277,6 +277,25 @@ uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
     }
   }
   return sum >> 2 * coeff_shift;
+}
+
+static int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
+  int maxc, maxr;
+  int skip = 1;
+  maxc = cm->mi_cols - mi_col;
+  maxr = cm->mi_rows - mi_row;
+
+  maxr = AOMMIN(maxr, MI_SIZE_64X64);
+  maxc = AOMMIN(maxc, MI_SIZE_64X64);
+
+  for (int r = 0; r < maxr; r++) {
+    for (int c = 0; c < maxc; c++) {
+      skip =
+          skip &&
+          cm->mi_grid_visible[(mi_row + r) * cm->mi_stride + mi_col + c]->skip;
+    }
+  }
+  return skip;
 }
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
