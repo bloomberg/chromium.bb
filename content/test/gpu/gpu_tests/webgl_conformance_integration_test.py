@@ -108,7 +108,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       test_path_with_args = test_path
       if cls._webgl_version > 1:
         test_path_with_args += '?webglVersion=' + str(cls._webgl_version)
-      yield (test_path,
+      yield (test_path.replace(os.path.sep, '/'),
              os.path.join(
                  webgl_test_util.conformance_relpath, test_path_with_args),
              ('_RunConformanceTest'))
