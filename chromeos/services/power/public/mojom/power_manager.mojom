@@ -50,6 +50,12 @@ struct BacklightBrightnessChange {
   BacklightBrightnessChangeCause cause;
 };
 
+enum RequestRestartReason {
+  kForUser,
+  kForUpdate,
+  kOther,
+};
+
 // The interface for handling out-of-process calls that query or adjust power
 // related state. The implementation relays calls to the D-Bus client, which
 // uses D-Bus to communicate with the Power Manager daemon. In Mash, this lives
@@ -61,6 +67,7 @@ interface PowerManagerController {
   // PowerManagerClient interface. Refer to that for documentation.
   SetScreenBrightness(SetBacklightBrightnessRequest request);
   GetScreenBrightnessPercent() => (Brightness? brightness);
+  RequestRestart(RequestRestartReason reason, string description);
 };
 
 // An interface for observing changes to power state. The changes are dispatched

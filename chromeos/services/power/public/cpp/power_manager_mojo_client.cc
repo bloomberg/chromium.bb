@@ -82,7 +82,9 @@ void PowerManagerMojoClient::RequestSuspend() {}
 
 void PowerManagerMojoClient::RequestRestart(
     power_manager::RequestRestartReason reason,
-    const std::string& description) {}
+    const std::string& description) {
+  controller_->RequestRestart(reason, description);
+}
 
 void PowerManagerMojoClient::RequestShutdown(
     power_manager::RequestShutdownReason reason,

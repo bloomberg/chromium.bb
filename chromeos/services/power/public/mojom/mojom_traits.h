@@ -9,6 +9,7 @@
 #include "chromeos/services/power/public/mojom/power_manager.mojom-shared.h"
 #include "chromeos/services/power/public/mojom/power_manager.mojom.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "third_party/cros_system_api/dbus/power_manager/dbus-constants.h"
 
 namespace mojo {
 
@@ -81,6 +82,16 @@ struct StructTraits<chromeos::power::mojom::BacklightBrightnessChangeDataView,
   static bool Read(
       chromeos::power::mojom::BacklightBrightnessChangeDataView data,
       power_manager::BacklightBrightnessChange* out);
+};
+
+template <>
+struct EnumTraits<chromeos::power::mojom::RequestRestartReason,
+                  power_manager::RequestRestartReason> {
+  static chromeos::power::mojom::RequestRestartReason ToMojom(
+      power_manager::RequestRestartReason reason);
+
+  static bool FromMojom(chromeos::power::mojom::RequestRestartReason reason,
+                        power_manager::RequestRestartReason* out);
 };
 
 }  // namespace mojo

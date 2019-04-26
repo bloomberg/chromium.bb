@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//chromeos/services/power/public/mojom/power_manager.mojom"
-public_headers = [ "chromeos/dbus/power_manager/backlight.pb.h" ]
+public_headers = [
+  "chromeos/dbus/power_manager/backlight.pb.h",
+  "third_party/cros_system_api/dbus/power_manager/dbus-constants.h",
+]
 traits_headers = [ "//chromeos/services/power/public/mojom/mojom_traits.h" ]
 sources = [
   "//chromeos/services/power/public/mojom/mojom_traits.cc",
@@ -15,6 +18,7 @@ deps = [
 type_mappings = [
   "chromeos.power.mojom.BacklightBrightnessChange=power_manager::BacklightBrightnessChange",
   "chromeos.power.mojom.BacklightBrightnessChangeCause=power_manager::BacklightBrightnessChange_Cause",
+  "chromeos.power.mojom.RequestRestartReason=power_manager::RequestRestartReason",
   "chromeos.power.mojom.SetBacklightBrightnessRequest=power_manager::SetBacklightBrightnessRequest",
   "chromeos.power.mojom.SetBacklightBrightnessRequestCause=power_manager::SetBacklightBrightnessRequest_Cause",
   "chromeos.power.mojom.SetBacklightBrightnessRequestTransition=power_manager::SetBacklightBrightnessRequest_Transition",

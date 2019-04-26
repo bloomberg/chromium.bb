@@ -7,6 +7,7 @@
 namespace mojo {
 
 using chromeos::power::mojom::BacklightBrightnessChangeCause;
+using chromeos::power::mojom::RequestRestartReason;
 using chromeos::power::mojom::SetBacklightBrightnessRequestCause;
 using chromeos::power::mojom::SetBacklightBrightnessRequestTransition;
 
@@ -197,6 +198,40 @@ bool StructTraits<chromeos::power::mojom::BacklightBrightnessChangeDataView,
 
   out->set_cause(cause);
   return true;
+}
+
+// static
+RequestRestartReason
+EnumTraits<RequestRestartReason, power_manager::RequestRestartReason>::ToMojom(
+    power_manager::RequestRestartReason reason) {
+  switch (reason) {
+    case power_manager::REQUEST_RESTART_FOR_USER:
+      return RequestRestartReason::kForUser;
+    case power_manager::REQUEST_RESTART_FOR_UPDATE:
+      return RequestRestartReason::kForUpdate;
+    case power_manager::REQUEST_RESTART_OTHER:
+      return RequestRestartReason::kOther;
+  }
+}
+
+// static
+bool EnumTraits<RequestRestartReason, power_manager::RequestRestartReason>::
+    FromMojom(chromeos::power::mojom::RequestRestartReason reason,
+              power_manager::RequestRestartReason* out) {
+  switch (reason) {
+    case RequestRestartReason::kForUser:
+      *out = power_manager::REQUEST_RESTART_FOR_USER;
+      return true;
+    case RequestRestartReason::kForUpdate:
+      *out = power_manager::REQUEST_RESTART_FOR_UPDATE;
+      return true;
+    case RequestRestartReason::kOther:
+      *out = power_manager::REQUEST_RESTART_OTHER;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

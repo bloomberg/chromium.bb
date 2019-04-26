@@ -48,6 +48,12 @@ void PowerManagerMojoController::GetScreenBrightnessPercent(
       std::move(callback)));
 }
 
+void PowerManagerMojoController::RequestRestart(
+    power_manager::RequestRestartReason reason,
+    const std::string& description) {
+  PowerManagerClient::Get()->RequestRestart(reason, description);
+}
+
 void PowerManagerMojoController::PowerManagerBecameAvailable(bool available) {
   client_->PowerManagerBecameAvailable(available);
 }

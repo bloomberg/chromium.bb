@@ -32,6 +32,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CONTROLLER)
       const power_manager::SetBacklightBrightnessRequest& request) override;
   void GetScreenBrightnessPercent(
       GetScreenBrightnessPercentCallback callback) override;
+  void RequestRestart(power_manager::RequestRestartReason reason,
+                      const std::string& description) override;
 
   // PowerManagerClient::Observer:
   void PowerManagerBecameAvailable(bool available) override;
