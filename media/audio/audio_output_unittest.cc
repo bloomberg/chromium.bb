@@ -98,13 +98,7 @@ TEST_F(AudioOutputTest, StopTwice) {
 }
 
 // This test produces actual audio for .25 seconds on the default device.
-#if defined(OS_FUCHSIA)
-// Disabled on Fuchsia to workaround https://crbug.com/956446 .
-#define MAYBE_Play200HzTone DISABLED_Play200HzTone
-#else
-#define MAYBE_Play200HzTone Play200HzTone
-#endif
-TEST_F(AudioOutputTest, MAYBE_Play200HzTone) {
+TEST_F(AudioOutputTest, Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   stream_params_ =
