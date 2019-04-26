@@ -35,7 +35,7 @@ ScriptPromise NavigatorWakeLock::getWakeLock(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            DOMExceptionCode::kSecurityError,
+            DOMExceptionCode::kNotAllowedError,
             "Access to WakeLock features is disallowed by feature policy"));
   }
 
