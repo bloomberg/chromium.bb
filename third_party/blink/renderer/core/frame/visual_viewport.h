@@ -51,6 +51,7 @@ class AnimationHost;
 }
 
 namespace blink {
+enum class PaintPropertyChangeType : unsigned char;
 class EffectPaintPropertyNode;
 class GraphicsContext;
 class GraphicsLayer;
@@ -58,6 +59,7 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 class Page;
+class PaintArtifactCompositor;
 class RootFrameViewport;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
@@ -261,8 +263,9 @@ class CORE_EXPORT VisualViewport final
   // Create/update the page scale translation, viewport scroll, and viewport
   // translation property nodes. Also set the layer states (inner viewport
   // container, page scale layer, inner viewport scroll layer) to reference
-  // these nodes.
-  void UpdatePaintPropertyNodesIfNeeded(
+  // these nodes. Returns the maximum paint property change type for any of the
+  // viewport's nodes.
+  PaintPropertyChangeType UpdatePaintPropertyNodesIfNeeded(
       PaintPropertyTreeBuilderFragmentContext& context);
 
   CompositorElementId GetCompositorOverscrollElasticityElementId() const;
@@ -315,6 +318,7 @@ class CORE_EXPORT VisualViewport final
     return *page_;
   }
 
+  PaintArtifactCompositor* GetPaintArtifactCompositor() const;
   CompositorElementId GetCompositorScrollElementId() const;
 
   // Contracts the given size by the thickness of any visible scrollbars. Does

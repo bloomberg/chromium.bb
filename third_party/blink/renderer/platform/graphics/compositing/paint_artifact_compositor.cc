@@ -1112,6 +1112,15 @@ bool PaintArtifactCompositor::DirectlyUpdateTransform(
   return false;
 }
 
+bool PaintArtifactCompositor::DirectlyUpdatePageScaleTransform(
+    const TransformPaintPropertyNode& transform) {
+  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
+    return property_tree_manager_.DirectlyUpdatePageScaleTransform(
+        property_trees, transform);
+  }
+  return false;
+}
+
 static bool IsRenderSurfaceCandidate(
     const cc::EffectNode& effect,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {
