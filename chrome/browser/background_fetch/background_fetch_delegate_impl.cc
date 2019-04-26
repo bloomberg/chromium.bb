@@ -787,7 +787,13 @@ void BackgroundFetchDelegateImpl::GetAllItems(MultipleItemCallback callback) {
 
 void BackgroundFetchDelegateImpl::GetVisualsForItem(
     const offline_items_collection::ContentId& id,
+    GetVisualsOptions options,
     VisualsCallback callback) {
+  if (!options.get_icon) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), id, nullptr));
+    return;
+  }
   // GetVisualsForItem mustn't be called directly since offline_items_collection
   // is not re-entrant and it must be called even if there are no visuals.
   auto visuals =

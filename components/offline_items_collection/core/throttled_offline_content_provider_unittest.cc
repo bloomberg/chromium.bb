@@ -24,6 +24,8 @@ using testing::Return;
 namespace offline_items_collection {
 namespace {
 
+using GetVisualsOptions = OfflineContentProvider::GetVisualsOptions;
+
 // Helper class to automatically trigger another OnItemUpdated() to the
 // underlying provider when this observer gets notified of OnItemUpdated().
 // This will only happen the first time the ContentId of the udpated OfflineItem
@@ -98,14 +100,15 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   EXPECT_CALL(wrapped_provider_, CancelDownload(id));
   EXPECT_CALL(wrapped_provider_, PauseDownload(id));
   EXPECT_CALL(wrapped_provider_, ResumeDownload(id, true));
-  EXPECT_CALL(wrapped_provider_, GetVisualsForItem_(id, _));
+  EXPECT_CALL(wrapped_provider_, GetVisualsForItem_(id, _, _));
   wrapped_provider_.SetItems(items);
   provider_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id);
   provider_.RemoveItem(id);
   provider_.CancelDownload(id);
   provider_.PauseDownload(id);
   provider_.ResumeDownload(id, true);
-  provider_.GetVisualsForItem(id, OfflineContentProvider::VisualsCallback());
+  provider_.GetVisualsForItem(id, GetVisualsOptions::IconOnly(),
+                              OfflineContentProvider::VisualsCallback());
 
   EXPECT_CALL(*this, OnGetAllItemsDone(items)).Times(1);
   provider_.GetAllItems(

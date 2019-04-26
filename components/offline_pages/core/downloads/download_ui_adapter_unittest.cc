@@ -37,6 +37,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+using GetVisualsOptions =
+    offline_items_collection::OfflineContentProvider::GetVisualsOptions;
 using offline_items_collection::OfflineItemState;
 
 namespace offline_pages {
@@ -603,7 +605,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
       });
 
   base::HistogramTester histogram_tester;
-  adapter->GetVisualsForItem(kTestContentId1, callback);
+  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
+                             callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(
@@ -627,7 +630,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
       });
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kContentID, callback);
+  adapter->GetVisualsForItem(kContentID, GetVisualsOptions::IconOnly(),
+                             callback);
   PumpLoop();
 
   histogram_tester.ExpectTotalCount(
@@ -651,7 +655,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
   adapter->GetAllItems(base::DoNothing());
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kTestContentId1, callback);
+  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
+                             callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(
@@ -679,7 +684,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
       });
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kTestContentId1, callback);
+  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
+                             callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(

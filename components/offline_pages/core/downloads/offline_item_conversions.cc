@@ -64,6 +64,8 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.is_suggested = is_suggested;
   item.is_openable = true;
   item.externally_removed = page.file_missing_time != base::Time();
+  item.description = page.snippet;
+  item.attribution = page.attribution;
 
   return item;
 }

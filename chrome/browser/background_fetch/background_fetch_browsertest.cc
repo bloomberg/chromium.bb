@@ -42,6 +42,8 @@
 
 using offline_items_collection::ContentId;
 using offline_items_collection::OfflineContentProvider;
+using GetVisualsOptions =
+    offline_items_collection::OfflineContentProvider::GetVisualsOptions;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemFilter;
 using offline_items_collection::OfflineItemProgressUnit;
@@ -318,9 +320,10 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
 
     delegate_->GetVisualsForItem(
-        offline_item_id, base::Bind(&BackgroundFetchBrowserTest::DidGetVisuals,
-                                    base::Unretained(this),
-                                    run_loop.QuitClosure(), out_visuals));
+        offline_item_id, GetVisualsOptions::IconOnly(),
+        base::BindOnce(&BackgroundFetchBrowserTest::DidGetVisuals,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_visuals));
     run_loop.Run();
   }
 

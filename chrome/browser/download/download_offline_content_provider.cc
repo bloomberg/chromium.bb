@@ -149,11 +149,16 @@ void DownloadOfflineContentProvider::GetAllItems(
 
 void DownloadOfflineContentProvider::GetVisualsForItem(
     const ContentId& id,
+    GetVisualsOptions options,
     VisualsCallback callback) {
   // TODO(crbug.com/855330) Supply thumbnail if item is visible.
   DownloadItem* item = GetDownload(id.id);
-  if (!item)
+  if (!item || !options.get_icon) {
+    // No favicon is available; run the callback without visuals.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), id, nullptr));
     return;
+  }
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   int icon_size = kThumbnailSizeInDP * display.device_scale_factor();

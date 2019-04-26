@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
 #include "components/prefs/pref_service.h"
@@ -27,6 +28,8 @@
 
 namespace android {
 using chrome::mojom::AvailableContentType;
+using GetVisualsOptions =
+    offline_items_collection::OfflineContentProvider::GetVisualsOptions;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemState;
 
@@ -126,7 +129,8 @@ class ThumbnailFetch {
     auto callback = base::BindRepeating(&ThumbnailFetch::VisualsReceived,
                                         base::Unretained(this));
     for (offline_items_collection::ContentId id : content_ids_) {
-      aggregator->GetVisualsForItem(id, callback);
+      aggregator->GetVisualsForItem(
+          id, GetVisualsOptions::IconAndCustomFavicon(), callback);
     }
   }
 

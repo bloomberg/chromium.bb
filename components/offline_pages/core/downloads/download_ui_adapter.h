@@ -100,6 +100,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void GetAllItems(
       OfflineContentProvider::MultipleItemCallback callback) override;
   void GetVisualsForItem(const ContentId& id,
+                         GetVisualsOptions options,
                          VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback share_callback) override;
@@ -144,13 +145,15 @@ class DownloadUIAdapter : public OfflineContentProvider,
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
       const MultipleOfflinePageItemResult& pages);
-  void OnVisualsLoaded(VisualResultCallback callback,
+  void OnVisualsLoaded(GetVisualsOptions options,
+                       VisualResultCallback callback,
                        std::unique_ptr<OfflinePageVisuals> visuals);
   void OnRequestsLoaded(
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
   void OnPageGetForVisuals(const ContentId& id,
+                           GetVisualsOptions options,
                            VisualsCallback visuals_callback,
                            const std::vector<OfflinePageItem>& pages);
   void OnPageGetForGetItem(const ContentId& id,

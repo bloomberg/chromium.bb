@@ -97,8 +97,9 @@ void ThrottledOfflineContentProvider::OnGetItemByIdDone(
 
 void ThrottledOfflineContentProvider::GetVisualsForItem(
     const ContentId& id,
+    GetVisualsOptions options,
     VisualsCallback callback) {
-  wrapped_provider_->GetVisualsForItem(id, std::move(callback));
+  wrapped_provider_->GetVisualsForItem(id, options, std::move(callback));
 }
 
 void ThrottledOfflineContentProvider::GetShareInfoForItem(

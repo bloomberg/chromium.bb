@@ -244,13 +244,14 @@ void DownloadUIAdapter::GetAllItems(
 }
 
 void DownloadUIAdapter::GetVisualsForItem(const ContentId& id,
+                                          GetVisualsOptions options,
                                           VisualsCallback visuals_callback) {
   PageCriteria criteria;
   criteria.guid = id.id;
   criteria.maximum_matches = 1;
   model_->GetPagesWithCriteria(
       criteria, base::BindOnce(&DownloadUIAdapter::OnPageGetForVisuals,
-                               weak_ptr_factory_.GetWeakPtr(), id,
+                               weak_ptr_factory_.GetWeakPtr(), id, options,
                                std::move(visuals_callback)));
 }
 
@@ -267,6 +268,7 @@ void DownloadUIAdapter::RenameItem(const ContentId& id,
 
 void DownloadUIAdapter::OnPageGetForVisuals(
     const ContentId& id,
+    GetVisualsOptions options,
     VisualsCallback visuals_callback,
     const std::vector<OfflinePageItem>& pages) {
   if (pages.empty()) {
@@ -292,16 +294,17 @@ void DownloadUIAdapter::OnPageGetForVisuals(
   }
 
   model_->GetVisualsByOfflineId(
-      page->offline_id,
-      base::BindOnce(&DownloadUIAdapter::OnVisualsLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      page->offline_id, base::BindOnce(&DownloadUIAdapter::OnVisualsLoaded,
+                                       weak_ptr_factory_.GetWeakPtr(), options,
+                                       std::move(callback)));
 }
 
 void DownloadUIAdapter::OnVisualsLoaded(
+    GetVisualsOptions options,
     VisualResultCallback callback,
     std::unique_ptr<OfflinePageVisuals> visuals) {
   DCHECK(thumbnail_decoder_);
-  if (!visuals || visuals->thumbnail.empty()) {
+  if (!options.get_icon || !visuals || visuals->thumbnail.empty()) {
     // PostTask not required, GetThumbnailByOfflineId does it for us.
     std::move(callback).Run(nullptr);
     return;

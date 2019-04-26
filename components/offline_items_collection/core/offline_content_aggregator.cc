@@ -195,6 +195,7 @@ void OfflineContentAggregator::OnGetAllItemsDone(
 }
 
 void OfflineContentAggregator::GetVisualsForItem(const ContentId& id,
+                                                 GetVisualsOptions options,
                                                  VisualsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = providers_.find(id.name_space);
@@ -205,7 +206,7 @@ void OfflineContentAggregator::GetVisualsForItem(const ContentId& id,
     return;
   }
 
-  it->second->GetVisualsForItem(id, std::move(callback));
+  it->second->GetVisualsForItem(id, options, std::move(callback));
 }
 
 void OfflineContentAggregator::GetShareInfoForItem(const ContentId& id,

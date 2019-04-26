@@ -52,6 +52,7 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
       OfflineContentProvider::MultipleItemCallback callback) override;
   void GetVisualsForItem(
       const ContentId& id,
+      GetVisualsOptions options,
       OfflineContentProvider::VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback callback) override;

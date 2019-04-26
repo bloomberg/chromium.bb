@@ -34,6 +34,7 @@ std::ostream& operator<<(std::ostream& os, const OfflineItem& item) {
   os << ", page_url: " << item.page_url;
   os << ", original_url: " << item.original_url;
   os << ", is_off_the_record: " << item.is_off_the_record;
+  os << ", attribution: " << item.attribution;
   os << ", state: " << item.state;
   os << ", fail_state: " << item.fail_state;
   os << ", pending_state: " << item.pending_state;
