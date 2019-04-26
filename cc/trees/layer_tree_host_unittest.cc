@@ -351,7 +351,8 @@ class LayerTreeHostTestReadyToActivateNonEmpty
 
 // No single thread test because the commit goes directly to the active tree in
 // single thread mode, so notify ready to activate is skipped.
-MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+// Flaky: https://crbug.com/947673
+// MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // no raster tasks get scheduled.
