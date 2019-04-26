@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
@@ -207,14 +207,14 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, true);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
-                equalTo(ApiCompatibilityUtils.getColor(
-                        mRecyclerView.getResources(), R.color.incognito_modern_primary_color)));
+                equalTo(ApiCompatibilityUtils.getColor(mRecyclerView.getResources(),
+                        org.chromium.chrome.R.color.incognito_modern_primary_color)));
 
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, false);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
-                equalTo(ApiCompatibilityUtils.getColor(
-                        mRecyclerView.getResources(), R.color.modern_primary_color)));
+                equalTo(ApiCompatibilityUtils.getColor(mRecyclerView.getResources(),
+                        org.chromium.chrome.R.color.modern_primary_color)));
     }
 
     @Test

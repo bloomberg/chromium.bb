@@ -18,11 +18,11 @@ import android.graphics.drawable.Drawable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
@@ -183,21 +183,21 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
         mEmptyThumbnailPaint.setStyle(Paint.Style.FILL);
-        mEmptyThumbnailPaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_100));
+        mEmptyThumbnailPaint.setColor(ApiCompatibilityUtils.getColor(
+                context.getResources(), org.chromium.chrome.R.color.modern_grey_100));
         mEmptyThumbnailPaint.setAntiAlias(true);
 
         mThumbnailFramePaint = new Paint();
         mThumbnailFramePaint.setStyle(Paint.Style.STROKE);
         mThumbnailFramePaint.setStrokeWidth(
                 context.getResources().getDimension(R.dimen.tab_list_mini_card_frame_size));
-        mThumbnailFramePaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_300));
+        mThumbnailFramePaint.setColor(ApiCompatibilityUtils.getColor(
+                context.getResources(), org.chromium.chrome.R.color.modern_grey_300));
         mThumbnailFramePaint.setAntiAlias(true);
 
         mTextPaint = new Paint();
-        mTextPaint.setTextSize(
-                context.getResources().getDimension(R.dimen.compositor_tab_title_text_size));
+        mTextPaint.setTextSize(context.getResources().getDimension(
+                org.chromium.chrome.R.dimen.compositor_tab_title_text_size));
         mTextPaint.setFakeBoldText(true);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -212,7 +212,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                 0,
                 context.getResources().getDimension(
                         R.dimen.tab_grid_thumbnail_favicon_background_down_shift),
-                context.getResources().getColor(R.color.modern_grey_800_alpha_38));
+                context.getResources().getColor(
+                        org.chromium.chrome.R.color.modern_grey_800_alpha_38));
 
         // Initialize Rects for thumbnails.
         float thumbnailPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);

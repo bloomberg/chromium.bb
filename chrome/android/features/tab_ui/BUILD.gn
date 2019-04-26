@@ -5,6 +5,14 @@
 import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
 
+android_resources("java_resources") {
+  resource_dirs = [ "java/res" ]
+  deps = [
+    "//chrome/android:chrome_app_java_resources",
+  ]
+  custom_package = "org.chromium.chrome.tab_ui"
+}
+
 android_library("java") {
   java_files = [
     "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
@@ -36,6 +44,10 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabStripViewBinder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabStripViewHolder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabListFaviconProvider.java",
+  ]
+
+  deps = [
+    ":java_resources",
   ]
 
   classpath_deps = [
