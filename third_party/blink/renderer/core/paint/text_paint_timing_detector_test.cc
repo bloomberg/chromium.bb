@@ -96,8 +96,8 @@ class TextPaintTimingDetectorTest
                         CurrentTimeTicks());
   }
 
-  void SimulateAnalyze() {
-    GetPaintTimingDetector().GetTextPaintTimingDetector().Analyze();
+  void UpdateCandidate() {
+    GetPaintTimingDetector().GetTextPaintTimingDetector().UpdateCandidate();
   }
 
   Element* AppendFontElementToBody(String content) {
@@ -204,7 +204,7 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
     <div>small text</div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
+  UpdateCandidate();
   TimeTicks time2 = CurrentTimeTicks();
   TimeTicks first_largest = LargestPaintStoredResult();
   EXPECT_GE(first_largest, time1);
@@ -213,7 +213,7 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   Text* larger_text = GetDocument().createTextNode("a long-long-long text");
   GetDocument().body()->AppendChild(larger_text);
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
+  UpdateCandidate();
   TimeTicks time3 = CurrentTimeTicks();
   TimeTicks second_largest = LargestPaintStoredResult();
   EXPECT_GE(second_largest, time2);
@@ -307,13 +307,13 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
   )HTML");
   Element* text = AppendDivElementToBody("text to remove");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
+  UpdateCandidate();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(text));
   EXPECT_NE(LargestPaintStoredResult(), base::TimeTicks());
 
   RemoveElement(text);
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
+  UpdateCandidate();
   EXPECT_FALSE(TextRecordOfLargestTextPaint());
   EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }

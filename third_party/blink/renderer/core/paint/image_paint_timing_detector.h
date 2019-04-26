@@ -208,7 +208,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Deactivate();
   void HandleTooManyNodes();
 
-  void Analyze();
+  void UpdateCandidate();
 
   base::RepeatingCallback<void(WebWidgetClient::ReportTimeCallback)>
       notify_swap_time_override_for_testing_;

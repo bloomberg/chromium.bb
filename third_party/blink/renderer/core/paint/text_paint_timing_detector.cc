@@ -73,21 +73,28 @@ void TextPaintTimingDetector::OnLargestTextDetected(
 }
 
 void TextPaintTimingDetector::TimerFired(TimerBase* time) {
-  // Wrap Analyze method in TimerFired so that we can drop |time| for Analyze
-  // in testing.
-  Analyze();
+  // Wrap |UpdateCandidate| method in TimerFired so that we can drop |time| for
+  // |UpdateCandidate| in testing.
+  UpdateCandidate();
 }
 
-void TextPaintTimingDetector::Analyze() {
+void TextPaintTimingDetector::UpdateCandidate() {
   TextRecord* candidate = records_manager_.FindLargestPaintCandidate();
-  DCHECK(!candidate || !candidate->paint_time.is_null());
-  if (candidate && candidate->paint_time != largest_text_paint_) {
+  if (!candidate) {
+    largest_text_paint_ = base::TimeTicks();
+    largest_text_paint_size_ = 0;
+    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
+  } else if (candidate->paint_time != largest_text_paint_) {
     OnLargestTextDetected(*candidate);
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {
+  if (need_update_timing_at_frame_end_) {
+    need_update_timing_at_frame_end_ = false;
+    UpdateCandidate();
+  }
   if (records_manager_.NeedMeausuringPaintTime()) {
     // Start repeating timer only once at the first text paint.
     if (!timer_.IsActive())
@@ -106,11 +113,7 @@ void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
   if (!records_manager_.IsKnownVisibleNode(node_id))
     return;
   records_manager_.SetNodeDetachedIfNeeded(node_id);
-  if (records_manager_.AreAllVisibleNodesDetached() &&
-      largest_text_paint_ != base::TimeTicks()) {
-    largest_text_paint_ = base::TimeTicks();
-    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-  }
+  need_update_timing_at_frame_end_ = true;
 }
 
 void TextPaintTimingDetector::RegisterNotifySwapTime(

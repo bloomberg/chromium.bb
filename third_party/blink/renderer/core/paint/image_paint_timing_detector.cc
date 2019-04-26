@@ -103,7 +103,7 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
       largest_image_record->paint_time, "data", std::move(value));
 }
 
-void ImagePaintTimingDetector::Analyze() {
+void ImagePaintTimingDetector::UpdateCandidate() {
   ImageRecord* largest_image_record =
       records_manager_.FindLargestPaintCandidate();
   // These conditions represents the following scenarios:
@@ -132,7 +132,7 @@ void ImagePaintTimingDetector::OnPaintFinished() {
   frame_index_++;
   if (need_update_timing_at_frame_end_) {
     need_update_timing_at_frame_end_ = false;
-    Analyze();
+    UpdateCandidate();
   }
   if (!records_manager_.NeedMeausuringPaintTime())
     return;
@@ -191,7 +191,7 @@ void ImagePaintTimingDetector::ReportSwapTime(
   DCHECK(ThreadState::Current()->IsMainThread());
   records_manager_.AssignPaintTimeToRegisteredQueuedNodes(
       timestamp, last_queued_frame_index);
-  Analyze();
+  UpdateCandidate();
 }
 
 void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(

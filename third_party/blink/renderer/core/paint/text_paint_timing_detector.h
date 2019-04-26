@@ -130,7 +130,7 @@ class CORE_EXPORT TextPaintTimingDetector final
                           const TextRecord& first_text_paint,
                           unsigned candidate_index) const;
   void TimerFired(TimerBase*);
-  void Analyze();
+  void UpdateCandidate();
 
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
@@ -145,6 +145,7 @@ class CORE_EXPORT TextPaintTimingDetector final
   bool is_recording_ = true;
 
   bool has_records_changed_ = true;
+  bool need_update_timing_at_frame_end_ = false;
 
   base::TimeTicks largest_text_paint_;
   uint64_t largest_text_paint_size_ = 0;

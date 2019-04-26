@@ -108,8 +108,10 @@ class ImagePaintTimingDetectorTest
         .records_manager_.size_ordered_set_.size();
   }
 
-  void Analyze() {
-    return GetPaintTimingDetector().GetImagePaintTimingDetector().Analyze();
+  void UpdateCandidate() {
+    return GetPaintTimingDetector()
+        .GetImagePaintTimingDetector()
+        .UpdateCandidate();
   }
 
   TimeTicks LargestPaintStoredResult() {
@@ -596,7 +598,7 @@ TEST_F(ImagePaintTimingDetectorTest, NullTimeNoCrash) {
   )HTML");
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesForTest();
-  Analyze();
+  UpdateCandidate();
 }
 
 TEST_F(ImagePaintTimingDetectorTest, Iframe) {
