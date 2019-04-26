@@ -28,8 +28,7 @@ class PlatformNotificationService;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 
-class CONTENT_EXPORT PlatformNotificationServiceProxy
-    : public base::SupportsWeakPtr<PlatformNotificationServiceProxy> {
+class CONTENT_EXPORT PlatformNotificationServiceProxy {
  public:
   using DisplayResultCallback =
       base::OnceCallback<void(bool /* success */,
@@ -40,6 +39,13 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy
       BrowserContext* browser_context);
 
   ~PlatformNotificationServiceProxy();
+
+  // To be called when the |browser_context_| has been shutdown. This
+  // invalidates all weak pointers. Must be called on the UI thread.
+  void Shutdown();
+
+  // Gets a weak pointer to be used on the UI thread.
+  base::WeakPtr<PlatformNotificationServiceProxy> AsWeakPtr();
 
   // Displays a notification with |data| and calls |callback| with the result.
   // This will verify against the given |service_worker_context_| if available.
@@ -84,6 +90,7 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   PlatformNotificationService* notification_service_;
+  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_ui_;
   base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_io_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceProxy);

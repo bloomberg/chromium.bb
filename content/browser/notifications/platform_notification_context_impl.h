@@ -272,6 +272,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   NotificationDatabase::UkmCallback ukm_callback_;
 
+  // Flag if the |browser_context_| has been shutdown already.
+  bool has_shutdown_;
+
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };
 

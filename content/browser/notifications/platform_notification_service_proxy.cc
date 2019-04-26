@@ -24,9 +24,20 @@ PlatformNotificationServiceProxy::PlatformNotificationServiceProxy(
       notification_service_(
           GetContentClient()->browser()->GetPlatformNotificationService(
               browser_context)),
+      weak_ptr_factory_ui_(this),
       weak_ptr_factory_io_(this) {}
 
 PlatformNotificationServiceProxy::~PlatformNotificationServiceProxy() = default;
+
+void PlatformNotificationServiceProxy::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  weak_ptr_factory_ui_.InvalidateWeakPtrs();
+}
+
+base::WeakPtr<PlatformNotificationServiceProxy>
+PlatformNotificationServiceProxy::AsWeakPtr() {
+  return weak_ptr_factory_ui_.GetWeakPtr();
+}
 
 void PlatformNotificationServiceProxy::DoDisplayNotification(
     const NotificationDatabaseData& data,

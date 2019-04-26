@@ -67,7 +67,8 @@ PlatformNotificationContextImpl::PlatformNotificationContextImpl(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : path_(path),
       browser_context_(browser_context),
-      service_worker_context_(service_worker_context) {
+      service_worker_context_(service_worker_context),
+      has_shutdown_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -109,6 +110,10 @@ void PlatformNotificationContextImpl::DidGetNotifications(
     std::set<std::string> displayed_notifications,
     bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Abort if the profile has been shut down already. This mainly happens in
+  // tests and very short lived sessions.
+  if (has_shutdown_)
+    return;
 
   // Check if there are pending notifications to display.
   base::Time next_trigger = base::Time::Max();
@@ -189,8 +194,11 @@ void PlatformNotificationContextImpl::DoHandleSyncNotification(
 
 void PlatformNotificationContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  has_shutdown_ = true;
 
-  service_proxy_.reset();
+  if (service_proxy_)
+    service_proxy_->Shutdown();
+
   services_.clear();
 
   // |service_worker_context_| may be NULL in tests.
@@ -267,7 +275,7 @@ void PlatformNotificationContextImpl::CheckPermissionsAndDeleteBlocked(
     std::set<GURL> origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Make sure |browser_context_| is still valid before getting the controller.
-  if (!success || !service_proxy_) {
+  if (!success || !service_proxy_ || has_shutdown_) {
     std::move(callback).Run(/* success= */ false, /* deleted_count= */ 0);
     return;
   }
