@@ -92,7 +92,7 @@ public class WebappActivity extends SingleTabActivity {
 
     private WebappInfo mWebappInfo;
 
-    private WebappSplashScreenController mSplashController;
+    private SplashController mSplashController;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
@@ -135,7 +135,7 @@ public class WebappActivity extends SingleTabActivity {
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
-        mSplashController = new WebappSplashScreenController();
+        mSplashController = new SplashController();
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 

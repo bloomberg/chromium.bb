@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.tab.Tab;
 
-/** Delegate for {@link SplashScreenController}. */
-interface WebappSplashDelegate {
+/** Delegate for {@link SplashController}. */
+interface SplashDelegate {
     /** Shows the splash screen. */
     void showSplash(ViewGroup parentView, WebappInfo webappInfo);
 
@@ -28,12 +28,6 @@ interface WebappSplashDelegate {
      */
     ViewGroup getSplashViewIfChildOf(ViewGroup parent);
 
-    /** Returns whether the WebAPK network error dialog is visible. */
-    boolean isWebApkNetworkErrorDialogVisible();
-
-    /** Shows the WebAPK network error dialog. */
-    void showWebApkNetworkErrorDialog(String errorMsg);
-
-    /** Hides the WebAPK network error dialog. */
-    void hideWebApkNetworkErrorDialog();
+    /** Returns whether to wait for a subsequent page load to hide the splash screen. */
+    boolean shouldWaitForSubsequentPageLoadToHideSplash();
 }

@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Shows and hides splash screen. */
-public class WebappSplashScreenController extends EmptyTabObserver {
+public class SplashController extends EmptyTabObserver {
     // SplashHidesReason defined in tools/metrics/histograms/enums.xml.
     @IntDef({SplashHidesReason.PAINT, SplashHidesReason.LOAD_FINISHED,
             SplashHidesReason.LOAD_FAILED, SplashHidesReason.CRASH})
@@ -36,7 +36,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
     public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
-    private WebappSplashDelegate mDelegate;
+    private SplashDelegate mDelegate;
 
     /** Used to schedule splash screen hiding. */
     private CompositorViewHolder mCompositorViewHolder;
@@ -49,7 +49,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
 
     private ObserverList<SplashscreenObserver> mObservers;
 
-    public WebappSplashScreenController() {
+    public SplashController() {
         mObservers = new ObserverList<>();
     }
 
@@ -116,7 +116,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     protected boolean canHideSplashScreen() {
-        return !mDelegate.isWebApkNetworkErrorDialogVisible();
+        return !mDelegate.shouldWaitForSubsequentPageLoadToHideSplash();
     }
 
     /** Hides the splash screen. */
@@ -126,7 +126,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         final Runnable onHiddenCallback = new Runnable() {
             @Override
             public void run() {
-                tab.removeObserver(WebappSplashScreenController.this);
+                tab.removeObserver(SplashController.this);
                 mCompositorViewHolder = null;
                 mDelegate = null;
 

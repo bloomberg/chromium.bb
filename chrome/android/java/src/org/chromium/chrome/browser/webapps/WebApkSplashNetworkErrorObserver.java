@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
@@ -23,8 +24,8 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
     // No error.
     public static final int ERROR_OK = 0;
 
-    private WebappSplashDelegate mDelegate;
-
+    private Activity mActivity;
+    private WebApkOfflineDialog mOfflineDialog;
     private String mWebApkName;
 
     private boolean mDidShowNetworkErrorDialog;
@@ -32,9 +33,13 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
     /** Indicates whether reloading is allowed. */
     private boolean mAllowReloads;
 
-    public WebApkSplashNetworkErrorObserver(WebappSplashDelegate delegate, String webApkName) {
-        mDelegate = delegate;
+    public WebApkSplashNetworkErrorObserver(Activity activity, String webApkName) {
+        mActivity = activity;
         mWebApkName = webApkName;
+    }
+
+    public boolean isNetworkErrorDialogVisible() {
+        return mOfflineDialog != null && mOfflineDialog.isShowing();
     }
 
     @Override
@@ -43,7 +48,10 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
 
         switch (navigation.errorCode()) {
             case ERROR_OK:
-                mDelegate.hideWebApkNetworkErrorDialog();
+                if (mOfflineDialog != null) {
+                    mOfflineDialog.cancel();
+                    mOfflineDialog = null;
+                }
                 break;
             case NetError.ERR_NETWORK_CHANGED:
                 onNetworkChanged(tab);
@@ -67,8 +75,6 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
     }
 
     private void onNetworkError(final Tab tab, int errorCode) {
-        if (tab.getActivity() == null) return;
-
         // Do not show the network error dialog more than once (e.g. if the user backed out of
         // the dialog).
         if (mDidShowNetworkErrorDialog) return;
@@ -89,7 +95,8 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
                 };
 
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
-        mDelegate.showWebApkNetworkErrorDialog(generateNetworkErrorWebApkDialogMessage(errorCode));
+        mOfflineDialog = new WebApkOfflineDialog();
+        mOfflineDialog.show(mActivity, generateNetworkErrorWebApkDialogMessage(errorCode));
     }
 
     /** Generates network error dialog message for the given error code. */

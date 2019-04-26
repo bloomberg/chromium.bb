@@ -26,7 +26,7 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
  * Delegate for when splash screen is shown by Chrome (as opposed to by external non-Chrome
  * activity).
  */
-public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
+public class SameActivityWebappSplashDelegate implements SplashDelegate {
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
 
@@ -45,8 +45,6 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     private SameActivityWebappUmaCache mUmaCache;
 
     private WebApkSplashNetworkErrorObserver mWebApkNetworkErrorObserver;
-
-    private WebApkOfflineDialog mWebApkOfflineDialog;
 
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
         private final View mView;
@@ -114,7 +112,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
         mTab = tab;
         if (mWebappInfo.isForWebApk()) {
             mWebApkNetworkErrorObserver =
-                    new WebApkSplashNetworkErrorObserver(this, mWebappInfo.name());
+                    new WebApkSplashNetworkErrorObserver(tab.getActivity(), mWebappInfo.name());
             mTab.addObserver(mWebApkNetworkErrorObserver);
         }
         if (mUmaCache != null) mUmaCache.commitMetrics();
@@ -154,21 +152,9 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
     }
 
     @Override
-    public boolean isWebApkNetworkErrorDialogVisible() {
-        return mWebApkOfflineDialog != null && mWebApkOfflineDialog.isShowing();
-    }
-
-    @Override
-    public void showWebApkNetworkErrorDialog(String errorMsg) {
-        mWebApkOfflineDialog = new WebApkOfflineDialog();
-        mWebApkOfflineDialog.show(mTab.getActivity(), errorMsg);
-    }
-
-    @Override
-    public void hideWebApkNetworkErrorDialog() {
-        if (mWebApkOfflineDialog == null) return;
-        mWebApkOfflineDialog.cancel();
-        mWebApkOfflineDialog = null;
+    public boolean shouldWaitForSubsequentPageLoadToHideSplash() {
+        return mWebApkNetworkErrorObserver != null
+                && mWebApkNetworkErrorObserver.isNetworkErrorDialogVisible();
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
