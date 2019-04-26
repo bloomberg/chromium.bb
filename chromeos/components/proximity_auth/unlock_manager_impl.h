@@ -125,8 +125,9 @@ class UnlockManagerImpl : public UnlockManager,
   // current state of |this| unlock manager.
   void UpdateProximityMonitorState();
 
-  // Sets waking up state.
-  void SetWakingUpState(bool is_waking_up);
+  // Sets if the "initial scan" is in progress. This state factors into what is
+  // shown to the user. See |is_performing_initial_scan_| for more.
+  void SetIsPerformingInitialScan(bool is_performing_initial_scan);
 
   // Accepts or rejects the current auth attempt according to |error|. Accepts
   // if and only if |error| is empty. If the auth attempt is accepted, unlocks
@@ -135,8 +136,9 @@ class UnlockManagerImpl : public UnlockManager,
       const base::Optional<
           SmartLockMetricsRecorder::SmartLockAuthResultFailureReason>& error);
 
-  // Failed to create a connection to the host.
-  void OnConnectionAttemptTimeOut();
+  // Failed to create a connection to the host during the "initial scan". See
+  // |is_performing_initial_scan_| for more.
+  void OnInitialScanTimeout();
 
   // Returns the screen lock state corresponding to the given remote |status|
   // update.
@@ -180,8 +182,14 @@ class UnlockManagerImpl : public UnlockManager,
   // attempt, which is initiated when the user pod is clicked.
   bool is_attempting_auth_;
 
-  // Whether the system is waking up from sleep.
-  bool is_waking_up_;
+  // If true, either the lock screen was just shown (after resuming from
+  // suspend, or directly locking the screen), or the focused user pod was
+  // switched. It becomes false if the phone is found, something goes wrong
+  // while searching for the phone, or the initial scan times out (at which
+  // point the user visually sees an indication that the phone cannot be found).
+  // Though this field becomes false after this timeout, Smart Lock continues
+  // to scan for the phone until the user unlocks the screen.
+  bool is_performing_initial_scan_;
 
   // The Bluetooth adapter. Null if there is no adapter present on the local
   // device.
@@ -204,9 +212,10 @@ class UnlockManagerImpl : public UnlockManager,
   // RemoteDeviceLifeCycle, and begins to try to fetch its "remote status".
   base::Time attempt_get_remote_status_start_time_;
 
-  // Used to clear the waking up state after a timeout.
+  // Used to track if the "initial scan" has timed out. See
+  // |is_performing_initial_scan_| for more.
   base::WeakPtrFactory<UnlockManagerImpl>
-      clear_waking_up_state_weak_ptr_factory_;
+      initial_scan_timeout_weak_ptr_factory_;
 
   // Used to reject auth attempts after a timeout. An in-progress auth attempt
   // blocks the sign-in screen UI, so it's important to prevent the auth attempt
