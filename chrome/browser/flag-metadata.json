@@ -1476,6 +1476,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-process-sharing-with-strict-site-instances",
+    "owners": [ "japhet" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

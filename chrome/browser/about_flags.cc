@@ -1644,6 +1644,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
+    {"enable-process-sharing-with-strict-site-instances",
+     flag_descriptions::kProcessSharingWithStrictSiteInstancesName,
+     flag_descriptions::kProcessSharingWithStrictSiteInstancesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kProcessSharingWithStrictSiteInstances)},
 #endif
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,

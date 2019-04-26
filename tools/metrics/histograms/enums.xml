@@ -32405,6 +32405,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
   <int value="-1903365454" label="SyncPseudoUSSPreferences:disabled"/>
   <int value="-1899715534" label="GamepadPollingInterval:enabled"/>
+  <int value="-1899409297"
+      label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1893668420"
@@ -35003,6 +35005,8 @@ from previous Chrome versions.
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2134480727" label="MediaSessionAccelerators:disabled"/>
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
+  <int value="2137113620"
+      label="ProcessSharingWithStrictSiteInstances:enabled"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2138146331" label="OmniboxVoiceSearchAlwaysVisible:enabled"/>
