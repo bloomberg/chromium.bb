@@ -104,12 +104,13 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     container_border_box_logical_height = container->LogicalHeight();
   }
 
-  container_builder.SetInlineSize(container_border_box_logical_width);
-  container_builder.SetBlockSize(container_border_box_logical_height);
-  container_builder.SetBorders(
-      ComputeBorders(constraint_space, container_node));
-  container_builder.SetPadding(
-      ComputePadding(constraint_space, *container_style));
+  NGFragmentGeometry fragment_geometry;
+  fragment_geometry.border_box_size = {container_border_box_logical_width,
+                                       container_border_box_logical_height};
+  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
+  fragment_geometry.padding =
+      ComputePadding(constraint_space, *container_style);
+  container_builder.SetInitialFragmentGeometry(fragment_geometry);
 
   NGStaticPosition static_position =
       LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);

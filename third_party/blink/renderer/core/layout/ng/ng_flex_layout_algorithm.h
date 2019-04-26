@@ -23,6 +23,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                                NGBlockBreakToken> {
  public:
   NGFlexLayoutAlgorithm(NGBlockNode,
+                        const NGFragmentGeometry&,
                         const NGConstraintSpace&,
                         const NGBreakToken*);
 
@@ -45,10 +46,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // not reimplement.
   bool IsMultiline() const;
 
-  const NGBoxStrut border_scrollbar_padding_;
-  const NGBoxStrut borders_;
-  const NGBoxStrut padding_;
   const NGBoxStrut border_padding_;
+  const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;
   LogicalSize border_box_size_;
   LogicalSize content_box_size_;

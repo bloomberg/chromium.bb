@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 
@@ -34,9 +35,11 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
   NGBlockNode node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
 
   scoped_refptr<const NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, space).Layout();
+      NGBlockLayoutAlgorithm(node, fragment_geometry, space).Layout();
   return std::make_pair(To<NGPhysicalBoxFragment>(result->PhysicalFragment()),
                         std::move(space));
 }

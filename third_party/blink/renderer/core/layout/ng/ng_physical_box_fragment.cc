@@ -59,10 +59,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               : kFragmentBox,
           builder->BoxType()),
       baselines_(builder->baselines_),
-      borders_(builder->borders_.ConvertToPhysical(builder->GetWritingMode(),
-                                                   builder->Direction())),
-      padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
-                                                   builder->Direction())) {
+      borders_(builder->initial_fragment_geometry_->border.ConvertToPhysical(
+          builder->GetWritingMode(),
+          builder->Direction())),
+      padding_(builder->initial_fragment_geometry_->padding.ConvertToPhysical(
+          builder->GetWritingMode(),
+          builder->Direction())) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;

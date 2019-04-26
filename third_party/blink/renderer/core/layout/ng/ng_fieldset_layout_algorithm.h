@@ -21,8 +21,9 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFieldsetLayoutAlgorithm(NGBlockNode node,
-                            const NGConstraintSpace& space,
+  NGFieldsetLayoutAlgorithm(NGBlockNode,
+                            const NGFragmentGeometry& fragment_geometry,
+                            const NGConstraintSpace&,
                             const NGBreakToken* break_token = nullptr);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
@@ -35,6 +36,8 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       LogicalSize available_size);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
       LogicalSize padding_box_size);
+
+  const NGBoxStrut border_padding_;
 };
 
 }  // namespace blink

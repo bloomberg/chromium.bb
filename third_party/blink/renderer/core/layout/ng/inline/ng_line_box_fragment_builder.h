@@ -45,6 +45,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     return metrics_.LineHeight().ClampNegativeToZero();
   }
 
+  void SetInlineSize(LayoutUnit inline_size) {
+    size_.inline_size = inline_size;
+  }
+
   // Mark this line box is an "empty" line box. See NGLineBoxType.
   void SetIsEmptyLineBox();
 

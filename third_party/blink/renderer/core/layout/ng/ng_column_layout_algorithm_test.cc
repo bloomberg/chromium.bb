@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_column_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
@@ -30,8 +31,10 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       const NGConstraintSpace& space,
       NGBlockNode node) {
+    NGFragmentGeometry fragment_geometry =
+        CalculateInitialFragmentGeometry(space, node);
     scoped_refptr<const NGLayoutResult> result =
-        NGBlockLayoutAlgorithm(node, space).Layout();
+        NGBlockLayoutAlgorithm(node, fragment_geometry, space).Layout();
 
     return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   }
@@ -1986,7 +1989,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize));
-  NGColumnLayoutAlgorithm algorithm(node, space);
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
+  NGColumnLayoutAlgorithm algorithm(node, fragment_geometry, space);
   base::Optional<MinMaxSize> size;
   MinMaxSizeInput zero_input(
       /* percentage_resolution_block_size */ (LayoutUnit()));

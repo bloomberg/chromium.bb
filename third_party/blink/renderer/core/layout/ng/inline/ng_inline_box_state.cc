@@ -572,10 +572,18 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   DCHECK(item);
   DCHECK(item->Style());
   const ComputedStyle& style = *item->Style();
+
+  NGFragmentGeometry fragment_geometry;
+  fragment_geometry.border_box_size = size;
+  fragment_geometry.border_box_size.inline_size.ClampNegativeToZero();
+  fragment_geometry.padding =
+      NGBoxStrut(padding, IsFlippedLinesWritingMode(style.GetWritingMode()));
+
   // Because children are already in the visual order, use LTR for the
   // fragment builder so that it should not transform the coordinates for RTL.
   NGBoxFragmentBuilder box(item->GetLayoutObject(), &style,
                            style.GetWritingMode(), TextDirection::kLtr);
+  box.SetInitialFragmentGeometry(fragment_geometry);
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
   box.SetStyleVariant(item->StyleVariant());
 
@@ -583,9 +591,6 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // was fragmented. Fragmenting a line box in block direction is not
   // supported today.
   box.SetBorderEdges({true, has_line_right_edge, true, has_line_left_edge});
-  box.SetInlineSize(size.inline_size.ClampNegativeToZero());
-  box.SetBlockSize(size.block_size);
-  box.SetPadding(padding);
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];

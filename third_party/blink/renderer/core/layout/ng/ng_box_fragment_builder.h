@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
@@ -56,30 +57,34 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
+  NGBoxFragmentBuilder& SetInitialFragmentGeometry(
+      const NGFragmentGeometry& initial_fragment_geometry) {
+    initial_fragment_geometry_ = &initial_fragment_geometry;
+    size_ = initial_fragment_geometry_->border_box_size;
+    return *this;
+  }
+
   NGBoxFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
     return *this;
   }
-  NGBoxFragmentBuilder& SetBorders(const NGBoxStrut& border) {
+  const NGBoxStrut& Borders() const {
+    DCHECK(initial_fragment_geometry_);
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-    borders_ = border;
-    return *this;
+    return initial_fragment_geometry_->border;
   }
-  const NGBoxStrut& Borders() const { return borders_; }
-  NGBoxFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
-    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-    padding_ = padding;
-    return *this;
+  const NGBoxStrut& Scrollbar() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->scrollbar;
   }
-  NGBoxFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
-    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
-    // Convert to flow-relative, because ToInlineBoxFragment() will convert
-    // the padding to physical coordinates using flow-relative writing-mode.
-    padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
-    return *this;
+  const NGBoxStrut& Padding() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->padding;
   }
-  const NGBoxStrut& Padding() const { return padding_; }
-
+  const LogicalSize& InitialBorderBoxSize() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->border_box_size;
+  }
   // Remove all children.
   void RemoveChildren();
 
@@ -227,9 +232,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
  private:
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
+  const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
   LayoutUnit intrinsic_block_size_;
-  NGBoxStrut borders_;
-  NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;

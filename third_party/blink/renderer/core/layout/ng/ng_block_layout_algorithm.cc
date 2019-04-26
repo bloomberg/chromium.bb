@@ -165,12 +165,16 @@ void StopMarginCollapsing(EMarginCollapse collapse_value,
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGBlockNode node,
+    const NGFragmentGeometry& fragment_geometry,
     const NGConstraintSpace& space,
     const NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
+      border_padding_(fragment_geometry.border + fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar),
       is_resuming_(IsResumingLayout(break_token)),
       exclusion_space_(space.ExclusionSpace()) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
 }
 
 // Define the destructor here, so that we can forward-declare more in the
@@ -183,22 +187,18 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 
 base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
-                              ComputePadding(ConstraintSpace(), Style());
   MinMaxSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
   if (node_.ShouldApplySizeContainment()) {
-    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize) {
-      sizes =
-          border_padding.InlineSum() + Node().GetScrollbarSizes().InlineSum();
-    }
+    if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
+      sizes = border_scrollbar_padding_.InlineSum();
     return sizes;
   }
 
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
-          ConstraintSpace(), Node(), border_padding,
+          ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
 
   const TextDirection direction = Style().Direction();
@@ -324,7 +324,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
   if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    sizes += border_padding.InlineSum() + node_.GetScrollbarSizes().InlineSum();
+    sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 
@@ -369,33 +369,9 @@ NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     NGInlineChildLayoutContext* inline_child_layout_context) {
-  container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Node()));
-  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
-  border_padding_ = container_builder_.Borders() + container_builder_.Padding();
-
-  NGBoxStrut scrollbars = Node().GetScrollbarSizes();
-  border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
-                                  ? NGBoxStrut()
-                                  : border_padding_ + scrollbars;
-  LogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), border_padding_,
-      CalculateDefaultBlockSize(ConstraintSpace(), Node(),
-                                border_scrollbar_padding_));
-
+  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
-
-  // When the content box is smaller than the scrollbar, clamp the scrollbar.
-  if (UNLIKELY(!child_available_size_.inline_size && scrollbars.InlineSum() &&
-               ClampScrollbarToContentBox(
-                   &scrollbars,
-                   border_box_size.inline_size - border_padding_.InlineSum()) &&
-               !ConstraintSpace().IsAnonymous())) {
-    // Re-compute dependent values if scrollbar size was clamped.
-    border_scrollbar_padding_ = border_padding_ + scrollbars;
-    child_available_size_ =
-        ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
-  }
 
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), child_available_size_);
@@ -405,13 +381,11 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
   // All of the above calculations with border_scrollbar_padding_ shouldn't
   // include the table cell's intrinsic padding. We can now add this.
-  NGBoxStrut intrinsic_padding =
+  border_scrollbar_padding_ +=
       ComputeIntrinsicPadding(ConstraintSpace(), Node());
-  border_scrollbar_padding_ += intrinsic_padding;
 
   if (ConstraintSpace().HasBlockFragmentation())
     container_builder_.SetHasBlockFragmentation();
-  container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
 
@@ -572,7 +546,8 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // function is continued within |FinishLayout|. However it should be read as
   // one function.
   return FinishLayout(&previous_inflow_position, border_box_size,
-                      container_builder_.Borders(), scrollbars);
+                      container_builder_.Borders(),
+                      container_builder_.Scrollbar());
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(

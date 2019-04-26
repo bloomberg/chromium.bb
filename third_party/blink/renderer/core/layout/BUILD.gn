@@ -315,6 +315,7 @@ blink_core_sources("layout") {
     "ng/geometry/ng_border_edges.h",
     "ng/geometry/ng_box_strut.cc",
     "ng/geometry/ng_box_strut.h",
+    "ng/geometry/ng_fragment_geometry.h",
     "ng/geometry/ng_margin_strut.cc",
     "ng/geometry/ng_margin_strut.h",
     "ng/geometry/ng_static_position.cc",

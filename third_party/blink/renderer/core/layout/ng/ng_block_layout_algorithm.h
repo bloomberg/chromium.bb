@@ -56,6 +56,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //              fragment within.
   // @param break_token The break token from which the layout should start.
   NGBlockLayoutAlgorithm(NGBlockNode node,
+                         const NGFragmentGeometry&,
                          const NGConstraintSpace& space,
                          const NGBlockBreakToken* break_token = nullptr);
 
@@ -299,12 +300,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Returns kIndefiniteSize in all other cases.
   LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
 
+  const NGBoxStrut border_padding_;
+  NGBoxStrut border_scrollbar_padding_;
+
   LogicalSize child_available_size_;
   LogicalSize child_percentage_size_;
   LogicalSize replaced_child_percentage_size_;
 
-  NGBoxStrut border_padding_;
-  NGBoxStrut border_scrollbar_padding_;
   LayoutUnit intrinsic_block_size_;
 
   // The line box index at which we ran out of space. This where we'll actually

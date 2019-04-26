@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors.All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -957,6 +957,30 @@ LayoutUnit InlineOffsetForTextAlign(const ComputedStyle& container_style,
   return IsLtr(direction) ? line_offset : space_left - line_offset;
 }
 
+namespace {
+
+// Calculates default content size for html and body elements in quirks mode.
+// Returns |kIndefiniteSize| in all other cases.
+LayoutUnit CalculateDefaultBlockSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode& node,
+    const NGBoxStrut& border_scrollbar_padding) {
+  // In quirks mode, html and body elements will completely fill the ICB, block
+  // percentages should resolve against this size.
+  if (node.IsQuirkyAndFillsViewport()) {
+    LayoutUnit block_size = space.AvailableSize().block_size;
+    block_size -= ComputeMarginsForSelf(space, node.Style()).BlockSum();
+    return std::max(block_size.ClampNegativeToZero(),
+                    border_scrollbar_padding.BlockSum());
+  }
+  return kIndefiniteSize;
+}
+
+// Clamp the inline size of the scrollbar, unless it's larger than the inline
+// size of the content box, in which case we'll return that instead. Scrollbar
+// handling is quite bad in such situations, and this method here is just to
+// make sure that left-hand scrollbars don't mess up scrollWidth. For the full
+// story, visit http://crbug.com/724255.
 bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
                                 LayoutUnit content_box_inline_size) {
   DCHECK(scrollbars->InlineSum());
@@ -972,41 +996,58 @@ bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
   return true;
 }
 
-NGBoxStrut CalculateBorderScrollbarPadding(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode node) {
-  // If we are producing an anonymous fragment (e.g. a column), it has no
-  // borders, padding or scrollbars. Using the ones from the container can only
-  // cause trouble.
-  if (constraint_space.IsAnonymous())
-    return NGBoxStrut();
-  return ComputeBorders(constraint_space, node) +
-         ComputePadding(constraint_space, node.Style()) +
-         ComputeIntrinsicPadding(constraint_space, node) +
-         node.GetScrollbarSizes();
-}
+}  // namespace
 
-LogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
-                                   const NGBlockNode& node,
-                                   const NGBoxStrut& border_padding,
-                                   LayoutUnit block_content_size) {
+NGFragmentGeometry CalculateInitialFragmentGeometry(
+    const NGConstraintSpace& constraint_space,
+    const NGBlockNode& node) {
+  const ComputedStyle& style = node.Style();
+
+  NGBoxStrut border = ComputeBorders(constraint_space, node);
+  NGBoxStrut padding = ComputePadding(constraint_space, style);
+  NGBoxStrut scrollbar =
+      constraint_space.IsAnonymous() ? NGBoxStrut() : node.GetScrollbarSizes();
+  NGBoxStrut border_padding = border + padding;
+  NGBoxStrut border_scrollbar_padding = border_padding + scrollbar;
+
   // If we have a percentage size, we need to set the
-  // HasPercentHeightDescendants flag correctly so that flexboz knows it may
+  // HasPercentHeightDescendants flag correctly so that flexbox knows it may
   // need to redo layout and can also do some performance optimizations.
-  if (node.Style().LogicalHeight().IsPercentOrCalc() ||
-      node.Style().LogicalMinHeight().IsPercentOrCalc() ||
-      node.Style().LogicalMaxHeight().IsPercentOrCalc() ||
-      (node.GetLayoutBox()->IsFlexItemIncludingNG() &&
-       node.Style().FlexBasis().IsPercentOrCalc())) {
+  if (style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc() ||
+      (node.IsFlexItem() && style.FlexBasis().IsPercentOrCalc())) {
     // This call has the side-effect of setting HasPercentHeightDescendants
     // correctly.
     node.GetLayoutBox()->ComputePercentageLogicalHeight(Length::Percent(0));
   }
 
-  return LogicalSize(
+  LayoutUnit default_block_size = CalculateDefaultBlockSize(
+      constraint_space, node, border_scrollbar_padding);
+  LogicalSize border_box_size(
       ComputeInlineSizeForFragment(constraint_space, node, border_padding),
       ComputeBlockSizeForFragment(constraint_space, node.Style(),
-                                  border_padding, block_content_size));
+                                  border_padding, default_block_size));
+
+  if (UNLIKELY(border_box_size.inline_size <
+                   border_scrollbar_padding.InlineSum() &&
+               scrollbar.InlineSum() && !constraint_space.IsAnonymous())) {
+    ClampScrollbarToContentBox(
+        &scrollbar, border_box_size.inline_size - border_padding.InlineSum());
+  }
+
+  return {border_box_size, border, scrollbar, padding};
+}
+
+NGFragmentGeometry CalculateInitialMinMaxFragmentGeometry(
+    const NGConstraintSpace& constraint_space,
+    const NGBlockNode& node) {
+  NGBoxStrut border = ComputeBorders(constraint_space, node);
+  NGBoxStrut padding = ComputePadding(constraint_space, node.Style());
+  NGBoxStrut scrollbar =
+      constraint_space.IsAnonymous() ? NGBoxStrut() : node.GetScrollbarSizes();
+
+  return {/* border_box_size */ LogicalSize(), border, scrollbar, padding};
 }
 
 LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset) {
@@ -1020,21 +1061,6 @@ LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset) {
   }
 
   return size;
-}
-
-LayoutUnit CalculateDefaultBlockSize(
-    const NGConstraintSpace& space,
-    const NGBlockNode& node,
-    const NGBoxStrut& border_scrollbar_padding) {
-  // In quirks mode, html and body elements will completely fill the ICB, block
-  // percentages should resolve against this size.
-  if (node.IsQuirkyAndFillsViewport()) {
-    LayoutUnit block_size = space.AvailableSize().block_size;
-    block_size -= ComputeMarginsForSelf(space, node.Style()).BlockSum();
-    return std::max(block_size.ClampNegativeToZero(),
-                    border_scrollbar_padding.BlockSum());
-  }
-  return kIndefiniteSize;
 }
 
 namespace {

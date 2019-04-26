@@ -19,17 +19,17 @@
 
 namespace blink {
 
-NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(NGBlockNode node,
-                                             const NGConstraintSpace& space,
-                                             const NGBreakToken* break_token)
+NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
+    NGBlockNode node,
+    const NGFragmentGeometry& fragment_geometry,
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
-      border_scrollbar_padding_(
-          CalculateBorderScrollbarPadding(ConstraintSpace(), Node())),
-      borders_(ComputeBorders(ConstraintSpace(), Node())),
-      padding_(ComputePadding(ConstraintSpace(), Style())),
-      border_padding_(borders_ + padding_),
+      border_padding_(fragment_geometry.border + fragment_geometry.padding),
+      border_scrollbar_padding_(border_padding_ + fragment_geometry.scrollbar),
       is_column_(Style().IsColumnFlexDirection()) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+  container_builder_.SetInitialFragmentGeometry(fragment_geometry);
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(NGBlockNode child) {
@@ -243,8 +243,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
-  border_box_size_ =
-      CalculateBorderBoxSize(ConstraintSpace(), Node(), border_padding_);
+  border_box_size_ = container_builder_.InitialBorderBoxSize();
   content_box_size_ =
       ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
 
@@ -320,18 +319,16 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
 
   container_builder_.SetBlockSize(block_size);
-  container_builder_.SetInlineSize(border_box_size_.inline_size);
-  container_builder_.SetBorders(borders_);
-  container_builder_.SetPadding(padding_);
   container_builder_.SetIntrinsicBlockSize(
       algorithm_->IntrinsicContentBlockSize() +
       border_scrollbar_padding_.BlockSum());
 
   GiveLinesAndItemsFinalPositionAndSize();
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(),
-                        borders_ + Node().GetScrollbarSizes(),
-                        &container_builder_)
+  NGOutOfFlowLayoutPart(
+      Node(), ConstraintSpace(),
+      container_builder_.Borders() + Node().GetScrollbarSizes(),
+      &container_builder_)
       .Run();
 
   return container_builder_.ToBoxFragment();
@@ -407,7 +404,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
 
   LayoutUnit child_percentage_resolution_block_size =
       CalculateChildPercentageBlockSizeForMinMax(
-          ConstraintSpace(), Node(), borders_ + padding_,
+          ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
 
   // Use default MinMaxSizeInput:

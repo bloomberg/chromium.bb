@@ -22,6 +22,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                                NGBlockBreakToken> {
  public:
   NGColumnLayoutAlgorithm(NGBlockNode node,
+                          const NGFragmentGeometry&,
                           const NGConstraintSpace& space,
                           const NGBreakToken* break_token = nullptr);
 
@@ -43,11 +44,17 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       LayoutUnit current_column_size,
       LayoutUnit container_content_box_block_size) const;
 
+  LayoutUnit ConstrainColumnBlockSize(LayoutUnit size) const;
+
   NGConstraintSpace CreateConstraintSpaceForColumns(
       const LogicalSize& column_size,
       bool separate_leading_margins) const;
-  NGConstraintSpace CreateConstaintSpaceForBalancing(
+  NGConstraintSpace CreateConstraintSpaceForBalancing(
       const LogicalSize& column_size) const;
+  NGConstraintSpace CreateConstraintSpaceForMinMax() const;
+
+  const NGBoxStrut border_padding_;
+  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

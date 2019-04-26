@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -421,37 +422,23 @@ inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
   return std::max(min, std::min(length, max));
 }
 
-// Clamp the inline size of the scrollbar, unless it's larger than the inline
-// size of the content box, in which case we'll return that instead. Scrollbar
-// handling is quite bad in such situations, and this method here is just to
-// make sure that left-hand scrollbars don't mess up scrollWidth. For the full
-// story, visit http://crbug.com/724255.
-bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
-                                LayoutUnit content_box_inline_size);
+// Calculates the initial (pre-layout) fragment geometry given a node, and a
+// constraint space.
+// The "pre-layout" block-size may be indefinite, as we'll only have enough
+// information to determine this post-layout.
+CORE_EXPORT NGFragmentGeometry
+CalculateInitialFragmentGeometry(const NGConstraintSpace&, const NGBlockNode&);
 
-NGBoxStrut CalculateBorderScrollbarPadding(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode node);
-
-// border_padding can be passed in as an optimization; otherwise this function
-// will compute it itself.
-LogicalSize CalculateBorderBoxSize(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode& node,
-    const NGBoxStrut& border_padding,
-    LayoutUnit block_content_size = kIndefiniteSize);
+// Similar to |CalculateInitialFragmentGeometry| however will only calculate
+// the border, scrollbar, and padding (resolving percentages to zero).
+CORE_EXPORT NGFragmentGeometry
+CalculateInitialMinMaxFragmentGeometry(const NGConstraintSpace&,
+                                       const NGBlockNode&);
 
 // Shrink and return the available size by an inset. This may e.g. be used to
 // convert from border-box to content-box size. Indefinite block size is
 // allowed, in which case the inset will be ignored for block size.
 LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
-
-// Calculates default content size for html and body elements in quirks mode.
-// Returns kIndefiniteSize in all other cases.
-LayoutUnit CalculateDefaultBlockSize(
-    const NGConstraintSpace&,
-    const NGBlockNode&,
-    const NGBoxStrut& border_scrollbar_padding);
 
 // Calculates the percentage resolution size that children of the node should
 // use.

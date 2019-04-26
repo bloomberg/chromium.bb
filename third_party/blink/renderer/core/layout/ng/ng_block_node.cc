@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -62,11 +63,16 @@ struct NGLayoutAlgorithmParams {
 
  public:
   NGLayoutAlgorithmParams(NGBlockNode node,
+                          const NGFragmentGeometry& fragment_geometry,
                           const NGConstraintSpace& space,
                           const NGBlockBreakToken* break_token = nullptr)
-      : node(node), space(space), break_token(break_token) {}
+      : node(node),
+        fragment_geometry(fragment_geometry),
+        space(space),
+        break_token(break_token) {}
 
   NGBlockNode node;
+  const NGFragmentGeometry& fragment_geometry;
   const NGConstraintSpace& space;
   const NGBlockBreakToken* break_token;
 };
@@ -77,7 +83,8 @@ struct NGLayoutAlgorithmParams {
 template <typename Algorithm, typename Callback>
 NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
                                     const Callback& callback) {
-  Algorithm algorithm(params.node, params.space, params.break_token);
+  Algorithm algorithm(params.node, params.fragment_geometry, params.space,
+                      params.break_token);
   callback(&algorithm);
 }
 
@@ -155,7 +162,8 @@ void UpdateLegacyMultiColumnFlowThread(
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
     NGFragment logical_fragment(writing_mode, fragment);
     auto border_scrollbar_padding =
-        CalculateBorderScrollbarPadding(constraint_space, node);
+        ComputeBorders(constraint_space, node) + node.GetScrollbarSizes() +
+        ComputePadding(constraint_space, node.Style());
 
     column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
     column_set->SetLogicalTop(border_scrollbar_padding.block_start);
@@ -242,14 +250,15 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
   PrepareForLayout();
 
-  NGBoxStrut old_scrollbars = GetScrollbarSizes();
-
-  NGLayoutAlgorithmParams params(*this, constraint_space,
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(constraint_space, *this);
+  NGLayoutAlgorithmParams params(*this, fragment_geometry, constraint_space,
                                  To<NGBlockBreakToken>(break_token));
   layout_result = LayoutWithAlgorithm(params);
-
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
-  if (old_scrollbars != GetScrollbarSizes()) {
+
+  NGBoxStrut after_layout_scrollbars = GetScrollbarSizes();
+  if (fragment_geometry.scrollbar != after_layout_scrollbars) {
     // If our scrollbars have changed, we need to relayout because either:
     // - Our size has changed (if shrinking to fit), or
     // - Space available to our children has changed.
@@ -266,6 +275,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
                          kMarkOnlyThis);
 
+    fragment_geometry =
+        CalculateInitialFragmentGeometry(constraint_space, *this);
     layout_result = LayoutWithAlgorithm(params);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);
   }
@@ -423,8 +434,11 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return sizes;
   }
 
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
   base::Optional<MinMaxSize> maybe_sizes = ComputeMinMaxSizeWithAlgorithm(
-      NGLayoutAlgorithmParams(*this, *constraint_space), input);
+      NGLayoutAlgorithmParams(*this, fragment_geometry, *constraint_space),
+      input);
 
   if (maybe_sizes.has_value()) {
     if (UNLIKELY(IsHTMLMarqueeElement(box_->GetNode()) &&
@@ -919,21 +933,22 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
       box_->ForceLayout();
 
     // Synthesize a new layout result.
-    LogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
+    NGFragmentGeometry fragment_geometry;
+    fragment_geometry.border_box_size = {box_->LogicalWidth(),
+                                         box_->LogicalHeight()};
+    fragment_geometry.border = {box_->BorderStart(), box_->BorderEnd(),
+                                box_->BorderBefore(), box_->BorderAfter()};
+    fragment_geometry.scrollbar = GetScrollbarSizes();
+    fragment_geometry.padding = {box_->PaddingStart(), box_->PaddingEnd(),
+                                 box_->PaddingBefore(), box_->PaddingAfter()};
+
     // TODO(kojii): Implement use_first_line_style.
     NGBoxFragmentBuilder builder(*this, box_->Style(), &constraint_space,
                                  writing_mode, box_->StyleRef().Direction());
     builder.SetIsNewFormattingContext(
         constraint_space.IsNewFormattingContext());
+    builder.SetInitialFragmentGeometry(fragment_geometry);
     builder.SetIsLegacyLayoutRoot();
-    builder.SetInlineSize(box_size.inline_size);
-    builder.SetBlockSize(box_size.block_size);
-    NGBoxStrut borders(box_->BorderStart(), box_->BorderEnd(),
-                       box_->BorderBefore(), box_->BorderAfter());
-    builder.SetBorders(borders);
-    NGBoxStrut padding(box_->PaddingStart(), box_->PaddingEnd(),
-                       box_->PaddingBefore(), box_->PaddingAfter());
-    builder.SetPadding(padding);
 
     CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();

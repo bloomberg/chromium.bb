@@ -23,6 +23,7 @@ class CORE_EXPORT NGPageLayoutAlgorithm
                                NGBlockBreakToken> {
  public:
   NGPageLayoutAlgorithm(NGBlockNode node,
+                        const NGFragmentGeometry& fragment_geometry,
                         const NGConstraintSpace& space,
                         const NGBreakToken* break_token = nullptr);
 
@@ -34,6 +35,9 @@ class CORE_EXPORT NGPageLayoutAlgorithm
  private:
   NGConstraintSpace CreateConstraintSpaceForPages(
       const LogicalSize& size) const;
+
+  NGBoxStrut border_padding_;
+  NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

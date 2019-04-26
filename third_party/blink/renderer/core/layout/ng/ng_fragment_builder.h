@@ -45,11 +45,6 @@ class CORE_EXPORT NGFragmentBuilder {
   LayoutUnit InlineSize() const { return size_.inline_size; }
   LayoutUnit BlockSize() const { return size_.block_size; }
   const LogicalSize& Size() const { return size_; }
-  NGFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
-    DCHECK_GE(inline_size, LayoutUnit());
-    size_.inline_size = inline_size;
-    return *this;
-  }
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
