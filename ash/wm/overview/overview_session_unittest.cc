@@ -35,6 +35,8 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/rounded_rect_view.h"
+#include "ash/wm/resize_shadow.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -1282,6 +1284,21 @@ TEST_F(OverviewSessionTest, DragDropInProgress) {
   GetEventGenerator()->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(gfx::Rect(30, 30, 100, 100), window->bounds());
+}
+
+// Tests that toggling overview on removes any resize shadows that may have been
+// present.
+TEST_F(OverviewSessionTest, DragWindowShadow) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
+  ::wm::ActivateWindow(window.get());
+  Shell::Get()->resize_shadow_controller()->ShowShadow(window.get(), HTTOP);
+
+  ToggleOverview();
+  ResizeShadow* shadow =
+      Shell::Get()->resize_shadow_controller()->GetShadowForWindowForTest(
+          window.get());
+  ASSERT_TRUE(shadow);
+  EXPECT_FALSE(shadow->GetLayerForTest()->visible());
 }
 
 // Test that a label is created under the window on entering overview mode.
