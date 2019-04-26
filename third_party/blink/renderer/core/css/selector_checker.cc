@@ -770,8 +770,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
           is_empty = false;
           break;
         }
-        if (n->IsTextNode()) {
-          Text* text_node = ToText(n);
+        if (auto* text_node = DynamicTo<Text>(n)) {
           if (!text_node->data().IsEmpty()) {
             if (text_node->ContainsOnlyWhitespaceOrEmpty()) {
               has_whitespace = true;

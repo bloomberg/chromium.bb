@@ -103,7 +103,7 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
 
   GetDocument().body()->SetInnerHTMLFromString("1234");
-  Text* old_text = ToText(GetDocument().body()->firstChild());
+  auto* old_text = To<Text>(GetDocument().body()->firstChild());
 
   Range* range04 = Range::Create(GetDocument(), old_text, 0, old_text, 4);
   Range* range02 = Range::Create(GetDocument(), old_text, 0, old_text, 2);
@@ -111,7 +111,7 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   Range* range24 = Range::Create(GetDocument(), old_text, 2, old_text, 4);
 
   old_text->splitText(2, ASSERT_NO_EXCEPTION);
-  Text* new_text = ToText(old_text->nextSibling());
+  auto* new_text = To<Text>(old_text->nextSibling());
 
   EXPECT_TRUE(range04->BoundaryPointsValid());
   EXPECT_EQ(old_text, range04->startContainer());
@@ -153,7 +153,7 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
       GetDocument().getElementById(AtomicString::FromUTF8("inner-left"));
   Element* inner_right =
       GetDocument().getElementById(AtomicString::FromUTF8("inner-right"));
-  Text* old_text = ToText(outer->childNodes()->item(2));
+  auto* old_text = To<Text>(outer->childNodes()->item(2));
 
   Range* range_outer_outside = Range::Create(GetDocument(), outer, 0, outer, 5);
   Range* range_outer_inside = Range::Create(GetDocument(), outer, 1, outer, 4);
@@ -167,7 +167,7 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
       Range::Create(GetDocument(), old_text, 6, outer, 3);
 
   old_text->splitText(3, ASSERT_NO_EXCEPTION);
-  Text* new_text = ToText(old_text->nextSibling());
+  auto* new_text = To<Text>(old_text->nextSibling());
 
   EXPECT_TRUE(range_outer_outside->BoundaryPointsValid());
   EXPECT_EQ(outer, range_outer_outside->startContainer());
@@ -233,7 +233,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
   Element* div = GetDocument().QuerySelector("div");
   Element* span1 = GetDocument().getElementById("span1");
   Element* span2 = GetDocument().getElementById("span2");
-  Text* text = ToText(div->childNodes()->item(1));
+  auto* text = To<Text>(div->childNodes()->item(1));
 
   Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
 
@@ -255,7 +255,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
   Element* div = GetDocument().QuerySelector("div");
   Element* span1 = GetDocument().getElementById("span1");
   Element* span2 = GetDocument().getElementById("span2");
-  Text* text = ToText(div->childNodes()->item(1));
+  auto* text = To<Text>(div->childNodes()->item(1));
 
   Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
 

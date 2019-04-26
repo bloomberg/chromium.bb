@@ -268,7 +268,7 @@ void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
 void FirstLetterPseudoElement::DetachLayoutTree(const AttachContext& context) {
   if (remaining_text_layout_object_) {
     if (remaining_text_layout_object_->GetNode() && GetDocument().IsActive()) {
-      Text* text_node = ToText(remaining_text_layout_object_->GetNode());
+      auto* text_node = To<Text>(remaining_text_layout_object_->GetNode());
       remaining_text_layout_object_->SetTextFragment(
           text_node->DataImpl(), 0, text_node->DataImpl()->length());
     }

@@ -1422,15 +1422,15 @@ TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_SingleNode) {
 
   UpdateAllLifecyclePhases();
 
-  ToText(t1->firstChild())->setData("");
+  To<Text>(t1->firstChild())->setData("");
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
 
-  ToText(t2->firstChild())->setData("Text");
+  To<Text>(t2->firstChild())->setData("Text");
   EXPECT_TRUE(t2->NeedsStyleInvalidation());
 
   // This is not optimal. We do not detect that we change text to/from
   // non-empty string.
-  ToText(t3->firstChild())->setData("NewText");
+  To<Text>(t3->firstChild())->setData("NewText");
   EXPECT_TRUE(t3->NeedsStyleInvalidation());
 }
 
@@ -1455,13 +1455,13 @@ TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_HasSiblings) {
 
   UpdateAllLifecyclePhases();
 
-  ToText(t1->firstChild())->setData("");
+  To<Text>(t1->firstChild())->setData("");
   EXPECT_FALSE(t1->NeedsStyleInvalidation());
 
-  ToText(t2->lastChild())->setData("Text");
+  To<Text>(t2->lastChild())->setData("Text");
   EXPECT_FALSE(t2->NeedsStyleInvalidation());
 
-  ToText(t3->firstChild())->setData("NewText");
+  To<Text>(t3->firstChild())->setData("NewText");
   EXPECT_FALSE(t3->NeedsStyleInvalidation());
 }
 

@@ -46,7 +46,7 @@ HTMLDocument& StaticRangeTest::GetDocument() const {
 TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
   GetDocument().body()->SetInnerHTMLFromString("1234");
-  Text* old_text = ToText(GetDocument().body()->firstChild());
+  auto* old_text = To<Text>(GetDocument().body()->firstChild());
 
   StaticRange* static_range04 =
       StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);
@@ -63,7 +63,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
   Range* range24 = static_range24->toRange(ASSERT_NO_EXCEPTION);
 
   old_text->splitText(2, ASSERT_NO_EXCEPTION);
-  Text* new_text = ToText(old_text->nextSibling());
+  auto* new_text = To<Text>(old_text->nextSibling());
 
   // Range should mutate.
   EXPECT_TRUE(range04->BoundaryPointsValid());
@@ -126,7 +126,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
       GetDocument().getElementById(AtomicString::FromUTF8("inner-left"));
   Element* inner_right =
       GetDocument().getElementById(AtomicString::FromUTF8("inner-right"));
-  Text* old_text = ToText(outer->childNodes()->item(2));
+  auto* old_text = To<Text>(outer->childNodes()->item(2));
 
   StaticRange* static_range_outer_outside =
       StaticRange::Create(GetDocument(), outer, 0u, outer, 5u);
@@ -155,7 +155,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
       static_range_from_text_to_middle_of_element->toRange(ASSERT_NO_EXCEPTION);
 
   old_text->splitText(3, ASSERT_NO_EXCEPTION);
-  Text* new_text = ToText(old_text->nextSibling());
+  auto* new_text = To<Text>(old_text->nextSibling());
 
   // Range should mutate.
   EXPECT_TRUE(range_outer_outside->BoundaryPointsValid());
@@ -232,7 +232,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
 TEST_F(StaticRangeTest, InvalidToRange) {
   V8TestingScope scope;
   GetDocument().body()->SetInnerHTMLFromString("1234");
-  Text* old_text = ToText(GetDocument().body()->firstChild());
+  auto* old_text = To<Text>(GetDocument().body()->firstChild());
 
   StaticRange* static_range04 =
       StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);

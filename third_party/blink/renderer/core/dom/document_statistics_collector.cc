@@ -48,10 +48,11 @@ unsigned TextContentLengthSaturated(const Element& root) {
   // Given shadow DOM rarely appears in <P> elements in long-form articles, the
   // overall accuracy should not be largely affected.
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
-    if (!node.IsTextNode()) {
+    auto* text_node = DynamicTo<Text>(node);
+    if (!text_node) {
       continue;
     }
-    length += ToText(node).length();
+    length += text_node->length();
     if (length > kTextContentLengthSaturation) {
       return kTextContentLengthSaturation;
     }

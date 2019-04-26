@@ -209,8 +209,8 @@ void CharacterData::SetDataAndUpdate(const String& new_data,
   data_ = new_data;
 
   DCHECK(!GetLayoutObject() || IsTextNode());
-  if (IsTextNode())
-    ToText(this)->UpdateTextLayoutObject(offset_of_replaced_data, old_length);
+  if (auto* text_node = DynamicTo<Text>(this))
+    text_node->UpdateTextLayoutObject(offset_of_replaced_data, old_length);
 
   if (source != kUpdateFromParser) {
     if (getNodeType() == kProcessingInstructionNode)

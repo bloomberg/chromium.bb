@@ -1399,8 +1399,8 @@ void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
     if (!change.TraverseChild(*child))
       continue;
-    if (child->IsTextNode())
-      ToText(child)->RecalcTextStyle(change);
+    if (auto* child_text_node = DynamicTo<Text>(child))
+      child_text_node->RecalcTextStyle(change);
     else if (child->IsElementNode())
       ToElement(child)->RecalcStyle(change);
   }
@@ -1409,12 +1409,11 @@ void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
 void ContainerNode::RebuildLayoutTreeForChild(
     Node* child,
     WhitespaceAttacher& whitespace_attacher) {
-  if (child->IsTextNode()) {
-    Text* text_node = ToText(child);
+  if (auto* child_text_node = DynamicTo<Text>(child)) {
     if (child->NeedsReattachLayoutTree())
-      text_node->RebuildTextLayoutTree(whitespace_attacher);
+      child_text_node->RebuildTextLayoutTree(whitespace_attacher);
     else
-      whitespace_attacher.DidVisitText(text_node);
+      whitespace_attacher.DidVisitText(child_text_node);
     return;
   }
 

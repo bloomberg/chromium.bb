@@ -874,7 +874,7 @@ void Node::normalize() {
       break;
 
     if (node->getNodeType() == kTextNode)
-      node = ToText(node)->MergeNextSiblingNodesIfPossible();
+      node = To<Text>(node)->MergeNextSiblingNodesIfPossible();
     else
       node = NodeTraversal::NextPostOrder(*node);
   }
@@ -1814,8 +1814,8 @@ String Node::textContent(bool convert_brs_to_newlines) const {
   for (const Node& node : NodeTraversal::InclusiveDescendantsOf(*this)) {
     if (IsHTMLBRElement(node) && convert_brs_to_newlines) {
       content.Append('\n');
-    } else if (node.IsTextNode()) {
-      content.Append(ToText(node).data());
+    } else if (auto* text_node = DynamicTo<Text>(node)) {
+      content.Append(text_node->data());
     }
   }
   return content.ToString();
@@ -1856,7 +1856,7 @@ void Node::setTextContent(const String& text) {
       // See crbug.com/352836 also.
       // No need to do anything if the text is identical.
       if (container->HasOneTextChild() &&
-          ToText(container->firstChild())->data() == text && !text.IsEmpty())
+          To<Text>(container->firstChild())->data() == text && !text.IsEmpty())
         return;
 
       ChildListMutationScope mutation(*this);
@@ -2356,8 +2356,8 @@ void Node::DidMoveToNewDocument(Document& old_document) {
         GetDocument().AddListenerTypeIfNeeded(type, *this);
     }
   }
-  if (IsTextNode())
-    old_document.Markers().RemoveMarkersForNode(*ToText(this));
+  if (auto* text_node = DynamicTo<Text>(this))
+    old_document.Markers().RemoveMarkersForNode(*text_node);
   if (GetDocument().GetPage() &&
       GetDocument().GetPage() != old_document.GetPage()) {
     GetDocument().GetFrame()->GetEventHandlerRegistry().DidMoveIntoPage(*this);

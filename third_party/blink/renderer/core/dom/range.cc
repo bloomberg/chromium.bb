@@ -910,7 +910,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
   // splitting it with offset range’s start offset.
   if (start_is_text) {
     reference_node =
-        ToText(start_node).splitText(start_.Offset(), exception_state);
+        To<Text>(start_node).splitText(start_.Offset(), exception_state);
     if (exception_state.HadException())
       return;
   }
@@ -1703,9 +1703,10 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
       continue;
     }
 
-    if (!node->IsTextNode())
+    auto* const text_node = DynamicTo<Text>(node);
+    if (!text_node)
       continue;
-    LayoutText* const layout_text = ToText(node)->GetLayoutObject();
+    LayoutText* const layout_text = text_node->GetLayoutObject();
     if (!layout_text)
       continue;
 

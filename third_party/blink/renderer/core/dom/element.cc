@@ -3028,7 +3028,8 @@ bool HasSiblingsForNonEmpty(const Node* sibling,
   for (; sibling; sibling = next_func(*sibling)) {
     if (sibling->IsElementNode())
       return true;
-    if (sibling->IsTextNode() && !ToText(sibling)->data().IsEmpty())
+    auto* text_node = DynamicTo<Text>(sibling);
+    if (text_node && !text_node->data().IsEmpty())
       return true;
   }
   return false;
@@ -3770,12 +3771,21 @@ void Element::SetOuterHTMLFromString(const String& html,
     return;
 
   parent->ReplaceChild(fragment, this, exception_state);
-  Node* node = next ? next->previousSibling() : nullptr;
-  if (!exception_state.HadException() && node && node->IsTextNode())
-    MergeWithNextTextNode(ToText(node), exception_state);
+  if (exception_state.HadException())
+    return;
 
-  if (!exception_state.HadException() && prev && prev->IsTextNode())
-    MergeWithNextTextNode(ToText(prev), exception_state);
+  Node* node = next ? next->previousSibling() : nullptr;
+  if (auto* text = DynamicTo<Text>(node)) {
+    MergeWithNextTextNode(text, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
+
+  if (auto* prev_text = DynamicTo<Text>(prev)) {
+    MergeWithNextTextNode(prev_text, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
 }
 
 void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
@@ -4002,14 +4012,14 @@ String Element::TextFromChildren() {
   unsigned total_length = 0;
 
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
-    if (!child->IsTextNode())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (!child_text_node)
       continue;
-    Text* text = ToText(child);
     if (!first_text_node)
-      first_text_node = text;
+      first_text_node = child_text_node;
     else
       found_multiple_text_nodes = true;
-    unsigned length = text->data().length();
+    unsigned length = child_text_node->data().length();
     if (length > std::numeric_limits<unsigned>::max() - total_length)
       return g_empty_string;
     total_length += length;
@@ -4026,9 +4036,10 @@ String Element::TextFromChildren() {
   StringBuilder content;
   content.ReserveCapacity(total_length);
   for (Node* child = first_text_node; child; child = child->nextSibling()) {
-    if (!child->IsTextNode())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (!child_text_node)
       continue;
-    content.Append(ToText(child)->data());
+    content.Append(child_text_node->data());
   }
 
   DCHECK_EQ(content.length(), total_length);

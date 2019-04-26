@@ -69,7 +69,7 @@ Node* Text::MergeNextSiblingNodesIfPossible() {
     if (next_sibling->getNodeType() != kTextNode)
       break;
 
-    Text* next_text = ToText(next_sibling);
+    auto* next_text = To<Text>(next_sibling);
 
     // Remove empty text nodes.
     if (!next_text->length()) {
