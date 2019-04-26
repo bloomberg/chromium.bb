@@ -4,11 +4,11 @@
     <title>
       Test Constructor: MediaStreamAudioDestinationNode
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
-    <script src="../resources/audionodeoptions.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit-util.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
+    <script src="/webaudio/resources/audionodeoptions.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -36,7 +36,7 @@
             should, 'MediaStreamAudioDestinationNode', context, {
               prefix: prefix,
               numberOfInputs: 1,
-              numberOfOutputs: 1,
+              numberOfOutputs: 0,
               channelCount: 2,
               channelCountMode: 'explicit',
               channelInterpretation: 'speakers'
