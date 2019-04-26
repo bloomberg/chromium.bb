@@ -16,7 +16,6 @@ import shutil
 import socket
 
 from chromite.cli.cros import cros_chrome_sdk
-from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -525,10 +524,7 @@ class VM(device.Device):
     Returns:
       List of parsed opts.
     """
-    device_parser = device.Device.GetParser()
-    parser = commandline.ArgumentParser(description=__doc__,
-                                        parents=[device_parser],
-                                        add_help=False, logging=False)
+    parser = device.Device.GetParser()
     parser.add_argument('--start', action='store_true', default=False,
                         help='Start the VM.')
     parser.add_argument('--stop', action='store_true', default=False,

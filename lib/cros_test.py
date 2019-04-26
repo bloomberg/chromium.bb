@@ -13,7 +13,6 @@ import re
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import chrome_util
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
@@ -450,10 +449,7 @@ def ParseCommandLine(argv):
     List of parsed options for CrOSTest.
   """
 
-  vm_parser = vm.VM.GetParser()
-  parser = commandline.ArgumentParser(description=__doc__,
-                                      parents=[vm_parser],
-                                      add_help=False, logging=False)
+  parser = vm.VM.GetParser()
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests', nargs='+',
@@ -514,12 +510,6 @@ def ParseCommandLine(argv):
                       help='Timeout for running all tests (for --tast).')
 
   opts = parser.parse_args(argv)
-
-  # Remove the logging handling after https://crbug.com/955575
-  log_level = parser.default_log_level
-  if hasattr(opts, 'log_level'):
-    log_level = opts.log_level
-  logging.getLogger().setLevel(getattr(logging, log_level.upper()))
 
   if opts.chrome_test:
     if not opts.args:
