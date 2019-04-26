@@ -1184,29 +1184,47 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
 }
 
 int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
-  frame_callback->SetUseLegacyTimeBase(false);
-  if (Document* doc = document())
+  if (Document* doc = document()) {
+    auto* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    frame_callback->SetUseLegacyTimeBase(false);
     return doc->RequestAnimationFrame(frame_callback);
+  }
   return 0;
 }
 
 int LocalDOMWindow::webkitRequestAnimationFrame(
     V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
-  frame_callback->SetUseLegacyTimeBase(true);
-  if (Document* document = this->document())
-    return document->RequestAnimationFrame(frame_callback);
+  if (Document* doc = document()) {
+    auto* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    frame_callback->SetUseLegacyTimeBase(true);
+    return doc->RequestAnimationFrame(frame_callback);
+  }
   return 0;
 }
 
 void LocalDOMWindow::cancelAnimationFrame(int id) {
   if (Document* document = this->document())
     document->CancelAnimationFrame(id);
+}
+
+int LocalDOMWindow::requestPostAnimationFrame(
+    V8FrameRequestCallback* callback) {
+  if (Document* doc = document()) {
+    FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    return doc->RequestPostAnimationFrame(frame_callback);
+  }
+  return 0;
+}
+
+void LocalDOMWindow::cancelPostAnimationFrame(int id) {
+  if (Document* doc = this->document())
+    doc->CancelPostAnimationFrame(id);
 }
 
 void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {

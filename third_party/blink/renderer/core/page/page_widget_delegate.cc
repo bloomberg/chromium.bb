@@ -51,6 +51,10 @@ void PageWidgetDelegate::Animate(Page& page,
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
 }
 
+void PageWidgetDelegate::PostAnimate(Page& page) {
+  page.Animator().RunPostAnimationFrameCallbacks();
+}
+
 void PageWidgetDelegate::UpdateLifecycle(
     Page& page,
     LocalFrame& root,
@@ -69,6 +73,8 @@ void PageWidgetDelegate::UpdateLifecycle(
 void PageWidgetDelegate::DidBeginFrame(LocalFrame& root) {
   if (LocalFrameView* frame_view = root.View())
     frame_view->RunPostLifecycleSteps();
+  if (Page* page = root.GetPage())
+    PostAnimate(*page);
 }
 
 WebInputEventResult PageWidgetDelegate::HandleInputEvent(

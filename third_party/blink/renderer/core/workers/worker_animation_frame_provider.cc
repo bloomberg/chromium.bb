@@ -27,13 +27,13 @@ int WorkerAnimationFrameProvider::RegisterCallback(
   }
 
   FrameRequestCallbackCollection::CallbackId id =
-      callback_collection_.RegisterCallback(callback);
+      callback_collection_.RegisterFrameCallback(callback);
   begin_frame_provider_->RequestBeginFrame();
   return id;
 }
 
 void WorkerAnimationFrameProvider::CancelCallback(int id) {
-  callback_collection_.CancelCallback(id);
+  callback_collection_.CancelFrameCallback(id);
 }
 
 void WorkerAnimationFrameProvider::BeginFrame() {
@@ -47,7 +47,8 @@ void WorkerAnimationFrameProvider::BeginFrame() {
                 // We don't want to expose microseconds residues to users.
                 time = round(time * 60) / 60;
 
-                provider->callback_collection_.ExecuteCallbacks(time, time);
+                provider->callback_collection_.ExecuteFrameCallbacks(time,
+                                                                     time);
 
                 for (auto& offscreen_canvas : provider->offscreen_canvases_) {
                   offscreen_canvas->PushFrameIfNeeded();

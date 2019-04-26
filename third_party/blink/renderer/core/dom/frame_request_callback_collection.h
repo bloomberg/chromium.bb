@@ -71,11 +71,21 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
     Member<V8FrameRequestCallback> callback_;
   };
 
-  CallbackId RegisterCallback(FrameCallback*);
-  void CancelCallback(CallbackId);
-  void ExecuteCallbacks(double high_res_now_ms, double high_res_now_ms_legacy);
+  CallbackId RegisterFrameCallback(FrameCallback*);
+  void CancelFrameCallback(CallbackId);
+  void ExecuteFrameCallbacks(double high_res_now_ms,
+                             double high_res_now_ms_legacy);
 
-  bool IsEmpty() const { return !callbacks_.size(); }
+  CallbackId RegisterPostFrameCallback(FrameCallback*);
+  void CancelPostFrameCallback(CallbackId);
+  void ExecutePostFrameCallbacks(double high_res_now_ms,
+                                 double high_rest_now_ms_legacy);
+
+  bool HasFrameCallback() const { return frame_callbacks_.size(); }
+  bool HasPostFrameCallback() const { return post_frame_callbacks_.size(); }
+  bool IsEmpty() const {
+    return !HasFrameCallback() && !HasPostFrameCallback();
+  }
 
   void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
@@ -84,9 +94,19 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
 
  private:
   using CallbackList = HeapVector<Member<FrameCallback>>;
-  CallbackList callbacks_;
-  CallbackList
-      callbacks_to_invoke_;  // only non-empty while inside executeCallbacks
+  void ExecuteCallbacksInternal(CallbackList& callbacks,
+                                const char* trace_event_name,
+                                const char* probe_name,
+                                double high_res_now_ms,
+                                double high_res_now_ms_legacy);
+  void CancelCallbackInternal(CallbackId id,
+                              const char* trace_event_name,
+                              const char* probe_name);
+
+  CallbackList frame_callbacks_;
+  CallbackList post_frame_callbacks_;
+  // only non-empty while inside ExecuteCallbacks or ExecutePostFrameCallbacks.
+  CallbackList callbacks_to_invoke_;
 
   CallbackId next_callback_id_ = 0;
 

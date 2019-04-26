@@ -335,7 +335,7 @@ int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
           callback);
 
   frame_callback->SetUseLegacyTimeBase(false);
-  return EnsureScriptedAnimationController(doc).RegisterCallback(
+  return EnsureScriptedAnimationController(doc).RegisterFrameCallback(
       frame_callback);
 }
 
@@ -343,7 +343,7 @@ void VRDisplay::cancelAnimationFrame(int id) {
   DVLOG(2) << __FUNCTION__;
   if (!scripted_animation_controller_)
     return;
-  scripted_animation_controller_->CancelCallback(id);
+  scripted_animation_controller_->CancelFrameCallback(id);
 }
 
 void VRDisplay::OnBlur(bool is_immersive) {
@@ -1224,7 +1224,7 @@ bool VRDisplay::HasPendingActivity() const {
   return GetExecutionContext() &&
          (HasEventListeners() ||
           (scripted_animation_controller_ &&
-           scripted_animation_controller_->HasCallback()));
+           scripted_animation_controller_->HasFrameCallback()));
 }
 
 void VRDisplay::FocusChanged() {

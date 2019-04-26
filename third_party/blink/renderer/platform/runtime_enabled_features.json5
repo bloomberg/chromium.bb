@@ -1143,6 +1143,10 @@
       status: "test",
     },
     {
+      name: "PostAnimationFrame",
+      status: "experimental",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     {

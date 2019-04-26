@@ -56,10 +56,15 @@ class CORE_EXPORT ScriptedAnimationController
 
   // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
-  CallbackId RegisterCallback(FrameRequestCallbackCollection::FrameCallback*);
-  void CancelCallback(CallbackId);
+  CallbackId RegisterFrameCallback(
+      FrameRequestCallbackCollection::FrameCallback*);
+  void CancelFrameCallback(CallbackId);
   // Returns true if any callback is currently registered.
-  bool HasCallback() const;
+  bool HasFrameCallback() const;
+
+  CallbackId RegisterPostFrameCallback(
+      FrameRequestCallbackCollection::FrameCallback*);
+  void CancelPostFrameCallback(CallbackId);
 
   // Animation frame events are used for resize events, scroll events, etc.
   void EnqueueEvent(Event*);
@@ -75,6 +80,7 @@ class CORE_EXPORT ScriptedAnimationController
   // Invokes callbacks, dispatches events, etc. The order is defined by HTML:
   // https://html.spec.whatwg.org/C/#event-loop-processing-model
   void ServiceScriptedAnimations(base::TimeTicks monotonic_time_now);
+  void RunPostFrameCallbacks();
 
   void Pause();
   void Unpause();
@@ -90,10 +96,10 @@ class CORE_EXPORT ScriptedAnimationController
   void RunTasks();
   void DispatchEvents(
       const AtomicString& event_interface_filter = AtomicString());
-  void ExecuteCallbacks(base::TimeTicks monotonic_time_now);
+  void ExecuteFrameCallbacks();
   void CallMediaQueryListListeners();
 
-  bool HasScheduledItems() const;
+  bool HasScheduledFrameTasks() const;
 
   Member<Document> document_;
   FrameRequestCallbackCollection callback_collection_;
@@ -105,6 +111,8 @@ class CORE_EXPORT ScriptedAnimationController
   using MediaQueryListListeners =
       HeapListHashSet<Member<MediaQueryListListener>>;
   MediaQueryListListeners media_query_list_listeners_;
+  double current_frame_time_ms_ = 0.0;
+  double current_frame_legacy_time_ms_ = 0.0;
 
   // Used for animation metrics; see cc::CompositorTimingHistory::DidDraw.
   bool current_frame_had_raf_;

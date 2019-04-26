@@ -674,6 +674,7 @@ Document::Document(const DocumentInit& initializer,
       document_timing_(*this),
       write_recursion_is_too_deep_(false),
       write_recursion_depth_(0),
+      current_frame_is_throttled_(false),
       registration_context_(initializer.RegistrationContext(this)),
       element_data_cache_clear_timer_(
           GetTaskRunner(TaskType::kInternalUserInteraction),
@@ -6933,13 +6934,13 @@ ScriptedAnimationController& Document::EnsureScriptedAnimationController() {
 
 int Document::RequestAnimationFrame(
     FrameRequestCallbackCollection::FrameCallback* callback) {
-  return EnsureScriptedAnimationController().RegisterCallback(callback);
+  return EnsureScriptedAnimationController().RegisterFrameCallback(callback);
 }
 
 void Document::CancelAnimationFrame(int id) {
   if (!scripted_animation_controller_)
     return;
-  scripted_animation_controller_->CancelCallback(id);
+  scripted_animation_controller_->CancelFrameCallback(id);
 }
 
 void Document::ServiceScriptedAnimations(
@@ -6948,6 +6949,24 @@ void Document::ServiceScriptedAnimations(
     return;
   scripted_animation_controller_->ServiceScriptedAnimations(
       monotonic_animation_start_time);
+}
+
+int Document::RequestPostAnimationFrame(
+    FrameRequestCallbackCollection::FrameCallback* cb) {
+  return EnsureScriptedAnimationController().RegisterPostFrameCallback(cb);
+}
+
+void Document::CancelPostAnimationFrame(int id) {
+  if (scripted_animation_controller_)
+    scripted_animation_controller_->CancelPostFrameCallback(id);
+}
+
+void Document::RunPostAnimationFrameCallbacks() {
+  bool was_throttled = current_frame_is_throttled_;
+  current_frame_is_throttled_ = false;
+  if (was_throttled || !scripted_animation_controller_)
+    return;
+  scripted_animation_controller_->RunPostFrameCallbacks();
 }
 
 ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
