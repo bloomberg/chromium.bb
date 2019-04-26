@@ -461,8 +461,7 @@ bool HttpUtil::IsValidHeaderValue(base::StringPiece value) {
 }
 
 // static
-bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
-                                     std::string::const_iterator name_end) {
+bool HttpUtil::IsNonCoalescingHeader(base::StringPiece name) {
   // NOTE: "set-cookie2" headers do not support expires attributes, so we don't
   // have to list them here.
   const char* const kNonCoalescingHeaders[] = {
@@ -482,8 +481,7 @@ bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
   };
 
   for (const char* header : kNonCoalescingHeaders) {
-    if (base::LowerCaseEqualsASCII(base::StringPiece(name_begin, name_end),
-                                   header)) {
+    if (base::LowerCaseEqualsASCII(name, header)) {
       return true;
     }
   }
@@ -544,31 +542,26 @@ bool IsQuote(char c) {
   return c == '"';
 }
 
-bool UnquoteImpl(std::string::const_iterator begin,
-                 std::string::const_iterator end,
-                 bool strict_quotes,
-                 std::string* out) {
-  // Empty string
-  if (begin == end)
+bool UnquoteImpl(base::StringPiece str, bool strict_quotes, std::string* out) {
+  if (str.empty())
     return false;
 
   // Nothing to unquote.
-  if (!IsQuote(*begin))
+  if (!IsQuote(str[0]))
     return false;
 
   // No terminal quote mark.
-  if (end - begin < 2 || *begin != *(end - 1))
+  if (str.size() < 2 || str.front() != str.back())
     return false;
 
   // Strip quotemarks
-  ++begin;
-  --end;
+  str.remove_prefix(1);
+  str.remove_suffix(1);
 
   // Unescape quoted-pair (defined in RFC 2616 section 2.2)
   bool prev_escape = false;
   std::string unescaped;
-  for (; begin != end; ++begin) {
-    char c = *begin;
+  for (char c : str) {
     if (c == '\\' && !prev_escape) {
       prev_escape = true;
       continue;
@@ -589,45 +582,29 @@ bool UnquoteImpl(std::string::const_iterator begin,
 
 }  // anonymous namespace
 
-std::string HttpUtil::Unquote(std::string::const_iterator begin,
-                              std::string::const_iterator end) {
+// static
+std::string HttpUtil::Unquote(base::StringPiece str) {
   std::string result;
-  if (!UnquoteImpl(begin, end, false, &result))
-    return std::string(begin, end);
+  if (!UnquoteImpl(str, false, &result))
+    return str.as_string();
 
   return result;
 }
 
 // static
-std::string HttpUtil::Unquote(const std::string& str) {
-  return Unquote(str.begin(), str.end());
+bool HttpUtil::StrictUnquote(base::StringPiece str, std::string* out) {
+  return UnquoteImpl(str, true, out);
 }
 
 // static
-bool HttpUtil::StrictUnquote(std::string::const_iterator begin,
-                             std::string::const_iterator end,
-                             std::string* out) {
-  return UnquoteImpl(begin, end, true, out);
-}
-
-// static
-bool HttpUtil::StrictUnquote(const std::string& str, std::string* out) {
-  return StrictUnquote(str.begin(), str.end(), out);
-}
-
-// static
-std::string HttpUtil::Quote(const std::string& str) {
+std::string HttpUtil::Quote(base::StringPiece str) {
   std::string escaped;
   escaped.reserve(2 + str.size());
-
-  std::string::const_iterator begin = str.begin();
-  std::string::const_iterator end = str.end();
 
   // Esape any backslashes or quotemarks within the string, and
   // then surround with quotes.
   escaped.push_back('"');
-  for (; begin != end; ++begin) {
-    char c = *begin;
+  for (char c : str) {
     if (c == '"' || c == '\\')
       escaped.push_back('\\');
     escaped.push_back(c);
@@ -1123,7 +1100,8 @@ bool HttpUtil::NameValuePairsIterator::GetNext() {
     value_is_quoted_ = true;
 
     if (strict_quotes_) {
-      if (!HttpUtil::StrictUnquote(value_begin_, value_end_, &unquoted_value_))
+      if (!HttpUtil::StrictUnquote(base::StringPiece(value_begin_, value_end_),
+                                   &unquoted_value_))
         return valid_ = false;
       return true;
     }
@@ -1139,7 +1117,8 @@ bool HttpUtil::NameValuePairsIterator::GetNext() {
       ++value_begin_;  // Gracefully recover from mismatching quotes.
     } else {
       // Do not store iterators into this. See declaration of unquoted_value_.
-      unquoted_value_ = HttpUtil::Unquote(value_begin_, value_end_);
+      unquoted_value_ =
+          HttpUtil::Unquote(base::StringPiece(value_begin_, value_end_));
     }
   }
 

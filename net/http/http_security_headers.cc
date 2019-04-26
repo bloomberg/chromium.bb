@@ -93,16 +93,17 @@ bool ParseHSTSHeader(const std::string& value,
   tokenizer.set_quote_chars("\"");
   std::string unquoted;
   while (tokenizer.GetNext()) {
-    DCHECK(!tokenizer.token_is_delim() || tokenizer.token().length() == 1);
+    DCHECK(!tokenizer.token_is_delim() ||
+           tokenizer.token_piece().length() == 1);
     switch (state) {
       case START:
       case DIRECTIVE_END:
         if (base::IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
-        if (base::LowerCaseEqualsASCII(tokenizer.token(), "max-age")) {
+        if (base::LowerCaseEqualsASCII(tokenizer.token_piece(), "max-age")) {
           state = AFTER_MAX_AGE_LABEL;
           max_age_observed++;
-        } else if (base::LowerCaseEqualsASCII(tokenizer.token(),
+        } else if (base::LowerCaseEqualsASCII(tokenizer.token_piece(),
                                               "includesubdomains")) {
           state = AFTER_INCLUDE_SUBDOMAINS;
           include_subdomains_observed++;
@@ -124,7 +125,7 @@ bool ParseHSTSHeader(const std::string& value,
       case AFTER_MAX_AGE_EQUALS:
         if (base::IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
-        unquoted = HttpUtil::Unquote(tokenizer.token());
+        unquoted = HttpUtil::Unquote(tokenizer.token_piece());
         if (!MaxAgeToLimitedInt(unquoted, kMaxHSTSAgeSecs, &max_age_candidate))
           return false;
         state = AFTER_MAX_AGE;

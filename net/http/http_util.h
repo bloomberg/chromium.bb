@@ -107,11 +107,7 @@ class NET_EXPORT HttpUtil {
   // Multiple occurances of some headers cannot be coalesced into a comma-
   // separated list since their values are (or contain) unquoted HTTP-date
   // values, which may contain a comma (see RFC 2616 section 3.3.1).
-  static bool IsNonCoalescingHeader(std::string::const_iterator name_begin,
-                                    std::string::const_iterator name_end);
-  static bool IsNonCoalescingHeader(const std::string& name) {
-    return IsNonCoalescingHeader(name.begin(), name.end());
-  }
+  static bool IsNonCoalescingHeader(base::StringPiece name);
 
   // Return true if the character is HTTP "linear white space" (SP | HT).
   // This definition corresponds with the HTTP_LWS macro, and does not match
@@ -136,26 +132,17 @@ class NET_EXPORT HttpUtil {
   // Unquote() strips the surrounding quotemarks off a string, and unescapes
   // any quoted-pair to obtain the value contained by the quoted-string.
   // If the input is not quoted, then it works like the identity function.
-  static std::string Unquote(std::string::const_iterator begin,
-                             std::string::const_iterator end);
-
-  // Same as above.
-  static std::string Unquote(const std::string& str);
+  static std::string Unquote(base::StringPiece str);
 
   // Similar to Unquote(), but additionally validates that the string being
   // unescaped actually is a valid quoted string. Returns false for an empty
   // string, a string without quotes, a string with mismatched quotes, and
   // a string with unescaped embeded quotes.
-  static bool StrictUnquote(std::string::const_iterator begin,
-                            std::string::const_iterator end,
-                            std::string* out) WARN_UNUSED_RESULT;
-
-  // Same as above.
-  static bool StrictUnquote(const std::string& str,
+  static bool StrictUnquote(base::StringPiece str,
                             std::string* out) WARN_UNUSED_RESULT;
 
   // The reverse of Unquote() -- escapes and surrounds with "
-  static std::string Quote(const std::string& str);
+  static std::string Quote(base::StringPiece str);
 
   // Returns the start of the status line, or std::string::npos if no status
   // line was found. This allows for 4 bytes of junk to precede the status line

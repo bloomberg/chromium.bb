@@ -774,7 +774,8 @@ void HttpResponseHeaders::AddHeader(std::string::const_iterator name_begin,
                                     std::string::const_iterator values_end) {
   // If the header can be coalesced, then we should split it up.
   if (values_begin == values_end ||
-      HttpUtil::IsNonCoalescingHeader(name_begin, name_end)) {
+      HttpUtil::IsNonCoalescingHeader(
+          base::StringPiece(name_begin, name_end))) {
     AddToParsed(name_begin, name_end, values_begin, values_end);
   } else {
     HttpUtil::ValuesIterator it(values_begin, values_end, ',',
