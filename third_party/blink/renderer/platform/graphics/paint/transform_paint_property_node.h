@@ -125,9 +125,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     PaintPropertyChangeType ComputeChange(
         const State& other,
         const AnimationState& animation_state) const {
-      if (transform_and_origin.Origin() !=
-              other.transform_and_origin.Origin() ||
-          flattens_inherited_transform != other.flattens_inherited_transform ||
+      if (flattens_inherited_transform != other.flattens_inherited_transform ||
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
           backface_visibility != other.backface_visibility ||
@@ -136,22 +134,36 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           scroll != other.scroll || !StickyConstraintEquals(other)) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      bool transform_changed =
+
+      bool matrix_changed =
           !transform_and_origin.TransformEquals(other.transform_and_origin);
-      // An additional cc::EffectNode may be required if
-      // blink::TransformPaintPropertyNode is not axis-aligned (see:
-      // PropertyTreeManager::NeedsSyntheticEffect). Changes to axis alignment
-      // are therefore treated as non-simple. By ensuring both |this| and
-      // |other| preserve axis alignment, this check is more conservative than
-      // PropertyTreeManager.
-      bool transform_change_is_simple =
-          transform_changed &&
-          !animation_state.is_running_animation_on_compositor &&
-          TransformPreservesAxisAlignment(transform_and_origin) &&
-          TransformPreservesAxisAlignment(other.transform_and_origin);
+      bool origin_changed =
+          transform_and_origin.Origin() != other.transform_and_origin.Origin();
+      bool transform_changed = matrix_changed || origin_changed;
+
+      bool transform_has_simple_change = true;
+      if (!transform_changed) {
+        transform_has_simple_change = false;
+      } else if (animation_state.is_running_animation_on_compositor) {
+        transform_has_simple_change = false;
+      } else if (matrix_changed) {
+        // An additional cc::EffectNode may be required if
+        // blink::TransformPaintPropertyNode is not axis-aligned (see:
+        // PropertyTreeManager::NeedsSyntheticEffect). Changes to axis alignment
+        // are therefore treated as non-simple. By ensuring both |this| and
+        // |other| preserve axis alignment, this check is more conservative than
+        // PropertyTreeManager. We do not need to set
+        // transform_has_simple_change = false if the origin changes because
+        // axis alignment is not affected by transform origin.
+        if (!TransformPreservesAxisAlignment(transform_and_origin) ||
+            !TransformPreservesAxisAlignment(other.transform_and_origin)) {
+          transform_has_simple_change = false;
+        }
+      }
+
       // If the transform changed, and it's not simple then we need to report
       // values change.
-      if (transform_changed && !transform_change_is_simple &&
+      if (transform_changed && !transform_has_simple_change &&
           !animation_state.is_running_animation_on_compositor) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
@@ -160,11 +172,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           direct_compositing_reasons != other.direct_compositing_reasons;
       // Both simple value change and non-reraster change is upgraded to value
       // change.
-      if (non_reraster_values_changed && transform_change_is_simple)
+      if (non_reraster_values_changed && transform_has_simple_change)
         return PaintPropertyChangeType::kChangedOnlyValues;
       if (non_reraster_values_changed)
         return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-      if (transform_change_is_simple)
+      if (transform_has_simple_change)
         return PaintPropertyChangeType::kChangedOnlySimpleValues;
       // At this point, our transform change isn't simple, and the above checks
       // didn't return a values change, so it must mean that we're running a
