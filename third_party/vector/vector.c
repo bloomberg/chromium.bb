@@ -28,6 +28,134 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "third_party/vector/vector.h"
 
+/***** PRIVATE *****/
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+static bool _vector_should_grow(Vector *vector) {
+  assert(vector->size <= vector->capacity);
+  return vector->size == vector->capacity;
+}
+
+static bool _vector_should_shrink(Vector *vector) {
+  assert(vector->size <= vector->capacity);
+  return vector->size == vector->capacity * VECTOR_SHRINK_THRESHOLD;
+}
+
+static void *_vector_offset(Vector *vector, size_t index) {
+  // return vector->data + (index * vector->element_size);
+  return (unsigned char *)vector->data + (index * vector->element_size);
+}
+
+static const void *_vector_const_offset(const Vector *vector, size_t index) {
+  // return vector->data + (index * vector->element_size);
+  return (unsigned char *)vector->data + (index * vector->element_size);
+}
+
+static void _vector_assign(Vector *vector, size_t index, void *element) {
+  /* Insert the element */
+  void *offset = _vector_offset(vector, index);
+  memcpy(offset, element, vector->element_size);
+}
+
+static int _vector_move_right(Vector *vector, size_t index) {
+  assert(vector->size < vector->capacity);
+
+  /* The location where to start to move from. */
+  void *offset = _vector_offset(vector, index);
+
+  /* How many to move to the right. */
+  size_t elements_in_bytes = (vector->size - index) * vector->element_size;
+
+#ifdef __STDC_LIB_EXT1__
+  size_t right_capacity_in_bytes =
+      (vector->capacity - (index + 1)) * vector->element_size;
+
+  /* clang-format off */
+    int return_code =  memmove_s(
+        offset + vector->element_size,
+        right_capacity_in_bytes,
+        offset,
+        elements_in_bytes);
+
+  /* clang-format on */
+
+  return return_code == 0 ? VECTOR_SUCCESS : VECTOR_ERROR;
+
+#else
+  // memmove(offset + vector->element_size, offset, elements_in_bytes);
+  memmove((unsigned char *)offset + vector->element_size, offset,
+          elements_in_bytes);
+  return VECTOR_SUCCESS;
+#endif
+}
+
+static void _vector_move_left(Vector *vector, size_t index) {
+  size_t right_elements_in_bytes;
+  void *offset;
+
+  /* The offset into the memory */
+  offset = _vector_offset(vector, index);
+
+  /* How many to move to the left */
+  right_elements_in_bytes = (vector->size - index - 1) * vector->element_size;
+
+  // memmove(offset, offset + vector->element_size, right_elements_in_bytes);
+  memmove(offset, (unsigned char *)offset + vector->element_size,
+          right_elements_in_bytes);
+}
+
+static int _vector_reallocate(Vector *vector, size_t new_capacity) {
+  size_t new_capacity_in_bytes;
+  void *old;
+  assert(vector != NULL);
+
+  if (new_capacity < VECTOR_MINIMUM_CAPACITY) {
+    if (vector->capacity > VECTOR_MINIMUM_CAPACITY) {
+      new_capacity = VECTOR_MINIMUM_CAPACITY;
+    } else {
+      /* NO-OP */
+      return VECTOR_SUCCESS;
+    }
+  }
+
+  new_capacity_in_bytes = new_capacity * vector->element_size;
+  old = vector->data;
+
+  if ((vector->data = malloc(new_capacity_in_bytes)) == NULL) {
+    return VECTOR_ERROR;
+  }
+
+#ifdef __STDC_LIB_EXT1__
+  /* clang-format off */
+    if (memcpy_s(vector->data,
+                             new_capacity_in_bytes,
+                             old,
+                             aom_vector_byte_size(vector)) != 0) {
+        return VECTOR_ERROR;
+    }
+/* clang-format on */
+#else
+  memcpy(vector->data, old, aom_vector_byte_size(vector));
+#endif
+
+  vector->capacity = new_capacity;
+
+  free(old);
+
+  return VECTOR_SUCCESS;
+}
+
+static int _vector_adjust_capacity(Vector *vector) {
+  return _vector_reallocate(vector,
+                            MAX(1, vector->size * VECTOR_GROWTH_FACTOR));
+}
+
+static void _vector_swap(size_t *first, size_t *second) {
+  size_t temp = *first;
+  *first = *second;
+  *second = temp;
+}
+
 int aom_vector_setup(Vector *vector, size_t capacity, size_t element_size) {
   assert(vector != NULL);
 
@@ -409,135 +537,4 @@ size_t iterator_index(Vector *vector, Iterator *iterator) {
   // return (iterator->pointer - vector->data) / vector->element_size;
   return ((unsigned char *)iterator->pointer - (unsigned char *)vector->data) /
          vector->element_size;
-}
-
-/***** PRIVATE *****/
-
-bool _vector_should_grow(Vector *vector) {
-  assert(vector->size <= vector->capacity);
-  return vector->size == vector->capacity;
-}
-
-bool _vector_should_shrink(Vector *vector) {
-  assert(vector->size <= vector->capacity);
-  return vector->size == vector->capacity * VECTOR_SHRINK_THRESHOLD;
-}
-
-size_t _vector_free_bytes(const Vector *vector) {
-  return aom_vector_free_space(vector) * vector->element_size;
-}
-
-void *_vector_offset(Vector *vector, size_t index) {
-  // return vector->data + (index * vector->element_size);
-  return (unsigned char *)vector->data + (index * vector->element_size);
-}
-
-const void *_vector_const_offset(const Vector *vector, size_t index) {
-  // return vector->data + (index * vector->element_size);
-  return (unsigned char *)vector->data + (index * vector->element_size);
-}
-
-void _vector_assign(Vector *vector, size_t index, void *element) {
-  /* Insert the element */
-  void *offset = _vector_offset(vector, index);
-  memcpy(offset, element, vector->element_size);
-}
-
-int _vector_move_right(Vector *vector, size_t index) {
-  assert(vector->size < vector->capacity);
-
-  /* The location where to start to move from. */
-  void *offset = _vector_offset(vector, index);
-
-  /* How many to move to the right. */
-  size_t elements_in_bytes = (vector->size - index) * vector->element_size;
-
-#ifdef __STDC_LIB_EXT1__
-  size_t right_capacity_in_bytes =
-      (vector->capacity - (index + 1)) * vector->element_size;
-
-  /* clang-format off */
-    int return_code =  memmove_s(
-        offset + vector->element_size,
-        right_capacity_in_bytes,
-        offset,
-        elements_in_bytes);
-
-  /* clang-format on */
-
-  return return_code == 0 ? VECTOR_SUCCESS : VECTOR_ERROR;
-
-#else
-  // memmove(offset + vector->element_size, offset, elements_in_bytes);
-  memmove((unsigned char *)offset + vector->element_size, offset,
-          elements_in_bytes);
-  return VECTOR_SUCCESS;
-#endif
-}
-
-void _vector_move_left(Vector *vector, size_t index) {
-  size_t right_elements_in_bytes;
-  void *offset;
-
-  /* The offset into the memory */
-  offset = _vector_offset(vector, index);
-
-  /* How many to move to the left */
-  right_elements_in_bytes = (vector->size - index - 1) * vector->element_size;
-
-  // memmove(offset, offset + vector->element_size, right_elements_in_bytes);
-  memmove(offset, (unsigned char *)offset + vector->element_size,
-          right_elements_in_bytes);
-}
-
-int _vector_adjust_capacity(Vector *vector) {
-  return _vector_reallocate(vector,
-                            MAX(1, vector->size * VECTOR_GROWTH_FACTOR));
-}
-
-int _vector_reallocate(Vector *vector, size_t new_capacity) {
-  size_t new_capacity_in_bytes;
-  void *old;
-  assert(vector != NULL);
-
-  if (new_capacity < VECTOR_MINIMUM_CAPACITY) {
-    if (vector->capacity > VECTOR_MINIMUM_CAPACITY) {
-      new_capacity = VECTOR_MINIMUM_CAPACITY;
-    } else {
-      /* NO-OP */
-      return VECTOR_SUCCESS;
-    }
-  }
-
-  new_capacity_in_bytes = new_capacity * vector->element_size;
-  old = vector->data;
-
-  if ((vector->data = malloc(new_capacity_in_bytes)) == NULL) {
-    return VECTOR_ERROR;
-  }
-
-#ifdef __STDC_LIB_EXT1__
-  /* clang-format off */
-    if (memcpy_s(vector->data,
-                             new_capacity_in_bytes,
-                             old,
-                             aom_vector_byte_size(vector)) != 0) {
-        return VECTOR_ERROR;
-    }
-/* clang-format on */
-#else
-  memcpy(vector->data, old, aom_vector_byte_size(vector));
-#endif
-
-  vector->capacity = new_capacity;
-
-  free(old);
-
-  return VECTOR_SUCCESS;
-}
-
-void _vector_swap(size_t *first, size_t *second) {
-  size_t temp = *first;
-  *first = *second;
-  *second = temp;
 }
