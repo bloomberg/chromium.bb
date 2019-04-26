@@ -551,7 +551,7 @@ static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
 // Do some setup associated with the chosen source
 // temporal_filtered, flush, and frame_update_type are outputs.
 // Return the frame source, or NULL if we couldn't find one
-struct lookahead_entry *choose_frame_source(
+static struct lookahead_entry *choose_frame_source(
     AV1_COMP *const cpi, int *const temporal_filtered, int *const flush,
     struct lookahead_entry **last_source, FRAME_UPDATE_TYPE *frame_update_type,
     EncodeFrameParams *const frame_params) {
