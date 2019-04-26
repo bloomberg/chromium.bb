@@ -70,6 +70,13 @@ std::unique_ptr<SystemMonitor> SystemMonitor::Create() {
 }
 
 // static
+std::unique_ptr<SystemMonitor> SystemMonitor::CreateForTesting(
+    std::unique_ptr<MetricEvaluatorsHelper> helper) {
+  DCHECK(!g_system_metrics_monitor);
+  return base::WrapUnique(new SystemMonitor(std::move(helper)));
+}
+
+// static
 SystemMonitor* SystemMonitor::Get() {
   return g_system_metrics_monitor;
 }

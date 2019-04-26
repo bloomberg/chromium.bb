@@ -56,6 +56,11 @@ class SystemMonitor {
   // with Get().
   static std::unique_ptr<SystemMonitor> Create();
 
+  // Test fixture that allows creating a global SystemMonitor instance that uses
+  // a custom metric evaluator helper.
+  static std::unique_ptr<SystemMonitor> CreateForTesting(
+      std::unique_ptr<MetricEvaluatorsHelper> helper);
+
   // Get the application-wide SystemMonitor (if not present, returns
   // nullptr).
   static SystemMonitor* Get();
@@ -112,11 +117,6 @@ class SystemMonitor {
 
   const base::OneShotTimer& refresh_timer_for_testing() {
     return refresh_timer_;
-  }
-
-  void SetMetricEvaluatorsHelperForTesting(
-      std::unique_ptr<MetricEvaluatorsHelper> helper) {
-    metric_evaluators_helper_.reset(helper.release());
   }
 
  protected:
@@ -230,13 +230,6 @@ class SystemMonitor {
   const MetricSamplingFrequencyArray&
   GetMetricSamplingFrequencyArrayForTesting() {
     return metrics_refresh_frequencies_;
-  }
-
-  MetricMetadata* GetMetricEvaluatorMetadataForTesting(
-      MetricEvaluator::Type type) {
-    DCHECK_LT(static_cast<size_t>(type), metric_evaluators_metadata_.size());
-    return const_cast<MetricMetadata*>(
-        &metric_evaluators_metadata_[static_cast<size_t>(type)]);
   }
 
  private:
