@@ -148,19 +148,22 @@ public class AutofillAssistantFacade {
      */
     private static void checkAndLoadDynamicModuleIfNeeded(
             ChromeActivity activity, Callback<Boolean> callback) {
+        // Required to access resources in DFM using this activity as context.
+        ModuleInstaller.initActivity(activity);
         if (AutofillAssistantModule.isInstalled()) {
             callback.onResult(true);
             return;
         }
-        getTab(activity, tab -> { loadDynamicModuleWithUi(tab, callback); });
+        getTab(activity, tab -> { loadDynamicModuleWithUi(activity, tab, callback); });
     }
 
-    private static void loadDynamicModuleWithUi(Tab tab, Callback<Boolean> callback) {
+    private static void loadDynamicModuleWithUi(
+            ChromeActivity activity, Tab tab, Callback<Boolean> callback) {
         ModuleInstallUi ui = new ModuleInstallUi(tab, R.string.autofill_assistant_module_title,
                 new ModuleInstallUi.FailureUiListener() {
                     @Override
                     public void onRetry() {
-                        loadDynamicModuleWithUi(tab, callback);
+                        loadDynamicModuleWithUi(activity, tab, callback);
                     }
 
                     @Override
@@ -172,6 +175,9 @@ public class AutofillAssistantFacade {
         ui.showInstallStartUi();
         ModuleInstaller.install("autofill_assistant", (success) -> {
             if (success) {
+                // Clean install of chrome will have issues here without initializing
+                // after installation of DFM.
+                ModuleInstaller.initActivity(activity);
                 // Don't show success UI from DFM, transition to autobot UI directly.
                 callback.onResult(true);
                 return;
