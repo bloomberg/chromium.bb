@@ -131,10 +131,13 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
   KURL response_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
+  mojom::IPAddressSpace response_address_space =
+      *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<ServiceWorkerGlobalScope>(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
-  global_scope->Initialize(response_url, response_referrer_policy);
+  global_scope->Initialize(response_url, response_referrer_policy,
+                           response_address_space);
   return global_scope;
 }
 
@@ -424,7 +427,8 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
 void ServiceWorkerGlobalScope::Initialize(
     const KURL& response_url,
-    network::mojom::ReferrerPolicy response_referrer_policy) {
+    network::mojom::ReferrerPolicy response_referrer_policy,
+    mojom::IPAddressSpace response_address_space) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -435,6 +439,9 @@ void ServiceWorkerGlobalScope::Initialize(
   // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
   // script resource's referrer policy."
   SetReferrerPolicy(response_referrer_policy);
+
+  // https://wicg.github.io/cors-rfc1918/#integration-html
+  SetAddressSpace(response_address_space);
 
   // TODO(nhiroki): Move the step 4.8-4.12 from RunClassicScript() to this
   // function.
@@ -450,10 +457,7 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   // Step 4.5-4.7 are implemented in Initialize().
-  Initialize(response_url, response_referrer_policy);
-
-  // https://wicg.github.io/cors-rfc1918/#integration-html
-  SetAddressSpace(response_address_space);
+  Initialize(response_url, response_referrer_policy, response_address_space);
 
   // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
   // implementation.

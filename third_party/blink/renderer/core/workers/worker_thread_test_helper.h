@@ -57,11 +57,12 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void Initialize(
-      const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy) override {
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
+    SetAddressSpace(response_address_space);
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

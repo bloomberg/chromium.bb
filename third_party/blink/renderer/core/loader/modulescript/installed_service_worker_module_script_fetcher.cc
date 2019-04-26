@@ -55,10 +55,8 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
           kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
     }
 
-    global_scope_->Initialize(response_url, response_referrer_policy);
-
-    // TODO(nhiroki): Move this call into WorkerGlobalScope::Initialize().
-    global_scope_->SetAddressSpace(script_data->GetResponseAddressSpace());
+    global_scope_->Initialize(response_url, response_referrer_policy,
+                              script_data->GetResponseAddressSpace());
 
     // TODO(nhiroki): Set CSP etc (https://crbug.com/937757).
   }

@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -147,7 +148,8 @@ class CORE_EXPORT WorkerGlobalScope
   //   https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
   virtual void Initialize(
       const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy) = 0;
+      network::mojom::ReferrerPolicy response_referrer_policy,
+      mojom::IPAddressSpace response_address_space) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context

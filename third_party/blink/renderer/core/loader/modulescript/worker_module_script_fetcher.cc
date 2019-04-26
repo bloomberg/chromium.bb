@@ -90,9 +90,6 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
           kDoNotSupportReferrerPolicyLegacyKeywords, &response_referrer_policy);
     }
 
-    // Step 12.3-12.5 are implemented in Initialize().
-    global_scope_->Initialize(response_url, response_referrer_policy);
-
     // Calculate an address space from worker script's response url according to
     // the "CORS and RFC1918" spec:
     // https://wicg.github.io/cors-rfc1918/#integration-html
@@ -109,7 +106,10 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     }
     if (SecurityOrigin::Create(response_url)->IsLocalhost())
       response_address_space = mojom::IPAddressSpace::kLocal;
-    global_scope_->SetAddressSpace(response_address_space);
+
+    // Step 12.3-12.5 are implemented in Initialize().
+    global_scope_->Initialize(response_url, response_referrer_policy,
+                              response_address_space);
 
     // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
     // on worker global scope and response. [CSP]" [spec text]

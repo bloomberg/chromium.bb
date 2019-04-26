@@ -458,16 +458,6 @@ WorkerGlobalScope::WorkerGlobalScope(
 
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
-  // Set address space here for workers whose script is fetched on the main
-  // thread. For off-the-main-thread fetches, this is instead set after the
-  // script is fetched.
-  if (creation_params->off_main_thread_fetch_option ==
-      OffMainThreadWorkerScriptFetchOption::kDisabled) {
-    SetAddressSpace(*creation_params->response_address_space);
-  } else {
-    DCHECK(!creation_params->response_address_space);
-  }
-
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
   // TODO(sammc): Require a valid |creation_params->interface_provider| once all

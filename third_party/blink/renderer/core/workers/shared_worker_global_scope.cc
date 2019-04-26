@@ -65,9 +65,12 @@ SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
   KURL response_script_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
+  mojom::IPAddressSpace response_address_space =
+      *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<SharedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin);
-  global_scope->Initialize(response_script_url, response_referrer_policy);
+  global_scope->Initialize(response_script_url, response_referrer_policy,
+                           response_address_space);
   return global_scope;
 }
 
@@ -86,7 +89,8 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::Initialize(
     const KURL& response_url,
-    network::mojom::ReferrerPolicy response_referrer_policy) {
+    network::mojom::ReferrerPolicy response_referrer_policy,
+    mojom::IPAddressSpace response_address_space) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -97,6 +101,9 @@ void SharedWorkerGlobalScope::Initialize(
   // Step 12.5. "Set worker global scope's referrer policy to the result of
   // parsing the `Referrer-Policy` header of response."
   SetReferrerPolicy(response_referrer_policy);
+
+  // https://wicg.github.io/cors-rfc1918/#integration-html
+  SetAddressSpace(response_address_space);
 
   // TODO(nhiroki): Move the step 12.6 from DidFetchClassicScript() to this
   // function.
@@ -203,10 +210,8 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
   }
 
   // Step 12.3-12.5 are implemented in Initialize().
-  Initialize(classic_script_loader->ResponseURL(), response_referrer_policy);
-
-  // https://wicg.github.io/cors-rfc1918/#integration-html
-  SetAddressSpace(classic_script_loader->ResponseAddressSpace());
+  Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
+             classic_script_loader->ResponseAddressSpace());
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
