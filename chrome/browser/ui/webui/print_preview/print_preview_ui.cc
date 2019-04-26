@@ -457,7 +457,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
                             kPrintPreviewResources[i].value);
   }
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   SetupPrintPreviewPlugin(source);
 #endif
   AddPrintPreviewFlags(source, profile);

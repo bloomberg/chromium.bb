@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * @typedef {{
@@ -10,10 +10,10 @@ cr.exportPath('print_preview_new');
  *   height_microns: number,
  * }}
  */
-print_preview_new.MediaSizeValue;
+print_preview.MediaSizeValue;
 
 /** @enum {string} */
-print_preview_new.PreviewAreaState = {
+print_preview.PreviewAreaState = {
   NO_PLUGIN: 'no-plugin',
   LOADING: 'loading',
   DISPLAY_PREVIEW: 'display-preview',
@@ -33,7 +33,7 @@ Polymer({
 
     documentModifiable: Boolean,
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: {
       type: Number,
       notify: true,
@@ -53,14 +53,14 @@ Polymer({
     /** @type {!print_preview.Size} */
     pageSize: Object,
 
-    /** @type {!print_preview_new.PreviewAreaState} */
+    /** @type {!print_preview.PreviewAreaState} */
     previewState: {
       type: String,
       notify: true,
-      value: print_preview_new.PreviewAreaState.LOADING,
+      value: print_preview.PreviewAreaState.LOADING,
     },
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: {
       type: Number,
       observer: 'onStateChange_',
@@ -104,7 +104,7 @@ Polymer({
   /** @private {number} */
   inFlightRequestId_: -1,
 
-  /** @private {?print_preview_new.PluginProxy} */
+  /** @private {?print_preview.PluginProxy} */
   pluginProxy_: null,
 
   /** @private {?function(!KeyboardEvent)} */
@@ -120,11 +120,11 @@ Polymer({
           'dark-mode-changed', this.onDarkModeChanged_.bind(this));
     }
 
-    this.pluginProxy_ = print_preview_new.PluginProxy.getInstance();
+    this.pluginProxy_ = print_preview.PluginProxy.getInstance();
     if (!this.pluginProxy_.checkPluginCompatibility(assert(
             this.$$('.preview-area-compatibility-object-out-of-process')))) {
-      this.error = print_preview_new.Error.NO_PLUGIN;
-      this.previewState = print_preview_new.PreviewAreaState.ERROR;
+      this.error = print_preview.Error.NO_PLUGIN;
+      this.previewState = print_preview.PreviewAreaState.ERROR;
     }
   },
 
@@ -182,14 +182,14 @@ Polymer({
   /** @private */
   pluginOrDocumentStatusChanged_: function() {
     if (!this.pluginLoaded_ || !this.documentReady_ ||
-        this.previewState === print_preview_new.PreviewAreaState.ERROR) {
+        this.previewState === print_preview.PreviewAreaState.ERROR) {
       return;
     }
 
     this.previewState = this.previewState ==
-            print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED :
-        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW;
+            print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
+        print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADED :
+        print_preview.PreviewAreaState.DISPLAY_PREVIEW;
   },
 
   /**
@@ -213,8 +213,7 @@ Polymer({
    * @private
    */
   isInDisplayPreviewState_: function() {
-    return this.previewState ==
-        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW;
+    return this.previewState == print_preview.PreviewAreaState.DISPLAY_PREVIEW;
   },
 
   /**
@@ -222,7 +221,7 @@ Polymer({
    * @private
    */
   isPreviewLoading_: function() {
-    return this.previewState == print_preview_new.PreviewAreaState.LOADING;
+    return this.previewState == print_preview.PreviewAreaState.LOADING;
   },
 
   /**
@@ -239,7 +238,7 @@ Polymer({
    * @private
    */
   shouldShowLearnMoreLink_: function() {
-    return this.error === print_preview_new.Error.UNSUPPORTED_PRINTER;
+    return this.error === print_preview.Error.UNSUPPORTED_PRINTER;
   },
 
   /**
@@ -248,16 +247,16 @@ Polymer({
    */
   currentMessage_: function() {
     switch (this.previewState) {
-      case print_preview_new.PreviewAreaState.LOADING:
+      case print_preview.PreviewAreaState.LOADING:
         return this.i18n('loading');
-      case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
+      case print_preview.PreviewAreaState.DISPLAY_PREVIEW:
         return '';
       // <if expr="is_macosx">
-      case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
-      case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
+      case print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
+      case print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
         return this.i18n('openingPDFInPreview');
       // </if>
-      case print_preview_new.PreviewAreaState.ERROR:
+      case print_preview.PreviewAreaState.ERROR:
         // The preview area is responsible for displaying all errors except
         // print failed and cloud print error.
         return this.getErrorMessage_();
@@ -272,10 +271,10 @@ Polymer({
    */
   startPreview: function(forceUpdate) {
     if (!this.hasTicketChanged_() && !forceUpdate &&
-        this.previewState !== print_preview_new.PreviewAreaState.ERROR) {
+        this.previewState !== print_preview.PreviewAreaState.ERROR) {
       return;
     }
-    this.previewState = print_preview_new.PreviewAreaState.LOADING;
+    this.previewState = print_preview.PreviewAreaState.LOADING;
     this.documentReady_ = false;
     this.getPreview_().then(
         previewUid => {
@@ -286,11 +285,11 @@ Polymer({
         },
         type => {
           if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
-            this.error = print_preview_new.Error.INVALID_PRINTER;
-            this.previewState = print_preview_new.PreviewAreaState.ERROR;
+            this.error = print_preview.Error.INVALID_PRINTER;
+            this.previewState = print_preview.PreviewAreaState.ERROR;
           } else if (/** @type{string} */ (type) != 'CANCELLED') {
-            this.error = print_preview_new.Error.PREVIEW_FAILED;
-            this.previewState = print_preview_new.PreviewAreaState.ERROR;
+            this.error = print_preview.Error.PREVIEW_FAILED;
+            this.previewState = print_preview.PreviewAreaState.ERROR;
           }
         });
   },
@@ -300,9 +299,9 @@ Polymer({
   setOpeningPdfInPreview: function() {
     assert(cr.isMac);
     this.previewState =
-        this.previewState == print_preview_new.PreviewAreaState.LOADING ?
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
+        this.previewState == print_preview.PreviewAreaState.LOADING ?
+        print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
+        print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
   },
   // </if>
 
@@ -344,8 +343,8 @@ Polymer({
     if (success) {
       this.pluginLoaded_ = true;
     } else {
-      this.error = print_preview_new.Error.PREVIEW_FAILED;
-      this.previewState = print_preview_new.PreviewAreaState.ERROR;
+      this.error = print_preview.Error.PREVIEW_FAILED;
+      this.previewState = print_preview.PreviewAreaState.ERROR;
     }
   },
 
@@ -408,8 +407,7 @@ Polymer({
       this.pluginProxy_.darkModeChanged(darkMode);
     }
 
-    if (this.previewState ===
-        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW) {
+    if (this.previewState === print_preview.PreviewAreaState.DISPLAY_PREVIEW) {
       this.startPreview(true);
     }
   },
@@ -591,7 +589,7 @@ Polymer({
           Object.values(print_preview.ticket_items.CustomMarginsOrientation)
               .some(side => {
                 return this.margins.get(side) !==
-                    customMargins[print_preview_new.MARGIN_KEY_MAP.get(side)];
+                    customMargins[print_preview.MARGIN_KEY_MAP.get(side)];
               });
       if (customMarginsChanged) {
         return true;
@@ -628,7 +626,7 @@ Polymer({
 
     // Media size
     const newValue =
-        /** @type {!print_preview_new.MediaSizeValue} */ (
+        /** @type {!print_preview.MediaSizeValue} */ (
             this.getSettingValue('mediaSize'));
     if (newValue.height_microns != lastTicket.mediaSize.height_microns ||
         newValue.width_microns != lastTicket.mediaSize.width_microns ||
@@ -711,8 +709,8 @@ Polymer({
       dpiHorizontal: this.getDpiForTicket_('horizontal_dpi'),
       dpiVertical: this.getDpiForTicket_('vertical_dpi'),
       duplex: this.getSettingValue('duplex') ?
-          print_preview_new.DuplexMode.LONG_EDGE :
-          print_preview_new.DuplexMode.SIMPLEX,
+          print_preview.DuplexMode.LONG_EDGE :
+          print_preview.DuplexMode.SIMPLEX,
       printToPDF: this.destination.id ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
       printWithCloudPrint: !this.destination.isLocal,
@@ -738,33 +736,33 @@ Polymer({
 
   /** @private */
   onStateChange_: function() {
-    if ((this.state === print_preview_new.State.ERROR ||
-         this.state === print_preview_new.State.FATAL_ERROR) &&
+    if ((this.state === print_preview.State.ERROR ||
+         this.state === print_preview.State.FATAL_ERROR) &&
         this.getErrorMessage_() !== '') {
-      this.previewState = print_preview_new.PreviewAreaState.ERROR;
+      this.previewState = print_preview.PreviewAreaState.ERROR;
     }
   },
 
   /** @return {string} The error message to display in the preview area. */
   getErrorMessage_: function() {
     switch (this.error) {
-      case print_preview_new.Error.INVALID_PRINTER:
+      case print_preview.Error.INVALID_PRINTER:
         return this.i18nAdvanced('invalidPrinterSettings', {
           substitutions: [],
           tags: ['BR'],
         });
-      case print_preview_new.Error.UNSUPPORTED_PRINTER:
+      case print_preview.Error.UNSUPPORTED_PRINTER:
         return this.i18nAdvanced('unsupportedCloudPrinter', {
           substitutions: [],
           tags: ['BR'],
         });
       // <if expr="chromeos">
-      case print_preview_new.Error.NO_DESTINATIONS:
+      case print_preview.Error.NO_DESTINATIONS:
         return this.i18n('noDestinationsMessage');
       // </if>
-      case print_preview_new.Error.NO_PLUGIN:
+      case print_preview.Error.NO_PLUGIN:
         return this.i18n('noPlugin');
-      case print_preview_new.Error.PREVIEW_FAILED:
+      case print_preview.Error.PREVIEW_FAILED:
         return this.i18n('previewFailed');
       default:
         return '';

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 /**
  * @typedef {{
  *   is_default: (boolean | undefined),
@@ -12,15 +12,15 @@ cr.exportPath('print_preview_new');
  *   name: (string | undefined),
  * }}
  */
-print_preview_new.SelectOption;
+print_preview.SelectOption;
 
 Polymer({
   is: 'print-preview-settings-select',
 
-  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
+  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
 
   properties: {
-    /** @type {{ option: Array<!print_preview_new.SelectOption> }} */
+    /** @type {{ option: Array<!print_preview.SelectOption> }} */
     capability: Object,
 
     settingName: String,
@@ -29,7 +29,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview_new.SelectOption} option Option to check.
+   * @param {!print_preview.SelectOption} option Option to check.
    * @return {boolean} Whether the option is selected.
    * @private
    */
@@ -44,7 +44,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview_new.SelectOption} option Option to get the value
+   * @param {!print_preview.SelectOption} option Option to get the value
    *    for.
    * @return {string} Value for the option.
    * @private
@@ -54,7 +54,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview_new.SelectOption} option Option to get the display
+   * @param {!print_preview.SelectOption} option Option to get the display
    *    name for.
    * @return {string} Display name for the option.
    * @private

@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-layout-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
+  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
 
   properties: {
     disabled: Boolean,

@@ -14,7 +14,7 @@ const RADIUS_PX = 9;
 Polymer({
   is: 'print-preview-margin-control',
 
-  behaviors: [print_preview_new.InputBehavior, I18nBehavior],
+  behaviors: [print_preview.InputBehavior, I18nBehavior],
 
   properties: {
     side: {

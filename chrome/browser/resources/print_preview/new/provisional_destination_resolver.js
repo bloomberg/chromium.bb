@@ -11,13 +11,13 @@
  * has successfully granted access.
  */
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * States that the provisional destination resolver can be in.
  * @enum {string}
  */
-print_preview_new.ResolverState = {
+print_preview.ResolverState = {
   INITIAL: 'INITIAL',
   ACTIVE: 'ACTIVE',
   GRANTING_PERMISSION: 'GRANTING_PERMISSION',
@@ -40,10 +40,10 @@ Polymer({
       value: null,
     },
 
-    /** @private {!print_preview_new.ResolverState} */
+    /** @private {!print_preview.ResolverState} */
     state_: {
       type: String,
-      value: print_preview_new.ResolverState.INITIAL,
+      value: print_preview.ResolverState.INITIAL,
     },
   },
 
@@ -64,7 +64,7 @@ Polymer({
    *     resolved.
    */
   resolveDestination: function(destination) {
-    this.state_ = print_preview_new.ResolverState.ACTIVE;
+    this.state_ = print_preview.ResolverState.ACTIVE;
     this.destination_ = destination;
     this.$.dialog.showModal();
     const icon = this.$$('.extension-icon');
@@ -85,10 +85,10 @@ Polymer({
    */
   startResolveDestination_: function() {
     assert(
-        this.state_ == print_preview_new.ResolverState.ACTIVE,
+        this.state_ == print_preview.ResolverState.ACTIVE,
         'Invalid state in request grant permission');
 
-    this.state_ = print_preview_new.ResolverState.GRANTING_PERMISSION;
+    this.state_ = print_preview.ResolverState.GRANTING_PERMISSION;
     const destination =
         /** @type {!print_preview.Destination} */ (this.destination_);
     this.destinationStore.resolveProvisionalDestination(destination)
@@ -96,7 +96,7 @@ Polymer({
             /** @param {?print_preview.Destination} resolvedDestination */
             (resolvedDestination) => {
               if (this.state_ !=
-                  print_preview_new.ResolverState.GRANTING_PERMISSION) {
+                  print_preview.ResolverState.GRANTING_PERMISSION) {
                 return;
               }
 
@@ -105,12 +105,12 @@ Polymer({
               }
 
               if (resolvedDestination) {
-                this.state_ = print_preview_new.ResolverState.DONE;
+                this.state_ = print_preview.ResolverState.DONE;
                 this.promiseResolver_.resolve(resolvedDestination);
                 this.promiseResolver_ = null;
                 this.$.dialog.close();
               } else {
-                this.state_ = print_preview_new.ResolverState.ERROR;
+                this.state_ = print_preview.ResolverState.ERROR;
               }
             });
   },
@@ -135,7 +135,7 @@ Polymer({
   /** @private */
   onCancel_: function() {
     this.promiseResolver_.reject();
-    this.state_ = print_preview_new.ResolverState.INITIAL;
+    this.state_ = print_preview.ResolverState.INITIAL;
   },
 
   /**
@@ -143,7 +143,7 @@ Polymer({
    * @private
    */
   getPermissionMessage_: function() {
-    return this.state_ == print_preview_new.ResolverState.ERROR ?
+    return this.state_ == print_preview.ResolverState.ERROR ?
         this.i18n(
             'resolveExtensionUSBErrorMessage',
             this.destination_.extensionName) :
@@ -155,7 +155,7 @@ Polymer({
    * @private
    */
   isInErrorState_: function() {
-    return this.state_ == print_preview_new.ResolverState.ERROR;
+    return this.state_ == print_preview.ResolverState.ERROR;
   },
 
   /**
@@ -163,7 +163,7 @@ Polymer({
    * @private
    */
   isInActiveState_: function() {
-    return this.state_ == print_preview_new.ResolverState.ACTIVE;
+    return this.state_ == print_preview.ResolverState.ACTIVE;
   },
 
   /**
@@ -171,7 +171,7 @@ Polymer({
    *     state, empty otherwise.
    */
   getThrobberClass_: function() {
-    return this.state_ == print_preview_new.ResolverState.GRANTING_PERMISSION ?
+    return this.state_ == print_preview.ResolverState.GRANTING_PERMISSION ?
         'throbber' :
         '';
   },

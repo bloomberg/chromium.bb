@@ -270,7 +270,7 @@ cr.define('model_test', function() {
         color: testDestination.getNativeColorModel(true),
         headerFooterEnabled: false,  // Only used in print preview
         marginsType: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-        duplex: print_preview_new.DuplexMode.SIMPLEX,
+        duplex: print_preview.DuplexMode.SIMPLEX,
         copies: 1,
         collate: true,
         shouldPrintBackgrounds: false,
@@ -305,7 +305,7 @@ cr.define('model_test', function() {
         color: testDestination.getNativeColorModel(false),
         headerFooterEnabled: false,
         marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-        duplex: print_preview_new.DuplexMode.SHORT_EDGE,
+        duplex: print_preview.DuplexMode.SHORT_EDGE,
         copies: 2,
         collate: false,
         shouldPrintBackgrounds: true,

@@ -11,7 +11,7 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @type {!print_preview_new.Settings} */
+    /** @type {!print_preview.Settings} */
     settings: Object,
 
     /** @private {boolean} */

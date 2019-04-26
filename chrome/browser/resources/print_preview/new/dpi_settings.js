@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * @typedef {{
@@ -10,7 +10,7 @@ cr.exportPath('print_preview_new');
  *   vertical_dpi: (number | undefined),
  *   vendor_id: (number | undefined)}}
  */
-print_preview_new.DpiOption;
+print_preview.DpiOption;
 
 /**
  * @typedef {{
@@ -19,7 +19,7 @@ print_preview_new.DpiOption;
  *   vertical_dpi: (number | undefined),
  *   vendor_id: (number | undefined)}}
  */
-print_preview_new.LabelledDpiOption;
+print_preview.LabelledDpiOption;
 
 Polymer({
   is: 'print-preview-dpi-settings',
@@ -27,12 +27,12 @@ Polymer({
   behaviors: [SettingsBehavior],
 
   properties: {
-    /** @type {{ option: Array<!print_preview_new.SelectOption> }} */
+    /** @type {{ option: Array<!print_preview.SelectOption> }} */
     capability: Object,
 
     disabled: Boolean,
 
-    /** @private {{ option: Array<!print_preview_new.SelectOption> }} */
+    /** @private {{ option: Array<!print_preview.SelectOption> }} */
     capabilityWithLabels_: {
       type: Object,
       computed: 'computeCapabilityWithLabels_(capability)',
@@ -45,7 +45,7 @@ Polymer({
 
   /**
    * Adds default labels for each option.
-   * @return {?{option: Array<!print_preview_new.SelectOption>}}
+   * @return {?{option: Array<!print_preview.SelectOption>}}
    * @private
    */
   computeCapabilityWithLabels_: function() {
@@ -54,10 +54,10 @@ Polymer({
     }
 
     const result =
-        /** @type {{option: Array<!print_preview_new.SelectOption>}} */ (
+        /** @type {{option: Array<!print_preview.SelectOption>}} */ (
             JSON.parse(JSON.stringify(this.capability)));
     this.capability.option.forEach((option, index) => {
-      const dpiOption = /** @type {print_preview_new.DpiOption} */ (option);
+      const dpiOption = /** @type {print_preview.DpiOption} */ (option);
       const hDpi = dpiOption.horizontal_dpi || 0;
       const vDpi = dpiOption.vertical_dpi || 0;
       if (hDpi > 0 && vDpi > 0 && hDpi != vDpi) {
@@ -79,11 +79,11 @@ Polymer({
       return;
     }
 
-    const dpiValue = /** @type {print_preview_new.DpiOption} */ (
-        this.getSettingValue('dpi'));
+    const dpiValue =
+        /** @type {print_preview.DpiOption} */ (this.getSettingValue('dpi'));
     for (const option of assert(this.capabilityWithLabels_.option)) {
       const dpiOption =
-          /** @type {print_preview_new.LabelledDpiOption} */ (option);
+          /** @type {print_preview.LabelledDpiOption} */ (option);
       if (dpiValue.horizontal_dpi == dpiOption.horizontal_dpi &&
           dpiValue.vertical_dpi == dpiOption.vertical_dpi &&
           dpiValue.vendor_id == dpiOption.vendor_id) {

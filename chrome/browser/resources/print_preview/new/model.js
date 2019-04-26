@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * @typedef {{
@@ -31,7 +31,7 @@ cr.exportPath('print_preview_new');
  *    pinValue: (string | undefined)
  * }}
  */
-print_preview_new.SerializedSettings;
+print_preview.SerializedSettings;
 
 /**
  * @typedef {{
@@ -39,20 +39,20 @@ print_preview_new.SerializedSettings;
  *  managed: boolean
  * }}
  */
-print_preview_new.PolicyEntry;
+print_preview.PolicyEntry;
 
 /**
  * @typedef {{
- *   headerFooter: print_preview_new.PolicyEntry
+ *   headerFooter: print_preview.PolicyEntry
  * }}
  */
-print_preview_new.PolicySettings;
+print_preview.PolicySettings;
 
 /**
  * Constant values matching printing::DuplexMode enum.
  * @enum {number}
  */
-print_preview_new.DuplexMode = {
+print_preview.DuplexMode = {
   SIMPLEX: 0,
   LONG_EDGE: 1,
   SHORT_EDGE: 2,
@@ -63,7 +63,7 @@ print_preview_new.DuplexMode = {
  * Values matching the types of duplex in a CDD.
  * @enum {string}
  */
-print_preview_new.DuplexType = {
+print_preview.DuplexType = {
   NO_DUPLEX: 'NO_DUPLEX',
   LONG_EDGE: 'LONG_EDGE',
   SHORT_EDGE: 'SHORT_EDGE'
@@ -136,7 +136,7 @@ Polymer({
      * Initialize settings that are only available on some printers to
      * unavailable, and settings that are provided by PDF generation to
      * available.
-     * @type {!print_preview_new.Settings}
+     * @type {!print_preview.Settings}
      */
     settings: {
       type: Object,
@@ -175,10 +175,10 @@ Polymer({
   /** @private {boolean} */
   initialized_: false,
 
-  /** @private {?print_preview_new.SerializedSettings} */
+  /** @private {?print_preview.SerializedSettings} */
   stickySettings_: null,
 
-  /** @private {?print_preview_new.PolicySettings} */
+  /** @private {?print_preview.PolicySettings} */
   policySettings_: null,
 
   /** @private {?print_preview.Cdd} */
@@ -445,10 +445,10 @@ Polymer({
 
   /**
    * @param {string} settingName Name of the setting to get.
-   * @return {print_preview_new.Setting} The setting object.
+   * @return {print_preview.Setting} The setting object.
    */
   getSetting: function(settingName) {
-    const setting = /** @type {print_preview_new.Setting} */ (
+    const setting = /** @type {print_preview.Setting} */ (
         this.get(settingName, this.settings));
     assert(setting, 'Setting is missing: ' + settingName);
     return setting;
@@ -589,17 +589,17 @@ Polymer({
     const capsHasDuplex = !!caps && !!caps.duplex && !!caps.duplex.option;
     const capsHasLongEdge = capsHasDuplex &&
         caps.duplex.option.some(
-            o => o.type == print_preview_new.DuplexType.LONG_EDGE);
+            o => o.type == print_preview.DuplexType.LONG_EDGE);
     const capsHasShortEdge = capsHasDuplex &&
         caps.duplex.option.some(
-            o => o.type == print_preview_new.DuplexType.SHORT_EDGE);
+            o => o.type == print_preview.DuplexType.SHORT_EDGE);
     this.setSettingPath_(
         'duplexShortEdge.available', capsHasLongEdge && capsHasShortEdge);
     this.setSettingPath_(
         'duplex.available',
         (capsHasLongEdge || capsHasShortEdge) &&
             caps.duplex.option.some(
-                o => o.type == print_preview_new.DuplexType.NO_DUPLEX));
+                o => o.type == print_preview.DuplexType.NO_DUPLEX));
 
     this.setSettingPath_(
         'vendorItems.available', !!caps && !!caps.vendor_capability);
@@ -816,13 +816,13 @@ Polymer({
       this.setSetting(
           'duplex',
           defaultOption ?
-              (defaultOption.type == print_preview_new.DuplexType.LONG_EDGE ||
-               defaultOption.type == print_preview_new.DuplexType.SHORT_EDGE) :
+              (defaultOption.type == print_preview.DuplexType.LONG_EDGE ||
+               defaultOption.type == print_preview.DuplexType.SHORT_EDGE) :
               false);
       this.setSetting(
           'duplexShortEdge',
           defaultOption ?
-              defaultOption.type == print_preview_new.DuplexType.SHORT_EDGE :
+              defaultOption.type == print_preview.DuplexType.SHORT_EDGE :
               false);
 
       if (!this.settings.duplexShortEdge.available) {
@@ -831,16 +831,16 @@ Polymer({
         this.setSettingPath_(
             'duplexShortEdge.unavailableValue',
             caps.duplex.option.some(
-                o => o.type == print_preview_new.DuplexType.SHORT_EDGE));
+                o => o.type == print_preview.DuplexType.SHORT_EDGE));
       }
     } else if (
         !this.settings.duplex.available && caps && caps.duplex &&
         caps.duplex.option) {
       // In this case, there must only be one option.
       const hasLongEdge = caps.duplex.option.some(
-          o => o.type == print_preview_new.DuplexType.LONG_EDGE);
+          o => o.type == print_preview.DuplexType.LONG_EDGE);
       const hasShortEdge = caps.duplex.option.some(
-          o => o.type == print_preview_new.DuplexType.SHORT_EDGE);
+          o => o.type == print_preview.DuplexType.SHORT_EDGE);
       // If the only option available is long edge, the value should always be
       // true.
       this.setSettingPath_(
@@ -892,7 +892,7 @@ Polymer({
 
     let savedSettings;
     try {
-      savedSettings = /** @type {print_preview_new.SerializedSettings} */ (
+      savedSettings = /** @type {print_preview.SerializedSettings} */ (
           JSON.parse(savedSettingsStr));
     } catch (e) {
       console.error('Unable to parse state ' + e);
@@ -1055,31 +1055,31 @@ Polymer({
   },
 
   /**
-   * @return {!print_preview_new.DuplexMode} The duplex mode selected.
+   * @return {!print_preview.DuplexMode} The duplex mode selected.
    * @private
    */
   getDuplexMode_: function() {
     if (!this.getSettingValue('duplex')) {
-      return print_preview_new.DuplexMode.SIMPLEX;
+      return print_preview.DuplexMode.SIMPLEX;
     }
 
     return this.getSettingValue('duplexShortEdge') ?
-        print_preview_new.DuplexMode.SHORT_EDGE :
-        print_preview_new.DuplexMode.LONG_EDGE;
+        print_preview.DuplexMode.SHORT_EDGE :
+        print_preview.DuplexMode.LONG_EDGE;
   },
 
   /**
-   * @return {!print_preview_new.DuplexType} The duplex type selected.
+   * @return {!print_preview.DuplexType} The duplex type selected.
    * @private
    */
   getCddDuplexType_: function() {
     if (!this.getSettingValue('duplex')) {
-      return print_preview_new.DuplexType.NO_DUPLEX;
+      return print_preview.DuplexType.NO_DUPLEX;
     }
 
     return this.getSettingValue('duplexShortEdge') ?
-        print_preview_new.DuplexType.SHORT_EDGE :
-        print_preview_new.DuplexType.LONG_EDGE;
+        print_preview.DuplexType.SHORT_EDGE :
+        print_preview.DuplexType.LONG_EDGE;
   },
 
   /**

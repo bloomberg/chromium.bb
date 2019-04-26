@@ -9,7 +9,7 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: {
       type: Number,
       observer: 'updatePrintButtonEnabled_',
@@ -32,8 +32,8 @@ Polymer({
 
   observers: ['updatePrintButtonLabel_(destination.id)'],
 
-  /** @private {!print_preview_new.State} */
-  lastState_: print_preview_new.State.NOT_READY,
+  /** @private {!print_preview.State} */
+  lastState_: print_preview.State.NOT_READY,
 
   /** @private */
   onPrintClick_: function() {
@@ -66,10 +66,10 @@ Polymer({
   /** @private */
   updatePrintButtonEnabled_: function() {
     switch (this.state) {
-      case (print_preview_new.State.PRINTING):
+      case (print_preview.State.PRINTING):
         this.printButtonEnabled_ = false;
         break;
-      case (print_preview_new.State.READY):
+      case (print_preview.State.READY):
         this.printButtonEnabled_ = true;
         if (this.lastState_ != this.state &&
             (document.activeElement == null ||

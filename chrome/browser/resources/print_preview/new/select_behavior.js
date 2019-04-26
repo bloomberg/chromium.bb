@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview_new', function() {
+cr.define('print_preview', function() {
   /**
    * Helper functions for a select with timeout. Implemented by select settings
    * sections, so that the preview does not immediately begin generating and

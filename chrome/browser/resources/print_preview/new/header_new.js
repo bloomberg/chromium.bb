@@ -23,10 +23,10 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: Number,
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: Number,
 
     managed: Boolean,
@@ -99,17 +99,17 @@ Polymer({
   /** @private */
   update_: function() {
     switch (this.state) {
-      case (print_preview_new.State.PRINTING):
+      case (print_preview.State.PRINTING):
         this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
         this.summaryLabel_ = this.summary_;
         break;
-      case (print_preview_new.State.READY):
+      case (print_preview.State.READY):
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
         this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
         break;
-      case (print_preview_new.State.FATAL_ERROR):
+      case (print_preview.State.FATAL_ERROR):
         this.summary_ = this.getErrorMessage_();
         this.summaryLabel_ = this.getErrorMessage_();
         break;
@@ -126,9 +126,9 @@ Polymer({
    */
   getErrorMessage_: function() {
     switch (this.error) {
-      case print_preview_new.Error.PRINT_FAILED:
+      case print_preview.Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
-      case print_preview_new.Error.CLOUD_PRINT_ERROR:
+      case print_preview.Error.CLOUD_PRINT_ERROR:
         return this.cloudPrintErrorMessage;
       default:
         return '';

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /** @enum {number} */
-print_preview_new.State = {
+print_preview.State = {
   NOT_READY: 0,
   READY: 1,
   HIDDEN: 2,
@@ -17,7 +17,7 @@ print_preview_new.State = {
 };
 
 /** @enum {number} */
-print_preview_new.Error = {
+print_preview.Error = {
   NONE: 0,
   INVALID_TICKET: 1,
   INVALID_PRINTER: 2,
@@ -33,64 +33,64 @@ Polymer({
   is: 'print-preview-state',
 
   properties: {
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: {
       type: Number,
       notify: true,
-      value: print_preview_new.State.NOT_READY,
+      value: print_preview.State.NOT_READY,
     },
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: {
       type: Number,
       notify: true,
-      value: print_preview_new.Error.NONE,
+      value: print_preview.Error.NONE,
     },
   },
 
-  /** @param {print_preview_new.State} newState The state to transition to. */
+  /** @param {print_preview.State} newState The state to transition to. */
   transitTo: function(newState) {
     switch (newState) {
-      case (print_preview_new.State.NOT_READY):
+      case (print_preview.State.NOT_READY):
         assert(
-            this.state == print_preview_new.State.NOT_READY ||
-            this.state == print_preview_new.State.READY ||
-            this.state == print_preview_new.State.ERROR);
+            this.state == print_preview.State.NOT_READY ||
+            this.state == print_preview.State.READY ||
+            this.state == print_preview.State.ERROR);
         break;
-      case (print_preview_new.State.READY):
+      case (print_preview.State.READY):
         assert(
-            this.state == print_preview_new.State.ERROR ||
-            this.state == print_preview_new.State.NOT_READY ||
-            this.state == print_preview_new.State.PRINTING);
+            this.state == print_preview.State.ERROR ||
+            this.state == print_preview.State.NOT_READY ||
+            this.state == print_preview.State.PRINTING);
         break;
-      case (print_preview_new.State.HIDDEN):
-        assert(this.state == print_preview_new.State.READY);
+      case (print_preview.State.HIDDEN):
+        assert(this.state == print_preview.State.READY);
         break;
-      case (print_preview_new.State.PRINTING):
+      case (print_preview.State.PRINTING):
         assert(
-            this.state == print_preview_new.State.READY ||
-            this.state == print_preview_new.State.HIDDEN);
+            this.state == print_preview.State.READY ||
+            this.state == print_preview.State.HIDDEN);
         break;
-      case (print_preview_new.State.SYSTEM_DIALOG):
+      case (print_preview.State.SYSTEM_DIALOG):
         assert(
-            this.state != print_preview_new.State.HIDDEN &&
-            this.state != print_preview_new.State.PRINTING &&
-            this.state != print_preview_new.State.CLOSING);
+            this.state != print_preview.State.HIDDEN &&
+            this.state != print_preview.State.PRINTING &&
+            this.state != print_preview.State.CLOSING);
         break;
-      case (print_preview_new.State.ERROR):
+      case (print_preview.State.ERROR):
         assert(
-            this.state == print_preview_new.State.ERROR ||
-            this.state == print_preview_new.State.NOT_READY ||
-            this.state == print_preview_new.State.READY);
+            this.state == print_preview.State.ERROR ||
+            this.state == print_preview.State.NOT_READY ||
+            this.state == print_preview.State.READY);
         break;
-      case (print_preview_new.State.CLOSING):
-        assert(this.state != print_preview_new.State.HIDDEN);
+      case (print_preview.State.CLOSING):
+        assert(this.state != print_preview.State.HIDDEN);
         break;
     }
     this.state = newState;
-    if (newState !== print_preview_new.State.ERROR &&
-        newState !== print_preview_new.State.FATAL_ERROR) {
-      this.error = print_preview_new.Error.NONE;
+    if (newState !== print_preview.State.ERROR &&
+        newState !== print_preview.State.FATAL_ERROR) {
+      this.error = print_preview.Error.NONE;
     }
   },
 });

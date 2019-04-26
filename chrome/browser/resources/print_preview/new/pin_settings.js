@@ -5,10 +5,10 @@
 Polymer({
   is: 'print-preview-pin-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
+  behaviors: [SettingsBehavior, print_preview.InputBehavior],
 
   properties: {
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: Number,
 
     disabled: Boolean,
@@ -136,7 +136,7 @@ Polymer({
     // It's done because we don't permit multiple simultaneous validation errors
     // in Print Preview and we also don't want to set the value when sticky
     // settings may not yet have been set.
-    if (this.state != print_preview_new.State.READY &&
+    if (this.state != print_preview.State.READY &&
         this.settings.pinValue.valid) {
       return;
     }

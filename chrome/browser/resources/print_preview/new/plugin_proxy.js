@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 /**
  * @typedef {{accessibility: Function,
  *            documentLoadComplete: Function,
@@ -32,9 +32,9 @@ cr.exportPath('print_preview_new');
  *            zoomIn: Function,
  *            zoomOut: Function}}
  */
-print_preview_new.PDFPlugin;
+print_preview.PDFPlugin;
 
-cr.define('print_preview_new', function() {
+cr.define('print_preview', function() {
   'use strict';
 
   /**
@@ -43,7 +43,7 @@ cr.define('print_preview_new', function() {
   class PluginProxy {
     /**
      * Creates a new PluginProxy if the current instance is not set.
-     * @return {!print_preview_new.PluginProxy} The singleton instance.
+     * @return {!print_preview.PluginProxy} The singleton instance.
      */
     static getInstance() {
       if (instance == null) {
@@ -53,7 +53,7 @@ cr.define('print_preview_new', function() {
     }
 
     /**
-     * @param {!print_preview_new.PluginProxy} newInstance The PluginProxy
+     * @param {!print_preview.PluginProxy} newInstance The PluginProxy
      *     instance to set for print preview construction.
      */
     static setInstance(newInstance) {
@@ -61,7 +61,7 @@ cr.define('print_preview_new', function() {
     }
 
     constructor() {
-      /** @private {?print_preview_new.PDFPlugin} */
+      /** @private {?print_preview.PDFPlugin} */
       this.plugin_ = null;
     }
 
@@ -85,12 +85,12 @@ cr.define('print_preview_new', function() {
      * Creates the PDF plugin.
      * @param {number} previewUid The unique ID of the preview UI.
      * @param {number} index The preview index to load.
-     * @return {!print_preview_new.PDFPlugin} The created plugin.
+     * @return {!print_preview.PDFPlugin} The created plugin.
      */
     createPlugin(previewUid, index) {
       assert(!this.plugin_);
       const srcUrl = this.getPreviewUrl_(previewUid, index);
-      this.plugin_ = /** @type {print_preview_new.PDFPlugin} */ (
+      this.plugin_ = /** @type {print_preview.PDFPlugin} */ (
           PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
       this.plugin_.classList.add('preview-area-plugin');
       this.plugin_.setAttribute('aria-live', 'polite');
@@ -166,7 +166,7 @@ cr.define('print_preview_new', function() {
     }
   }
 
-  /** @type {?print_preview_new.PluginProxy} */
+  /** @type {?print_preview.PluginProxy} */
   let instance = null;
 
   // Export

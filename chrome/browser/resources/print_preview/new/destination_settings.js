@@ -56,13 +56,13 @@ Polymer({
 
     disabled: Boolean,
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: {
       type: Number,
       notify: true,
     },
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: Number,
 
     /** @private {string} */
@@ -226,7 +226,7 @@ Polymer({
 
   /** @private */
   onDestinationSelect_: function() {
-    if (this.state === print_preview_new.State.FATAL_ERROR) {
+    if (this.state === print_preview.State.FATAL_ERROR) {
       // Don't let anything reset if there is a fatal error.
       return;
     }
@@ -265,17 +265,17 @@ Polymer({
    * @private
    */
   onDestinationError_: function(e) {
-    let errorType = print_preview_new.Error.NONE;
+    let errorType = print_preview.Error.NONE;
     switch (e.detail) {
       case print_preview.DestinationErrorType.INVALID:
-        errorType = print_preview_new.Error.INVALID_PRINTER;
+        errorType = print_preview.Error.INVALID_PRINTER;
         break;
       case print_preview.DestinationErrorType.UNSUPPORTED:
-        errorType = print_preview_new.Error.UNSUPPORTED_PRINTER;
+        errorType = print_preview.Error.UNSUPPORTED_PRINTER;
         break;
       // <if expr="chromeos">
       case print_preview.DestinationErrorType.NO_DESTINATIONS:
-        errorType = print_preview_new.Error.NO_DESTINATIONS;
+        errorType = print_preview.Error.NO_DESTINATIONS;
         this.noDestinations_ = true;
         break;
       // </if>
@@ -377,9 +377,9 @@ Polymer({
    * @private
    */
   shouldDisableDropdown_: function() {
-    return this.state === print_preview_new.State.FATAL_ERROR ||
+    return this.state === print_preview.State.FATAL_ERROR ||
         (this.destinationState === print_preview.DestinationState.UPDATED &&
-         this.disabled && this.state !== print_preview_new.State.NOT_READY);
+         this.disabled && this.state !== print_preview.State.NOT_READY);
   },
 
   /** @private */

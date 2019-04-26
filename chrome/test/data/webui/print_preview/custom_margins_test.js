@@ -65,7 +65,7 @@ cr.define('custom_margins_test', function() {
           defaultMarginPts);
       container.measurementSystem = new print_preview.MeasurementSystem(
           ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
-      container.state = print_preview_new.State.NOT_READY;
+      container.state = print_preview.State.NOT_READY;
     });
 
     /** @return {!Array<!PrintPreviewMarginControlElement>} */
@@ -92,7 +92,7 @@ cr.define('custom_margins_test', function() {
         container.settings = model.settings;
         test_util.fakeDataBind(model, container, 'settings');
 
-        container.state = print_preview_new.State.READY;
+        container.state = print_preview.State.READY;
         container.updateClippingMask(new print_preview.Size(850, 1100));
         container.updateScaleTransform(pixelsPerInch / pointsPerInch);
         container.previewLoaded = true;

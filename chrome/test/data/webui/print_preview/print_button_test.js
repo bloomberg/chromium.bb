@@ -45,7 +45,7 @@ cr.define('print_button_test', function() {
 
       const pluginProxy = new print_preview.PDFPluginStub();
       pluginProxy.setPluginCompatible(true);
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);

@@ -52,7 +52,7 @@ cr.define('print_preview_app_test', function() {
       cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
       cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
       pluginProxy = new print_preview.PDFPluginStub();
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -90,7 +90,7 @@ cr.define('print_preview_app_test', function() {
 
       // Send preset values of duplex LONG_EDGE and 2 copies.
       const copies = 2;
-      const duplex = print_preview_new.DuplexMode.LONG_EDGE;
+      const duplex = print_preview.DuplexMode.LONG_EDGE;
       cr.webUIListenerCallback('print-preset-options', true, copies, duplex);
       assertEquals(copies, page.getSettingValue('copies'));
       assertTrue(page.getSettingValue('duplex'));

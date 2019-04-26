@@ -32,7 +32,7 @@ cr.define('select_behavior_test', function() {
 
       Polymer({
         is: 'test-select',
-        behaviors: [print_preview_new.SelectBehavior],
+        behaviors: [print_preview.SelectBehavior],
 
         onProcessSelectChange: function(value) {
           settingValue = value;

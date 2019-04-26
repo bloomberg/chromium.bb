@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-number-settings-section',
 
-  behaviors: [print_preview_new.InputBehavior],
+  behaviors: [print_preview.InputBehavior],
 
   properties: {
     /** @private {string} */

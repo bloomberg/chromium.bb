@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * |key| is the field in the serialized settings state that corresponds to the
@@ -18,46 +18,46 @@ cr.exportPath('print_preview_new');
  *   updatesPreview: boolean,
  * }}
  */
-print_preview_new.Setting;
+print_preview.Setting;
 
 /**
  * @typedef {{
- *   pages: !print_preview_new.Setting,
- *   copies: !print_preview_new.Setting,
- *   collate: !print_preview_new.Setting,
- *   layout: !print_preview_new.Setting,
- *   color: !print_preview_new.Setting,
- *   mediaSize: !print_preview_new.Setting,
- *   margins: !print_preview_new.Setting,
- *   dpi: !print_preview_new.Setting,
- *   fitToPage: !print_preview_new.Setting,
- *   scaling: !print_preview_new.Setting,
- *   duplex: !print_preview_new.Setting,
- *   duplexShortEdge: !print_preview_new.Setting,
- *   cssBackground: !print_preview_new.Setting,
- *   selectionOnly: !print_preview_new.Setting,
- *   headerFooter: !print_preview_new.Setting,
- *   rasterize: !print_preview_new.Setting,
- *   vendorItems: !print_preview_new.Setting,
- *   otherOptions: !print_preview_new.Setting,
- *   ranges: !print_preview_new.Setting,
- *   pagesPerSheet: !print_preview_new.Setting,
- *   pin: (print_preview_new.Setting|undefined),
- *   pinValue: (print_preview_new.Setting|undefined),
+ *   pages: !print_preview.Setting,
+ *   copies: !print_preview.Setting,
+ *   collate: !print_preview.Setting,
+ *   layout: !print_preview.Setting,
+ *   color: !print_preview.Setting,
+ *   mediaSize: !print_preview.Setting,
+ *   margins: !print_preview.Setting,
+ *   dpi: !print_preview.Setting,
+ *   fitToPage: !print_preview.Setting,
+ *   scaling: !print_preview.Setting,
+ *   duplex: !print_preview.Setting,
+ *   duplexShortEdge: !print_preview.Setting,
+ *   cssBackground: !print_preview.Setting,
+ *   selectionOnly: !print_preview.Setting,
+ *   headerFooter: !print_preview.Setting,
+ *   rasterize: !print_preview.Setting,
+ *   vendorItems: !print_preview.Setting,
+ *   otherOptions: !print_preview.Setting,
+ *   ranges: !print_preview.Setting,
+ *   pagesPerSheet: !print_preview.Setting,
+ *   pin: (print_preview.Setting|undefined),
+ *   pinValue: (print_preview.Setting|undefined),
  * }}
  */
-print_preview_new.Settings;
+print_preview.Settings;
 
 /** @polymerBehavior */
 const SettingsBehavior = {
   properties: {
-    /** @type {print_preview_new.Settings} */
+    /** @type {print_preview.Settings} */
     settings: Object,
   },
 
   /**
    * @param {string} settingName Name of the setting to get.
-   * @return {print_preview_new.Setting} The setting object.
+   * @return {print_preview.Setting} The setting object.
    */
   getSetting: function(settingName) {
     return print_preview.Model.getInstance().getSetting(settingName);

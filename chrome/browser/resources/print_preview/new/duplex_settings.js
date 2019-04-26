@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-duplex-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
+  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
 
   properties: {
     dark: Boolean,
@@ -18,7 +18,7 @@ Polymer({
      */
     duplexValueEnum_: {
       type: Object,
-      value: print_preview_new.DuplexMode,
+      value: print_preview.DuplexMode,
     },
   },
 

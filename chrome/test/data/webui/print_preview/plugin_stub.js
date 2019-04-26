@@ -45,7 +45,7 @@ cr.define('print_preview', function() {
      * Sets the load callback to imitate the plugin.
      * @param {number} previewUid The unique ID of the preview UI.
      * @param {number} index The preview index to load.
-     * @return {?print_preview_new.PDFPlugin}
+     * @return {?print_preview.PDFPlugin}
      */
     createPlugin(previewUid, index) {
       return null;

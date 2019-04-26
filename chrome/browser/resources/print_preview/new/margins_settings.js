@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-margins-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
+  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
 
   properties: {
     disabled: Boolean,

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 // <if expr="chromeos">
 /** @enum {number} */
-print_preview_new.DestinationConfigStatus = {
+print_preview.DestinationConfigStatus = {
   IDLE: 0,
   IN_PROGRESS: 1,
   FAILED: 2,
@@ -33,10 +33,10 @@ Polymer({
     searchHint_: String,
 
     // <if expr="chromeos">
-    /** @private {!print_preview_new.DestinationConfigStatus} */
+    /** @private {!print_preview.DestinationConfigStatus} */
     configurationStatus_: {
       type: Number,
-      value: print_preview_new.DestinationConfigStatus.IDLE,
+      value: print_preview.DestinationConfigStatus.IDLE,
     },
 
     /**
@@ -45,7 +45,7 @@ Polymer({
      */
     statusEnum_: {
       type: Object,
-      value: print_preview_new.DestinationConfigStatus,
+      value: print_preview.DestinationConfigStatus,
     },
     // </if>
   },
@@ -85,7 +85,7 @@ Polymer({
         this.destination.origin == print_preview.DestinationOrigin.CROS &&
         !this.destination.capabilities);
     this.configurationStatus_ =
-        print_preview_new.DestinationConfigStatus.IN_PROGRESS;
+        print_preview.DestinationConfigStatus.IN_PROGRESS;
   },
 
   /**
@@ -94,12 +94,12 @@ Polymer({
    */
   onConfigureComplete: function(success) {
     this.configurationStatus_ = success ?
-        print_preview_new.DestinationConfigStatus.IDLE :
-        print_preview_new.DestinationConfigStatus.FAILED;
+        print_preview.DestinationConfigStatus.IDLE :
+        print_preview.DestinationConfigStatus.FAILED;
   },
 
   /**
-   * @param {!print_preview_new.DestinationConfigStatus} status
+   * @param {!print_preview.DestinationConfigStatus} status
    * @return {boolean} Whether the current configuration status is |status|.
    * @private
    */

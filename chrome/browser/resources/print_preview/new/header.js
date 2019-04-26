@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new.Header');
+cr.exportPath('print_preview.Header');
 
 /**
  * @typedef {{numPages: number,
@@ -10,7 +10,7 @@ cr.exportPath('print_preview_new.Header');
  *            pagesLabel: string,
  *            summaryLabel: string}}
  */
-print_preview_new.Header.LabelInfo;
+print_preview.Header.LabelInfo;
 
 Polymer({
   is: 'print-preview-header',
@@ -23,10 +23,10 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: Number,
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: Number,
 
     /** @private */
@@ -64,8 +64,8 @@ Polymer({
     'updatePrintButtonLabel_(destination.id)'
   ],
 
-  /** @private {!print_preview_new.State} */
-  lastState_: print_preview_new.State.NOT_READY,
+  /** @private {!print_preview.State} */
+  lastState_: print_preview.State.NOT_READY,
 
   /** @private */
   onPrintClick_: function() {
@@ -96,7 +96,7 @@ Polymer({
   },
 
   /**
-   * @return {!print_preview_new.Header.LabelInfo}
+   * @return {!print_preview.Header.LabelInfo}
    * @private
    */
   computeLabelInfo_: function() {
@@ -133,13 +133,13 @@ Polymer({
   /** @private */
   update_: function() {
     switch (this.state) {
-      case (print_preview_new.State.PRINTING):
+      case (print_preview.State.PRINTING):
         this.printButtonEnabled_ = false;
         this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
         this.summaryLabel_ = this.summary_;
         break;
-      case (print_preview_new.State.READY):
+      case (print_preview.State.READY):
         this.printButtonEnabled_ = true;
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
@@ -150,7 +150,7 @@ Polymer({
           this.$$('paper-button.action-button').focus();
         }
         break;
-      case (print_preview_new.State.FATAL_ERROR):
+      case (print_preview.State.FATAL_ERROR):
         this.summary_ = this.getErrorMessage_();
         this.summaryLabel_ = this.getErrorMessage_();
         this.printButtonEnabled_ = false;
@@ -170,9 +170,9 @@ Polymer({
    */
   getErrorMessage_: function() {
     switch (this.error) {
-      case print_preview_new.Error.PRINT_FAILED:
+      case print_preview.Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
-      case print_preview_new.Error.CLOUD_PRINT_ERROR:
+      case print_preview.Error.CLOUD_PRINT_ERROR:
         return this.cloudPrintErrorMessage;
       default:
         return '';
@@ -180,7 +180,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview_new.Header.LabelInfo} labelInfo
+   * @param {!print_preview.Header.LabelInfo} labelInfo
    * @return {string}
    * @private
    */
@@ -196,7 +196,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview_new.Header.LabelInfo} labelInfo
+   * @param {!print_preview.Header.LabelInfo} labelInfo
    * @return {string}
    * @private
    */

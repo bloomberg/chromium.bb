@@ -37,7 +37,7 @@ cr.define('key_event_test', function() {
       nativeLayer.setPageCount(3);
       print_preview.NativeLayer.setInstance(nativeLayer);
       const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');

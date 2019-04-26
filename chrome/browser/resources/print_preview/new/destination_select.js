@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-destination-select',
 
-  behaviors: [I18nBehavior, print_preview_new.SelectBehavior],
+  behaviors: [I18nBehavior, print_preview.SelectBehavior],
 
   properties: {
     activeUser: String,

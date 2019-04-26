@@ -23,7 +23,7 @@ Polymer({
     }
     const valueToSet = JSON.stringify(this.getSettingValue('mediaSize'));
     for (const option of
-         /** @type {!Array<!print_preview_new.SelectOption>} */ (
+         /** @type {!Array<!print_preview.SelectOption>} */ (
              this.capability.option)) {
       if (JSON.stringify(option) === valueToSet) {
         this.$$('print-preview-settings-select').selectValue(valueToSet);

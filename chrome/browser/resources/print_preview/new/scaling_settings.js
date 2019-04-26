@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /** @enum {number} */
 const ScalingValue = {
@@ -22,7 +22,7 @@ const ScalingValue = {
 Polymer({
   is: 'print-preview-scaling-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
+  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
 
   properties: {
     disabled: {

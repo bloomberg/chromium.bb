@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview_new');
+cr.exportPath('print_preview');
 
 /**
  * @const {!Map<!print_preview.ticket_items.CustomMarginsOrientation, string>}
  */
-print_preview_new.MARGIN_KEY_MAP = new Map([
+print_preview.MARGIN_KEY_MAP = new Map([
   [print_preview.ticket_items.CustomMarginsOrientation.TOP, 'marginTop'],
   [print_preview.ticket_items.CustomMarginsOrientation.RIGHT, 'marginRight'],
   [print_preview.ticket_items.CustomMarginsOrientation.BOTTOM, 'marginBottom'],
@@ -43,7 +43,7 @@ Polymer({
     /** @type {?print_preview.MeasurementSystem} */
     measurementSystem: Object,
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: {
       type: Number,
       observer: 'onStateChanged_',
@@ -150,7 +150,7 @@ Polymer({
       const newMargins = {};
       for (const side of Object.values(
                print_preview.ticket_items.CustomMarginsOrientation)) {
-        const key = print_preview_new.MARGIN_KEY_MAP.get(side);
+        const key = print_preview.MARGIN_KEY_MAP.get(side);
         newMargins[key] = this.documentMargins.get(side);
       }
       this.setSetting('customMargins', newMargins);
@@ -169,7 +169,7 @@ Polymer({
     }
     this.shadowRoot.querySelectorAll('print-preview-margin-control')
         .forEach(control => {
-          const key = print_preview_new.MARGIN_KEY_MAP.get(control.side);
+          const key = print_preview.MARGIN_KEY_MAP.get(control.side);
           const newValue = margins[key] || 0;
           control.setPositionInPts(newValue);
           control.setTextboxValue(this.serializeValueFromPts_(newValue));
@@ -199,7 +199,7 @@ Polymer({
 
   /** @private */
   onStateChanged_: function() {
-    if (this.state == print_preview_new.State.READY &&
+    if (this.state == print_preview.State.READY &&
         this.resetMargins_ === null) {
       // Don't reset margins if there are sticky values. Otherwise, set them to
       // the document margins when the user selects custom margins.
@@ -401,7 +401,7 @@ Polymer({
             side);
     const oldMargins = /** @type {print_preview.MarginsSetting} */ (
         this.getSettingValue('customMargins'));
-    const key = print_preview_new.MARGIN_KEY_MAP.get(marginSide);
+    const key = print_preview.MARGIN_KEY_MAP.get(marginSide);
     if (oldMargins[key] == marginValue) {
       return;
     }

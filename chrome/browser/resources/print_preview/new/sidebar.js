@@ -40,7 +40,7 @@ Polymer({
       notify: true,
     },
 
-    /** @type {!print_preview_new.Error} */
+    /** @type {!print_preview.Error} */
     error: {
       type: Number,
       notify: true,
@@ -53,7 +53,7 @@ Polymer({
 
     pageCount: Number,
 
-    /** @type {!print_preview_new.State} */
+    /** @type {!print_preview.State} */
     state: {
       type: Number,
       observer: 'onStateChanged_',
@@ -123,7 +123,7 @@ Polymer({
    * @private
    */
   computeControlsDisabled_: function() {
-    return this.state != print_preview_new.State.READY;
+    return this.state != print_preview.State.READY;
   },
 
   /**
@@ -157,7 +157,7 @@ Polymer({
   },
 
   onStateChanged_: function() {
-    if (this.state !== print_preview_new.State.PRINTING) {
+    if (this.state !== print_preview.State.PRINTING) {
       return;
     }
 

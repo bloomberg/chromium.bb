@@ -38,8 +38,8 @@ Polymer({
   is: 'print-preview-pages-settings',
 
   behaviors: [
-    SettingsBehavior, print_preview_new.InputBehavior,
-    print_preview_new.SelectBehavior
+    SettingsBehavior, print_preview.InputBehavior,
+    print_preview.SelectBehavior
   ],
 
   properties: {
