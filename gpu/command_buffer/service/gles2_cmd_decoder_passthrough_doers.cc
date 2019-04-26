@@ -4872,7 +4872,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindFragDataLocationIndexedEXT(
     GLuint colorNumber,
     GLuint index,
     const char* name) {
-  NOTIMPLEMENTED();
+  api()->glBindFragDataLocationIndexedFn(
+      GetProgramServiceID(program, resources_), colorNumber, index, name);
   return error::kNoError;
 }
 
@@ -4880,7 +4881,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindFragDataLocationEXT(
     GLuint program,
     GLuint colorNumber,
     const char* name) {
-  NOTIMPLEMENTED();
+  api()->glBindFragDataLocationFn(GetProgramServiceID(program, resources_),
+                                  colorNumber, name);
   return error::kNoError;
 }
 
@@ -4888,7 +4890,8 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFragDataIndexEXT(
     GLuint program,
     const char* name,
     GLint* index) {
-  NOTIMPLEMENTED();
+  *index = api()->glGetFragDataIndexFn(GetProgramServiceID(program, resources_),
+                                       name);
   return error::kNoError;
 }
 
