@@ -17292,7 +17292,8 @@
               "device_type": "marlin",
               "os": "Android"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -17474,7 +17475,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -24707,7 +24709,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
       },

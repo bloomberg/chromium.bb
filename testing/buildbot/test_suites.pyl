@@ -38,6 +38,9 @@
           '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         ],
+        'swarming': {
+          'shards': 2,
+        },
         'test': 'chrome_public_test_vr_apk',
       },
       'chrome_public_test_vr_apk-ddready-dynamicsettings': {
