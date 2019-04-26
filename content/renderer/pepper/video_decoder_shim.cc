@@ -653,7 +653,7 @@ class VideoDecoderShim::DecoderImpl {
   void OnInitDone(bool success);
   void DoDecode();
   void OnDecodeComplete(media::DecodeStatus status);
-  void OnOutputComplete(const scoped_refptr<media::VideoFrame>& frame);
+  void OnOutputComplete(scoped_refptr<media::VideoFrame> frame);
   void OnResetComplete();
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
@@ -808,14 +808,14 @@ void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
 }
 
 void VideoDecoderShim::DecoderImpl::OnOutputComplete(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   // Software decoders are expected to generated frames only when a Decode()
   // call is pending.
   DCHECK(awaiting_decoder_);
 
   std::unique_ptr<PendingFrame> pending_frame;
   if (!frame->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
-    pending_frame.reset(new PendingFrame(decode_id_, frame));
+    pending_frame.reset(new PendingFrame(decode_id_, std::move(frame)));
   else
     pending_frame.reset(new PendingFrame(decode_id_));
 

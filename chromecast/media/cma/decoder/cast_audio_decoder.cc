@@ -220,7 +220,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     decode_queue_.pop();
   }
 
-  void OnDecoderOutput(const scoped_refptr<::media::AudioBuffer>& decoded) {
+  void OnDecoderOutput(scoped_refptr<::media::AudioBuffer> decoded) {
     if (decoded->sample_rate() != config_.samples_per_second) {
       LOG(WARNING) << "sample_rate changed to " << decoded->sample_rate()
                    << " from " << config_.samples_per_second;
@@ -233,7 +233,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
       decoded_bus_.reset();
     }
 
-    decoded_chunks_.push_back(decoded);
+    decoded_chunks_.push_back(std::move(decoded));
   }
 
   scoped_refptr<media::DecoderBufferBase> ConvertDecoded() {

@@ -83,8 +83,8 @@ void IsValidFrame(const media::VideoFrame& frame) {
 namespace content {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
-    const scoped_refptr<media::VideoFrame>& frame)
-    : frame_(frame) {}
+    scoped_refptr<media::VideoFrame> frame)
+    : frame_(std::move(frame)) {}
 
 WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {
 }

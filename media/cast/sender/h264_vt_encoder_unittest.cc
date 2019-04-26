@@ -149,7 +149,7 @@ class EndToEndFrameChecker
                                        base::Unretained(this)));
   }
 
-  void CompareFrameWithExpected(const scoped_refptr<VideoFrame>& frame) {
+  void CompareFrameWithExpected(scoped_refptr<VideoFrame> frame) {
     ASSERT_LT(0u, expectations_.size());
     auto& e = expectations_.front();
     expectations_.pop();

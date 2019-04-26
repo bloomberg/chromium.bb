@@ -43,7 +43,7 @@ class MEDIA_EXPORT VideoThumbnailDecoder {
   void OnEosBufferDecoded(DecodeStatus status);
 
   // Called when the output frame is generated.
-  void OnVideoFrameDecoded(const scoped_refptr<VideoFrame>& frame);
+  void OnVideoFrameDecoded(scoped_refptr<VideoFrame> frame);
 
   void NotifyComplete(scoped_refptr<VideoFrame> frame);
 

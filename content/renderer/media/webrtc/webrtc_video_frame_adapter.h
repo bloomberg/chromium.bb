@@ -17,7 +17,7 @@ namespace content {
 // different threads, but that's safe since it's read-only.
 class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
  public:
-  WebRtcVideoFrameAdapter(const scoped_refptr<media::VideoFrame>& frame);
+  explicit WebRtcVideoFrameAdapter(scoped_refptr<media::VideoFrame> frame);
 
   scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
 

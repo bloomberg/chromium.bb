@@ -169,7 +169,7 @@ class OffloadingVideoDecoderTest : public testing::Test {
   }
 
   MOCK_METHOD1(InitDone, void(bool));
-  MOCK_METHOD1(OutputDone, void(const scoped_refptr<VideoFrame>&));
+  MOCK_METHOD1(OutputDone, void(scoped_refptr<VideoFrame>));
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
   MOCK_METHOD0(ResetDone, void(void));
 

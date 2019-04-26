@@ -150,7 +150,7 @@ class WebMediaPlayerMS::FrameDeliverer {
         FROM_HERE,
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
-            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
+            base::Unretained(gpu_memory_buffer_pool_.get()), std::move(frame),
             media::BindToCurrentLoop(
                 base::BindOnce(&FrameDeliverer::EnqueueFrame,
                                weak_factory_for_pool_.GetWeakPtr()))));
@@ -169,7 +169,7 @@ class WebMediaPlayerMS::FrameDeliverer {
  private:
   friend class WebMediaPlayerMS;
 
-  void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
     {
@@ -187,7 +187,7 @@ class WebMediaPlayerMS::FrameDeliverer {
       }
     }
 
-    enqueue_frame_cb_.Run(frame);
+    enqueue_frame_cb_.Run(std::move(frame));
   }
 
   void DropCurrentPoolTasks() {

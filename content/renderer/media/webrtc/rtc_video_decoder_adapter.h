@@ -92,7 +92,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
                                const media::VideoDecoder::InitCB& init_cb);
   void DecodeOnMediaThread();
   void OnDecodeDone(media::DecodeStatus status);
-  void OnOutput(const scoped_refptr<media::VideoFrame>& frame);
+  void OnOutput(scoped_refptr<media::VideoFrame> frame);
 
   bool ShouldReinitializeForSettingHDRColorSpace(
       const webrtc::EncodedImage& input_image) const;

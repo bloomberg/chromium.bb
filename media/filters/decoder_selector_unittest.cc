@@ -162,7 +162,7 @@ class DecoderSelectorTest : public ::testing::Test {
         demuxer_stream_(TypeParam::kStreamType) {}
 
   void OnWaiting(WaitingReason reason) { NOTREACHED(); }
-  void OnOutput(const scoped_refptr<Output>& output) { NOTREACHED(); }
+  void OnOutput(scoped_refptr<Output> output) { NOTREACHED(); }
 
   MOCK_METHOD2_T(OnDecoderSelected,
                  void(std::string, std::unique_ptr<DecryptingDemuxerStream>));

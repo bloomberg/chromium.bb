@@ -38,8 +38,8 @@ namespace media {
 namespace {
 
 void OutputCb(scoped_refptr<VideoFrame>* output,
-              const scoped_refptr<VideoFrame>& frame) {
-  *output = frame;
+              scoped_refptr<VideoFrame> frame) {
+  *output = std::move(frame);
 }
 
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(

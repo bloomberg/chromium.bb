@@ -313,8 +313,7 @@ void MojoVideoDecoderService::OnDecoderReset() {
   std::move(reset_cb_).Run();
 }
 
-void MojoVideoDecoderService::OnDecoderOutput(
-    const scoped_refptr<VideoFrame>& frame) {
+void MojoVideoDecoderService::OnDecoderOutput(scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__;
   DCHECK(client_);
   DCHECK(decoder_);
@@ -336,7 +335,8 @@ void MojoVideoDecoderService::OnDecoderOutput(
     release_token = releaser->RegisterVideoFrame(frame);
   }
 
-  client_->OnVideoFrameDecoded(frame, decoder_->CanReadWithoutStalling(),
+  client_->OnVideoFrameDecoded(std::move(frame),
+                               decoder_->CanReadWithoutStalling(),
                                std::move(release_token));
 }
 

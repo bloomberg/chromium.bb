@@ -78,7 +78,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
   // Completion callbacks.
   MOCK_METHOD1(OnInitialized, void(bool));
-  MOCK_METHOD1(OnOutput, void(const scoped_refptr<AudioBuffer>&));
+  MOCK_METHOD1(OnOutput, void(scoped_refptr<AudioBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDecoded, void(DecodeStatus));
   MOCK_METHOD0(OnReset, void());

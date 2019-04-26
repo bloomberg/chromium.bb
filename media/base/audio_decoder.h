@@ -30,7 +30,7 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Callback for AudioDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
-  using OutputCB = base::Callback<void(const scoped_refptr<AudioBuffer>&)>;
+  using OutputCB = base::RepeatingCallback<void(scoped_refptr<AudioBuffer>)>;
 
   // Callback for Decode(). Called after the decoder has accepted corresponding
   // DecoderBuffer, indicating that the pipeline can send next buffer to decode.

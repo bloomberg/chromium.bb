@@ -289,9 +289,9 @@ class AudioDecoderTest
     ASSERT_TRUE(reader_->SeekForTesting(seek_time));
   }
 
-  void OnDecoderOutput(const scoped_refptr<AudioBuffer>& buffer) {
+  void OnDecoderOutput(scoped_refptr<AudioBuffer> buffer) {
     EXPECT_FALSE(buffer->end_of_stream());
-    decoded_audio_.push_back(buffer);
+    decoded_audio_.push_back(std::move(buffer));
   }
 
   void DecodeFinished(const base::Closure& quit_closure, DecodeStatus status) {

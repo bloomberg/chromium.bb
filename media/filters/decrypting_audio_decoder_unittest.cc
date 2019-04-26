@@ -237,7 +237,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  MOCK_METHOD1(FrameReady, void(const scoped_refptr<AudioBuffer>&));
+  MOCK_METHOD1(FrameReady, void(scoped_refptr<AudioBuffer>));
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
   MOCK_METHOD1(OnWaiting, void(WaitingReason));

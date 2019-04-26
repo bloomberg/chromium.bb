@@ -423,19 +423,19 @@ void RTCVideoDecoderAdapter::OnDecodeDone(media::DecodeStatus status) {
   DecodeOnMediaThread();
 }
 
-void RTCVideoDecoderAdapter::OnOutput(
-    const scoped_refptr<media::VideoFrame>& frame) {
+void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   DVLOG(3) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
+  const base::TimeDelta timestamp = frame->timestamp();
   webrtc::VideoFrame rtc_frame(
-      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame),
-      frame->timestamp().InMicroseconds(), 0, webrtc::kVideoRotation_0);
+      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(std::move(frame)),
+      timestamp.InMicroseconds(), 0, webrtc::kVideoRotation_0);
 
   base::AutoLock auto_lock(lock_);
 
-  if (!base::ContainsValue(decode_timestamps_, frame->timestamp())) {
-    DVLOG(2) << "Discarding frame with timestamp " << frame->timestamp();
+  if (!base::ContainsValue(decode_timestamps_, timestamp)) {
+    DVLOG(2) << "Discarding frame with timestamp " << timestamp;
     return;
   }
 

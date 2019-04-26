@@ -43,7 +43,7 @@ void OnInitDone(const base::Closure& quit_closure,
   quit_closure.Run();
 }
 
-void OnOutputComplete(const scoped_refptr<VideoFrame>& frame) {}
+void OnOutputComplete(scoped_refptr<VideoFrame> frame) {}
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

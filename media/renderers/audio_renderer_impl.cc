@@ -693,9 +693,8 @@ void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
   play_delay_cb_for_testing_ = std::move(cb);
 }
 
-void AudioRendererImpl::DecodedAudioReady(
-    AudioDecoderStream::Status status,
-    const scoped_refptr<AudioBuffer>& buffer) {
+void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::Status status,
+                                          scoped_refptr<AudioBuffer> buffer) {
   DVLOG(2) << __func__ << "(" << status << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -717,7 +716,7 @@ void AudioRendererImpl::DecodedAudioReady(
   }
 
   DCHECK_EQ(status, AudioDecoderStream::OK);
-  DCHECK(buffer.get());
+  DCHECK(buffer);
 
   if (state_ == kFlushing) {
     ChangeState_Locked(kFlushed);
@@ -756,7 +755,7 @@ void AudioRendererImpl::DecodedAudioReady(
     }
 
     DCHECK(buffer_converter_);
-    buffer_converter_->AddInput(buffer);
+    buffer_converter_->AddInput(std::move(buffer));
 
     while (buffer_converter_->HasNextBuffer()) {
       need_another_buffer =
@@ -783,7 +782,7 @@ void AudioRendererImpl::DecodedAudioReady(
       return;
     }
 
-    need_another_buffer = HandleDecodedBuffer_Locked(buffer);
+    need_another_buffer = HandleDecodedBuffer_Locked(std::move(buffer));
   }
 
   if (!need_another_buffer && !CanRead_Locked())
@@ -793,13 +792,13 @@ void AudioRendererImpl::DecodedAudioReady(
 }
 
 bool AudioRendererImpl::HandleDecodedBuffer_Locked(
-    const scoped_refptr<AudioBuffer>& buffer) {
+    scoped_refptr<AudioBuffer> buffer) {
   lock_.AssertAcquired();
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
   } else {
     if (buffer->IsBitstreamFormat() && state_ == kPlaying) {
-      if (IsBeforeStartTime(buffer))
+      if (IsBeforeStartTime(*buffer))
         return true;
 
       // Adjust the start time since we are unable to trim a compressed audio
@@ -811,7 +810,7 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
                                           audio_parameters_.sample_rate()));
       }
     } else if (state_ == kPlaying) {
-      if (IsBeforeStartTime(buffer))
+      if (IsBeforeStartTime(*buffer))
         return true;
 
       // Trim off any additional time before the start timestamp.
@@ -831,14 +830,14 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
         return true;
     }
 
-    if (state_ != kUninitialized)
-      algorithm_->EnqueueBuffer(buffer);
-  }
+    // Store the timestamp of the first packet so we know when to start actual
+    // audio playback.
+    if (first_packet_timestamp_ == kNoTimestamp)
+      first_packet_timestamp_ = buffer->timestamp();
 
-  // Store the timestamp of the first packet so we know when to start actual
-  // audio playback.
-  if (first_packet_timestamp_ == kNoTimestamp)
-    first_packet_timestamp_ = buffer->timestamp();
+    if (state_ != kUninitialized)
+      algorithm_->EnqueueBuffer(std::move(buffer));
+  }
 
   const size_t memory_usage = algorithm_->GetMemoryUsage();
   PipelineStatistics stats;
@@ -860,7 +859,7 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       return false;
 
     case kPlaying:
-      if (buffer->end_of_stream() || algorithm_->IsQueueFull()) {
+      if (received_end_of_stream_ || algorithm_->IsQueueFull()) {
         if (buffering_state_ == BUFFERING_HAVE_NOTHING)
           SetBufferingState_Locked(BUFFERING_HAVE_ENOUGH);
         return false;
@@ -945,11 +944,10 @@ void AudioRendererImpl::SetPlaybackRate(double playback_rate) {
   }
 }
 
-bool AudioRendererImpl::IsBeforeStartTime(
-    const scoped_refptr<AudioBuffer>& buffer) {
+bool AudioRendererImpl::IsBeforeStartTime(const AudioBuffer& buffer) {
   DCHECK_EQ(state_, kPlaying);
-  return buffer.get() && !buffer->end_of_stream() &&
-         (buffer->timestamp() + buffer->duration()) < start_timestamp_;
+  return !buffer.end_of_stream() &&
+         (buffer.timestamp() + buffer.duration()) < start_timestamp_;
 }
 
 int AudioRendererImpl::Render(base::TimeDelta delay,

@@ -252,12 +252,12 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
     std::move(quit_closure).Run();
   }
 
-  void OnVideoFrameReady(const scoped_refptr<VideoFrame>& video_frame) {
+  void OnVideoFrameReady(scoped_refptr<VideoFrame> video_frame) {
     // Do not queue EOS frames, which is not needed.
     if (video_frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
       return;
 
-    decoded_video_frames_.push(video_frame);
+    decoded_video_frames_.push(std::move(video_frame));
   }
 
   void OnReset(base::OnceClosure quit_closure) {

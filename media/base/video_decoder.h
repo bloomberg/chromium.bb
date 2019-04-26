@@ -30,7 +30,7 @@ class MEDIA_EXPORT VideoDecoder {
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
-  using OutputCB = base::Callback<void(const scoped_refptr<VideoFrame>&)>;
+  using OutputCB = base::RepeatingCallback<void(scoped_refptr<VideoFrame>)>;
 
   // Callback type for Decode(). Called after the decoder has completed decoding
   // corresponding DecoderBuffer, indicating that it's ready to accept another

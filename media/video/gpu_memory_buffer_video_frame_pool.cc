@@ -1182,10 +1182,11 @@ GpuMemoryBufferVideoFramePool::~GpuMemoryBufferVideoFramePool() {
 }
 
 void GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     FrameReadyCB frame_ready_cb) {
   DCHECK(video_frame);
-  pool_impl_->CreateHardwareFrame(video_frame, std::move(frame_ready_cb));
+  pool_impl_->CreateHardwareFrame(std::move(video_frame),
+                                  std::move(frame_ready_cb));
 }
 
 void GpuMemoryBufferVideoFramePool::Abort() {
