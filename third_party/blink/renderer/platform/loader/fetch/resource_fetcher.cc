@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -277,68 +278,6 @@ void SetReferrer(
   }
 }
 
-// This function maps from Blink's internal "request context" concept to Fetch's
-// notion of a request's "destination":
-// https://fetch.spec.whatwg.org/#concept-request-destination.
-const char* GetDestinationFromContext(mojom::RequestContextType context) {
-  switch (context) {
-    case mojom::RequestContextType::UNSPECIFIED:
-    case mojom::RequestContextType::BEACON:
-    case mojom::RequestContextType::DOWNLOAD:
-    case mojom::RequestContextType::EVENT_SOURCE:
-    case mojom::RequestContextType::FETCH:
-    case mojom::RequestContextType::PING:
-    case mojom::RequestContextType::XML_HTTP_REQUEST:
-    case mojom::RequestContextType::SUBRESOURCE:
-    case mojom::RequestContextType::PREFETCH:
-      return "";
-    case mojom::RequestContextType::CSP_REPORT:
-      return "report";
-    case mojom::RequestContextType::AUDIO:
-      return "audio";
-    case mojom::RequestContextType::EMBED:
-      return "embed";
-    case mojom::RequestContextType::FONT:
-      return "font";
-    case mojom::RequestContextType::FRAME:
-    case mojom::RequestContextType::HYPERLINK:
-    case mojom::RequestContextType::IFRAME:
-    case mojom::RequestContextType::LOCATION:
-    case mojom::RequestContextType::FORM:
-      return "document";
-    case mojom::RequestContextType::IMAGE:
-    case mojom::RequestContextType::FAVICON:
-    case mojom::RequestContextType::IMAGE_SET:
-      return "image";
-    case mojom::RequestContextType::MANIFEST:
-      return "manifest";
-    case mojom::RequestContextType::OBJECT:
-      return "object";
-    case mojom::RequestContextType::SCRIPT:
-      return "script";
-    case mojom::RequestContextType::SERVICE_WORKER:
-      return "serviceworker";
-    case mojom::RequestContextType::SHARED_WORKER:
-      return "sharedworker";
-    case mojom::RequestContextType::STYLE:
-      return "style";
-    case mojom::RequestContextType::TRACK:
-      return "track";
-    case mojom::RequestContextType::VIDEO:
-      return "video";
-    case mojom::RequestContextType::WORKER:
-      return "worker";
-    case mojom::RequestContextType::XSLT:
-      return "xslt";
-    case mojom::RequestContextType::IMPORT:
-    case mojom::RequestContextType::INTERNAL:
-    case mojom::RequestContextType::PLUGIN:
-      return "unknown";
-  }
-  NOTREACHED();
-  return "";
-}
-
 // This maps the network::mojom::FetchRequestMode to a string that can be used
 // in a `Sec-Fetch-Mode` header.
 const char* FetchRequestModeToString(network::mojom::FetchRequestMode mode) {
@@ -365,7 +304,7 @@ void SetSecFetchHeaders(
   if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
       url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
-        GetDestinationFromContext(request.GetRequestContext());
+        FetchUtils::GetDestinationFromContext(request.GetRequestContext());
 
     // If the request's destination is the empty string (e.g. `fetch()`), then
     // we'll use the identifier "empty" instead.
