@@ -372,10 +372,19 @@ class CrOSTest(object):
     # Copy files, preserving the directory structure.
     copy_paths = []
     for f in files:
-      if os.path.isdir(f) and not f.endswith('/'):
-        f += '/'
       is_exe = os.path.isfile(f) and os.access(f, os.X_OK)
-      copy_paths.append(chrome_util.Path(f, exe=is_exe))
+      has_exe = False
+      if os.path.isdir(f):
+        if not f.endswith('/'):
+          f += '/'
+        for sub_dir, _, sub_files in os.walk(f):
+          for sub_file in sub_files:
+            if os.access(os.path.join(sub_dir, sub_file), os.X_OK):
+              has_exe = True
+              break
+          if has_exe:
+            break
+      copy_paths.append(chrome_util.Path(f, exe=is_exe or has_exe))
     self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
 
     # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
