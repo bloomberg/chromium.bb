@@ -46,5 +46,4 @@ UNDOCUMENTED_BENCHMARKS = {
   'v8.runtime_stats.top_25',
   'validating_command_buffer_perftests',
   'views_perftests',
-  'wasm',
 }

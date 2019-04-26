@@ -66,5 +66,4 @@ v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaSc
 v8.runtime_stats.top_25,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"cold,hot,warm"
 validating_command_buffer_perftests,"piman@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU,,
 views_perftests,tapted@chromium.org,Internals>Views,,
-wasm,bradnelson@chromium.org,,,
 webrtc,"qiangchen@chromium.org, mbonadei@chromium.org, phoglund@chromium.org",Blink>WebRTC,http://bit.ly/webrtc-benchmark,"datachannel,getusermedia,pauseplay,smoothness,stress,videoConstraints"

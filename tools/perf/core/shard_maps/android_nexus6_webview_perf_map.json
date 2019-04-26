@@ -134,7 +134,6 @@
                 "begin": 20
             },
             "v8.browsing_mobile-future": {},
-            "wasm": {},
             "webrtc": {}
         }
     },

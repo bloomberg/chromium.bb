@@ -91,7 +91,6 @@
             "tracing.tracing_with_background_memory_infra": {},
             "v8.browsing_mobile": {},
             "v8.browsing_mobile-future": {},
-            "wasm": {},
             "webrtc": {}
         }
     },

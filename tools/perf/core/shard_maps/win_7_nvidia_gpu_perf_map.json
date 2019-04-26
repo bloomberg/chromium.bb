@@ -74,7 +74,6 @@
             },
             "v8.browsing_desktop-future": {},
             "v8.runtime_stats.top_25": {},
-            "wasm": {},
             "webrtc": {}
         }
     },
