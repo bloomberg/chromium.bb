@@ -946,8 +946,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
   CloseAppWindow(app_window);
 }
 
+// https://crbug.com/956870
 IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
-                       NoTabIdForDevToolsAndAppWindows) {
+                       DISABLED_NoTabIdForDevToolsAndAppWindows) {
   Browser* normal_browser = CreateBrowserWithEmptyTab(false);
   {
     ActivateBrowserWindow(normal_browser);
