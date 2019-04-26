@@ -927,19 +927,6 @@ const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
     {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
 #endif  // defined(OS_ANDROID)
 
-const FeatureEntry::FeatureParam
-    kAutofillCreditCardLocalCardMigrationWithoutSettingsPage[] = {
-        {autofill::features::kAutofillCreditCardLocalCardMigrationParameterName,
-         autofill::features::
-             kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage}};
-
-const FeatureEntry::FeatureVariation
-    kAutofillCreditCardLocalCardMigrationVariations[] = {
-        {"(without settings page)",
-         kAutofillCreditCardLocalCardMigrationWithoutSettingsPage,
-         base::size(kAutofillCreditCardLocalCardMigrationWithoutSettingsPage),
-         nullptr}};
-
 const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
     {"predictor", "lsq"}};
 
@@ -2297,14 +2284,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillCreditCardAblationExperiment)},
-    {"enable-autofill-credit-card-local-card-migration",
-     flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationName,
-     flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationDescription,
-     kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::features::kAutofillCreditCardLocalCardMigration,
-         kAutofillCreditCardLocalCardMigrationVariations,
-         "AutofillLocalCardMigration")},
     {"enable-autofill-credit-card-upload-editable-cardholder-name",
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameName,
@@ -2339,13 +2318,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
-    {"enable-autofill-local-card-migration-show-feedback",
-     flag_descriptions::kEnableAutofillLocalCardMigrationShowFeedbackName,
-     flag_descriptions::
-         kEnableAutofillLocalCardMigrationShowFeedbackDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillLocalCardMigrationShowFeedback)},
     {"enable-autofill-local-card-migration-uses-strike-system-v2",
      flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
      flag_descriptions::

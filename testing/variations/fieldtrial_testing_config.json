@@ -739,42 +739,6 @@
             ]
         }
     ],
-    "AutofillLocalCardMigration": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableLocalCardMigration",
-                    "enable_features": [
-                        "AutofillCreditCardLocalCardMigration"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillLocalCardMigrationShowFeedback": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableLocalCardMigrationShowFeedback",
-                    "enable_features": [
-                        "AutofillLocalCardMigrationShowFeedback"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillLocalCardMigrationUsesStrikeSystemV2": [
         {
             "platforms": [

@@ -28,9 +28,6 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 const base::Feature kAutofillCreditCardAuthentication{
     "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillCreditCardLocalCardMigration{
-    "AutofillCreditCardLocalCardMigration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
     "AutofillDoNotUploadSaveUnsupportedCards",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -61,12 +58,6 @@ const base::Feature kAutofillImportDynamicForms{
 const base::Feature kAutofillImportNonFocusableCreditCardForms{
     "AutofillImportNonFocusableCreditCardForms",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, the local card migration dialog will show the progress
-// and result of the migration after starting the migration. When disabled,
-// there is no feedback for the migration.
-const base::Feature kAutofillLocalCardMigrationShowFeedback{
-    "AutofillLocalCardMigrationShowFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
@@ -156,26 +147,6 @@ const base::Feature kAutofillUpstreamEditableExpirationDate{
 // Google Payments.
 const base::Feature kAutofillUsePaymentsCustomerData{
     "AutofillUsePaymentsCustomerData", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
-
-const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
-    "without-settings-page";
-
-LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
-  if (!base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration))
-    return LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillCreditCardLocalCardMigration,
-      kAutofillCreditCardLocalCardMigrationParameterName);
-
-  if (param ==
-      kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
-    return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
-  }
-  return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
-}
 
 bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
   return base::FeatureList::IsEnabled(

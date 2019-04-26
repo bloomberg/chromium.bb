@@ -5404,12 +5404,8 @@ TEST_F(CreditCardSaveManagerTest, OnUserDidAcceptUpload_NotifiesPDM) {
 // locally.
 TEST_F(CreditCardSaveManagerTest,
        LocalCreditCard_LocalCardMigrationStrikesRemovedOnLocalSave) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
 
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);
@@ -5459,12 +5455,8 @@ TEST_F(CreditCardSaveManagerTest,
 // uploaded.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoLocalSaveMigrationStrikesRemovedOnUpload) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
 
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);

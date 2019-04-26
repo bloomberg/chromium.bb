@@ -158,12 +158,6 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
                                   PrefService* pref_service,
                                   syncer::SyncService* sync_service,
                                   bool is_test_mode) {
-  // Confirm that experiment flags are enabled.
-  if (features::GetLocalCardMigrationExperimentalFlag() ==
-      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled) {
-    return false;
-  }
-
   // If |is_test_mode| is set, assume we are in a browsertest and
   // credit card upload should be enabled by default to fix flaky
   // local card migration browsertests.
@@ -199,26 +193,6 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
   return group_name == "Disabled";
-}
-
-features::LocalCardMigrationExperimentalFlag
-GetLocalCardMigrationExperimentalFlag() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardLocalCardMigration))
-    return features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      features::kAutofillCreditCardLocalCardMigration,
-      features::kAutofillCreditCardLocalCardMigrationParameterName);
-
-  if (param ==
-      features::
-          kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
-    return features::LocalCardMigrationExperimentalFlag::
-        kMigrationWithoutSettingsPage;
-  }
-  return features::LocalCardMigrationExperimentalFlag::
-      kMigrationIncludeSettingsPage;
 }
 
 bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled() {

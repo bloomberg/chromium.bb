@@ -280,15 +280,12 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
     personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationShowFeedback)) {
-    client_->ShowLocalCardMigrationResults(
-        result != AutofillClient::PaymentsRpcResult::SUCCESS,
-        base::UTF8ToUTF16(display_text), migratable_credit_cards_,
-        base::BindRepeating(&LocalCardMigrationManager::
-                                OnUserDeletedLocalCardViaMigrationDialog,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
+  client_->ShowLocalCardMigrationResults(
+      result != AutofillClient::PaymentsRpcResult::SUCCESS,
+      base::UTF8ToUTF16(display_text), migratable_credit_cards_,
+      base::BindRepeating(
+          &LocalCardMigrationManager::OnUserDeletedLocalCardViaMigrationDialog,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LocalCardMigrationManager::OnDidGetMigrationRiskData(

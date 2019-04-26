@@ -166,11 +166,7 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED);
 
   std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
-  // If flag is disabled, we don't show the credit card icon animation.
-  base::FeatureList::IsEnabled(
-      features::kAutofillLocalCardMigrationShowFeedback)
-      ? NotifyMigrationStarted()
-      : NotifyMigrationNoLongerAvailable();
+  NotifyMigrationStarted();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {

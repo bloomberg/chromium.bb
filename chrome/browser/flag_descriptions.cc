@@ -415,11 +415,6 @@ const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
-const char kEnableAutofillCreditCardLocalCardMigrationName[] =
-    "Enable migrating local cards to Google Pay";
-const char kEnableAutofillCreditCardLocalCardMigrationDescription[] =
-    "If enabled, prompt migration of locally-saved credit cards to Google Pay.";
-
 const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
     "Make cardholder name editable in dialog during credit card upload";
 const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
@@ -453,13 +448,6 @@ const char kEnableAutofillImportDynamicFormsName[] =
 const char kEnableAutofillImportDynamicFormsDescription[] =
     "If enabled, offers credit card save for dynamic forms from the page after "
     "information has been entered into them.";
-
-const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
-    "Show the upload results dialog after local card migration";
-const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =
-    "If enabled, the local card migration offer dialog will remain pending "
-    "after the user clicks the save button. Once migration is finished, "
-    "the dialog will be updated with the results of each card.";
 
 const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[] =
     "Enable limit on offering to migrate local cards repeatedly using the "

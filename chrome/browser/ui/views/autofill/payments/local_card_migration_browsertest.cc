@@ -213,8 +213,6 @@ class LocalCardMigrationBrowserTest
         std::make_unique<device::ScopedGeolocationOverrider>(
             kFakeGeolocationLatitude, kFakeGeolocationLongitude);
 
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillCreditCardLocalCardMigration);
     ASSERT_TRUE(harness_->SetupSync());
 
     // Set the billing_customer_number to designate existence of a Payments
@@ -514,8 +512,6 @@ class LocalCardMigrationBrowserTest
 
   PersonalDataManager* personal_data_;
   PersonalDataLoadedObserverMock personal_data_observer_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<ProfileSyncServiceHarness> harness_;
 

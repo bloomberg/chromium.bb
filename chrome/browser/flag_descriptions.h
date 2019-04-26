@@ -277,9 +277,6 @@ extern const char kEnableAutofillCreditCardAuthenticationDescription[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
-extern const char kEnableAutofillCreditCardLocalCardMigrationName[];
-extern const char kEnableAutofillCreditCardLocalCardMigrationDescription[];
-
 extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];
@@ -296,9 +293,6 @@ extern const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[];
 
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
-
-extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
-extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
 
 extern const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[];
 extern const char

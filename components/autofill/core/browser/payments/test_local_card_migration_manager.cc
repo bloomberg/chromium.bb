@@ -25,10 +25,6 @@ TestLocalCardMigrationManager::TestLocalCardMigrationManager(
 TestLocalCardMigrationManager::~TestLocalCardMigrationManager() {}
 
 bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
-  bool migration_experiment_enabled =
-      features::GetLocalCardMigrationExperimentalFlag() !=
-      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
   bool has_google_payments_account =
       (payments::GetBillingCustomerId(personal_data_manager_) != 0);
 
@@ -36,7 +32,7 @@ bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
       (personal_data_manager_->GetSyncSigninState() ==
        AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled);
 
-  return migration_experiment_enabled && has_google_payments_account &&
+  return has_google_payments_account &&
          (sync_feature_enabled ||
           base::FeatureList::IsEnabled(
               features::kAutofillEnableLocalCardMigrationForNonSyncUser));

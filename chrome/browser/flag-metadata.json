@@ -774,11 +774,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-autofill-credit-card-local-card-migration",
-    "owners": [ "jiahuiguo@google.com", "siyua@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-credit-card-upload",
     "owners": [ "jsaul@google.com" ],
     // This flag is heavily used by the testing team that can't easily use the
@@ -809,11 +804,6 @@
   {
     "name": "enable-autofill-import-non-focusable-credit-card-forms",
     "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-autofill-local-card-migration-show-feedback",
-    "owners": [ "jiahuiguo@google.com", "siyua@google.com" ],
     "expiry_milestone": 76
   },
   {
