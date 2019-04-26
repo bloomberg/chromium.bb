@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import argparse
+import collections
 import json
 import logging
 import os
@@ -18,6 +19,7 @@ import tempfile
 # The following non-std imports are fetched via vpython. See the list at
 # //.vpython
 import dateutil.parser  # pylint: disable=import-error
+import jsonlines  # pylint: disable=import-error
 import psutil  # pylint: disable=import-error
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
@@ -325,9 +327,7 @@ class TastTest(RemoteTest):
     if not self._use_host_tast:
       return super(TastTest, self).post_run(return_code)
 
-    # TODO(crbug.com/952085): Switch to streamed_results.jsonl after jsonlines
-    # becomes available as a wheel.
-    tast_results_path = os.path.join(self._logs_dir, 'results.json')
+    tast_results_path = os.path.join(self._logs_dir, 'streamed_results.jsonl')
     if not os.path.exists(tast_results_path):
       logging.error(
          'Tast results not found at %s. Falling back to generic result '
@@ -336,8 +336,8 @@ class TastTest(RemoteTest):
 
     # See the link below for the format of the results:
     # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/cmd/tast/run#TestResult
-    with open(tast_results_path) as f:
-      tast_results = json.load(f)
+    with jsonlines.open(tast_results_path) as reader:
+      tast_results = collections.deque(reader)
 
     suite_results = base_test_result.TestRunResults()
     for test in tast_results:
