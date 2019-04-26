@@ -1,8 +1,6 @@
 @ This file was created from a .asm file
 @  using the ads2gas_apple.pl script.
 
-	.set WIDE_REFERENCE, 0
-	.set ARCHITECTURE, 5
 	.syntax unified
 .set ARCH_ARM ,  1
 .set ARCH_MIPS ,  0
