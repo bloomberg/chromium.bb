@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/favicon_retriever.h"
@@ -26,7 +27,6 @@
 
 namespace {
 const CGFloat kImageViewCornerRadius = 7;
-const CGFloat kRowMinimumHeight = 58;
 const CGFloat kTextTopMargin = 6;
 const CGFloat kTrailingButtonSize = 24;
 const CGFloat kTrailingButtonTrailingMargin = 14;
@@ -59,6 +59,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 @property(nonatomic, strong) ExtendedTouchTargetButton* trailingButton;
 // Trailing image view for images from suggestions (e.g. weather).
 @property(nonatomic, strong) UIImageView* answerImageView;
+// Separator line for adjacent cells.
+@property(nonatomic, strong) UIView* separator;
 
 @end
 
@@ -112,6 +114,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
 
+    _separator = [[UIView alloc] initWithFrame:CGRectZero];
+    _separator.translatesAutoresizingMaskIntoConstraints = NO;
+    _separator.backgroundColor = [MDCPalette.cr_greyPalette tint200];
+    _separator.hidden = YES;
+
     _incognito = NO;
 
     self.backgroundColor = [UIColor clearColor];
@@ -134,11 +141,12 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 - (void)setupLayout {
   [self.contentView addSubview:self.leadingImageView];
   [self.contentView addSubview:self.textStackView];
+  [self.contentView addSubview:self.separator];
 
   [NSLayoutConstraint activateConstraints:@[
     // Row has a minimum height.
     [self.contentView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kRowMinimumHeight],
+        constraintGreaterThanOrEqualToConstant:kOmniboxPopupCellMinimumHeight],
 
     // Position leadingImageView at the leading edge of the view.
     // Leave the horizontal position unconstrained as that will be added via a
@@ -158,6 +166,15 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
                                     constant:kTextTopMargin],
     [self.textStackView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
+
+    [self.separator.bottomAnchor
+        constraintEqualToAnchor:self.contentView.bottomAnchor],
+    [self.separator.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor],
+    [self.separator.heightAnchor
+        constraintEqualToConstant:1.0f / UIScreen.mainScreen.scale],
+    [self.separator.leadingAnchor
+        constraintEqualToAnchor:self.textStackView.leadingAnchor],
   ]];
 
   // If optional views have internal constraints (height is constant, etc.),
@@ -254,6 +271,14 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   _omniboxSemanticContentAttribute = omniboxSemanticContentAttribute;
   self.contentView.semanticContentAttribute = omniboxSemanticContentAttribute;
   self.textStackView.semanticContentAttribute = omniboxSemanticContentAttribute;
+}
+
+- (BOOL)showsSeparator {
+  return self.separator.hidden;
+}
+
+- (void)setShowsSeparator:(BOOL)showsSeparator {
+  self.separator.hidden = !showsSeparator;
 }
 
 - (void)prepareForReuse {

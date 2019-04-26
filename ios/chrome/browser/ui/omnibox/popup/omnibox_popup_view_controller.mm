@@ -22,7 +22,7 @@
   [super viewDidLoad];
 
   self.tableView.rowHeight = UITableViewAutomaticDimension;
-  self.tableView.estimatedRowHeight = 44;
+  self.tableView.estimatedRowHeight = kOmniboxPopupCellMinimumHeight;
 
   [self.tableView registerClass:[OmniboxPopupRowCell class]
          forCellReuseIdentifier:OmniboxPopupRowCellReuseIdentifier];
@@ -102,6 +102,8 @@
                            forIndexPath:indexPath];
   [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.row]
                               incognito:self.incognito];
+  cell.showsSeparator =
+      (NSUInteger)indexPath.row < self.currentResult.count - 1;
   cell.delegate = self;
   cell.faviconRetriever = self.faviconRetriever;
   cell.imageRetriever = self.imageRetriever;
