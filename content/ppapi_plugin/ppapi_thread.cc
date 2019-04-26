@@ -430,17 +430,6 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
       return;
     }
   } else {
-#if defined(OS_MACOSX)
-    // TODO(kerrnel): Delete this once the V2 sandbox is default.
-    const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    if (!cmdline->HasSwitch(sandbox::switches::kSeatbeltClientName)) {
-      // We need to do this after getting |PPP_GetInterface()| (or presumably
-      // doing something nontrivial with the library), else the sandbox
-      // intercedes.
-      CHECK(InitializeSandbox());
-    }
-#endif
-
     int32_t init_error = plugin_entry_points_.initialize_module(
         local_pp_module_, &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
     if (init_error != PP_OK) {

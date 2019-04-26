@@ -86,6 +86,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/mach_port_broker.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
 
@@ -812,19 +813,16 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
             params.sandbox_info))
       return TerminateForFatalInitializationError();
 #elif defined(OS_MACOSX)
-    // Do not initialize the sandbox at this point if the V2
-    // sandbox is enabled for the process type.
+    // Only the GPU process still runs the V1 sandbox.
     bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
         sandbox::switches::kSeatbeltClientName);
 
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kPpapiPluginProcess || v2_enabled ||
-        delegate_->DelaySandboxInitialization(process_type)) {
-      // On OS X the renderer sandbox needs to be initialized later in the
-      // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
-    } else {
-      if (!InitializeSandbox())
+    if (!v2_enabled && process_type == switches::kGpuProcess) {
+      if (!InitializeSandbox()) {
         return TerminateForFatalInitializationError();
+      }
+    } else if (v2_enabled) {
+      CHECK(sandbox::Seatbelt::IsSandboxed());
     }
 #endif
 
