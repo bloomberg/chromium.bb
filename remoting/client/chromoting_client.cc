@@ -89,7 +89,8 @@ void ChromotingClient::Start(
 #endif
     } else {
       DCHECK(protocol_config_->ice_supported());
-      connection_.reset(new protocol::IceConnectionToHost());
+      // TODO(yuweih): Pass true for FTL connection.
+      connection_.reset(new protocol::IceConnectionToHost(false));
     }
   }
   connection_->set_client_stub(this);

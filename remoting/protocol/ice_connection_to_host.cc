@@ -27,7 +27,9 @@
 namespace remoting {
 namespace protocol {
 
-IceConnectionToHost::IceConnectionToHost() = default;
+IceConnectionToHost::IceConnectionToHost(bool use_turn_api)
+    : use_turn_api_(use_turn_api) {}
+
 IceConnectionToHost::~IceConnectionToHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
@@ -40,7 +42,7 @@ void IceConnectionToHost::Connect(
   DCHECK(clipboard_stub_);
   DCHECK(video_renderer_);
 
-  transport_.reset(new IceTransport(transport_context, this));
+  transport_.reset(new IceTransport(transport_context, this, use_turn_api_));
 
   session_ = std::move(session);
   session_->SetEventHandler(this);
