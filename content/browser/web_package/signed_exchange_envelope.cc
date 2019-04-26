@@ -105,7 +105,7 @@ bool IsCacheableBySharedCache(const SignedExchangeEnvelope::HeaderMap& headers,
       net::HttpUtil::NameValuePairsIterator::Values::NOT_REQUIRED,
       net::HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
   while (it.GetNext()) {
-    auto name = it.name();
+    base::StringPiece name = it.name_piece();
     if (name == "no-store" || name == "private") {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,

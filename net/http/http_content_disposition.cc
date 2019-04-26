@@ -402,9 +402,7 @@ void HttpContentDisposition::Parse(const std::string& header,
   HttpUtil::NameValuePairsIterator iter(pos, end, ';');
   while (iter.GetNext()) {
     if (filename.empty() &&
-        base::LowerCaseEqualsASCII(
-            base::StringPiece(iter.name_begin(), iter.name_end()),
-            "filename")) {
+        base::LowerCaseEqualsASCII(iter.name_piece(), "filename")) {
       DecodeFilenameValue(iter.value(), referrer_charset, &filename,
                           &parse_result_flags_);
       if (!filename.empty()) {
@@ -413,9 +411,7 @@ void HttpContentDisposition::Parse(const std::string& header,
           parse_result_flags_ |= HAS_SINGLE_QUOTED_FILENAME;
       }
     } else if (ext_filename.empty() &&
-               base::LowerCaseEqualsASCII(
-                   base::StringPiece(iter.name_begin(), iter.name_end()),
-                   "filename*")) {
+               base::LowerCaseEqualsASCII(iter.name_piece(), "filename*")) {
       DecodeExtValue(iter.raw_value(), &ext_filename);
       if (!ext_filename.empty())
         parse_result_flags_ |= HAS_EXT_FILENAME;

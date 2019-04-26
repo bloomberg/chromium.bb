@@ -94,7 +94,7 @@ base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
     net::HttpUtil::NameValuePairsIterator parser(
         content_type.begin() + semicolon + 1, content_type.end(), ';');
     while (parser.GetNext()) {
-      const base::StringPiece name(parser.name_begin(), parser.name_end());
+      const base::StringPiece name = parser.name_piece();
       params[base::ToLowerASCII(name)] = parser.value();
     }
     if (!parser.valid())

@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_handler.h"
@@ -131,8 +132,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
   bool ParseChallenge(HttpAuthChallengeTokenizer* challenge);
 
   // Parse an individual property. Returns true on success.
-  bool ParseChallengeProperty(const std::string& name,
-                              const std::string& value);
+  bool ParseChallengeProperty(base::StringPiece name, base::StringPiece value);
 
   // Generates a random string, to be used for client-nonce.
   static std::string GenerateNonce();

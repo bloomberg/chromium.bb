@@ -230,12 +230,13 @@ OriginPolicyThrottle::GetRequestedPolicyAndReportGroupFromHeaderString(
   net::HttpUtil::NameValuePairsIterator iter(header.cbegin(), header.cend(),
                                              ',');
   while (iter.GetNext()) {
-    std::string token_value = net::HttpUtil::TrimLWS(iter.value()).as_string();
+    std::string token_value =
+        net::HttpUtil::TrimLWS(iter.value_piece()).as_string();
     bool is_token = net::HttpUtil::IsToken(token_value);
-    if (iter.name() == kPolicy) {
+    if (iter.name_piece() == kPolicy) {
       valid &= is_token && policy.empty();
       policy = token_value;
-    } else if (iter.name() == kReportTo) {
+    } else if (iter.name_piece() == kReportTo) {
       valid &= is_token && report_to.empty();
       report_to = token_value;
     }

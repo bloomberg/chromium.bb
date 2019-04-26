@@ -265,7 +265,7 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
   ValuesIterator byte_range_set_iterator(byte_range_set_begin,
                                          byte_range_set_end, ',');
   while (byte_range_set_iterator.GetNext()) {
-    size_t minus_char_offset = byte_range_set_iterator.value().find('-');
+    size_t minus_char_offset = byte_range_set_iterator.value_piece().find('-');
     // If '-' character is not found, reports failure.
     if (minus_char_offset == std::string::npos)
       return false;
@@ -517,7 +517,7 @@ bool HttpUtil::IsTokenChar(char c) {
 }
 
 // See RFC 7230 Sec 3.2.6 for the definition of |token|.
-bool HttpUtil::IsToken(const base::StringPiece& string) {
+bool HttpUtil::IsToken(base::StringPiece string) {
   if (string.empty())
     return false;
   for (char c : string) {
@@ -528,12 +528,10 @@ bool HttpUtil::IsToken(const base::StringPiece& string) {
 }
 
 // See RFC 5987 Sec 3.2.1 for the definition of |parmname|.
-bool HttpUtil::IsParmName(std::string::const_iterator begin,
-                          std::string::const_iterator end) {
-  if (begin == end)
+bool HttpUtil::IsParmName(base::StringPiece str) {
+  if (str.empty())
     return false;
-  for (std::string::const_iterator iter = begin; iter != end; ++iter) {
-    unsigned char c = *iter;
+  for (char c : str) {
     if (!IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
       return false;
   }

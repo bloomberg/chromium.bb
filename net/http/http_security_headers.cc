@@ -23,12 +23,7 @@ enum MaxAgeParsing { REQUIRE_MAX_AGE, DO_NOT_REQUIRE_MAX_AGE };
 // seconds into a uint32_t. The string may contain an arbitrarily large number,
 // which will be clipped to a supplied limit and which is guaranteed to fit
 // within a 32-bit unsigned integer. False is returned on any parse error.
-bool MaxAgeToLimitedInt(std::string::const_iterator begin,
-                        std::string::const_iterator end,
-                        uint32_t limit,
-                        uint32_t* result) {
-  const base::StringPiece s(begin, end);
-
+bool MaxAgeToLimitedInt(base::StringPiece s, uint32_t limit, uint32_t* result) {
   ParseIntError error;
   if (!ParseUint32(s, result, &error)) {
     if (error == ParseIntError::FAILED_OVERFLOW) {
@@ -130,8 +125,7 @@ bool ParseHSTSHeader(const std::string& value,
         if (base::IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
         unquoted = HttpUtil::Unquote(tokenizer.token());
-        if (!MaxAgeToLimitedInt(unquoted.begin(), unquoted.end(),
-                                kMaxHSTSAgeSecs, &max_age_candidate))
+        if (!MaxAgeToLimitedInt(unquoted, kMaxHSTSAgeSecs, &max_age_candidate))
           return false;
         state = AFTER_MAX_AGE;
         break;
@@ -201,16 +195,14 @@ bool ParseExpectCTHeader(const std::string& value,
       HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
 
   while (name_value_pairs.GetNext()) {
-    base::StringPiece name(name_value_pairs.name_begin(),
-                           name_value_pairs.name_end());
+    base::StringPiece name = name_value_pairs.name_piece();
     if (base::LowerCaseEqualsASCII(name, "max-age")) {
       // "A given directive MUST NOT appear more than once in a given header
       // field."
       if (parsed_max_age)
         return false;
-      if (!MaxAgeToLimitedInt(name_value_pairs.value_begin(),
-                              name_value_pairs.value_end(), kMaxExpectCTAgeSecs,
-                              &max_age_candidate)) {
+      if (!MaxAgeToLimitedInt(name_value_pairs.value_piece(),
+                              kMaxExpectCTAgeSecs, &max_age_candidate)) {
         return false;
       }
       parsed_max_age = true;
@@ -219,7 +211,7 @@ bool ParseExpectCTHeader(const std::string& value,
       // field."
       if (enforce_candidate)
         return false;
-      if (!name_value_pairs.value().empty())
+      if (!name_value_pairs.value_piece().empty())
         return false;
       enforce_candidate = true;
     } else if (base::LowerCaseEqualsASCII(name, "report-uri")) {
@@ -229,8 +221,7 @@ bool ParseExpectCTHeader(const std::string& value,
         return false;
 
       has_report_uri = true;
-      parsed_report_uri = GURL(base::StringPiece(name_value_pairs.value_begin(),
-                                                 name_value_pairs.value_end()));
+      parsed_report_uri = GURL(name_value_pairs.value_piece());
       if (parsed_report_uri.is_empty() || !parsed_report_uri.is_valid())
         return false;
     } else {

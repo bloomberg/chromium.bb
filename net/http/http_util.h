@@ -126,14 +126,10 @@ class NET_EXPORT HttpUtil {
   // Whether the character is a valid |tchar| as defined in RFC 7230 Sec 3.2.6.
   static bool IsTokenChar(char c);
   // Whether the string is a valid |token| as defined in RFC 7230 Sec 3.2.6.
-  static bool IsToken(const base::StringPiece& str);
+  static bool IsToken(base::StringPiece str);
 
   // Whether the string is a valid |parmname| as defined in RFC 5987 Sec 3.2.1.
-  static bool IsParmName(std::string::const_iterator begin,
-                         std::string::const_iterator end);
-  static bool IsParmName(const std::string& str) {
-    return IsParmName(str.begin(), str.end());
-  }
+  static bool IsParmName(base::StringPiece str);
 
   // RFC 2616 Sec 2.2:
   // quoted-string = ( <"> *(qdtext | quoted-pair ) <"> )
@@ -306,6 +302,9 @@ class NET_EXPORT HttpUtil {
     std::string name() const {
       return std::string(name_begin_, name_end_);
     }
+    base::StringPiece name_piece() const {
+      return base::StringPiece(name_begin_, name_end_);
+    }
 
     std::string::const_iterator values_begin() const {
       return values_begin_;
@@ -315,6 +314,9 @@ class NET_EXPORT HttpUtil {
     }
     std::string values() const {
       return std::string(values_begin_, values_end_);
+    }
+    base::StringPiece values_piece() const {
+      return base::StringPiece(values_begin_, values_end_);
     }
 
    private:
@@ -356,6 +358,9 @@ class NET_EXPORT HttpUtil {
     }
     std::string value() const {
       return std::string(value_begin_, value_end_);
+    }
+    base::StringPiece value_piece() const {
+      return base::StringPiece(value_begin_, value_end_);
     }
 
    private:
@@ -414,6 +419,9 @@ class NET_EXPORT HttpUtil {
     std::string::const_iterator name_begin() const { return name_begin_; }
     std::string::const_iterator name_end() const { return name_end_; }
     std::string name() const { return std::string(name_begin_, name_end_); }
+    base::StringPiece name_piece() const {
+      return base::StringPiece(name_begin_, name_end_);
+    }
 
     // The value of the current name-value pair.
     std::string::const_iterator value_begin() const {
@@ -425,6 +433,10 @@ class NET_EXPORT HttpUtil {
     std::string value() const {
       return value_is_quoted_ ? unquoted_value_ : std::string(value_begin_,
                                                               value_end_);
+    }
+    base::StringPiece value_piece() const {
+      return value_is_quoted_ ? unquoted_value_
+                              : base::StringPiece(value_begin_, value_end_);
     }
 
     bool value_is_quoted() const { return value_is_quoted_; }
