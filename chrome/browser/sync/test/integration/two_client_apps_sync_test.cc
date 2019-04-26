@@ -67,7 +67,8 @@ class TwoClientAppsSyncTest : public FeatureToggler, public SyncTest {
 
   ~TwoClientAppsSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Needed for AwaitQuiescence().
+  bool TestUsesSelfNotifications() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientAppsSyncTest);
@@ -311,6 +312,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, E2E_ENABLED(UpdateCWSOrdinals)) {
 // have the same launch type values for the CWS.
 IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, E2E_ENABLED(UpdateLaunchType)) {
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles before we override the apps below.
+  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   // Change the launch type to window.
@@ -337,6 +340,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, E2E_ENABLED(UpdateLaunchType)) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles before we override the apps below.
+  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameApps());
 
   extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
