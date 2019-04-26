@@ -16,6 +16,7 @@ from selenium.common.exceptions import TimeoutException
 
 NAV_THROTTLE_VERSION = "v1_NavThrottle"
 URL_LOADER_VERSION = "v2_URLLoader"
+LITEPAGES_REGEXP = r'https://\w+\.litepages\.googlezip\.net/.*'
 
 # These are integration tests for server provided previews and the
 # protocol that supports them. This class is intended as an abstract base class
@@ -67,6 +68,8 @@ class HttpsPreviewsBaseClass():
 
     Args:
       t: the TestDriver object.
+      expectedText: text that should appear in the HTML response body.
+      expectedImages: the number of images that should be fetched.
     """
     lite_page_responses = 0
     image_responses = 0
@@ -75,15 +78,12 @@ class HttpsPreviewsBaseClass():
       content_type = ''
       if 'content-type' in response.response_headers:
         content_type = response.response_headers['content-type']
-
       if 'text/html' in content_type:
-        self.assertRegexpMatches(response.url,
-                                 r"https://\w+\.litepages\.googlezip\.net/")
+        self.assertRegexpMatches(response.url, LITEPAGES_REGEXP)
         self.assertEqual(200, response.status)
         lite_page_responses += 1
       if 'image/' in content_type:
-        self.assertRegexpMatches(response.url,
-                                 r"https://\w+\.litepages\.googlezip\.net/")
+        self.assertRegexpMatches(response.url, LITEPAGES_REGEXP)
         self.assertEqual(200, response.status)
         image_responses += 1
 
@@ -95,11 +95,15 @@ class HttpsPreviewsBaseClass():
 
     self.assertPreviewShownViaHistogram(t, 'LitePageRedirect')
 
-  def _AssertShowingOriginalPage(self, t, expectedURL, expectedStatus):
+  def _AssertShowingOriginalPage(self, t, expectedURL, expectedStatus,
+                                 expectedBypassCount = 1):
     """Asserts that Chrome has not loaded a Lite Page from the litepages server.
 
     Args:
       t: the TestDriver object.
+      expectedURL: the URL of the mainframe HTML response.
+      expectedStatus: the HTTP response status for the mainframe HTML response.
+      expectBypass: true if we expect a bypass from the litepages server.
     """
     html_responses = 0
 
@@ -108,8 +112,9 @@ class HttpsPreviewsBaseClass():
         self.assertEqual(expectedStatus, response.status)
         html_responses += 1
 
+    bypass_count = t.GetHistogram('Previews.ServerLitePage.ServerResponse', 2)
     self.assertEqual(1, html_responses)
-
+    self.assertEqual(expectedBypassCount, bypass_count['count'])
     self.assertPreviewNotShownViaHistogram(t, 'LitePageRedirect')
 
   # Verifies that a Lite Page is not served when the server returns a bypass.
@@ -120,6 +125,23 @@ class HttpsPreviewsBaseClass():
       url = 'https://mobilespeed-test.appspot.com/static/litepagetests/bypass.html'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 200)
+
+  # Verifies that a Lite Page is not served when the server returns a bypass.
+  # Additionally, verifies that after receiving the host-blacklisted directive,
+  # previews will not be attempted for future navigations on the same host.
+  @ChromeVersionEqualOrAfterM(74)
+  def testServerReturnsBypassWithHostBlacklisted(self):
+    with TestDriver() as t:
+      self.EnableLitePageServerPreviewsAndInit(t)
+      url = 'https://mobilespeed-test2.appspot.com/static/litepagetests/bypass.html'
+      t.LoadURL(url)
+      self._AssertShowingOriginalPage(t, url, 200)
+      # Ensure the reload doesn't use a cached page.
+      t.LoadURL('chrome://settings/clearBrowserData')
+      # This second navigation should not attempt a preview, so the bypass count
+      # should not have been incremented a second time.
+      t.LoadURL(url)
+      self._AssertShowingOriginalPage(t, url, 200, expectedBypassCount = 1)
 
   # Verifies that a Lite Page is not served when the server returns a 404.
   @ChromeVersionEqualOrAfterM(74)
@@ -215,9 +237,8 @@ class HttpsPreviewsBaseClass():
 
       # Verify that the request is served by a Lite Page.
       lite_page_responses = 0
-      lite_page_regexp = re.compile('https://\w+\.litepages\.googlezip\.net/p')
       for response in t.GetHTTPResponses():
-        if lite_page_regexp.search(response.url) and response.status == 200:
+        if re.match(LITEPAGES_REGEXP, response.url) and response.status == 200:
           lite_page_responses += 1
       self.assertEqual(1, lite_page_responses)
 

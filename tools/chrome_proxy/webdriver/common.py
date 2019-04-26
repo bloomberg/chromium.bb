@@ -25,6 +25,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+# Pretty printer for debug output.
+def PrettyPrintJSON(obj):
+  return json.dumps(obj, indent=2)
+
 # These network condition values are used in SetNetworkConnection()
 NETWORKS = {
     '4G': {
@@ -322,7 +326,7 @@ class TestDriver:
       self._logger.info('Using the Chrome binary at this path: %s',
         self._flags.chrome_exec)
     self._logger.debug('ChromeOptions will be parsed into these capabilities: '
-      '%s', json.dumps(chrome_options.to_capabilities()))
+      '%s', PrettyPrintJSON(chrome_options.to_capabilities()))
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver,
       desired_capabilities=capabilities, chrome_options=chrome_options)
     driver.command_executor._commands.update({
@@ -598,7 +602,8 @@ class TestDriver:
       json_file_content = json_file_content[:end] + ']}'
       return json.loads(json_file_content)
 
-  def GetPerformanceLogs(self, method_filter=r'Network\.responseReceived'):
+  def GetPerformanceLogs(self, method_filter=r'Network\.(requestWillBeSent|' +
+                                                        'responseReceived)'):
     """Returns all logged Performance events from Chrome. Raises an Exception if
     no pages have been loaded since the last time this function was called.
 
@@ -614,7 +619,7 @@ class TestDriver:
     all_messages = []
     for log in self._driver.execute('getLog', {'type': 'performance'})['value']:
       message = json.loads(log['message'])['message']
-      self._logger.debug('Got Performance log: %s', log['message'])
+      self._logger.debug('Got Performance log:\n%s', PrettyPrintJSON(message))
       if re.match(method_filter, message['method']):
         all_messages.append(message)
     self._logger.info('Got %d performance logs with filter method=%s',
@@ -664,8 +669,12 @@ class TestDriver:
     """
     if override_has_logs:
       self._has_logs = True
-    def MakeHTTPResponse(log_dict):
-      params = log_dict['params']
+
+    all_requests = {}  # map from requestId to params
+    all_responses = [] # list of HTTPResponse
+
+    def MakeHTTPResponse(message):
+      params = message['params']
       response_dict = params['response']
       http_response_dict = {
         'response_headers': response_dict['headers'] if 'headers' in
@@ -678,11 +687,21 @@ class TestDriver:
         'port': response_dict['remotePort'] if 'remotePort' in response_dict
           else -1,
         'status': response_dict['status'] if 'status' in response_dict else -1,
-        'request_type': params['type'] if 'type' in params else ''
+        'request_type': params['type'] if 'type' in params else '',
+        'redirect_chain': [],
       }
+      for request in all_requests[params['requestId']][:-1]:
+        http_response_dict['redirect_chain'].append(request['request']['url'])
       return HTTPResponse(**http_response_dict)
-    all_responses = []
+
     for message in self.GetPerformanceLogs():
+      if message['method'] == 'Network.requestWillBeSent':
+        requestId = message['params']['requestId']
+        if requestId not in all_requests:
+          all_requests[requestId] = [message['params']]
+        else:
+          all_requests[requestId].append(message['params'])
+        continue
       response = MakeHTTPResponse(message)
       self._logger.debug('New HTTPResponse: %s', str(response))
       is_favicon = response.url.endswith('favicon.ico')
@@ -717,7 +736,7 @@ class HTTPResponse:
   """
 
   def __init__(self, response_headers, request_headers, url, protocol, port,
-      status, request_type):
+      status, request_type, redirect_chain):
     self._response_headers = {}
     self._request_headers = {}
     self._url = url
@@ -725,6 +744,7 @@ class HTTPResponse:
     self._port = port
     self._status = status
     self._request_type = request_type
+    self._redirect_chain = redirect_chain # empty if no redirects
     self._flags = ParseFlags()
     # Make all header names lower case.
     for name in response_headers:
@@ -733,16 +753,16 @@ class HTTPResponse:
       self._request_headers[name.lower()] = request_headers[name]
 
   def __str__(self):
-    self_dict = {
+    return PrettyPrintJSON({
       'response_headers': self._response_headers,
       'request_headers': self._request_headers,
       'url': self._url,
       'protocol': self._protocol,
       'port': self._port,
       'status': self._status,
-      'request_type': self._request_type
-    }
-    return json.dumps(self_dict, indent=2)
+      'request_type': self._request_type,
+      'redirect_chain': self._redirect_chain,
+    })
 
   @property
   def response_headers(self):
@@ -771,6 +791,10 @@ class HTTPResponse:
   @property
   def request_type(self):
     return self._request_type
+
+  @property
+  def redirect_chain(self):
+    return self._redirect_chain
 
   def ResponseHasViaHeader(self):
     return 'via' in self._response_headers and (self._response_headers['via'] ==
