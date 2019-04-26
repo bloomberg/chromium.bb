@@ -326,11 +326,6 @@ void TtsControllerImpl::SpeakNow(TtsUtterance* utterance) {
   if (!GetTtsControllerDelegate())
     return;
 
-  // Ensure we have all built-in voices loaded. This is a no-op if already
-  // loaded.
-  bool loaded_built_in =
-      GetTtsPlatform()->LoadBuiltInTtsEngine(utterance->GetBrowserContext());
-
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
   GetVoices(utterance->GetBrowserContext(), &voices);
@@ -389,25 +384,31 @@ void TtsControllerImpl::SpeakNow(TtsUtterance* utterance) {
     // during |speak|.
     current_utterance_ = utterance;
     GetTtsPlatform()->ClearError();
-    bool success = GetTtsPlatform()->Speak(
-        utterance->GetId(), utterance->GetText(), utterance->GetLang(), voice,
-        utterance->GetContinuousParameters());
-    if (!success)
-      current_utterance_ = nullptr;
+    GetTtsPlatform()->Speak(utterance->GetId(), utterance->GetText(),
+                            utterance->GetLang(), voice,
+                            utterance->GetContinuousParameters(),
+                            base::BindOnce(&TtsControllerImpl::OnSpeakFinished,
+                                           base::Unretained(this), utterance));
+  }
+}
 
-    // If the native voice wasn't able to process this speech, see if
-    // the browser has built-in TTS that isn't loaded yet.
-    if (!success && loaded_built_in) {
-      utterance_queue_.push(utterance);
-      return;
-    }
+void TtsControllerImpl::OnSpeakFinished(TtsUtterance* utterance, bool success) {
+  if (!success)
+    current_utterance_ = nullptr;
 
-    if (!success) {
-      utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex, kInvalidLength,
-                            GetTtsPlatform()->GetError());
-      delete utterance;
-      return;
-    }
+  // If the native voice wasn't able to process this speech, see if
+  // the browser has built-in TTS that isn't loaded yet.
+  if (!success &&
+      GetTtsPlatform()->LoadBuiltInTtsEngine(utterance->GetBrowserContext())) {
+    utterance_queue_.push(utterance);
+    return;
+  }
+
+  if (!success) {
+    utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex, kInvalidLength,
+                          GetTtsPlatform()->GetError());
+    delete utterance;
+    return;
   }
 }
 

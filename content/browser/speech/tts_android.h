@@ -15,11 +15,12 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
  public:
   // TtsPlatform overrides.
   bool PlatformImplAvailable() override;
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;

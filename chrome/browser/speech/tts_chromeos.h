@@ -15,11 +15,12 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
   // TtsPlatform overrides:
   bool PlatformImplAvailable() override;
   bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override;
+             const content::UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
   bool StopSpeaking() override;
   void GetVoices(std::vector<content::VoiceData>* out_voices) override;
   std::string GetError() override;

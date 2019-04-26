@@ -33,11 +33,12 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override { return true; }
 
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
 
   bool StopSpeaking() override;
 
@@ -84,16 +85,20 @@ TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
   return TtsPlatformImplWin::GetInstance();
 }
 
-bool TtsPlatformImplWin::Speak(int utterance_id,
-                               const std::string& src_utterance,
-                               const std::string& lang,
-                               const VoiceData& voice,
-                               const UtteranceContinuousParameters& params) {
+void TtsPlatformImplWin::Speak(
+    int utterance_id,
+    const std::string& src_utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   std::wstring prefix;
   std::wstring suffix;
 
-  if (!speech_synthesizer_.Get())
-    return false;
+  if (!speech_synthesizer_.Get()) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
 
   SetVoiceFromName(voice.name);
 
@@ -131,7 +136,7 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
 
   HRESULT result = speech_synthesizer_->Speak(merged_utterance.c_str(),
                                               SPF_ASYNC, &stream_number_);
-  return (result == S_OK);
+  std::move(on_speak_finished).Run((result == S_OK));
 }
 
 bool TtsPlatformImplWin::StopSpeaking() {

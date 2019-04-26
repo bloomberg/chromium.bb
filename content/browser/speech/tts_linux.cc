@@ -38,11 +38,12 @@ struct SPDChromeVoice {
 class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override;
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;
@@ -160,14 +161,17 @@ bool TtsPlatformImplLinux::PlatformImplAvailable() {
   return result;
 }
 
-bool TtsPlatformImplLinux::Speak(int utterance_id,
-                                 const std::string& utterance,
-                                 const std::string& lang,
-                                 const VoiceData& voice,
-                                 const UtteranceContinuousParameters& params) {
+void TtsPlatformImplLinux::Speak(
+    int utterance_id,
+    const std::string& utterance,
+    const std::string& lang,
+    const VoiceData& voice,
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   if (!PlatformImplAvailable()) {
     error_ = kNotSupportedError;
-    return false;
+    std::move(on_speak_finished).Run(false);
+    return;
   }
 
   // Speech dispatcher's speech params are around 3x at either limit.
@@ -197,9 +201,10 @@ bool TtsPlatformImplLinux::Speak(int utterance_id,
 
   if (libspeechd_loader_.spd_say(conn_, SPD_TEXT, utterance.c_str()) == -1) {
     Reset();
-    return false;
+    std::move(on_speak_finished).Run(false);
+    return;
   }
-  return true;
+  std::move(on_speak_finished).Run(true);
 }
 
 bool TtsPlatformImplLinux::StopSpeaking() {

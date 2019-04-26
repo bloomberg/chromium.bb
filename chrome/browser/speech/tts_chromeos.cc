@@ -27,20 +27,25 @@ bool TtsPlatformImplChromeOs::LoadBuiltInTtsEngine(
   return false;
 }
 
-bool TtsPlatformImplChromeOs::Speak(
+void TtsPlatformImplChromeOs::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
     const content::VoiceData& voice,
-    const content::UtteranceContinuousParameters& params) {
+    const content::UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* const arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return false;
+  if (!arc_service_manager) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
   arc::mojom::TtsInstance* tts = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->tts(), Speak);
-  if (!tts)
-    return false;
+  if (!tts) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
 
   arc::mojom::TtsUtterancePtr arc_utterance = arc::mojom::TtsUtterance::New();
   arc_utterance->utteranceId = utterance_id;
@@ -48,7 +53,7 @@ bool TtsPlatformImplChromeOs::Speak(
   arc_utterance->rate = params.rate;
   arc_utterance->pitch = params.pitch;
   tts->Speak(std::move(arc_utterance));
-  return true;
+  std::move(on_speak_finished).Run(true);
 }
 
 bool TtsPlatformImplChromeOs::StopSpeaking() {

@@ -37,11 +37,12 @@ class CONTENT_EXPORT TtsPlatform {
   // The TtsController will only try to speak one utterance at
   // a time. If it wants to interrupt speech, it will always call Stop
   // before speaking again.
-  virtual bool Speak(int utterance_id,
+  virtual void Speak(int utterance_id,
                      const std::string& utterance,
                      const std::string& lang,
                      const VoiceData& voice,
-                     const UtteranceContinuousParameters& params) = 0;
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished) = 0;
 
   // Stop speaking immediately and return true on success.
   virtual bool StopSpeaking() = 0;

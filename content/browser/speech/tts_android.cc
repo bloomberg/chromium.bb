@@ -33,24 +33,27 @@ bool TtsPlatformImplAndroid::PlatformImplAvailable() {
   return true;
 }
 
-bool TtsPlatformImplAndroid::Speak(
+void TtsPlatformImplAndroid::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
     const VoiceData& voice,
-    const UtteranceContinuousParameters& params) {
+    const UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   JNIEnv* env = AttachCurrentThread();
   jboolean success = Java_TtsPlatformImpl_speak(
       env, java_ref_, utterance_id,
       base::android::ConvertUTF8ToJavaString(env, utterance),
       base::android::ConvertUTF8ToJavaString(env, lang), params.rate,
       params.pitch, params.volume);
-  if (!success)
-    return false;
+  if (!success) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
 
   utterance_ = utterance;
   utterance_id_ = utterance_id;
-  return true;
+  std::move(on_speak_finished).Run(true);
 }
 
 bool TtsPlatformImplAndroid::StopSpeaking() {

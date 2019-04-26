@@ -52,11 +52,12 @@ class TtsPlatformImplMac : public content::TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override { return true; }
 
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override;
+             const content::UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
 
   bool StopSpeaking() override;
 
@@ -100,20 +101,23 @@ content::TtsPlatformImpl* content::TtsPlatformImpl::GetInstance() {
   return TtsPlatformImplMac::GetInstance();
 }
 
-bool TtsPlatformImplMac::Speak(
+void TtsPlatformImplMac::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
     const content::VoiceData& voice,
-    const content::UtteranceContinuousParameters& params) {
+    const content::UtteranceContinuousParameters& params,
+    base::OnceCallback<void(bool)> on_speak_finished) {
   // TODO: convert SSML to SAPI xml. http://crbug.com/88072
   utterance_ = utterance;
   paused_ = false;
 
   NSString* utterance_nsstring =
       [NSString stringWithUTF8String:utterance_.c_str()];
-  if (!utterance_nsstring)
-    return false;
+  if (!utterance_nsstring) {
+    std::move(on_speak_finished).Run(false);
+    return;
+  }
 
   // Deliberately construct a new speech synthesizer every time Speak is
   // called, otherwise there's no way to know whether calls to the delegate
@@ -166,7 +170,7 @@ bool TtsPlatformImplMac::Speak(
     content::TtsController* controller = content::TtsController::GetInstance();
     controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_START, 0, -1, "");
   }
-  return success;
+  std::move(on_speak_finished).Run(success);
 }
 
 bool TtsPlatformImplMac::StopSpeaking() {

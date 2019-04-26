@@ -97,6 +97,9 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   // pulled from user prefs, and may not be the same as other platforms.
   void UpdateUtteranceDefaults(TtsUtterance* utterance);
 
+  // Passed to Speak() as a callback.
+  void OnSpeakFinished(TtsUtterance* utterance, bool success);
+
   TtsControllerDelegate* GetTtsControllerDelegate();
 
   TtsControllerDelegate* delegate_;
