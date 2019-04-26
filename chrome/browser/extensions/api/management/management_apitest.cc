@@ -162,7 +162,9 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     ASSERT_TRUE(https_test_server_.Start());
   }
 
-  void RunTest(const char* web_app_path, const char* background_script) {
+  void RunTest(const char* web_app_path,
+               const char* background_script,
+               bool from_webstore) {
     static constexpr char kManifest[] =
         R"({
             "name": "Management API Test",
@@ -177,13 +179,32 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                             background_script);
     extensions::ResultCatcher catcher;
-    ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
+    if (from_webstore) {
+      // |expected_change| is the expected change in the number of installed
+      // extensions.
+      ASSERT_TRUE(InstallExtensionFromWebstore(extension_dir.UnpackedPath(),
+                                               1 /* expected_change */));
+    } else {
+      ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
+    }
 
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 
   net::EmbeddedTestServer https_test_server_;
 };
+
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
+  static constexpr char kBackground[] = R"(
+  chrome.management.installReplacementWebApp(function() {
+    chrome.test.assertLastError(
+        'Only extensions from the web store can install replacement web apps.');
+    chrome.test.notifyPass();
+  });)";
+
+  RunTest("/management/install_replacement_web_app/good_web_app/index.html",
+          kBackground, false /* from_webstore */);
+}
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
   static constexpr char kBackground[] = R"(
@@ -194,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
   });)";
 
   RunTest("/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground);
+          kBackground, true /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
@@ -208,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
          });)";
 
   RunTest("/management/install_replacement_web_app/bad_web_app/index.html",
-          kBackground);
+          kBackground, true /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
@@ -240,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
   EXPECT_FALSE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
                                                         good_web_app_url));
 
-  RunTest(kGoodWebAppURL, kBackground);
+  RunTest(kGoodWebAppURL, kBackground, true /* from_webstore */);
   EXPECT_TRUE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
                                                        good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);

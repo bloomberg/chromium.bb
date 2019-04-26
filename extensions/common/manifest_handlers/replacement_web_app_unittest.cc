@@ -20,7 +20,8 @@ namespace {
 
 class ReplacementWebAppManifestTest : public ManifestTest {
  public:
-  ReplacementWebAppManifestTest() : channel_(version_info::Channel::UNKNOWN) {}
+  ReplacementWebAppManifestTest() = default;
+  ~ReplacementWebAppManifestTest() override = default;
 
  protected:
   ManifestData CreateManifest(const char* replacement_web_app) {
@@ -36,9 +37,6 @@ class ReplacementWebAppManifestTest : public ManifestTest {
     return ManifestData(base::Value::ToUniquePtrValue(std::move(manifest)),
                         "test");
   }
-
- private:
-  ScopedCurrentChannel channel_;
 };
 
 }  // namespace

@@ -831,6 +831,11 @@ ManagementInstallReplacementWebAppFunction::Run() {
   if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
     return RespondNow(Error(keys::kNotAllowedInKioskError));
 
+  if (!extension()->from_webstore()) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppNotFromWebstoreError));
+  }
+
   if (!user_gesture()) {
     return RespondNow(
         Error(keys::kGestureNeededForInstallReplacementWebAppError));
