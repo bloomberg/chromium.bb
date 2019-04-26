@@ -422,6 +422,7 @@
     },
     {
       name: "CustomUserTiming",
+      status: "experimental",
     },
     {
       name: "Database",

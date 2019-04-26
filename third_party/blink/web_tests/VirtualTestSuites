@@ -1066,5 +1066,10 @@
     "prefix": "native-file-system",
     "base": "external/wpt/native-file-system",
     "args": ["--enable-features=NativeFileSystemAPI"]
+  },
+  {
+    "prefix": "user-timing-l2",
+    "base": "external/wpt/user-timing",
+    "args": ["--disable-blink-features=CustomUserTiming"]
   }
 ]

@@ -2816,13 +2816,6 @@ crbug.com/748549 external/wpt/network-error-logging [ Skip ]
 
 crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
 
-# These tests will pass when we ship User Timing L3.
-crbug.com/758385 external/wpt/user-timing/mark-errors.html [ Failure ]
-crbug.com/758385 external/wpt/user-timing/mark-l3.html [ Failure ]
-crbug.com/758385 external/wpt/user-timing/mark-measure-return-objects.html [ Failure ]
-crbug.com/758385 external/wpt/user-timing/measure-l3.html [ Failure ]
-crbug.com/758385 external/wpt/user-timing/measure-with-dict.html [ Failure ]
-
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
 # These tests requires enabling the flag LongTaskV2 in a virtual test suite.
@@ -5544,8 +5537,6 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
-
-crbug.com/914441 external/wpt/user-timing/mark-measure-feature-detection.html [ Failure ]
 
 # New rebaselines because LayoutNG is more correct
 crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]
