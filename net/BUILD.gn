@@ -3076,8 +3076,20 @@ if (is_linux || is_mac) {
 if (is_linux) {
   static_library("epoll_server") {
     sources = [
-      "tools/epoll_server/epoll_server.cc",
-      "tools/epoll_server/epoll_server.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_bug.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_export.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_logging.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_ptr_util.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_thread.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_time.h",
+      "third_party/quiche/src/epoll_server/simple_epoll_server.cc",
+      "third_party/quiche/src/epoll_server/simple_epoll_server.h",
+      "tools/epoll_server/platform/impl/epoll_bug_impl.h",
+      "tools/epoll_server/platform/impl/epoll_export_impl.h",
+      "tools/epoll_server/platform/impl/epoll_logging_impl.h",
+      "tools/epoll_server/platform/impl/epoll_ptr_util_impl.h",
+      "tools/epoll_server/platform/impl/epoll_thread_impl.h",
+      "tools/epoll_server/platform/impl/epoll_time_impl.h",
     ]
     deps = [
       ":net",
@@ -3197,6 +3209,25 @@ if (is_android || is_linux) {
       "//base",
     ]
   }
+}
+
+source_set("epoll_server_test_tools") {
+  testonly = true
+  sources = [
+    "third_party/quiche/src/epoll_server/platform/api/epoll_address_test_utils.h",
+    "third_party/quiche/src/epoll_server/platform/api/epoll_expect_bug.h",
+    "third_party/quiche/src/epoll_server/platform/api/epoll_test.h",
+    "tools/epoll_server/platform/impl/epoll_address_test_utils_impl.h",
+    "tools/epoll_server/platform/impl/epoll_expect_bug_impl.h",
+    "tools/epoll_server/platform/impl/epoll_test_impl.h",
+  ]
+  deps = [
+    ":net",
+    ":test_support",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 source_set("spdy_test_tools") {
@@ -3369,6 +3400,8 @@ source_set("quic_test_tools") {
 
   if (is_linux) {
     sources += [
+      "third_party/quiche/src/epoll_server/fake_simple_epoll_server.cc",
+      "third_party/quiche/src/epoll_server/fake_simple_epoll_server.h",
       "third_party/quiche/src/quic/test_tools/bad_packet_writer.cc",
       "third_party/quiche/src/quic/test_tools/bad_packet_writer.h",
       "third_party/quiche/src/quic/test_tools/limited_mtu_test_writer.cc",
@@ -3387,8 +3420,6 @@ source_set("quic_test_tools") {
       "third_party/quiche/src/quic/test_tools/quic_test_server.h",
       "third_party/quiche/src/quic/test_tools/server_thread.cc",
       "third_party/quiche/src/quic/test_tools/server_thread.h",
-      "tools/epoll_server/fake_epoll_server.cc",
-      "tools/epoll_server/fake_epoll_server.h",
     ]
     deps += [
       ":epoll_quic_tools",
@@ -5557,6 +5588,7 @@ test("net_unittests") {
       "quic/platform/impl/quic_flags_test.cc",
       "quic/platform/impl/quic_linux_socket_utils_test.cc",
       "quic/platform/impl/quic_socket_utils_test.cc",
+      "third_party/quiche/src/epoll_server/simple_epoll_server_test.cc",
       "third_party/quiche/src/quic/core/chlo_extractor_test.cc",
       "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_test.cc",
@@ -5579,6 +5611,7 @@ test("net_unittests") {
     deps += [
       ":epoll_quic_tools",
       ":epoll_server",
+      ":epoll_server_test_tools",
     ]
   }
 
