@@ -77,9 +77,10 @@ class InstallManager {
       OnceInstallCallback callback) = 0;
 
   // Starts a web app installation process using prefilled
-  // |web_application_info|. If |no_network_install| is true, then
-  // |web_application_info| holds all the data needed for installation and
-  // InstallManager should not try to fetch a manifest.
+  // |web_application_info| which holds all the data needed for installation.
+  // InstallManager doesn't fetch a manifest. If |no_network_install| is true,
+  // the app will not be synced, since if the data is locally available we
+  // assume there is an external sync mechanism.
   virtual void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       bool no_network_install,

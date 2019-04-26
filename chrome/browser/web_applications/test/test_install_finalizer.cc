@@ -34,15 +34,12 @@ void TestInstallFinalizer::FinalizeInstall(
     next_result_code_.reset();
   }
 
-  // Store a copy for inspecting in tests.
+  // Store input data copies for inspecting in tests.
   web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
-  finalized_policy_install_ = false;
+  finalize_options_ = options;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
-
-  if (options.policy_installed)
-    finalized_policy_install_ = true;
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {

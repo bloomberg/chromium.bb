@@ -674,6 +674,126 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
   run_loop.Run();
 }
 
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
+  CreateTestDataRetriever();
+  SetInstallFinalizerForTesting();
+
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+  web_app_info->open_as_window = false;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/false,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                     InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccess, code);
+        EXPECT_EQ(app_id, installed_app_id);
+        EXPECT_FALSE(
+            test_install_finalizer().finalize_options().no_network_install);
+        EXPECT_EQ(
+            LaunchContainer::kDefault,
+            test_install_finalizer().finalize_options().force_launch_container);
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_NoNetworkInstall) {
+  CreateTestDataRetriever();
+  SetInstallFinalizerForTesting();
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("https://example.com/path");
+  web_app_info->open_as_window = false;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/true,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                     InstallResultCode code) {
+        EXPECT_TRUE(
+            test_install_finalizer().finalize_options().no_network_install);
+        EXPECT_EQ(
+            LaunchContainer::kWindow,
+            test_install_finalizer().finalize_options().force_launch_container);
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
+  CreateTestDataRetriever();
+  SetInstallFinalizerForTesting();
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("https://example.com/path");
+  web_app_info->open_as_window = false;
+
+  const GURL icon_url("https://example.com/path/main.ico");
+
+  // Add square yellow icon.
+  {
+    auto icon_info =
+        GenerateIconInfo(icon_url, icon_size::k256, SK_ColorYELLOW);
+    web_app_info->icons.push_back(std::move(icon_info));
+  }
+
+  // Add non-square red icon.
+  {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(icon_size::k256, icon_size::k128);
+    bitmap.eraseColor(SK_ColorRED);
+
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.url = GURL("https://example.com/path/bad.ico");
+    icon_info.width = icon_size::k256;
+    icon_info.height = icon_size::k128;
+    icon_info.data = bitmap;
+    web_app_info->icons.push_back(std::move(icon_info));
+  }
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfo(
+      std::move(web_app_info), /*no_network_install=*/true,
+      WebappInstallSource::ARC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            // Make sure no red non-square icons, only square yellow ones.
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_EQ(SK_ColorYELLOW, icon.data.getColor(0, 0));
+
+              // All icons should have an empty url except the original one:
+              if (icon.url != icon_url)
+                EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
 
 }  // namespace web_app

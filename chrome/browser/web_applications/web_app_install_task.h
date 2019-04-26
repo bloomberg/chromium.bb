@@ -55,6 +55,17 @@ class WebAppInstallTask : content::WebContentsObserver {
       InstallManager::WebAppInstallDialogCallback dialog_callback,
       InstallManager::OnceInstallCallback callback);
 
+  // Starts a web app installation process using prefilled
+  // |web_application_info| which holds all the data needed for installation.
+  // InstallManager doesn't fetch a manifest. If |no_network_install| is true,
+  // the app will not be synced, since if the data is locally available we
+  // assume there is an external sync mechanism.
+  void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool no_network_install,
+      WebappInstallSource install_source,
+      InstallManager::OnceInstallCallback callback);
+
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
@@ -64,6 +75,7 @@ class WebAppInstallTask : content::WebContentsObserver {
 
  private:
   void CheckInstallPreconditions();
+  void RecordInstallEvent(ForInstallableSite for_installable_site);
 
   // Calling the callback may destroy |this| task. Callers shoudln't work with
   // any |this| class members after calling it.

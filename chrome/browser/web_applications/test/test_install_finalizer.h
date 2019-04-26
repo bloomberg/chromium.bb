@@ -44,7 +44,9 @@ class TestInstallFinalizer final : public InstallFinalizer {
     return std::move(web_app_info_copy_);
   }
 
-  bool finalized_policy_install() { return finalized_policy_install_.value(); }
+  const FinalizeOptions& finalize_options() const {
+    return finalize_options_.value();
+  }
 
   int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
@@ -53,7 +55,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
-  base::Optional<bool> finalized_policy_install_;
+  base::Optional<FinalizeOptions> finalize_options_;
 
   base::Optional<AppId> next_app_id_;
   base::Optional<InstallResultCode> next_result_code_;

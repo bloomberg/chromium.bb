@@ -56,6 +56,10 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 void MergeInstallableDataIcon(const InstallableData& data,
                               WebApplicationInfo* web_app_info);
 
+// Get a list of non-empty square icons from |web_app_info|.
+void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
+                               std::vector<BitmapAndSource>* square_icons);
+
 // Get a list of non-empty square icons from downloaded |icons_map| and
 // |web_app_info| (merged together).
 std::vector<BitmapAndSource> FilterSquareIcons(

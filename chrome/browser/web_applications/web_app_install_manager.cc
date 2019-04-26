@@ -72,8 +72,16 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     bool no_network_install,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
+  DCHECK(AreWebAppsUserInstallable(profile()));
+
+  auto task =
+      std::make_unique<WebAppInstallTask>(profile(), install_finalizer_);
+  task->InstallWebAppFromInfo(
+      std::move(web_application_info), no_network_install, install_source,
+      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  tasks_.insert(std::move(task));
 }
 
 void WebAppInstallManager::InstallWebAppWithOptions(

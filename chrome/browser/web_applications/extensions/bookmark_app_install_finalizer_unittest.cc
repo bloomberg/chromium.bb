@@ -14,14 +14,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 
@@ -165,7 +168,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
 
   bool callback1_called = false;
   bool callback2_called = false;
-  web_app::InstallFinalizer::FinalizeOptions options;
+  const web_app::InstallFinalizer::FinalizeOptions options;
 
   // Start install finalization for the 1st app
   {
@@ -255,6 +258,39 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
                 installed_app_id);
         EXPECT_TRUE(Manifest::IsExternalLocation(extension->location()));
         EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, extension->location());
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL(kWebAppUrl);
+  // The info says extensions::LAUNCH_TYPE_WINDOW needed.
+  info->open_as_window = true;
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  // Force launch as a tab.
+  options.force_launch_container = web_app::LaunchContainer::kTab;
+
+  base::RunLoop run_loop;
+  installer.FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+
+        auto* extension =
+            ExtensionRegistry::Get(profile())->GetInstalledExtension(
+                installed_app_id);
+
+        extensions::LaunchType launch_type =
+            GetLaunchType(ExtensionPrefs::Get(profile()), extension);
+        // Not extensions::LAUNCH_TYPE_WINDOW.
+        EXPECT_EQ(launch_type, extensions::LAUNCH_TYPE_REGULAR);
 
         run_loop.Quit();
       }));

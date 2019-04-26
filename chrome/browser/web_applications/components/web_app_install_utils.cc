@@ -128,28 +128,32 @@ void MergeInstallableDataIcon(const InstallableData& data,
   }
 }
 
+void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
+                               std::vector<BitmapAndSource>* square_icons) {
+  // Add all existing icons from WebApplicationInfo.
+  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+    const SkBitmap& icon = icon_info.data;
+    if (!icon.drawsNothing() && icon.width() == icon.height())
+      square_icons->push_back(BitmapAndSource(icon_info.url, icon));
+  }
+}
+
 std::vector<BitmapAndSource> FilterSquareIcons(
     const IconsMap& icons_map,
     const WebApplicationInfo& web_app_info) {
-  std::vector<BitmapAndSource> downloaded_icons;
+  std::vector<BitmapAndSource> square_icons;
+
   for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : icons_map) {
     for (const SkBitmap& bitmap : url_bitmap.second) {
       if (bitmap.empty() || bitmap.width() != bitmap.height())
         continue;
 
-      downloaded_icons.push_back(BitmapAndSource(url_bitmap.first, bitmap));
+      square_icons.push_back(BitmapAndSource(url_bitmap.first, bitmap));
     }
   }
 
-  // Add all existing icons from WebApplicationInfo.
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
-    const SkBitmap& icon = icon_info.data;
-    if (!icon.drawsNothing() && icon.width() == icon.height()) {
-      downloaded_icons.push_back(BitmapAndSource(icon_info.url, icon));
-    }
-  }
-
-  return downloaded_icons;
+  FilterSquareIconsFromInfo(web_app_info, &square_icons);
+  return square_icons;
 }
 
 void ResizeDownloadedIconsGenerateMissing(

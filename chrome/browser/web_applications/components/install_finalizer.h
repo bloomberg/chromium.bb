@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 struct WebApplicationInfo;
@@ -31,6 +32,9 @@ class InstallFinalizer {
       base::OnceCallback<void(bool shortcuts_created)>;
 
   struct FinalizeOptions {
+    // If |force_launch_container| defined as non-kDefault then the installed
+    // app will launch in |force_launch_container|.
+    LaunchContainer force_launch_container = LaunchContainer::kDefault;
     bool policy_installed = false;
     bool no_network_install = false;
   };

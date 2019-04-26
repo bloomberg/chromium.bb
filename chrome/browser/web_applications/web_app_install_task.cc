@@ -70,6 +70,34 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
                      base::Unretained(this), force_shortcut_app));
 }
 
+void WebAppInstallTask::InstallWebAppFromInfo(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool no_network_install,
+    WebappInstallSource install_source,
+    InstallManager::OnceInstallCallback callback) {
+  std::vector<BitmapAndSource> square_icons;
+  FilterSquareIconsFromInfo(*web_application_info, &square_icons);
+  ResizeDownloadedIconsGenerateMissing(std::move(square_icons),
+                                       web_application_info.get());
+
+  install_source_ = install_source;
+  // |for_installable_site| arg is determined by fetching a manifest and running
+  // the eligibility check on it. If we don't hit the network, assume that the
+  // app represetned by |web_application_info| is installable.
+  RecordInstallEvent(no_network_install ? ForInstallableSite::kYes
+                                        : ForInstallableSite::kNo);
+
+  InstallFinalizer::FinalizeOptions options;
+  if (no_network_install) {
+    options.no_network_install = true;
+    // We should only install windowed apps via this method.
+    options.force_launch_container = LaunchContainer::kWindow;
+  }
+
+  install_finalizer_->FinalizeInstall(*web_application_info, options,
+                                      std::move(callback));
+}
+
 void WebAppInstallTask::WebContentsDestroyed() {
   CallInstallCallback(AppId(), InstallResultCode::kWebContentsDestroyed);
 }
@@ -91,6 +119,16 @@ void WebAppInstallTask::CheckInstallPreconditions() {
   // Concurrent calls are not allowed.
   DCHECK(!web_contents());
   CHECK(!install_callback_);
+}
+
+void WebAppInstallTask::RecordInstallEvent(
+    ForInstallableSite for_installable_site) {
+  DCHECK(install_source_ != kNoInstallSource);
+
+  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
+      for_installable_site == ForInstallableSite::kYes) {
+    InstallableMetrics::TrackInstallEvent(install_source_);
+  }
 }
 
 void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
@@ -202,13 +240,8 @@ void WebAppInstallTask::OnDialogCompleted(
 
   WebApplicationInfo web_app_info_copy = *web_app_info;
 
-  DCHECK(install_source_ != kNoInstallSource);
-
   // This metric is recorded regardless of the installation result.
-  if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
-      for_installable_site == ForInstallableSite::kYes) {
-    InstallableMetrics::TrackInstallEvent(install_source_);
-  }
+  RecordInstallEvent(for_installable_site);
 
   InstallFinalizer::FinalizeOptions options;
 

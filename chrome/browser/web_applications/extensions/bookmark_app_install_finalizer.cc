@@ -29,10 +29,6 @@ namespace extensions {
 
 namespace {
 
-LaunchType GetLaunchType(const WebApplicationInfo& web_app_info) {
-  return web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
-}
-
 const Extension* GetExtensionById(Profile* profile,
                                   const web_app::AppId& app_id) {
   const Extension* app =
@@ -90,9 +86,25 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
 
-  crx_installer->set_installer_callback(base::BindOnce(
-      OnExtensionInstalled, web_app_info.app_url, GetLaunchType(web_app_info),
-      std::move(callback), crx_installer));
+  extensions::LaunchType launch_type =
+      web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
+
+  // Override extensions::LaunchType with force web_app::LaunchContainer:
+  switch (options.force_launch_container) {
+    case web_app::LaunchContainer::kDefault:
+      // force_launch_container is not defined, do not override.
+      break;
+    case web_app::LaunchContainer::kTab:
+      launch_type = LAUNCH_TYPE_REGULAR;
+      break;
+    case web_app::LaunchContainer::kWindow:
+      launch_type = LAUNCH_TYPE_WINDOW;
+      break;
+  }
+
+  crx_installer->set_installer_callback(
+      base::BindOnce(OnExtensionInstalled, web_app_info.app_url, launch_type,
+                     std::move(callback), crx_installer));
 
   if (options.policy_installed)
     crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
