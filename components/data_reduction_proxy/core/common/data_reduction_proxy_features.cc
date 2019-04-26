@@ -31,6 +31,12 @@ const base::Feature kDataReductionProxyLowMemoryDevicePromo{
 const base::Feature kDogfood{"DataReductionProxyDogfood",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the usage of data reduction proxy is disabled for HTTP URLs.
+// Does not affect the state of save-data header or other
+// features that may depend on data saver being enabled.
+const base::Feature kDataReductionProxyHoldback{
+    "DataReductionProxyHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
     "DataReductionProxyEnabledWithNetworkService",

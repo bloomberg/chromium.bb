@@ -382,11 +382,21 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
     bool is_warmup_url,
     const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   auto config = network::mojom::CustomProxyConfig::New();
-  config->rules = configurator_
-                      ->CreateProxyConfig(
-                          is_warmup_url, config_->GetNetworkPropertiesManager(),
-                          proxies_for_http)
-                      .proxy_rules();
+  if (params::IsIncludedInHoldbackFieldTrial()) {
+    config->rules =
+        configurator_
+            ->CreateProxyConfig(is_warmup_url,
+                                config_->GetNetworkPropertiesManager(),
+                                std::vector<DataReductionProxyServer>())
+            .proxy_rules();
+  } else {
+    config->rules =
+        configurator_
+            ->CreateProxyConfig(is_warmup_url,
+                                config_->GetNetworkPropertiesManager(),
+                                proxies_for_http)
+            .proxy_rules();
+  }
 
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {

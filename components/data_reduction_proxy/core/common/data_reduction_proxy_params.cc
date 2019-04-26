@@ -104,7 +104,12 @@ bool IsIncludedInFREPromoFieldTrial() {
 }
 
 bool IsIncludedInHoldbackFieldTrial() {
-  return IsIncludedInFieldTrial("DataCompressionProxyHoldback");
+  // For now, DRP can be disabled using either the field trial or the feature.
+  // New server configs should use the feature capability.
+  // TODO(tbansal): Remove the field trial code.
+  return base::FeatureList::IsEnabled(
+             data_reduction_proxy::features::kDataReductionProxyHoldback) ||
+         IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
 bool IsIncludedInSecureProxyHoldbackFieldTrial() {

@@ -30,6 +30,8 @@ void DataReductionProxyConfigurator::Enable(
     const NetworkPropertiesManager& network_properties_manager,
     const std::vector<DataReductionProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial() || proxies_for_http.empty());
+
   net::ProxyConfig config =
       CreateProxyConfig(false /* probe_url_config */,
                         network_properties_manager, proxies_for_http);
@@ -43,6 +45,7 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     const NetworkPropertiesManager& network_properties_manager,
     const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial() || proxies_for_http.empty());
 
   net::ProxyConfig config;
   DCHECK(config.proxy_rules().proxies_for_http.IsEmpty());
