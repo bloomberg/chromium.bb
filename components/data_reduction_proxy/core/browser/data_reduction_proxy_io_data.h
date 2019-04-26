@@ -257,6 +257,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Creates a config using |proxies_for_http| that can be sent to the
   // NetworkContext.
   network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
+      bool is_warmup_url,
       const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
   // Called when the list of proxies changes.
