@@ -230,7 +230,7 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
                            best_effort.Get());
   scoped_task_environment_.RunUntilIdle();
 
-  BrowserTaskExecutor::NotifyBrowserStartupCompleted();
+  BrowserTaskExecutor::EnableBestEffortQueues();
   EXPECT_CALL(best_effort, Run).Times(4);
   scoped_task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(100));

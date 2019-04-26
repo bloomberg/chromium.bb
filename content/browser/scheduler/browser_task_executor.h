@@ -42,7 +42,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // called.
   static void Shutdown();
 
-  static void NotifyBrowserStartupCompleted();
+  static void EnableBestEffortQueues();
 
   // Unregister and delete the TaskExecutor after a test.
   static void ResetForTesting();

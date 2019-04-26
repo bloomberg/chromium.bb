@@ -372,7 +372,7 @@ BrowserTaskExecutor::GetAfterStartupTaskRunnerForThread(BrowserThread::ID id) {
 }
 
 // static
-void BrowserTaskExecutor::NotifyBrowserStartupCompleted() {
+void BrowserTaskExecutor::EnableBestEffortQueues() {
   DCHECK(g_browser_task_executor);
   g_browser_task_executor->browser_ui_thread_scheduler_
       ->EnableBestEffortQueues();

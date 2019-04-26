@@ -123,7 +123,6 @@ BrowserUIThreadScheduler::GetTaskRunner(QueueType queue_type) {
 }
 
 void BrowserUIThreadScheduler::EnableBestEffortQueues() {
-  DCHECK(!best_effort_voter_->IsVotingToEnable());
   best_effort_voter_->SetVoteToEnable(true);
 }
 

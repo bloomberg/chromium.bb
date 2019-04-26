@@ -1212,7 +1212,7 @@ void BrowserMainLoop::InitializeMainThread() {
   // TODO(https://crbug.com/863341): Replace with a better API
   GetContentClient()->browser()->PostAfterStartupTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
-        content::BrowserTaskExecutor::NotifyBrowserStartupCompleted();
+        content::BrowserTaskExecutor::EnableBestEffortQueues();
       }));
 }
 

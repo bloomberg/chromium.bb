@@ -42,7 +42,6 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   // however no tasks will be executed after this point.
   void Shutdown();
 
-  // Attention: Can only be called once
   void EnableBestEffortQueues();
 
   using QueueType = BrowserUIThreadTaskQueue::QueueType;
