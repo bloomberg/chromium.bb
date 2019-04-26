@@ -50,6 +50,7 @@ class MojoRendererFactory : public RendererFactory {
 #if defined(OS_ANDROID)
   std::unique_ptr<MojoRenderer> CreateFlingingRenderer(
       const std::string& presentation_id,
+      mojom::FlingingRendererClientExtensionPtr client_extenion_ptr,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
 

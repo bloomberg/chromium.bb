@@ -189,7 +189,7 @@ void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {
 }
 
 void MojoRendererService::OnRemotePlayStateChange(MediaStatus::State state) {
-  client_->OnRemotePlayStateChange(state);
+  // TODO(https://crbug.com/956677, tguilbert): Remove this function.
 }
 
 void MojoRendererService::OnVideoOpacityChange(bool opaque) {

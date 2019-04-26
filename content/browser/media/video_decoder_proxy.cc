@@ -55,6 +55,7 @@ void VideoDecoderProxy::CreateCastRenderer(
 #if defined(OS_ANDROID)
 void VideoDecoderProxy::CreateFlingingRenderer(
     const std::string& audio_device_id,
+    media::mojom::FlingingRendererClientExtensionPtr client_extenion,
     media::mojom::RendererRequest request) {}
 
 void VideoDecoderProxy::CreateMediaPlayerRenderer(

@@ -42,8 +42,10 @@ class CONTENT_EXPORT MediaInterfaceFactory
                           media::mojom::RendererRequest request) final;
 #endif
 #if defined(OS_ANDROID)
-  void CreateFlingingRenderer(const std::string& presentation_id,
-                              media::mojom::RendererRequest request) final;
+  void CreateFlingingRenderer(
+      const std::string& presentation_id,
+      media::mojom::FlingingRendererClientExtensionPtr client_extension,
+      media::mojom::RendererRequest request) final;
   void CreateMediaPlayerRenderer(
       media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
       media::mojom::RendererRequest request,

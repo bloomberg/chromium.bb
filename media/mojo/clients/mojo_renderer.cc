@@ -265,11 +265,6 @@ void MojoRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
   client_->OnVideoNaturalSizeChange(size);
 }
 
-void MojoRenderer::OnRemotePlayStateChange(media::MediaStatus::State state) {
-  DVLOG(2) << __func__ << ": state [" << static_cast<int>(state) << "]";
-  client_->OnRemotePlayStateChange(state);
-}
-
 void MojoRenderer::OnVideoOpacityChange(bool opaque) {
   DVLOG(2) << __func__ << ": " << opaque;
   DCHECK(task_runner_->BelongsToCurrentThread());

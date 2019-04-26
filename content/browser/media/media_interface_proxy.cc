@@ -177,13 +177,15 @@ void MediaInterfaceProxy::CreateCastRenderer(
 #if defined(OS_ANDROID)
 void MediaInterfaceProxy::CreateFlingingRenderer(
     const std::string& presentation_id,
+    media::mojom::FlingingRendererClientExtensionPtr client_extension,
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::unique_ptr<FlingingRenderer> renderer =
-      FlingingRenderer::Create(render_frame_host_, presentation_id);
 
-  media::MojoRendererService::Create(nullptr, std::move(renderer),
-                                     std::move(request));
+  media::MojoRendererService::Create(
+      nullptr,
+      FlingingRenderer::Create(render_frame_host_, presentation_id,
+                               std::move(client_extension)),
+      std::move(request));
 }
 
 void MediaInterfaceProxy::CreateMediaPlayerRenderer(

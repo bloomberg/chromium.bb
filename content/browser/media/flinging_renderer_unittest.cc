@@ -53,7 +53,8 @@ class FlingingRendererTest : public testing::Test {
     EXPECT_CALL(*flinging_controller_, RemoveMediaStatusObserver(_));
 
     renderer_ = base::WrapUnique(new FlingingRenderer(
-        std::unique_ptr<media::FlingingController>(flinging_controller_)));
+        std::unique_ptr<media::FlingingController>(flinging_controller_),
+        nullptr));
 
     renderer_->Initialize(nullptr, &renderer_client_, base::DoNothing());
   }
