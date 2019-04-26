@@ -212,6 +212,10 @@ struct GPU_EXPORT GpuPreferences {
   // testing in order to detect regressions which crash Vulkan.
   bool disable_vulkan_fallback_to_gl_for_testing = false;
 
+  // Use Metal for rasterization and Skia-based display compositing. Note that
+  // this is compatible with GL-based display compositing.
+  bool enable_metal = false;
+
   // ===================================
   // Settings from //cc/base/switches.h
   // Enable the GPU benchmarking extension; used by tests only.

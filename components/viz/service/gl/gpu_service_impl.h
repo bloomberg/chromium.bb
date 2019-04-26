@@ -59,6 +59,7 @@ class SharedContextState;
 namespace viz {
 
 class VulkanContextProvider;
+class MetalContextProvider;
 
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
@@ -309,6 +310,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::VulkanImplementation* vulkan_implementation_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
 #endif
+  std::unique_ptr<MetalContextProvider> metal_context_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 

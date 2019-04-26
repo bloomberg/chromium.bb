@@ -16,6 +16,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -164,6 +165,11 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
+#if defined(OS_MACOSX)
+  if (gpu_preferences.enable_metal)
+    metal_context_provider_ = MetalContextProvider::Create();
+#endif
+
   gpu_memory_buffer_factory_ =
       gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
 
@@ -279,7 +285,8 @@ void GpuServiceImpl::InitializeWithHost(
       scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
-      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider());
+      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider(),
+      metal_context_provider_.get());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

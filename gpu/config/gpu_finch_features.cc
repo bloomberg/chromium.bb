@@ -80,6 +80,11 @@ const base::Feature kGpuWatchdogNoTerminationAwaitingAcknowledge{
     "GpuWatchdogNoTerminationAwaitingAcknowledge",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Enable use of Metal for OOP rasterization.
+const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Causes us to use the SharedImageManager, removing support for the old
 // mailbox system. Any consumers of the GPU process using the old mailbox
 // system will experience undefined results.

@@ -34,6 +34,10 @@ GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
 GPU_EXPORT extern const base::Feature
     kGpuWatchdogNoTerminationAwaitingAcknowledge;
 
+#if defined(OS_MACOSX)
+GPU_EXPORT extern const base::Feature kMetal;
+#endif
+
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;
