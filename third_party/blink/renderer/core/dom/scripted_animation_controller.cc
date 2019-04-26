@@ -168,16 +168,18 @@ bool ScriptedAnimationController::HasScheduledFrameTasks() const {
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
     base::TimeTicks monotonic_time_now) {
-  current_frame_time_ms_ =
-      document_->Loader()
-          ->GetTiming()
-          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
-          .InMillisecondsF();
-  current_frame_legacy_time_ms_ =
-      document_->Loader()
-          ->GetTiming()
-          .MonotonicTimeToPseudoWallTime(monotonic_time_now)
-          .InMillisecondsF();
+  if (document_ && document_->Loader()) {
+    current_frame_time_ms_ =
+        document_->Loader()
+            ->GetTiming()
+            .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+            .InMillisecondsF();
+    current_frame_legacy_time_ms_ =
+        document_->Loader()
+            ->GetTiming()
+            .MonotonicTimeToPseudoWallTime(monotonic_time_now)
+            .InMillisecondsF();
+  }
   current_frame_had_raf_ = HasFrameCallback();
 
   if (!HasScheduledFrameTasks())
@@ -193,6 +195,10 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
 }
 
 void ScriptedAnimationController::RunPostFrameCallbacks() {
+  if (!callback_collection_.HasPostFrameCallback())
+    return;
+  DCHECK(current_frame_time_ms_ > 0.);
+  DCHECK(current_frame_legacy_time_ms_ > 0.);
   callback_collection_.ExecutePostFrameCallbacks(current_frame_time_ms_,
                                                  current_frame_legacy_time_ms_);
 }
