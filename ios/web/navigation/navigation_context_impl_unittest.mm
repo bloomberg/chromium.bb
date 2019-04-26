@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -17,10 +17,9 @@
 
 namespace web {
 namespace {
-const char kRawResponseHeaders[] =
-    "HTTP/1.1 200 OK\0"
-    "Content-Length: 450\0"
-    "Connection: keep-alive\0";
+const char kRawResponseHeaders[] = "HTTP/1.1 200 OK\0"
+                                   "Content-Length: 450\0"
+                                   "Connection: keep-alive\0";
 }  // namespace
 
 // Test fixture for NavigationContextImplTest testing.

@@ -58,6 +58,8 @@ source_set("core") {
   sources = [
     "error_retry_state_machine.h",
     "error_retry_state_machine.mm",
+    "navigation_context_impl.h",
+    "navigation_context_impl.mm",
     "navigation_item_impl.h",
     "navigation_item_impl.mm",
     "navigation_manager_delegate.h",
@@ -89,7 +91,6 @@ source_set("navigation_manager_util") {
     "//base",
     "//ios/web/navigation:core",
     "//ios/web/public",
-    "//ios/web/web_state:navigation_context",
   ]
 
   sources = [

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 
 #import <Foundation/Foundation.h>
 

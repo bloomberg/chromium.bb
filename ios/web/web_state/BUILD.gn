@@ -7,7 +7,6 @@ import("//ios/build/config.gni")
 source_set("web_state") {
   deps = [
     ":context_menu",
-    ":navigation_context",
     ":session_certificate_policy_cache",
     ":web_state_impl_header",
     ":wk_web_view_security_util",
@@ -52,21 +51,6 @@ source_set("wk_web_view_security_util") {
   sources = [
     "wk_web_view_security_util.h",
     "wk_web_view_security_util.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("navigation_context") {
-  deps = [
-    "//base",
-    "//ios/web/navigation:core",
-    "//ios/web/public",
-  ]
-
-  sources = [
-    "navigation_context_impl.h",
-    "navigation_context_impl.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
