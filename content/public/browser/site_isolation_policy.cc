@@ -18,6 +18,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -36,10 +37,13 @@ bool IsSiteIsolationDisabled() {
     return true;
   }
 
+#if defined(OS_ANDROID)
+  // Desktop platforms no longer support disabling Site Isolation by policy.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSiteIsolationForPolicy)) {
     return true;
   }
+#endif
 
   return GetContentClient() &&
          GetContentClient()->browser()->ShouldDisableSiteIsolation();

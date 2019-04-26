@@ -1108,9 +1108,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     // (constructed and owned by BrowserProcessImpl).
   }
 
+#if defined(OS_ANDROID)
   // The admin should also be able to use these policies to force Site Isolation
-  // off.  Note that disabling either SitePerProcess or IsolateOrigins via
-  // policy will disable both types of isolation.
+  // off (on Android; using enterprise policies to disable Site Isolation is not
+  // supported on other platforms).  Note that disabling either SitePerProcess
+  // or IsolateOrigins via policy will disable both types of isolation.
   if ((local_state->IsManagedPreference(prefs::kSitePerProcess) &&
        !local_state->GetBoolean(prefs::kSitePerProcess)) ||
       (local_state->IsManagedPreference(prefs::kIsolateOrigins) &&
@@ -1118,6 +1120,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableSiteIsolationForPolicy);
   }
+#endif
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
   // this.

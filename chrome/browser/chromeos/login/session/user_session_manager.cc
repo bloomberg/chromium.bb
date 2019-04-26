@@ -447,27 +447,13 @@ void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
 void UserSessionManager::MaybeAppendPolicySwitches(
     PrefService* user_profile_prefs,
     base::CommandLine* user_flags) {
-  // Get target values for --site-per-process and --isolate-origins for the user
-  // session according to policy. Values from command-line flags should not be
-  // honored at this point, so check |IsManaged()|.
+  // Get target value for --site-per-process for the user session according to
+  // policy. Values from command-line flags should not be honored at this point,
+  // so check |IsManaged()|.
   const PrefService::Preference* site_per_process_pref =
       user_profile_prefs->FindPreference(prefs::kSitePerProcess);
-  const PrefService::Preference* isolate_origins_pref =
-      user_profile_prefs->FindPreference(prefs::kIsolateOrigins);
   bool site_per_process = site_per_process_pref->IsManaged() &&
                           site_per_process_pref->GetValue()->GetBool();
-  std::string isolate_origins =
-      isolate_origins_pref->IsManaged()
-          ? isolate_origins_pref->GetValue()->GetString()
-          : std::string();
-
-  // The admin should also be able to use these policies to force site isolation
-  // off.  Note that disabling either SitePerProcess or IsolateOrigins via
-  // policy will disable both types of isolation.
-  bool disable_site_isolation =
-      (site_per_process_pref->IsManaged() &&
-       !site_per_process_pref->GetValue()->GetBool()) ||
-      (isolate_origins_pref->IsManaged() && isolate_origins.empty());
 
   // Append sentinels indicating that these values originate from policy.
   // This is important, because only command-line switches between the
@@ -478,19 +464,9 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   // We use the policy-style sentinels because these values originate from
   // policy, and because login_manager uses the same sentinels when adding the
   // login-screen site isolation flags.
-  bool use_policy_sentinels = site_per_process || disable_site_isolation;
-  if (use_policy_sentinels) {
-    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
-  }
-
   if (site_per_process) {
+    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
     user_flags->AppendSwitch(::switches::kSitePerProcess);
-  }
-  if (disable_site_isolation) {
-    user_flags->AppendSwitch(::switches::kDisableSiteIsolationForPolicy);
-  }
-
-  if (use_policy_sentinels) {
     user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesEnd);
   }
 }

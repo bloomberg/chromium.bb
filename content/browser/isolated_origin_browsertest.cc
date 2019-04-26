@@ -1395,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTrialOverrideTest, Test) {
 }
 
 // Ensure that --disable-site-isolation-trials and/or
-// --disable-site-isolation-for-enterprise-policy do not override the flag.
+// --disable-site-isolation-for-policy do not override the flag.
 class IsolatedOriginPolicyOverrideTest : public IsolatedOriginFieldTrialTest {
  public:
   IsolatedOriginPolicyOverrideTest() {}
@@ -1404,7 +1404,9 @@ class IsolatedOriginPolicyOverrideTest : public IsolatedOriginFieldTrialTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+#if defined(OS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
+#endif
   }
 
  private:
@@ -1419,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginPolicyOverrideTest, Test) {
 }
 
 // Ensure that --disable-site-isolation-trials and/or
-// DisableSiteIsolationForPolicy do not override the flag.
+// --disable-site-isolation-for-policy do not override the flag.
 class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
  public:
   IsolatedOriginNoFlagOverrideTest() {}
@@ -1429,7 +1431,9 @@ class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+#if defined(OS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
+#endif
   }
 
  private:
