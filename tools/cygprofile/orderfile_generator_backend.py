@@ -1121,7 +1121,7 @@ def CreateArgumentParser():
                       help='Required if your checkout is non-internal.',
                       default=False)
   parser.add_argument('--nosystem-health-orderfile', action='store_false',
-                      dest='system_health_orderfile', default=False,
+                      dest='system_health_orderfile', default=True,
                       help=('Create an orderfile based on an about:blank '
                             'startup benchmark instead of system health '
                             'benchmarks.'))
