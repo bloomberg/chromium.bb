@@ -306,6 +306,7 @@ public abstract class ChromeFeatureList {
     public static final String SENSOR_CONTENT_SETTING = "SensorContentSetting";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
+    public static final String SHOPPING_ASSIST = "ShoppingAssist";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SOLE_INTEGRATION = "SoleIntegration";
     public static final String SSL_COMMITTED_INTERSTITIALS = "SSLCommittedInterstitials";

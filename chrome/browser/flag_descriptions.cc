@@ -2592,6 +2592,10 @@ const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
     "item.";
 
+const char kShoppingAssistName[] = "Shopping assist exploration";
+const char kShoppingAssistDescription[] =
+    "Show some shopping assistance when available";
+
 const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";

@@ -164,6 +164,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
     &kServiceManagerForDownload,
+    &kShoppingAssist,
     &kSoleIntegration,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
@@ -479,6 +480,9 @@ const base::Feature kServiceManagerForBackgroundPrefetch{
 
 const base::Feature kServiceManagerForDownload{
     "ServiceManagerForDownload", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShoppingAssist{"ShoppingAssist",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSoleIntegration{"SoleIntegration",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

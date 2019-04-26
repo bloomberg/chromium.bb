@@ -11,8 +11,7 @@ import java.net.URL;
 /**
  * An interface for network communication between the Contextual Search client and server.
  */
-public interface ContextualSearchNetworkCommunicator {
-
+interface ContextualSearchNetworkCommunicator {
     /**
      * Starts a Search Term Resolution request.
      * When the response comes back {@link #handleSearchTermResolutionResponse} will be called.

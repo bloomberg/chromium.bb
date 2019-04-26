@@ -684,11 +684,12 @@ public class ContextualSearchManager
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
             final String searchUrlFull, final String searchUrlPreload,
             @CardTag final int cocaCardTag) {
-        mNetworkCommunicator.handleSearchTermResolutionResponse(new ResolvedSearchTerm(
-                isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, mid,
-                doPreventPreload, selectionStartAdjust, selectionEndAdjust, contextLanguage,
-                thumbnailUrl, caption, quickActionUri, quickActionCategory, loggedEventId,
-                searchUrlFull, searchUrlPreload, cocaCardTag));
+        ResolvedSearchTerm resolvedSearchTerm = new ResolvedSearchTerm(isNetworkUnavailable,
+                responseCode, searchTerm, displayText, alternateTerm, mid, doPreventPreload,
+                selectionStartAdjust, selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
+                quickActionUri, quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload,
+                cocaCardTag);
+        mNetworkCommunicator.handleSearchTermResolutionResponse(resolvedSearchTerm);
     }
 
     @Override

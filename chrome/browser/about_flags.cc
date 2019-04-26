@@ -1157,6 +1157,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
                                     kExploreSitesVariations,
                                     "ExploreSites")},
+    {"shopping-assist", flag_descriptions::kShoppingAssistName,
+     flag_descriptions::kShoppingAssistDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kShoppingAssist)},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
