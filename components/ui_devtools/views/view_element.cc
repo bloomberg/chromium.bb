@@ -84,11 +84,13 @@ void ViewElement::SetBounds(const gfx::Rect& bounds) {
 }
 
 void ViewElement::GetVisible(bool* visible) const {
-  *visible = view_->visible();
+  // Visibility information should be directly retrieved from View's metadata,
+  // no need for this function any more.
+  NOTREACHED();
 }
 
 void ViewElement::SetVisible(bool visible) {
-  view_->SetVisible(visible);
+  // Intentional No-op.
 }
 
 bool ViewElement::SetPropertiesFromString(const std::string& text) {
