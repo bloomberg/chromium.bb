@@ -153,23 +153,26 @@ body.remove-fakebox #fakebox-container {
   transition: background-color 300ms ease-in-out, opacity 200ms
 }
 
+.alternate-fakebox-rect #fakebox {
+  border-radius: 8px;
+}
+
 html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox {
   background-color: rgb(var(--GG900-rgb));
 }
 
 .alternate-fakebox #fakebox {
   background: white;
-  border: 1px solid rgb(223, 225, 229);
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
   box-sizing: border-box;
   font-size: 16px;
-  height: 46px;
   line-height: 21px;
   max-width: 584px;
   transition: none;
 }
 
 html[darkmode=true] .alternate-fakebox #fakebox {
-  border-color: transparent;
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
 }
 
 #fakebox:hover {
@@ -183,13 +186,6 @@ html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox:hover
 .alternate-fakebox #fakebox:hover,
 .alternate-fakebox.fakebox-focused #fakebox {
   background: white;
-  border-color: transparent;
-  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
-}
-
-html[darkmode=true] .alternate-fakebox #fakebox:hover,
-html[darkmode=true] .alternate-fakebox.fakebox-focused #fakebox {
-  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
 }
 
 .non-google-page #fakebox-container {
@@ -227,6 +223,10 @@ html[dir=rtl] #fakebox > input {
   position: absolute;
   top: 0;
   width: 24px;
+}
+
+#fakebox-search-icon.color {
+  background-color: rgb(var(--GB600-rgb));
 }
 
 .show-fakebox-icon #fakebox-search-icon {
@@ -333,9 +333,9 @@ html[dir=rtl] .show-fakebox-icon.alternate-fakebox #fakebox-cursor {
 }
 
 .alternate-fakebox #fakebox-microphone {
+  background-size: 21px 21px;
   margin-inline-end: 16px;
-  padding: 11px 0 0;
-  width: 24px;
+  width: 21px;
 }
 
 html[dir=rtl] #fakebox-microphone {
