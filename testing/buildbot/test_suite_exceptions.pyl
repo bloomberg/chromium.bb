@@ -1021,12 +1021,6 @@
           '--debug',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              # TODO(kbr): this is essentially redundant.
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'shards': 20,
         },
       },
@@ -1721,12 +1715,6 @@
       },
       'Linux Tests': {
         'swarming': {
-          'dimension_sets': [
-            {
-              # TODO(kbr): this is essentially redundant.
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'shards': 6,
         },
       },
@@ -1735,12 +1723,6 @@
           '--debug',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              # TODO(kbr): this is essentially redundant.
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'shards': 20,
         },
       },
@@ -1768,26 +1750,17 @@
         },
       },
       'Mac10.12 Tests': {
-        # TODO(kbr): if the Swarming dimensions were explicitly specified for
-        # all jobs then this wouldn't be needed.
         'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '8086:0a2e',
-              'os': 'Mac-10.12.6',
-            },
-          ],
           'shards': 12,
         },
       },
       'Mac10.13 Tests': {
-        # TODO(kbr): if the Swarming dimensions were explicitly specified for
-        # all jobs then this wouldn't be needed.
         'swarming': {
           'dimension_sets': [
             {
+              # Run the layout tests on a consistent set of hardware
+              # (Mac Minis).
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.13.6',
             },
           ],
           'shards': 12,
