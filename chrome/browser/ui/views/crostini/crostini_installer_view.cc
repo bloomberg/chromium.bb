@@ -750,6 +750,9 @@ void CrostiniInstallerView::StepProgress() {
     if (progress_bar_callback_for_testing_) {
       progress_bar_callback_for_testing_.Run(progress_bar_->current_value());
     }
+  } else if (state_ == State::CLEANUP) {
+    progress_bar_->SetValue(-1);
+    progress_bar_->SetVisible(true);
   } else {
     progress_bar_->SetVisible(false);
   }
@@ -839,6 +842,10 @@ void CrostiniInstallerView::SetBigMessageLabel() {
       break;
     case State::INSTALL_END:
       message = l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_COMPLETE);
+      break;
+    case State::CLEANUP:
+      message =
+          l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_CANCELING_TITLE);
       break;
 
     default:
