@@ -1380,11 +1380,11 @@ int av1_selfguided_restoration_neon(const uint8_t *dat8, int width, int height,
   return 0;
 }
 
-void apply_selfguided_restoration_neon(const uint8_t *dat8, int width,
-                                       int height, int stride, int eps,
-                                       const int *xqd, uint8_t *dst8,
-                                       int dst_stride, int32_t *tmpbuf,
-                                       int bit_depth, int highbd) {
+void av1_apply_selfguided_restoration_neon(const uint8_t *dat8, int width,
+                                           int height, int stride, int eps,
+                                           const int *xqd, uint8_t *dst8,
+                                           int dst_stride, int32_t *tmpbuf,
+                                           int bit_depth, int highbd) {
   int32_t *flt0 = tmpbuf;
   int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
   assert(width * height <= RESTORATION_UNITPELS_MAX);
