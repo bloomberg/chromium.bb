@@ -1460,7 +1460,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
     content::DWriteFontLookupTableBuilder::GetInstance()
-        ->SchedulePrepareFontUniqueNameTable();
+        ->SchedulePrepareFontUniqueNameTableIfNeeded();
   }
 #endif
 

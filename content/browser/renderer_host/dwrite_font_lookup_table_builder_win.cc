@@ -170,6 +170,11 @@ void DWriteFontLookupTableBuilder::InitializeDirectWrite() {
   // running an older version of DirectWrite (earlier than Win8.1).
   factory.As<IDWriteFactory2>(&factory2_);
 
+  // QueryInterface for IDwriteFactory3, needed for MatchUniqueFont on Windows
+  // 10. May fail on older versions, in which case, unique font matching must be
+  // done through indexing system fonts using DWriteFontLookupTableBuilder.
+  factory.As<IDWriteFactory3>(&factory3_);
+
   HRESULT hr = factory->GetSystemFontCollection(&collection_);
   DCHECK(SUCCEEDED(hr));
 
@@ -226,6 +231,16 @@ void DWriteFontLookupTableBuilder::SetCacheDirectoryForTesting(
 void DWriteFontLookupTableBuilder::SetCachingEnabledForTesting(
     bool caching_enabled) {
   caching_enabled_ = caching_enabled;
+}
+
+bool DWriteFontLookupTableBuilder::HasDWriteUniqueFontLookups() {
+  InitializeDirectWrite();
+  return factory3_;
+}
+
+void DWriteFontLookupTableBuilder::OverrideDWriteVersionChecksForTesting() {
+  InitializeDirectWrite();
+  factory3_.Reset();
 }
 
 base::FilePath DWriteFontLookupTableBuilder::TableCacheFilePath() {
@@ -303,6 +318,7 @@ bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable() {
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  DCHECK(!HasDWriteUniqueFontLookups());
   base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   font_table_built_.Wait();
   return IsFontUniqueNameTableValid();
@@ -312,8 +328,19 @@ bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
   return font_table_built_.IsSignaled() && IsFontUniqueNameTableValid();
 }
 
-void DWriteFontLookupTableBuilder::SchedulePrepareFontUniqueNameTable() {
+void DWriteFontLookupTableBuilder::
+    SchedulePrepareFontUniqueNameTableIfNeeded() {
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    InitializeDirectWrite();
+  }
+
+  // Nothing to do if we have API to directly lookup local fonts by unique name.
+  if (HasDWriteUniqueFontLookups())
+    return;
 
   start_time_table_ready_ = base::TimeTicks::Now();
 
@@ -335,6 +362,7 @@ void DWriteFontLookupTableBuilder::SchedulePrepareFontUniqueNameTable() {
 void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::BuildFontUniqueNameTable");
+  DCHECK(!HasDWriteUniqueFontLookups());
   // The table must only be built once.
   DCHECK(!font_table_built_.IsSignaled());
 
@@ -357,12 +385,6 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
       font_table_built_.Signal();
       return;
     }
-  }
-
-  {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    InitializeDirectWrite();
   }
 
   start_time_table_build_ = base::TimeTicks::Now();

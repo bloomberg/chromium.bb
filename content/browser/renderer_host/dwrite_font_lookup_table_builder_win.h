@@ -7,6 +7,7 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
+#include <dwrite_3.h>
 #include <wrl.h>
 #include <memory>
 #include <string>
@@ -56,11 +57,12 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // immediately ready without any sync operations.
   bool FontUniqueNameTableReady();
 
-  // Posts a task to load from cache or build (if cache not available) the
-  // unique name table index, should only be called once at browser startup,
-  // after that, use EnsureFontUniqueNameTable() and
-  // DuplicatedMemoryRegion() to retrieve the lookup structure buffer.
-  void SchedulePrepareFontUniqueNameTable();
+  // If needed, i.e. if we're on pre-Windows 10, posts a task to load from cache
+  // or build (if cache not available) the unique name table index, should only
+  // be called once at browser startup, after that, use
+  // EnsureFontUniqueNameTable() and DuplicatedMemoryRegion() to retrieve the
+  // lookup structure buffer.
+  void SchedulePrepareFontUniqueNameTableIfNeeded();
 
   enum class SlowDownMode { kDelayEachTask, kHangOneTask, kNoSlowdown };
 
@@ -90,6 +92,10 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // Configures whether the cache should be used. Needed for testing to test
   // repeated rebuilding of the font table lookup structure.
   void SetCachingEnabledForTesting(bool caching_enabled);
+
+  // Disables DCHECKs that ensure DWriteFontLookupTableBuilder is only run pre
+  // Windows 10, used for testing only to allow running the tests on Windows 10.
+  void OverrideDWriteVersionChecksForTesting();
 
  private:
   friend class base::NoDestructor<DWriteFontLookupTableBuilder>;
@@ -149,6 +155,11 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   base::FilePath TableCacheFilePath();
 
+  // Returns true if IDWriteFactory3 is available, which means that we can
+  // access IDWriteFontSet API which provides direct lookup by PostScript name
+  // and full font name, in which case we do not need to build this table.
+  bool HasDWriteUniqueFontLookups();
+
   DWriteFontLookupTableBuilder();
   ~DWriteFontLookupTableBuilder();
 
@@ -161,6 +172,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
+  Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   SlowDownMode slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   uint32_t outstanding_family_results_ = 0;
   base::TimeTicks start_time_table_ready_;
