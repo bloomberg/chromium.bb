@@ -5006,7 +5006,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     };
     // clang-format on
     int num_refs_using_gm = 0;
-    int num_frm_corners;
+    int num_frm_corners = -1;
     int frm_corners[2 * MAX_CORNERS];
     unsigned char *frm_buffer = cpi->source->y_buffer;
     if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -5015,10 +5015,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       frm_buffer =
           downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
     }
-    // compute interest points using FAST features
-    num_frm_corners = fast_corner_detect(
-        frm_buffer, cpi->source->y_width, cpi->source->y_height,
-        cpi->source->y_stride, frm_corners, MAX_CORNERS);
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
       ref_buf[frame] = NULL;
       RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
@@ -5040,6 +5036,12 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
                  !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+        if (num_frm_corners < 0) {
+          // compute interest points using FAST features
+          num_frm_corners = fast_corner_detect(
+              frm_buffer, cpi->source->y_width, cpi->source->y_height,
+              cpi->source->y_stride, frm_corners, MAX_CORNERS);
+        }
         TransformationType model;
         const int64_t ref_frame_error = av1_frame_error(
             is_cur_buf_hbd(xd), xd->bd, ref_buf[frame]->y_buffer,
