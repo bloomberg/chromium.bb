@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 <resources>
     <dimen name="touchless_new_tab_view_top_margin">12dp</dimen>
-    <dimen name="touchless_new_tab_view_padding_horizontal">12dp</dimen>
+    <dimen name="touchless_new_tab_view_padding_horizontal">8dp</dimen>
 
     <dimen name="notouch_tooltip_padding">8dp</dimen>
     <dimen name="notouch_tooltip_margin_bottom">16dp</dimen>
