@@ -28,6 +28,9 @@ namespace net {
 class WKHTTPSystemCookieStoreTestDelegate {
  public:
   WKHTTPSystemCookieStoreTestDelegate() {
+    // Using off the record browser state so it will use non-persistent
+    // datastore.
+    browser_state_.SetOffTheRecord(true);
     web::WKWebViewConfigurationProvider& config_provider =
         web::WKWebViewConfigurationProvider::FromBrowserState(&browser_state_);
     shared_store_ = config_provider.GetWebViewConfiguration()

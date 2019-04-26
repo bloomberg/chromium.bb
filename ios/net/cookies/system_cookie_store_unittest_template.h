@@ -154,8 +154,7 @@ class SystemCookieStoreTest : public PlatformTest {
 
 TYPED_TEST_SUITE_P(SystemCookieStoreTest);
 
-// TODO(crbug.com/956477): Reenable the test.
-TYPED_TEST_P(SystemCookieStoreTest, DISABLED_SetCookieAsync) {
+TYPED_TEST_P(SystemCookieStoreTest, SetCookieAsync) {
   NSHTTPCookie* system_cookie =
       CreateCookie(@"a", @"b", this->test_cookie_url1_);
   SystemCookieCallbackRunVerifier callback_verifier;
@@ -169,8 +168,7 @@ TYPED_TEST_P(SystemCookieStoreTest, DISABLED_SetCookieAsync) {
 }
 
 // Tests cases of GetAllCookiesAsync and GetCookiesForURLAsync.
-// TODO(crbug.com/956477): Reenable the test.
-TYPED_TEST_P(SystemCookieStoreTest, DISABLED_GetCookiesAsync) {
+TYPED_TEST_P(SystemCookieStoreTest, GetCookiesAsync) {
   SystemCookieStore* cookie_store = this->GetCookieStore();
   NSMutableDictionary* input_cookies = [[NSMutableDictionary alloc] init];
   NSHTTPCookie* system_cookie =
@@ -217,8 +215,7 @@ TYPED_TEST_P(SystemCookieStoreTest, DISABLED_GetCookiesAsync) {
 
 // Tests deleting cookies for different URLs and for different
 // cookie key/value pairs.
-// TODO(crbug.com/956477): Reenable the test.
-TYPED_TEST_P(SystemCookieStoreTest, DISABLED_DeleteCookiesAsync) {
+TYPED_TEST_P(SystemCookieStoreTest, DeleteCookiesAsync) {
   SystemCookieStore* cookie_store = this->GetCookieStore();
   NSHTTPCookie* system_cookie1 =
       CreateCookie(@"a", @"b", this->test_cookie_url1_);
@@ -251,8 +248,7 @@ TYPED_TEST_P(SystemCookieStoreTest, DISABLED_DeleteCookiesAsync) {
   EXPECT_EQ(0, this->CookiesCount());
 }
 
-// TODO(crbug.com/956477): Reenable the test.
-TYPED_TEST_P(SystemCookieStoreTest, DISABLED_ClearCookiesAsync) {
+TYPED_TEST_P(SystemCookieStoreTest, ClearCookiesAsync) {
   SystemCookieStore* cookie_store = this->GetCookieStore();
   SetCookieInStoreWithNoCallback(
       CreateCookie(@"a", @"b", this->test_cookie_url1_), cookie_store);
@@ -268,8 +264,7 @@ TYPED_TEST_P(SystemCookieStoreTest, DISABLED_ClearCookiesAsync) {
   EXPECT_EQ(0, this->CookiesCount());
 }
 
-// TODO(crbug.com/956477): Reenable the test.
-TYPED_TEST_P(SystemCookieStoreTest, DISABLED_GetCookieAcceptPolicy) {
+TYPED_TEST_P(SystemCookieStoreTest, GetCookieAcceptPolicy) {
   SystemCookieStore* cookie_store = this->GetCookieStore();
   EXPECT_EQ([NSHTTPCookieStorage sharedHTTPCookieStorage].cookieAcceptPolicy,
             cookie_store->GetCookieAcceptPolicy());
@@ -284,11 +279,11 @@ TYPED_TEST_P(SystemCookieStoreTest, DISABLED_GetCookieAcceptPolicy) {
 }
 
 REGISTER_TYPED_TEST_SUITE_P(SystemCookieStoreTest,
-                            DISABLED_SetCookieAsync,
-                            DISABLED_GetCookiesAsync,
-                            DISABLED_DeleteCookiesAsync,
-                            DISABLED_ClearCookiesAsync,
-                            DISABLED_GetCookieAcceptPolicy);
+                            SetCookieAsync,
+                            GetCookiesAsync,
+                            DeleteCookiesAsync,
+                            ClearCookiesAsync,
+                            GetCookieAcceptPolicy);
 
 }  // namespace net
 
