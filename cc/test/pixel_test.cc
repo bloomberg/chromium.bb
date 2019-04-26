@@ -180,7 +180,15 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
       SkImageInfo::MakeN32Premul(result_bitmap_->width(),
                                  result_bitmap_->height()),
       ref_pixels->data(), result_bitmap_->width() * sizeof(SkColor));
-  return comparator.Compare(*result_bitmap_, ref_pixels_bitmap);
+  bool result = comparator.Compare(*result_bitmap_, ref_pixels_bitmap);
+  if (!result) {
+    std::string res_bmp_data_url = GetPNGDataUrl(*result_bitmap_);
+    std::string ref_bmp_data_url = GetPNGDataUrl(ref_pixels_bitmap);
+    LOG(ERROR) << "Pixels do not match!";
+    LOG(ERROR) << "Actual: " << res_bmp_data_url;
+    LOG(ERROR) << "Expected: " << ref_bmp_data_url;
+  }
+  return result;
 }
 
 void PixelTest::ReadbackResult(base::OnceClosure quit_run_loop,
