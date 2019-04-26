@@ -1,9 +1,8 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(`Test sampling native memory snapshot.`);
 
-  // --sampling-heap-profiler enables sampling with interval 128KiB
-  // Maximum interval afterval after randomization is 20x, which is 2560KiB.
-  // That corresponds to a canvas of size 640x1024 with 32bits per pixel.
+  await dp.Memory.startSampling({samplingInterval: 10000, suppressRandomness: true});
+
   await session.evaluate(`
     const canvas = document.createElement('canvas');
     canvas.width = 640;

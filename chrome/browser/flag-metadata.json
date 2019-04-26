@@ -2746,11 +2746,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "sampling-heap-profiler",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 80

@@ -712,7 +712,6 @@ crbug.com/874695 virtual/outofblink-cors/http/tests/xmlhttprequest/timeout/xmlht
 crbug.com/874695 virtual/outofblink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Slow ]
 crbug.com/874695 virtual/outofblink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.html [ Slow ]
 crbug.com/874695 virtual/outofblink-cors/http/tests/xmlhttprequest/web-apps/013.html [ Slow ]
-crbug.com/874695 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-snapshot.js [ Slow ]
 crbug.com/874695 virtual/scroll_customization/fast/scroll-behavior/overscroll-behavior.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/new-window-redirect-history.html [ Slow ]

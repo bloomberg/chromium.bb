@@ -606,11 +606,6 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "sampling-heap-profiler",
-    "base": "inspector-protocol/memory",
-    "args": ["--sampling-heap-profiler"]
-  },
-  {
     "prefix": "sxg-with-network-service",
     "base": "http/tests/loading/sxg",
     "args": ["--enable-features=NetworkService"]

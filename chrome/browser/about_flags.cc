@@ -2563,10 +2563,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceEffectiveConnectionTypeChoices)},
 
-    {"sampling-heap-profiler", flag_descriptions::kSamplingHeapProfilerName,
-     flag_descriptions::kSamplingHeapProfilerDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kSamplingHeapProfiler)},
-
     {"memlog", flag_descriptions::kMemlogName,
      flag_descriptions::kMemlogDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogModeChoices)},

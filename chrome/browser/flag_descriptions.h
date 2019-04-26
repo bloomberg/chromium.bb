@@ -1020,9 +1020,6 @@ extern const char kSafeSearchUrlReportingDescription[];
 extern const char kSameSiteByDefaultCookiesName[];
 extern const char kSameSiteByDefaultCookiesDescription[];
 
-extern const char kSamplingHeapProfilerName[];
-extern const char kSamplingHeapProfilerDescription[];
-
 extern const char kSaveasMenuLabelExperimentName[];
 extern const char kSaveasMenuLabelExperimentDescription[];
 

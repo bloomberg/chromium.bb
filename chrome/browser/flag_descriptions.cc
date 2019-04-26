@@ -1703,11 +1703,6 @@ const char kSameSiteByDefaultCookiesDescription[] =
     "SameSite=Lax. Sites must specify SameSite=None in order to enable "
     "third-party usage.";
 
-const char kSamplingHeapProfilerName[] = "Native memory sampling profiler.";
-const char kSamplingHeapProfilerDescription[] =
-    "Enables native memory sampling profiler with specified rate in KiB. "
-    "If sampling rate is not provided the default value of 128 KiB is used.";
-
 const char kSaveasMenuLabelExperimentName[] =
     "Switch 'Save as' menu labels to 'Download'";
 const char kSaveasMenuLabelExperimentDescription[] =
