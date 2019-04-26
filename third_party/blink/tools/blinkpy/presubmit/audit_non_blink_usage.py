@@ -314,6 +314,7 @@ _CONFIG = [
             'testing::.+',  # googlemock / googletest
             'v8::.+',
             'v8_inspector::.+',
+            'inspector_protocol_encoding::.+',
 
             # Inspector instrumentation and protocol
             'probe::.+',

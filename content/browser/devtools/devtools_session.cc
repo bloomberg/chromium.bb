@@ -380,7 +380,7 @@ void DevToolsSession::ApplySessionStateUpdates(
     session_state_cookie_ = blink::mojom::DevToolsSessionState::New();
   for (auto& entry : updates->entries) {
     if (entry.second.has_value())
-      session_state_cookie_->entries[entry.first] = std::move(entry.second);
+      session_state_cookie_->entries[entry.first] = std::move(*entry.second);
     else
       session_state_cookie_->entries.erase(entry.first);
   }

@@ -25,7 +25,7 @@ class FakeDevToolsSession {
     if (!session_state_cookie_)
       session_state_cookie_ = DevToolsSessionState::New();
     for (auto& entry : updates->entries) {
-      if (!entry.value.IsNull())
+      if (entry.value.has_value())
         session_state_cookie_->entries.Set(entry.key, std::move(entry.value));
       else
         session_state_cookie_->entries.erase(entry.key);
