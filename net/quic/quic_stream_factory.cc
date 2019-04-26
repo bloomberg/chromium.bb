@@ -657,6 +657,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority_;
   if (race_stale_dns_on_connection_) {
+    // Allow host resolver to return stale result immediately.
     parameters.cache_usage =
         HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
   }
@@ -664,6 +665,8 @@ int QuicStreamFactory::Job::DoResolveHost() {
       host_resolver_->CreateRequest(key_.destination(), net_log_, parameters);
   // Unretained is safe because |this| owns the request, ensuring cancellation
   // on destruction.
+  // When race_stale_dns_on_connection_ is on, this request will query for stale
+  // cache if no fresh host result is available.
   int rv = resolve_host_request_->Start(base::BindOnce(
       &QuicStreamFactory::Job::OnResolveHostComplete, base::Unretained(this)));
 
@@ -684,6 +687,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
       host_resolver_->CreateRequest(key_.destination(), net_log_, parameters);
   // Unretained is safe because |this| owns the request, ensuring cancellation
   // on destruction.
+  // This request will only query fresh host resolution.
   int fresh_rv = fresh_resolve_host_request_->Start(base::BindOnce(
       &QuicStreamFactory::Job::OnResolveHostComplete, base::Unretained(this)));
   if (fresh_rv != ERR_IO_PENDING) {
@@ -693,6 +697,10 @@ int QuicStreamFactory::Job::DoResolveHost() {
     return rv;
   }
 
+  // No fresh host resolution is available at this time, but there is available
+  // stale result. End time for stale host resolution is recorded and connection
+  // from stale host will be tried.
+  dns_resolution_end_time_ = base::TimeTicks().Now();
   io_state_ = STATE_CONNECT;
   LogStaleHostRacing(true);
   return OK;
@@ -720,6 +728,7 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoConnect() {
+  DCHECK(dns_resolution_end_time_ != base::TimeTicks());
   io_state_ = STATE_CONNECT_COMPLETE;
   bool require_confirmation = was_alternative_service_recently_broken_;
   net_log_.BeginEvent(

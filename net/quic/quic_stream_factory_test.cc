@@ -9878,7 +9878,8 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
 }
 
 // With dns race experiment on, dns resolve async, stale used and connection
-// return error, then dns matches
+// return error, then dns matches.
+// This serves as a regression test for crbug.com/956374.
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
   test_params_.quic_race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
