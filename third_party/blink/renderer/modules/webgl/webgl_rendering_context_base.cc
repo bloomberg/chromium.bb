@@ -1681,11 +1681,11 @@ void WebGLRenderingContextBase::Reshape(int width, int height) {
   width = Clamp(width, 1, max_width);
   height = Clamp(height, 1, max_height);
 
-  // Limit drawing buffer area to 4k*4k to avoid memory exhaustion. Width or
-  // height may be larger than 4k as long as it's within the max viewport
-  // dimensions and total area remains within the limit.
-  // For example: 5120x2880 should be fine.
-  const int kMaxArea = 4096 * 4096;
+  // Limit drawing buffer area to the resolution of an 8K monitor to avoid
+  // memory exhaustion.  Width or height may be larger than that size as long as
+  // it's within the max viewport dimensions and total area remains within the
+  // limit. For example: 7680x4320 should be fine.
+  const int kMaxArea = 5760 * 5760;
   int current_area = width * height;
   if (current_area > kMaxArea) {
     // If we've exceeded the area limit scale the buffer down, preserving
