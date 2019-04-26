@@ -60,6 +60,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/mock_persistent_nel_store.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_report.h"
@@ -1360,9 +1361,44 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 }
 
-// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
-// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
+  auto store = std::make_unique<net::MockPersistentNELStore>();
+  std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
+      net::NetworkErrorLoggingService::Create(store.get());
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_network_error_logging_service(logging_service.get());
+
+  GURL domain("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain),
+                            net::IPAddress(192, 168, 0, 1),
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
+  store->FinishLoading(true /* load_success */);
+  store->Flush();
+
+  ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
+  ASSERT_EQ(1, store->StoredPoliciesCount());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+
+  EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+  EXPECT_EQ(0, store->StoredPoliciesCount());
+
+  // Check that the persistent store was told to delete the policy.
+  net::NetworkErrorLoggingService::NELPolicy deleted_policy;
+  deleted_policy.origin = url::Origin::Create(domain);
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNELStore::Command(
+                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy)));
+}
+
+// Test that removal of in-memory browsing data works without a persistent
+// store.
+TEST_F(BrowsingDataRemoverImplTest,
+       RemoveNetworkErrorLogging_NoPersistentStore) {
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
       net::NetworkErrorLoggingService::Create(nullptr /* store */);
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
@@ -1383,11 +1419,10 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
 }
 
-// TODO(chlily): Use a PersistentNELStore and test that entries are removed from
-// it.
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
+  auto store = std::make_unique<net::MockPersistentNELStore>();
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create(nullptr /* store */);
+      net::NetworkErrorLoggingService::Create(store.get());
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()
@@ -1409,8 +1444,11 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   logging_service->OnHeader(url::Origin::Create(domain4),
                             net::IPAddress(192, 168, 0, 1),
                             "{\"report_to\":\"group\",\"max_age\":86400}");
+  store->FinishLoading(true /* load_success */);
+  store->Flush();
 
   ASSERT_EQ(4u, logging_service->GetPolicyOriginsForTesting().size());
+  ASSERT_EQ(4, store->StoredPoliciesCount());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1426,6 +1464,21 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   EXPECT_THAT(policy_origins,
               UnorderedElementsAre(url::Origin::Create(domain2),
                                    url::Origin::Create(domain4)));
+  EXPECT_EQ(2, store->StoredPoliciesCount());
+
+  // Check that the persistent store was told to delete the policies.
+  net::NetworkErrorLoggingService::NELPolicy deleted_policy1;
+  deleted_policy1.origin = url::Origin::Create(domain1);
+  net::NetworkErrorLoggingService::NELPolicy deleted_policy2;
+  deleted_policy2.origin = url::Origin::Create(domain3);
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNELStore::Command(
+                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy1)));
+  EXPECT_THAT(store->GetAllCommands(),
+              testing::Contains(net::MockPersistentNELStore::Command(
+                  net::MockPersistentNELStore::Command::Type::DELETE_NEL_POLICY,
+                  deleted_policy2)));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_NoService) {

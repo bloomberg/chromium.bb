@@ -16,8 +16,10 @@
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
+#include "net/reporting/reporting_service.h"
 #include "net/reporting/reporting_uploader.h"
 #include "net/test/test_with_scoped_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,6 +39,15 @@ namespace net {
 struct ReportingClient;
 class ReportingGarbageCollector;
 class TestURLRequestContext;
+
+// A matcher for ReportingReports, which checks that the url of the report is
+// the given url.
+// Usage: EXPECT_THAT(report, ReportUrlIs(url));
+// EXPECT_THAT(reports(),
+//             testing::ElementsAre(ReportUrlIs(url1), ReportUrlIs(url2)));
+MATCHER_P(ReportUrlIs, url, "") {
+  return arg.url == url;
+}
 
 // A test implementation of ReportingUploader that holds uploads for tests to
 // examine and complete with a specified outcome.
@@ -265,6 +276,69 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
   std::unique_ptr<TestReportingContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingTestBase);
+};
+
+class TestReportingService : public ReportingService {
+ public:
+  struct Report {
+    Report();
+
+    Report(Report&& other);
+
+    Report(const GURL& url,
+           const std::string& user_agent,
+           const std::string& group,
+           const std::string& type,
+           std::unique_ptr<const base::Value> body,
+           int depth);
+
+    ~Report();
+
+    GURL url;
+    std::string user_agent;
+    std::string group;
+    std::string type;
+    std::unique_ptr<const base::Value> body;
+    int depth;
+
+   private:
+    DISALLOW_COPY(Report);
+  };
+
+  TestReportingService();
+
+  const std::vector<Report>& reports() const { return reports_; }
+
+  // ReportingService implementation:
+
+  ~TestReportingService() override;
+
+  void QueueReport(const GURL& url,
+                   const std::string& user_agent,
+                   const std::string& group,
+                   const std::string& type,
+                   std::unique_ptr<const base::Value> body,
+                   int depth) override;
+
+  void ProcessHeader(const GURL& url, const std::string& header_value) override;
+
+  void RemoveBrowsingData(
+      int data_type_mask,
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
+
+  void RemoveAllBrowsingData(int data_type_mask) override;
+
+  void OnShutdown() override;
+
+  const ReportingPolicy& GetPolicy() const override;
+
+  ReportingContext* GetContextForTesting() const override;
+
+ private:
+  std::vector<Report> reports_;
+  ReportingPolicy dummy_policy_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestReportingService);
 };
 
 }  // namespace net

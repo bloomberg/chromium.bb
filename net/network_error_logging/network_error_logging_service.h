@@ -227,7 +227,7 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   // Queues a Signed Exchange report.
   virtual void QueueSignedExchangeReport(
-      const SignedExchangeReportDetails& details) = 0;
+      SignedExchangeReportDetails details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true.
@@ -241,10 +241,12 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Sets the ReportingService that will be used to queue network error reports.
   // If |nullptr| is passed, reports will be queued locally or discarded.
   // |reporting_service| must outlive the NetworkErrorLoggingService.
+  // Should not be called again if previously called with a non-null pointer.
   void SetReportingService(ReportingService* reporting_service);
 
-  // Shuts down the NEL service so that no more requests or headers are
-  // processed and no more reports are queued.
+  // Shuts down the NEL service, so that no more requests or headers can be
+  // processed, no more reports are queued, and browsing data can no longer be
+  // cleared.
   void OnShutdown();
 
   // Sets a base::Clock (used to track policy expiration) for tests.

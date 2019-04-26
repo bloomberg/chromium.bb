@@ -15,8 +15,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_test_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,8 +30,13 @@ namespace {
 const base::FilePath::CharType kReportingAndNELStoreFilename[] =
     FILE_PATH_LITERAL("ReportingAndNEL");
 
-const url::Origin kOrigin1 = url::Origin::Create(GURL("https://www.foo.test"));
-const url::Origin kOrigin2 = url::Origin::Create(GURL("https://www.bar.test"));
+const GURL kUrl1 = GURL("https://www.foo.test");
+const GURL kUrl2 = GURL("https://www.bar.test");
+const url::Origin kOrigin1 = url::Origin::Create(kUrl1);
+const url::Origin kOrigin2 = url::Origin::Create(kUrl2);
+const IPAddress kServerIP = IPAddress(192, 168, 0, 1);
+const std::string kHeader = "{\"report_to\":\"group\",\"max_age\":86400}";
+const std::string kHeaderMaxAge0 = "{\"report_to\":\"group\",\"max_age\":0}";
 
 enum class Op { kAdd, kDelete, kUpdate };
 
@@ -348,6 +356,218 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
 
   event.Signal();
   RunUntilIdle();
+}
+
+// These tests test that a SQLitePersistentReportingAndNELStore
+// can be used by a NetworkErrorLoggingService to persist NEL policies.
+class SQLitePersistNELTest : public SQLitePersistentReportingAndNELStoreTest {
+ public:
+  SQLitePersistNELTest() {}
+
+  void SetUp() override {
+    SQLitePersistentReportingAndNELStoreTest::SetUp();
+    SetUpNetworkErrorLoggingService();
+  }
+
+  void TearDown() override {
+    service_->OnShutdown();
+    service_.reset();
+    reporting_service_.reset();
+    SQLitePersistentReportingAndNELStoreTest::TearDown();
+  }
+
+  void SetUpNetworkErrorLoggingService() {
+    CreateStore();
+    service_ = NetworkErrorLoggingService::Create(store_.get());
+    reporting_service_ = std::make_unique<TestReportingService>();
+    service_->SetReportingService(reporting_service_.get());
+    service_->SetClockForTesting(&clock_);
+  }
+
+  void SimulateRestart() {
+    TearDown();
+    SetUpNetworkErrorLoggingService();
+  }
+
+  NetworkErrorLoggingService::RequestDetails MakeRequestDetails(
+      GURL url,
+      Error error_type) {
+    NetworkErrorLoggingService::RequestDetails details;
+
+    details.uri = url;
+    details.referrer = GURL("https://referrer.com/");
+    details.user_agent = "Mozilla/1.0";
+    details.server_ip = kServerIP;
+    details.method = "GET";
+    details.status_code = 0;
+    details.elapsed_time = base::TimeDelta::FromSeconds(1);
+    details.type = error_type;
+    details.reporting_upload_depth = 0;
+
+    return details;
+  }
+
+ protected:
+  base::SimpleTestClock clock_;
+  std::unique_ptr<NetworkErrorLoggingService> service_;
+  std::unique_ptr<TestReportingService> reporting_service_;
+};
+
+TEST_F(SQLitePersistNELTest, AddAndRetrieveNELPolicy) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  RunUntilIdle();
+
+  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+
+  EXPECT_THAT(reporting_service_->reports(),
+              testing::ElementsAre(ReportUrlIs(kUrl1)));
+}
+
+TEST_F(SQLitePersistNELTest, AddAndDeleteNELPolicy) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  RunUntilIdle();
+
+  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  SimulateRestart();
+
+  // Deletes the stored policy.
+  service_->OnHeader(kOrigin1, kServerIP, kHeaderMaxAge0);
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  EXPECT_EQ(0u, reporting_service_->reports().size());
+}
+
+TEST_F(SQLitePersistNELTest, ExpirationTimeIsPersisted) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  RunUntilIdle();
+
+  // Makes the policy we just added expired.
+  clock_.Advance(base::TimeDelta::FromSeconds(86401));
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, reporting_service_->reports().size());
+
+  // Add the policy again so that it is not expired.
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  EXPECT_THAT(reporting_service_->reports(),
+              testing::ElementsAre(ReportUrlIs(kUrl1)));
+}
+
+TEST_F(SQLitePersistNELTest, OnRequestUpdatesAccessTime) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  RunUntilIdle();
+
+  SimulateRestart();
+
+  // Update the access time by sending a request.
+  clock_.Advance(base::TimeDelta::FromSeconds(100));
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  EXPECT_THAT(reporting_service_->reports(),
+              testing::ElementsAre(ReportUrlIs(kUrl1)));
+
+  SimulateRestart();
+  // Check that the policy's access time has been updated.
+  base::Time now = clock_.Now();
+  NetworkErrorLoggingService::NELPolicy policy = MakeNELPolicy(kOrigin1, now);
+  std::vector<NetworkErrorLoggingService::NELPolicy> policies;
+  LoadNELPolicies(&policies);
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy.origin, policies[0].origin);
+  EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
+}
+
+TEST_F(SQLitePersistNELTest, RemoveSomeBrowsingData) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  service_->OnHeader(kOrigin2, kServerIP, kHeader);
+  RunUntilIdle();
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_THAT(reporting_service_->reports(),
+              testing::ElementsAre(ReportUrlIs(kUrl1)));
+
+  SimulateRestart();
+
+  service_->RemoveBrowsingData(
+      base::BindRepeating([](const GURL& origin) -> bool {
+        return origin.host() == kOrigin1.host();
+      }));
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  EXPECT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, reporting_service_->reports().size());
+}
+
+TEST_F(SQLitePersistNELTest, RemoveAllBrowsingData) {
+  service_->OnHeader(kOrigin1, kServerIP, kHeader);
+  service_->OnHeader(kOrigin2, kServerIP, kHeader);
+  RunUntilIdle();
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kUrl2, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  ASSERT_EQ(1u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_THAT(reporting_service_->reports(),
+              testing::ElementsAre(ReportUrlIs(kUrl1), ReportUrlIs(kUrl2)));
+
+  SimulateRestart();
+
+  service_->RemoveAllBrowsingData();
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+
+  SimulateRestart();
+
+  service_->OnRequest(MakeRequestDetails(kUrl1, ERR_INVALID_RESPONSE));
+  service_->OnRequest(MakeRequestDetails(kUrl2, ERR_INVALID_RESPONSE));
+  RunUntilIdle();
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin1));
+  EXPECT_EQ(0u, service_->GetPolicyOriginsForTesting().count(kOrigin2));
+  EXPECT_EQ(0u, reporting_service_->reports().size());
 }
 
 }  // namespace net

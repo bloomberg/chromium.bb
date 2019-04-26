@@ -283,4 +283,70 @@ base::TimeTicks ReportingTestBase::tomorrow() {
   return tick_clock()->NowTicks() + base::TimeDelta::FromDays(1);
 }
 
+TestReportingService::Report::Report() = default;
+
+TestReportingService::Report::Report(Report&& other)
+    : url(other.url),
+      user_agent(other.user_agent),
+      group(other.group),
+      type(other.type),
+      body(std::move(other.body)),
+      depth(other.depth) {}
+
+TestReportingService::Report::Report(const GURL& url,
+                                     const std::string& user_agent,
+                                     const std::string& group,
+                                     const std::string& type,
+                                     std::unique_ptr<const base::Value> body,
+                                     int depth)
+    : url(url),
+      user_agent(user_agent),
+      group(group),
+      type(type),
+      body(std::move(body)),
+      depth(depth) {}
+
+TestReportingService::Report::~Report() = default;
+
+TestReportingService::TestReportingService() = default;
+
+TestReportingService::~TestReportingService() = default;
+
+void TestReportingService::QueueReport(const GURL& url,
+                                       const std::string& user_agent,
+                                       const std::string& group,
+                                       const std::string& type,
+                                       std::unique_ptr<const base::Value> body,
+                                       int depth) {
+  reports_.push_back(
+      Report(url, user_agent, group, type, std::move(body), depth));
+}
+
+void TestReportingService::ProcessHeader(const GURL& url,
+                                         const std::string& header_value) {
+  NOTREACHED();
+}
+
+void TestReportingService::RemoveBrowsingData(
+    int data_type_mask,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
+  NOTREACHED();
+}
+
+void TestReportingService::RemoveAllBrowsingData(int data_type_mask) {
+  NOTREACHED();
+}
+
+void TestReportingService::OnShutdown() {}
+
+const ReportingPolicy& TestReportingService::GetPolicy() const {
+  NOTREACHED();
+  return dummy_policy_;
+}
+
+ReportingContext* TestReportingService::GetContextForTesting() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace net

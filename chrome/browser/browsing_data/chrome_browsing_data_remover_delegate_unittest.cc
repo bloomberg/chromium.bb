@@ -1100,8 +1100,7 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
 
   void OnRequest(RequestDetails details) override { NOTREACHED(); }
 
-  void QueueSignedExchangeReport(
-      const SignedExchangeReportDetails& details) override {
+  void QueueSignedExchangeReport(SignedExchangeReportDetails details) override {
     NOTREACHED();
   }
 

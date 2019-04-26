@@ -932,7 +932,7 @@ void NetworkContext::QueueSignedExchangeReport(
   details.status_code = report->status_code;
   details.elapsed_time = report->elapsed_time;
   details.user_agent = std::move(user_agent);
-  logging_service->QueueSignedExchangeReport(details);
+  logging_service->QueueSignedExchangeReport(std::move(details));
 }
 
 #else   // BUILDFLAG(ENABLE_REPORTING)
