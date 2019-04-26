@@ -511,6 +511,7 @@ CRLSetResult CheckRevocationWithCRLSet(CFArrayRef chain, CRLSet* crl_set) {
 // held.
 int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
                                 CFArrayRef trust_policies,
+                                CFDataRef ocsp_response_ref,
                                 int flags,
                                 CFArrayRef keychain_search_list,
                                 ScopedCFTypeRef<SecTrustRef>* trust_ref,
@@ -532,6 +533,12 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
 
   if (keychain_search_list) {
     status = SecTrustSetKeychains(tmp_trust, keychain_search_list);
+    if (status)
+      return NetErrorFromOSStatus(status);
+  }
+
+  if (ocsp_response_ref) {
+    status = SecTrustSetOCSPResponse(tmp_trust, ocsp_response_ref);
     if (status)
       return NetErrorFromOSStatus(status);
   }
@@ -609,6 +616,7 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
 // flags. This function does not handle EV.
 int VerifyWithGivenFlags(X509Certificate* cert,
                          const std::string& hostname,
+                         const std::string& ocsp_response,
                          const int flags,
                          CRLSet* crl_set,
                          CertVerifyResult* verify_result,
@@ -619,6 +627,16 @@ int VerifyWithGivenFlags(X509Certificate* cert,
     return NetErrorFromOSStatus(status);
 
   *completed_chain_crl_result = kCRLSetUnknown;
+
+  ScopedCFTypeRef<CFDataRef> ocsp_response_ref;
+  if (!ocsp_response.empty()) {
+    ocsp_response_ref.reset(CFDataCreateWithBytesNoCopy(
+        kCFAllocatorDefault,
+        reinterpret_cast<const UInt8*>(ocsp_response.data()),
+        base::checked_cast<CFIndex>(ocsp_response.size()), kCFAllocatorNull));
+    if (!ocsp_response_ref)
+      return ERR_OUT_OF_MEMORY;
+  }
 
   // Serialize all calls that may use the Keychain, to work around various
   // issues in OS X 10.6+ with multi-threaded access to Security.framework.
@@ -756,7 +774,7 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       CSSM_TP_APPLE_EVIDENCE_INFO* temp_chain_info = NULL;
 
       int rv = BuildAndEvaluateSecTrustRef(
-          cert_array, trust_policies, flags,
+          cert_array, trust_policies, ocsp_response_ref.get(), flags,
           scoped_alternate_keychain_search_list.get(), &temp_ref,
           &temp_trust_result, &temp_chain, &temp_chain_info);
       if (rv != OK)
@@ -1000,8 +1018,8 @@ int CertVerifyProcMac::VerifyInternal(
   GetCandidateEVPolicy(cert, &candidate_ev_policy_oid);
 
   CRLSetResult completed_chain_crl_result;
-  int rv = VerifyWithGivenFlags(cert, hostname, flags, crl_set, verify_result,
-                                &completed_chain_crl_result);
+  int rv = VerifyWithGivenFlags(cert, hostname, ocsp_response, flags, crl_set,
+                                verify_result, &completed_chain_crl_result);
   if (rv != OK)
     return rv;
 
@@ -1018,10 +1036,10 @@ int CertVerifyProcMac::VerifyInternal(
       // Restore the input state of |*verify_result|, so that the
       // re-verification starts with a clean slate.
       *verify_result = input_verify_result;
-      int tmp_rv =
-          VerifyWithGivenFlags(verify_result->verified_cert.get(), hostname,
-                               flags | VERIFY_REV_CHECKING_ENABLED, crl_set,
-                               verify_result, &completed_chain_crl_result);
+      int tmp_rv = VerifyWithGivenFlags(
+          verify_result->verified_cert.get(), hostname, ocsp_response,
+          flags | VERIFY_REV_CHECKING_ENABLED, crl_set, verify_result,
+          &completed_chain_crl_result);
       // If re-verification failed, return those results without setting EV
       // status.
       if (tmp_rv != OK)

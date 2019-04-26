@@ -68,6 +68,7 @@ OSStatus CreateTrustPolicies(ScopedCFTypeRef<CFArrayRef>* policies) {
 // verification was performed successfully.
 int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
                                 CFArrayRef trust_policies,
+                                CFDataRef ocsp_response_ref,
                                 ScopedCFTypeRef<SecTrustRef>* trust_ref,
                                 ScopedCFTypeRef<CFArrayRef>* verified_chain,
                                 SecTrustResultType* trust_result) {
@@ -80,6 +81,12 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
 
   if (TestRootCerts::HasInstance()) {
     status = TestRootCerts::GetInstance()->FixupSecTrustRef(tmp_trust);
+    if (status)
+      return NetErrorFromOSStatus(status);
+  }
+
+  if (ocsp_response_ref) {
+    status = SecTrustSetOCSPResponse(tmp_trust, ocsp_response_ref);
     if (status)
       return NetErrorFromOSStatus(status);
   }
@@ -271,11 +278,22 @@ int CertVerifyProcIOS::VerifyInternal(
     return ERR_CERT_INVALID;
   }
 
+  ScopedCFTypeRef<CFDataRef> ocsp_response_ref;
+  if (!ocsp_response.empty()) {
+    ocsp_response_ref.reset(CFDataCreateWithBytesNoCopy(
+        kCFAllocatorDefault,
+        reinterpret_cast<const UInt8*>(ocsp_response.data()),
+        base::checked_cast<CFIndex>(ocsp_response.size()), kCFAllocatorNull));
+    if (!ocsp_response_ref)
+      return ERR_OUT_OF_MEMORY;
+  }
+
   ScopedCFTypeRef<SecTrustRef> trust_ref;
   SecTrustResultType trust_result = kSecTrustResultDeny;
   ScopedCFTypeRef<CFArrayRef> final_chain;
 
-  status = BuildAndEvaluateSecTrustRef(cert_array, trust_policies, &trust_ref,
+  status = BuildAndEvaluateSecTrustRef(cert_array, trust_policies,
+                                       ocsp_response_ref.get(), &trust_ref,
                                        &final_chain, &trust_result);
   if (status)
     return NetErrorFromOSStatus(status);

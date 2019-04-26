@@ -153,6 +153,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/network_error_logging_test_util.h"
@@ -11068,11 +11072,16 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
-#if defined(USE_NSS_CERTS) || defined(OS_WIN) || \
-    defined(USE_BUILTIN_CERT_VERIFIER)
-  return true;
-#else
+#if defined(OS_ANDROID)
   return false;
+#elif defined(OS_MACOSX)
+  // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
+  // not actually do anything until 10.12.
+  if (base::mac::IsAtLeastOS10_12())
+    return true;
+  return false;
+#else
+  return true;
 #endif
 }
 
