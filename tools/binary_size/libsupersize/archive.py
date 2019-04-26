@@ -359,6 +359,13 @@ def _AssignNmAliasPathsAndCreatePathAliases(raw_symbols, object_paths_by_name):
   for symbol in raw_symbols:
     ret.append(symbol)
     full_name = symbol.full_name
+    # '__typeid_' symbols appear in linker .map only, and not nm output.
+    if full_name.startswith('__typeid_'):
+      if object_paths_by_name.get(full_name):
+        logging.warning('Found unexpected __typeid_ symbol in nm output: %s',
+                        full_name)
+      continue
+
     # Don't skip if symbol.IsBss(). This is needed for LLD-LTO to work, since
     # .bss object_path data are unavailable for linker_map_parser, and need to
     # be extracted here. For regular LLD flow, incorrect aliased symbols can
@@ -651,12 +658,15 @@ def _AddNmAliases(raw_symbols, names_by_address):
     # Don't alias padding-only symbols (e.g. ** symbol gap)
     if s.size_without_padding == 0:
       continue
+    # Also skip artificial symbols that won't appear in nm output.
+    if s.full_name.startswith('** CFI jump table'):
+      continue
     name_list = names_by_address.get(s.address)
     if name_list:
       if s.full_name not in name_list:
         missing_names[s.full_name].append(s.address)
-        logging.warning('Name missing from aliases: %s %s', s.full_name,
-                        name_list)
+        logging.warning('Name missing from aliases: %08x %s %s', s.address,
+                        s.full_name, name_list)
         continue
       replacements.append((i, name_list))
       num_new_symbols += len(name_list) - 1

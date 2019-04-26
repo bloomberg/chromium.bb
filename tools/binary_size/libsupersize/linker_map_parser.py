@@ -73,6 +73,8 @@ def _NormalizeName(name):
     return '** outlined function'
   if name.startswith('.L.str'):
     return models.STRING_LITERAL_NAME
+  if name.endswith(' (.cfi)'):
+    return name[:-7]
   return name
 
 
@@ -483,6 +485,11 @@ class MapFileParserLld(object):
     thin_map = {}
 
     tokenizer = self.Tokenize(lines)
+
+    in_jump_table = False
+    jump_tables_count = 0
+    jump_entries_count = 0
+
     for (line, address, size, level, span, tok) in tokenizer:
       # Level 1 data match the "Out" column. They specify sections or
       # PROVIDE_HIDDEN lines.
@@ -504,28 +511,37 @@ class MapFileParserLld(object):
         if level == 2:
           # E.g., 'path.o:(.text._name)' => ['path.o', '(.text._name)'].
           cur_obj, paren_value = tok.split(':')
-          # E.g., '(.text.unlikely._name)' -> '_name'.
-          mangled_name = paren_value[mangled_start_idx:-1]
-          cur_flags = _FlagsFromMangledName(mangled_name)
-          is_partial = True
-          # As of 2017/11 LLD does not distinguish merged strings from other
-          # merged data. Feature request is filed under:
-          # https://bugs.llvm.org/show_bug.cgi?id=35248
-          if cur_obj == '<internal>':
-            if cur_section == '.rodata' and mangled_name == '':
-              # Treat all <internal> sections within .rodata as as string
-              # literals. Some may hold numeric constants or other data, but
-              # there is currently no way to distinguish them.
-              mangled_name = '** lld merge strings'
-            else:
-              # e.g. <internal>:(.text.thunk)
-              mangled_name = '** ' + mangled_name
 
-            is_partial = False
-            cur_obj = None
-          elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
-            thin_map[address] = os.path.basename(cur_obj)
-            cur_obj = None
+          in_jump_table = '.L.cfi.jumptable' in paren_value
+          if in_jump_table:
+            # Store each CFI jump table as a Level 2 symbol, whose Level 3
+            # details are discarded.
+            jump_tables_count += 1
+            cur_obj = ''  # Replaces 'lto.tmp' to prevent problem later.
+            mangled_name = '** CFI jump table'
+          else:
+            # E.g., '(.text.unlikely._name)' -> '_name'.
+            mangled_name = paren_value[mangled_start_idx:-1]
+            cur_flags = _FlagsFromMangledName(mangled_name)
+            is_partial = True
+            # As of 2017/11 LLD does not distinguish merged strings from other
+            # merged data. Feature request is filed under:
+            # https://bugs.llvm.org/show_bug.cgi?id=35248
+            if cur_obj == '<internal>':
+              if cur_section == '.rodata' and mangled_name == '':
+                # Treat all <internal> sections within .rodata as as string
+                # literals. Some may hold numeric constants or other data, but
+                # there is currently no way to distinguish them.
+                mangled_name = '** lld merge strings'
+              else:
+                # e.g. <internal>:(.text.thunk)
+                mangled_name = '** ' + mangled_name
+
+              is_partial = False
+              cur_obj = None
+            elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
+              thin_map[address] = os.path.basename(cur_obj)
+              cur_obj = None
 
           # Create a symbol here since there may be no ensuing Level 3 lines.
           # But if there are, then the symbol can be modified later as sym[-1].
@@ -542,6 +558,17 @@ class MapFileParserLld(object):
         # '$t.42' also appear at Level 3, but they are consumed by |tokenizer|,
         # so don't appear hear.
         elif level == 3:
+          # Handle .L.cfi.jumptable.
+          if in_jump_table:
+            # Level 3 entries in CFI jump tables are thunks with mangled names.
+            # Extracting them as symbols is not worthwhile; we only store the
+            # Level 2 symbol, and print the count for verbose output. For
+            # counting, '__typeid_' entries are excluded since they're likely
+            # just annotations.
+            if not tok.startswith('__typeid_'):
+              jump_entries_count += 1
+            continue
+
           # Ignore anything with '.L_MergedGlobals' prefix. This seems to only
           # happen for ARM (32-bit) builds.
           if tok.startswith('.L_MergedGlobals'):
@@ -578,8 +605,23 @@ class MapFileParserLld(object):
               next_usable_address = address + syms[-1].size
               is_partial = False
             elif address >= next_usable_address:
-              # Prefer |size|, and only fall back to |span| if |size == 0|.
-              size_to_use = size if size > 0 else span
+              if tok.startswith('__typeid_'):
+                assert size == 1
+                if tok.endswith('_byte_array'):
+                  # CFI byte array table: |size| is inaccurate, so use |span|.
+                  size_to_use = span
+                else:
+                  # Likely '_global_addr' or '_unique_member'. These should be:
+                  # * Skipped since they're in CFI tables.
+                  # * Suppressed (via |next_usable_address|) by another Level 3
+                  #   symbol.
+                  # Anything that makes it here would be an anomaly worthy of
+                  # investigation, so print warnings.
+                  logging.warn('Unrecognized __typeid_ symbol at %08X', address)
+                  continue
+              else:
+                # Prefer |size|, and only fall back to |span| if |size == 0|.
+                size_to_use = size if size > 0 else span
               sym = models.Symbol(cur_section, size_to_use, address=address,
                                   full_name=tok, flags=cur_flags)
               syms.append(sym)
@@ -595,6 +637,9 @@ class MapFileParserLld(object):
 
     if promoted_name_count:
       logging.info('Found %d promoted global names', promoted_name_count)
+    if jump_tables_count:
+      logging.info('Found %d CFI jump tables with %d total entries',
+                   jump_tables_count, jump_entries_count)
     return self._section_sizes, syms, {'thin_map': thin_map}
 
 
