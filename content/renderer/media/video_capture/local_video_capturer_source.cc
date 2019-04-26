@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -73,7 +72,7 @@ void LocalVideoCapturerSource::StopCapture() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Immediately make sure we don't provide more frames.
   if (!stop_capture_cb_.is_null())
-    base::ResetAndReturn(&stop_capture_cb_).Run();
+    std::move(stop_capture_cb_).Run();
 }
 
 void LocalVideoCapturerSource::OnFrameDropped(

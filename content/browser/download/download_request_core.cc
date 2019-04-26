@@ -5,9 +5,9 @@
 #include "content/browser/download/download_request_core.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -268,7 +268,7 @@ bool DownloadRequestCore::OnResponseStarted(
   if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     delegate_->OnStart(std::move(create_info),
                        std::unique_ptr<ByteStreamReader>(),
-                       base::ResetAndReturn(&on_started_callback_));
+                       std::move(on_started_callback_));
     return false;
   }
 
@@ -321,7 +321,7 @@ bool DownloadRequestCore::OnResponseStarted(
       create_info->transition_type);
 
   delegate_->OnStart(std::move(create_info), std::move(stream_reader),
-                     base::ResetAndReturn(&on_started_callback_));
+                     std::move(on_started_callback_));
   return true;
 }
 
@@ -441,7 +441,7 @@ void DownloadRequestCore::OnResponseCompleted(
       CreateDownloadCreateInfo(reason);
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
   delegate_->OnStart(std::move(create_info), std::move(empty_byte_stream),
-                     base::ResetAndReturn(&on_started_callback_));
+                     std::move(on_started_callback_));
 }
 
 void DownloadRequestCore::PauseRequest() {

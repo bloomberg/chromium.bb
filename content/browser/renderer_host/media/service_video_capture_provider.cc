@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -284,7 +286,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
     }
   }
 #endif
-  base::ResetAndReturn(&result_callback).Run(infos);
+  std::move(result_callback).Run(infos);
 }
 
 void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
@@ -304,8 +306,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
                                SERVICE_DROPPED_DEVICE_INFOS_REQUEST_ON_RETRY);
   }
 #endif
-  base::ResetAndReturn(&result_callback)
-      .Run(std::vector<media::VideoCaptureDeviceInfo>());
+  std::move(result_callback).Run(std::vector<media::VideoCaptureDeviceInfo>());
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider() {

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
@@ -30,7 +32,7 @@ void ConcludeLaunchDeviceWithSuccess(
       std::make_unique<ServiceLaunchedVideoCaptureDevice>(
           std::move(source), std::move(subscription),
           std::move(connection_lost_cb)));
-  base::ResetAndReturn(&done_cb).Run();
+  std::move(done_cb).Run();
 }
 
 void ConcludeLaunchDeviceWithFailure(
@@ -44,7 +46,7 @@ void ConcludeLaunchDeviceWithFailure(
     callbacks->OnDeviceLaunchAborted();
   else
     callbacks->OnDeviceLaunchFailed(error);
-  base::ResetAndReturn(&done_cb).Run();
+  std::move(done_cb).Run();
 }
 
 }  // anonymous namespace
@@ -181,7 +183,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback(
         source.reset();
         service_connection_.reset();
         callbacks->OnDeviceLaunchAborted();
-        base::ResetAndReturn(&done_cb_).Run();
+        std::move(done_cb_).Run();
         return;
       }
       ConcludeLaunchDeviceWithSuccess(

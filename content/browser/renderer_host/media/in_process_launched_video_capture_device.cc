@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,7 +24,7 @@ void StopAndReleaseDeviceOnDeviceThread(media::VideoCaptureDevice* device,
   device->StopAndDeAllocate();
   DVLOG(3) << "StopAndReleaseDeviceOnDeviceThread";
   delete device;
-  base::ResetAndReturn(&done_cb).Run();
+  std::move(done_cb).Run();
 }
 
 }  // anonymous namespace
@@ -157,7 +159,7 @@ void InProcessLaunchedVideoCaptureDevice::
   desktop_device->SetNotificationWindowId(window_id);
   VLOG(2) << "Screen capture notification window passed on device thread.";
 #endif
-  base::ResetAndReturn(&done_cb).Run();
+  std::move(done_cb).Run();
 }
 
 }  // namespace content

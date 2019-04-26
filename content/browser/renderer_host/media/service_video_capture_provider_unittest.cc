@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -148,7 +150,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
         .WillByDefault(Invoke([](video_capture::mojom::VideoSourceProvider::
                                      GetSourceInfosCallback& callback) {
           std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
-          base::ResetAndReturn(&callback).Run(arbitrarily_empty_results);
+          std::move(callback).Run(arbitrarily_empty_results);
         }));
 
     ON_CALL(mock_source_provider_, DoGetVideoSource(_, _))
@@ -281,8 +283,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
 
   // Exercise part 2: The service responds
   std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
-  base::ResetAndReturn(&callback_to_be_called_by_service)
-      .Run(arbitrarily_empty_results);
+  std::move(callback_to_be_called_by_service).Run(arbitrarily_empty_results);
 
   // Verification: Expect |provider_| to close the connection to the service.
   wait_for_connection_to_source_provider_to_close.Run();
@@ -420,7 +421,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
 
   // The service now responds to the first request.
   std::vector<media::VideoCaptureDeviceInfo> arbitrarily_empty_results;
-  base::ResetAndReturn(&callbacks_to_be_called_by_service[0])
+  std::move(callbacks_to_be_called_by_service[0])
       .Run(arbitrarily_empty_results);
   {
     base::RunLoop give_provider_chance_to_disconnect;
@@ -438,7 +439,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
   ASSERT_FALSE(connection_has_been_closed);
 
   // The service now responds to the second request.
-  base::ResetAndReturn(&callbacks_to_be_called_by_service[1])
+  std::move(callbacks_to_be_called_by_service[1])
       .Run(arbitrarily_empty_results);
   {
     base::RunLoop give_provider_chance_to_disconnect;

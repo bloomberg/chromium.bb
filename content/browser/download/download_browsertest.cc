@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -563,7 +562,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
       item_ = download;
 
     if (!completion_closure_.is_null())
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
   }
 
   download::DownloadItem* WaitForFinished() {
@@ -597,7 +596,7 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
             "Download.ParallelDownloadAddStreamSuccess");
     if (samples->GetCount(0 /* failure */) == count_ &&
         !completion_closure_.is_null())
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
   }
 
   void OnDownloadDestroyed(download::DownloadItem* download) override {

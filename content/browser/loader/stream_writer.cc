@@ -4,7 +4,8 @@
 
 #include "content/browser/loader/stream_writer.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
+
 #include "base/guid.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/streams/stream.h"
@@ -95,7 +96,7 @@ void StreamWriter::Finalize(int status) {
 }
 
 void StreamWriter::OnSpaceAvailable(Stream* stream) {
-  base::ResetAndReturn(&need_more_data_callback_).Run();
+  std::move(need_more_data_callback_).Run();
 }
 
 void StreamWriter::OnClose(Stream* stream) {

@@ -4,8 +4,9 @@
 
 #include "content/renderer/pepper/pepper_platform_camera_device.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -55,7 +56,7 @@ void PepperPlatformCameraDevice::DetachEventHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
   handler_ = nullptr;
   if (!release_device_cb_.is_null()) {
-    base::ResetAndReturn(&release_device_cb_).Run();
+    std::move(release_device_cb_).Run();
   }
   if (!label_.empty()) {
     PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();

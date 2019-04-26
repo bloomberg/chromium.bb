@@ -281,11 +281,11 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
         callbacks->OnDeviceLaunchFailed(
             media::VideoCaptureError::
                 kInProcessDeviceLauncherFailedToCreateDeviceInstance);
-        base::ResetAndReturn(&done_cb).Run();
+        std::move(done_cb).Run();
         return;
       case State::DEVICE_START_ABORTING:
         callbacks->OnDeviceLaunchAborted();
-        base::ResetAndReturn(&done_cb).Run();
+        std::move(done_cb).Run();
         return;
       case State::READY_TO_LAUNCH:
         NOTREACHED();
@@ -299,12 +299,12 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
   switch (state_copy) {
     case State::DEVICE_START_IN_PROGRESS:
       callbacks->OnDeviceLaunched(std::move(launched_device));
-      base::ResetAndReturn(&done_cb).Run();
+      std::move(done_cb).Run();
       return;
     case State::DEVICE_START_ABORTING:
       launched_device.reset();
       callbacks->OnDeviceLaunchAborted();
-      base::ResetAndReturn(&done_cb).Run();
+      std::move(done_cb).Run();
       return;
     case State::READY_TO_LAUNCH:
       NOTREACHED();

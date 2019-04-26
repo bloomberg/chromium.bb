@@ -4,8 +4,9 @@
 
 #include "content/renderer/p2p/host_address_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -53,7 +54,7 @@ void P2PAsyncAddressResolver::OnResponse(const net::IPAddressList& addresses) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == STATE_SENT) {
     state_ = STATE_FINISHED;
-    base::ResetAndReturn(&done_callback_).Run(addresses);
+    std::move(done_callback_).Run(addresses);
   }
 }
 

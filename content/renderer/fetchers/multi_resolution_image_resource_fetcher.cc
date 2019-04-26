@@ -4,6 +4,8 @@
 
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/child/image_decoder.h"
@@ -80,15 +82,11 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     // If we get here, it means no image from server or couldn't decode the
     // response as an image. The delegate will see an empty vector.
 
-  // Take local ownership of the callback as running the callback may lead to
-  // our destruction.
-  base::ResetAndReturn(&callback_).Run(this, bitmaps);
+  std::move(callback_).Run(this, bitmaps);
 }
 
 void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
-  // Take local ownership of the callback as running the callback may lead to
-  // our destruction.
-  base::ResetAndReturn(&callback_).Run(this, std::vector<SkBitmap>());
+  std::move(callback_).Run(this, std::vector<SkBitmap>());
 }
 
 }  // namespace content

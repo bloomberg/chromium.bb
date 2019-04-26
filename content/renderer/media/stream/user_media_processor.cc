@@ -1406,7 +1406,7 @@ bool UserMediaProcessor::DeleteWebRequest(
   if (current_request_info_ &&
       current_request_info_->web_request() == web_request) {
     current_request_info_.reset();
-    base::ResetAndReturn(&request_completed_cb_).Run();
+    std::move(request_completed_cb_).Run();
     return true;
   }
   return false;
