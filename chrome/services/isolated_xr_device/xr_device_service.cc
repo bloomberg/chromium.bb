@@ -5,6 +5,7 @@
 #include "chrome/services/isolated_xr_device/xr_device_service.h"
 
 #include "base/bind.h"
+#include "base/win/com_init_check_hook.h"
 #include "chrome/services/isolated_xr_device/xr_runtime_provider.h"
 #include "chrome/services/isolated_xr_device/xr_service_test_hook.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -28,6 +29,8 @@ void XrDeviceService::OnTestHookRequest(
 XrDeviceService::XrDeviceService(service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
       service_keepalive_(&service_binding_, base::TimeDelta()) {
+  base::win::ComInitCheckHook::DisableCOMChecksForProcess();
+
   // Register device provider here.
   registry_.AddInterface(base::BindRepeating(
       &XrDeviceService::OnDeviceProviderRequest, base::Unretained(this)));
