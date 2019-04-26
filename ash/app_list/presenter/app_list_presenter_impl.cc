@@ -346,6 +346,12 @@ void AppListPresenterImpl::ScheduleDismissAnimation() {
   transform.Translate(-offset.x(), -offset.y());
   layer->SetTransform(transform);
 
+  if (view_->is_side_shelf()) {
+    // No close animation in side shelf mode.
+    OnImplicitAnimationsCompleted();
+    return;
+  }
+
   {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTransitionDuration(animation_duration);

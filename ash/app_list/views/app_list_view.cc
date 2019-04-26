@@ -1492,9 +1492,6 @@ void AppListView::StartAnimationForState(
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
   state_animation_metrics_reporter_->SetTargetState(
       ash::mojom::AppListViewState::kClosed);
-  if (is_side_shelf_)
-    return;
-
   // If animating from PEEKING, animate the opacity twice as fast so the
   // SearchBoxView does not flash behind the shelf.
   if (app_list_state_ == ash::mojom::AppListViewState::kPeeking ||
