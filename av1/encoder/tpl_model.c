@@ -473,11 +473,10 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
   int frame_disp_idx = 0;
-  int pframe_qindex = cpi->tpl_stats[2].base_qindex;
-
   RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
   int recon_frame_index[INTER_REFS_PER_FRAME + 1] = { -1, -1, -1, -1,
                                                       -1, -1, -1, -1 };
+  int pframe_qindex = 0;
 
   for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
        ++i) {
@@ -529,6 +528,9 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi, GF_PICTURE *gf_picture,
 
     ++*tpl_group_frames;
   }
+  cpi->tpl_stats[frame_idx].base_qindex = gf_group->q_val[frame_idx];
+  if (gf_group->update_type[frame_idx] == LF_UPDATE)
+    pframe_qindex = gf_group->q_val[frame_idx];
 
   ++frame_disp_idx;
   int extend_frame_count = 0;
