@@ -28,8 +28,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone X",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -38,8 +46,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     },
     {
@@ -47,8 +63,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -57,8 +81,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     },
     {
@@ -66,8 +98,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone 7",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -76,8 +116,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone 7",
       "os": "12.1",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     },
     {
@@ -85,8 +133,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone 7",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -95,8 +151,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone 7",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     },
     {
@@ -104,8 +168,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -114,8 +186,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     },
     {
@@ -123,8 +203,16 @@
       "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "shards": 4,
       "priority": 35
     },
@@ -133,8 +221,16 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome",
+      "host os": "Mac-10.14.4",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.13.6"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
       "priority": 35
     }
   ]
