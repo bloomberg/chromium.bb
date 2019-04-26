@@ -13,18 +13,15 @@
 
 namespace blink {
 struct Manifest;
-namespace mojom {
-class ManifestManager;
-}
 }  // namespace blink
 
 namespace content {
 
-class ManifestManager;
+class RenderFrame;
 
 class CONTENT_EXPORT RelatedAppsFetcher : public blink::WebRelatedAppsFetcher {
  public:
-  explicit RelatedAppsFetcher(blink::mojom::ManifestManager* manifest_manager);
+  explicit RelatedAppsFetcher(RenderFrame* render_frame);
   ~RelatedAppsFetcher() override;
 
   // blink::WebRelatedAppsFetcher overrides:
@@ -37,10 +34,10 @@ class CONTENT_EXPORT RelatedAppsFetcher : public blink::WebRelatedAppsFetcher {
   // getManifestRelatedApplications.
   void OnGetManifestForRelatedApplications(
       blink::GetManifestRelatedApplicationsCallback completion_callback,
-      const GURL& url,
+      const blink::WebURL& url,
       const blink::Manifest& manifest);
 
-  blink::mojom::ManifestManager* const manifest_manager_;
+  RenderFrame* const render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RelatedAppsFetcher);
 };

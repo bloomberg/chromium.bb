@@ -28,12 +28,12 @@ class ManifestParserTest : public testing::Test {
                                  const GURL& document_url) {
     ManifestParser parser(data, KURL(manifest_url), KURL(document_url));
     parser.Parse();
-    WebVector<ManifestError> errors;
+    Vector<mojom::blink::ManifestErrorPtr> errors;
     parser.TakeErrors(&errors);
 
     errors_.clear();
     for (auto& error : errors)
-      errors_.push_back(std::move(error.message));
+      errors_.push_back(std::move(error->message));
     return parser.manifest();
   }
 
@@ -42,7 +42,7 @@ class ManifestParserTest : public testing::Test {
                                  default_document_url);
   }
 
-  const std::vector<std::string>& errors() const { return errors_; }
+  const Vector<String>& errors() const { return errors_; }
 
   unsigned int GetErrorCount() const { return errors_.size(); }
 
@@ -50,7 +50,7 @@ class ManifestParserTest : public testing::Test {
   static const GURL default_manifest_url;
 
  private:
-  std::vector<std::string> errors_;
+  Vector<String> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParserTest);
 };
@@ -67,7 +67,7 @@ TEST_F(ManifestParserTest, CrashTest) {
   ManifestParser parser(json, url, url);
 
   parser.Parse();
-  WebVector<ManifestError> errors;
+  Vector<mojom::blink::ManifestErrorPtr> errors;
   parser.TakeErrors(&errors);
 
   // .Parse() should have been call without crashing and succeeded.
@@ -899,11 +899,11 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
 }
 
 TEST_F(ManifestParserTest, IconPurposeParseRules) {
-  const std::string kPurposeParseStringError =
+  const String kPurposeParseStringError =
       "property 'purpose' ignored, type string expected.";
-  const std::string kPurposeInvalidValueError =
+  const String kPurposeInvalidValueError =
       "found icon with no valid purpose; ignoring it.";
-  const std::string kSomeInvalidPurposeError =
+  const String kSomeInvalidPurposeError =
       "found icon with one or more invalid purposes; those purposes are "
       "ignored.";
 

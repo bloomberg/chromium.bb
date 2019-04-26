@@ -112,9 +112,10 @@ const Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
-void ManifestParser::TakeErrors(WebVector<ManifestError>* errors) {
-  errors->Clear();
-  errors->Assign(errors_);
+void ManifestParser::TakeErrors(
+    Vector<mojom::blink::ManifestErrorPtr>* errors) {
+  errors->clear();
+  errors->swap(errors_);
 }
 
 bool ManifestParser::failed() const {
@@ -761,8 +762,9 @@ void ManifestParser::AddErrorInfo(const std::string& error_msg,
                                   bool critical,
                                   int error_line,
                                   int error_column) {
-  ManifestError error = {error_msg, critical, error_line, error_column};
-  errors_.push_back(error);
+  mojom::blink::ManifestErrorPtr error = mojom::blink::ManifestError::New(
+      String(error_msg.c_str()), critical, error_line, error_column);
+  errors_.push_back(std::move(error));
 }
 
 }  // namespace blink

@@ -12,8 +12,6 @@
 
 #include "base/callback_forward.h"
 
-class GURL;
-
 namespace blink {
 struct Manifest;
 class WebInputEvent;
@@ -65,7 +63,7 @@ test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
 // between WebFrames and RenderFrames.
 void EnableWebTestProxyCreation();
 
-typedef base::OnceCallback<void(const GURL&, const blink::Manifest&)>
+typedef base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
     FetchManifestCallback;
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
 

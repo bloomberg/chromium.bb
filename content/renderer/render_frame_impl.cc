@@ -120,7 +120,6 @@
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/manifest/manifest_change_notifier.h"
-#include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
@@ -1827,7 +1826,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
   plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
 #endif
 
-  manifest_manager_ = std::make_unique<ManifestManager>(this);
   // TODO(ajwong): This always returns true as is_main_frame_ gets initialized
   // later in RenderFrameImpl::Initialize(). Should the conditional be in
   // RenderFrameImpl::Initialize()?  https://crbug.com/840533
@@ -2307,10 +2305,6 @@ void RenderFrameImpl::BindNavigationClient(
     mojom::NavigationClientAssociatedRequest request) {
   navigation_client_impl_ = std::make_unique<NavigationClient>(this);
   navigation_client_impl_->Bind(std::move(request));
-}
-
-blink::mojom::ManifestManager& RenderFrameImpl::GetManifestManager() {
-  return *manifest_manager_;
 }
 
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
@@ -5520,7 +5514,7 @@ blink::WebPushClient* RenderFrameImpl::PushClient() {
 
 blink::WebRelatedAppsFetcher* RenderFrameImpl::GetRelatedAppsFetcher() {
   if (!related_apps_fetcher_)
-    related_apps_fetcher_.reset(new RelatedAppsFetcher(&GetManifestManager()));
+    related_apps_fetcher_.reset(new RelatedAppsFetcher(this));
 
   return related_apps_fetcher_.get();
 }
@@ -7295,11 +7289,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
     // Host zoom is per-page, so only added on the main frame.
     GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
         &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
-
-    // Web manifests are only requested for main frames.
-    registry_.AddInterface(
-        base::Bind(&ManifestManager::BindToRequest,
-                   base::Unretained(manifest_manager_.get())));
   }
 }
 

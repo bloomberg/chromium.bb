@@ -192,8 +192,6 @@ target(link_target_type, "renderer") {
     "low_memory_mode_controller.h",
     "manifest/manifest_change_notifier.cc",
     "manifest/manifest_change_notifier.h",
-    "manifest/manifest_manager.cc",
-    "manifest/manifest_manager.h",
     "manifest/manifest_uma_util.cc",
     "manifest/manifest_uma_util.h",
     "media/android/flinging_renderer_client.cc",

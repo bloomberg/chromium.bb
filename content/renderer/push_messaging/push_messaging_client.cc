@@ -17,13 +17,13 @@
 #include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -56,12 +56,13 @@ void PushMessagingClient::Subscribe(
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.
   if (options.application_server_key.IsEmpty()) {
-    RenderFrameImpl::FromRoutingID(routing_id())
-        ->GetManifestManager()
-        .RequestManifest(base::BindOnce(&PushMessagingClient::DidGetManifest,
-                                        base::Unretained(this),
-                                        service_worker_registration_id, options,
-                                        user_gesture, std::move(callbacks)));
+    blink::WebManifestManager* manifest_manager =
+        blink::WebManifestManager::FromFrame(
+            RenderFrameImpl::FromRoutingID(routing_id())->GetWebFrame());
+    manifest_manager->RequestManifest(
+        base::BindOnce(&PushMessagingClient::DidGetManifest,
+                       base::Unretained(this), service_worker_registration_id,
+                       options, user_gesture, std::move(callbacks)));
   } else {
     PushSubscriptionOptions content_options;
     content_options.user_visible_only = options.user_visible_only;
@@ -78,7 +79,7 @@ void PushMessagingClient::DidGetManifest(
     const blink::WebPushSubscriptionOptions& options,
     bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-    const GURL& manifest_url,
+    const blink::WebURL& manifest_url,
     const blink::Manifest& manifest) {
   // Get the sender_info from the manifest since it wasn't provided by
   // the caller.

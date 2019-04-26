@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/time/time.h"
@@ -54,6 +53,7 @@
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -470,6 +470,8 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
+
+  CoreInitializer::GetInstance().DidCommitLoad(*web_frame_->GetFrame());
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
@@ -1008,6 +1010,7 @@ LocalFrameClientImpl::CreateApplicationCacheHost(
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
+  CoreInitializer::GetInstance().DidChangeManifest(*web_frame_->GetFrame());
   if (web_frame_->Client())
     web_frame_->Client()->DidChangeManifest();
 }

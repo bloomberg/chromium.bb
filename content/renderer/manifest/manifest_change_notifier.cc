@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/manifest/manifest_manager.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 
 namespace content {
 
@@ -21,8 +21,11 @@ ManifestChangeNotifier::ManifestChangeNotifier(RenderFrame* render_frame)
 ManifestChangeNotifier::~ManifestChangeNotifier() = default;
 
 void ManifestChangeNotifier::DidChangeManifest() {
+  blink::WebManifestManager* manifest_manager =
+      blink::WebManifestManager::FromFrame(render_frame()->GetWebFrame());
+
   // Manifests are not considered when the current page has a unique origin.
-  if (!ManifestManager::CanFetchManifest(render_frame()))
+  if (!manifest_manager || !manifest_manager->CanFetchManifest())
     return;
 
   if (weak_factory_.HasWeakPtrs())

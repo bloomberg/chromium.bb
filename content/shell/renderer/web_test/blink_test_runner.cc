@@ -606,7 +606,8 @@ bool BlinkTestRunner::AllowExternalPages() {
 
 void BlinkTestRunner::FetchManifest(
     blink::WebView* view,
-    base::OnceCallback<void(const GURL&, const blink::Manifest&)> callback) {
+    base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
+        callback) {
   ::content::FetchManifest(view, std::move(callback));
 }
 

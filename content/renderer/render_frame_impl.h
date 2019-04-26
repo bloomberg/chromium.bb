@@ -80,7 +80,6 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -160,7 +159,6 @@ class CompositorDependencies;
 class DocumentState;
 class ExternalPopupMenu;
 class FrameRequestBlocker;
-class ManifestManager;
 class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
 class NavigationClient;
@@ -905,8 +903,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only used when PerNavigationMojoInterface is enabled.
   void BindNavigationClient(mojom::NavigationClientAssociatedRequest request);
 
-  blink::mojom::ManifestManager& GetManifestManager();
-
   media::MediaPermission* GetMediaPermission();
 
   // Sends the current frame's navigation state to the browser.
@@ -1600,10 +1596,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The Connector proxy used to connect to services.
   service_manager::mojom::ConnectorPtr connector_;
-
-  // The Manifest Manager handles the manifest requests from the browser
-  // process.
-  std::unique_ptr<ManifestManager> manifest_manager_;
 
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;

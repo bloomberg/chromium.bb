@@ -10,6 +10,8 @@ blink_modules_sources("manifest") {
     "image_resource_type_converters.h",
     "manifest_fetcher.cc",
     "manifest_fetcher.h",
+    "manifest_manager.cc",
+    "manifest_manager.h",
     "manifest_parser.cc",
     "manifest_parser.h",
     "manifest_type_converters.cc",

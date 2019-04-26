@@ -14,7 +14,7 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -46,7 +46,7 @@ class MODULES_EXPORT ManifestParser {
   const Manifest& manifest() const;
   bool failed() const;
 
-  void TakeErrors(WebVector<ManifestError>* errors);
+  void TakeErrors(Vector<mojom::blink::ManifestErrorPtr>* errors);
 
  private:
   // Used to indicate whether to strip whitespace when parsing a string.
@@ -271,13 +271,13 @@ class MODULES_EXPORT ManifestParser {
                     int error_line = 0,
                     int error_column = 0);
 
-  const base::StringPiece& data_;
+  const base::StringPiece data_;
   GURL manifest_url_;
   GURL document_url_;
 
   bool failed_;
   Manifest manifest_;
-  Vector<ManifestError> errors_;
+  Vector<mojom::blink::ManifestErrorPtr> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };

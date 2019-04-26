@@ -201,13 +201,6 @@ struct BLINK_COMMON_EXPORT Manifest {
   GURL scope;
 };
 
-struct BLINK_COMMON_EXPORT ManifestError {
-  std::string message;
-  bool critical;
-  uint32_t line;
-  uint32_t column;
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_

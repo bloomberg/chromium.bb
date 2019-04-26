@@ -124,7 +124,6 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebVector<WebDraggableRegion> DraggableRegions() const;
 
   BLINK_EXPORT WebURL ManifestURL() const;
-  BLINK_EXPORT bool ManifestUseCredentials() const;
 
   BLINK_EXPORT WebURL CanonicalUrlForSharing() const;
 

@@ -252,22 +252,10 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
   return draggable_regions;
 }
 
+// TODO(crbug.com/704441): Remove it after moving ManifestChangeNotifier to
+// blink.
 WebURL WebDocument::ManifestURL() const {
-  const Document* document = ConstUnwrap<Document>();
-  HTMLLinkElement* link_element = document->LinkManifest();
-  if (!link_element)
-    return WebURL();
-  return link_element->Href();
-}
-
-bool WebDocument::ManifestUseCredentials() const {
-  const Document* document = ConstUnwrap<Document>();
-  HTMLLinkElement* link_element = document->LinkManifest();
-  if (!link_element)
-    return false;
-  return EqualIgnoringASCIICase(
-      link_element->FastGetAttribute(html_names::kCrossoriginAttr),
-      "use-credentials");
+  return ConstUnwrap<Document>()->ManifestURL();
 }
 
 WebURL WebDocument::CanonicalUrlForSharing() const {

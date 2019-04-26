@@ -54,7 +54,7 @@ class PushMessagingClient : public RenderFrameObserver,
       const blink::WebPushSubscriptionOptions& options,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      const GURL& manifest_url,
+      const blink::WebURL& manifest_url,
       const blink::Manifest& manifest);
 
   void DoSubscribe(

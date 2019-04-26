@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 
 namespace blink {
 
@@ -17,7 +16,7 @@ ManifestFetcher::~ManifestFetcher() = default;
 
 void ManifestFetcher::Start(Document& document,
                             bool use_credentials,
-                            WebManifestFetcher::Callback callback) {
+                            ManifestFetcher::Callback callback) {
   callback_ = std::move(callback);
 
   ResourceRequest request(url_);
@@ -63,8 +62,7 @@ void ManifestFetcher::DidFinishLoading(uint64_t) {
   DCHECK(!completed_);
   completed_ = true;
 
-  WrappedResourceResponse wrapped_response(response_);
-  std::move(callback_).Run(wrapped_response, data_.ToString());
+  std::move(callback_).Run(response_, data_.ToString());
   data_.Clear();
 }
 
@@ -74,8 +72,7 @@ void ManifestFetcher::DidFail(const ResourceError& error) {
 
   data_.Clear();
 
-  WrappedResourceResponse wrapped_response(response_);
-  std::move(callback_).Run(wrapped_response, String());
+  std::move(callback_).Run(response_, String());
 }
 
 void ManifestFetcher::DidFailRedirectCheck() {

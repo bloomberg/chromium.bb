@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
@@ -195,6 +196,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   ::blink::ProvideSpeechRecognitionTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
+  ManifestManager::ProvideTo(frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
@@ -311,6 +313,18 @@ void ModulesInitializer::CloneSessionStorage(
   StorageNamespace* storage_namespace = StorageNamespace::From(clone_from_page);
   if (storage_namespace)
     storage_namespace->CloneTo(WebString::FromLatin1(clone_to_namespace));
+}
+
+void ModulesInitializer::DidCommitLoad(LocalFrame& frame) {
+  ManifestManager* manifest_manager = ManifestManager::From(frame);
+  if (manifest_manager)
+    manifest_manager->DidCommitLoad();
+}
+
+void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
+  ManifestManager* manifest_manager = ManifestManager::From(frame);
+  if (manifest_manager)
+    manifest_manager->DidChangeManifest();
 }
 
 void ModulesInitializer::RegisterInterfaces(

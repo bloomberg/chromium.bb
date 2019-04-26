@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "third_party/blink/public/web/web_manifest_fetcher.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -27,6 +26,12 @@ class KURL;
 class ManifestFetcher final : public GarbageCollectedFinalized<ManifestFetcher>,
                               public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestFetcher);
+  // This will be called asynchronously after the URL has been fetched,
+  // successfully or not.  If there is a failure, response and data will both be
+  // empty.  |response| and |data| are both valid until the ManifestFetcher
+  // instance is destroyed.
+  using Callback =
+      base::OnceCallback<void(const ResourceResponse&, const String&)>;
 
  public:
   explicit ManifestFetcher(const KURL& url);
@@ -34,7 +39,7 @@ class ManifestFetcher final : public GarbageCollectedFinalized<ManifestFetcher>,
 
   void Start(Document& document,
              bool use_credentials,
-             WebManifestFetcher::Callback callback);
+             ManifestFetcher::Callback callback);
   void Cancel();
 
   // ThreadableLoaderClient
@@ -49,7 +54,7 @@ class ManifestFetcher final : public GarbageCollectedFinalized<ManifestFetcher>,
  private:
   KURL url_;
   bool completed_;
-  WebManifestFetcher::Callback callback_;
+  ManifestFetcher::Callback callback_;
   ResourceResponse response_;
   StringBuilder data_;
   Member<ThreadableLoader> loader_;
