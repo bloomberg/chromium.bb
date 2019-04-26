@@ -635,6 +635,10 @@
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
 
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+#include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -4570,6 +4574,10 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
       &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+  frame_interfaces_parameterized_->AddInterface(base::Bind(
+      &ForwardToJavaWebContentsRegistry<blink::mojom::SpatialNavigationHost>));
+#endif
 #endif
 
 #if !defined(OS_ANDROID)

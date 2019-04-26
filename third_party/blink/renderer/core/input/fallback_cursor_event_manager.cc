@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -337,8 +338,9 @@ void FallbackCursorEventManager::HandleMousePressEvent(const WebMouseEvent& e) {
 }
 
 Element* FallbackCursorEventManager::GetFocusedElement() const {
+  DCHECK(root_frame_->GetPage());
   LocalFrame* frame =
-      root_frame_->View()->GetPage()->GetFocusController().FocusedFrame();
+      root_frame_->GetPage()->GetFocusController().FocusedFrame();
   if (!frame || !frame->GetDocument())
     return nullptr;
 
@@ -359,6 +361,12 @@ bool FallbackCursorEventManager::HandleKeyBackEvent() {
 
   ResetCurrentScrollable();
   return true;
+}
+
+void FallbackCursorEventManager::SetIsFallbackCursorModeOn(bool is_on) {
+  is_fallback_cursor_mode_on_ = is_on;
+  DCHECK(root_frame_->GetPage());
+  root_frame_->GetPage()->GetSettings().SetSpatialNavigationEnabled(!is_on);
 }
 
 }  // namespace blink

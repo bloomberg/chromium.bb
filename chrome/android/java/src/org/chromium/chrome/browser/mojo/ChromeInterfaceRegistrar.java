@@ -35,6 +35,7 @@ class ChromeInterfaceRegistrar {
         public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
             registry.addInterface(
                     ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
+            AppHooks.get().registerChromeWebContentsInterfaces(registry, webContents);
         }
     }
 
