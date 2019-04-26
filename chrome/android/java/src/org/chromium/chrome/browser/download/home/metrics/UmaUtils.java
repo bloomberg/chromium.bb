@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.RenameResult;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -294,5 +295,14 @@ public class UmaUtils {
     public static void recordRenameAction(@RenameDialogAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.Download.Rename.Dialog.Action", action, RenameDialogAction.NUM_ENTRIES);
+    }
+
+    /**
+     * Called to record metrics for the given rename result.
+     * @param result The given rename result.
+     */
+    public static void recordRenameResult(@RenameResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.Download.Rename.Result", result, RenameResult.MAX_VALUE);
     }
 }
