@@ -17,10 +17,8 @@ namespace content {
 class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
-  SoftwareBrowserCompositorOutputSurface(
-      std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback);
+  explicit SoftwareBrowserCompositorOutputSurface(
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device);
 
   ~SoftwareBrowserCompositorOutputSurface() override;
 

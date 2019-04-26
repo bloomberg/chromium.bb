@@ -11,12 +11,10 @@ namespace viz {
 GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
-                                 std::move(update_vsync_callback),
                                  gpu_memory_buffer_manager,
                                  buffer_format) {}
 

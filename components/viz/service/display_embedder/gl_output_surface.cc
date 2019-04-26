@@ -22,10 +22,9 @@
 namespace viz {
 
 GLOutputSurface::GLOutputSurface(
-    scoped_refptr<VizProcessContextProvider> context_provider,
-    UpdateVSyncParametersCallback update_vsync_callback)
+    scoped_refptr<VizProcessContextProvider> context_provider)
     : OutputSurface(context_provider),
-      wants_vsync_parameter_updates_(!update_vsync_callback.is_null()),
+      viz_context_provider_(context_provider),
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
@@ -40,8 +39,6 @@ GLOutputSurface::GLOutputSurface(
   // can use.
   capabilities_.max_frames_pending =
       context_provider->ContextCapabilities().num_surface_buffers - 1;
-  context_provider->SetUpdateVSyncParametersCallback(
-      std::move(update_vsync_callback));
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -200,6 +197,12 @@ unsigned GLOutputSurface::UpdateGpuFence() {
 void GLOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   needs_swap_size_notifications_ = needs_swap_size_notifications;
+}
+
+void GLOutputSurface::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {
+  wants_vsync_parameter_updates_ = !callback.is_null();
+  viz_context_provider_->SetUpdateVSyncParametersCallback(std::move(callback));
 }
 
 }  // namespace viz

@@ -35,6 +35,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override;
 
   void SetReflector(ReflectorImpl* reflector);
 
@@ -45,19 +47,15 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       scoped_refptr<viz::ContextProvider> context,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
-  BrowserCompositorOutputSurface(
-      std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback);
+  explicit BrowserCompositorOutputSurface(
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device);
 
-  const viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
-  ReflectorImpl* reflector_;
+  viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  ReflectorImpl* reflector_ = nullptr;
 
  private:
   std::unique_ptr<viz::CompositorOverlayCandidateValidator>

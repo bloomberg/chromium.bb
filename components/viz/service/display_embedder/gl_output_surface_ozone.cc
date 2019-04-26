@@ -17,12 +17,10 @@ namespace viz {
 GLOutputSurfaceOzone::GLOutputSurfaceOzone(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     std::vector<OverlayStrategy> strategies)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
-                                 std::move(update_vsync_callback),
                                  gpu_memory_buffer_manager,
                                  display::DisplaySnapshot::PrimaryFormat()) {
   if (!strategies.empty()) {

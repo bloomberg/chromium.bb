@@ -69,12 +69,10 @@ base::RepeatingCallback<void(Args...)> CreateSafeCallback(
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
-    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings)
     : gpu_service_(gpu_service),
       is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
-      update_vsync_callback_(std::move(update_vsync_callback)),
       renderer_settings_(renderer_settings),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -246,6 +244,11 @@ unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
 void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   needs_swap_size_notifications_ = needs_swap_size_notifications;
+}
+
+void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {
+  update_vsync_parameters_callback_ = std::move(callback);
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
@@ -690,13 +693,13 @@ void SkiaOutputSurfaceImpl::BufferPresented(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
   client_->DidReceivePresentationFeedback(feedback);
-  if (update_vsync_callback_ &&
+  if (update_vsync_parameters_callback_ &&
       feedback.flags & gfx::PresentationFeedback::kVSync) {
     // TODO(brianderson): We should not be receiving 0 intervals.
-    update_vsync_callback_.Run(feedback.timestamp,
-                               feedback.interval.is_zero()
-                                   ? BeginFrameArgs::DefaultInterval()
-                                   : feedback.interval);
+    update_vsync_parameters_callback_.Run(
+        feedback.timestamp, feedback.interval.is_zero()
+                                ? BeginFrameArgs::DefaultInterval()
+                                : feedback.interval);
   }
 }
 

@@ -20,10 +20,9 @@ namespace viz {
 GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
-    : GLOutputSurface(context_provider, std::move(update_vsync_callback)) {
+    : GLOutputSurface(context_provider) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling

@@ -105,6 +105,8 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
   unsigned UpdateGpuFence() override { return 0; }
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override {}
 };
 
 base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::

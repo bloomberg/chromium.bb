@@ -10,9 +10,8 @@ namespace viz {
 
 GLOutputSurfaceAndroid::GLOutputSurfaceAndroid(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    UpdateVSyncParametersCallback update_vsync_callback,
     bool allow_overlays)
-    : GLOutputSurface(context_provider, std::move(update_vsync_callback)) {
+    : GLOutputSurface(context_provider) {
   if (allow_overlays) {
     overlay_candidate_validator_ =
         std::make_unique<CompositorOverlayCandidateValidatorAndroid>();

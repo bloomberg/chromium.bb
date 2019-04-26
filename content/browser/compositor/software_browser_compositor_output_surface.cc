@@ -21,10 +21,8 @@
 namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
-    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
-    : BrowserCompositorOutputSurface(std::move(software_device),
-                                     update_vsync_parameters_callback),
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
+    : BrowserCompositorOutputSurface(std::move(software_device)),
       weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::
@@ -98,7 +96,8 @@ void SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback(
     const base::TimeTicks timebase,
     const base::TimeDelta interval) {
   refresh_interval_ = interval;
-  update_vsync_parameters_callback_.Run(timebase, interval);
+  if (update_vsync_parameters_callback_)
+    update_vsync_parameters_callback_.Run(timebase, interval);
 }
 
 bool SoftwareBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {

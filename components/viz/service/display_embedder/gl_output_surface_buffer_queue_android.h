@@ -17,7 +17,6 @@ class GLOutputSurfaceBufferQueueAndroid : public GLOutputSurfaceBufferQueue {
   GLOutputSurfaceBufferQueueAndroid(
       scoped_refptr<VizProcessContextProvider> context_provider,
       gpu::SurfaceHandle surface_handle,
-      UpdateVSyncParametersCallback update_vsync_callback,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gfx::BufferFormat buffer_format);
   ~GLOutputSurfaceBufferQueueAndroid() override;

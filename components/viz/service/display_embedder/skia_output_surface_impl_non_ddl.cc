@@ -208,6 +208,11 @@ void SkiaOutputSurfaceImplNonDDL::SetNeedsSwapSizeNotifications(
   NOTIMPLEMENTED();
 }
 
+void SkiaOutputSurfaceImplNonDDL::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(current_render_pass_id_, 0u);

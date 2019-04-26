@@ -19,8 +19,8 @@ namespace viz {
 // swaps to an actual GL surface.
 class GLOutputSurface : public OutputSurface {
  public:
-  GLOutputSurface(scoped_refptr<VizProcessContextProvider> context_provider,
-                  UpdateVSyncParametersCallback update_vsync_callback);
+  explicit GLOutputSurface(
+      scoped_refptr<VizProcessContextProvider> context_provider);
   ~GLOutputSurface() override;
 
   // OutputSurface implementation
@@ -45,6 +45,8 @@ class GLOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -69,8 +71,9 @@ class GLOutputSurface : public OutputSurface {
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
+  scoped_refptr<VizProcessContextProvider> viz_context_provider_;
   OutputSurfaceClient* client_ = nullptr;
-  const bool wants_vsync_parameter_updates_;
+  bool wants_vsync_parameter_updates_ = false;
   ui::LatencyTracker latency_tracker_;
 
   bool set_draw_rectangle_for_frame_ = false;

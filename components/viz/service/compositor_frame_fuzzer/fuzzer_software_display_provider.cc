@@ -105,7 +105,7 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
                     : std::make_unique<SoftwareOutputDevice>();
 
   auto output_surface = std::make_unique<SoftwareOutputSurface>(
-      std::move(software_output_device), std::move(update_vsync_callback));
+      std::move(software_output_device));
 
   auto scheduler = std::make_unique<DisplayScheduler>(
       begin_frame_source_.get(), task_runner.get(),

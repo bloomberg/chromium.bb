@@ -437,8 +437,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  auto vsync_callback = base::BindRepeating(
-      &ui::Compositor::SetDisplayVSyncParameters, compositor);
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&
@@ -453,15 +451,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     display_output_surface =
         std::make_unique<SoftwareBrowserCompositorOutputSurface>(
             CreateSoftwareOutputDevice(compositor->widget(),
-                                       compositor->task_runner()),
-            std::move(vsync_callback));
+                                       compositor->task_runner()));
   } else {
     DCHECK(context_provider);
     const auto& capabilities = context_provider->ContextCapabilities();
     if (data->surface_handle == gpu::kNullSurfaceHandle) {
       display_output_surface =
           std::make_unique<OffscreenBrowserCompositorOutputSurface>(
-              context_provider, std::move(vsync_callback),
+              context_provider,
               std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
     } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
@@ -469,7 +466,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       bool disable_overlay_ca_layers =
           gpu_feature_info.IsWorkaroundEnabled(gpu::DISABLE_OVERLAY_CA_LAYERS);
       display_output_surface = std::make_unique<GpuOutputSurfaceMac>(
-          context_provider, data->surface_handle, vsync_callback,
+          context_provider, data->surface_handle,
           CreateOverlayCandidateValidator(compositor->widget(),
                                           disable_overlay_ca_layers),
           GetGpuMemoryBufferManager());
@@ -477,7 +474,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       DCHECK(capabilities.texture_format_bgra8888);
       auto gpu_output_surface =
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
-              context_provider, data->surface_handle, std::move(vsync_callback),
+              context_provider, data->surface_handle,
               CreateOverlayCandidateValidator(compositor->widget()),
               display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
@@ -498,11 +495,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
       auto gpu_output_surface =
           std::make_unique<GpuBrowserCompositorOutputSurface>(
-              context_provider, std::move(vsync_callback),
-              std::move(validator));
+              context_provider, std::move(validator));
       display_output_surface = std::move(gpu_output_surface);
     }
   }
+
+  auto vsync_callback = base::BindRepeating(
+      &ui::Compositor::SetDisplayVSyncParameters, compositor);
+  display_output_surface->SetUpdateVSyncParametersCallback(vsync_callback);
 
   data->display_output_surface = display_output_surface.get();
   if (data->reflector)

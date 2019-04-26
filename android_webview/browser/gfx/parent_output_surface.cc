@@ -113,4 +113,7 @@ unsigned ParentOutputSurface::UpdateGpuFence() {
   return 0;
 }
 
+void ParentOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {}
+
 }  // namespace android_webview

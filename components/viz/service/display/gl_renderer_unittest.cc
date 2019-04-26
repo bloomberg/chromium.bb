@@ -2081,6 +2081,8 @@ class MockOutputSurface : public OutputSurface {
   MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
   MOCK_CONST_METHOD0(HasExternalStencilTest, bool());
   MOCK_METHOD0(ApplyExternalStencil, void());
+  MOCK_METHOD1(SetUpdateVSyncParametersCallback,
+               void(UpdateVSyncParametersCallback));
 };
 
 class MockOutputSurfaceTest : public GLRendererTest {

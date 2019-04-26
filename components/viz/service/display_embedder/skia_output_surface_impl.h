@@ -48,7 +48,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
   SkiaOutputSurfaceImpl(GpuServiceImpl* gpu_service,
                         gpu::SurfaceHandle surface_handle,
-                        UpdateVSyncParametersCallback update_vsync_callback,
                         const RendererSettings& renderer_settings);
   ~SkiaOutputSurfaceImpl() override;
 
@@ -74,6 +73,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -135,7 +136,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   const bool is_using_vulkan_;
   const gpu::SurfaceHandle surface_handle_;
-  UpdateVSyncParametersCallback update_vsync_callback_;
+  UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   OutputSurfaceClient* client_ = nullptr;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;

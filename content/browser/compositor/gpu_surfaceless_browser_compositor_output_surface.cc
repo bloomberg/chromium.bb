@@ -22,14 +22,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         scoped_refptr<ws::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        const viz::UpdateVSyncParametersCallback&
-            update_vsync_parameters_callback,
         std::unique_ptr<viz::CompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       use_gpu_fence_(
           context_provider_->ContextCapabilities().chromium_gpu_fence &&

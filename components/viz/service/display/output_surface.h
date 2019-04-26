@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
@@ -49,7 +50,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // Note: HasExternalStencilTest() must return false when an output surface
     // has been configured for stencil usage.
     bool supports_stencil = false;
-    // Whether this OutputSurface suppotrs post sub buffer or not.
+    // Whether this OutputSurface supports post sub buffer or not.
     bool supports_post_sub_buffer = false;
   };
 
@@ -131,6 +132,11 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // corresponds to the GL id used by the CHROMIUM_gpu_fence GL extension and
   // can be passed directly to any related extension functions.
   virtual unsigned UpdateGpuFence() = 0;
+
+  // Sets callback to receive updated vsync parameters after SwapBuffers() if
+  // supported.
+  virtual void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) = 0;
 
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.

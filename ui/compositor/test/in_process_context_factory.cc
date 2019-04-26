@@ -129,6 +129,8 @@ class DirectOutputSurface : public viz::OutputSurface {
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
   unsigned UpdateGpuFence() override { return 0; }
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override {}
 
  private:
   void OnSwapBuffersComplete() {

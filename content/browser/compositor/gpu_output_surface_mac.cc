@@ -15,14 +15,12 @@ namespace content {
 GpuOutputSurfaceMac::GpuOutputSurfaceMac(
     scoped_refptr<ws::ContextProviderCommandBuffer> context,
     gpu::SurfaceHandle surface_handle,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<viz::CompositorOverlayCandidateValidator>
         overlay_candidate_validator,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuSurfacelessBrowserCompositorOutputSurface(
           std::move(context),
           surface_handle,
-          update_vsync_parameters_callback,
           std::move(overlay_candidate_validator),
           gfx::BufferFormat::RGBA_8888,
           gpu_memory_buffer_manager) {}

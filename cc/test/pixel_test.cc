@@ -20,7 +20,6 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/client/client_resource_provider.h"
-#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -69,7 +68,6 @@ class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
                                  bool flipped_output_surface)
       : SkiaOutputSurfaceImpl(gpu_service,
                               surface_handle,
-                              viz::UpdateVSyncParametersCallback(),
                               renderer_settings),
         flipped_output_surface_(flipped_output_surface) {}
 

@@ -126,11 +126,13 @@ void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
 std::unique_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> device) {
-  return std::make_unique<content::SoftwareBrowserCompositorOutputSurface>(
-      std::move(device),
-      base::Bind(
-          &SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters,
-          base::Unretained(this)));
+  auto surface =
+      std::make_unique<content::SoftwareBrowserCompositorOutputSurface>(
+          std::move(device));
+  surface->SetUpdateVSyncParametersCallback(base::BindRepeating(
+      &SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters,
+      base::Unretained(this)));
+  return surface;
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters(

@@ -16,7 +16,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/display/renderer_settings.h"
-#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -211,8 +210,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
 #endif
   }
   output_surface_ = std::make_unique<SkiaOutputSurfaceImpl>(
-      gpu_service_.get(), surface_handle_, UpdateVSyncParametersCallback(),
-      RendererSettings());
+      gpu_service_.get(), surface_handle_, RendererSettings());
   output_surface_->BindToClient(output_surface_client_.get());
 }
 

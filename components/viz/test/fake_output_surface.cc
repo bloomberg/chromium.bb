@@ -105,4 +105,7 @@ unsigned FakeOutputSurface::UpdateGpuFence() {
   return gpu_fence_id_;
 }
 
+void FakeOutputSurface::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {}
+
 }  // namespace viz

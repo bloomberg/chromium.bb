@@ -120,6 +120,11 @@ void FakeSkiaOutputSurface::SetNeedsSwapSizeNotifications(
   NOTIMPLEMENTED();
 }
 
+void FakeSkiaOutputSurface::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 SkCanvas* FakeSkiaOutputSurface::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto& sk_surface = sk_surfaces_[0];

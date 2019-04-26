@@ -39,6 +39,8 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override;
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;

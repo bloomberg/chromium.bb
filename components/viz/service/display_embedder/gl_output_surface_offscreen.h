@@ -18,9 +18,8 @@ namespace viz {
 // framebuffer.
 class GLOutputSurfaceOffscreen : public GLOutputSurface {
  public:
-  GLOutputSurfaceOffscreen(
-      scoped_refptr<VizProcessContextProvider> context_provider,
-      UpdateVSyncParametersCallback update_vsync_callback);
+  explicit GLOutputSurfaceOffscreen(
+      scoped_refptr<VizProcessContextProvider> context_provider);
   ~GLOutputSurfaceOffscreen() override;
 
   // OutputSurface implementation.

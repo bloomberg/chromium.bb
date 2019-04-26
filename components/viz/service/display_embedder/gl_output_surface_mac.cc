@@ -11,12 +11,10 @@ namespace viz {
 GLOutputSurfaceMac::GLOutputSurfaceMac(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool allow_overlays)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
-                                 std::move(update_vsync_callback),
                                  gpu_memory_buffer_manager,
                                  gfx::BufferFormat::RGBA_8888),
       overlay_validator_(

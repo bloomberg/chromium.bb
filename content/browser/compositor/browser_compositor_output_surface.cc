@@ -20,21 +20,15 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<viz::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : OutputSurface(std::move(context_provider)),
-      update_vsync_parameters_callback_(update_vsync_parameters_callback),
-      reflector_(nullptr) {
+    : OutputSurface(std::move(context_provider)) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
-    : OutputSurface(std::move(software_device)),
-      update_vsync_parameters_callback_(update_vsync_parameters_callback),
-      reflector_(nullptr) {}
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(software_device)) {}
 
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   if (reflector_)
@@ -66,5 +60,10 @@ bool BrowserCompositorOutputSurface::HasExternalStencilTest() const {
 }
 
 void BrowserCompositorOutputSurface::ApplyExternalStencil() {}
+
+void BrowserCompositorOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {
+  update_vsync_parameters_callback_ = std::move(callback);
+}
 
 }  // namespace content

@@ -120,8 +120,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client),
-        std::move(update_vsync_callback));
+        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
   } else if (renderer_settings.use_skia_renderer ||
              renderer_settings.use_skia_renderer_non_ddl) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -157,8 +156,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
     } else {
       output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-          gpu_service_impl_, surface_handle, std::move(update_vsync_callback),
-          renderer_settings);
+          gpu_service_impl_, surface_handle, renderer_settings);
     }
 #endif
   } else {
@@ -200,26 +198,24 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
     if (surface_handle == gpu::kNullSurfaceHandle) {
       output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
-          std::move(context_provider), std::move(update_vsync_callback));
+          std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
+          gpu_memory_buffer_manager_.get(),
           renderer_settings.overlay_strategies);
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
-          renderer_settings.allow_overlays);
+          gpu_memory_buffer_manager_.get(), renderer_settings.allow_overlays);
 #elif defined(OS_ANDROID)
       auto buffer_format = context_provider->UseRGB565PixelFormat()
                                ? gfx::BufferFormat::BGR_565
                                : gfx::BufferFormat::RGBA_8888;
       output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
-          buffer_format);
+          gpu_memory_buffer_manager_.get(), buffer_format);
 #else
       NOTREACHED();
 #endif
@@ -233,8 +229,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
                                      use_overlays_for_sw_protected_video);
       output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), std::move(update_vsync_callback),
-          use_overlays);
+          std::move(context_provider), use_overlays);
 #elif defined(OS_ANDROID)
       const bool surface_control_enabled =
           task_executor_->gpu_feature_info()
@@ -244,17 +239,20 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
              renderer_settings.backed_by_surface_texture);
 
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), std::move(update_vsync_callback),
+          std::move(context_provider),
           !surface_control_enabled /* allow_overlays */);
 #else
-      output_surface = std::make_unique<GLOutputSurface>(
-          std::move(context_provider), std::move(update_vsync_callback));
+      output_surface =
+          std::make_unique<GLOutputSurface>(std::move(context_provider));
 #endif
     }
   }
 
   // If we need swap size notifications tell the output surface now.
   output_surface->SetNeedsSwapSizeNotifications(send_swap_size_notifications);
+
+  output_surface->SetUpdateVSyncParametersCallback(
+      std::move(update_vsync_callback));
 
   int max_frames_pending = output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);

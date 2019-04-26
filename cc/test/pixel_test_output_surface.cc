@@ -110,4 +110,7 @@ unsigned PixelTestOutputSurface::UpdateGpuFence() {
   return 0;
 }
 
+void PixelTestOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {}
+
 }  // namespace cc

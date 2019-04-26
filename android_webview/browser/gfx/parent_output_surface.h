@@ -45,6 +45,8 @@ class ParentOutputSurface : public viz::OutputSurface {
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override;
 
  private:
   void OnPresentation(const gfx::PresentationFeedback& feedback);

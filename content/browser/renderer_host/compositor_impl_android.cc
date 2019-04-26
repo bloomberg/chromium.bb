@@ -478,6 +478,9 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   unsigned UpdateGpuFence() override { return 0; }
 
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override {}
+
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     ws::ContextProviderCommandBuffer* provider_command_buffer =
