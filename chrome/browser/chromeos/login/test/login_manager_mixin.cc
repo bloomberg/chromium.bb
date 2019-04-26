@@ -41,7 +41,8 @@ namespace {
 // When users are registered, it marks OOBE as complete.
 class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
  public:
-  explicit TestUserRegistrationMainExtra(const std::vector<AccountId>& users)
+  explicit TestUserRegistrationMainExtra(
+      const std::vector<LoginManagerMixin::TestUserInfo>& users)
       : users_(users) {}
   ~TestUserRegistrationMainExtra() override = default;
 
@@ -55,13 +56,18 @@ class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
       auto user_manager = std::make_unique<user_manager::FakeUserManager>();
       user_manager->set_local_state(g_browser_process->local_state());
       user_manager::ScopedUserManager scoper(std::move(user_manager));
-      for (const auto& account_id : users_) {
+      for (const auto& user : users_) {
         ListPrefUpdate users_pref(g_browser_process->local_state(),
                                   "LoggedInUsers");
         users_pref->AppendIfNotPresent(
-            std::make_unique<base::Value>(account_id.GetUserEmail()));
+            std::make_unique<base::Value>(user.account_id.GetUserEmail()));
 
-        user_manager::known_user::UpdateId(account_id);
+        DictionaryPrefUpdate user_type_update(g_browser_process->local_state(),
+                                              "UserType");
+        user_type_update->SetKey(user.account_id.GetAccountIdKey(),
+                                 base::Value(static_cast<int>(user.user_type)));
+
+        user_manager::known_user::UpdateId(user.account_id);
       }
     }
 
@@ -69,7 +75,7 @@ class TestUserRegistrationMainExtra : public ChromeBrowserMainExtraParts {
   }
 
  private:
-  const std::vector<AccountId> users_;
+  const std::vector<LoginManagerMixin::TestUserInfo> users_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserRegistrationMainExtra);
 };
@@ -117,21 +123,23 @@ class SessionStateWaiter : public session_manager::SessionManagerObserver {
 
 // static
 UserContext LoginManagerMixin::CreateDefaultUserContext(
-    const AccountId& account_id) {
-  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
-                           account_id);
+    const TestUserInfo& user_info) {
+  UserContext user_context(user_info.user_type, user_info.account_id);
   user_context.SetKey(Key("password"));
   return user_context;
 }
 
 LoginManagerMixin::LoginManagerMixin(
     InProcessBrowserTestMixinHost* host,
-    const std::vector<AccountId>& initial_users)
+    const std::vector<TestUserInfo>& initial_users)
     : InProcessBrowserTestMixin(host), initial_users_(initial_users) {}
 
 LoginManagerMixin::~LoginManagerMixin() = default;
 
 void LoginManagerMixin::SetUpCommandLine(base::CommandLine* command_line) {
+  if (skip_flags_setup_)
+    return;
+
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
 }

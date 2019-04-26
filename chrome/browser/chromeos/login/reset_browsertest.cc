@@ -94,9 +94,9 @@ class ResetTest : public MixinBasedInProcessBrowserTest {
   FakeUpdateEngineClient* update_engine_client_ = nullptr;
 
  private:
-  LoginManagerMixin login_manager_mixin_{
-      &mixin_host_,
-      {AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)}};
+  LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId)};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
   DISALLOW_COPY_AND_ASSIGN(ResetTest);
 };
 

@@ -157,8 +157,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       crostini_manager->MaybeUpgradeCrostini();
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
-      ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
       ConsumerStatusReportingServiceFactory::GetForBrowserContext(user_profile);
+      ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
     }
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()

@@ -34,10 +34,9 @@ class LoginUIShelfVisibilityTest : public MixinBasedInProcessBrowserTest {
   }
 
  private:
-  LoginManagerMixin login_manager_mixin_{
-      &mixin_host_,
-      {AccountId::FromUserEmailGaiaId(kExistingUserEmail,
-                                      kExistingUserGaiaId)}};
+  LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kExistingUserEmail, kExistingUserGaiaId)};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
   EmbeddedTestServerSetupMixin test_server_mixin_{&mixin_host_,
                                                   embedded_test_server()};
   FakeGaiaMixin fake_gaia_mixin_{&mixin_host_, embedded_test_server()};

@@ -134,6 +134,10 @@ class ScreenTimeController
   base::Optional<TimeLimitNotifier::LimitType> ConvertPolicyType(
       usage_time_limit::PolicyType policy_type);
 
+  // Initializes parent access service if it does not already exist. It requires
+  // LoginScreenClient to be created.
+  void InitializeParentAccessServiceIfNeeded();
+
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 

@@ -356,7 +356,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
     https_server_.StartAcceptingConnections();
 
     login_manager_.LoginAndWaitForActiveSession(
-        LoginManagerMixin::CreateDefaultUserContext(test_account_id_));
+        LoginManagerMixin::CreateDefaultUserContext(test_user_));
 
     assistant_settings_ = std::make_unique<FakeAssistantSettings>();
 
@@ -481,9 +481,9 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
 
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 
-  const AccountId test_account_id_ =
-      AccountId::FromUserEmailGaiaId(kTestUser, kTestUser);
-  LoginManagerMixin login_manager_{&mixin_host_, {test_account_id_}};
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kTestUser, kTestUser)};
+  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
 };
 
 class AssistantOptInFlowTestWithDisabledAssistant

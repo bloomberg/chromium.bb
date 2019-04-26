@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user_type.h"
 
 namespace chromeos {
 
@@ -24,12 +25,27 @@ class UserContext;
 // suitable for OOBE tests.
 class LoginManagerMixin : public InProcessBrowserTestMixin {
  public:
+  // Represents test user.
+  struct TestUserInfo {
+    // Creates test user with regular user type from the given |account_id|.
+    explicit TestUserInfo(const AccountId& account_id)
+        : account_id(account_id), user_type(user_manager::USER_TYPE_REGULAR) {}
+
+    // Creates test user with |user_type| from the given |account_id|.
+    TestUserInfo(const AccountId& account_id, user_manager::UserType user_type)
+        : account_id(account_id), user_type(user_type) {}
+
+    const AccountId account_id;
+    const user_manager::UserType user_type;
+  };
+
   // Convenience method for creating default UserContext for an account ID. The
   // result can be used with Login* methods below.
-  static UserContext CreateDefaultUserContext(const AccountId& account_id);
+  static UserContext CreateDefaultUserContext(const TestUserInfo& account_id);
 
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
-                    const std::vector<AccountId>& initial_users);
+                    const std::vector<TestUserInfo>& initial_users);
+
   ~LoginManagerMixin() override;
 
   // InProcessBrowserTestMixin:
@@ -59,8 +75,14 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Returns whether the newly logged in user is active when the method exits.
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
+  // Allows to skip setup of command line switches. It can be used to test
+  // session restart after test, or restart to apply per-session flags, where
+  // the session should start with a user logged in.
+  void set_skip_flags_setup(bool value) { skip_flags_setup_ = value; }
+
  private:
-  const std::vector<AccountId> initial_users_;
+  bool skip_flags_setup_ = false;
+  const std::vector<TestUserInfo> initial_users_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerMixin);
 };

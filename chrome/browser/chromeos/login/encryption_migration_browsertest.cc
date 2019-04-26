@@ -88,7 +88,7 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
  protected:
   void SetUpStubAuthenticatorAndAttemptLogin(bool has_incomplete_migration) {
     const UserContext user_context =
-        LoginManagerMixin::CreateDefaultUserContext(test_account_);
+        LoginManagerMixin::CreateDefaultUserContext(test_user_);
 
     auto authenticator_builder =
         std::make_unique<StubAuthenticatorBuilder>(user_context);
@@ -101,15 +101,18 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
   void WaitForActiveSession() { login_manager_.WaitForActiveSession(); }
 
   cryptohome::AccountIdentifier GetTestCryptohomeId() const {
-    return cryptohome::CreateAccountIdentifierFromAccountId(test_account_);
+    return cryptohome::CreateAccountIdentifierFromAccountId(
+        test_user_.account_id);
   }
 
   void SetUpEncryptionMigrationActionPolicy(
       arc::policy_util::EcryptfsMigrationAction action) {
     policy_builder_.payload().mutable_ecryptfsmigrationstrategy()->set_value(
         static_cast<int>(action));
-    policy_builder_.policy_data().set_username(test_account_.GetUserEmail());
-    policy_builder_.policy_data().set_gaia_id(test_account_.GetGaiaId());
+    policy_builder_.policy_data().set_username(
+        test_user_.account_id.GetUserEmail());
+    policy_builder_.policy_data().set_gaia_id(
+        test_user_.account_id.GetGaiaId());
     policy_builder_.Build();
 
     // The pre-login policy fetcher will first check the cached policy, and then
@@ -246,9 +249,9 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
 
   policy::UserPolicyBuilder policy_builder_;
 
-  AccountId test_account_ =
-      AccountId::FromUserEmailGaiaId("user@gmail.com", "user");
-  LoginManagerMixin login_manager_{&mixin_host_, {test_account_}};
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId("user@gmail.com", "user")};
+  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
 };
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
