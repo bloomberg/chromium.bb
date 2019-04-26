@@ -120,6 +120,48 @@
       <message desc="The description for Switch Access." name="IDS_SWITCH_ACCESS_DESCRIPTION">
         Control the device with just 1 or 2 switches.
       </message>
+      <message desc="The title of the Switch Access menu to select which action to perform on an element." name="IDS_SWITCH_ACCESS_MENU_TITLE">
+        Switch Access Menu
+      </message>
+      <message desc="The Switch Access action to perform the default action on the current element, similar to a click or tap. Should be short." name="IDS_SWITCH_ACCESS_SELECT">
+        Select
+      </message>
+      <message desc="The Switch Access action to open the onscreen keyboard and begin entering text in the selected text input element. Should be short." name="IDS_SWITCH_ACCESS_OPEN_KEYBOARD">
+        Keyboard
+      </message>
+      <message desc="The Switch Access action to increment the selected input element. Should be short." name="IDS_SWITCH_ACCESS_INCREMENT">
+        Increment
+      </message>
+      <message desc="The Switch Access action to decrement the selected input element. Should be short." name="IDS_SWITCH_ACCESS_DECREMENT">
+        Decrement
+      </message>
+      <message desc="The Switch Access action to scroll the selected element down. Should be short." name="IDS_SWITCH_ACCESS_SCROLL_DOWN">
+        Scroll down
+      </message>
+      <message desc="The Switch Access action to scroll the selected element up. Should be short." name="IDS_SWITCH_ACCESS_SCROLL_UP">
+        Scroll up
+      </message>
+      <message desc="The Switch Access action to scroll the selected element right. Should be short." name="IDS_SWITCH_ACCESS_SCROLL_RIGHT">
+        Scroll right
+      </message>
+      <message desc="The Switch Access action to scroll the selected element left. Should be short." name="IDS_SWITCH_ACCESS_SCROLL_LEFT">
+        Scroll left
+      </message>
+      <message desc="The Switch Access action to scroll the selected element logically forward (generally either down or right, depending on the context). Should be short." name="IDS_SWITCH_ACCESS_SCROLL_FORWARD">
+        Scroll forward
+      </message>
+      <message desc="The Switch Access action to scroll the selected element logically backward (generally either up or left, depending on the context). Should be short." name="IDS_SWITCH_ACCESS_SCROLL_BACKWARD">
+        Scroll backward
+      </message>
+      <message desc="The Switch Access action to speak to type in the selected text input element. Ideally the same as the name of the standalone Dictation feature (IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION). Should be short." name="IDS_SWITCH_ACCESS_DICTATION">
+        Dictation
+      </message>
+      <message desc="The Switch Access action to show the system context menu, as when a user right-clicks on the focused element. Should be short." name="IDS_SWITCH_ACCESS_SHOW_CONTEXT_MENU">
+        Context menu
+      </message>
+      <message desc="The Switch Access action to open the Switch Access settings page. Should be short." name="IDS_SWITCH_ACCESS_SETTINGS_ACTION">
+        Settings
+      </message>
     </messages>
   </release>
 </grit>
