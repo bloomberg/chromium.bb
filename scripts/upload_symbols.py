@@ -438,9 +438,12 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
-          return isinstance(exception, (requests.exceptions.RequestException,
-                                        urllib2.URLError,
-                                        httplib.HTTPException, socket.error))
+          if isinstance(exception, (requests.exceptions.RequestException,
+                                    urllib2.URLError,
+                                    httplib.HTTPException, socket.error)):
+            logging.info('Request failed, retrying: %s', exception)
+            return True
+          return False
 
         with cros_build_lib.TimedSection() as timer:
           retry_stats.RetryWithStats(
