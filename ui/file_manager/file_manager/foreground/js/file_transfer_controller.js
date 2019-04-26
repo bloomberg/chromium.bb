@@ -883,7 +883,13 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
         this.fileOperationManager_.paste(
             entries, destinationEntry, toMove, taskId);
         this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
-
+      })
+      .catch(error => {
+        if (error !== 'ABORT') {
+          console.error(error.stack ? error.stack : error);
+        }
+      })
+      .finally(() => {
         // Publish source not found error item.
         for (let i = 0; i < failureUrls.length; i++) {
           const fileName =
@@ -898,11 +904,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
           item.state = ProgressItemState.ERROR;
           this.progressCenter_.updateItem(item);
           this.sourceNotFoundErrorCount_++;
-        }
-      })
-      .catch(error => {
-        if (error !== 'ABORT') {
-          console.error(error.stack ? error.stack : error);
         }
       });
   return toMove ? 'move' : 'copy';

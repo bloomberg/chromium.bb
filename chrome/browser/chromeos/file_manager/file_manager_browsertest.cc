@@ -656,7 +656,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferBetweenTeamDrives").EnableDriveFs(),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndHover"),
-        TestCase("transferFromDownloadsToDownloads")));
+        TestCase("transferFromDownloadsToDownloads"),
+        TestCase("transferDeletedFile")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
