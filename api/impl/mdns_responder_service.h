@@ -55,6 +55,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   void SuspendListener() override;
   void ResumeListener() override;
   void SearchNow(ServiceListener::State from) override;
+  void RunTasksListener() override;
 
   // ServicePublisherImpl::Delegate overrides.
   void StartPublisher() override;
@@ -62,6 +63,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   void StopPublisher() override;
   void SuspendPublisher() override;
   void ResumePublisher() override;
+  void RunTasksPublisher() override;
 
  private:
   // NOTE: service_instance implicit in map key.

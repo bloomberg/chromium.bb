@@ -4,8 +4,6 @@
 
 #include "api/public/network_service_manager.h"
 
-#include "api/impl/internal_services.h"
-
 namespace {
 
 openscreen::NetworkServiceManager* g_network_service_manager_instance = nullptr;
@@ -47,7 +45,10 @@ void NetworkServiceManager::Dispose() {
 }
 
 void NetworkServiceManager::RunEventLoopOnce() {
-  InternalServices::RunEventLoopOnce();
+  if (mdns_listener_)
+    mdns_listener_->RunTasks();
+  if (mdns_publisher_)
+    mdns_publisher_->RunTasks();
   if (connection_client_)
     connection_client_->RunTasks();
   if (connection_server_)

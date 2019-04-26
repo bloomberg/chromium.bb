@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "api/impl/internal_services.h"
 #include "base/error.h"
 #include "platform/api/logging.h"
 
@@ -106,6 +107,10 @@ void MdnsResponderService::SearchNow(ServiceListener::State from) {
   ServiceListenerImpl::Delegate::SetState(from);
 }
 
+void MdnsResponderService::RunTasksListener() {
+  InternalServices::RunEventLoopOnce();
+}
+
 void MdnsResponderService::StartPublisher() {
   if (!mdns_responder_)
     mdns_responder_ = mdns_responder_factory_->Create();
@@ -138,6 +143,10 @@ void MdnsResponderService::SuspendPublisher() {
 void MdnsResponderService::ResumePublisher() {
   StartService();
   ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kRunning);
+}
+
+void MdnsResponderService::RunTasksPublisher() {
+  InternalServices::RunEventLoopOnce();
 }
 
 bool MdnsResponderService::NetworkScopedDomainNameComparator::operator()(

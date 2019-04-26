@@ -26,6 +26,7 @@ class ServicePublisherImpl final : public ServicePublisher,
     virtual void StopPublisher() = 0;
     virtual void SuspendPublisher() = 0;
     virtual void ResumePublisher() = 0;
+    virtual void RunTasksPublisher() = 0;
 
    protected:
     void SetState(State state) { publisher_->SetState(state); }
@@ -45,6 +46,8 @@ class ServicePublisherImpl final : public ServicePublisher,
   bool Stop() override;
   bool Suspend() override;
   bool Resume() override;
+
+  void RunTasks() override;
 
  private:
   // Called by |delegate_| to transition the state machine (except kStarting and

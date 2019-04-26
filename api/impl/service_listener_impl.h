@@ -31,6 +31,7 @@ class ServiceListenerImpl final : public ServiceListener,
     virtual void SuspendListener() = 0;
     virtual void ResumeListener() = 0;
     virtual void SearchNow(State from) = 0;
+    virtual void RunTasksListener() = 0;
 
    protected:
     void SetState(State state) { listener_->SetState(state); }
@@ -58,6 +59,8 @@ class ServiceListenerImpl final : public ServiceListener,
   bool Suspend() override;
   bool Resume() override;
   bool SearchNow() override;
+
+  void RunTasks() override;
 
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

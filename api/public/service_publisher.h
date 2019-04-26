@@ -134,6 +134,8 @@ class ServicePublisher {
   // Resumes publishing.  Returns true if state() == kSuspended.
   virtual bool Resume() = 0;
 
+  virtual void RunTasks() = 0;
+
   // Returns the current state of the publisher.
   State state() const { return state_; }
 

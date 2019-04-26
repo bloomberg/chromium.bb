@@ -40,6 +40,7 @@ class MockMdnsDelegate final : public ServicePublisherImpl::Delegate {
   MOCK_METHOD0(StopPublisher, void());
   MOCK_METHOD0(SuspendPublisher, void());
   MOCK_METHOD0(ResumePublisher, void());
+  MOCK_METHOD0(RunTasksPublisher, void());
 };
 
 class ServicePublisherImplTest : public ::testing::Test {

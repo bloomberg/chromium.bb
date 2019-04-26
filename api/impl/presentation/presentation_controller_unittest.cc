@@ -37,6 +37,7 @@ class MockServiceListenerDelegate final : public ServiceListenerImpl::Delegate {
   MOCK_METHOD0(SuspendListener, void());
   MOCK_METHOD0(ResumeListener, void());
   MOCK_METHOD1(SearchNow, void(ServiceListener::State from));
+  MOCK_METHOD0(RunTasksListener, void());
 };
 
 class MockReceiverObserver final : public ReceiverObserver {

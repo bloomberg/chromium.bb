@@ -50,6 +50,7 @@ class MockMdnsDelegate final : public ServiceListenerImpl::Delegate {
   MOCK_METHOD0(SuspendListener, void());
   MOCK_METHOD0(ResumeListener, void());
   MOCK_METHOD1(SearchNow, void(State));
+  MOCK_METHOD0(RunTasksListener, void());
 };
 
 class ServiceListenerImplTest : public ::testing::Test {
