@@ -45,7 +45,7 @@ message SharedQuadState {
   // Will be normalized to a float in [0,1].
   required fixed32 opacity = 7 [default = 0xffffffff];
 
-  // TODO(celineo): add fuzzable SkBlendMode, crbug.com/923088
+  // TODO(kylechar): add fuzzable SkBlendMode, crbug.com/923088
 
   required sint32 sorting_context_id = 9;
 }
@@ -63,7 +63,7 @@ message TileDrawQuad {
   required fixed32 texture_color = 2;
   required Size texture_size = 3;
 
-  // TODO (celineo): enable fuzzing gfx::RectF
+  // TODO(kylechar): enable fuzzing gfx::RectF
   required Rect tex_coord_rect = 4;
 
   required bool swizzle_contents = 5;

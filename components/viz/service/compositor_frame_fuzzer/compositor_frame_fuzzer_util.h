@@ -26,6 +26,9 @@ struct FuzzedBitmap {
 
   SharedBitmapId id;
   gfx::Size size;
+
+  // TODO(kylechar): base::SharedMemory is deprecated, change to
+  // base::WritableSharedMemoryRegion.
   std::unique_ptr<base::SharedMemory> shared_memory;
 
   DISALLOW_COPY(FuzzedBitmap);
