@@ -38,10 +38,10 @@ String MediaControlsResourceLoader::GetMediaControlsCSS() const {
 }
 
 String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {
-  if (RuntimeEnabledFeatures::ModernMediaControlsEnabled())
-    return String();
   return UncompressResourceAsString(
-      IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS);
+      RuntimeEnabledFeatures::ModernMediaControlsEnabled()
+          ? IDR_UASTYLE_MODERN_MEDIA_CONTROLS_ANDROID_CSS
+          : IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS);
 }
 
 // static

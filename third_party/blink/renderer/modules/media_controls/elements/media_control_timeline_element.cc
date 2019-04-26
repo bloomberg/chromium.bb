@@ -220,9 +220,9 @@ void MediaControlTimelineElement::RenderBarSegments() {
   // Convert 6px into ratio respect to progress bar width since
   // current_position is range from 0 to 1
   double width = TrackWidth() / ZoomFactor();
-  if (width != 0) {
+  if (width != 0 && current_position != 0) {
     double offset = kThumbRadius / width;
-    current_position += offset - 2 * offset * current_position;
+    current_position += offset - (2 * offset * current_position);
   }
 
   MediaControlSliderElement::Position before_segment(0, 0);
@@ -246,9 +246,11 @@ void MediaControlTimelineElement::RenderBarSegments() {
     double end_position = end / duration;
 
     if (MediaControlsImpl::IsModern()) {
-      // Draw dark grey highlight to show what we have loaded.
-      after_segment.left = current_position;
-      after_segment.width = end_position - current_position;
+      // Draw dark grey highlight to show what we have loaded. This just uses a
+      // width since it just starts at zero just like the before segment.
+      // We use |std::max()| here because |current_position| has an offset added
+      // to it and can therefore be greater than |end_position| in some cases.
+      after_segment.width = std::max(current_position, end_position);
     } else {
       // Draw highlight to show what we have played.
       if (current_position > start_position) {

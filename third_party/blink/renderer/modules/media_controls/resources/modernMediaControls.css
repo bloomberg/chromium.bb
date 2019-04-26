@@ -641,11 +641,22 @@ input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-
   height: 4px;
 }
 
-input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
-input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
+  transition: opacity 0.3s;
+  opacity: 0;
   width: 12px;
   height: 12px;
   margin-top: -4px;
+}
+
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:hover::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-timeline" i]:hover::-webkit-slider-thumb,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:hover::-webkit-slider-thumb,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-volume-slider" i]:hover::-webkit-slider-thumb {
+  opacity: 1;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
@@ -1394,6 +1405,8 @@ video::-webkit-media-controls.test-mode div[pseudo="-internal-media-controls-loa
 /* Prevent transitions. */
 audio::-webkit-media-controls.test-mode *,
 video::-webkit-media-controls.test-mode *,
+video::-webkit-media-controls.test-mode input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
+audio::-webkit-media-controls.test-mode input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
 video::-webkit-media-controls.test-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   transition: none !important;
 }
