@@ -189,6 +189,9 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
     WebRuntimeFeatures::EnableWebXRHitTest(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrPlaneDetection))
+    WebRuntimeFeatures::EnableWebXRPlaneDetection(true);
+
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::EnablePresentationAPI(false);
 

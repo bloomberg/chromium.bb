@@ -1921,7 +1921,7 @@
   {
     "name": "enable-webvr",
     "owners": [ "//third_party/blink/renderer/modules/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-zero-copy",
@@ -2341,7 +2341,7 @@
   {
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "offline-indicator-always-http-probe",
@@ -2601,7 +2601,7 @@
   {
     "name": "openvr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "out-of-blink-cors",
@@ -3085,22 +3085,27 @@
   {
     "name": "webxr-hit-test",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "webxr-orientation-sensor-device",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
+  },
+  {
+    "name": "webxr-plane-detection",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "windows-mixed-reality",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "xr-sandbox",
     "owners": [ "//chrome/services/isolated_xr_device/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-streamlined-usb-printer-setup",

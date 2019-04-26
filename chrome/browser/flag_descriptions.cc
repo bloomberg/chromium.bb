@@ -2156,6 +2156,10 @@ const char kWebXrHitTestName[] = "WebXR Hit Test";
 const char kWebXrHitTestDescription[] =
     "Enables access to raycasting against estimated XR scene geometry.";
 
+const char kWebXrPlaneDetectionName[] = "WebXR Plane Detection";
+const char kWebXrPlaneDetectionDescription[] =
+    "Enables access to planes detected in the user's environment.";
+
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";

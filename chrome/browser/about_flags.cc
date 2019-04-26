@@ -1813,6 +1813,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
+    {"webxr-plane-detection", flag_descriptions::kWebXrPlaneDetectionName,
+     flag_descriptions::kWebXrPlaneDetectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
 #if BUILDFLAG(ENABLE_VR)
     {"webxr-orientation-sensor-device",
      flag_descriptions::kWebXrOrientationSensorDeviceName,

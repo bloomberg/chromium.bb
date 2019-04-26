@@ -308,7 +308,7 @@ const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // History navigation in response to horizontal overscroll (aka gesture-nav).
-const base::Feature kOverscrollHistoryNavigation{
+const base::Feature kOverscrollHistoryNavigation {
   "OverscrollHistoryNavigation",
 #if defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -676,6 +676,10 @@ const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables access to planes detected in the user's environment.
+const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Wipe corrupt v2 IndexedDB databases.
 const base::Feature kWipeCorruptV2IDBDatabases{
