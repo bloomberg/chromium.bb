@@ -294,6 +294,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
     profile.set_language_code(*address->language_code);
 
   if (use_existing_profile) {
+    profile.set_origin(kSettingsOrigin);
     personal_data->UpdateProfile(profile);
   } else {
     personal_data->AddProfile(profile);
