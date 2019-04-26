@@ -154,9 +154,7 @@ void ChromiumHttpConnection::Start() {
       resource_request->method = "HEAD";
       break;
   }
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->allow_credentials = false;
 
   const bool chunked_upload =
       !chunked_upload_content_type_.empty() && method_ == Method::POST;

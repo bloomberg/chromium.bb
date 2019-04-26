@@ -120,9 +120,7 @@ TEST_F(CorsURLLoaderFactoryTest, DestructionOrder) {
   GURL url("http://localhost");
   request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.allow_credentials = false;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = url;
   request.request_initiator = url::Origin::Create(url);

@@ -86,10 +86,8 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->fetch_credentials_mode =
       mojom::FetchCredentialsMode::kOmit;
+  preflight_request->allow_credentials = false;
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
-  preflight_request->load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   preflight_request->fetch_window_id = request.fetch_window_id;
   preflight_request->render_frame_id = request.render_frame_id;
 

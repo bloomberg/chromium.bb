@@ -35,6 +35,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   ~ResourceRequest();
 
   bool EqualsForTesting(const ResourceRequest& request) const;
+  bool SendsCookies() const;
+  bool SavesCookies() const;
 
   std::string method = "GET";
   GURL url;

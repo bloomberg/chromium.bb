@@ -1039,8 +1039,7 @@ Response InterceptionJob::ProcessResponseOverride(
 
 void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
                                         base::OnceClosure callback) {
-  if (create_loader_params_->request.load_flags &
-      net::LOAD_DO_NOT_SAVE_COOKIES) {
+  if (!create_loader_params_->request.SavesCookies()) {
     std::move(callback).Run();
     return;
   }
@@ -1186,8 +1185,7 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 
 void InterceptionJob::FetchCookies(
     network::mojom::CookieManager::GetCookieListCallback callback) {
-  if (create_loader_params_->request.load_flags &
-      net::LOAD_DO_NOT_SEND_COOKIES) {
+  if (!create_loader_params_->request.SendsCookies()) {
     std::move(callback).Run({}, {});
     return;
   }

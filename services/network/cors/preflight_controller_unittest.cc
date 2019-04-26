@@ -90,9 +90,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
 
   EXPECT_EQ(mojom::FetchCredentialsMode::kOmit,
             preflight->fetch_credentials_mode);
-  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
-  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  EXPECT_FALSE(preflight->allow_credentials);
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest,

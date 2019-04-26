@@ -80,12 +80,9 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
 
   // Check to make sure the request is pending with proper flags, and
   // provide a response.
-  int pending_load_flags = 0;
-  EXPECT_TRUE(
-      test_url_loader_factory_.IsPending(kImageURL, &pending_load_flags));
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
+  EXPECT_FALSE(pending_request->allow_credentials);
 
   network::ResourceResponseHead head;
   std::string raw_header =
@@ -116,12 +113,9 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
 
   // Check to make sure the request is pending with proper flags, and
   // provide a response.
-  int pending_load_flags = 0;
-  EXPECT_TRUE(
-      test_url_loader_factory_.IsPending(kImageURL, &pending_load_flags));
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
+  EXPECT_TRUE(pending_request->allow_credentials);
 
   network::ResourceResponseHead head;
   std::string raw_header =

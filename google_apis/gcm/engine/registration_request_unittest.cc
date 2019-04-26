@@ -459,10 +459,11 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataAndURL) {
   request_->Start();
 
   // Verify that the no-cookie flag is set.
-  int flags = 0;
-  ASSERT_TRUE(test_url_loader_factory()->IsPending(kRegistrationURL, &flags));
-  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  const network::ResourceRequest* pending_request;
+  ASSERT_TRUE(
+      test_url_loader_factory()->IsPending(kRegistrationURL, &pending_request));
+  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_TRUE(pending_request->load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 
   // Verify that authorization header was put together properly.
   const net::HttpRequestHeaders* headers =

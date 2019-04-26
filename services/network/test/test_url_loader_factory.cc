@@ -72,12 +72,12 @@ void TestURLLoaderFactory::AddResponse(const std::string& url,
 }
 
 bool TestURLLoaderFactory::IsPending(const std::string& url,
-                                     int* load_flags_out) {
+                                     const ResourceRequest** request_out) {
   base::RunLoop().RunUntilIdle();
   for (const auto& candidate : pending_requests_) {
     if (candidate.request.url == url) {
-      if (load_flags_out)
-        *load_flags_out = candidate.request.load_flags;
+      if (request_out)
+        *request_out = &candidate.request;
       return !candidate.client.encountered_error();
     }
   }

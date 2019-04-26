@@ -171,9 +171,7 @@ class CorsURLLoaderTest : public testing::Test {
     ResourceRequest request;
     request.fetch_request_mode = fetch_request_mode;
     request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-    request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    request.allow_credentials = false;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
     request.request_initiator = url::Origin::Create(origin);
@@ -1007,9 +1005,7 @@ TEST_F(CorsURLLoaderTest,
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  original_request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  original_request.allow_credentials = false;
   original_request.method = "PATCH";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);
@@ -1080,9 +1076,7 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.allow_credentials = false;
   request.method = "POST";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -1165,9 +1159,7 @@ TEST_F(CorsURLLoaderTest, FollowErrorRedirect) {
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  original_request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  original_request.allow_credentials = false;
   original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kError;
   original_request.method = "GET";
   original_request.url = url;
@@ -1332,9 +1324,7 @@ TEST_F(CorsURLLoaderTest, 304ForSimpleRevalidation) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -1364,9 +1354,7 @@ TEST_F(CorsURLLoaderTest, 304ForSimpleGet) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -1392,9 +1380,7 @@ TEST_F(CorsURLLoaderTest, 200ForSimpleRevalidation) {
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -1424,9 +1410,7 @@ TEST_F(CorsURLLoaderTest, RevalidationAndPreflight) {
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  original_request.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  original_request.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  original_request.allow_credentials = false;
   original_request.method = "GET";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);

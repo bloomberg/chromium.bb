@@ -507,9 +507,7 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
 
   resource_request->url = server_url;
 
-  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->allow_credentials = false;
 
   // Put API key in request's header if a key exists, and the endpoint is
   // trusted by Google.

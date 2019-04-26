@@ -288,9 +288,7 @@ void OriginPolicyThrottle::FetchPolicy(const GURL& url,
       std::make_unique<network::ResourceRequest>();
   policy_request->url = url;
   policy_request->request_initiator = url::Origin::Create(url);
-  policy_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                               net::LOAD_DO_NOT_SAVE_COOKIES |
-                               net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  policy_request->allow_credentials = false;
   url_loader_ = network::SimpleURLLoader::Create(std::move(policy_request),
                                                  traffic_annotation);
   url_loader_->SetOnRedirectCallback(std::move(redirect));

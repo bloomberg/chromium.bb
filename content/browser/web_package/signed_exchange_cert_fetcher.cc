@@ -115,9 +115,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   resource_request_->resource_type = ResourceType::kSubResource;
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
-  resource_request_->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                  net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->allow_credentials = false;
   resource_request_->headers.SetHeader(network::kAcceptHeader,
                                        kCertChainMimeType);
   if (force_fetch) {

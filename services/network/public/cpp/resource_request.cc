@@ -4,6 +4,8 @@
 
 #include "services/network/public/cpp/resource_request.h"
 
+#include "net/base/load_flags.h"
+
 namespace network {
 
 ResourceRequest::ResourceRequest() {}
@@ -66,6 +68,14 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.custom_proxy_use_alternate_proxy_list &&
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id;
+}
+
+bool ResourceRequest::SendsCookies() const {
+  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+}
+
+bool ResourceRequest::SavesCookies() const {
+  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 }
 
 }  // namespace network

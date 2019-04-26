@@ -745,9 +745,8 @@ class PpdProviderImpl : public PpdProvider {
       auto resource_request = std::make_unique<network::ResourceRequest>();
       resource_request->url = url;
       resource_request->load_flags =
-          net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-          net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
-          net::LOAD_DO_NOT_SEND_AUTH_DATA;
+          net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+      resource_request->allow_credentials = false;
 
       // TODO(luum): confirm correct traffic annotation
       fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),

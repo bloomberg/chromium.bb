@@ -420,9 +420,7 @@ void CorsURLLoader::StartRequest() {
 
   if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
                                 response_tainting_)) {
-    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    request_.allow_credentials = false;
   }
 
   // Note that even when |NeedsPreflight(request_)| holds we don't make a

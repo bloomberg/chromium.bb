@@ -412,12 +412,14 @@ URLLoader::URLLoader(
 
   url_request_->SetLoadFlags(request.load_flags);
 
-  // Use allow credentials unless credential load flags have been explicitly
-  // set.
+  // net::LOAD_DO_NOT_* are in the process of being converted to
+  // allow_credentials. See https://crbug.com/799935.
   if (!request.allow_credentials) {
-    DCHECK((request.load_flags &
-            (net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
-             net::LOAD_DO_NOT_SEND_AUTH_DATA)) == 0);
+    const auto creds_mask = net::LOAD_DO_NOT_SAVE_COOKIES |
+                            net::LOAD_DO_NOT_SEND_COOKIES |
+                            net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    DCHECK((request.load_flags & creds_mask) == 0 ||
+           (request.load_flags & creds_mask) == creds_mask);
     url_request_->set_allow_credentials(false);
   }
 
