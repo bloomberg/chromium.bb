@@ -264,8 +264,6 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
     DCHECK(wifi_dict);
     mojo->wifi = TranslateONCWifi(wifi_dict);
     mojo->tethering_client_state = GetWifiTetheringClientState(wifi_dict);
-  } else if (type == onc::network_type::kWimax) {
-    mojo->type = arc::mojom::NetworkType::WIMAX;
   } else {
     NOTREACHED() << "Unknown network type: " << type;
   }
