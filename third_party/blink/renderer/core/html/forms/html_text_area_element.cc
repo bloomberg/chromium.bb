@@ -433,8 +433,7 @@ void HTMLTextAreaElement::SetValueCommon(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kControlValue));
   SetNeedsValidityCheck();
-  if (IsFinishedParsingChildren() &&
-      selection == TextControlSetValueSelection::kSetSelectionToEnd) {
+  if (selection == TextControlSetValueSelection::kSetSelectionToEnd) {
     // Set the caret to the end of the text value except for initialize.
     unsigned end_of_string = value_.length();
     SetSelectionRange(end_of_string, end_of_string);
