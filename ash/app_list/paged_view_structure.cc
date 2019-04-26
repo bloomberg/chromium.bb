@@ -23,19 +23,16 @@ PagedViewStructure::PagedViewStructure(const PagedViewStructure& other) =
 PagedViewStructure::~PagedViewStructure() = default;
 
 void PagedViewStructure::LoadFromMetadata() {
-  auto* view_model = apps_grid_view_->view_model();
-  const auto* item_list = apps_grid_view_->item_list_;
   int model_index = 0;
-
   pages_.clear();
   pages_.emplace_back();
-  for (size_t i = 0; i < item_list->item_count(); ++i) {
-    const auto* item = item_list->item_at(i);
-    auto* current_page = &pages_.back();
+
+  for (size_t i = 0; i < apps_grid_view_->item_list_->item_count(); ++i) {
+    const auto* item = apps_grid_view_->item_list_->item_at(i);
     if (item->is_page_break()) {
       // Create a new page if a "page break" item is detected and current page
       // is not empty. Otherwise, ignore the "page break" item.
-      if (!current_page->empty())
+      if (!pages_.back().empty())
         pages_.emplace_back();
       continue;
     }
@@ -43,17 +40,16 @@ void PagedViewStructure::LoadFromMetadata() {
     // Create a new page if the current page is full.
     const size_t current_page_max_items =
         apps_grid_view_->TilesPerPage(pages_.size() - 1);
-    if (current_page->size() == current_page_max_items) {
+    if (pages_.back().size() == current_page_max_items)
       pages_.emplace_back();
-      current_page = &pages_.back();
-    }
 
-    current_page->emplace_back(view_model->view_at(model_index++));
+    pages_.back().emplace_back(
+        apps_grid_view_->view_model()->view_at(model_index++));
   }
 
   // Remove trailing empty page if exist.
   if (pages_.back().empty())
-    pages_.erase(pages_.end() - 1);
+    pages_.pop_back();
 }
 
 void PagedViewStructure::SaveToMetadata() {
