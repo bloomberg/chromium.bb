@@ -83,8 +83,7 @@ IntentConfigHelper::IntentConfigHelper(std::unique_ptr<Delegate> delegate)
     : ready_(false) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           [](std::unique_ptr<Delegate> read_config_delegate) {
             return read_config_delegate->GetJsonConfig();
