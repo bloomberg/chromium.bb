@@ -720,11 +720,10 @@ def CMDupdate_bootstrap(parser, args):
     return 1
 
   parser.add_option('--prune', action='store_true',
-                    help='Prune all other cached zipballs of the same repo.')
+                    help='Prune all other cached bundles of the same repo.')
 
   # First, we need to ensure the cache is populated.
   populate_args = args[:]
-  populate_args.append('--no-bootstrap')
   CMDpopulate(parser, populate_args)
 
   # Get the repo directory.
