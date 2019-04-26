@@ -75,7 +75,14 @@ bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
   // target rect; it's not helpful to know that the portion of the target that
   // is clipped is also occluded.
   HitTestResult result(target->HitTestForOcclusion(rect));
-  return (!result.InnerNode() || result.InnerNode() == target->GetNode());
+  Node* hit_node = result.InnerNode();
+  if (!hit_node || hit_node == target->GetNode())
+    return true;
+  // TODO(layout-dev): This IsDescendantOf tree walk could be optimized by
+  // stopping when hit_node's containing LayoutBlockFlow is reached.
+  if (target->IsLayoutInline())
+    return hit_node->IsDescendantOf(target->GetNode());
+  return false;
 }
 
 static const unsigned kConstructorFlagsMask =
