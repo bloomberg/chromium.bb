@@ -102,6 +102,8 @@ mojom::StackMode GetStackModeForStartup() {
   } else {
     stack_mode = base::GetFieldTrialParamValueByFeature(
         kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureStackMode);
+    if (stack_mode.empty())
+      stack_mode = kMemlogStackModeNative;
   }
 
   return ConvertStringToStackMode(stack_mode);
