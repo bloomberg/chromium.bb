@@ -35,7 +35,8 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
       base::FilePath(FILE_PATH_LITERAL(kTestPageDirectory)));
   XCTAssertTrue(self.testServer->Start());
 
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kTestPageUrl)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kTestPageUrl)]);
 }
 
 // Tests the click action, by clicking a button that populates the web page,

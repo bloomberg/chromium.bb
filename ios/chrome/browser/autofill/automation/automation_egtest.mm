@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 
 #include "base/guid.h"
@@ -286,7 +287,7 @@ static const int kRecipeRetryLimit = 5;
 - (bool)runActionsOnce {
   @try {
     // Load the initial page of the recipe.
-    [ChromeEarlGrey loadURL:startUrl];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:startUrl]);
 
     for (AutomationAction* action in actions_) {
       CHROME_EG_ASSERT_NO_ERROR([action execute]);

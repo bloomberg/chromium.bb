@@ -73,7 +73,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_no_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   // Make sure the correct events were logged.
@@ -129,7 +129,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_bobpay_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [self waitForWebViewContainingTexts:{"rejected"}];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -193,8 +193,9 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_multiple_show_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"showAgain"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"showAgain"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   // Trying to show the same request twice is not considered a concurrent
@@ -267,7 +268,7 @@ using payments::JourneyLogger;
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -340,7 +341,7 @@ using payments::JourneyLogger;
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -417,7 +418,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_contact_details_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -491,7 +492,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_contact_details_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -571,7 +572,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -646,7 +647,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -719,7 +720,8 @@ using payments::JourneyLogger;
   chrome_test_util::HistogramTester histogramTester;
 
   [self loadTestPage:"payment_request_can_make_payment_metrics_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"queryNoShow"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"queryNoShow"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -765,7 +767,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -816,7 +818,7 @@ using payments::JourneyLogger;
   [self addProfiles];  // The user has no form of payment on file.
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -868,7 +870,7 @@ using payments::JourneyLogger;
   [self addCard2];  // AMEX is not supported by the merchant.
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];

@@ -14,6 +14,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -89,7 +90,8 @@ id<GREYMatcher> ShareMenuCollectionView() {
   web::test::SetUpHttpServer(std::move(provider));
 
   // Open a page with an error.
-  [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()]);
 
   // Verify that you can share, but that the Print action is not available.
   [ChromeEarlGreyUI openShareMenu];
@@ -113,7 +115,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
 - (void)testActivityServiceControllerIsDisabled {
   // Open an un-shareable page.
   GURL kURL("chrome://version");
-  [ChromeEarlGrey loadURL:kURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:kURL]);
   // Verify that the share button is disabled.
   id<GREYMatcher> share_button = chrome_test_util::ShareButton();
   [[EarlGrey selectElementWithMatcher:share_button]
@@ -133,7 +135,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Open page and open the share menu.
-  [ChromeEarlGrey loadURL:url];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:url]);
   [ChromeEarlGreyUI openShareMenu];
 
   // Verify that the share menu is up and contains a Copy action.

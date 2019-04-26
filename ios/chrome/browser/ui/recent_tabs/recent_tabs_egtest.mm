@@ -21,6 +21,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
@@ -44,7 +45,7 @@ NSString* const kTitleOfTestPage = @"TestPageTitle";
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
   if (chrome_test_util::GetMainTabCount() == 0)
-    [ChromeEarlGrey openNewTab];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
@@ -68,7 +69,7 @@ id<GREYMatcher> TitleOfTestPage() {
 @implementation RecentTabsTestCase
 
 - (void)setUp {
-  [ChromeEarlGrey clearBrowsingHistory];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [super setUp];
   web::test::SetUpSimpleHttpServer(std::map<GURL, std::string>{{
       web::test::HttpServer::MakeUrl(kURLOfTestPage),
@@ -93,8 +94,9 @@ id<GREYMatcher> TitleOfTestPage() {
   const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
 
   // Open the test page in a new tab.
-  [ChromeEarlGrey loadURL:testPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"hello"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"hello"]);
 
   // Open the Recent Tabs panel, check that the test page is not
   // present.

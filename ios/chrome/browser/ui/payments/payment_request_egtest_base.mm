@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 
@@ -21,6 +22,7 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -129,7 +131,8 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 - (void)waitForWebViewContainingTexts:(const std::vector<std::string>&)texts {
   for (const std::string& text : texts)
-    [ChromeEarlGrey waitForWebViewContainingText:text];
+    CHROME_EG_ASSERT_NO_ERROR(
+        [ChromeEarlGrey waitForWebViewContainingText:text]);
 }
 
 - (autofill::PersonalDataManager*)personalDataManager {
@@ -139,7 +142,8 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 - (void)loadTestPage:(const std::string&)page {
   std::string fullPath = base::StringPrintf(
       "https://components/test/data/payments/%s", page.c_str());
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)]);
 }
 
 - (void)payWithCreditCardUsingCVC:(NSString*)cvc {

@@ -18,6 +18,7 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/scoped_block_popups_pref.h"
@@ -132,14 +133,14 @@ class ScopedBlockPopupsException {
 
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW,
                                    GetOriginalBrowserState());
-  [ChromeEarlGrey loadURL:blockPopupsURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:blockPopupsURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
   // Request popup and make sure the popup opened in a new tab.
   NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // No infobar should be displayed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -163,8 +164,8 @@ class ScopedBlockPopupsException {
 
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK,
                                    GetOriginalBrowserState());
-  [ChromeEarlGrey loadURL:blockPopupsURL];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:blockPopupsURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
   // Request popup, then make sure it was blocked and an infobar was displayed.
   // The window.open() call is run via async JS, so the infobar may not open
@@ -185,7 +186,7 @@ class ScopedBlockPopupsException {
                                     error:&error];
                     return error == nil;
                   }] waitWithTimeout:4.0];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 }
 
 // Tests that the "exceptions" section on the settings page is hidden and

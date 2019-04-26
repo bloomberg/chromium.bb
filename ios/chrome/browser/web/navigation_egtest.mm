@@ -11,6 +11,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
@@ -156,16 +157,19 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
       self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:windowHistoryURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:windowHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 
   // Tap on the window.history.go() button.  This will clear |kOnLoadText|, so
   // the subsequent check for |kOnLoadText| will only pass if a reload has
   // occurred.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoNoParameterID];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:kGoNoParameterID]);
 
   // Verify that the onload text is reset.
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 }
 
 // Tests reloading the current page via history.go(0).
@@ -174,16 +178,18 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
       self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:windowHistoryURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:windowHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 
   // Tap on the window.history.go() button.  This will clear |kOnLoadText|, so
   // the subsequent check for |kOnLoadText| will only pass if a reload has
   // occurred.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoZeroID];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:kGoZeroID]);
 
   // Verify that the onload text is reset.
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 }
 
 // Tests that calling window.history.go() with an offset that is out of bounds
@@ -193,20 +199,24 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
       self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:windowHistoryURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:windowHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 
   // Tap on the window.history.go(2) button.  This will clear all div text, so
   // the subsequent check for |kNoOpText| will only pass if no navigations have
   // occurred.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoTwoID];
-  [ChromeEarlGrey waitForWebViewContainingText:kNoOpText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:kGoTwoID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kNoOpText]);
 
   // Tap on the window.history.go(-2) button.  This will clear all div text, so
   // the subsequent check for |kNoOpText| will only pass if no navigations have
   // occurred.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID];
-  [ChromeEarlGrey waitForWebViewContainingText:kNoOpText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kNoOpText]);
 }
 
 // Tests going back and forward via history.go().
@@ -218,21 +228,25 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   const GURL fourthURL = self.testServer->GetURL("/history.html");
 
   // Load 4 pages.
-  [ChromeEarlGrey loadURL:firstURL];
-  [ChromeEarlGrey loadURL:secondURL];
-  [ChromeEarlGrey loadURL:thirdURL];
-  [ChromeEarlGrey loadURL:fourthURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"onload"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:secondURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:thirdURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:fourthURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"onload"]);
 
   // Tap button to go back 3 pages.
-  [ChromeEarlGrey tapWebViewElementWithID:@"goBack3"];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"goBack3"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap button to go forward 2 pages.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoTwoID];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:kGoTwoID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(thirdURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -244,20 +258,24 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
       self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:windowHistoryURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:windowHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 
   const GURL sampleURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:sampleURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:sampleURL]);
 
-  [ChromeEarlGrey loadURL:windowHistoryURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:windowHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 
   // Tap the window.history.go(-2) button.  This will clear the current page's
   // |kOnLoadText|, so the subsequent check will only pass if another load
   // occurs.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
 }
 
 #pragma mark window.history.[back/forward] operations
@@ -267,15 +285,16 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Navigate to a URL.
   const GURL firstURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:firstURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstURL]);
 
   // Navigate to an HTML page with a back button.
   const GURL secondURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:secondURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:secondURL]);
 
   // Tap the back button in the HTML and verify the first URL is loaded.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoBackID];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:kGoBackID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -291,22 +310,25 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Navigate to an HTML page with a forward button.
   const GURL firstURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:firstURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstURL]);
 
   // Navigate to some other page.
   const GURL secondURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:secondURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:secondURL]);
 
   // Tap the back button in the toolbar and verify the page with forward button
   // is loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the HTML and verify the second URL is loaded.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -322,19 +344,21 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 - (void)testHistoryBackAndForwardAroundNTP {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL testURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
 
   // Tap the back button and verify NTP is loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
   [[EarlGrey selectElementWithMatcher:ContentSuggestionCollectionView()]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button and verify test page is loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
 }
 
 #pragma mark window.location.hash operations
@@ -349,7 +373,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   const GURL hashChangedWithHistoryURL =
       self.testServer->GetURL(kHashChangedWithHistoryURL);
 
-  [ChromeEarlGrey loadURL:page1URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:page1URL]);
 
   // Click link to update location.hash and go to new URL (same page).
   GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
@@ -363,7 +387,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
       net::GetContentAndFragmentForUrl(page1URL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(page1OmniboxText)]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebViewContainingText:backHashChangeContent];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:backHashChangeContent]);
 
   // Navigate forward to the new URL. This should fire a hashchange event.
   std::string forwardHashChangeContent = "forwardHashChange";
@@ -375,13 +400,15 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [[EarlGrey
       selectElementWithMatcher:OmniboxText(hashChangedWithHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebViewContainingText:forwardHashChangeContent];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:forwardHashChangeContent]);
 
   // Load a hash URL directly. This shouldn't fire a hashchange event.
   std::string hashChangeContent = "FAIL_loadUrlHashChange";
   [self addHashChangeListenerWithContent:hashChangeContent];
-  [ChromeEarlGrey loadURL:hashChangedWithHistoryURL];
-  [ChromeEarlGrey waitForWebViewNotContainingText:hashChangeContent];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:hashChangedWithHistoryURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:hashChangeContent]);
 }
 
 // Loads a URL and replaces its location, then updates its location.hash
@@ -396,7 +423,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   const GURL hashChangedWithoutHistoryURL =
       self.testServer->GetURL(kHashChangedWithoutHistoryURL);
 
-  [ChromeEarlGrey loadURL:page1URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:page1URL]);
 
   // Tap link to replace the location value.
   GREYAssert(TapWebViewElementWithId(kHashChangeWithoutHistoryLabel),
@@ -434,7 +461,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   const GURL hashChangedWithHistoryURL =
       self.testServer->GetURL(kHashChangedWithHistoryURL);
 
-  [ChromeEarlGrey loadURL:page1URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:page1URL]);
 
   // Tap link to update location.hash with a new value.
   GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
@@ -477,8 +504,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   const GURL originURL = self.testServer->GetURL(kRedirectWindowURL);
   const GURL destinationURL = self.testServer->GetURL(kDestinationURL);
 
-  [ChromeEarlGrey loadURL:initialURL];
-  [ChromeEarlGrey loadURL:originURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:initialURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:originURL]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -536,24 +563,27 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   // Load index, tap on redirect link, and assert that the page is redirected
   // to the proper destination.
-  [ChromeEarlGrey loadURL:indexURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:indexURL]);
   GREYAssert(TapWebViewElementWithId(redirectLabel), @"Failed to tap %s",
              redirectLabel.c_str());
-  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate to a new URL, navigate back and assert that the resulting page is
   // the proper destination.
-  [ChromeEarlGrey loadURL:lastURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:lastURL]);
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate back and assert that the resulting page is the initial index.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:redirectLabel];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:redirectLabel]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(indexURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -561,7 +591,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // destination.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -571,17 +602,19 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 - (void)testRestoreHistoryToWebUIAndNavigateForward {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [ChromeEarlGrey loadURL:destinationURL];
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
 
-  [ChromeEarlGrey waitForWebViewContainingText:"Revision"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Revision"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey goForward];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goForward]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -591,13 +624,14 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 - (void)testRestoreHistoryToNTPAndNavigateForward {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
-  [ChromeEarlGrey loadURL:destinationURL];
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationURL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
 
-  [ChromeEarlGrey goForward];
-  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goForward]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"pony"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

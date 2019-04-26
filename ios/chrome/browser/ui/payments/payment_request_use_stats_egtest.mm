@@ -67,7 +67,7 @@ const char kContactDetailsFreeShippingPage[] =
 
 // Completes the Payment Request.
 - (void)completePayment {
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -113,7 +113,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(1U, initialBilling->use_count());
   EXPECT_EQ(kSomeDate, initialBilling->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -151,7 +152,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialShipping->use_count());
   EXPECT_EQ(kSomeDate, initialShipping->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -183,7 +185,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialContact->use_count());
   EXPECT_EQ(kSomeDate, initialContact->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRequestNamePage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kRequestNamePage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -215,8 +218,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialAddress->use_count());
   EXPECT_EQ(kSomeDate, initialAddress->use_date());
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsFreeShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsFreeShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];

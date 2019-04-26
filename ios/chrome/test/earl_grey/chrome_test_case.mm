@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <objc/runtime.h>
 
@@ -199,7 +200,7 @@ const CFTimeInterval kDrainTimeout = 5;
 
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the

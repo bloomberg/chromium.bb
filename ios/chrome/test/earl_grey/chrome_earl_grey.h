@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "url/gurl.h"
 
 @class ElementSelector;
@@ -32,9 +33,8 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 @interface ChromeEarlGrey : NSObject
 
 #pragma mark - History Utilities
-
 // Clears browsing history.
-+ (void)clearBrowsingHistory;
++ (NSError*)clearBrowsingHistory WARN_UNUSED_RESULT;
 
 #pragma mark - Cookie Utilities
 
@@ -48,91 +48,98 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
 // timeout, or a GREYAssert is induced.
-+ (void)loadURL:(const GURL&)URL;
++ (NSError*)loadURL:(const GURL&)URL WARN_UNUSED_RESULT;
 
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
-+ (void)reload;
++ (NSError*)reload WARN_UNUSED_RESULT;
 
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-+ (void)goBack;
++ (NSError*)goBack WARN_UNUSED_RESULT;
 
 // Navigates forward to the next page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-+ (void)goForward;
++ (NSError*)goForward WARN_UNUSED_RESULT;
 
 // Opens a new tab and waits for the new tab animation to complete.
-+ (void)openNewTab;
++ (NSError*)openNewTab WARN_UNUSED_RESULT;
 
 // Opens a new incognito tab and waits for the new tab animation to complete.
-+ (void)openNewIncognitoTab;
++ (NSError*)openNewIncognitoTab WARN_UNUSED_RESULT;
 
 // Closes all tabs in the current mode (incognito or normal), and waits for the
-// UI to complete. If current mode is Incognito, mode will be switched to 
+// UI to complete. If current mode is Incognito, mode will be switched to
 // normal after closing all tabs.
 + (void)closeAllTabsInCurrentMode;
 
 // Closes all incognito tabs and waits for the UI to complete.
-+ (void)closeAllIncognitoTabs;
++ (NSError*)closeAllIncognitoTabs WARN_UNUSED_RESULT;
 
 // Closes the current tab and waits for the UI to complete.
 + (void)closeCurrentTab;
 
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
-+ (void)waitForPageToFinishLoading;
++ (NSError*)waitForPageToFinishLoading WARN_UNUSED_RESULT;
 
 // Taps html element with |elementID| in the current web view.
-+ (void)tapWebViewElementWithID:(NSString*)elementID;
++ (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
 
 // Waits for a static html view containing |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
-+ (void)waitForStaticHTMLViewContainingText:(NSString*)text;
++ (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text
+    WARN_UNUSED_RESULT;
 
 // Waits for there to be no static html view, or a static html view that does
 // not contain |text|. If the condition is not met within a timeout, a
 // GREYAssert is induced.
-+ (void)waitForStaticHTMLViewNotContainingText:(NSString*)text;
++ (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text
+    WARN_UNUSED_RESULT;
 
 // Waits for a Chrome error page. If it is not found within a timeout, a
 // GREYAssert is induced.
-+ (void)waitForErrorPage;
++ (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
 
 // Waits for the current web view to contain |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingText:(std::string)text;
++ (NSError*)waitForWebViewContainingText:(std::string)text WARN_UNUSED_RESULT;
 
 // Waits for the current web view to contain an element matching |selector|.
 // If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingElement:(ElementSelector*)selector;
++ (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector
+    WARN_UNUSED_RESULT;
 
 // Waits for there to be no web view containing |text|. If the condition is not
 // met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewNotContainingText:(std::string)text;
++ (NSError*)waitForWebViewNotContainingText:(std::string)text
+    WARN_UNUSED_RESULT;
 
 // Waits for there to be |count| number of non-incognito tabs. If the condition
 // is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForMainTabCount:(NSUInteger)count;
++ (NSError*)waitForMainTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
 
 // Waits for there to be |count| number of incognito tabs. If the condition is
 // not met within a timeout, a GREYAssert is induced.
-+ (void)waitForIncognitoTabCount:(NSUInteger)count;
++ (NSError*)waitForIncognitoTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
 
 // Waits for there to be a web view containing a blocked |image_id|.  When
 // blocked, the image element will be smaller than the actual image size.
-+ (void)waitForWebViewContainingBlockedImageElementWithID:(std::string)imageID;
++ (NSError*)waitForWebViewContainingBlockedImageElementWithID:
+    (std::string)imageID WARN_UNUSED_RESULT;
 
 // Waits for there to be a web view containing loaded image with |image_id|.
 // When loaded, the image element will have the same size as actual image.
-+ (void)waitForWebViewContainingLoadedImageElementWithID:(std::string)imageID;
++ (NSError*)waitForWebViewContainingLoadedImageElementWithID:
+    (std::string)imageID WARN_UNUSED_RESULT;
 
 // Waits for the bookmark internal state to be done loading. If it does not
 // happen within a timeout, a GREYAssert is induced.
-+ (void)waitForBookmarksToFinishLoading;
++ (NSError*)waitForBookmarksToFinishLoading WARN_UNUSED_RESULT;
 
 // Waits for the matcher to return an element that is sufficiently visible.
-+ (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher;
++ (NSError*)waitForElementWithMatcherSufficientlyVisible:
+    (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
 
 @end
 

@@ -11,6 +11,7 @@
 #import "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -92,8 +93,9 @@ id<GREYMatcher> incognitoHelpContainsText() {
 
   // Prepare a helper block to test Sad Tab navigating from and to normal pages.
   void (^loadAndCheckSimpleURL)() = ^void() {
-    [ChromeEarlGrey loadURL:simple_URL];
-    [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:simple_URL]);
+    CHROME_EG_ASSERT_NO_ERROR(
+        [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
     [[EarlGrey selectElementWithMatcher:reloadSadTabTitleText()]
         assertWithMatcher:grey_nil()];
     [[EarlGrey selectElementWithMatcher:feedbackSadTabTitleContainsText()]
@@ -134,7 +136,7 @@ id<GREYMatcher> incognitoHelpContainsText() {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:newIncognitoTabButtonMatcher]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
   loadAndCheckSimpleURL();
 
   // Test an initial crash, and then a second crash in Incognito mode, as above.

@@ -9,6 +9,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/html_response_provider.h"
@@ -54,19 +55,19 @@ using web::test::HttpServer;
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
                  @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title1")]
       assertWithMatcher:grey_nil()];
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title1")]
@@ -100,19 +101,20 @@ using web::test::HttpServer;
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
                  @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title2")]
       assertWithMatcher:grey_nil()];
 
   // Load first URL and expect redirect to destination URL.
-  [ChromeEarlGrey loadURL:firstRedirectURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"redirect complete"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstRedirectURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"redirect complete"]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
-  [ChromeEarlGrey goBack];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   // Which of the two tiles that is displayed is an implementation detail, and
   // this test helps document it. The purpose of the test is to verify that only

@@ -62,9 +62,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // Tests when PaymentRequest.show() is called without a promise the payment
 // sheet is displayed with the payment details.
 - (void)testBuyWithNoPromise {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buyWithNoPromise"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"buyWithNoPromise"]);
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -85,7 +87,8 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // the promise resolves, the payment sheet displays the payment details and the
 // Buy button is enabled.
 - (void)testBuyWithResolvingPromise {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
 
   // Disable EarlGrey's synchronization. Needed likely due to
   // MDCActivityIndicator being present on the payment request view.
@@ -93,7 +96,8 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buyWithResolvingPromise"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"buyWithResolvingPromise"]);
 
   // Wait until the payment request view shows.
   ConditionBlock condition = ^{
@@ -137,7 +141,8 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // is initially displayed with a spinner and the Buy button is not enabled. Once
 // the promise rejects, the payment is aborted.
 - (void)testBuyWithRejectingPromise {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
 
   // Disable EarlGrey's synchronization. Needed likely due to
   // MDCActivityIndicator being present on the payment request view.
@@ -145,7 +150,8 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buyWithRejectingPromise"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"buyWithRejectingPromise"]);
 
   // Wait until the payment request view shows.
   ConditionBlock condition = ^{

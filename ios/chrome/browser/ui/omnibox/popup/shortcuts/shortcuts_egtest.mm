@@ -15,6 +15,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -82,7 +83,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
-  [ChromeEarlGrey clearBrowsingHistory];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
   [self prepareMostVisitedTiles];
   // Clear pasteboard
   [[UIPasteboard generalPasteboard] setItems:@[]];
@@ -121,7 +122,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGreyUI focusOmnibox];
   [[EarlGrey selectElementWithMatcher:[self mostVisitedTileMatcher]]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString]);
 }
 
 - (void)testBookmarksShortcut {
@@ -237,14 +239,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that on the NTP the shortcuts don't show up.
 - (void)testNTPShortcutsDontShowUp {
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   // Tap the fake omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   // Wait for the real omnibox to be visible.
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+                          chrome_test_util::Omnibox()]);
 
   // The shortcuts should not show up here.
   // The shortcuts are similar to the NTP tiles, so in this test it's necessary
@@ -259,21 +262,23 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 - (void)navigateToAPage {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
 }
 
 - (void)prepareMostVisitedTiles {
   const GURL pageURL = self.testServer->GetURL(kTilePageURL);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 }
 
 - (id<GREYMatcher>)mostVisitedTileMatcher {

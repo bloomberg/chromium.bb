@@ -18,6 +18,7 @@
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/matchers.h"
@@ -211,10 +212,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -225,11 +227,12 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
     // loading stops.
-    [ChromeEarlGrey reload];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
   }
   [self confirmResendWarning];
 
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -240,16 +243,17 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go to a new page and go back and check that the data is reposted.
-  [ChromeEarlGrey loadURL:GetGenericUrl()];
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetGenericUrl()]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   // WKBasedNavigationManager doesn't triggere repost on |goForward| due to
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
@@ -260,7 +264,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   }
 
   [self confirmResendWarning];
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -271,15 +276,16 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [ChromeEarlGrey goBack];
-  [ChromeEarlGrey goForward];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goForward]);
 
   // WKBasedNavigationManager doesn't triggere repost on |goForward| due to
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
@@ -290,7 +296,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   }
 
   [self confirmResendWarning];
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -301,21 +308,22 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go to a new page and go back to destination through back history.
-  [ChromeEarlGrey loadURL:GetGenericUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetGenericUrl()]);
   [self openBackHistory];
   [self waitForTabHistoryView];
   id<GREYMatcher> historyItem = grey_text(
       base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(destinationURL)));
   [[EarlGrey selectElementWithMatcher:historyItem] performAction:grey_tap()];
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
 
   // Back-forward navigation with WKBasedNavigationManager is served from
   // WKWebView's app-cache, so it won't trigger repost warning.
@@ -323,7 +331,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     [self confirmResendWarning];
   }
 
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -333,15 +342,16 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [ChromeEarlGrey goBack];
-  [ChromeEarlGrey goForward];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goForward]);
 
   // WKBasedNavigationManager doesn't triggere repost on |goForward| due to
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
@@ -353,14 +363,15 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
 
   // Expected behavior is different between the two navigation manager
   // implementations.
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // LegacyNavigationManager displays repost on |goBack|. So after cancelling,
     // web view should show form URL.
-    [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel];
+    CHROME_EG_ASSERT_NO_ERROR(
+        [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel]);
     [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
         assertWithMatcher:grey_notNil()];
     [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -368,7 +379,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   } else {
     // WKBasedNavigationManager displays repost on |reload|. So after
     // cancelling, web view should show |destinationURL|.
-    [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+    CHROME_EG_ASSERT_NO_ERROR(
+        [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
     [[EarlGrey
         selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
         assertWithMatcher:grey_notNil()];
@@ -382,10 +394,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -396,17 +409,18 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
     // loading stops.
-    [ChromeEarlGrey reload];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
   }
 
   // Repost confirmation box should be visible.
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:ResendPostButtonMatcher()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:ResendPostButtonMatcher()]);
 
   // Starting a new navigation while the repost dialog is presented should not
   // crash.
-  [ChromeEarlGrey loadURL:GetGenericUrl()];
-  [ChromeEarlGrey waitForWebViewContainingText:kGenericText];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetGenericUrl()]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kGenericText]);
 
   // Repost dialog should not be visible anymore.
   [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
@@ -419,16 +433,18 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify the browser navigates to the original URL.
-  [ChromeEarlGrey goBack];
-  [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -438,23 +454,25 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   web::test::SetUpHttpServer(std::make_unique<TestFormResponseProvider>());
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetRedirectFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetRedirectFormUrl()]);
 
   // Submit the form, which redirects before printing the data.
   GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
              kSubmitButtonLabel);
 
   // Check that the redirect changes the POST to a GET.
-  [ChromeEarlGrey waitForWebViewContainingText:"GET"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"GET"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   // Check that the popup did not show
   [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
       assertWithMatcher:grey_nil()];
-  [ChromeEarlGrey waitForWebViewContainingText:"GET"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"GET"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -473,23 +491,24 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL formURL = GetFormPostOnSamePageUrl();
 
   // Open the first URL so it's in history.
-  [ChromeEarlGrey loadURL:GetGenericUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetGenericUrl()]);
 
   // Open the second URL, tap the button, and verify the browser navigates to
   // the expected URL.
-  [ChromeEarlGrey loadURL:formURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:formURL]);
   GREYAssert(TapWebViewElementWithId("button"), @"Failed to tap \"button\"");
-  [ChromeEarlGrey waitForWebViewContainingText:"POST"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"POST"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back once and verify the browser navigates to the form URL.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back a second time and verify the browser navigates to the first URL.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetGenericUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -501,16 +520,17 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
-  [ChromeEarlGrey loadURL:GetFormUrl()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
   [self submitFormUsingKeyboardGoButtonWithInputID:"textfield"];
 
   // Verify that the browser navigates to the expected URL.
-  [ChromeEarlGrey waitForWebViewContainingText:"bar!"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"bar!"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify that the browser navigates to the original URL.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 }

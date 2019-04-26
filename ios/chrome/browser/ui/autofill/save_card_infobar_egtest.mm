@@ -24,6 +24,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -291,8 +292,8 @@ class SaveCardInfobarEGTestHelper {
 // fallback local save infobar becomes visible if the request unexpectedly fails
 // but the form data is complete.
 - (void)offerLocalSave_FullData_RequestFails {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -336,8 +337,8 @@ class SaveCardInfobarEGTestHelper {
 // fallback local save infobar becomes visible if the request is declined but
 // the form data is complete.
 - (void)offerLocalSave_FullData_PaymentsDeclines {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -380,8 +381,8 @@ class SaveCardInfobarEGTestHelper {
 // date, should query Google Payments; but the fallback local save infobar
 // should not appear if the request is declined and the form data is incomplete.
 - (void)testNotOfferLocalSave_PartialData_PaymentsDeclines {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -403,8 +404,8 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that submitting the form should query Google Payments; and the
 // upstreaming infobar should appear if the request is accepted.
 - (void)offerUpstream_FullData_PaymentsAccepts {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -446,8 +447,8 @@ class SaveCardInfobarEGTestHelper {
 // date, should query Google Payments and the upstreaming infobar should appear
 // if the request is accepted.
 - (void)offerUpstream_PartialData_PaymentsAccepts {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -493,8 +494,8 @@ class SaveCardInfobarEGTestHelper {
 
   base::HistogramTester histogram_tester;
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -569,8 +570,8 @@ class SaveCardInfobarEGTestHelper {
 
   base::HistogramTester histogram_tester;
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -622,8 +623,8 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that the infobar goes away and no credit card is saved to Chrome if
 // the user declines local save.
 - (void)userData_LocalSave_UserDeclines {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
@@ -690,8 +691,8 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that the infobar goes away and the credit card is saved to Chrome if
 // the user accepts local save.
 - (void)testUserData_LocalSave_UserAccepts {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Ensure there are no saved credit cards.
   GREYAssertEqual(0U, personal_data_manager_->GetCreditCards().size(),
@@ -734,8 +735,8 @@ class SaveCardInfobarEGTestHelper {
 // TODO(crbug.com/925670): remove SetMaxStrikesOnFormFillCard() and incur
 // the maximum number of strikes by showing and declining save infobar instead.
 - (void)testNotOfferLocalSave_MaxStrikesReached {
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)]);
 
   // Set up the Google Payments server response.
   test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,

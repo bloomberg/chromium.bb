@@ -145,20 +145,22 @@ void ClearBrowsingData() {
 
 void OpenNewIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)]);
   GREYAssert(IsIncognitoMode(), @"Failed to switch to incognito mode.");
 }
 
 void CloseCurrentIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
   [ChromeEarlGrey closeCurrentTab];
-  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)]);
 }
 
 void CloseAllIncognitoTabs() {
-  [ChromeEarlGrey closeAllIncognitoTabs];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
 
   // The user is dropped into the tab grid after closing the last incognito tab.
   // Therefore this test must manually switch back to showing the normal tabs.
@@ -172,8 +174,9 @@ void CloseAllIncognitoTabs() {
 
 void OpenNewRegularTab() {
   NSUInteger tab_count = chrome_test_util::GetMainTabCount();
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)]);
 }
 
 // Grant/revoke metrics consent and update MetricsServicesManager.
@@ -294,7 +297,7 @@ void SignOut() {
 - (void)testIncognitoPlusRegular {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
   chrome_test_util::CloseAllTabs();
-  [ChromeEarlGrey waitForMainTabCount:(0)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:(0)]);
 
   OpenNewIncognitoTab();
   AssertUKMEnabled(false);
@@ -303,8 +306,8 @@ void SignOut() {
   OpenNewRegularTab();
   AssertUKMEnabled(false);
 
-  [ChromeEarlGrey closeAllIncognitoTabs];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
   AssertUKMEnabled(true);
 
   // Client ID should not have been reset.

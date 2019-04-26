@@ -15,6 +15,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -109,7 +110,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
-  [ChromeEarlGrey clearBrowsingHistory];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
 }
 
 // Tests that tapping the switch to open tab button, switch to the open tab,
@@ -117,13 +118,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testSwitchToOpenTab {
   // Open the first page.
   GURL firstPageURL = self.testServer->GetURL(kPage1URL);
-  [ChromeEarlGrey loadURL:firstPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open the second page in another tab.
   [ChromeEarlGreyUI openNewTab];
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
 
   // Type the URL of the first page in the omnibox to trigger it as suggestion.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
@@ -131,7 +135,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(firstPageURL)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Check that both tabs are opened (and that we switched tab and not just
   // navigated.
@@ -150,13 +155,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL2 = self.testServer->GetURL(kPage2URL);
 
   // Open the first page.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage1URL)];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage1URL)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open the second page in another tab.
   [ChromeEarlGreyUI openNewTab];
-  [ChromeEarlGrey loadURL:URL2];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
 
   // Type the URL of the first page in the omnibox to trigger it as suggestion.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage2URL)];
@@ -177,27 +185,33 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL3 = self.testServer->GetURL(kPage3URL);
 
   // Add all the pages to the history.
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
-  [ChromeEarlGrey loadURL:URL2];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
-  [ChromeEarlGrey loadURL:URL3];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage3];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage3]);
   [[self class] closeAllTabs];
 
   // Load page 1 in non-incognito and page 2 in incognito.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey loadURL:URL2];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
 
   // Open page 3 in non-incognito.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:URL3];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage3];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage3]);
 
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(URL3.host())];
 
@@ -216,9 +230,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 
   // Open page 3 in incognito.
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey loadURL:URL3];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage3];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage3]);
 
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(URL3.host())];
 
@@ -240,42 +255,47 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testCloseNTPWhenSwitching {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open a new tab and switch to the first tab.
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Check that the other tab is closed.
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 }
 
 - (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open a new tab, navigate to a page and go back to have forward history.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   // Navigate to the other tab.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Check that the other tab is not closed.
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 }
 
 // Tests that switching to closed tab opens the tab in foreground, except if it
@@ -284,13 +304,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL1 = self.testServer->GetURL(kPage1URL);
 
   // Open the first page.
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open a new tab and load another URL.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
 
   // Start typing url of the first page.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
@@ -301,15 +324,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Close the first page.
   chrome_test_util::CloseTabAtIndex(0);
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
   // Try to switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
 
   // Check that the URL has been opened in a new foreground tab.
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 }
 
 // Tests that having multiple suggestions with corresponding opened tabs display
@@ -317,17 +341,19 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testMultiplePageOpened {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  [ChromeEarlGrey loadURL:URL1];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage1]);
 
   // Open the second page in a new tab.
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   GURL URL2 = self.testServer->GetURL(kPage2URL);
-  [ChromeEarlGrey loadURL:URL2];
-  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPage2]);
 
   // Start typing url of the two opened pages in a new tab.
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(@"page")];
 

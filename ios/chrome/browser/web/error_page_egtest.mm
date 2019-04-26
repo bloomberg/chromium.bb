@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -53,26 +54,32 @@ std::string GetErrorMessage() {
 - (void)testReloadErrorPage {
   // No response leads to ERR_CONNECTION_CLOSED error.
   self.serverRespondsWithContent = NO;
-  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
-  [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()]);
 
   // Reload the page, which should load without errors.
   self.serverRespondsWithContent = YES;
-  [ChromeEarlGrey reload];
-  [ChromeEarlGrey waitForWebViewContainingText:"foo"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"foo"]);
 }
 
 // Sucessfully loads the page, stops the server and reloads the page.
 - (void)testReloadPageAfterServerIsDown {
   // Sucessfully load the page.
   self.serverRespondsWithContent = YES;
-  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
-  [ChromeEarlGrey waitForWebViewContainingText:"foo"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"foo"]);
 
   // Reload the page, no response leads to ERR_CONNECTION_CLOSED error.
   self.serverRespondsWithContent = NO;
-  [ChromeEarlGrey reload];
-  [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()]);
 }
 
 @end

@@ -20,6 +20,7 @@
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/static_html_view_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -71,12 +72,15 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - History Utilities
 
-+ (void)clearBrowsingHistory {
-  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
-                 @"Clearing Browsing History timed out");
++ (NSError*)clearBrowsingHistory {
+  if (!chrome_test_util::ClearBrowsingHistory()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Clearing Browsing History timed out");
+  }
   // After clearing browsing history via code, wait for the UI to be done
   // with any updates. This includes icons from the new tab page being removed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  return nil;
 }
 
 #pragma mark - Cookie Utilities
@@ -106,44 +110,57 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-+ (void)loadURL:(const GURL&)URL {
++ (NSError*)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  NSError* loadingError = [ChromeEarlGrey waitForPageToFinishLoading];
+  if (loadingError) {
+    return loadingError;
+  }
 
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML()) {
-    GREYAssert(web::WaitUntilWindowIdInjected(webState),
-               @"WindowID failed to inject");
+    if (!web::WaitUntilWindowIdInjected(webState)) {
+      return testing::NSErrorWithLocalizedDescription(
+          @"WindowID failed to inject");
+    }
   }
+
+  return nil;
 }
 
-+ (void)reload {
++ (NSError*)reload {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (void)goBack {
++ (NSError*)goBack {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
 
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (void)goForward {
++ (NSError*)goForward {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
 
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (void)openNewTab {
++ (NSError*)openNewTab {
   chrome_test_util::OpenNewTab();
-  [ChromeEarlGrey waitForPageToFinishLoading];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
+  if (!error) {
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  }
+  return error;
 }
 
-+ (void)openNewIncognitoTab {
++ (NSError*)openNewIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
-  [ChromeEarlGrey waitForPageToFinishLoading];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
+  if (!error) {
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  }
+  return error;
 }
 
 + (void)closeAllTabsInCurrentMode {
@@ -151,9 +168,13 @@ id ExecuteJavaScript(NSString* javascript,
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (void)closeAllIncognitoTabs {
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
++ (NSError*)closeAllIncognitoTabs {
+  if (!chrome_test_util::CloseAllIncognitoTabs()) {
+    return testing::NSErrorWithLocalizedDescription(@"Tabs did not close");
+  }
+
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  return nil;
 }
 
 + (void)closeCurrentTab {
@@ -161,114 +182,198 @@ id ExecuteJavaScript(NSString* javascript,
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (void)waitForPageToFinishLoading {
-  GREYAssert(chrome_test_util::WaitForPageToFinishLoading(),
-             @"Page did not complete loading.");
++ (NSError*)waitForPageToFinishLoading {
+  if (!chrome_test_util::WaitForPageToFinishLoading()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Page did not complete loading.");
+  }
+
+  return nil;
 }
 
-+ (void)tapWebViewElementWithID:(NSString*)elementID {
++ (NSError*)tapWebViewElementWithID:(NSString*)elementID {
   BOOL success =
       web::test::TapWebViewElementWithId(chrome_test_util::GetCurrentWebState(),
                                          base::SysNSStringToUTF8(elementID));
-  GREYAssertTrue(success, @"Failed to tap web view element with ID: %@",
-                 elementID);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed to tap web view element with ID: %@",
+                         elementID];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
 }
 
-+ (void)waitForErrorPage {
++ (NSError*)waitForErrorPage {
   NSString* const kErrorPageText =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [self waitForStaticHTMLViewContainingText:kErrorPageText];
+  return [self waitForStaticHTMLViewContainingText:kErrorPageText];
 }
 
-+ (void)waitForStaticHTMLViewContainingText:(NSString*)text {
++ (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
   });
-  GREYAssert(success, @"Failed to find static html view containing %@", text);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed to find static html view containing %@",
+                         text];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForStaticHTMLViewNotContainingText:(NSString*)text {
++ (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
   });
-  GREYAssert(success, @"Failed, there was a static html view containing %@",
-             text);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed, there was a static html view containing %@",
+                         text];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForWebViewContainingText:(std::string)text {
++ (NSError*)waitForWebViewContainingText:(std::string)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return web::test::IsWebViewContainingText(
         chrome_test_util::GetCurrentWebState(), text);
   });
-  GREYAssert(success, @"Failed waiting for web view containing %s",
-             text.c_str());
+
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Failed waiting for web view containing %s",
+                                   text.c_str()];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForWebViewContainingElement:(ElementSelector*)selector {
++ (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return web::test::IsWebViewContainingElement(
         chrome_test_util::GetCurrentWebState(), selector);
   });
-  GREYAssert(success, @"Failed waiting for web view containing element %@",
-             selector.selectorDescription);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web view containing element %@",
+                         selector.selectorDescription];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForWebViewNotContainingText:(std::string)text {
++ (NSError*)waitForWebViewNotContainingText:(std::string)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !web::test::IsWebViewContainingText(
         chrome_test_util::GetCurrentWebState(), text);
   });
-  GREYAssert(success, @"Failed waiting for web view not containing %s",
-             text.c_str());
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web view not containing %s",
+                         text.c_str()];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForMainTabCount:(NSUInteger)count {
++ (NSError*)waitForMainTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return chrome_test_util::GetMainTabCount() == count;
   });
-  GREYAssert(success, @"Failed waiting for main tab count to become %" PRIuNS,
-             count);
+
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Failed waiting for main tab "
+                                   @"count to become %" PRIuNS,
+                                   count];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForIncognitoTabCount:(NSUInteger)count {
++ (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return chrome_test_util::GetIncognitoTabCount() == count;
   });
-  GREYAssert(success,
-             @"Failed waiting for incognito tab count to become %" PRIuNS,
-             count);
+
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Failed waiting for incognito tab "
+                                   @"count to become %" PRIuNS,
+                                   count];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForWebViewContainingBlockedImageElementWithID:(std::string)imageID {
-  GREYAssert(web::test::WaitForWebViewContainingImage(
-                 imageID, chrome_test_util::GetCurrentWebState(),
-                 web::test::IMAGE_STATE_BLOCKED),
-             @"Failed waiting for web view blocked image %s", imageID.c_str());
++ (NSError*)waitForWebViewContainingBlockedImageElementWithID:
+    (std::string)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      imageID, chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_BLOCKED);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web view blocked image %s",
+                         imageID.c_str()];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForWebViewContainingLoadedImageElementWithID:(std::string)imageID {
-  GREYAssert(web::test::WaitForWebViewContainingImage(
-                 imageID, chrome_test_util::GetCurrentWebState(),
-                 web::test::IMAGE_STATE_LOADED),
-             @"Failed waiting for web view loaded image %s", imageID.c_str());
++ (NSError*)waitForWebViewContainingLoadedImageElementWithID:
+    (std::string)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      imageID, chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_LOADED);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web view loaded image %s",
+                         imageID.c_str()];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
-+ (void)waitForBookmarksToFinishLoading {
-  GREYAssert(
-      WaitUntilConditionOrTimeout(kWaitForUIElementTimeout,
-                                  ^{
-                                    return chrome_test_util::BookmarksLoaded();
-                                  }),
-      @"Bookmark model did not load");
++ (NSError*)waitForBookmarksToFinishLoading {
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return chrome_test_util::BookmarksLoaded();
+  });
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Bookmark model did not load");
+  }
+
+  return nil;
 }
 
-+ (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher {
++ (NSError*)waitForElementWithMatcherSufficientlyVisible:
+    (id<GREYMatcher>)matcher {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:matcher]
@@ -276,9 +381,16 @@ id ExecuteJavaScript(NSString* javascript,
                     error:&error];
     return error == nil;
   });
-  GREYAssert(success,
-             @"Failed waiting for element with matcher %@ to become visible",
-             matcher);
+
+  if (!success) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:
+            @"Failed waiting for element with matcher %@ to become visible",
+            matcher];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+
+  return nil;
 }
 
 @end

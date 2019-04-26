@@ -38,6 +38,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -227,7 +228,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Open a new Tab.
   ScrollUp();
   [ChromeEarlGreyUI openNewTab];
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // Go back to the previous tab.
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
@@ -290,12 +291,13 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check that the page has been opened.
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:1];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
 
   // Go back.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -342,8 +344,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check a new page in normal model is opened.
-  [ChromeEarlGrey waitForMainTabCount:2];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
 
   // Check that the tab has been opened in background.
   ConditionBlock condition = ^{
@@ -360,7 +362,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Check the page has been correctly opened.
   chrome_test_util::SelectTabAtIndexInCurrentMode(1);
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -378,11 +381,12 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
                      IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
       performAction:grey_tap()];
 
-  [ChromeEarlGrey waitForMainTabCount:1];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
 
   // Check that the tab has been opened in foreground.
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -492,15 +496,16 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
                  @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
-  [ChromeEarlGrey goBack];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   [[self class] closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle)]

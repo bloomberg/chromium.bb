@@ -41,6 +41,7 @@
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/fakes/fake_language_detection_tab_helper_observer.h"
@@ -531,7 +532,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   expectedLanguageDetails.html_root_language = "de";
   expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   [self assertLanguageDetails:expectedLanguageDetails];
 }
 
@@ -545,7 +546,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       "<html><body style='display:none'>%s</body></html>", kFrenchText);
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   // Check for no language detected.
   translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
@@ -565,7 +566,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       base::StringPrintf("http://%s", kFrenchPageNoTranslateValue));
 
   // Load some french page with |content="notranslate"| meta tag.
-  [ChromeEarlGrey loadURL:noTranslateContentURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:noTranslateContentURL]);
 
   // Check that no language has been detected.
   GREYAssert(
@@ -573,7 +574,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       @"A language has been detected");
 
   // Load some french page with |value="notranslate"| meta tag.
-  [ChromeEarlGrey loadURL:noTranslateValueURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:noTranslateValueURL]);
 
   // Check that no language has been detected.
   GREYAssert(
@@ -594,7 +595,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   responses[URL] = "<html><body>Blahrg :)</body></html>";
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   // Check for no language detected.
   translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = "und";
@@ -633,7 +634,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   responses[URL] = html;
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   // Check that language has been detected.
   translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = "fr";
@@ -654,7 +655,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // The HTTP header is detected.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") +
                                             kLanguagePath + "?http=fr");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.content_language = "fr";
   expectedLanguageDetails.adopted_language = "fr";
@@ -663,7 +664,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Everything after the comma is truncated.
   URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLanguagePath +
                                        "?http=fr,ornot");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   expectedLanguageDetails.content_language = "fr";
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -671,7 +672,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // The HTTP header is overriden by meta tag.
   URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLanguagePath +
                                        "?http=fr&meta=it");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   expectedLanguageDetails.content_language = "it";
   expectedLanguageDetails.adopted_language = "it";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -679,7 +680,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Only the header of the main page is detected.
   URL =
       web::test::HttpServer::MakeUrl(std::string("http://") + kSubresourcePath);
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   expectedLanguageDetails.content_language = "fr";
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -694,9 +695,10 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Detection works when clicking on a link.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLinkPath);
   GURL someLanguageURL = web::test::HttpServer::MakeUrl(kSomeLanguageUrl);
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   GREYAssert(TapWebViewElementWithId("click"), @"Failed to tap \"click\"");
-  [ChromeEarlGrey waitForWebViewContainingText:kLanguagePathText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:kLanguagePathText]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -725,7 +727,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       web::test::HttpServer::MakeUrl("http://languageDetectionLargePage");
   responses[URL] = html;
   web::test::SetUpSimpleHttpServer(responses);
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Check that language has been detected.
   translate::LanguageDetectionDetails expectedLanguageDetails;
@@ -749,7 +751,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       prefs::kOfferTranslateEnabled, NO);
 
   // Open some webpage.
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   // Check that no language has been detected.
   GREYAssert(
       !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
@@ -775,7 +777,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -821,7 +823,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -854,7 +856,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self translateThenRevert];
 }
@@ -872,8 +874,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Stop observing the current IOSLanguageDetectionTabHelper before opening the
   // incognito tab.
   language_detection_tab_helper_observer_.reset();
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Needed for the incognito WebState.
   [self setUpMockScriptManager];
@@ -886,7 +888,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   [self assertTranslateInfobarIsVisible];
 
   // Make sure the page is not translated.
-  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The source language tab must be selected and the target language tab must
   // not. Translate the page by tapping the target language tab.
@@ -896,7 +899,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // The target language tab must be selected and the source language tab must
   // not. Revert the translation by tapping the source language tab.
@@ -906,7 +910,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
 
   // Make sure the translation is reverted.
-  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The source language tab must be selected and the target language tab must
   // not.
@@ -930,12 +935,13 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text and a link.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPageWithLinkPath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
   // Make sure the page is not translated.
-  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The target language tab must not be selected. Translate the page by
   // tapping the target language tab.
@@ -943,10 +949,11 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Click on the link.
-  [ChromeEarlGrey tapWebViewElementWithID:@"link"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"link"]);
 
   // Make sure the navigation is completed.
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
@@ -956,7 +963,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:grey_notNil()];
 
   // Make sure the page is automatically translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 }
 
 // Tests that the source and the target languages can be changed.
@@ -968,7 +976,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1009,7 +1017,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:grey_nil()];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure the target language changes to "Dutch". The target language
   // tab must be selected and the source language tab must not. Revert the
@@ -1020,7 +1029,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
 
   // Make sure the translation is reverted.
-  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // Open the translate options menu.
   [[EarlGrey selectElementWithMatcher:OptionsButton()]
@@ -1044,7 +1054,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       onElementWithMatcher:LanguagesMenu()] performAction:grey_tap()];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure the source language changes to "English". The target language
   // tab must be selected and the source language tab must not.
@@ -1064,7 +1075,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1088,7 +1099,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:grey_nil()];
 
   // Make sure the page is not translated yet.
-  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // Make sure that French to English translation is not whitelisted yet.
   GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
@@ -1103,7 +1115,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       performAction:grey_tap()];
 
   // Make sure the page is translated after the snackbar is dismissed.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure that French to English translation is whitelisted after the
   // snackbar is dismissed.
@@ -1111,12 +1124,13 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"French to English translation is not whitelisted");
 
   // Reload the page.
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   [self assertTranslateInfobarIsVisible];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // The target language tab must be selected and the source language tab must
   // not.
@@ -1171,7 +1185,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1220,7 +1234,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1278,7 +1292,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1337,7 +1351,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"Translation from French is not blocked");
 
   // Reload the page.
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   // Make sure the translate infobar does not appear.
   GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
@@ -1354,7 +1368,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1370,7 +1384,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   for (int i = 0;
        i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
     // Reload the page.
-    [ChromeEarlGrey reload];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
     [self assertTranslateInfobarIsVisible];
 
@@ -1413,7 +1427,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1434,7 +1448,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
          j < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold();
          j++) {
       // Reload the page.
-      [ChromeEarlGrey reload];
+      CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
       [self assertTranslateInfobarIsVisible];
 
@@ -1455,7 +1469,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   for (int i = 0;
        i < translate::TranslateInfoBarDelegate::GetAutoNeverThreshold(); i++) {
     // Reload the page.
-    [ChromeEarlGrey reload];
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
     [self assertTranslateInfobarIsVisible];
 
@@ -1483,7 +1497,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1541,7 +1555,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"Translate infobar failed to disappear.");
 
   // Reload the page.
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   // Make sure the translate infobar does not appear.
   GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
@@ -1562,7 +1576,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1607,7 +1621,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:ElementIsSelected(NO)];
 
   // Make sure the page is translated.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Dismiss the translate infobar.
   [[EarlGrey selectElementWithMatcher:CloseButton()] performAction:grey_tap()];
@@ -1645,7 +1660,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1669,7 +1684,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"Translate infobar failed to disappear.");
 
   // Reload the page.
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   // Make sure the translate infobar does not appear.
   GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
@@ -1698,7 +1713,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 
@@ -1721,7 +1736,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
              @"Translate infobar failed to disappear.");
 
   // Reload the page.
-  [ChromeEarlGrey reload];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
 
   // Make sure the translate infobar does not appear.
   GREYAssertFalse([self waitForElementToAppearOrTimeout:TranslateInfobar()],
@@ -1749,7 +1764,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text with |content="notranslate"| meta tag.
   GURL noTranslateContentURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPageNoTranslateContent));
-  [ChromeEarlGrey loadURL:noTranslateContentURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:noTranslateContentURL]);
 
   // Make sure no language has been detected.
   GREYAssert(
@@ -1769,7 +1784,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text with |value="notranslate"| meta tag.
   GURL noTranslateValueURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPageNoTranslateValue));
-  [ChromeEarlGrey loadURL:noTranslateValueURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:noTranslateValueURL]);
 
   // Make sure no language has been detected.
   GREYAssert(
@@ -1788,7 +1803,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Load a chrome:// page.
   GURL URL = web::test::HttpServer::MakeUrl("chrome://something-internal");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Make sure the Translate manual trigger button is not enabled.
   [ChromeEarlGreyUI openToolsMenu];
@@ -1813,7 +1828,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   [self assertTranslateInfobarIsVisible];
 

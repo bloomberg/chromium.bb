@@ -31,6 +31,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
@@ -322,7 +323,7 @@ using translate::LanguageDetectionController;
   // A page with French text.
   responses[URL] = GetFrenchPageHtml(kHtmlAttribute, "");
   web::test::SetUpSimpleHttpServer(responses);
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Check that the "Before Translate" infobar is displayed.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
@@ -387,7 +388,7 @@ using translate::LanguageDetectionController;
   }
 
   // Open a new webpage.
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   [self simulateTranslationFromSpanishToEnglish];
 
   // Check that the "Always Translate" switch is displayed in the infobar.
@@ -436,8 +437,8 @@ using translate::LanguageDetectionController;
   }
 
   // Do a translation in incognito
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   [self simulateTranslationFromSpanishToEnglish];
   // Check that the infobar does not contain the "Always Translate" switch.
   NSString* switchLabel = GetTranslateInfobarSwitchLabel("Spanish");
@@ -472,17 +473,19 @@ using translate::LanguageDetectionController;
   // Translate the page with the link.
   GURL frenchPageURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPageWithLinkPath));
-  [ChromeEarlGrey loadURL:frenchPageURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:frenchPageURL]);
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_TRANSLATE_INFOBAR_ACCEPT)]
       performAction:grey_tap()];
 
   // Check that the translation happened.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Click on the link.
-  [ChromeEarlGrey tapWebViewElementWithID:@"link"];
-  [ChromeEarlGrey waitForWebViewNotContainingText:"link"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"link"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewNotContainingText:"link"]);
 
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
@@ -491,7 +494,8 @@ using translate::LanguageDetectionController;
       assertWithMatcher:grey_notNil()];
 
   // Check that the auto-translation happened.
-  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 }
 
 #pragma mark - Utility methods
@@ -507,8 +511,9 @@ using translate::LanguageDetectionController;
 
   // The infobar is presented with an animation. Wait for the "Done" button
   // to become visibile before considering the animation as complete.
-  [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
-                      ButtonWithAccessibilityLabelId(IDS_DONE)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+                          ButtonWithAccessibilityLabelId(IDS_DONE)]);
 
   // Assert that the infobar is visible.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_DONE)]

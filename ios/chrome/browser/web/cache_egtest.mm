@@ -15,6 +15,7 @@
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/scoped_block_popups_pref.h"
@@ -134,26 +135,31 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
       HttpServer::MakeUrl(kCacheTestFirstPageURL);
 
   // 1st hit to server. Verify that the server has the correct hit count.
-  [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:cacheTestFirstPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"]);
 
   // Navigate to another page. 2nd hit to server.
   GREYAssert(chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID),
              @"Failed to tap %s", kCacheTestLinkID);
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"]);
 
   // Navigate back. This should not hit the server. Verify the page has been
   // loaded from cache. The serverHitCounter will remain the same.
-  [ChromeEarlGrey goBack];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"]);
 
   // Reload page. 3rd hit to server. Verify that page reload causes the
   // hitCounter to show updated value.
-  [ChromeEarlGrey reload];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 3"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 3"]);
 
   // Verify that page reload causes Cache-Control value to be sent with request.
-  [ChromeEarlGrey waitForWebViewContainingText:"cacheControl: max-age=0"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"cacheControl: max-age=0"]);
 }
 
 // Tests caching behavior when opening new tab. New tab should not use the
@@ -167,13 +173,16 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
       HttpServer::MakeUrl(kCacheTestThirdPageURL);
 
   // 1st hit to server. Verify title and hitCount.
-  [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"First Page"];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:cacheTestFirstPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"First Page"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"]);
 
   // 2nd hit to server. Verify hitCount.
-  [ChromeEarlGrey loadURL:cacheTestThirdPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:cacheTestThirdPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"]);
 
   // Open the first page in a new tab. Verify that cache was not used. Must
   // first allow popups.
@@ -181,10 +190,12 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
                                    GetOriginalBrowserState());
   GREYAssert(chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID),
              @"Failed to tap %s", kCacheTestLinkID);
-  [ChromeEarlGrey waitForMainTabCount:2];
-  [ChromeEarlGrey waitForPageToFinishLoading];
-  [ChromeEarlGrey waitForWebViewContainingText:"First Page"];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 3"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"First Page"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 3"]);
 }
 
 // Tests that cache is not used when selecting omnibox suggested website, even
@@ -206,9 +217,11 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
       HttpServer::MakeUrl(kCacheTestFirstPageURL);
 
   // 1st hit to server. Verify title and hitCount.
-  [ChromeEarlGrey loadURL:cacheTestFirstPageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"First Page"];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:cacheTestFirstPageURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"First Page"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"]);
 
   // Type a search into omnnibox and select the first suggestion (second row)
   [ChromeEarlGreyUI focusOmniboxAndType:@"cachetestfirstpage"];
@@ -217,8 +230,10 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
       performAction:grey_tap()];
 
   // Verify title and hitCount. Cache should not be used.
-  [ChromeEarlGrey waitForWebViewContainingText:"First Page"];
-  [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"First Page"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"]);
 }
 
 @end

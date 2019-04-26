@@ -95,7 +95,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
 
@@ -123,7 +123,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // TODO(crbug.com/852393): Investigate why synchronization isn't working.  Is
   // an animation going on forever?
@@ -168,7 +168,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
@@ -190,8 +190,9 @@ void AssertURLIs(const GURL& expectedURL) {
 // header being shown even if was not previously shown.
 - (void)testChromeToChromeURLKeepsHeaderOnScreen {
   const GURL kChromeAboutURL("chrome://chrome-urls");
-  [ChromeEarlGrey loadURL:kChromeAboutURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"chrome://version"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:kChromeAboutURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"chrome://version"]);
 
   // Hide the toolbar. The page is not long enough to dismiss the toolbar using
   // the UI so we have to zoom in.
@@ -244,7 +245,7 @@ void AssertURLIs(const GURL& expectedURL) {
       base::StringPrintf("<p style='height:%dem'>a</p><p>b</p>", kPageHeightEM);
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
   // Simulate a user scroll down.
   HideToolbarUsingUI();
@@ -270,8 +271,9 @@ void AssertURLIs(const GURL& expectedURL) {
       kPageHeightEM);
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
-  [ChromeEarlGrey waitForWebViewContainingText:"Tall page"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"Tall page"]);
 
   // Hide the toolbar.
   HideToolbarUsingUI();
@@ -310,9 +312,10 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpSimpleHttpServer(responses);
   chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_ALLOW);
 
-  [ChromeEarlGrey loadURL:URL];
-  [ChromeEarlGrey waitForWebViewContainingText:"link1"];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link1"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
   // Hide the toolbar.
   HideToolbarUsingUI();
@@ -322,8 +325,9 @@ void AssertURLIs(const GURL& expectedURL) {
   GREYAssert(TapWebViewElementWithId("link1"), @"Failed to tap \"link1\"");
 
   // Check that a new Tab was created.
-  [ChromeEarlGrey waitForWebViewContainingText:"link2"];
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link2"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   AssertURLIs(destinationURL);
 
@@ -345,10 +349,11 @@ void AssertURLIs(const GURL& expectedURL) {
                @"Failed to receive WKErrorDomain error");
   }
 
-  [ChromeEarlGrey waitForWebViewContainingText:"link1"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link1"]);
 
   // Make sure the toolbar is on the screen.
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
 }
 
@@ -374,16 +379,18 @@ void AssertURLIs(const GURL& expectedURL) {
                               "id='link2'>link2</a>";
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:originURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:originURL]);
 
-  [ChromeEarlGrey waitForWebViewContainingText:"link1"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link1"]);
   // Dismiss the toolbar.
   HideToolbarUsingUI();
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:NO]);
 
   // Navigate to the other page.
   GREYAssert(TapWebViewElementWithId("link1"), @"Failed to tap \"link1\"");
-  [ChromeEarlGrey waitForWebViewContainingText:"link2"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link2"]);
 
   // Make sure toolbar is shown since a new load has started.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
@@ -413,8 +420,9 @@ void AssertURLIs(const GURL& expectedURL) {
   responses[URL] = manyLines;
   web::test::SetUpSimpleHttpServer(responses);
 
-  [ChromeEarlGrey loadURL:URL];
-  [ChromeEarlGrey waitForWebViewContainingText:"link"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingText:"link"]);
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
@@ -443,7 +451,7 @@ void AssertURLIs(const GURL& expectedURL) {
       new ErrorPageResponseProvider(responses));
   web::test::SetUpHttpServer(std::move(provider));
 
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   HideToolbarUsingUI();
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:NO]);
 

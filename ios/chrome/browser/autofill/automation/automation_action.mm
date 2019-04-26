@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #include "base/guid.h"
 #include "base/mac/foundation_util.h"
@@ -214,7 +215,8 @@
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
 
   // Wait for the element to be visible on the page.
-  [ChromeEarlGrey waitForWebViewContainingElement:selector];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
 
   // Potentially scroll into view if below the fold.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
@@ -438,7 +440,8 @@
   }
 
   // Wait for the element to be visible on the page.
-  [ChromeEarlGrey waitForWebViewContainingElement:selector];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
 
   NSString* expectedType = base::SysUTF8ToNSString([self
       getStringFromDictionaryWithKey:"expectedAutofillType"
@@ -495,7 +498,8 @@
   }
 
   // Wait for the element to be visible on the page.
-  [ChromeEarlGrey waitForWebViewContainingElement:selector];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
 
   int selectedIndex = [self getIntFromDictionaryWithKey:"index" error:&error];
   if (error) {

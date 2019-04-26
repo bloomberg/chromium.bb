@@ -112,10 +112,10 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
   _creditCard2 = autofill::test::GetCreditCard2();
   CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard2]);
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentRequestDemoPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentRequestDemoPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 }
 
 #pragma mark - Tests
