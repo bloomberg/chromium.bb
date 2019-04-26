@@ -23,7 +23,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
-BLINK_COMMON_EXPORT extern const base::Feature kInvalidateFontCacheOnPurge;
 BLINK_COMMON_EXPORT extern const base::Feature kJankTrackingSweepLine;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkGenPropertyTrees;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
