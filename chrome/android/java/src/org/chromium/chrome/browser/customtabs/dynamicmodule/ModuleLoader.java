@@ -518,6 +518,7 @@ public class ModuleLoader {
                 CrashKeys crashKeys = CrashKeys.getInstance();
                 crashKeys.set(CrashKeyIndex.LOADED_DYNAMIC_MODULE, mModuleId);
                 crashKeys.set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, mModuleId);
+                crashKeys.set(CrashKeyIndex.DYNAMIC_MODULE_DEX_NAME, mDexAssetName);
 
                 ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.INSTANTIATED);
 
