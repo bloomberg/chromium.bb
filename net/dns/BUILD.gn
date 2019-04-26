@@ -227,6 +227,9 @@ source_set("host_resolver_manager") {
     # URLRequestContext creation for chromecast.
     "//chromecast/browser",
 
+    # Tests and test support.
+    "//components/cronet:cronet_common_unittests",
+
     # Network stack/service.
     "//net/*",
     "//services/network/*",
@@ -444,8 +447,8 @@ source_set("test_support") {
 source_set("fuzzer_test_support") {
   testonly = true
   sources = [
-    "fuzzed_context_host_resolver.cc",
-    "fuzzed_context_host_resolver.h",
+    "fuzzed_host_resolver_util.cc",
+    "fuzzed_host_resolver_util.h",
   ]
   deps = [
     "//base",

@@ -4,6 +4,7 @@
 
 #include "net/dns/mapped_host_resolver.h"
 
+#include <string>
 #include <utility>
 
 #include "base/no_destructor.h"
@@ -68,10 +69,6 @@ MappedHostResolver::CreateRequest(
     return std::make_unique<AlwaysErrorRequestImpl>(ERR_NAME_NOT_RESOLVED);
 
   return impl_->CreateRequest(rewritten, source_net_log, optional_parameters);
-}
-
-void MappedHostResolver::SetDnsClientEnabled(bool enabled) {
-  impl_->SetDnsClientEnabled(enabled);
 }
 
 HostCache* MappedHostResolver::GetHostCache() {

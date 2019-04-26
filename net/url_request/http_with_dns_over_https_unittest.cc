@@ -74,7 +74,8 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     resolver_->SetRequestContext(&request_context_);
     resolver_->SetProcParamsForTesting(
         ProcTaskParams(new TestHostResolverProc(), 1));
-    resolver_->SetDnsClientForTesting(std::move(dns_client));
+    resolver_->GetManagerForTesting()->SetDnsClientForTesting(
+        std::move(dns_client));
     request_context_.set_host_resolver(resolver_.get());
     request_context_.Init();
   }
