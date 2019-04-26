@@ -54,17 +54,17 @@ class LayerTreeHostFiltersPixelTest
     // This matrix swaps the red and green channels, and has a slight
     // translation in the alpha component, so that it affects transparent
     // pixels.
-    SkScalar matrix[20] = {
+    float matrix[20] = {
         0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20 / 255.0f,
     };
 
     FilterOperations filters;
     SkImageFilter::CropRect cropRect(
         SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
     filters.Append(FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(
-            SkColorFilters::MatrixRowMajor255(matrix), nullptr, &cropRect)));
+        sk_make_sp<ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+                                           nullptr, &cropRect)));
     filter_layer->SetFilters(filters);
     background->SetMasksToBounds(masks_to_bounds);
     background->AddChild(filter_layer);
@@ -381,16 +381,16 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
   background->AddChild(foreground);
 
-  SkScalar matrix[20];
+  float matrix[20];
   memset(matrix, 0, 20 * sizeof(matrix[0]));
   // This filter does a red-blue swap, so the foreground becomes blue.
-  matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
+  matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
   // We filter only the bottom 200x100 pixels of the foreground.
   SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
   FilterOperations filters;
   filters.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
+          SkColorFilters::Matrix(matrix), nullptr, &crop_rect)));
 
   // Make the foreground layer's render surface be clipped by the background
   // layer.
@@ -417,16 +417,16 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
   background->AddChild(foreground);
 
-  SkScalar matrix[20];
+  float matrix[20];
   memset(matrix, 0, 20 * sizeof(matrix[0]));
   // This filter does a red-blue swap, so the foreground becomes blue.
-  matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
+  matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
   // Set up a crop rec to filter the bottom 200x100 pixels of the foreground.
   SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
   FilterOperations filters;
   filters.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
+          SkColorFilters::Matrix(matrix), nullptr, &crop_rect)));
 
   // Make the foreground layer's render surface be clipped by the background
   // layer.

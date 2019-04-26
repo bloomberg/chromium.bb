@@ -38,9 +38,9 @@ SourceAlpha::SourceAlpha(FilterEffect* source_effect)
 sk_sp<PaintFilter> SourceAlpha::CreateImageFilter() {
   sk_sp<PaintFilter> source_graphic(paint_filter_builder::Build(
       InputEffect(0), OperatingInterpolationSpace()));
-  SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
-                         0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
-  sk_sp<SkColorFilter> color_filter = SkColorFilters::MatrixRowMajor255(matrix);
+  float matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
+  sk_sp<SkColorFilter> color_filter = SkColorFilters::Matrix(matrix);
   return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
                                             std::move(source_graphic));
 }

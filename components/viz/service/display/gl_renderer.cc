@@ -1220,7 +1220,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
       filter->asColorFilter(&colorfilter_rawptr);
       sk_sp<SkColorFilter> cf(colorfilter_rawptr);
 
-      if (cf && cf->asColorMatrix(params->color_matrix)) {
+      if (cf && cf->asAColorMatrix(params->color_matrix)) {
         // We have a color matrix at the root of the filter DAG; apply it
         // locally in the compositor and process the rest of the DAG (if any)
         // in Skia.
@@ -1453,11 +1453,10 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
                           matrix);
   }
 
-  static const float kScale = 1.0f / 255.0f;
   if (current_program_->color_offset_location() != -1) {
     float offset[4];
     for (int i = 0; i < 4; ++i)
-      offset[i] = SkScalarToFloat(params->color_matrix[i * 5 + 4]) * kScale;
+      offset[i] = params->color_matrix[i * 5 + 4];
 
     gl_->Uniform4fv(current_program_->color_offset_location(), 1, offset);
   }

@@ -2061,7 +2061,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   int child_pass_id = 2;
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
-  SkScalar matrix[20];
+  float matrix[20];
   float amount = 0.5f;
   matrix[0] = 0.213f + 0.787f * amount;
   matrix[1] = 0.715f - 0.715f * amount;
@@ -2079,8 +2079,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   matrix[18] = 1;
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
-      sk_make_sp<cc::ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr)));
+      sk_make_sp<cc::ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+                                             nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -2261,29 +2261,29 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   int child_pass_id = 2;
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
-  SkScalar matrix[20];
+  float matrix[20];
   float amount = 0.5f;
   matrix[0] = 0.213f + 0.787f * amount;
   matrix[1] = 0.715f - 0.715f * amount;
   matrix[2] = 1.f - (matrix[0] + matrix[1]);
   matrix[3] = 0;
-  matrix[4] = 20.f;
+  matrix[4] = 20.f / 255;
   matrix[5] = 0.213f - 0.213f * amount;
   matrix[6] = 0.715f + 0.285f * amount;
   matrix[7] = 1.f - (matrix[5] + matrix[6]);
   matrix[8] = 0;
-  matrix[9] = 200.f;
+  matrix[9] = 200.f / 255;
   matrix[10] = 0.213f - 0.213f * amount;
   matrix[11] = 0.715f - 0.715f * amount;
   matrix[12] = 1.f - (matrix[10] + matrix[11]);
   matrix[13] = 0;
-  matrix[14] = 1.5f;
+  matrix[14] = 1.5f / 255;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
-      sk_make_sp<cc::ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr)));
+      sk_make_sp<cc::ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+                                             nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
