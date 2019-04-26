@@ -58,7 +58,8 @@ class XRCompositorCommon : public base::Thread,
                       RequestSessionCallback callback);
   void ExitPresent();
 
-  void GetFrameData(XRFrameDataProvider::GetFrameDataCallback callback) final;
+  void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
+                    XRFrameDataProvider::GetFrameDataCallback callback) final;
   void GetControllerDataAndSendFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);

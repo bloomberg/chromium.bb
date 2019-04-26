@@ -240,6 +240,7 @@ class ArCoreDeviceTest : public testing::Test {
     // TODO(https://crbug.com/837834): verify GetFrameData fails if we
     // haven't resolved the Mailbox.
     frame_provider->GetFrameData(
+        nullptr,
         base::BindOnce(callback, std::move(quit_closure), &frame_data));
     run_loop->Run();
     EXPECT_TRUE(frame_data);

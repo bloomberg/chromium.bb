@@ -203,8 +203,9 @@ void XRFrameProvider::ScheduleImmersiveFrame() {
 
   pending_immersive_vsync_ = true;
 
-  immersive_data_provider_->GetFrameData(WTF::Bind(
-      &XRFrameProvider::OnImmersiveFrameData, WrapWeakPersistent(this)));
+  immersive_data_provider_->GetFrameData(
+      nullptr, WTF::Bind(&XRFrameProvider::OnImmersiveFrameData,
+                         WrapWeakPersistent(this)));
 }
 
 // TODO(lincolnfrog): add a ScheduleNonImmersiveARFrame, if we want camera RAF
@@ -239,8 +240,9 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   // we're waiting for it.  If not, clear any pose data, so that
   // ProcessScheduledFrame handles it appropriately.
   if (xr_->xrMagicWindowProviderPtr()) {
-    xr_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
-        &XRFrameProvider::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+    xr_->xrMagicWindowProviderPtr()->GetFrameData(
+        nullptr, WTF::Bind(&XRFrameProvider::OnNonImmersiveFrameData,
+                           WrapWeakPersistent(this)));
   } else {
     frame_pose_ = nullptr;
   }

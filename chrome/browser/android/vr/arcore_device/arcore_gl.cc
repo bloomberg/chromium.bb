@@ -221,6 +221,7 @@ bool ArCoreGl::InitializeGl() {
 }
 
 void ArCoreGl::GetFrameData(
+    mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
 

@@ -131,7 +131,8 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   void ClosePresentationBindings();
 
   // XRFrameDataProvider
-  void GetFrameData(device::mojom::XRFrameDataProvider::GetFrameDataCallback
+  void GetFrameData(device::mojom::XRFrameDataRequestOptionsPtr options,
+                    device::mojom::XRFrameDataProvider::GetFrameDataCallback
                         callback) override;
   void GetEnvironmentIntegrationProvider(
       device::mojom::XREnvironmentIntegrationProviderAssociatedRequest

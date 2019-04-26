@@ -284,6 +284,7 @@ void VRDisplay::RequestVSync() {
     pending_non_immersive_vsync_ = false;
     pending_presenting_vsync_ = true;
     vr_presentation_data_provider_->GetFrameData(
+        nullptr,
         WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
 
     DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
@@ -301,8 +302,9 @@ void VRDisplay::RequestVSync() {
     non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
 
     if (non_immersive_provider_) {
-      non_immersive_provider_->GetFrameData(WTF::Bind(
-          &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+      non_immersive_provider_->GetFrameData(
+          nullptr, WTF::Bind(&VRDisplay::OnNonImmersiveFrameData,
+                             WrapWeakPersistent(this)));
     } else {
       // If we don't have a non immersive provider, we should just return
       // an identity pose.  We're not worried about re-entrant calls right now

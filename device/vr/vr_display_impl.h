@@ -44,7 +44,8 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
   // Accessible to tests.
  protected:
   // mojom::XRFrameDataProvider
-  void GetFrameData(GetFrameDataCallback callback) override;
+  void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
+                    GetFrameDataCallback callback) override;
 
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool paused) override;

@@ -50,9 +50,7 @@ class VRDisplayImplTest : public testing::Test {
                mojom::XRSessionControllerPtr immersive_session_controller) {}));
   }
 
-  void ExitPresent() {
-    device_->StopSession();
-  }
+  void ExitPresent() { device_->StopSession(); }
 
   bool presenting() { return device_->IsPresenting(); }
   VRDeviceBase* device() { return device_.get(); }
@@ -87,14 +85,14 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   };
 
   static_cast<mojom::XRFrameDataProvider*>(display_1.get())
-      ->GetFrameData(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, false, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
 
   static_cast<mojom::XRFrameDataProvider*>(display_2.get())
-      ->GetFrameData(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, false, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
@@ -107,14 +105,14 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
 
   // While a device is presenting, no one should have access to magic window.
   static_cast<mojom::XRFrameDataProvider*>(display_1.get())
-      ->GetFrameData(base::BindOnce(callback, true, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, true, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
 
   static_cast<mojom::XRFrameDataProvider*>(display_2.get())
-      ->GetFrameData(base::BindOnce(callback, true, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, true, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
@@ -128,18 +126,18 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   // Once presentation had ended both services should be able to access the
   // device.
   static_cast<mojom::XRFrameDataProvider*>(display_1.get())
-      ->GetFrameData(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, false, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
 
   static_cast<mojom::XRFrameDataProvider*>(display_2.get())
-      ->GetFrameData(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(nullptr, base::BindOnce(callback, false, &was_called));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
 }
 
-}
+}  // namespace device

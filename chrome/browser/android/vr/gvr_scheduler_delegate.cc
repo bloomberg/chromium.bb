@@ -130,7 +130,6 @@ void GvrSchedulerDelegate::OnResume() {
     ScheduleOrCancelWebVrFrameTimeout();
 }
 
-
 void GvrSchedulerDelegate::SetWebXrMode(bool enabled) {
   BaseSchedulerDelegate::SetWebXrMode(enabled);
 
@@ -1025,6 +1024,7 @@ void GvrSchedulerDelegate::ClosePresentationBindings() {
 }
 
 void GvrSchedulerDelegate::GetFrameData(
+    device::mojom::XRFrameDataRequestOptionsPtr,
     device::mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __func__);
   if (!get_frame_data_callback_.is_null()) {

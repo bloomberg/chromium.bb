@@ -67,7 +67,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   }
 
   // mojom::XRFrameDataProvider
-  void GetFrameData(GetFrameDataCallback callback) override;
+  void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
+                    GetFrameDataCallback callback) override;
 
   void GetEnvironmentIntegrationProvider(
       mojom::XREnvironmentIntegrationProviderAssociatedRequest

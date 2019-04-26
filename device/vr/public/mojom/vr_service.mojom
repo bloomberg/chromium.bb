@@ -30,7 +30,6 @@ enum XRDeviceId {
   [EnableIf=enable_windows_mr] WINDOWS_MIXED_REALITY_ID = 7,
 };
 
-
 enum XRHandedness {
   NONE = 0,
   LEFT = 1,
@@ -240,6 +239,9 @@ struct XRPresentationTransportOptions {
   bool wait_for_gpu_fence;
 };
 
+struct XRPlaneData {
+};
+
 // The data needed for each animation frame of an XRSession.
 struct XRFrameData {
   // General XRSession value
@@ -287,6 +289,10 @@ struct XRFrameData {
   // so we have an extra flag to indicate to us that they have been updated.
   bool stage_parameters_updated;
   VRStageParameters? stage_parameters;
+
+  // Array containing detected planes data. If plane was detected in frame N and
+  // is no longer detected in frame N+1, it will not be present in the array.
+  array<XRPlaneData>? detected_planes;
 };
 
 enum VRDisplayEventReason {
@@ -359,6 +365,12 @@ interface XREnvironmentIntegrationProvider {
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
+struct XRFrameDataRequestOptions {
+  // Controls whether XRFrameData.detected_planes should be populated by the
+  // request to XRFrameDataProvider.GetFrameData().
+  bool include_plane_data;
+};
+
 // Provides the necessary functionality for a WebXR session to get data for
 // drawing frames. The kind of data it gets depends on what kind of session was
 // requested.
@@ -367,7 +379,7 @@ interface XREnvironmentIntegrationProvider {
 interface XRFrameDataProvider {
   // frame_data is optional and will not be set if and only if the call fails
   // for some reason, such as device disconnection.
-  GetFrameData() => (XRFrameData? frame_data);
+  GetFrameData(XRFrameDataRequestOptions? options) => (XRFrameData? frame_data);
   GetEnvironmentIntegrationProvider(
       associated XREnvironmentIntegrationProvider& environment_provider);
 };
