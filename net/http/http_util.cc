@@ -249,33 +249,30 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
     return false;
 
   // Try to extract bytes-unit part.
-  std::string::const_iterator bytes_unit_begin = ranges_specifier.begin();
-  std::string::const_iterator bytes_unit_end = bytes_unit_begin +
-                                               equal_char_offset;
-  std::string::const_iterator byte_range_set_begin = bytes_unit_end + 1;
-  std::string::const_iterator byte_range_set_end = ranges_specifier.end();
+  base::StringPiece bytes_unit =
+      base::StringPiece(ranges_specifier).substr(0, equal_char_offset);
 
-  TrimLWS(&bytes_unit_begin, &bytes_unit_end);
   // "bytes" unit identifier is not found.
-  if (!base::LowerCaseEqualsASCII(
-          base::StringPiece(bytes_unit_begin, bytes_unit_end), "bytes")) {
+  bytes_unit = TrimLWS(bytes_unit);
+  if (!base::LowerCaseEqualsASCII(bytes_unit, "bytes")) {
     return false;
   }
+
+  std::string::const_iterator byte_range_set_begin =
+      ranges_specifier.begin() + equal_char_offset + 1;
+  std::string::const_iterator byte_range_set_end = ranges_specifier.end();
 
   ValuesIterator byte_range_set_iterator(byte_range_set_begin,
                                          byte_range_set_end, ',');
   while (byte_range_set_iterator.GetNext()) {
-    size_t minus_char_offset = byte_range_set_iterator.value_piece().find('-');
+    base::StringPiece value = byte_range_set_iterator.value_piece();
+    size_t minus_char_offset = value.find('-');
     // If '-' character is not found, reports failure.
     if (minus_char_offset == std::string::npos)
       return false;
 
-    std::string::const_iterator first_byte_pos_begin =
-        byte_range_set_iterator.value_begin();
-    std::string::const_iterator first_byte_pos_end =
-        first_byte_pos_begin +  minus_char_offset;
-    TrimLWS(&first_byte_pos_begin, &first_byte_pos_end);
-    std::string first_byte_pos(first_byte_pos_begin, first_byte_pos_end);
+    base::StringPiece first_byte_pos = value.substr(0, minus_char_offset);
+    first_byte_pos = TrimLWS(first_byte_pos);
 
     HttpByteRange range;
     // Try to obtain first-byte-pos.
@@ -286,12 +283,8 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
       range.set_first_byte_position(first_byte_position);
     }
 
-    std::string::const_iterator last_byte_pos_begin =
-        byte_range_set_iterator.value_begin() + minus_char_offset + 1;
-    std::string::const_iterator last_byte_pos_end =
-        byte_range_set_iterator.value_end();
-    TrimLWS(&last_byte_pos_begin, &last_byte_pos_end);
-    std::string last_byte_pos(last_byte_pos_begin, last_byte_pos_end);
+    base::StringPiece last_byte_pos = value.substr(minus_char_offset + 1);
+    last_byte_pos = TrimLWS(last_byte_pos);
 
     // We have last-byte-pos or suffix-byte-range-spec in this case.
     if (!last_byte_pos.empty()) {
@@ -774,7 +767,7 @@ std::string HttpUtil::ConvertHeadersBackToHTTPResponse(const std::string& str) {
   std::string disassembled_headers;
   base::StringTokenizer tokenizer(str, std::string(1, '\0'));
   while (tokenizer.GetNext()) {
-    disassembled_headers.append(tokenizer.token_begin(), tokenizer.token_end());
+    tokenizer.token_piece().AppendToString(&disassembled_headers);
     disassembled_headers.append("\r\n");
   }
   disassembled_headers.append("\r\n");
