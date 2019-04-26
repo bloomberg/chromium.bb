@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 
 namespace memory {
@@ -17,22 +18,20 @@ using SamplingFrequency = performance_monitor::SystemMonitor::SamplingFrequency;
 
 const DWORDLONG kMBBytes = 1024 * 1024;
 
-// TODO(sebmarchand): Turn all these constants into base::FeatureParam and run
-// some experiments to find the best values.
-
 // Disk idle time is usually almost null (according to the
 // 'PerformanceMonitor.SystemMonitor.DiskIdleTime' metric) when the system is
 // under memory pressure, and it's usually at 100% the rest of the time. Using a
 // threshold of 30% should be a good indicator that there's a lot of I/O
 // activity that might be caused by memory pressure if the free physical memory
 // is low.
-const float kDiskIdleTimeLowThreshold = 0.3;
+constexpr base::FeatureParam<double> kDiskIdleTimeLowThreshold{
+    &features::kNewMemoryPressureMonitor, "DiskIdleTimeThreshold", 0.3};
 
 // A disk idle time observation window of 6 seconds combined with the threshold
 // specified above should be sufficient to determine that there's a high and
 // sustained I/O activity.
-constexpr base::TimeDelta kDiskIdleTimeWindowLength =
-    base::TimeDelta::FromSeconds(6);
+static constexpr base::FeatureParam<int> kDiskIdleTimeWindowLengthSeconds{
+    &features::kNewMemoryPressureMonitor, "DiskIdleTimeWindowLengthSeconds", 6};
 
 // A system is considered 'high memory' if it has more than 1.5GB of system
 // memory available for use by the memory manager (not reserved for hardware
@@ -49,28 +48,38 @@ const int kLargeMemoryThresholdMb = 1536;
 // available memory, paging until that is the case. To try to avoid paging a
 // threshold slightly above this is chosen. The early threshold is slightly less
 // grounded in reality and chosen as 2x critical.
-const int kSmallMemoryDefaultEarlyThresholdMb = 600;
-const int kSmallMemoryDefaultCriticalThresholdMb = 300;
+static constexpr base::FeatureParam<int> kSmallMemoryDefaultEarlyThresholdMb{
+    &features::kNewMemoryPressureMonitor, "SmallMemoryDefaultEarlyThresholdMb",
+    600};
+static constexpr base::FeatureParam<int> kSmallMemoryDefaultCriticalThresholdMb{
+    &features::kNewMemoryPressureMonitor,
+    "SmallMemoryDefaultCriticalThresholdMb", 300};
 
 // These are the default thresholds used for systems with >= ~2GB of physical
 // memory. Such systems have been observed to always maintain ~300MB of
 // available memory, paging until that is the case.
-const int kLargeMemoryDefaultEarlyThresholdMb = 1000;
-const int kLargeMemoryDefaultCriticalThresholdMb = 500;
+static constexpr base::FeatureParam<int> kLargeMemoryDefaultEarlyThresholdMb{
+    &features::kNewMemoryPressureMonitor, "LargeMemoryDefaultEarlyThresholdMb",
+    1000};
+static constexpr base::FeatureParam<int> kLargeMemoryDefaultCriticalThresholdMb{
+    &features::kNewMemoryPressureMonitor,
+    "LargeMemoryDefaultCriticalThresholdMb", 500};
 
 // A window length of 10 seconds should be sufficient to determine that the
 // system is under pressure. A shorter window will lead to too many false
 // positives (e.g. a brief memory spike will be treated as a memory pressure
 // event) and a longer one will delay the response to memory pressure.
-constexpr base::TimeDelta kFreeMemoryWindowLength =
-    base::TimeDelta::FromSeconds(10);
+static constexpr base::FeatureParam<int> kFreeMemoryWindowLengthSeconds{
+    &features::kNewMemoryPressureMonitor, "FreeMemoryWindowLengthSeconds", 10};
 
 // If 40% of the samples in the free physical memory observation window have a
 // value lower than one of the threshold then the window will consider that the
 // memory is under this limit. This makes this signal more stable if the memory
 // varies a lot (which can happen if the system is actively trying to free some
 // memory).
-const float kFreeMemorySampleRatioToBePositive = 0.4;
+constexpr base::FeatureParam<double> kFreeMemorySampleRatioToBePositive{
+    &features::kNewMemoryPressureMonitor, "FreeMemorySampleRatioToBePositive",
+    0.4};
 
 FreeMemoryObservationWindow::Config GetFreeMemoryWindowConfig() {
   // Default to a 'high' memory situation, which uses more conservative
@@ -84,28 +93,31 @@ FreeMemoryObservationWindow::Config GetFreeMemoryWindowConfig() {
     high_memory = mem_status.ullTotalPhys >= kLargeMemoryThresholdBytes;
   }
 
-  int low_memory_early_limit_mb = kSmallMemoryDefaultEarlyThresholdMb;
-  int low_memory_critical_limit_mb = kSmallMemoryDefaultCriticalThresholdMb;
+  int low_memory_early_limit_mb = kSmallMemoryDefaultEarlyThresholdMb.Get();
+  int low_memory_critical_limit_mb =
+      kSmallMemoryDefaultCriticalThresholdMb.Get();
 
   if (high_memory) {
-    low_memory_early_limit_mb = kLargeMemoryDefaultEarlyThresholdMb;
-    low_memory_critical_limit_mb = kLargeMemoryDefaultCriticalThresholdMb;
+    low_memory_early_limit_mb = kLargeMemoryDefaultEarlyThresholdMb.Get();
+    low_memory_critical_limit_mb = kLargeMemoryDefaultCriticalThresholdMb.Get();
   }
 
   return {
       .low_memory_early_limit_mb = low_memory_early_limit_mb,
       .low_memory_critical_limit_mb = low_memory_critical_limit_mb,
-      .sample_ratio_to_be_positive = kFreeMemorySampleRatioToBePositive,
+      .sample_ratio_to_be_positive = kFreeMemorySampleRatioToBePositive.Get(),
   };
 }
 
 }  // namespace
 
 MemoryPressureMonitorWin::MemoryPressureMonitorWin()
-    : free_memory_obs_window_(kFreeMemoryWindowLength,
-                              GetFreeMemoryWindowConfig()),
-      disk_idle_time_obs_window_(kDiskIdleTimeWindowLength,
-                                 kDiskIdleTimeLowThreshold) {
+    : free_memory_obs_window_(
+          base::TimeDelta::FromSeconds(kFreeMemoryWindowLengthSeconds.Get()),
+          GetFreeMemoryWindowConfig()),
+      disk_idle_time_obs_window_(
+          base::TimeDelta::FromSeconds(kDiskIdleTimeWindowLengthSeconds.Get()),
+          kDiskIdleTimeLowThreshold.Get()) {
   // The amount of free memory is always tracked.
   refresh_frequencies_ = {
       .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency,

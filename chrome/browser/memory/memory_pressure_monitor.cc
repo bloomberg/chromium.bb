@@ -12,6 +12,14 @@
 #include "chrome/browser/memory/memory_pressure_monitor_win.h"
 #endif
 
+namespace features {
+
+// Enables the new memory pressure monitor.
+const base::Feature kNewMemoryPressureMonitor{
+    "NewMemoryPressureMonitor", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
+
 namespace memory {
 namespace {
 

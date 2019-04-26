@@ -7,9 +7,14 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sequence_checker.h"
+
+namespace features {
+extern const base::Feature kNewMemoryPressureMonitor;
+}
 
 namespace memory {
 
