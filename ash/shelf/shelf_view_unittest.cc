@@ -194,6 +194,17 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
+  void GetContextMenuItems(int64_t display_id,
+                           GetContextMenuItemsCallback callback) override {
+    ash::MenuItemList items;
+    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+    item->type = ui::MenuModel::TYPE_COMMAND;
+    item->command_id = 0;
+    item->label = base::UTF8ToUTF16("Item");
+    item->enabled = true;
+    items.push_back(std::move(item));
+    std::move(callback).Run(std::move(items));
+  }
 
  private:
   size_t item_selected_count_ = 0;
@@ -2415,6 +2426,23 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
     EXPECT_EQ(last_visible_index_before_overflow - 1,
               shelf_view_->last_visible_index());
   }
+}
+
+TEST_F(ShelfViewTest, ReplacingDelegateCancelsContextMenu) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  ShelfID app_button_id = AddAppShortcut();
+  generator->MoveMouseTo(GetButtonCenter(GetButtonByID(app_button_id)));
+
+  // Right click should open the context menu.
+  generator->PressRightButton();
+  generator->ReleaseRightButton();
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+
+  // Replacing the item delegate should close the context menu.
+  model_->SetShelfItemDelegate(app_button_id,
+                               std::make_unique<ShelfItemSelectionTracker>());
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
 }
 
 // Test class that tests both context and application menus.

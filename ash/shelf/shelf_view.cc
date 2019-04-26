@@ -2287,7 +2287,10 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
 
 void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
                                          ShelfItemDelegate* old_delegate,
-                                         ShelfItemDelegate* delegate) {}
+                                         ShelfItemDelegate* delegate) {
+  if (id == context_menu_id_ && shelf_menu_model_adapter_)
+    shelf_menu_model_adapter_->Cancel();
+}
 
 void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
   int index = model_->ItemIndexByID(id);
