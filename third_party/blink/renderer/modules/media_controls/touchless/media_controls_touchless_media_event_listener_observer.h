@@ -20,6 +20,8 @@ class MediaControlsTouchlessMediaEventListenerObserver
   virtual void OnLoadingProgress() = 0;
   virtual void OnPlay() = 0;
   virtual void OnPause() = 0;
+  virtual void OnEnterFullscreen() = 0;
+  virtual void OnExitFullscreen() = 0;
   virtual void OnError() = 0;
   virtual void OnLoadedMetadata() = 0;
   virtual void OnKeyPress(KeyboardEvent* event) = 0;

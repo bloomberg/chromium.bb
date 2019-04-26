@@ -2,7 +2,7 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-video::-internal-media-controls-touchless {
+video::-webkit-media-controls-touchless {
   width: inherit;
   height: inherit;
 
@@ -150,4 +150,66 @@ video::-internal-media-controls-touchless-timeline-progress {
   height: 100%;
   border-radius: 0 2px 2px 0;
   background-color: rgba(255, 255, 255, 1.0);
+}
+
+video::-internal-media-controls-touchless-volume-container {
+  width: 44px;
+  max-height: 152px;
+  height: 90%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  background-color: rgba(60,64,67,0.9);
+  border-radius: 22px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+video::-internal-media-controls-touchless-volume-container.transparent {
+  opacity: 0;
+  transition: opacity .5s;
+}
+
+video::-internal-media-controls-touchless-volume-bar-background {
+  width: 4px;
+  margin-left: 20px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  background-color: rgba(255,255,255,0.54);
+  flex: 1 1 auto;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+video::-webkit-media-controls-touchless.inline [pseudo="-internal-media-controls-touchless-volume-bar-background"] {
+  margin-bottom: 12px;
+}
+
+video::-internal-media-controls-touchless-volume-bar {
+  background-color: #FFFFFF;
+  border-radius: 2px;
+}
+
+video::-internal-media-controls-touchless-volume-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  flex: 0 1 auto;
+  background-image: -webkit-image-set(url(ic_volume_on.svg) 1x);
+}
+
+video::-internal-media-controls-touchless-volume-icon.muted {
+  background-image: -webkit-image-set(url(ic_volume_off.svg) 1x);
+}
+
+video::-webkit-media-controls-touchless.inline div[pseudo="-internal-media-controls-touchless-volume-icon" i] {
+  display: none;
 }

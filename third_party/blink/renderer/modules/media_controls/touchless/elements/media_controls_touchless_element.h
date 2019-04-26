@@ -36,6 +36,8 @@ class MediaControlsTouchlessElement
   void OnLoadingProgress() override {}
   void OnPlay() override {}
   void OnPause() override {}
+  void OnEnterFullscreen() override {}
+  void OnExitFullscreen() override {}
   void OnError() override {}
   void OnLoadedMetadata() override {}
   void OnKeyPress(KeyboardEvent* event) override {}

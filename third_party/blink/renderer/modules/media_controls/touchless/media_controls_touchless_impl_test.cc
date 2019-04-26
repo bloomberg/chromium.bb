@@ -293,6 +293,28 @@ TEST_F(MediaControlsTouchlessImplTest, TimeDisplay) {
   EXPECT_EQ(time_display->InnerHTMLAsString(), expect_display);
 }
 
+TEST_F(MediaControlsTouchlessImplTest, VolumeDisplayTest) {
+  Element* volume_bar_background = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-volume-bar-background");
+  Element* volume_bar = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-volume-bar");
+  ASSERT_NE(nullptr, volume_bar_background);
+  ASSERT_NE(nullptr, volume_bar);
+
+  const double volume = 0.65;        // Initial volume.
+  const double volume_delta = 0.05;  // Volume change for each press.
+  const double error = 0.01;         // Allow precision error.
+  MediaElement().setVolume(volume);
+  SimulateKeydownEvent(MediaElement(), VK_UP);
+
+  double volume_bar_background_height =
+      volume_bar_background->getBoundingClientRect()->height();
+  double volume_bar_height = volume_bar->getBoundingClientRect()->height();
+
+  EXPECT_NEAR(volume + volume_delta,
+              volume_bar_height / volume_bar_background_height, error);
+}
+
 TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
        MidOverlayHideTimerTest) {
   Element* overlay =
@@ -372,6 +394,38 @@ TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
 
   platform()->RunForPeriodSeconds(3);
   EXPECT_FALSE(IsControlsVisible(bottom_container));
+}
+
+TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
+       VolumeDisplayTimerTest) {
+  Element* volume_container = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-volume-container");
+  Element* overlay =
+      GetControlByShadowPseudoId("-internal-media-controls-touchless-overlay");
+  ASSERT_NE(nullptr, volume_container);
+  ASSERT_NE(nullptr, overlay);
+
+  MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kFocusin));
+  EXPECT_TRUE(IsControlsVisible(overlay));
+
+  // Press up button should bring up volume display and hide overlay
+  // immediately.
+  SimulateKeydownEvent(MediaElement(), VK_UP);
+  EXPECT_TRUE(IsControlsVisible(volume_container));
+  EXPECT_FALSE(IsControlsVisible(overlay));
+
+  platform()->RunForPeriodSeconds(3);
+  EXPECT_FALSE(IsControlsVisible(volume_container));
+
+  SimulateKeydownEvent(MediaElement(), VK_UP);
+  EXPECT_TRUE(IsControlsVisible(volume_container));
+
+  // Press mid key should bring up mid overlay and hide volume display
+  // immediately.
+  SimulateKeydownEvent(MediaElement(), VK_RETURN);
+  EXPECT_FALSE(IsControlsVisible(volume_container));
+  EXPECT_TRUE(IsControlsVisible(overlay));
 }
 
 }  // namespace

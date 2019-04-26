@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_bottom_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
+#include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_volume_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_resource_loader.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -41,6 +42,8 @@ constexpr int kNumberOfSecondsToJumpForTouchless = 10;
 
 // Amount of volume to change when press up/down arrow.
 constexpr double kVolumeToChangeForTouchless = 0.05;
+
+const char kInlineCSSClass[] = "inline";
 
 }  // namespace
 
@@ -63,7 +66,7 @@ MediaControlsTouchlessImpl::MediaControlsTouchlessImpl(
       text_track_manager_(
           MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)),
       orientation_lock_delegate_(nullptr) {
-  SetShadowPseudoId(AtomicString("-internal-media-controls-touchless"));
+  SetShadowPseudoId(AtomicString("-webkit-media-controls-touchless"));
   media_event_listener_->AddObserver(this);
 }
 
@@ -77,12 +80,17 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
   controls->bottom_container_ =
       MakeGarbageCollected<MediaControlsTouchlessBottomContainerElement>(
           *controls);
+  controls->volume_container_ =
+      MakeGarbageCollected<MediaControlsTouchlessVolumeContainerElement>(
+          *controls);
 
   controls->ParserAppendChild(controls->overlay_);
   controls->ParserAppendChild(controls->bottom_container_);
+  controls->ParserAppendChild(controls->volume_container_);
 
   // Controls start hidden.
   controls->overlay_->MakeTransparent();
+  controls->volume_container_->MakeTransparent();
   if (!media_element.paused())
     controls->bottom_container_->MakeTransparent();
 
@@ -96,6 +104,9 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
 
   MediaControlsTouchlessResourceLoader::
       InjectMediaControlsTouchlessUAStyleSheet();
+
+  if (!media_element.IsFullscreen())
+    controls->classList().Add(kInlineCSSClass);
 
   shadow_root.ParserAppendChild(controls);
   return controls;
@@ -150,10 +161,19 @@ void MediaControlsTouchlessImpl::OnPause() {
   bottom_container_->MakeOpaque(false);
 }
 
+void MediaControlsTouchlessImpl::OnEnterFullscreen() {
+  classList().Remove(kInlineCSSClass);
+}
+
+void MediaControlsTouchlessImpl::OnExitFullscreen() {
+  classList().Add(kInlineCSSClass);
+}
+
 void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
   bool handled = true;
   switch (event->keyCode()) {
     case VKEY_RETURN:
+      volume_container_->MakeTransparent();
       overlay_->MakeOpaque(true);
       MediaElement().TogglePlayState();
       break;
@@ -328,10 +348,16 @@ WebScreenOrientationType MediaControlsTouchlessImpl::GetOrientation() {
 
 void MediaControlsTouchlessImpl::HandleTopButtonPress() {
   MaybeChangeVolume(kVolumeToChangeForTouchless);
+  volume_container_->UpdateVolume();
+  overlay_->MakeTransparent();
+  volume_container_->MakeOpaque(true);
 }
 
 void MediaControlsTouchlessImpl::HandleBottomButtonPress() {
   MaybeChangeVolume(kVolumeToChangeForTouchless * -1);
+  volume_container_->UpdateVolume();
+  overlay_->MakeTransparent();
+  volume_container_->MakeOpaque(true);
 }
 
 void MediaControlsTouchlessImpl::HandleLeftButtonPress() {
@@ -364,6 +390,7 @@ void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_event_listener_);
   visitor->Trace(text_track_manager_);
   visitor->Trace(orientation_lock_delegate_);
+  visitor->Trace(volume_container_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

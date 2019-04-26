@@ -18,6 +18,7 @@ class MediaControlsOrientationLockDelegate;
 class MediaControlsTouchlessBottomContainerElement;
 class MediaControlsTouchlessOverlayElement;
 class MediaControlsTouchlessMediaEventListener;
+class MediaControlsTouchlessVolumeContainerElement;
 class MediaControlsTextTrackManager;
 
 class MODULES_EXPORT MediaControlsTouchlessImpl final
@@ -57,6 +58,8 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnLoadingProgress() override {}
   void OnPlay() override;
   void OnPause() override;
+  void OnEnterFullscreen() override;
+  void OnExitFullscreen() override;
   void OnError() override {}
   void OnLoadedMetadata() override {}
   void OnKeyPress(KeyboardEvent* event) override {}
@@ -96,6 +99,7 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
 
   Member<MediaControlsTouchlessOverlayElement> overlay_;
   Member<MediaControlsTouchlessBottomContainerElement> bottom_container_;
+  Member<MediaControlsTouchlessVolumeContainerElement> volume_container_;
 
   Member<MediaControlsTouchlessMediaEventListener> media_event_listener_;
   Member<MediaControlsTextTrackManager> text_track_manager_;

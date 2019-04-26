@@ -47,6 +47,11 @@ void MediaControlsTouchlessMediaEventListener::Attach() {
   media_element_->addEventListener(event_type_names::kKeypress, this, false);
   media_element_->addEventListener(event_type_names::kKeydown, this, false);
   media_element_->addEventListener(event_type_names::kKeyup, this, false);
+
+  media_element_->addEventListener(event_type_names::kWebkitfullscreenchange,
+                                   this, false);
+  media_element_->GetDocument().addEventListener(
+      event_type_names::kFullscreenchange, this, false);
 }
 
 void MediaControlsTouchlessMediaEventListener::Detach() {
@@ -110,6 +115,16 @@ void MediaControlsTouchlessMediaEventListener::Invoke(
     for (auto& observer : observers_)
       observer->OnKeyUp(ToKeyboardEvent(event));
     return;
+  }
+  if (event->type() == event_type_names::kFullscreenchange ||
+      event->type() == event_type_names::kWebkitfullscreenchange) {
+    if (media_element_->IsFullscreen()) {
+      for (auto& observer : observers_)
+        observer->OnEnterFullscreen();
+    } else {
+      for (auto& observer : observers_)
+        observer->OnExitFullscreen();
+    }
   }
 }
 
