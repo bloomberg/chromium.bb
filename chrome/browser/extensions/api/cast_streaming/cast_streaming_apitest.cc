@@ -8,10 +8,10 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -152,7 +152,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     if (done_callback_.is_null())
       return;
     if (expected_tones_.empty() && expected_yuv_colors_.empty()) {
-      base::ResetAndReturn(&done_callback_).Run();
+      std::move(done_callback_).Run();
     } else {
       LOG(INFO) << "Waiting to encounter " << expected_tones_.size()
                 << " more tone(s) and " << expected_yuv_colors_.size()

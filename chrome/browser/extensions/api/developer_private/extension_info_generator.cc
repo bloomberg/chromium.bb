@@ -12,7 +12,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -781,7 +780,7 @@ void ExtensionInfoGenerator::OnImageLoaded(
   if (pending_image_loads_ == 0) {  // All done!
     ExtensionInfoList list = std::move(list_);
     list_.clear();
-    base::ResetAndReturn(&callback_).Run(std::move(list));
+    std::move(callback_).Run(std::move(list));
     // WARNING: |this| is possibly deleted after this line!
   }
 }

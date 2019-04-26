@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -574,7 +573,7 @@ void ExtensionInstallPrompt::ShowDialog(
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
   if (extension->is_theme() && extension->from_webstore()) {
-    base::ResetAndReturn(&done_callback_).Run(Result::ACCEPTED);
+    std::move(done_callback_).Run(Result::ACCEPTED);
     return;
   }
 
@@ -679,7 +678,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {
-    base::ResetAndReturn(&done_callback_).Run(Result::ABORTED);
+    std::move(done_callback_).Run(Result::ABORTED);
     return;
   }
 
@@ -691,7 +690,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
   if (show_dialog_callback_.is_null())
     show_dialog_callback_ = GetDefaultShowDialogCallback();
-  base::ResetAndReturn(&show_dialog_callback_)
-      .Run(show_params_.get(), base::ResetAndReturn(&done_callback_),
-           std::move(prompt_));
+  std::move(show_dialog_callback_)
+      .Run(show_params_.get(), std::move(done_callback_), std::move(prompt_));
 }

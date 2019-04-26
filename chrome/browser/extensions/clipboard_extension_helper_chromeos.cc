@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -104,8 +105,7 @@ void ClipboardExtensionHelper::DecodeAndSaveImageData(
 }
 
 void ClipboardExtensionHelper::OnImageDecodeFailure() {
-  base::ResetAndReturn(&image_save_error_callback_)
-      .Run("Image data decoding failed.");
+  std::move(image_save_error_callback_).Run("Image data decoding failed.");
 }
 
 void ClipboardExtensionHelper::OnImageDecoded(const SkBitmap& bitmap) {
@@ -122,11 +122,11 @@ void ClipboardExtensionHelper::OnImageDecoded(const SkBitmap& bitmap) {
         scw.WriteHTML(base::UTF8ToUTF16(item.data), std::string());
     }
   }
-  base::ResetAndReturn(&image_save_success_callback_).Run();
+  std::move(image_save_success_callback_).Run();
 }
 
 void ClipboardExtensionHelper::OnImageDecodeCancel() {
-  base::ResetAndReturn(&image_save_error_callback_).Run("Request canceled.");
+  std::move(image_save_error_callback_).Run("Request canceled.");
 }
 
 }  // namespace extensions
