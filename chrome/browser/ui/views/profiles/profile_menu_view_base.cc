@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
@@ -138,6 +139,7 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   }
 
   EnableUpDownKeyboardAccelerators();
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
 
   bool dice_enabled = AccountConsistencyModeManager::IsDiceEnabledForProfile(
       browser->profile());

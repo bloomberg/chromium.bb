@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/style/typography.h"
 
@@ -29,6 +30,7 @@ IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
                                      Browser* browser)
     : ProfileMenuViewBase(anchor_button, anchor_rect, parent_window, browser) {
   DCHECK(browser->profile()->IsIncognito());
+  GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::INCOGNITO_WINDOW_COUNT);
