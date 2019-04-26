@@ -32,4 +32,20 @@
     <!-- Desired 24dp, but the edge spacer is also in effect. 8 + 16 = 24 -->
     <dimen name="above_the_fold_bottom_margin">16dp</dimen>
 
+    <!-- Article specific dimensions. -->
+    <dimen name="touchless_snippets_padding">12dp</dimen>
+    <dimen name="touchless_snippets_thumbnail_size">64dp</dimen>
+    <dimen name="touchless_thumbnail_margin">12dp</dimen>
+    <!-- Desired 12dp space but headline text has 2dp of ascenders padding that
+    the mocks don't take into account -->
+    <dimen name="touchless_snippets_headline_margin_top">10dp</dimen>
+    <!-- Desired 8dp of space but adjusted to 7dp to to allow cards to match
+    specified height. Then, the headline's descender padding and age acender's
+    padding contribut to 3dp more. 7 - 3 = 4. -->
+    <dimen name="touchless_snippets_age_margin_top">4dp</dimen>
+    <dimen name="touchless_publisher_icon_size">12dp</dimen>
+    <!-- Desired 11dp of padding but age text has 1 dp of descender padding that
+    the mocks don't take into account -->
+    <dimen name="touchless_snippets_age_margin_bottom">10dp</dimen>
+
 </resources>

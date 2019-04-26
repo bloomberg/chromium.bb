@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.touchless.R;
 
 /**
  * A class that represents the view for a single card snippet.
@@ -34,7 +37,7 @@ public class TouchlessArticleViewHolder extends SnippetArticleViewHolder {
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
             Callback<View> asyncFocusDelegate) {
-        super(parent, contextMenuManager, uiDelegate, uiConfig, offlinePageBridge);
+        super(parent, contextMenuManager, uiDelegate, uiConfig, offlinePageBridge, getLayout());
         mAsyncFocusDelegate = asyncFocusDelegate;
     }
 
@@ -50,5 +53,15 @@ public class TouchlessArticleViewHolder extends SnippetArticleViewHolder {
                 callback.onResult(null);
             }
         });
+    }
+
+    @LayoutRes
+    private static int getLayout() {
+        return R.layout.touchless_content_suggestions_card;
+    }
+
+    @Override
+    protected SuggestionsBinder createBinder(SuggestionsUiDelegate uiDelegate) {
+        return new TouchlessSuggestionsBinder(itemView, uiDelegate);
     }
 }
