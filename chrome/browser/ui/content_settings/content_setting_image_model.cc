@@ -592,15 +592,14 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
 
   // Do not show any indicator if sensors are allowed by default and they were
   // not blocked in this page.
-  if (!blocked && content_type() == CONTENT_SETTINGS_TYPE_SENSORS &&
-      map->GetDefaultContentSetting(content_type(), nullptr) ==
-          CONTENT_SETTING_ALLOW) {
+  if (!blocked && map->GetDefaultContentSetting(content_type(), nullptr) ==
+                      CONTENT_SETTING_ALLOW) {
     return false;
   }
 
-  set_icon(kSensorsIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(allowed ? IDS_SENSORS_ALLOWED_TOOLTIP
-                                                : IDS_SENSORS_BLOCKED_TOOLTIP));
+  set_icon(kSensorsIcon, !blocked ? gfx::kNoneIcon : kBlockedBadgeIcon);
+  set_tooltip(l10n_util::GetStringUTF16(
+      !blocked ? IDS_SENSORS_ALLOWED_TOOLTIP : IDS_SENSORS_BLOCKED_TOOLTIP));
   return true;
 }
 
