@@ -1061,17 +1061,11 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   request.SetHttpMethod("PUT");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
-  document->SetSecurityOrigin(SecurityOrigin::Create(KURL(origin)));
-  document->SetURL(document_url);
-  document->SetReferrerPolicy(network::mojom::ReferrerPolicy::kOrigin);
-  document->SetAddressSpace(mojom::IPAddressSpace::kPublic);
 
   dummy_page_holder = nullptr;
 
   GetFetchContext()->AddAdditionalRequestHeaders(request);
 
-  EXPECT_EQ(String(origin + "/"),
-            request.HttpHeaderField(http_names::kReferer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));
 }
 

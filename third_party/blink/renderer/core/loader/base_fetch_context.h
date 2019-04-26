@@ -29,7 +29,6 @@ class WebSocketHandshakeThrottle;
 // Frame. This class provides basic default implementation for some methods.
 class CORE_EXPORT BaseFetchContext : public FetchContext {
  public:
-  void AddAdditionalRequestHeaders(ResourceRequest&) override;
   base::Optional<ResourceRequestBlockedReason> CanRequest(
       ResourceType,
       const ResourceRequest&,
