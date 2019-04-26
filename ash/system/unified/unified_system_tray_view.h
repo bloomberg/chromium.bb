@@ -112,6 +112,9 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // UnifiedSystemTrayView. It can be empty.
   void SetNotificationRectBelowScroll(const gfx::Rect& rect_below_scroll);
 
+  // Returns the number of visible feature pods.
+  int GetVisibleFeaturePodCount() const;
+
   // Create background of UnifiedSystemTray that is semi-transparent and has
   // rounded corners.
   static std::unique_ptr<views::Background> CreateBackground();
