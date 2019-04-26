@@ -2189,6 +2189,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_enable_skylab_hwtest = frozenset([
       'auron_paine',
       'auron_yuna',
+      'atlas',
       'bob',
       'caroline',
       'caroline-arcnext',
@@ -2388,7 +2389,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('coral',         None,            None,               'coral'),            # coral (APL)
     (None,            'eve',           'soraka',           'eve'),              # poppy (KBL)
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
-    ('atlas',         'atlas',         None,               'atlas'),            # Atlas (KBL)
+    ('atlas',         None,            None,               'atlas'),            # Atlas (KBL)
     ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
     (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
     ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
