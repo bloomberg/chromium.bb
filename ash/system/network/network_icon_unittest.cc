@@ -17,7 +17,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/tether_constants.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,8 +36,8 @@ class NetworkIconTest : public testing::Test {
 
   void SetUp() override {
     SetUpDefaultNetworkState();
-    active_network_icon_ =
-        std::make_unique<ActiveNetworkIcon>(network_config_helper_.connector());
+    active_network_icon_ = std::make_unique<ActiveNetworkIcon>();
+    active_network_icon_->InitForTesting(helper().network_state_handler());
   }
 
   void TearDown() override {
@@ -47,21 +46,21 @@ class NetworkIconTest : public testing::Test {
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
-    return helper().ConfigureService(shill_json_string);
+    return helper_.ConfigureService(shill_json_string);
   }
 
   void SetServiceProperty(const std::string& service_path,
                           const std::string& key,
                           const base::Value& value) {
-    helper().SetServiceProperty(service_path, key, value);
+    helper_.SetServiceProperty(service_path, key, value);
   }
 
   void SetUpDefaultNetworkState() {
     // NetworkStateTestHelper default has a wifi device only and no services.
 
-    helper().device_test()->AddDevice("/device/stub_cellular_device",
-                                      shill::kTypeCellular,
-                                      "stub_cellular_device");
+    helper_.device_test()->AddDevice("/device/stub_cellular_device",
+                                     shill::kTypeCellular,
+                                     "stub_cellular_device");
     base::RunLoop().RunUntilIdle();
 
     wifi1_path_ = ConfigureService(
@@ -81,8 +80,8 @@ class NetworkIconTest : public testing::Test {
       const std::string& type,
       const std::string& connection_state,
       int signal_strength) {
-    return helper().CreateStandaloneNetworkState(id, type, connection_state,
-                                                 signal_strength);
+    return helper_.CreateStandaloneNetworkState(id, type, connection_state,
+                                                signal_strength);
   }
 
   std::unique_ptr<chromeos::NetworkState>
@@ -139,19 +138,17 @@ class NetworkIconTest : public testing::Test {
   }
 
   void SetCellularUnavailable() {
-    helper().manager_test()->RemoveTechnology(shill::kTypeCellular);
+    helper_.manager_test()->RemoveTechnology(shill::kTypeCellular);
 
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(
         chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-        helper().network_state_handler()->GetTechnologyState(
+        helper_.network_state_handler()->GetTechnologyState(
             chromeos::NetworkTypePattern::Cellular()));
   }
 
-  chromeos::NetworkStateTestHelper& helper() {
-    return network_config_helper_.network_state_helper();
-  }
+  chromeos::NetworkStateTestHelper& helper() { return helper_; }
 
   const std::string& wifi1_path() const { return wifi1_path_; }
   const std::string& wifi2_path() const { return wifi2_path_; }
@@ -161,7 +158,9 @@ class NetworkIconTest : public testing::Test {
 
  private:
   const base::MessageLoop message_loop_;
-  chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
+
+  chromeos::NetworkStateTestHelper helper_{
+      false /* use_default_devices_and_services */};
 
   // Preconfigured service paths:
   std::string wifi1_path_;

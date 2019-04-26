@@ -9,7 +9,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -82,6 +81,19 @@ mojom::ConnectionStateType GetMojoConnectionStateType(
   return mojom::ConnectionStateType::kNotConnected;
 }
 
+mojom::ActivationStateType ShillActivationStateToMojo(
+    const std::string& shill_state) {
+  if (shill_state == shill::kActivationStateActivated)
+    return mojom::ActivationStateType::kActivated;
+  if (shill_state == shill::kActivationStateActivating)
+    return mojom::ActivationStateType::kActivating;
+  if (shill_state == shill::kActivationStateNotActivated)
+    return mojom::ActivationStateType::kNotActivated;
+  if (shill_state == shill::kActivationStatePartiallyActivated)
+    return mojom::ActivationStateType::kPartiallyActivated;
+  return mojom::ActivationStateType::kUnknown;
+}
+
 mojom::VPNType ShillVpnTypeToMojo(const std::string& shill_vpn_type) {
   if (shill_vpn_type == shill::kProviderL2tpIpsec)
     return mojom::VPNType::kL2TPIPsec;
@@ -93,6 +105,21 @@ mojom::VPNType ShillVpnTypeToMojo(const std::string& shill_vpn_type) {
     return mojom::VPNType::kArcVPN;
   NOTREACHED() << "Unsupported shill VPN type: " << shill_vpn_type;
   return mojom::VPNType::kOpenVPN;
+}
+
+mojom::SecurityType ShillSecurityToMojo(const std::string& shill_security) {
+  if (shill_security.empty() || shill_security == shill::kSecurityNone)
+    return mojom::SecurityType::kNone;
+  if (shill_security == shill::kSecurityWep)
+    return mojom::SecurityType::kWepPsk;
+  if (shill_security == shill::kSecurityPsk)
+    return mojom::SecurityType::kWpaPsk;
+  if (shill_security == shill::kSecurity8021x)
+    return mojom::SecurityType::kWpaEap;
+  if (shill_security == shill::kSecurityWep)
+    return mojom::SecurityType::kWep8021x;
+  NOTREACHED() << "Unsupported shill security: " << shill_security;
+  return mojom::SecurityType::kNone;
 }
 
 base::Optional<mojom::DeviceStateType> GetMojoDeviceStateType(
@@ -140,7 +167,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
   switch (type) {
     case mojom::NetworkType::kCellular: {
       auto cellular = mojom::CellularStateProperties::New();
-      cellular->activation_state = network->GetMojoActivationState();
+      cellular->activation_state =
+          ShillActivationStateToMojo(network->activation_state());
       cellular->network_technology = ShillToONC(network->network_technology(),
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
@@ -193,7 +221,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       wifi->bssid = network->bssid();
       wifi->frequency = network->frequency();
       wifi->hex_ssid = network->GetHexSsid();
-      wifi->security = network->GetMojoSecurity();
+      wifi->security = ShillSecurityToMojo(network->security_class());
       wifi->signal_strength = network->signal_strength();
       wifi->ssid = network->name();
       result->wifi = std::move(wifi);

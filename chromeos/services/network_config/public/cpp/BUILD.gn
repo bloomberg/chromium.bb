@@ -4,17 +4,6 @@
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
-source_set("cpp") {
-  sources = [
-    "cros_network_config_util.cc",
-    "cros_network_config_util.h",
-  ]
-
-  deps = [
-    "//chromeos/services/network_config/public/mojom",
-  ]
-}
-
 source_set("manifest") {
   sources = [
     "manifest.cc",
@@ -30,10 +19,6 @@ source_set("manifest") {
 
 source_set("test_support") {
   testonly = true
-
-  public_deps = [
-    ":cpp",
-  ]
 
   sources = [
     "cros_network_config_test_helper.cc",

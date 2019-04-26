@@ -1,5 +1,4 @@
 include_rules = [
-  "+chromeos/services/network_config/public",
   "+components/device_event_log",
   "+components/onc",
   "+third_party/cros_system_api",

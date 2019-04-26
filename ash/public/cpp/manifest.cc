@@ -44,7 +44,6 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/power/public/mojom/power_manager.mojom.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -123,9 +122,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
           .RequireCapability(chromeos::multidevice_setup::mojom::kServiceName,
                              "multidevice_setup")
-          .RequireCapability(
-              chromeos::network_config::mojom::kServiceName,
-              chromeos::network_config::mojom::kNetworkConfigCapability)
           .PackageService(ws::GetManifest())
           .Build()
           .Amend(GetAmendmentForTesting())};

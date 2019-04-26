@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/onc/onc_constants.h"
 #include "url/gurl.h"
 
@@ -215,10 +214,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
 
   // Returns |error_| if valid, otherwise returns |last_error_|.
   std::string GetErrorState() const;
-
-  // Helpers for returning mojo types.
-  network_config::mojom::ActivationStateType GetMojoActivationState() const;
-  network_config::mojom::SecurityType GetMojoSecurity() const;
 
   // Setters for testing.
   void set_connection_state_for_testing(const std::string& connection_state) {

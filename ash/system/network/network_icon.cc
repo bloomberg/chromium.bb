@@ -20,7 +20,6 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/tether_constants.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,10 +30,6 @@
 #include "ui/gfx/vector_icon_types.h"
 
 using chromeos::NetworkTypePattern;
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::SecurityType;
 
 namespace ash {
 namespace network_icon {
@@ -336,43 +331,24 @@ NetworkIconState::NetworkIconState(const chromeos::NetworkState* network) {
     connection_state = ConnectionStateType::kNotConnected;
   }
 
-  if (type == NetworkType::kWiFi)
-    security = network->GetMojoSecurity();
-
+  if (type == NetworkType::kWiFi && !network->security_class().empty()) {
+    chromeos::onc::TranslateStringToONC(chromeos::onc::kWiFiSecurityTable,
+                                        network->security_class(), &security);
+  }
   if (type == NetworkType::kCellular) {
     if (!network->network_technology().empty()) {
       chromeos::onc::TranslateStringToONC(
           chromeos::onc::kNetworkTechnologyTable, network->network_technology(),
           &network_technology);
     }
-    activation_state = network->GetMojoActivationState();
+    if (!network->activation_state().empty()) {
+      chromeos::onc::TranslateStringToONC(chromeos::onc::kActivationStateTable,
+                                          network->activation_state(),
+                                          &activation_state);
+    }
   }
   signal_strength = network->signal_strength();
   is_roaming = network->IndicateRoaming();
-}
-
-NetworkIconState::NetworkIconState(
-    const chromeos::network_config::mojom::NetworkStateProperties* network) {
-  guid = network->guid;
-  name = network->name;
-  type = network->type;
-  connection_state = network->connection_state;
-  if (type == NetworkType::kCellular && network->cellular) {
-    activation_state = network->cellular->activation_state;
-    network_technology = network->cellular->network_technology;
-    is_roaming = network->cellular->roaming;
-    signal_strength = network->cellular->signal_strength;
-  }
-  if (type == NetworkType::kTether && network->tether) {
-    signal_strength = network->tether->signal_strength;
-  }
-  if (type == NetworkType::kWiFi && network->wifi) {
-    security = network->wifi->security;
-    signal_strength = network->wifi->signal_strength;
-  }
-  if (type == NetworkType::kWiMAX && network->wimax) {
-    signal_strength = network->wimax->signal_strength;
-  }
 }
 
 NetworkIconState::NetworkIconState(const NetworkIconState& other) = default;
@@ -462,7 +438,8 @@ void NetworkIconImpl::GetBadges(const NetworkIconState& network,
   const NetworkType type = network.type;
   const SkColor icon_color = GetDefaultColorForIconType(icon_type_);
   if (type == NetworkType::kWiFi) {
-    if (network.security != SecurityType::kNone && !IsTrayIcon(icon_type_)) {
+    if (network.security != onc::wifi::kSecurityNone &&
+        !IsTrayIcon(icon_type_)) {
       badges->bottom_right = {&kUnifiedNetworkBadgeSecureIcon, icon_color};
     }
   } else if (type == NetworkType::kCellular) {
@@ -515,8 +492,8 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkIconState& network,
 // Public interface
 
 bool IsConnected(const NetworkIconState& icon_state) {
-  return chromeos::network_config::StateIsConnected(
-      icon_state.connection_state);
+  return icon_state.connection_state == ConnectionStateType::kConnected ||
+         icon_state.connection_state == ConnectionStateType::kPortal;
 }
 
 bool IsConnecting(const NetworkIconState& icon_state) {
@@ -625,7 +602,7 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
 
 base::string16 GetLabelForNetwork(const NetworkIconState& network,
                                   IconType icon_type) {
-  ActivationStateType activation_state = network.activation_state;
+  std::string activation_state = network.activation_state;
   if (icon_type == ICON_TYPE_LIST || icon_type == ICON_TYPE_MENU_LIST) {
     // Show "<network>: [Connecting|Activating]..."
     if (icon_type != ICON_TYPE_MENU_LIST && IsConnecting(network)) {
@@ -633,14 +610,14 @@ base::string16 GetLabelForNetwork(const NetworkIconState& network,
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
           base::UTF8ToUTF16(network.name));
     }
-    if (activation_state == ActivationStateType::kActivating) {
+    if (activation_state == onc::cellular::kActivating) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
           base::UTF8ToUTF16(network.name));
     }
     // Show "Activate <network>" in list view only.
-    if (activation_state == ActivationStateType::kNotActivated ||
-        activation_state == ActivationStateType::kPartiallyActivated) {
+    if (activation_state == onc::cellular::kNotActivated ||
+        activation_state == onc::cellular::kPartiallyActivated) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
           base::UTF8ToUTF16(network.name));
@@ -655,7 +632,7 @@ base::string16 GetLabelForNetwork(const NetworkIconState& network,
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING,
                                         base::UTF8ToUTF16(network.name));
     }
-    if (activation_state == ActivationStateType::kActivating) {
+    if (activation_state == onc::cellular::kActivating) {
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING,
                                         base::UTF8ToUTF16(network.name));
     }

@@ -20,7 +20,7 @@
 
 namespace ash {
 
-SystemTrayModel::SystemTrayModel(service_manager::Connector* connector)
+SystemTrayModel::SystemTrayModel()
     : clock_(std::make_unique<ClockModel>()),
       enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
       locale_(std::make_unique<LocaleModel>()),
@@ -28,7 +28,7 @@ SystemTrayModel::SystemTrayModel(service_manager::Connector* connector)
       tracing_(std::make_unique<TracingModel>()),
       update_model_(std::make_unique<UpdateModel>()),
       virtual_keyboard_(std::make_unique<VirtualKeyboardModel>()),
-      active_network_icon_(std::make_unique<ActiveNetworkIcon>(connector)) {}
+      active_network_icon_(std::make_unique<ActiveNetworkIcon>()) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
 

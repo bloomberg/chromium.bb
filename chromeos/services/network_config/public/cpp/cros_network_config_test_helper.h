@@ -42,7 +42,6 @@ class CrosNetworkConfigTestHelper {
   mojom::CrosNetworkConfig* service_interface_ptr() {
     return service_interface_ptr_.get();
   }
-  service_manager::Connector* connector() { return connector_.get(); }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
 
   void FlushForTesting();
