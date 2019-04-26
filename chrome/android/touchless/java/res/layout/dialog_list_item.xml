@@ -11,7 +11,8 @@
     android:paddingTop="9dp"
     android:paddingBottom="9dp"
     android:orientation="horizontal"
-    android:background="@color/modern_primary_color">
+    android:background="@color/modern_primary_color"
+    android:theme="@style/Theme.AppCompat.Light">
 
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/dialog_item_icon"
