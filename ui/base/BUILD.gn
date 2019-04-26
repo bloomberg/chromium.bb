@@ -484,11 +484,6 @@ jumbo_component("base") {
     }
   }
 
-  if (use_aura) {
-    deps += [ "//ui/events" ]
-    sources += [ "window_tracker_template.h" ]
-  }
-
   if (!use_aura || !is_linux) {
     sources -= [ "resource/resource_bundle_auralinux.cc" ]
   }

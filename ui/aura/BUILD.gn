@@ -157,6 +157,7 @@ jumbo_component("aura") {
     "window_port_for_shutdown.cc",
     "window_port_for_shutdown.h",
     "window_targeter.cc",
+    "window_tracker.cc",
     "window_tree_host.cc",
     "window_tree_host_platform.cc",
   ]
