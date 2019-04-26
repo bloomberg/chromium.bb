@@ -23,6 +23,8 @@
                           style:(UIAlertActionStyle)style
                         handler:(void (^)(AlertAction* action))handler;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 // This class is a replacement for UIAlertController that supports custom

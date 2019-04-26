@@ -64,16 +64,24 @@ constexpr int kButtonTextDestructiveColor = 0xdf322f;
 
 @implementation AlertAction
 
+- (instancetype)initWithTitle:(NSString*)title
+                        style:(UIAlertActionStyle)style
+                      handler:(void (^)(AlertAction* action))handler {
+  self = [super init];
+  if (self) {
+    static NSInteger actionIdentifier = 0;
+    _uniqueIdentifier = ++actionIdentifier;
+    _title = title;
+    _handler = handler;
+    _style = style;
+  }
+  return self;
+}
+
 + (instancetype)actionWithTitle:(NSString*)title
                           style:(UIAlertActionStyle)style
                         handler:(void (^)(AlertAction* action))handler {
-  AlertAction* action = [[AlertAction alloc] init];
-  static NSInteger actionIdentifier = 0;
-  action.uniqueIdentifier = ++actionIdentifier;
-  action.title = title;
-  action.handler = handler;
-  action.style = style;
-  return action;
+  return [[AlertAction alloc] initWithTitle:title style:style handler:handler];
 }
 
 @end
