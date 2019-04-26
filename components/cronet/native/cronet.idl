@@ -1456,8 +1456,16 @@ interface RequestFinishedInfoListener {
    * happen after a {@code UrlRequestCallback} method is called.
    *
    * @param request_info {@link RequestFinishedInfo} for finished request.
-   *     Ownership is *not* transferred by this call.  Cronet implementation
-   *     will destroy after this call.
+   *     Ownership is *not* transferred by this call, do not destroy
+   *     {@code request_info}.
+   *
+   *     {@code request_info} will be valid as long as the {@code UrlRequest}
+   *     that created it hasn't been destroyed -- **additionally**, it will
+   *     also always be valid for the duration of {@code OnRequestFinished()},
+   *     even if the {@code UrlRequest} has been destroyed.
+   *
+   *     This is accomplished by ownership being shared between the {@code
+   *     UrlRequest} and the code that calls this listener.
    */
   OnRequestFinished(RequestFinishedInfo request_info);
 };
