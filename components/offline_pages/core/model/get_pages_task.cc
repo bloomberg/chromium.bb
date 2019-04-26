@@ -30,7 +30,8 @@ using ReadResult = GetPagesTask::ReadResult;
   " offline_id,creation_time,file_size,last_access_time," \
   "access_count,system_download_id,file_missing_time,"    \
   "client_namespace,client_id,online_url,"                \
-  "file_path,title,original_url,request_origin,digest"
+  "file_path,title,original_url,request_origin,digest,"   \
+  "snippet,attribution"
 
 ClientId OfflinePageClientId(const sql::Statement& statement) {
   return ClientId(statement.ColumnString(7), statement.ColumnString(8));
@@ -57,6 +58,8 @@ OfflinePageItem MakeOfflinePageItem(const sql::Statement& statement) {
   item.original_url_if_different = GURL(statement.ColumnString(12));
   item.request_origin = statement.ColumnString(13);
   item.digest = statement.ColumnString(14);
+  item.snippet = statement.ColumnString(15);
+  item.attribution = statement.ColumnString(16);
   return item;
 }
 

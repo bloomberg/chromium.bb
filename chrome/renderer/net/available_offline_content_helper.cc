@@ -58,6 +58,8 @@ base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
                base::Value(ConvertToUTF16Base64(content->attribution)));
   value.SetKey("thumbnail_data_uri",
                base::Value(content->thumbnail_data_uri.spec()));
+  value.SetKey("favicon_data_uri",
+               base::Value(content->favicon_data_uri.spec()));
   value.SetKey("content_type",
                base::Value(static_cast<int>(content->content_type)));
   return value;
@@ -162,9 +164,10 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
                             &json);
   }
   std::move(callback).Run(list_visible_by_prefs, json);
-  // We don't need to retain the thumbnail here, so free up some memory.
+  // We don't need to retain the visuals here, so free up some memory.
   for (const AvailableOfflineContentPtr& item : fetched_content_) {
     item->thumbnail_data_uri = GURL();
+    item->favicon_data_uri = GURL();
   }
 }
 

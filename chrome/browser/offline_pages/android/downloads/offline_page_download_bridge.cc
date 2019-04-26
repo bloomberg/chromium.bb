@@ -24,7 +24,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
-#include "chrome/browser/offline_pages/thumbnail_decoder_impl.h"
+#include "chrome/browser/offline_pages/visuals_decoder_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -386,7 +386,7 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,
-        std::make_unique<ThumbnailDecoderImpl>(
+        std::make_unique<VisualsDecoderImpl>(
             std::make_unique<ImageDecoderImpl>()),
         std::make_unique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),

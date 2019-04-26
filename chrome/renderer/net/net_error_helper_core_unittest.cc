@@ -2674,7 +2674,8 @@ TEST_F(NetErrorHelperCoreTest, Download) {
   EXPECT_EQ(1, download_count());
 }
 
-const char kDataURI[] = "data:image/png;base64,abc";
+const char kThumbnailDataURI[] = "data:image/png;base64,abc";
+const char kFaviconDataURI[] = "data:image/png;base64,def";
 
 // Creates a couple of fake AvailableOfflineContent instances.
 std::vector<chrome::mojom::AvailableOfflineContentPtr>
@@ -2682,10 +2683,11 @@ GetFakeAvailableContent() {
   std::vector<chrome::mojom::AvailableOfflineContentPtr> content;
   content.push_back(chrome::mojom::AvailableOfflineContent::New(
       "ID", "name_space", "title", "snippet", "date_modified", "attribution",
-      GURL(kDataURI), chrome::mojom::AvailableContentType::kPrefetchedPage));
+      GURL(kThumbnailDataURI), GURL(kFaviconDataURI),
+      chrome::mojom::AvailableContentType::kPrefetchedPage));
   content.push_back(chrome::mojom::AvailableOfflineContent::New(
       "ID2", "name_space2", "title2", "snippet2", "date_modified2",
-      "attribution2", GURL(kDataURI),
+      "attribution2", GURL(kThumbnailDataURI), GURL(kFaviconDataURI),
       chrome::mojom::AvailableContentType::kOtherPage));
   return content;
 }
@@ -2704,6 +2706,7 @@ const std::string GetExpectedAvailableContentAsJson() {
       "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8Abg==",
       "content_type": 0,
       "date_modified": "date_modified",
+      "favicon_data_uri": "data:image/png;base64,def",
       "name_space": "name_space",
       "snippet_base64": "AHMAbgBpAHAAcABlAHQ=",
       "thumbnail_data_uri": "data:image/png;base64,abc",
@@ -2714,6 +2717,7 @@ const std::string GetExpectedAvailableContentAsJson() {
       "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8AbgAy",
       "content_type": 3,
       "date_modified": "date_modified2",
+      "favicon_data_uri": "data:image/png;base64,def",
       "name_space": "name_space2",
       "snippet_base64": "AHMAbgBpAHAAcABlAHQAMg==",
       "thumbnail_data_uri": "data:image/png;base64,abc",

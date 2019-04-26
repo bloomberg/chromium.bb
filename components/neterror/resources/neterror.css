@@ -423,29 +423,29 @@ a {
   }
 }
 
-.suggestion-with-image .offline-content-suggestion-visual {
+.suggestion-with-image .offline-content-suggestion-thumbnail {
   flex-basis: 8.2em;
   flex-shrink: 0;
 }
 
-.suggestion-with-image .offline-content-suggestion-visual > img {
+.suggestion-with-image .offline-content-suggestion-thumbnail > img {
   height: 100%;
   width: 100%;
 }
 
-#offline-content-list:not(.is-rtl) .suggestion-with-image
-.offline-content-suggestion-visual > img {
+.suggestion-with-image #offline-content-list:not(.is-rtl)
+.offline-content-suggestion-thumbnail > img {
   border-bottom-right-radius: 7px;
   border-top-right-radius: 7px;
 }
 
-#offline-content-list.is-rtl .suggestion-with-image
-.offline-content-suggestion-visual > img {
+.suggestion-with-image #offline-content-list.is-rtl
+.offline-content-suggestion-thumbnail > img {
   border-bottom-left-radius: 7px;
   border-top-left-radius: 7px;
 }
 
-.suggestion-with-icon .offline-content-suggestion-visual {
+.suggestion-with-icon .offline-content-suggestion-thumbnail {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -453,7 +453,7 @@ a {
   min-width: 4.2em;
 }
 
-.suggestion-with-icon .offline-content-suggestion-visual > div {
+.suggestion-with-icon .offline-content-suggestion-thumbnail > div {
   align-items: center;
   background-color: rgb(241, 243, 244);
   border-radius: 50%;
@@ -463,9 +463,24 @@ a {
   width: 2.3em;
 }
 
-.suggestion-with-icon .offline-content-suggestion-visual > div > img {
+.suggestion-with-icon .offline-content-suggestion-thumbnail > div > img {
   height: 1.45em;
   width: 1.45em;
+}
+
+.offline-content-suggestion-favicon {
+  height: 1em;
+  margin-inline-end: 0.4em;
+  width: 1.4em;
+}
+
+.offline-content-suggestion-favicon > img {
+  height: 1.4em;
+  width: 1.4em;
+}
+
+.no-favicon .offline-content-suggestion-favicon {
+  display: none;
 }
 
 .image-video {
@@ -537,6 +552,7 @@ div.offline-content-suggestion {
   color: rgb(95, 99, 104);
   display: flex;
   font-size: .8em;
+  line-height: 1.7em;
 }
 
 .offline-content-suggestion-attribution {
@@ -544,6 +560,7 @@ div.offline-content-suggestion {
   -webkit-line-clamp: 1;
   display: -webkit-box;
   flex-shrink: 1;
+  margin-inline-end: 0.3em;
   overflow-wrap: break-word;
   overflow: hidden;
   text-overflow: ellipsis;

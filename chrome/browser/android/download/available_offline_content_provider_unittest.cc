@@ -69,6 +69,7 @@ OfflineItem SuggestedOfflinePageItem() {
   item.creation_time =
       base::Time::Now() - base::TimeDelta::FromMinutes(60 * 3.5);
   item.last_accessed_time = base::Time::Now();
+  item.attribution = "attribution";
   return item;
 }
 
@@ -117,6 +118,7 @@ OfflineItem DangerousItem() {
 OfflineItemVisuals TestThumbnail() {
   OfflineItemVisuals visuals;
   visuals.icon = gfx::test::CreateImage(2, 4);
+  visuals.custom_favicon = gfx::test::CreateImage(4, 4);
   return visuals;
 }
 
@@ -215,8 +217,10 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
   EXPECT_TRUE(base::StartsWith(first->thumbnail_data_uri.spec(),
                                "data:image/png;base64,iVBORw0K",
                                base::CompareCase::SENSITIVE));
-  // TODO(crbug.com/852872): Add attribution.
-  EXPECT_EQ("", first->attribution);
+  EXPECT_TRUE(base::StartsWith(first->favicon_data_uri.spec(),
+                               "data:image/png;base64,iVBORw0K",
+                               base::CompareCase::SENSITIVE));
+  EXPECT_EQ(page_item.attribution, first->attribution);
 }
 
 TEST_F(AvailableOfflineContentTest, NotEnabled) {

@@ -82,6 +82,7 @@ static_library("core") {
     "snapshot_controller.cc",
     "snapshot_controller.h",
     "system_download_manager.h",
+    "visuals_decoder.h",
   ]
 
   deps = [

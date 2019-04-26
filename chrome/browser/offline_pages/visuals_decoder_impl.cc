@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/thumbnail_decoder_impl.h"
+#include "chrome/browser/offline_pages/visuals_decoder_impl.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -14,7 +14,10 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace offline_pages {
+
 namespace {
+
+const gfx::Size kPreferredFaviconSize = gfx::Size(64, 64);
 
 gfx::Image CropSquare(const gfx::Image& image) {
   if (image.IsEmpty())
@@ -30,19 +33,18 @@ gfx::Image CropSquare(const gfx::Image& image) {
 
 }  // namespace
 
-ThumbnailDecoderImpl::ThumbnailDecoderImpl(
+VisualsDecoderImpl::VisualsDecoderImpl(
     std::unique_ptr<image_fetcher::ImageDecoder> decoder)
     : image_decoder_(std::move(decoder)) {
   CHECK(image_decoder_);
 }
 
-ThumbnailDecoderImpl::~ThumbnailDecoderImpl() = default;
+VisualsDecoderImpl::~VisualsDecoderImpl() = default;
 
-void ThumbnailDecoderImpl::DecodeAndCropThumbnail(
-    const std::string& thumbnail_data,
-    DecodeComplete complete_callback) {
+void VisualsDecoderImpl::DecodeAndCropImage(const std::string& thumbnail_data,
+                                            DecodeComplete complete_callback) {
   auto callback = base::BindOnce(
-      [](ThumbnailDecoder::DecodeComplete complete_callback,
+      [](VisualsDecoder::DecodeComplete complete_callback,
          const gfx::Image& image) {
         if (image.IsEmpty()) {
           std::move(complete_callback).Run(image);
@@ -52,8 +54,10 @@ void ThumbnailDecoderImpl::DecodeAndCropThumbnail(
       },
       std::move(complete_callback));
 
+  // kPreferredFaviconSize only has an effect for images with multiple frames
+  // (.ico) and shouldn't make a difference for thumbnails.
   image_decoder_->DecodeImage(
-      thumbnail_data, gfx::Size(),
+      thumbnail_data, kPreferredFaviconSize,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
 

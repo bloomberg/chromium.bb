@@ -30,7 +30,7 @@ using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineItemShareInfo = offline_items_collection::OfflineItemShareInfo;
 
 namespace offline_pages {
-class ThumbnailDecoder;
+class VisualsDecoder;
 
 // C++ side of the UI Adapter. Mimics DownloadManager/Item/History (since we
 // share UI with Downloads).
@@ -74,12 +74,12 @@ class DownloadUIAdapter : public OfflineContentProvider,
                                      ShareCallback share_callback) = 0;
   };
 
-  // Create the adapter. thumbnail_decoder may be null, in which case,
-  // thumbnails will not be provided through GetVisualsForItem.
+  // Create the adapter. visuals_decoder may be null, in which case,
+  // thumbnails and favicons will not be provided through GetVisualsForItem.
   DownloadUIAdapter(OfflineContentAggregator* aggregator,
                     OfflinePageModel* model,
                     RequestCoordinator* coordinator,
-                    std::unique_ptr<ThumbnailDecoder> thumbnail_decoder,
+                    std::unique_ptr<VisualsDecoder> visuals_decoder,
                     std::unique_ptr<Delegate> delegate);
   ~DownloadUIAdapter() override;
 
@@ -148,6 +148,15 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void OnVisualsLoaded(GetVisualsOptions options,
                        VisualResultCallback callback,
                        std::unique_ptr<OfflinePageVisuals> visuals);
+
+  void DecodeThumbnail(std::unique_ptr<OfflinePageVisuals> visuals,
+                       GetVisualsOptions options,
+                       VisualResultCallback callback);
+  void DecodeFavicon(std::string favicon,
+                     GetVisualsOptions options,
+                     VisualResultCallback callback,
+                     const gfx::Image& thumbnail);
+
   void OnRequestsLoaded(
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
@@ -182,7 +191,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   RequestCoordinator* request_coordinator_;
 
   // May be null if thumbnails are not required.
-  std::unique_ptr<ThumbnailDecoder> thumbnail_decoder_;
+  std::unique_ptr<VisualsDecoder> visuals_decoder_;
 
   // A delegate, supplied at construction.
   std::unique_ptr<Delegate> delegate_;

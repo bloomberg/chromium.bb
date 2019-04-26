@@ -33,7 +33,7 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
-#include "components/offline_pages/core/thumbnail_decoder.h"
+#include "components/offline_pages/core/visuals_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -102,14 +102,14 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   bool maybe_suppress_notification_ = false;
 };
 
-class MockThumbnailDecoder : public ThumbnailDecoder {
+class MockVisualsDecoder : public VisualsDecoder {
  public:
-  MOCK_METHOD2(DecodeAndCropThumbnail_,
-               void(const std::string& thumbnail_data,
+  MOCK_METHOD2(DecodeAndCropImage_,
+               void(const std::string& image_data,
                     DecodeComplete* complete_callback));
-  void DecodeAndCropThumbnail(const std::string& thumbnail_data,
-                              DecodeComplete complete_callback) override {
-    DecodeAndCropThumbnail_(thumbnail_data, &complete_callback);
+  void DecodeAndCropImage(const std::string& image_data,
+                          DecodeComplete complete_callback) override {
+    DecodeAndCropImage_(image_data, &complete_callback);
   }
 };
 
@@ -271,7 +271,7 @@ class DownloadUIAdapterTest : public testing::Test,
   DownloadUIAdapterDelegate* adapter_delegate;
   std::unique_ptr<DownloadUIAdapter> adapter;
   OfflinerStub* offliner_stub;
-  MockThumbnailDecoder* thumbnail_decoder;
+  MockVisualsDecoder* visuals_decoder;
 
  private:
   std::unique_ptr<RequestCoordinatorStubTaco> request_coordinator_taco_;
@@ -298,8 +298,8 @@ void DownloadUIAdapterTest::SetUp() {
 
   request_coordinator_taco_->CreateRequestCoordinator();
 
-  auto decoder = std::make_unique<MockThumbnailDecoder>();
-  thumbnail_decoder = decoder.get();
+  auto decoder = std::make_unique<MockVisualsDecoder>();
+  visuals_decoder = decoder.get();
 
   adapter = std::make_unique<DownloadUIAdapter>(
       nullptr, model.get(), request_coordinator_taco_->request_coordinator(),
@@ -588,9 +588,15 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
   model->visuals_by_offline_id_result =
       std::make_unique<OfflinePageVisuals>(kVisuals);
   const int kImageWidth = 24;
-  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kThumbnailData, _))
       .WillOnce(
-          WithArg<1>(Invoke([&](ThumbnailDecoder::DecodeComplete* callback) {
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(
+                gfx::test::CreateImage(kImageWidth, kImageWidth));
+          })));
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kFaviconData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
             std::move(*callback).Run(
                 gfx::test::CreateImage(kImageWidth, kImageWidth));
           })));
@@ -601,12 +607,13 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
               visuals) {
         EXPECT_TRUE(visuals);
         EXPECT_EQ(kImageWidth, visuals->icon.Width());
+        EXPECT_EQ(kImageWidth, visuals->custom_favicon.Width());
         called = true;
       });
 
   base::HistogramTester histogram_tester;
-  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
-                             callback);
+  adapter->GetVisualsForItem(
+      kTestContentId1, GetVisualsOptions::IconAndCustomFavicon(), callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(
@@ -615,7 +622,7 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
-  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kThumbnailData, _))
       .Times(0);
   AddInitialPage(kTestClientIdPrefetch);
   const ContentId kContentID("not", "valid");
@@ -630,8 +637,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
       });
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kContentID, GetVisualsOptions::IconOnly(),
-                             callback);
+  adapter->GetVisualsForItem(
+      kContentID, GetVisualsOptions::IconAndCustomFavicon(), callback);
   PumpLoop();
 
   histogram_tester.ExpectTotalCount(
@@ -639,10 +646,11 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoVisuals) {
   AddInitialPage(kTestClientIdPrefetch);
   model->visuals_by_offline_id_result = nullptr;
-  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(_, _)).Times(0);
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(_, _)).Times(0);
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(_, _)).Times(0);
   bool called = false;
   auto callback = base::BindLambdaForTesting(
       [&](const offline_items_collection::ContentId& id,
@@ -655,8 +663,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
   adapter->GetAllItems(base::DoNothing());
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
-                             callback);
+  adapter->GetVisualsForItem(
+      kTestContentId1, GetVisualsOptions::IconAndCustomFavicon(), callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(
@@ -664,13 +672,61 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
+  const int kImageWidth = 24;
   AddInitialPage(kTestClientIdPrefetch);
   model->visuals_by_offline_id_result =
       std::make_unique<OfflinePageVisuals>(kVisuals);
-  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+  model->visuals_by_offline_id_result->thumbnail = "";
+
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_("", _))
       .WillOnce(
-          WithArg<1>(Invoke([&](ThumbnailDecoder::DecodeComplete* callback) {
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(gfx::test::CreateImage(0, 0));
+          })));
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kFaviconData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(
+                gfx::test::CreateImage(kImageWidth, kImageWidth));
+          })));
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kTestContentId1, id);
+        EXPECT_TRUE(visuals);
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
+  adapter->GetVisualsForItem(
+      kTestContentId1, GetVisualsOptions::IconAndCustomFavicon(), callback);
+  PumpLoop();
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", false, 1);
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoFavicon) {
+  const int kImageWidth = 24;
+  AddInitialPage(kTestClientIdPrefetch);
+  model->visuals_by_offline_id_result =
+      std::make_unique<OfflinePageVisuals>(kVisuals);
+  model->visuals_by_offline_id_result->favicon = "";
+
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kThumbnailData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(
+                gfx::test::CreateImage(kImageWidth, kImageWidth));
+          })));
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_("", _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
             std::move(*callback).Run(gfx::test::CreateImage(0, 0));
           })));
   bool called = false;
@@ -679,13 +735,48 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
           std::unique_ptr<offline_items_collection::OfflineItemVisuals>
               visuals) {
         EXPECT_EQ(kTestContentId1, id);
-        EXPECT_FALSE(visuals);
+        EXPECT_TRUE(visuals);
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
+  adapter->GetVisualsForItem(
+      kTestContentId1, GetVisualsOptions::IconAndCustomFavicon(), callback);
+  PumpLoop();
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", true, 1);
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
+  AddInitialPage(kTestClientIdPrefetch);
+  model->visuals_by_offline_id_result =
+      std::make_unique<OfflinePageVisuals>(kVisuals);
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kThumbnailData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(gfx::test::CreateImage(0, 0));
+          })));
+  EXPECT_CALL(*visuals_decoder, DecodeAndCropImage_(kFaviconData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](VisualsDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(gfx::test::CreateImage(0, 0));
+          })));
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kTestContentId1, id);
+        EXPECT_TRUE(visuals);
         called = true;
       });
   base::HistogramTester histogram_tester;
 
-  adapter->GetVisualsForItem(kTestContentId1, GetVisualsOptions::IconOnly(),
-                             callback);
+  adapter->GetVisualsForItem(
+      kTestContentId1, GetVisualsOptions::IconAndCustomFavicon(), callback);
   PumpLoop();
 
   histogram_tester.ExpectUniqueSample(
