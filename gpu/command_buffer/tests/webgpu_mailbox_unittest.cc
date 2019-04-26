@@ -76,6 +76,10 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
+  if (!WebGPUSharedImageSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPUSharedImage isn't supported";
+    return;
+  }
 
   // Create a the shared image
   SharedImageInterface* sii = GetSharedImageInterface();
@@ -190,6 +194,10 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
 TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   if (!WebGPUSupported()) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+  if (!WebGPUSharedImageSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPUSharedImage isn't supported";
     return;
   }
 

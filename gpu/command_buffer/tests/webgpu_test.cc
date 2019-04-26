@@ -7,6 +7,7 @@
 #include <dawn/dawn.h>
 
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_test_config.h"
@@ -24,6 +25,15 @@ WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
   return context_ != nullptr;
+}
+
+bool WebGPUTest::WebGPUSharedImageSupported() const {
+  // Currently WebGPUSharedImage is only implemented on Mac
+#if defined(OS_MACOSX) && BUILDFLAG(USE_DAWN)
+  return true;
+#else
+  return false;
+#endif
 }
 
 void WebGPUTest::SetUp() {
