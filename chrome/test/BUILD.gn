@@ -4112,8 +4112,11 @@ test("unit_tests") {
       "../renderer/media/cast_ipc_dispatcher_unittest.cc",
       "../utility/image_writer/image_writer_unittest.cc",
     ]
+    allow_circular_includes_from =
+        [ "//chrome/browser/web_applications/extensions:unit_tests" ]
     deps += [
       "//chrome/browser/web_applications:unit_tests",
+      "//chrome/browser/web_applications/extensions:unit_tests",
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",

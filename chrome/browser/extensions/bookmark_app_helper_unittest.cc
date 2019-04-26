@@ -534,6 +534,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   EXPECT_FALSE(AppThemeColorInfo::GetThemeColor(extension));
 }
 
+// Deprecated in favour of InstallManagerBookmarkAppTest.CreateWebAppFromInfo.
+// TODO(loyso): Erase it. crbug.com/915043.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
