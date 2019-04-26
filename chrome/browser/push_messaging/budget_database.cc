@@ -14,6 +14,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/budget.pb.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -22,11 +23,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// UMA are logged for the database with this string as part of the name.
-// They will be LevelDB.*.BudgetManager. Changes here should be synchronized
-// with histograms.xml.
-const char kDatabaseUMAName[] = "BudgetManager";
 
 // The default amount of time during which a budget will be valid.
 constexpr int kBudgetDurationInDays = 4;
@@ -56,16 +52,22 @@ BudgetDatabase::BudgetInfo::~BudgetInfo() = default;
 
 BudgetDatabase::BudgetDatabase(Profile* profile)
     : profile_(profile),
-      db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
-          budget_service::Budget>(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
-  db_->Init(kDatabaseUMAName,
-            profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-            leveldb_proto::CreateSimpleOptions(),
-            base::BindOnce(&BudgetDatabase::OnDatabaseInit,
+  auto* protodb_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
+          profile->GetProfileKey());
+  // In incognito mode the provider service is not created.
+  if (!protodb_provider)
+    return;
+
+  db_ = protodb_provider->GetDB<budget_service::Budget>(
+      leveldb_proto::ProtoDbType::BUDGET_DATABASE,
+      profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+  db_->Init(base::BindOnce(&BudgetDatabase::OnDatabaseInit,
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -90,8 +92,10 @@ void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
-void BudgetDatabase::OnDatabaseInit(bool success) {
+void BudgetDatabase::OnDatabaseInit(leveldb_proto::Enums::InitStatus status) {
   // TODO(harkness): Consider caching the budget database now?
+  if (status != leveldb_proto::Enums::InitStatus::kOK)
+    db_.reset();
 }
 
 bool BudgetDatabase::IsCached(const url::Origin& origin) const {
@@ -243,6 +247,12 @@ void BudgetDatabase::SpendBudgetAfterWrite(SpendBudgetCallback callback,
 
 void BudgetDatabase::WriteCachedValuesToDatabase(const url::Origin& origin,
                                                  StoreBudgetCallback callback) {
+  if (!db_) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
   // Create the data structures that are passed to the ProtoDatabase.
   std::unique_ptr<
       leveldb_proto::ProtoDatabase<budget_service::Budget>::KeyEntryVector>
@@ -279,6 +289,11 @@ void BudgetDatabase::SyncCache(const url::Origin& origin,
                                CacheCallback callback) {
   // If the origin isn't already cached, add it to the cache.
   if (!IsCached(origin)) {
+    if (!db_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), false));
+      return;
+    }
     CacheCallback add_callback = base::BindOnce(
         &BudgetDatabase::SyncLoadedCache, weak_ptr_factory_.GetWeakPtr(),
         origin, std::move(callback));

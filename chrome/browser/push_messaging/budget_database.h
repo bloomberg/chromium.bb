@@ -116,7 +116,7 @@ class BudgetDatabase {
 
   using CacheCallback = base::OnceCallback<void(bool success)>;
 
-  void OnDatabaseInit(bool success);
+  void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
 
   bool IsCached(const url::Origin& origin) const;
 
