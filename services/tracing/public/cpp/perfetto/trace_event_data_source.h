@@ -99,7 +99,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // is locally buffered until connection to the perfetto service is
   // established. Expects a later call to StartTracing() to bind to the perfetto
   // service. Should only be called once.
-  void SetupStartupTracing();
+  void SetupStartupTracing(bool privacy_filtering_enabled);
 
   // The PerfettoProducer is responsible for calling StopTracing
   // which will clear the stored pointer to it, before it
@@ -150,7 +150,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void LogHistogram(base::HistogramBase* histogram);
 
   bool disable_interning_ = false;
-  bool privacy_filtering_enabled_ = false;
   base::OnceClosure stop_complete_callback_;
 
   // Incremented and accessed atomically but without memory order guarantees.
@@ -168,6 +167,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   std::unique_ptr<perfetto::StartupTraceWriterRegistry>
       startup_writer_registry_;
   std::vector<std::string> histograms_;
+  bool privacy_filtering_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);
 };

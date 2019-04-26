@@ -1038,6 +1038,7 @@ test("content_browsertests") {
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/test/echo/public/mojom",
+    "//services/tracing:privacy_check",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom:constants",
