@@ -27,6 +27,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
+#include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -371,8 +372,8 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return false;
-  const ContentSettingsUsagesState& usages_state = content_settings->
-      geolocation_usages_state();
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->geolocation_usages_state();
   if (usages_state.state_map().empty())
     return false;
 
@@ -598,8 +599,14 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
   }
 
   set_icon(kSensorsIcon, !blocked ? gfx::kNoneIcon : kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(
-      !blocked ? IDS_SENSORS_ALLOWED_TOOLTIP : IDS_SENSORS_BLOCKED_TOOLTIP));
+  if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)) {
+    set_tooltip(l10n_util::GetStringUTF16(
+        !blocked ? IDS_SENSORS_ALLOWED_TOOLTIP : IDS_SENSORS_BLOCKED_TOOLTIP));
+  } else {
+    set_tooltip(l10n_util::GetStringUTF16(
+        !blocked ? IDS_MOTION_SENSORS_ALLOWED_TOOLTIP
+                 : IDS_MOTION_SENSORS_BLOCKED_TOOLTIP));
+  }
   return true;
 }
 
