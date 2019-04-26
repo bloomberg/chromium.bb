@@ -66,6 +66,11 @@ NSString* IOSChromePasswordManagerInfoBarDelegate::GetInfobarModalTitleText()
   return @"";
 }
 
+void IOSChromePasswordManagerInfoBarDelegate::set_dispatcher(
+    id<ApplicationCommands> dispatcher) {
+  dispatcher_ = dispatcher;
+}
+
 int IOSChromePasswordManagerInfoBarDelegate::GetIconId() const {
   return IDR_IOS_INFOBAR_SAVE_PASSWORD;
 }

@@ -43,6 +43,9 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The title for the InfobarModal being presented.
   virtual NSString* GetInfobarModalTitleText() const;
 
+  // Sets the dispatcher for this delegate.
+  void set_dispatcher(id<ApplicationCommands> dispatcher);
+
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
       bool is_sync_user,
@@ -61,10 +64,6 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   password_manager::metrics_util::UIDismissalReason infobar_response() const {
     return infobar_response_;
-  }
-
-  void set_dispatcher(id<ApplicationCommands> dispatcher) {
-    dispatcher_ = dispatcher;
   }
 
  private:

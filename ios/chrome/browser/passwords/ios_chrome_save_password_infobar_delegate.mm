@@ -13,9 +13,6 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/infobars/infobar.h"
-#import "ios/chrome/browser/passwords/ios_password_infobar_controller.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -27,38 +24,6 @@
 
 using password_manager::PasswordFormManagerForUI;
 
-// static
-void IOSChromeSavePasswordInfoBarDelegate::Create(
-    bool is_sync_user,
-    infobars::InfoBarManager* infobar_manager,
-    std::unique_ptr<PasswordFormManagerForUI> form_to_save,
-    id<ApplicationCommands> dispatcher) {
-  DCHECK(infobar_manager);
-  auto delegate = base::WrapUnique(new IOSChromeSavePasswordInfoBarDelegate(
-      is_sync_user, std::move(form_to_save)));
-  delegate->set_dispatcher(dispatcher);
-
-  if (IsInfobarUIRebootEnabled()) {
-    InfobarPasswordCoordinator* coordinator =
-        [[InfobarPasswordCoordinator alloc]
-            initWithInfoBarDelegate:delegate.get()];
-    infobar_manager->AddInfoBar(
-        std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
-  } else {
-    IOSPasswordInfoBarController* controller =
-        [[IOSPasswordInfoBarController alloc]
-            initWithInfoBarDelegate:delegate.get()];
-    infobar_manager->AddInfoBar(
-        std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
-  }
-}
-
-IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
-  password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response());
-  form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
-      infobar_response());
-}
-
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_sync_user,
     std::unique_ptr<PasswordFormManagerForUI> form_manager)
@@ -67,6 +32,12 @@ IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
   form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+}
+
+IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
+  password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response());
+  form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
+      infobar_response());
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

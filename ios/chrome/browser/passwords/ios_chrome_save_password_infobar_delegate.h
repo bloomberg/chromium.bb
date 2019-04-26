@@ -16,10 +16,6 @@ namespace password_manager {
 class PasswordFormManagerForUI;
 }
 
-namespace infobars {
-class InfoBarManager;
-}
-
 // After a successful *new* login attempt, Chrome passes the current
 // password_manager::PasswordFormManager and move it to a
 // IOSChromeSavePasswordInfoBarDelegate while the user makes up their mind
@@ -27,23 +23,15 @@ class InfoBarManager;
 class IOSChromeSavePasswordInfoBarDelegate
     : public IOSChromePasswordManagerInfoBarDelegate {
  public:
-  // Creates the infobar for |form_to_save| and adds it to |infobar_manager|.
-  // |is_sync_user| controls the footer string. |dispatcher| is not retained.
-  static void Create(
+  IOSChromeSavePasswordInfoBarDelegate(
       bool is_sync_user,
-      infobars::InfoBarManager* infobar_manager,
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
-      id<ApplicationCommands> dispatcher);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
   ~IOSChromeSavePasswordInfoBarDelegate() override;
 
   bool ShouldExpire(const NavigationDetails& details) const override;
 
  private:
-  IOSChromeSavePasswordInfoBarDelegate(
-      bool is_sync_user,
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
-
   // ConfirmInfoBarDelegate implementation.
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
