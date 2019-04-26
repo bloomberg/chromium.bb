@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,16 +92,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/956012
-#define MAYBE_SetPassphraseAndThenSetupSync \
-  DISABLED_SetPassphraseAndThenSetupSync
-#else
-#define MAYBE_SetPassphraseAndThenSetupSync SetPassphraseAndThenSetupSync
-#endif
-
 IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
-                       MAYBE_SetPassphraseAndThenSetupSync) {
+                       SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(GetClient(kEncryptingClientId)->SetupSync());
 
@@ -111,6 +104,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   ASSERT_TRUE(
       PassphraseAcceptedChecker(GetSyncService(kEncryptingClientId)).Wait());
   AddTestBookmarksToClient(kEncryptingClientId);
+  // Wait for the client to commit the update.
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kEncryptingClientId)).Wait());
 
   // Set up a new sync client.
   ASSERT_TRUE(
