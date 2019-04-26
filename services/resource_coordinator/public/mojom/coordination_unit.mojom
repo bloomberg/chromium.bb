@@ -45,11 +45,6 @@ enum PolicyControlledIntervention {
   kPageLifecycleTransitions,
 };
 
-struct CoordinationUnitID {
-  CoordinationUnitType type;
-  int64 id;
-};
-
 // Interface used by a blink::Document to communicate state associated with
 // resource management to the embedder.
 interface DocumentCoordinationUnit {

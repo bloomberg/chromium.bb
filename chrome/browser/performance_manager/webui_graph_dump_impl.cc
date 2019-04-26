@@ -37,7 +37,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       resource_coordinator::mojom::WebUIProcessInfoPtr process_info =
           resource_coordinator::mojom::WebUIProcessInfo::New();
 
-      process_info->id = process->id().id;
+      process_info->id = NodeBase::GetSerializationId(process);
       process_info->pid = process->process_id();
       process_info->cumulative_cpu_usage = process->cumulative_cpu_usage();
       process_info->private_footprint_kb = process->private_footprint_kb();
@@ -53,13 +53,13 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       resource_coordinator::mojom::WebUIFrameInfoPtr frame_info =
           resource_coordinator::mojom::WebUIFrameInfo::New();
 
-      frame_info->id = frame->id().id;
+      frame_info->id = NodeBase::GetSerializationId(frame);
 
       auto* parent_frame = frame->parent_frame_node();
-      frame_info->parent_frame_id = parent_frame ? parent_frame->id().id : 0;
+      frame_info->parent_frame_id = NodeBase::GetSerializationId(parent_frame);
 
       auto* process = frame->process_node();
-      frame_info->process_id = process ? process->id().id : 0;
+      frame_info->process_id = NodeBase::GetSerializationId(process);
 
       frame_info->url = frame->url().spec();
 
@@ -74,11 +74,11 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       resource_coordinator::mojom::WebUIPageInfoPtr page_info =
           resource_coordinator::mojom::WebUIPageInfo::New();
 
-      page_info->id = page->id().id;
+      page_info->id = NodeBase::GetSerializationId(page);
       page_info->main_frame_url = page->main_frame_url().spec();
 
       auto* main_frame = page->GetMainFrameNode();
-      page_info->main_frame_id = main_frame ? main_frame->id().id : 0;
+      page_info->main_frame_id = NodeBase::GetSerializationId(main_frame);
 
       graph->pages.push_back(std::move(page_info));
     }

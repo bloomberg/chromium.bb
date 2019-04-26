@@ -11,8 +11,6 @@
 #include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,8 +34,7 @@ class TestGraphObserver : public GraphObserver {
   void OnRegistered() override { ++registered_; }
   void OnUnregistered() override { ++unregistered_; }
   bool ShouldObserve(const NodeBase* node) override {
-    return node->id().type ==
-           resource_coordinator::CoordinationUnitType::kFrame;
+    return node->type() == FrameNodeImpl::Type();
   }
   void OnNodeAdded(NodeBase* node) override { ++node_created_count_; }
   void OnBeforeNodeRemoved(NodeBase* node) override { ++node_destroyed_count_; }

@@ -36,9 +36,7 @@ class ProcessNodeImpl
           resource_coordinator::mojom::ProcessCoordinationUnit,
           resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kProcess;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
   explicit ProcessNodeImpl(Graph* graph);
   ~ProcessNodeImpl() override;

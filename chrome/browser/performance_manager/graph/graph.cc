@@ -15,7 +15,6 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace ukm {
 class UkmEntryBuilder;
@@ -80,6 +79,10 @@ void Graph::OnBeforeNodeRemoved(NodeBase* node) {
   node->LeaveGraph();
 }
 
+int64_t Graph::GetNextNodeSerializationId() {
+  return ++current_node_serialization_id_;
+}
+
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
@@ -91,13 +94,10 @@ SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   return system_node_.get();
 }
 
-NodeBase* Graph::GetNodeByID(
-    const resource_coordinator::CoordinationUnitID cu_id) {
+bool Graph::NodeInGraph(const NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto& it = nodes_.find(cu_id);
-  if (it == nodes_.end())
-    return nullptr;
-  return it->second;
+  const auto& it = nodes_.find(const_cast<NodeBase*>(node));
+  return it != nodes_.end();
 }
 
 ProcessNodeImpl* Graph::GetProcessNodeByPid(base::ProcessId pid) {
@@ -141,7 +141,7 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
 
 void Graph::AddNewNode(NodeBase* new_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = nodes_.emplace(new_node->id(), new_node);
+  auto it = nodes_.insert(new_node);
   DCHECK(it.second);  // Inserted successfully
 
   // Allow the node to initialize itself now that it's been added.
@@ -161,7 +161,7 @@ void Graph::RemoveNode(NodeBase* node) {
   node_attached_data_map_.erase(lower, upper);
 
   // Before removing the node itself.
-  size_t erased = nodes_.erase(node->id());
+  size_t erased = nodes_.erase(node);
   DCHECK_EQ(1u, erased);
 }
 
@@ -182,14 +182,14 @@ void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
     processes_by_pid_[new_pid] = process;
 }
 
-template <typename CUType>
-std::vector<CUType*> Graph::GetAllNodesOfType() {
+template <typename NodeType>
+std::vector<NodeType*> Graph::GetAllNodesOfType() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto type = CUType::Type();
-  std::vector<CUType*> ret;
-  for (const auto& el : nodes_) {
-    if (el.first.type == type)
-      ret.push_back(CUType::FromNodeBase(el.second));
+  const auto type = NodeType::Type();
+  std::vector<NodeType*> ret;
+  for (auto* node : nodes_) {
+    if (node->type() == type)
+      ret.push_back(NodeType::FromNodeBase(node));
   }
   return ret;
 }

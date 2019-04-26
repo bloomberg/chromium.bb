@@ -27,9 +27,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  public:
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
 
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kPage;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
   explicit PageNodeImpl(Graph* graph,
                         const base::WeakPtr<WebContentsProxy>& contents_proxy);

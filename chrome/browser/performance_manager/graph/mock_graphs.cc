@@ -13,8 +13,6 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace performance_manager {
 

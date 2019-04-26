@@ -56,7 +56,7 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
       ++top_level_frames;
 
       // The page's main frame should have an URL.
-      if (frame->id == static_cast<int64_t>(main_frame->id().id))
+      if (frame->id == NodeBase::GetSerializationId(main_frame))
         EXPECT_EQ(kExampleUrl, frame->url);
     }
     EXPECT_NE(0u, frame->id);

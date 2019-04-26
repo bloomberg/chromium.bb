@@ -75,7 +75,7 @@ class TabLifecycleStateObserver : public performance_manager::GraphObserver {
 
  private:
   bool ShouldObserve(const NodeBase* node) override {
-    return node->id().type == resource_coordinator::CoordinationUnitType::kPage;
+    return node->type() == performance_manager::PageNodeImpl::Type();
   }
 
   static void OnLifecycleStateChangedImpl(

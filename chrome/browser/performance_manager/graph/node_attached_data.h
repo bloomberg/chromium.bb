@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
+#include "chrome/browser/performance_manager/graph/node_type.h"
 
 namespace performance_manager {
 
@@ -29,8 +29,7 @@ class NodeAttachedData {
 
   // Returns true if the implementation is able to be attached to a node of the
   // given type.
-  virtual bool CanAttach(
-      resource_coordinator::CoordinationUnitType node_type) const = 0;
+  virtual bool CanAttach(NodeTypeEnum node_type) const = 0;
   bool CanAttach(const NodeBase* node) const;
 
  protected:

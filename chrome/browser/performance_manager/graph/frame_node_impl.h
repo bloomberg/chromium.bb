@@ -47,9 +47,7 @@ class FrameNodeImpl
           resource_coordinator::mojom::DocumentCoordinationUnit,
           resource_coordinator::mojom::DocumentCoordinationUnitRequest> {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kFrame;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
   // Construct a frame node associated with a |process_node|, a |page_node| and
   // optionally with a |parent_frame_node|. For the main frame of |page_node|

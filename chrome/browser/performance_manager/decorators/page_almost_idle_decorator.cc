@@ -68,10 +68,10 @@ void PageAlmostIdleDecorator::OnRegistered() {
 }
 
 bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
-  switch (node->id().type) {
-    case resource_coordinator::CoordinationUnitType::kFrame:
-    case resource_coordinator::CoordinationUnitType::kPage:
-    case resource_coordinator::CoordinationUnitType::kProcess:
+  switch (node->type()) {
+    case FrameNodeImpl::Type():
+    case PageNodeImpl::Type():
+    case ProcessNodeImpl::Type():
       return true;
 
     default:

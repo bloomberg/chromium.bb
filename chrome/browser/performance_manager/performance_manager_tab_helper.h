@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace performance_manager {
 

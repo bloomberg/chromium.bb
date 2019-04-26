@@ -13,9 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-// TODO(siggi): This is an abomination, remove this as soon as the page signal
-//     receiver is abolished.
-#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_memory_metrics_reporter.h"

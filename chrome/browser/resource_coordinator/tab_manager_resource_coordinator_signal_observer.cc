@@ -41,9 +41,8 @@ TabManager::ResourceCoordinatorSignalObserver::
 
 bool TabManager::ResourceCoordinatorSignalObserver::ShouldObserve(
     const NodeBase* node) {
-  return node->id().type == resource_coordinator::CoordinationUnitType::kPage ||
-         node->id().type ==
-             resource_coordinator::CoordinationUnitType::kProcess;
+  return node->type() == performance_manager::PageNodeImpl::Type() ||
+         node->type() == performance_manager::ProcessNodeImpl::Type();
 }
 
 void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdleChanged(

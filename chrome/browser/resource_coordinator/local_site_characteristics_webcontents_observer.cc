@@ -315,7 +315,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::GraphObserver::ShouldObserve(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Observe all frame nodes.
-  if (node->id().type == CoordinationUnitType::kFrame)
+  if (node->type() == performance_manager::FrameNodeImpl::Type())
     return true;
 
   return false;

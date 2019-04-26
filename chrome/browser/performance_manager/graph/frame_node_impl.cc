@@ -216,7 +216,7 @@ void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK(child_frame_node);
   DCHECK_EQ(this, child_frame_node->parent_frame_node());
   DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(graph()->NodeInGraph(child_frame_node));
   DCHECK(!HasFrameNodeInAncestors(child_frame_node) &&
          !child_frame_node->HasFrameNodeInDescendants(this));
 
@@ -229,7 +229,7 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK(child_frame_node);
   DCHECK_EQ(this, child_frame_node->parent_frame_node());
   DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(graph()->NodeInGraph(child_frame_node));
 
   size_t removed = child_frame_nodes_.erase(child_frame_node);
   DCHECK_EQ(1u, removed);
@@ -258,17 +258,17 @@ void FrameNodeImpl::LeaveGraph() {
   DCHECK(child_frame_nodes_.empty());
 
   // Leave the page.
-  DCHECK(NodeInGraph(page_node_));
+  DCHECK(graph()->NodeInGraph(page_node_));
   page_node_->RemoveFrame(this);
 
   // Leave the frame hierarchy.
   if (parent_frame_node_) {
-    DCHECK(NodeInGraph(parent_frame_node_));
+    DCHECK(graph()->NodeInGraph(parent_frame_node_));
     parent_frame_node_->RemoveChildFrame(this);
   }
 
   // And leave the process.
-  DCHECK(NodeInGraph(process_node_));
+  DCHECK(graph()->NodeInGraph(process_node_));
   process_node_->RemoveFrame(this);
 }
 

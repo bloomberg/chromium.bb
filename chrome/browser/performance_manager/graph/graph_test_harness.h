@@ -131,7 +131,7 @@ class GraphTestHarness : public ::testing::Test {
                                               std::forward<Args>(args)...);
   }
 
-  TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {
+  TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
     return TestNodeWrapper<SystemNodeImpl>(graph()->FindOrCreateSystemNode());
   }
 

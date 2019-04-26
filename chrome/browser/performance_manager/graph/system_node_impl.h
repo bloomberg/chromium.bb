@@ -47,9 +47,7 @@ struct ProcessResourceMeasurementBatch {
 
 class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kSystem;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
 
   explicit SystemNodeImpl(Graph* graph);
   ~SystemNodeImpl() override;

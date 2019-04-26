@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace performance_manager {
 
@@ -112,8 +111,6 @@ namespace performance_manager {
 // DCHECK(Foo::Destroy(page_node));
 // -- user_of_foo.cc --
 
-using NodeTypeEnum = resource_coordinator::CoordinationUnitType;
-
 // Implementation of NodeAttachedData intended to be used as the base class for
 // derived types. Provides the basic plumbing for accessing the node attached
 // data in a strongly typed manner, while enforcing node type bindings.
@@ -186,8 +183,7 @@ class NodeAttachedDataImpl : public NodeAttachedData {
 
   static const void* UserDataKey() { return &DataType::kUserDataKey; }
 
-  static bool CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType node_type);
+  static bool CanAttachToNodeType(NodeTypeEnum node_type);
 
   template <typename NodeType>
   static bool CanAttachToNodeType() {
@@ -198,8 +194,7 @@ class NodeAttachedDataImpl : public NodeAttachedData {
 
   // NodeAttachedData implementation:
   const void* key() const override { return UserDataKey(); }
-  bool CanAttach(
-      resource_coordinator::CoordinationUnitType node_type) const override {
+  bool CanAttach(NodeTypeEnum node_type) const override {
     return CanAttachToNodeType(node_type);
   }
 
@@ -261,7 +256,7 @@ constexpr int NodeAttachedDataImpl<DataType>::kUserDataKey;
 // static
 template <typename DataType>
 bool NodeAttachedDataImpl<DataType>::CanAttachToNodeType(
-    resource_coordinator::CoordinationUnitType node_type) {
+    NodeTypeEnum node_type) {
   switch (node_type) {
     case NodeTypeEnum::kInvalidType: {
       return false;

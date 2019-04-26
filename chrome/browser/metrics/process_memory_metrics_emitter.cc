@@ -800,7 +800,8 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
 
       PageInfo page_info;
       page_info.ukm_source_id = page_node->ukm_source_id();
-      page_info.tab_id = page_node->id().id;
+      page_info.tab_id =
+          performance_manager::NodeBase::GetSerializationId(page_node);
       page_info.hosts_main_frame = HostsMainFrame(process_node, page_node);
       page_info.is_visible = page_node->is_visible();
       page_info.time_since_last_visibility_change =

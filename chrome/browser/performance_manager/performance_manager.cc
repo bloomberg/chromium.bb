@@ -199,8 +199,8 @@ void PerformanceManager::BatchDeleteNodesImpl(
   base::flat_set<ProcessNodeImpl*> process_nodes;
 
   for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-    switch ((*it)->id().type) {
-      case resource_coordinator::CoordinationUnitType::kPage: {
+    switch ((*it)->type()) {
+      case PageNodeImpl::Type(): {
         auto* page_node = PageNodeImpl::FromNodeBase(it->get());
 
         // Delete the main frame nodes until no more exist.
@@ -211,17 +211,17 @@ void PerformanceManager::BatchDeleteNodesImpl(
         graph_.RemoveNode(page_node);
         break;
       }
-      case resource_coordinator::CoordinationUnitType::kProcess: {
+      case ProcessNodeImpl::Type(): {
         // Keep track of the process nodes for removing once all frames nodes
         // are removed.
         auto* process_node = ProcessNodeImpl::FromNodeBase(it->get());
         process_nodes.insert(process_node);
         break;
       }
-      case resource_coordinator::CoordinationUnitType::kFrame:
+      case FrameNodeImpl::Type():
         break;
-      case resource_coordinator::CoordinationUnitType::kSystem:
-      case resource_coordinator::CoordinationUnitType::kInvalidType:
+      case SystemNodeImpl::Type():
+      case NodeTypeEnum::kInvalidType:
       default: {
         NOTREACHED();
         break;

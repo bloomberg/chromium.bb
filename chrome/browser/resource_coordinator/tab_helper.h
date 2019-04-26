@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -55,9 +54,6 @@ class ResourceCoordinatorTabHelper
  private:
   explicit ResourceCoordinatorTabHelper(content::WebContents* web_contents);
 
-  // The coordination unit ID of the page node associated with |web_contents()|,
-  // if any.
-  CoordinationUnitID page_cu_id_;
   // TODO(siggi): This is used by the TabLifecycleUnit, remove this with it.
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 

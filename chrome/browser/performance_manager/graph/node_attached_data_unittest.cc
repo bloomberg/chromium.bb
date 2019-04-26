@@ -30,14 +30,11 @@ constexpr size_t kFooDataSize = sizeof(uintptr_t);
 class DummyNode : public NodeBase {
  public:
   explicit DummyNode(Graph* graph)
-      : NodeBase(resource_coordinator::CoordinationUnitType::kInvalidType,
-                 graph) {}
+      : NodeBase(NodeTypeEnum::kInvalidType, graph) {}
 
   ~DummyNode() override = default;
 
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kInvalidType;
-  }
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kInvalidType; }
 
   // Internal storage for DummyData and FooData types. These would normally be
   // protected and the data classes friended, but we also want to access these
@@ -127,28 +124,18 @@ TEST_F(NodeAttachedDataTest, CanAttach) {
   EXPECT_TRUE(DummyData::CanAttachToNodeType<ProcessNodeImpl>());
   EXPECT_FALSE(DummyData::CanAttachToNodeType<SystemNodeImpl>());
 
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kInvalidType));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kFrame));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kPage));
-  EXPECT_TRUE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kProcess));
-  EXPECT_FALSE(DummyData::CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType::kSystem));
+  EXPECT_FALSE(DummyData::CanAttachToNodeType(NodeTypeEnum::kInvalidType));
+  EXPECT_FALSE(DummyData::CanAttachToNodeType(FrameNodeImpl::Type()));
+  EXPECT_TRUE(DummyData::CanAttachToNodeType(PageNodeImpl::Type()));
+  EXPECT_TRUE(DummyData::CanAttachToNodeType(ProcessNodeImpl::Type()));
+  EXPECT_FALSE(DummyData::CanAttachToNodeType(SystemNodeImpl::Type()));
 
   std::unique_ptr<NodeAttachedData> data = std::make_unique<DummyData>();
-  EXPECT_FALSE(data->CanAttach(
-      resource_coordinator::CoordinationUnitType::kInvalidType));
-  EXPECT_FALSE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kFrame));
-  EXPECT_TRUE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kPage));
-  EXPECT_TRUE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kProcess));
-  EXPECT_FALSE(
-      data->CanAttach(resource_coordinator::CoordinationUnitType::kSystem));
+  EXPECT_FALSE(data->CanAttach(NodeTypeEnum::kInvalidType));
+  EXPECT_FALSE(data->CanAttach(FrameNodeImpl::Type()));
+  EXPECT_TRUE(data->CanAttach(PageNodeImpl::Type()));
+  EXPECT_TRUE(data->CanAttach(ProcessNodeImpl::Type()));
+  EXPECT_FALSE(data->CanAttach(SystemNodeImpl::Type()));
 }
 
 TEST_F(NodeAttachedDataTest, RawAttachDetach) {

@@ -62,7 +62,7 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
   DCHECK_EQ(this, frame_node->page_node());
-  DCHECK(NodeInGraph(frame_node));
+  DCHECK(graph()->NodeInGraph(frame_node));
 
   ++frame_node_count_;
   if (frame_node->parent_frame_node() == nullptr)
@@ -75,7 +75,7 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
   DCHECK_EQ(this, frame_node->page_node());
-  DCHECK(NodeInGraph(frame_node));
+  DCHECK(graph()->NodeInGraph(frame_node));
 
   --frame_node_count_;
   if (frame_node->parent_frame_node() == nullptr) {

@@ -24,8 +24,7 @@ class SystemAndProcessObserver : public GraphObserver {
  public:
   // GraphObserver implementation:
   bool ShouldObserve(const NodeBase* node) override {
-    auto cu_type = node->id().type;
-    return cu_type == resource_coordinator::CoordinationUnitType::kSystem;
+    return node->type() == SystemNodeImpl::Type();
   }
 
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {

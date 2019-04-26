@@ -9,7 +9,7 @@
 
 #include <map>
 #include <memory>
-#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -19,8 +19,6 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace performance_manager {
 
@@ -31,14 +29,12 @@ class PageNodeImpl;
 class ProcessNodeImpl;
 class SystemNodeImpl;
 
-// The Graph represents a graph of the coordination units
-// representing a single system. It vends out new instances of coordination
-// units and indexes them by ID. It also fires the creation and pre-destruction
-// notifications for all coordination units.
+// Represents a graph of the nodes representing a single browser. Maintains a
+// set of nodes that can be retrieved in different ways, some indexed. Keeps
+// a list of observers that are notified of node addition and removal.
 class Graph {
  public:
-  using CUIDMap =
-      std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
+  using NodeSet = std::unordered_set<NodeBase*>;
 
   Graph();
   ~Graph();
@@ -59,11 +55,13 @@ class Graph {
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
   std::vector<FrameNodeImpl*> GetAllFrameNodes();
   std::vector<PageNodeImpl*> GetAllPageNodes();
-  const CUIDMap& nodes() { return nodes_; }
+  const NodeSet& nodes() { return nodes_; }
 
-  // Retrieves the process CU with PID |pid|, if any.
+  // Retrieves the process node with PID |pid|, if any.
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
-  NodeBase* GetNodeByID(const resource_coordinator::CoordinationUnitID cu_id);
+
+  // Returns true if |node| is in this graph.
+  bool NodeInGraph(const NodeBase* node);
 
   std::vector<GraphObserver*>& observers_for_testing() { return observers_; }
 
@@ -84,16 +82,20 @@ class Graph {
   void OnNodeAdded(NodeBase* node);
   void OnBeforeNodeRemoved(NodeBase* node);
 
+  // Returns a new serialization ID.
+  friend class NodeBase;
+  int64_t GetNextNodeSerializationId();
+
   // Process PID map for use by ProcessNodeImpl.
   friend class ProcessNodeImpl;
   void BeforeProcessPidChange(ProcessNodeImpl* process,
                               base::ProcessId new_pid);
 
-  template <typename CUType>
-  std::vector<CUType*> GetAllNodesOfType();
+  template <typename NodeType>
+  std::vector<NodeType*> GetAllNodesOfType();
 
   std::unique_ptr<SystemNodeImpl> system_node_;
-  CUIDMap nodes_;
+  NodeSet nodes_;
   ProcessByPidMap processes_by_pid_;
   std::vector<GraphObserver*> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
@@ -104,6 +106,9 @@ class Graph {
   using NodeAttachedDataMap =
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
   NodeAttachedDataMap node_attached_data_map_;
+
+  // The most recently assigned serialization ID.
+  int64_t current_node_serialization_id_ = 0u;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(Graph);

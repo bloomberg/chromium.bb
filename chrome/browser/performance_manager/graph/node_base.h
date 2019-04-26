@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_BASE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_NODE_BASE_H_
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <utility>
@@ -14,12 +15,12 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
@@ -34,20 +35,28 @@ class Graph;
 // All methods not documented otherwise are single-threaded.
 class NodeBase {
  public:
-  NodeBase(resource_coordinator::CoordinationUnitType type, Graph* graph);
+  // TODO(siggi): Don't store the node type, expose it on a virtual function
+  //    instead.
+  NodeBase(NodeTypeEnum type, Graph* graph);
   virtual ~NodeBase();
 
   void AddObserver(GraphObserver* observer);
   void RemoveObserver(GraphObserver* observer);
 
   // May be called on any sequence.
-  const resource_coordinator::CoordinationUnitID& id() const { return id_; }
+  NodeTypeEnum type() const { return type_; }
+
   // May be called on any sequence.
   Graph* graph() const { return graph_; }
 
   const base::ObserverList<GraphObserver>::Unchecked& observers() const {
     return observers_;
   }
+
+  // Returns an opaque ID for |node|, unique across all nodes in the same graph,
+  // zero for nullptr. This should never be used to look up nodes, only to
+  // provide a stable ID for serialization.
+  static int64_t GetSerializationId(NodeBase* node);
 
  protected:
   friend class Graph;
@@ -59,11 +68,11 @@ class NodeBase {
   // node state.
   virtual void LeaveGraph();
 
-  // Returns true if |other_node| is in the same graph.
-  bool NodeInGraph(const NodeBase* other_node) const;
-
   Graph* const graph_;
-  const resource_coordinator::CoordinationUnitID id_;
+  const NodeTypeEnum type_;
+
+  // Assigned on first use, immutable from that point forward.
+  int64_t serialization_id_ = 0u;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -81,24 +90,12 @@ class TypedNodeBase : public NodeBase {
   explicit TypedNodeBase(Graph* graph) : NodeBase(NodeClass::Type(), graph) {}
 
   static const NodeClass* FromNodeBase(const NodeBase* cu) {
-    DCHECK(cu->id().type == NodeClass::Type());
+    DCHECK_EQ(cu->type(), NodeClass::Type());
     return static_cast<const NodeClass*>(cu);
   }
 
   static NodeClass* FromNodeBase(NodeBase* cu) {
-    DCHECK(cu->id().type == NodeClass::Type());
-    return static_cast<NodeClass*>(cu);
-  }
-
-  static NodeClass* GetNodeByID(
-      Graph* graph,
-      const resource_coordinator::CoordinationUnitID cu_id) {
-    DCHECK(cu_id.type == NodeClass::Type());
-    auto* cu = graph->GetNodeByID(cu_id);
-    if (!cu)
-      return nullptr;
-
-    CHECK_EQ(cu->id().type, NodeClass::Type());
+    DCHECK(cu->type() == NodeClass::Type());
     return static_cast<NodeClass*>(cu);
   }
 };

@@ -16,13 +16,13 @@ NodeAttachedData::NodeAttachedData() = default;
 NodeAttachedData::~NodeAttachedData() = default;
 
 bool NodeAttachedData::CanAttach(const NodeBase* node) const {
-  return CanAttach(node->id().type);
+  return CanAttach(node->type());
 }
 
 // static
 void NodeAttachedData::AttachInMap(const NodeBase* node,
                                    std::unique_ptr<NodeAttachedData> data) {
-  CHECK(data->CanAttach(node->id().type));
+  CHECK(data->CanAttach(node->type()));
   Graph::NodeAttachedDataKey data_key = std::make_pair(node, data->key());
   auto& map = node->graph()->node_attached_data_map_;
   DCHECK(!base::ContainsKey(map, data_key));
@@ -53,7 +53,7 @@ std::unique_ptr<NodeAttachedData> NodeAttachedData::DetachFromMap(
   if (it != map.end()) {
     data = std::move(it->second);
     map.erase(it);
-    DCHECK(data->CanAttach(node->id().type));
+    DCHECK(data->CanAttach(node->type()));
   }
 
   return data;
