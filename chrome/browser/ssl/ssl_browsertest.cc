@@ -3981,9 +3981,10 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 }
 
 // This test checks the behavior of mixed content blocking for the requests
-// from a dedicated worker by changing the settings in WebPreferences.
-// TODO(crbug.com/890372): This test is flaky.
-IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSettings) {
+// from a dedicated worker by changing the settings in WebPreferences
+// with allow_running_insecure_content = true.
+IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
+                       MixedContentSettings_AllowRunningInsecureContent) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -3994,51 +3995,82 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSettings) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   WriteTestFiles(*embedded_test_server(), "example.com");
+  for (bool strict_mixed_content_checking : {true, false}) {
+    for (bool strictly_block_blockable_mixed_content : {true, false}) {
+      if (strict_mixed_content_checking) {
+        RunMixedContentSettingsTest(
+            &browser_client, true /* allow_running_insecure_content */,
+            strict_mixed_content_checking,
+            strictly_block_blockable_mixed_content, false /* expected_load */,
+            false /* expected_show_blocked */,
+            false /* expected_show_dangerous */,
+            false /* expected_load_after_allow */,
+            false /* expected_show_blocked_after_allow */,
+            false /* expected_show_dangerous_after_allow */);
+      } else {
+        RunMixedContentSettingsTest(
+            &browser_client, true /* allow_running_insecure_content */,
+            strict_mixed_content_checking,
+            strictly_block_blockable_mixed_content, true /* expected_load */,
+            false /* expected_show_blocked */,
+            true /* expected_show_dangerous */,
+            true /* expected_load_after_allow */,
+            false /* expected_show_blocked_after_allow */,
+            true /* expected_show_dangerous_after_allow */);
+      }
+    }
+  }
 
-  for (bool allow_running_insecure_content : {true, false}) {
-    for (bool strict_mixed_content_checking : {true, false}) {
-      for (bool strictly_block_blockable_mixed_content : {true, false}) {
-        if (strict_mixed_content_checking) {
-          RunMixedContentSettingsTest(
-              &browser_client, allow_running_insecure_content,
-              strict_mixed_content_checking,
-              strictly_block_blockable_mixed_content, false /* expected_load */,
-              false /* expected_show_blocked */,
-              false /* expected_show_dangerous */,
-              false /* expected_load_after_allow */,
-              false /* expected_show_blocked_after_allow */,
-              false /* expected_show_dangerous_after_allow */);
-        } else if (allow_running_insecure_content) {
-          RunMixedContentSettingsTest(
-              &browser_client, allow_running_insecure_content,
-              strict_mixed_content_checking,
-              strictly_block_blockable_mixed_content, true /* expected_load */,
-              false /* expected_show_blocked */,
-              true /* expected_show_dangerous */,
-              true /* expected_load_after_allow */,
-              false /* expected_show_blocked_after_allow */,
-              true /* expected_show_dangerous_after_allow */);
-        } else if (strictly_block_blockable_mixed_content) {
-          RunMixedContentSettingsTest(
-              &browser_client, allow_running_insecure_content,
-              strict_mixed_content_checking,
-              strictly_block_blockable_mixed_content, false /* expected_load */,
-              false /* expected_show_blocked */,
-              false /* expected_show_dangerous */,
-              false /* expected_load_after_allow */,
-              false /* expected_show_blocked_after_allow */,
-              false /* expected_show_dangerous_after_allow */);
-        } else {
-          RunMixedContentSettingsTest(
-              &browser_client, allow_running_insecure_content,
-              strict_mixed_content_checking,
-              strictly_block_blockable_mixed_content, false /* expected_load */,
-              true /* expected_show_blocked */,
-              false /* expected_show_dangerous */,
-              true /* expected_load_after_allow */,
-              false /* expected_show_blocked_after_allow */,
-              true /* expected_show_dangerous_after_allow */);
-        }
+  content::SetBrowserClientForTesting(old_browser_client);
+}
+
+// This test checks the behavior of mixed content blocking for the requests
+// from a dedicated worker by changing the settings in WebPreferences
+// with allow_running_insecure_content = false.
+IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
+                       MixedContentSettings_DisallowRunningInsecureContent) {
+  ChromeContentBrowserClientForMixedContentTest browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  https_server_.ServeFilesFromDirectory(tmp_dir_.GetPath());
+  embedded_test_server()->ServeFilesFromDirectory(tmp_dir_.GetPath());
+  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WriteTestFiles(*embedded_test_server(), "example.com");
+  for (bool strict_mixed_content_checking : {true, false}) {
+    for (bool strictly_block_blockable_mixed_content : {true, false}) {
+      if (strict_mixed_content_checking) {
+        RunMixedContentSettingsTest(
+            &browser_client, false /* allow_running_insecure_content */,
+            strict_mixed_content_checking,
+            strictly_block_blockable_mixed_content, false /* expected_load */,
+            false /* expected_show_blocked */,
+            false /* expected_show_dangerous */,
+            false /* expected_load_after_allow */,
+            false /* expected_show_blocked_after_allow */,
+            false /* expected_show_dangerous_after_allow */);
+      } else if (strictly_block_blockable_mixed_content) {
+        RunMixedContentSettingsTest(
+            &browser_client, false /* allow_running_insecure_content */,
+            strict_mixed_content_checking,
+            strictly_block_blockable_mixed_content, false /* expected_load */,
+            false /* expected_show_blocked */,
+            false /* expected_show_dangerous */,
+            false /* expected_load_after_allow */,
+            false /* expected_show_blocked_after_allow */,
+            false /* expected_show_dangerous_after_allow */);
+      } else {
+        RunMixedContentSettingsTest(
+            &browser_client, false /* allow_running_insecure_content */,
+            strict_mixed_content_checking,
+            strictly_block_blockable_mixed_content, false /* expected_load */,
+            true /* expected_show_blocked */,
+            false /* expected_show_dangerous */,
+            true /* expected_load_after_allow */,
+            false /* expected_show_blocked_after_allow */,
+            true /* expected_show_dangerous_after_allow */);
       }
     }
   }
