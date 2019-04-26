@@ -1261,11 +1261,26 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
   canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
 }
 
-// TODO(xidachen): ensure paint worklet generated images are correctly handled.
 void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
                                       const PaintFlags* flags,
                                       SkCanvas* canvas,
                                       const PlaybackParams& params) {
+  // TODO(crbug.com/931704): make sure to support the case where paint worklet
+  // generated images are used in other raster work such as canvas2d.
+  if (op->image.IsPaintWorklet()) {
+    DCHECK(params.image_provider);
+    ImageProvider::ScopedResult result =
+        params.image_provider->GetRasterContent(DrawImage(op->image));
+
+    DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
+    SkAutoCanvasRestore save_restore(canvas, true);
+    canvas->concat(
+        SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
+    canvas->clipRect(op->src);
+    result.paint_record()->Playback(canvas, params);
+    return;
+  }
+
   // TODO(enne): Probably PaintCanvas should just use the skia enum directly.
   SkCanvas::SrcRectConstraint skconstraint =
       static_cast<SkCanvas::SrcRectConstraint>(op->constraint);
