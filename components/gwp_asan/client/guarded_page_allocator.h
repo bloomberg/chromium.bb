@@ -120,6 +120,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Array used to store all free metadata indices.
   std::vector<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
 
+  // Number of used slots/metadata. These counters are to make sure we use all
+  // free metadata/slots before starting to use random eviction.
+  size_t num_used_slots_ GUARDED_BY(lock_) = 0;
+  size_t num_used_metadata_ GUARDED_BY(lock_) = 0;
+
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
   // Max number of concurrent allocations.
