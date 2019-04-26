@@ -43,13 +43,67 @@ class HeapCompact::MovableObjectFixups final {
     relocatable_pages_.insert(page);
   }
 
-  void AddInteriorFixup(MovableReference* slot) {
-    auto it = interior_fixups_.find(slot);
-    // Ephemeron fixpoint iterations may cause repeated registrations.
-    if (UNLIKELY(it != interior_fixups_.end())) {
-      DCHECK(!it->second);
+  void Add(MovableReference* slot) {
+    MovableReference reference = *slot;
+    CHECK(reference);
+
+    // All slots and references are part of Oilpan's heap.
+    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(reference)));
+
+    BasePage* const reference_page = PageFromObject(reference);
+    // The following cases are not compacted and do not require recording:
+    // - Backings in large pages.
+    // - Inline backings that are part of a non-backing arena.
+    if (reference_page->IsLargeObjectPage() ||
+        !HeapCompact::IsCompactableArena(reference_page->Arena()->ArenaIndex()))
+      return;
+
+    // Slots may have been recorded already but must point to the same
+    // reference. Example: Ephemeron iterations may register slots multiple
+    // times.
+    auto fixup_it = fixups_.find(reference);
+    if (UNLIKELY(fixup_it != fixups_.end())) {
+      CHECK_EQ(slot, fixup_it->second);
       return;
     }
+
+    // References must always point to live objects at this point.
+    // Slots must reside in live objects
+
+    // Add regular fixup.
+    fixups_.insert({reference, slot});
+
+    BasePage* const slot_page = PageFromObject(slot);
+
+    // Slots must reside in and references must point to live objects at this
+    // point, with the exception of slots in eagerly swept arenas where objects
+    // have already been processed. |reference| usually points to a separate
+    // backing store but can also point to inlined storage which is why the
+    // dynamic header lookup is required.
+    CHECK(reference_page->Arena()->ArenaIndex() !=
+          BlinkGC::kEagerSweepArenaIndex);
+    CHECK(static_cast<NormalPage*>(reference_page)
+              ->FindHeaderFromAddress(reinterpret_cast<Address>(reference))
+              ->IsMarked());
+    CHECK(slot_page->Arena()->ArenaIndex() == BlinkGC::kEagerSweepArenaIndex ||
+          static_cast<NormalPage*>(slot_page)
+              ->FindHeaderFromAddress(reinterpret_cast<Address>(slot))
+              ->IsMarked());
+
+    // Check whether the slot itself resides on a page that is compacted.
+    if (LIKELY(!relocatable_pages_.Contains(slot_page)))
+      return;
+
+    // Interior slots are recorded as follows:
+    // - Storing it in the interior map, which maps the slot to its (eventual)
+    //   location. Initially nullptr.
+    // - Mark it as being interior pointer within the page's interior bitmap.
+    //   This bitmap is used when moving a backing store to check whether an
+    //   interior slot is to be redirected.
+    auto interior_it = interior_fixups_.find(slot);
+    // Repeated registrations have been filtered above.
+    CHECK(interior_fixups_.end() == interior_it);
     interior_fixups_.insert({slot, nullptr});
     LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
     Address slot_address = reinterpret_cast<Address>(slot);
@@ -58,62 +112,6 @@ class HeapCompact::MovableObjectFixups final {
       return;
     }
     interiors_->Add(slot_address);
-  }
-
-  void Add(MovableReference* slot) {
-    DCHECK(*slot);
-    MovableReference reference = *slot;
-    BasePage* ref_page =
-        heap_->LookupPageForAddress(reinterpret_cast<Address>(reference));
-
-    // ref_page is null if *slot is pointing to an off-heap region. This may
-    // happy if *slot is pointing to an inline buffer of HeapVector with inline
-    // capacity.
-    if (!ref_page)
-      return;
-    // Nothing to compact on a large object's page.
-    if (ref_page->IsLargeObjectPage())
-      return;
-
-    if (!HeapCompact::IsCompactableArena(ref_page->Arena()->ArenaIndex()))
-      return;
-#if DCHECK_IS_ON()
-    auto it = fixups_.find(reference);
-    DCHECK(it == fixups_.end() || it->second == slot);
-#endif
-
-    // TODO: when updateHeapResidency() becomes more discriminating about
-    // leaving out arenas that aren't worth compacting, a check for
-    // isCompactingArena() would be appropriate here, leaving early if
-    // |refPage|'s arena isn't in the set.
-
-    fixups_.insert({reference, slot});
-
-    // Note: |slot| will reside outside the Oilpan heap if it is a
-    // PersistentHeapCollectionBase. Hence pageFromObject() cannot be
-    // used, as it sanity checks the |BasePage| it returns. Simply
-    // derive the raw BasePage address here and check if it is a member
-    // of the compactable and relocatable page address set.
-    Address slot_address = reinterpret_cast<Address>(slot);
-    void* slot_page_address =
-        BlinkPageAddress(slot_address) + kBlinkGuardPageSize;
-    if (LIKELY(!relocatable_pages_.Contains(slot_page_address)))
-      return;
-#if DCHECK_IS_ON()
-    BasePage* slot_page = reinterpret_cast<BasePage*>(slot_page_address);
-    DCHECK(slot_page->Contains(slot_address));
-#endif
-    // Unlikely case, the slot resides on a compacting arena's page.
-    //  => It is an 'interior slot' (interior to a movable backing store.)
-    // Record it as an interior slot, which entails:
-    //
-    //  - Storing it in the interior map, which maps the slot to
-    //    its (eventual) location. Initially nullptr.
-    //  - Mark it as being interior pointer within the page's
-    //    "interior" bitmap. This bitmap is used when moving a backing
-    //    store, quickly/ier checking if interior slots will have to
-    //    be additionally redirected.
-    AddInteriorFixup(slot);
   }
 
   void AddFixupCallback(MovableReference* slot,
