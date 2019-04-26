@@ -24,6 +24,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_H_
 
+#include <unicode/utf16.h>
+
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -33,9 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-#include <SkRefCnt.h>
-#include <unicode/utf16.h>
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 

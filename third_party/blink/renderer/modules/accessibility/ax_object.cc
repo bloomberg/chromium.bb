@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
-#include "SkMatrix44.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
@@ -64,6 +63,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 using blink::WebLocalizedString;
 

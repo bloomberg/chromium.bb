@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
-#include "SkPixelRef.h"  // FIXME: qualify this skia header file.
-
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,6 +56,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

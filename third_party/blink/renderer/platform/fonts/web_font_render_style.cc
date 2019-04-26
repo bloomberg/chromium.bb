@@ -8,8 +8,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
-
-#include <SkFont.h>
+#include "third_party/skia/include/core/SkFont.h"
 
 namespace blink {
 

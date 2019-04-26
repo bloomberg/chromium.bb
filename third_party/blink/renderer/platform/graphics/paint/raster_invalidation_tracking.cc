@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 
-#include "SkImageFilter.h"
 #include "base/trace_event/traced_value.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -14,6 +13,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
 

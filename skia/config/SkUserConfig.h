@@ -73,9 +73,9 @@
 // ===== Begin Chrome-specific definitions =====
 
 #ifdef SK_DEBUG
-#define SK_REF_CNT_MIXIN_INCLUDE "sk_ref_cnt_ext_debug.h"
+#define SK_REF_CNT_MIXIN_INCLUDE "skia/config/sk_ref_cnt_ext_debug.h"
 #else
-#define SK_REF_CNT_MIXIN_INCLUDE "sk_ref_cnt_ext_release.h"
+#define SK_REF_CNT_MIXIN_INCLUDE "skia/config/sk_ref_cnt_ext_release.h"
 #endif
 
 #define SK_MSCALAR_IS_FLOAT

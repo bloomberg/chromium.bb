@@ -35,11 +35,6 @@
 #include <memory>
 #include <utility>
 
-#include "SkFontMetrics.h"
-#include "SkPath.h"
-#include "SkTypeface.h"
-#include "SkTypes.h"
-
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
@@ -51,6 +46,10 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace blink {
 

@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
-#include "GrTypes.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 

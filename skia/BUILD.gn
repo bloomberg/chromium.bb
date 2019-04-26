@@ -30,19 +30,7 @@ declare_args() {
 # External-facing config for dependent code.
 config("skia_config") {
   include_dirs = [
-    "config",
-    "ext",
-    "//third_party/skia/",
-    "//third_party/skia/include/c",
-    "//third_party/skia/include/codec",
-    "//third_party/skia/include/core",
-    "//third_party/skia/include/docs",
-    "//third_party/skia/include/effects",
-    "//third_party/skia/include/encode",
-    "//third_party/skia/include/gpu",
-    "//third_party/skia/include/pathops",
-    "//third_party/skia/include/ports",
-    "//third_party/skia/include/utils",
+    "//third_party/skia",
     "//third_party/skia/third_party/skcms",
   ]
   if (enable_vulkan) {
@@ -82,10 +70,6 @@ config("skia_config") {
   }
 
   if (skia_support_gpu) {
-    include_dirs += [
-      "//third_party/skia/src/gpu",
-      "//third_party/skia/src/sksl",
-    ]
     workaround_header = "gpu/config/gpu_driver_bug_workaround_autogen.h"
     defines += [
       "SK_SUPPORT_GPU=1",
@@ -116,46 +100,11 @@ config("skia_config") {
   if (skia_whitelist_serialized_typefaces) {
     defines += [ "SK_WHITELIST_SERIALIZED_TYPEFACES" ]
   }
-
-  if (skia_support_skottie) {
-    include_dirs += [ "//third_party/skia/modules/skottie/include" ]
-  }
 }
 
 # Internal-facing config for Skia library code.
 config("skia_library_config") {
   defines = [ "SK_IGNORE_LINEAR_METRICS_FIX" ]
-
-  # These include directories are only included for Skia code and are not
-  # exported to dependents.
-  include_dirs = [
-    "//third_party/skia/include/codec",
-    "//third_party/skia/include/private",
-    "//third_party/skia/include/client/android",
-    "//third_party/skia/src/codec",
-    "//third_party/skia/src/core",
-    "//third_party/skia/src/image",
-    "//third_party/skia/src/images",
-    "//third_party/skia/src/opts",
-    "//third_party/skia/src/pdf",
-    "//third_party/skia/src/ports",
-    "//third_party/skia/src/shaders",
-    "//third_party/skia/src/shaders/gradients",
-    "//third_party/skia/src/sfnt",
-    "//third_party/skia/src/utils",
-    "//third_party/skia/src/lazy",
-    "//third_party/skia/third_party/gif",
-  ]
-
-  if (is_mac || is_ios) {
-    include_dirs += [ "//third_party/skia/include/utils/mac" ]
-  }
-  if (is_mac) {
-    include_dirs += [ "//third_party/skia/include/utils/ios" ]
-  }
-
-  # TODO: remove after Skia shader relocation (https://skia-review.googlesource.com/c/17927)
-  include_dirs += [ "//third_party/skia/src/effects/gradients" ]
 
   if (!is_ios && !use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
@@ -207,11 +156,6 @@ config("skia_library_config") {
   }
 
   if (is_win) {
-    include_dirs += [
-      "//third_party/skia/include/utils/win",
-      "//third_party/skia/src/utils/win",
-    ]
-
     defines += [
       # On windows, GDI handles are a scarse system-wide resource so we have to
       # keep the glyph cache, which holds up to 4 GDI handles per entry, to a
@@ -230,13 +174,6 @@ config("skia_library_config") {
                   # assembly code contains flow control(jmp or jcc) statements.
 
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
-    ]
-  }
-
-  if (skia_support_skottie) {
-    include_dirs += [
-      "//third_party/skia/modules/sksg/include",
-      "//third_party/skia/modules/skshaper/include",
     ]
   }
 }
