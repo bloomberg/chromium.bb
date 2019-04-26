@@ -170,6 +170,7 @@ static_library("test_support") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/viz/public/cpp:manifest",
     "//services/ws/common",
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/host",
@@ -188,6 +189,7 @@ static_library("test_support") {
   ]
 
   data_deps = [
+    "//services/viz",
     "//services/ws/ime/test_ime_driver",
   ]
 }

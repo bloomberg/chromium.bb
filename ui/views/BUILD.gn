@@ -918,6 +918,7 @@ jumbo_source_set("test_support") {
       "//services/service_manager",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
+      "//services/viz/public/cpp:manifest",
       "//services/ws/common",
       "//services/ws/ime/test_ime_driver/public/cpp:manifest",
       "//services/ws/public/mojom",
@@ -930,6 +931,7 @@ jumbo_source_set("test_support") {
     ]
 
     data_deps = [
+      "//services/viz",
       "//services/ws/ime/test_ime_driver",
       "//ui/resources:ui_test_pak_data",
     ]

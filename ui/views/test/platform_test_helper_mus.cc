@@ -14,6 +14,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
+#include "services/viz/public/cpp/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/test_ws/test_manifest.h"
@@ -139,6 +140,7 @@ class PlatformTestHelperMus::ServiceManagerConnection {
         std::make_unique<service_manager::BackgroundServiceManager>(
             std::vector<service_manager::Manifest>{
                 test_ws::GetManifest(), test_ime_driver::GetManifest(),
+                viz::GetManifest(),
                 service_manager::ManifestBuilder()
                     .WithServiceName(kServiceName)
                     .RequireCapability("*", "app")

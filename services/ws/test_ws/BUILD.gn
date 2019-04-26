@@ -63,6 +63,7 @@ source_set("manifest") {
     ":mojom",
     "//base",
     "//services/service_manager/public/cpp",
+    "//services/viz/public/interfaces:constants",
     "//services/ws/public/cpp:manifest",
   ]
 }

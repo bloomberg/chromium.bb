@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
+#include "services/viz/public/cpp/manifest.h"
 #include "services/ws/common/switches.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
@@ -31,7 +32,7 @@ void EnsureCommandLineSwitch(const std::string& name) {
 
 WindowServerServiceTestBase::WindowServerServiceTestBase()
     : test_service_manager_(
-          {test_ws::GetManifest(),
+          {test_ws::GetManifest(), viz::GetManifest(),
            service_manager::ManifestBuilder()
                .WithServiceName(kTestAppName)
                .ExposeCapability("ui:window_tree_client",

@@ -18,6 +18,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/viz/public/cpp/manifest.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -84,7 +85,8 @@ class AshServiceTest : public testing::Test {
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(ws::mojom::kServiceName, "app")
-                 .Build()}),
+                 .Build(),
+             viz::GetManifest()}),
         test_service_(
             test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
   ~AshServiceTest() override = default;

@@ -32,6 +32,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/viz/public/cpp:manifest",
     "//services/ws/ime/test_ime_driver/public/cpp:manifest",
     "//services/ws/ime/test_ime_driver/public/mojom",
     "//services/ws/public/mojom",
@@ -40,6 +41,7 @@ source_set("tests") {
   ]
 
   data_deps = [
+    "//services/viz",
     "//services/ws/ime/test_ime_driver",
     "//services/ws/test_ws",
   ]

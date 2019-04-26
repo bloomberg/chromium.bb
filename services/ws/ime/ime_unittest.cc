@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/viz/public/cpp/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -74,6 +75,7 @@ class IMEAppTest : public testing::Test {
   IMEAppTest()
       : test_service_manager_(
             {test_ws::GetManifest(), test_ime_driver::GetManifest(),
+             viz::GetManifest(),
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(ws::mojom::kServiceName, "app")

@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
+#include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/public/cpp/manifest.h"
 #include "services/ws/test_ws/test_ws.mojom.h"
 
@@ -21,6 +22,7 @@ const service_manager::Manifest& GetManifest() {
                            .Build())
           .ExposeCapability(
               "test", service_manager::Manifest::InterfaceList<mojom::TestWs>())
+          .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
           .PackageService(ws::GetManifest())
           .Build()};
   return *manifest;
