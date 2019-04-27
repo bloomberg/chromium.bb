@@ -35,6 +35,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/device/public/cpp/device_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -992,6 +993,11 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingImageModelTest.SensorAccessPermissionsChanged
 TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
+  // Enable all sensors just to avoid hardcoding the expected messages to the
+  // motion sensor-specific ones.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
+
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =

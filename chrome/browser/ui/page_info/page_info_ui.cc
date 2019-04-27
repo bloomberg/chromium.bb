@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -19,6 +21,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -140,7 +143,9 @@ struct PermissionsUIInfo {
   int string_id;
 };
 
-const PermissionsUIInfo kPermissionsUIInfo[] = {
+base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
+  DCHECK(base::FeatureList::GetInstance() != nullptr);
+  static const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, 0},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
@@ -160,9 +165,14 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_ADS, IDS_PAGE_INFO_TYPE_ADS},
     {CONTENT_SETTINGS_TYPE_SOUND, IDS_PAGE_INFO_TYPE_SOUND},
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
-    {CONTENT_SETTINGS_TYPE_SENSORS, IDS_PAGE_INFO_TYPE_SENSORS},
+    {CONTENT_SETTINGS_TYPE_SENSORS,
+     base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+         ? IDS_PAGE_INFO_TYPE_SENSORS
+         : IDS_PAGE_INFO_TYPE_MOTION_SENSORS},
     {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
-};
+  };
+  return kPermissionsUIInfo;
+}
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
     PageInfoUI::SecuritySummaryColor style,
@@ -304,7 +314,7 @@ PageInfoUI::~PageInfoUI() {}
 
 // static
 base::string16 PageInfoUI::PermissionTypeToUIString(ContentSettingsType type) {
-  for (const PermissionsUIInfo& info : kPermissionsUIInfo) {
+  for (const PermissionsUIInfo& info : GetContentSettingsUIInfo()) {
     if (info.type == type)
       return l10n_util::GetStringUTF16(info.string_id);
   }
@@ -619,7 +629,7 @@ const gfx::ImageSkia PageInfoUI::GetVrSettingsIcon(SkColor related_text_color) {
 
 // static
 bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {
-  for (const PermissionsUIInfo& info : kPermissionsUIInfo) {
+  for (const PermissionsUIInfo& info : GetContentSettingsUIInfo()) {
     if (info.type == type)
       return true;
   }
