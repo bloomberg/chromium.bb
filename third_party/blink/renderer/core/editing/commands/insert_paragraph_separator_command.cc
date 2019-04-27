@@ -489,31 +489,33 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // FIXME: leadingCollapsibleWhitespacePosition is returning the position
   // before preserved newlines for positions after the preserved newline,
   // causing the newline to be turned into a nbsp.
-  if (leading_whitespace.IsNotNull() &&
-      leading_whitespace.AnchorNode()->IsTextNode()) {
-    Text* text_node = ToText(leading_whitespace.AnchorNode());
-    DCHECK(!text_node->GetLayoutObject() ||
-           text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
-        << text_node;
-    ReplaceTextInNode(text_node,
-                      leading_whitespace.ComputeOffsetInContainerNode(), 1,
-                      NonBreakingSpaceString());
-    GetDocument().UpdateStyleAndLayout();
+  if (leading_whitespace.IsNotNull()) {
+    if (auto* text_node = DynamicTo<Text>(leading_whitespace.AnchorNode())) {
+      DCHECK(!text_node->GetLayoutObject() ||
+             text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
+          << text_node;
+      ReplaceTextInNode(text_node,
+                        leading_whitespace.ComputeOffsetInContainerNode(), 1,
+                        NonBreakingSpaceString());
+      GetDocument().UpdateStyleAndLayout();
+    }
   }
 
   // Split at pos if in the middle of a text node.
   Position position_after_split;
-  if (insertion_position.IsOffsetInAnchor() &&
-      insertion_position.ComputeContainerNode()->IsTextNode()) {
-    Text* text_node = ToText(insertion_position.ComputeContainerNode());
-    int text_offset = insertion_position.OffsetInContainerNode();
-    bool at_end = static_cast<unsigned>(text_offset) >= text_node->length();
-    if (text_offset > 0 && !at_end) {
-      SplitTextNode(text_node, text_offset);
-      GetDocument().UpdateStyleAndLayout();
+  if (insertion_position.IsOffsetInAnchor()) {
+    if (auto* text_node =
+            DynamicTo<Text>(insertion_position.ComputeContainerNode())) {
+      int text_offset = insertion_position.OffsetInContainerNode();
+      bool at_end = static_cast<unsigned>(text_offset) >= text_node->length();
+      if (text_offset > 0 && !at_end) {
+        SplitTextNode(text_node, text_offset);
+        GetDocument().UpdateStyleAndLayout();
 
-      position_after_split = Position::FirstPositionInNode(*text_node);
-      insertion_position = Position(text_node->previousSibling(), text_offset);
+        position_after_split = Position::FirstPositionInNode(*text_node);
+        insertion_position =
+            Position(text_node->previousSibling(), text_offset);
+      }
     }
   }
 

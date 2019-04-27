@@ -21,7 +21,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Text* text = ToText(div->nextSibling());
+  auto* text = To<Text>(div->nextSibling());
   EXPECT_FALSE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -41,7 +41,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedInline) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Text* text = ToText(span->nextSibling());
+  auto* text = To<Text>(span->nextSibling());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -61,9 +61,9 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedWhitespace) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Text* first_whitespace = ToText(span->nextSibling());
-  Text* second_whitespace =
-      ToText(first_whitespace->nextSibling()->nextSibling());
+  auto* first_whitespace = To<Text>(span->nextSibling());
+  auto* second_whitespace =
+      To<Text>(first_whitespace->nextSibling()->nextSibling());
   EXPECT_TRUE(first_whitespace->GetLayoutObject());
   EXPECT_FALSE(second_whitespace->GetLayoutObject());
 
@@ -87,7 +87,7 @@ TEST_F(WhitespaceAttacherTest, VisitBlockAfterReattachedWhitespace) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Text* text = ToText(div->nextSibling());
+  auto* text = To<Text>(div->nextSibling());
   EXPECT_FALSE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -105,7 +105,7 @@ TEST_F(WhitespaceAttacherTest, VisitInlineAfterReattachedWhitespace) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Text* text = ToText(span->nextSibling());
+  auto* text = To<Text>(span->nextSibling());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -125,8 +125,8 @@ TEST_F(WhitespaceAttacherTest, VisitTextAfterReattachedWhitespace) {
   GetDocument().body()->SetInnerHTMLFromString("Text<!-- --> ");
   UpdateAllLifecyclePhasesForTest();
 
-  Text* text = ToText(GetDocument().body()->firstChild());
-  Text* whitespace = ToText(text->nextSibling()->nextSibling());
+  auto* text = To<Text>(GetDocument().body()->firstChild());
+  auto* whitespace = To<Text>(text->nextSibling()->nextSibling());
   EXPECT_TRUE(text->GetLayoutObject());
   EXPECT_TRUE(whitespace->GetLayoutObject());
 
@@ -149,7 +149,7 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideBlockExitingScope) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
   EXPECT_FALSE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -171,7 +171,7 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideInlineExitingScope) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Text* text = ToText(span->firstChild());
+  auto* text = To<Text>(span->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -198,7 +198,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = shadow_root.getElementById("block");
-  Text* text = ToText(host->firstChild());
+  auto* text = To<Text>(host->firstChild());
   EXPECT_FALSE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -226,7 +226,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedInline) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = shadow_root.getElementById("inline");
-  Text* text = ToText(host->firstChild());
+  auto* text = To<Text>(host->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -250,7 +250,7 @@ TEST_F(WhitespaceAttacherTest,
 
   Element* div = GetDocument().getElementById("block");
   Element* contents = ToElement(div->nextSibling());
-  Text* text = ToText(contents->firstChild());
+  auto* text = To<Text>(contents->firstChild());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
@@ -276,7 +276,7 @@ TEST_F(WhitespaceAttacherTest,
 
   Element* span = GetDocument().getElementById("inline");
   Element* contents = ToElement(span->nextSibling());
-  Text* text = ToText(contents->firstChild());
+  auto* text = To<Text>(contents->firstChild());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_TRUE(text->GetLayoutObject());
 
@@ -301,7 +301,7 @@ TEST_F(WhitespaceAttacherTest,
 
   Element* div = GetDocument().getElementById("block");
   Element* contents = ToElement(div->nextSibling());
-  Text* text = ToText(contents->nextSibling());
+  auto* text = To<Text>(contents->nextSibling());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
@@ -329,7 +329,7 @@ TEST_F(WhitespaceAttacherTest,
 
   Element* div = GetDocument().getElementById("block");
   Element* contents = ToElement(div->nextSibling());
-  Text* text = ToText(contents->nextSibling());
+  auto* text = To<Text>(contents->nextSibling());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
 
@@ -357,7 +357,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceDeepInsideDisplayContents) {
 
   Element* span = GetDocument().getElementById("inline");
   Element* contents = ToElement(span->nextSibling());
-  Text* text = ToText(GetDocument().getElementById("inner")->firstChild());
+  auto* text = To<Text>(GetDocument().getElementById("inner")->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -385,7 +385,7 @@ TEST_F(WhitespaceAttacherTest, MultipleDisplayContents) {
   Element* first_contents = ToElement(span->nextSibling());
   Element* second_contents = ToElement(first_contents->nextSibling());
   Element* last_contents = ToElement(second_contents->nextSibling());
-  Text* text = ToText(last_contents->firstChild());
+  auto* text = To<Text>(last_contents->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -417,7 +417,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
 
   Element* span = shadow_root.getElementById("inline");
   Element* contents = ToElement(span->nextSibling());
-  Text* text = ToText(host->firstChild());
+  auto* text = To<Text>(host->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);

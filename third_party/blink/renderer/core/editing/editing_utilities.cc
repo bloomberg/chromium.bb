@@ -803,9 +803,10 @@ int FindNextBoundaryOffset(const String& str, int current) {
 int PreviousGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.
   DCHECK_GE(current, 0);
-  if (current <= 1 || !node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (current <= 1 || !text_node)
     return current - 1;
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   // TODO(yosin): Replace with DCHECK for out-of-range request.
   if (static_cast<unsigned>(current) > text.length())
     return current - 1;
@@ -817,19 +818,21 @@ static int PreviousBackwardDeletionOffsetOf(const Node& node, int current) {
   DCHECK_GE(current, 0);
   if (current <= 1)
     return 0;
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return current - 1;
 
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   DCHECK_LT(static_cast<unsigned>(current - 1), text.length());
   return FindNextBoundaryOffset<BackspaceStateMachine>(text, current);
 }
 
 int NextGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return current + 1;
-  const String& text = ToText(node).data();
+  const String& text = text_node->data();
   const int length = text.length();
   DCHECK_LE(current, length);
   if (current >= length - 1)

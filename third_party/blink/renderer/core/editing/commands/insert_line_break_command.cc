@@ -163,9 +163,8 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentAfterNode(*node_to_insert))
             .Build()));
-  } else if (pos.AnchorNode()->IsTextNode()) {
+  } else if (auto* text_node = DynamicTo<Text>(pos.AnchorNode())) {
     // Split a text node
-    Text* text_node = ToText(pos.AnchorNode());
     SplitTextNode(text_node, pos.ComputeOffsetInContainerNode());
     InsertNodeBefore(node_to_insert, text_node, editing_state);
     if (editing_state->IsAborted())

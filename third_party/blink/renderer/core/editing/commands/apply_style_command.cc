@@ -1446,10 +1446,10 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
   // Position("world", 0) instead.
   const unsigned push_down_start_offset =
       push_down_start.ComputeOffsetInContainerNode();
-  Node* push_down_start_container = push_down_start.ComputeContainerNode();
-  if (push_down_start_container && push_down_start_container->IsTextNode() &&
-      push_down_start_offset ==
-          ToText(push_down_start_container)->length())
+  auto* push_down_start_container =
+      DynamicTo<Text>(push_down_start.ComputeContainerNode());
+  if (push_down_start_container &&
+      push_down_start_offset == push_down_start_container->length())
     push_down_start = NextVisuallyDistinctCandidate(push_down_start);
 
   // TODO(editing-dev): Use of UpdateStyleAndLayout
@@ -1579,7 +1579,7 @@ void ApplyStyleCommand::SplitTextAtStart(const Position& start,
   else
     new_end = end;
 
-  Text* text = ToText(start.ComputeContainerNode());
+  auto* text = To<Text>(start.ComputeContainerNode());
   SplitTextNode(text, start.OffsetInContainerNode());
   UpdateStartEnd(EphemeralRange(Position::FirstPositionInNode(*text), new_end));
 }
@@ -1591,19 +1591,19 @@ void ApplyStyleCommand::SplitTextAtEnd(const Position& start,
   bool should_update_start =
       start.IsOffsetInAnchor() &&
       start.ComputeContainerNode() == end.ComputeContainerNode();
-  Text* text = ToText(end.AnchorNode());
+  auto* text = To<Text>(end.AnchorNode());
   SplitTextNode(text, end.OffsetInContainerNode());
 
-  Node* prev_node = text->previousSibling();
-  if (!prev_node || !prev_node->IsTextNode())
+  auto* prev_text_node = DynamicTo<Text>(text->previousSibling());
+  if (!prev_text_node)
     return;
 
   Position new_start =
       should_update_start
-          ? Position(ToText(prev_node), start.OffsetInContainerNode())
+          ? Position(prev_text_node, start.OffsetInContainerNode())
           : start;
   UpdateStartEnd(
-      EphemeralRange(new_start, Position::LastPositionInNode(*prev_node)));
+      EphemeralRange(new_start, Position::LastPositionInNode(*prev_text_node)));
 }
 
 void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,
@@ -1618,7 +1618,7 @@ void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,
   else
     new_end = end;
 
-  SplitTextNodeContainingElement(ToText(start.ComputeContainerNode()),
+  SplitTextNodeContainingElement(To<Text>(start.ComputeContainerNode()),
                                  start.OffsetInContainerNode());
   UpdateStartEnd(EphemeralRange(
       Position::BeforeNode(*start.ComputeContainerNode()), new_end));
@@ -1630,19 +1630,21 @@ void ApplyStyleCommand::SplitTextElementAtEnd(const Position& start,
 
   bool should_update_start =
       start.ComputeContainerNode() == end.ComputeContainerNode();
-  SplitTextNodeContainingElement(ToText(end.ComputeContainerNode()),
+  SplitTextNodeContainingElement(To<Text>(end.ComputeContainerNode()),
                                  end.OffsetInContainerNode());
 
   Node* parent_element = end.ComputeContainerNode()->parentNode();
   if (!parent_element || !parent_element->previousSibling())
     return;
-  Node* first_text_node = parent_element->previousSibling()->lastChild();
-  if (!first_text_node || !first_text_node->IsTextNode())
+
+  auto* first_text_node =
+      DynamicTo<Text>(parent_element->previousSibling()->lastChild());
+  if (!first_text_node)
     return;
 
   Position new_start =
       should_update_start
-          ? Position(ToText(first_text_node), start.OffsetInContainerNode())
+          ? Position(first_text_node, start.OffsetInContainerNode())
           : start;
   UpdateStartEnd(
       EphemeralRange(new_start, Position::AfterNode(*first_text_node)));
@@ -2054,20 +2056,18 @@ void ApplyStyleCommand::JoinChildTextNodes(ContainerNode* node,
   Position new_end = end;
 
   HeapVector<Member<Text>> text_nodes;
-  for (Node* curr = node->firstChild(); curr; curr = curr->nextSibling()) {
-    if (!curr->IsTextNode())
-      continue;
-
-    text_nodes.push_back(ToText(curr));
+  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
+    if (auto* child_text = DynamicTo<Text>(child))
+      text_nodes.push_back(child_text);
   }
 
   for (const auto& text_node : text_nodes) {
     Text* child_text = text_node;
     Node* next = child_text->nextSibling();
-    if (!next || !next->IsTextNode())
+    auto* next_text = DynamicTo<Text>(next);
+    if (!next_text)
       continue;
 
-    Text* next_text = ToText(next);
     if (start.IsOffsetInAnchor() && next == start.ComputeContainerNode())
       new_start = Position(
           child_text, child_text->length() + start.OffsetInContainerNode());

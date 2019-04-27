@@ -777,9 +777,8 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
     InsertedNodes& inserted_nodes) {
   GetDocument().UpdateStyleAndLayout();
 
-  Node* last_leaf_inserted = inserted_nodes.LastLeafInserted();
-  if (last_leaf_inserted && last_leaf_inserted->IsTextNode() &&
-      !NodeHasVisibleLayoutText(ToText(*last_leaf_inserted)) &&
+  auto* last_leaf_inserted = DynamicTo<Text>(inserted_nodes.LastLeafInserted());
+  if (last_leaf_inserted && !NodeHasVisibleLayoutText(*last_leaf_inserted) &&
       !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*last_leaf_inserted),
                                kSelectTag) &&
       !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*last_leaf_inserted),
@@ -792,9 +791,9 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
   // We don't have to make sure that firstNodeInserted isn't inside a select or
   // script element, because it is a top level node in the fragment and the user
   // can't insert into those elements.
-  Node* first_node_inserted = inserted_nodes.FirstNodeInserted();
-  if (first_node_inserted && first_node_inserted->IsTextNode() &&
-      !NodeHasVisibleLayoutText(ToText(*first_node_inserted))) {
+  auto* first_node_inserted =
+      DynamicTo<Text>(inserted_nodes.FirstNodeInserted());
+  if (first_node_inserted && !NodeHasVisibleLayoutText(*first_node_inserted)) {
     inserted_nodes.WillRemoveNode(*first_node_inserted);
     // Removing a Text node won't dispatch synchronous events.
     RemoveNode(first_node_inserted, ASSERT_NO_EDITING_ABORT);
@@ -1299,11 +1298,10 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // our style spans and for positions inside list items
   // since insertAsListItems already does the right thing.
   if (!match_style_ && !EnclosingList(insertion_pos.ComputeContainerNode())) {
-    if (insertion_pos.ComputeContainerNode()->IsTextNode() &&
-        insertion_pos.OffsetInContainerNode() &&
+    auto* text_node = DynamicTo<Text>(insertion_pos.ComputeContainerNode());
+    if (text_node && insertion_pos.OffsetInContainerNode() &&
         !insertion_pos.AtLastEditingPositionForNode()) {
-      SplitTextNode(ToText(insertion_pos.ComputeContainerNode()),
-                    insertion_pos.OffsetInContainerNode());
+      SplitTextNode(text_node, insertion_pos.OffsetInContainerNode());
       insertion_pos =
           Position::FirstPositionInNode(*insertion_pos.ComputeContainerNode());
     }
@@ -1708,8 +1706,8 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
   Position end_upstream =
       MostBackwardCaretPosition(end_of_inserted_content.DeepEquivalent());
   Node* end_node = end_upstream.ComputeNodeBeforePosition();
-  int end_offset =
-      end_node && end_node->IsTextNode() ? ToText(end_node)->length() : 0;
+  auto* end_text_node = DynamicTo<Text>(end_node);
+  int end_offset = end_text_node ? end_text_node->length() : 0;
   if (end_upstream.IsOffsetInAnchor()) {
     end_node = end_upstream.ComputeContainerNode();
     end_offset = end_upstream.OffsetInContainerNode();
@@ -1723,8 +1721,8 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
     bool collapse_white_space =
         !end_node->GetLayoutObject() ||
         end_node->GetLayoutObject()->Style()->CollapseWhiteSpace();
-    if (end_node->IsTextNode()) {
-      InsertTextIntoNode(ToText(end_node), end_offset,
+    if (auto* end_text_node = DynamicTo<Text>(end_node)) {
+      InsertTextIntoNode(end_text_node, end_offset,
                          collapse_white_space ? NonBreakingSpaceString() : " ");
       if (end_of_inserted_content_.ComputeContainerNode() == end_node)
         end_of_inserted_content_ = Position(
@@ -1763,8 +1761,8 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
     bool collapse_white_space =
         !start_node->GetLayoutObject() ||
         start_node->GetLayoutObject()->Style()->CollapseWhiteSpace();
-    if (start_node->IsTextNode()) {
-      InsertTextIntoNode(ToText(start_node), start_offset,
+    if (auto* start_text_node = DynamicTo<Text>(start_node)) {
+      InsertTextIntoNode(start_text_node, start_offset,
                          collapse_white_space ? NonBreakingSpaceString() : " ");
       if (end_of_inserted_content_.ComputeContainerNode() == start_node &&
           end_of_inserted_content_.OffsetInContainerNode())
@@ -1852,19 +1850,17 @@ void ReplaceSelectionCommand::MergeTextNodesAroundPosition(
   bool position_only_to_be_updated_is_offset_in_anchor =
       position_only_to_be_updated.IsOffsetInAnchor();
   Text* text = nullptr;
-  if (position_is_offset_in_anchor && position.ComputeContainerNode() &&
-      position.ComputeContainerNode()->IsTextNode()) {
-    text = ToText(position.ComputeContainerNode());
-  } else {
-    Node* before = position.ComputeNodeBeforePosition();
-    if (before && before->IsTextNode()) {
-      text = ToText(before);
-    } else {
-      Node* after = position.ComputeNodeAfterPosition();
-      if (after && after->IsTextNode())
-        text = ToText(after);
-    }
+  auto* container_text_node = DynamicTo<Text>(position.ComputeContainerNode());
+  if (position_is_offset_in_anchor && container_text_node) {
+    text = container_text_node;
+  } else if (auto* before =
+                 DynamicTo<Text>(position.ComputeNodeBeforePosition())) {
+    text = before;
+  } else if (auto* after =
+                 DynamicTo<Text>(position.ComputeNodeAfterPosition())) {
+    text = after;
   }
+
   if (!text)
     return;
 
@@ -1878,8 +1874,7 @@ void ReplaceSelectionCommand::MergeTextNodesAroundPosition(
        U16_IS_LEAD(text->data()[text->data().length() - 1]));
   if (!has_incomplete_surrogate && text->data().length() > kMergeSizeLimit)
     return;
-  if (text->previousSibling() && text->previousSibling()->IsTextNode()) {
-    Text* previous = ToText(text->previousSibling());
+  if (auto* previous = DynamicTo<Text>(text->previousSibling())) {
     if (has_incomplete_surrogate ||
         previous->data().length() <= kMergeSizeLimit) {
       InsertTextIntoNode(text, 0, previous->data());
@@ -1966,8 +1961,9 @@ Node* ReplaceSelectionCommand::InsertAsListItems(HTMLElement* list_element,
   // list items and insert these nodes between them.
   if (is_middle) {
     int text_node_offset = insert_pos.OffsetInContainerNode();
-    if (insert_pos.AnchorNode()->IsTextNode() && text_node_offset > 0)
-      SplitTextNode(ToText(insert_pos.AnchorNode()), text_node_offset);
+    auto* text_node = DynamicTo<Text>(insert_pos.AnchorNode());
+    if (text_node && text_node_offset > 0)
+      SplitTextNode(text_node, text_node_offset);
     SplitTreeToNode(insert_pos.AnchorNode(), last_node, true);
   }
 
@@ -2036,7 +2032,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
 
   Node* node_after_insertion_pos =
       MostForwardCaretPosition(EndingSelection().End()).AnchorNode();
-  Text* text_node = ToText(fragment.FirstChild());
+  auto* text_node = To<Text>(fragment.FirstChild());
   // Our fragment creation code handles tabs, spaces, and newlines, so we don't
   // have to worry about those here.
 
