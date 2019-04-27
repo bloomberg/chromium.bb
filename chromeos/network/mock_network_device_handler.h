@@ -49,12 +49,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
                     const base::Closure& callback,
                     const network_handler::ErrorCallback& error_callback));
 
-  MOCK_METHOD4(SetCarrier,
-               void(const std::string& device_path,
-                    const std::string& carrier,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
-
   MOCK_METHOD5(RequirePin,
                void(const std::string& device_path,
                     bool require_pin,

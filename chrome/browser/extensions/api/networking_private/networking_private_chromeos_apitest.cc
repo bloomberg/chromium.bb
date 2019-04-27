@@ -528,17 +528,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivate) {
   EXPECT_EQ(1, UIDelegateStub::s_show_account_details_called_);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivateSprint) {
-  SetupCellular();
-  // Set the carrier to Sprint.
-  DBusThreadManager::Get()->GetShillDeviceClient()->SetCarrier(
-      dbus::ObjectPath(kCellularDevicePath), shill::kCarrierSprint,
-      base::DoNothing(),
-      base::BindRepeating([](const std::string&, const std::string&) {}));
-  EXPECT_TRUE(RunNetworkingSubtest("startActivateSprint")) << message_;
-  EXPECT_EQ(0, UIDelegateStub::s_show_account_details_called_);
-}
-
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        StartConnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;

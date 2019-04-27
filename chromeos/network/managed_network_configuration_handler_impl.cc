@@ -390,24 +390,6 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           *profile, guid, &policies->global_network_config, network_policy,
           validated_user_settings.get()));
 
-  // 'Carrier' needs to be handled specially if set.
-  base::DictionaryValue* cellular = nullptr;
-  if (validated_user_settings->GetDictionaryWithoutPathExpansion(
-          ::onc::network_config::kCellular, &cellular)) {
-    std::string carrier;
-    if (cellular->GetStringWithoutPathExpansion(::onc::cellular::kCarrier,
-                                                &carrier)) {
-      network_device_handler_->SetCarrier(
-          state->device_path(), carrier,
-          base::Bind(
-              &ManagedNetworkConfigurationHandlerImpl::SetShillProperties,
-              weak_ptr_factory_.GetWeakPtr(), service_path,
-              base::Passed(&shill_dictionary), callback, error_callback),
-          error_callback);
-      return;
-    }
-  }
-
   SetShillProperties(service_path, std::move(shill_dictionary), callback,
                      error_callback);
 }

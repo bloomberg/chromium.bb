@@ -318,18 +318,6 @@ void NetworkDeviceHandlerImpl::RegisterCellularNetwork(
       base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
-void NetworkDeviceHandlerImpl::SetCarrier(
-    const std::string& device_path,
-    const std::string& carrier,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  NET_LOG(USER) << "Device.SetCarrier: " << device_path
-                << " carrier: " << carrier;
-  ShillDeviceClient::Get()->SetCarrier(
-      dbus::ObjectPath(device_path), carrier, callback,
-      base::Bind(&HandleShillCallFailure, device_path, error_callback));
-}
-
 void NetworkDeviceHandlerImpl::RequirePin(
     const std::string& device_path,
     bool require_pin,

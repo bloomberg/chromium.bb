@@ -162,19 +162,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                           error_callback);
   }
 
-  void SetCarrier(const dbus::ObjectPath& device_path,
-                  const std::string& carrier,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override {
-    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
-                                 shill::kSetCarrierFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(carrier);
-    GetHelper(device_path)
-        ->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                          error_callback);
-  }
-
   void Reset(const dbus::ObjectPath& device_path,
              const base::Closure& callback,
              const ErrorCallback& error_callback) override {

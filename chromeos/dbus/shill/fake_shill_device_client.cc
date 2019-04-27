@@ -261,15 +261,6 @@ void FakeShillDeviceClient::Register(const dbus::ObjectPath& device_path,
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
-void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
-                                       const std::string& carrier,
-                                       const base::Closure& callback,
-                                       const ErrorCallback& error_callback) {
-  SetPropertyInternal(device_path, shill::kCarrierProperty,
-                      base::Value(carrier), callback, error_callback,
-                      /*notify_changed=*/true);
-}
-
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,
                                   const base::Closure& callback,
                                   const ErrorCallback& error_callback) {

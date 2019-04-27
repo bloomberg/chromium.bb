@@ -151,16 +151,6 @@ var availableTests = [
           }));
       }));
   },
-  function startActivateSprint() {
-    chrome.networkingPrivate.startActivate(
-      kCellularGuid, callbackPass(function() {
-        chrome.networkingPrivate.getState(
-          kCellularGuid, callbackPass(function(state) {
-            assertEq(ActivationStateType.ACTIVATED,
-                     state.Cellular.ActivationState);
-          }));
-      }));
-  },
   function startConnectNonexistent() {
     chrome.networkingPrivate.startConnect(
       'nonexistent_path',
@@ -707,19 +697,12 @@ var availableTests = [
   },
   function setCellularProperties() {
     var network_guid = kCellularGuid;
-    // Make sure we test Cellular.Carrier since it requires a special call
-    // to Shill.Device.SetCarrier.
-    var newCarrier = 'new_carrier';
     chrome.networkingPrivate.getProperties(
         network_guid,
         callbackPass(function(result) {
           assertEq(network_guid, result.GUID);
-          assertTrue(!result.Cellular || result.Cellular.Carrier != newCarrier);
           var new_properties = {
-            Priority: 1,
-            Cellular: {
-              Carrier: newCarrier,
-            },
+            Priority: 1
           };
           chrome.networkingPrivate.setProperties(
               network_guid,
@@ -732,8 +715,6 @@ var availableTests = [
                       assertEq(network_guid, result.GUID);
                       // Ensure that the properties were set.
                       assertEq(1, result['Priority']);
-                      assertTrue('Cellular' in result);
-                      assertEq(newCarrier, result.Cellular.Carrier);
                     }));
               }));
         }));

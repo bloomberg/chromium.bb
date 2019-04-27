@@ -146,13 +146,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) = 0;
 
-  // Calls the SetCarrier method.
-  // |callback| is called after the method call finishes.
-  virtual void SetCarrier(const dbus::ObjectPath& device_path,
-                          const std::string& carrier,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
-
   // Calls the Reset method.
   // |callback| is called after the method call finishes.
   virtual void Reset(const dbus::ObjectPath& device_path,
