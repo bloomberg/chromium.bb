@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../';
-
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * SetTimeDialogBrowserTest tests the "Set Time" web UI dialog.
@@ -20,9 +16,10 @@ SetTimeDialogBrowserTest.prototype = {
 
   browsePreload: 'chrome://set-time/',
 
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
-  ]),
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
+    '//chrome/test/data/webui/test_browser_proxy.js',
+  ],
 };
 
 TEST_F('SetTimeDialogBrowserTest', 'All', function() {

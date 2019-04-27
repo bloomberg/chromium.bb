@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @const {string} Path to root from chrome/test/data/webui/management/a11y. */
-const ROOT_PATH = '../../../../../../';
-
 // Polymer BrowserTest fixture and aXe-core accessibility audit.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/a11y/accessibility_test.js',
-  ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
+  '//chrome/test/data/webui/a11y/accessibility_test.js',
+  '//chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
 GEN('#include "chrome/browser/ui/webui/management_a11y_browsertest.h"');
@@ -22,11 +19,6 @@ CrManagementA11yTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://management/';
-  }
-
-  // Include files that define the mocha tests.
-  get extraLibraries() {
-    return PolymerTest.getLibraries(ROOT_PATH);
   }
 
   // Default accessibility audit options. Specify in test definition to use.

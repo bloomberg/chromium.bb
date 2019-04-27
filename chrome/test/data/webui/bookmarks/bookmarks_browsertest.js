@@ -5,10 +5,7 @@
 /**
  * @fileoverview Test suite for the bookmarks page.
  */
-const ROOT_PATH = '../../../../../';
-
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/prefs/incognito_mode_prefs.h"');
 GEN('#include "chrome/browser/ui/webui/bookmarks/bookmarks_browsertest.h"');
 
@@ -21,13 +18,14 @@ BookmarksBrowserTest.prototype = {
 
   typedefCppFixture: 'BookmarksBrowserTest',
 
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
     '../test_store.js',
     'test_command_manager.js',
     'test_store.js',
     'test_timer_proxy.js',
     'test_util.js',
-  ]),
+  ],
 
   /** override */
   runAccessibilityChecks: true,
@@ -54,7 +52,7 @@ BookmarksAppTest.prototype = {
 
   extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
     'app_test.js',
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
+    '//ui/webui/resources/js/util.js',
   ]),
 };
 
