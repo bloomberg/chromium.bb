@@ -946,18 +946,16 @@ group("content_shell_crash_test") {
   if (is_win) {
     data_deps += [ "//build/win:copy_cdb_to_output" ]
   }
-  if (is_posix && !is_android) {
+  if (is_posix) {
     data_deps += [
-      "//third_party/breakpad:dump_syms($host_toolchain)",
-      "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
+      "//third_party/breakpad:dump_syms",
+      "//third_party/breakpad:minidump_stackwalk",
     ]
   }
   if (is_android) {
     data_deps += [
-      "//third_party/breakpad:dump_syms",
       "//third_party/breakpad:microdump_stackwalk",
       "//third_party/breakpad:minidump_dump",
-      "//third_party/breakpad:minidump_stackwalk",
       "//third_party/breakpad:symupload",
       "//tools/android/forwarder2",
     ]

@@ -433,10 +433,6 @@
     },
   },
   'content_shell_crash_test': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',  # https://crbug.com/859264
-    ],
     'modifications': {
       # chromium.win
       'Win10 Tests x64 (dbg)': {

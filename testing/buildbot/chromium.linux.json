@@ -4962,6 +4962,18 @@
         }
       },
       {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "devtools_closure_compile",
         "name": "devtools_closure_compile",
         "swarming": {
