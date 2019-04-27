@@ -11,7 +11,10 @@ import mock
 import sys
 import run_gpu_integration_test
 import gpu_project_config
+import inspect
+import itertools
 
+from collections import defaultdict
 
 from telemetry.testing import browser_test_runner
 from telemetry.internal.platform import system_info
@@ -19,7 +22,12 @@ from telemetry.internal.platform import system_info
 from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
+from gpu_tests import pixel_integration_test
+from gpu_tests import pixel_test_pages
 from gpu_tests import webgl_conformance_integration_test
+
+from py_utils import discover
+from typ import expectations_parser
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -86,7 +94,7 @@ class MockAbstractGpuTestClass(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    pass
+    return []
 
   def RunActualGpuTest(self, test_path, *args):
     pass
@@ -133,6 +141,90 @@ def _generateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
   return set(MockTestCase.GenerateTags(args, possible_browser))
 
 
+def _checkTestExpectationsAreForExistingTests(
+    test_class, mock_options, test_names=None):
+  expectations_file = test_class.ExpectationsFiles()[0]
+  test_names = test_names or [
+      args[0] for args in
+      test_class.GenerateGpuTests(mock_options)]
+  trie = {}
+  for test in test_names:
+    _trie = trie.setdefault(test[0], {})
+    for l in test[1:]:
+      _trie = _trie.setdefault(l, {})
+  f = open(expectations_file, 'r')
+  expectations_file = os.path.basename(expectations_file)
+  expectations = f.read()
+  f.close()
+  parser = expectations_parser.TaggedTestListParser(expectations)
+  for exp in parser.expectations:
+    _trie = trie
+    for i, l in enumerate(exp.test):
+      if l == '*':
+        assert i == len(exp.test)-1, (
+            ("%s:%d: '*' can only be at the "
+            "end of a test expectation's patttern")
+            % (expectations_file, exp.lineno))
+        break
+      assert l in _trie, (
+        "%s:%d: Glob '%s' does not match with any tests in the %s test suite" %
+        (expectations_file, exp.lineno, exp.test, test_class.Name()))
+      _trie = _trie[l]
+
+
+def _checkTestExpectationsForCollision(expectations, file_name):
+  parser = expectations_parser.TaggedTestListParser(expectations)
+  tests_to_exps = defaultdict(list)
+  conflicts_found = False
+  for exp in parser.expectations:
+    if not exp.test.endswith('*'):
+      tests_to_exps[exp.test].append(exp)
+  error_msg = ''
+  for pattern, exps in tests_to_exps.items():
+    if len(exps) > 1:
+      error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
+                    (pattern, file_name))
+    for e1, e2 in itertools.combinations(exps, 2):
+      if e1.tags.issubset(e2.tags) or e2.tags.issubset(e1.tags):
+        conflicts_found = True
+        error_msg += ('  line %d conflicts with line %d\n' %
+                      (e1.lineno, e2.lineno))
+  assert not conflicts_found, error_msg
+
+
+def _testCheckTestExpectationsAreForExistingTests(expectations):
+  options = MockArgs()
+  expectations_file = tempfile.NamedTemporaryFile(delete=False)
+  expectations_file.write(expectations)
+  expectations_file.close()
+
+  class _MockTestCase(object):
+    @classmethod
+    def Name(cls):
+      return '_MockTestCase'
+
+    @classmethod
+    def GenerateGpuTests(cls, options):
+      tests = [('a/b/c', ())]
+      for t in tests:
+        yield t
+
+    @classmethod
+    def ExpectationsFiles(cls):
+      return [expectations_file.name]
+
+  _checkTestExpectationsAreForExistingTests(_MockTestCase, options)
+
+def _FindTestCases():
+  test_cases = []
+  for start_dir in gpu_project_config.CONFIG.start_dirs:
+    modules_to_classes = discover.DiscoverClasses(
+        start_dir,
+        gpu_project_config.CONFIG.top_level_dir,
+        base_class=gpu_integration_test.GpuIntegrationTest)
+    test_cases.extend(modules_to_classes.values())
+  return test_cases
+
 class GpuIntegrationTestUnittest(unittest.TestCase):
   def setUp(self):
     self._test_state = {}
@@ -157,6 +249,86 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self._test_result = json.load(f)
     finally:
       temp_file.close()
+
+  def testCollisionInTestExpectationCausesAssertion(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel win ] a/b/c/d [ Failure ]
+    [ intel win debug ] a/b/c/d [ Skip ]
+    [ intel  ] a/b/c/d [ Failure ]
+    [ amd mac ] a/b [ RetryOnFailure ]
+    [ mac ] a/b [ Skip ]
+    '''
+    with self.assertRaises(AssertionError) as context:
+      _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+    self.assertIn("Found conflicts for test a/b/c/d in test.txt:",
+      str(context.exception))
+    self.assertIn('line 4 conflicts with line 5',
+      str(context.exception))
+    self.assertIn('line 4 conflicts with line 6',
+      str(context.exception))
+    self.assertIn('line 5 conflicts with line 6',
+      str(context.exception))
+    self.assertIn("Found conflicts for test a/b in test.txt:",
+      str(context.exception))
+    self.assertIn('line 7 conflicts with line 8',
+      str(context.exception))
+
+  def testNoCollisionInTestExpectations(self):
+    test_expectations = '''# tags: [ mac win linux ]
+    # tags: [ intel amd nvidia ]
+    # tags: [ debug release ]
+    [ intel win release ] a/b/* [ Failure ]
+    [ intel debug ] a/b/c/d [ Failure ]
+    [ nvidia debug ] a/b/c/d [ Failure ]
+    '''
+    _checkTestExpectationsForCollision(test_expectations, 'test.txt')
+
+  def testNoCollisionsInGpuTestExpectations(self):
+    for test_case in _FindTestCases():
+      if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
+        if test_case.ExpectationsFiles():
+          with open(test_case.ExpectationsFiles()[0]) as f:
+            _checkTestExpectationsForCollision(f.read(),
+            os.path.basename(f.name))
+
+  def testGpuTestExpectationsAreForExistingTests(self):
+    options = MockArgs()
+    for test_case in _FindTestCases():
+      if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
+        if (test_case.Name() not in ('pixel', 'webgl_conformance')
+            and test_case.ExpectationsFiles()):
+          _checkTestExpectationsAreForExistingTests(test_case, options)
+
+  def testPixelTestsExpectationsAreForExistingTests(self):
+    pixel_test_names = []
+    for _, method in inspect.getmembers(
+        pixel_test_pages.PixelTestPages, predicate=inspect.isfunction):
+      pixel_test_names.extend(
+          [p.name for p in method(
+              pixel_integration_test.PixelIntegrationTest.test_base_name)])
+    _checkTestExpectationsAreForExistingTests(
+        pixel_integration_test.PixelIntegrationTest,
+        MockArgs(), pixel_test_names)
+
+  def testStarMustBeAtEndOfTestPattern(self):
+    with self.assertRaises(AssertionError) as context:
+      _testCheckTestExpectationsAreForExistingTests(
+          'a/b*/c [ Failure ]\n')
+    self.assertIn(("1: '*' can only be at the end of"
+                   " a test expectation's patttern"),
+                  str(context.exception))
+
+  def testExpectationPatternNotInGeneratedTests(self):
+    with self.assertRaises(AssertionError) as context:
+      _testCheckTestExpectationsAreForExistingTests('a/b/d [ Failure ]')
+    self.assertIn(("1: Glob 'a/b/d' does not match with any"
+                  " tests in the _MockTestCase test suite"),
+                  str(context.exception))
+
+  def testGlobMatchesTestName(self):
+    _testCheckTestExpectationsAreForExistingTests('a/b* [ Failure ]')
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests(

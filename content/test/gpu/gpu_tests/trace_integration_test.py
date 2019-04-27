@@ -104,21 +104,22 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Include the device level trace tests, even though they're
     # currently skipped on all platforms, to give a hint that they
     # should perhaps be enabled in the future.
-    for p in pixel_test_pages.DefaultPages('TraceTest'):
+    namespace = pixel_test_pages.PixelTestPages
+    for p in namespace.DefaultPages('TraceTest'):
       yield (p.name, gpu_relative_path + p.url,
              {'browser_args': [],
               'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
               'test_harness_script': webgl_test_harness_script,
               'finish_js_condition': 'domAutomationController._finished',
               'success_eval_func': 'CheckGLCategory'})
-    for p in pixel_test_pages.DefaultPages('DeviceTraceTest'):
+    for p in namespace.DefaultPages('DeviceTraceTest'):
       yield (p.name, gpu_relative_path + p.url,
              {'browser_args': [],
               'category': cls._DisabledByDefaultTraceCategory('gpu.device'),
               'test_harness_script': webgl_test_harness_script,
               'finish_js_condition': 'domAutomationController._finished',
               'success_eval_func': 'CheckGLCategory'})
-    for p in pixel_test_pages.DirectCompositionPages('VideoPathTraceTest'):
+    for p in namespace.DirectCompositionPages('VideoPathTraceTest'):
       yield (p.name, gpu_relative_path + p.url,
              {'browser_args': p.browser_args,
               'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
@@ -126,7 +127,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'finish_js_condition': 'domAutomationController._finished',
               'success_eval_func': 'CheckVideoPath',
               'other_args': p.other_args})
-    for p in pixel_test_pages.DirectCompositionPages('OverlayModeTraceTest'):
+    for p in namespace.DirectCompositionPages('OverlayModeTraceTest'):
       if p.other_args and p.other_args.get('video_is_rotated', False):
         # For all drivers we tested, when a video is rotated, frames won't
         # be promoted to hardware overlays.
