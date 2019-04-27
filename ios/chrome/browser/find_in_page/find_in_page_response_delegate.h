@@ -13,6 +13,8 @@
 @optional
 // Called once a Find action finishes.
 - (void)findDidFinishWithUpdatedModel:(FindInPageModel*)model;
+// Called once Find in Page is properly disabled.
+- (void)findDidStop;
 @end
 
 #endif  // IOS_CHROME_BROWSER_FIND_IN_PAGE_FIND_IN_PAGE_RESPONSE_DELEGATE_H_

@@ -4275,6 +4275,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_findBarController updateResultsCount:model];
 }
 
+- (void)findDidStop {
+  [self updateFindBar:NO shouldFocus:NO];
+}
+
 #pragma mark - BrowserCommands helpers
 
 // Reloads the original url of the last non-redirect item (including non-history
