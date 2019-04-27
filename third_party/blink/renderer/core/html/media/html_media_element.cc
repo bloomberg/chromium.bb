@@ -370,6 +370,10 @@ void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
   histogram.Count(static_cast<int>(reason));
 }
 
+bool IsValidPlaybackRate(double rate) {
+  return rate == 0.0 || (rate > kMinRate && rate < kMaxRate);
+}
+
 }  // anonymous namespace
 
 MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
@@ -2237,7 +2241,7 @@ void HTMLMediaElement::setDefaultPlaybackRate(double rate) {
   if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
     return;
 
-  if (default_playback_rate_ == rate)
+  if (default_playback_rate_ == rate || !IsValidPlaybackRate(rate))
     return;
 
   default_playback_rate_ = rate;
@@ -2256,7 +2260,7 @@ void HTMLMediaElement::setPlaybackRate(double rate,
   if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
     return;
 
-  if (rate != 0.0 && (rate < kMinRate || rate > kMaxRate)) {
+  if (!IsValidPlaybackRate(rate)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLMediaElementMediaPlaybackRateOutOfRange);
 
