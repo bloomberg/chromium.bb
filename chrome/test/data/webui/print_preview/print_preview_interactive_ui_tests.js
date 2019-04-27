@@ -39,7 +39,7 @@ PrintPreviewPrintHeaderInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/header.html';
+    return 'chrome://print/ui/header.html';
   }
 
   /** @override */
@@ -73,7 +73,7 @@ PrintPreviewButtonStripInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/button_strip.html';
+    return 'chrome://print/ui/button_strip.html';
   }
 
   /** @override */
@@ -107,7 +107,7 @@ PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_dialog.html';
+    return 'chrome://print/ui/destination_dialog.html';
   }
 
   /** @override */
@@ -157,7 +157,7 @@ TEST_F(
 PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/pages_settings.html';
+    return 'chrome://print/ui/pages_settings.html';
   }
 
   /** @override */
@@ -215,7 +215,7 @@ PrintPreviewNumberSettingsSectionInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/number_settings_section.html';
+    return 'chrome://print/ui/number_settings_section.html';
   }
 
   /** @override */
@@ -250,7 +250,7 @@ PrintPreviewScalingSettingsInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/scaling_settings.html';
+    return 'chrome://print/ui/scaling_settings.html';
   }
 
   /** @override */

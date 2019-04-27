@@ -62,18 +62,18 @@ Polymer({
       clearTimeout(timeout);
     }
 
-    this.timeouts_.set(settingName, setTimeout(() => {
-                         this.timeouts_.delete(settingName);
-                         if (this.previousValues_.get(settingName) ==
-                             newValue) {
-                           return;
-                         }
-                         this.previousValues_.set(settingName, newValue);
-                         this.setSetting(settingName, newValue);
+    this.timeouts_.set(
+        settingName, setTimeout(() => {
+          this.timeouts_.delete(settingName);
+          if (this.previousValues_.get(settingName) == newValue) {
+            return;
+          }
+          this.previousValues_.set(settingName, newValue);
+          this.setSetting(settingName, newValue);
 
-                         // For tests only
-                         this.fire('update-checkbox-setting', settingName);
-                       }, 200));
+          // For tests only
+          this.fire('update-checkbox-setting', settingName);
+        }, 200));
   },
 
   /**

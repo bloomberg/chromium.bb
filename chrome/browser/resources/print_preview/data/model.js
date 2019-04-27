@@ -5,6 +5,50 @@
 cr.exportPath('print_preview');
 
 /**
+ * |key| is the field in the serialized settings state that corresponds to the
+ * setting, or an empty string if the setting should not be saved in the
+ * serialized state.
+ * @typedef {{
+ *   value: *,
+ *   unavailableValue: *,
+ *   valid: boolean,
+ *   available: boolean,
+ *   setByPolicy: boolean,
+ *   key: string,
+ *   updatesPreview: boolean,
+ * }}
+ */
+print_preview.Setting;
+
+/**
+ * @typedef {{
+ *   pages: !print_preview.Setting,
+ *   copies: !print_preview.Setting,
+ *   collate: !print_preview.Setting,
+ *   layout: !print_preview.Setting,
+ *   color: !print_preview.Setting,
+ *   mediaSize: !print_preview.Setting,
+ *   margins: !print_preview.Setting,
+ *   dpi: !print_preview.Setting,
+ *   fitToPage: !print_preview.Setting,
+ *   scaling: !print_preview.Setting,
+ *   duplex: !print_preview.Setting,
+ *   duplexShortEdge: !print_preview.Setting,
+ *   cssBackground: !print_preview.Setting,
+ *   selectionOnly: !print_preview.Setting,
+ *   headerFooter: !print_preview.Setting,
+ *   rasterize: !print_preview.Setting,
+ *   vendorItems: !print_preview.Setting,
+ *   otherOptions: !print_preview.Setting,
+ *   ranges: !print_preview.Setting,
+ *   pagesPerSheet: !print_preview.Setting,
+ *   pin: (print_preview.Setting|undefined),
+ *   pinValue: (print_preview.Setting|undefined),
+ * }}
+ */
+print_preview.Settings;
+
+/**
  * @typedef {{
  *    version: string,
  *    recentDestinations: (!Array<!print_preview.RecentDestination> |
@@ -1092,10 +1136,13 @@ Polymer({
    * @return {string} Serialized print ticket.
    */
   createPrintTicket: function(destination, openPdfInPreview, showSystemDialog) {
-    const dpi = /** @type {{horizontal_dpi: (number | undefined),
-                            vertical_dpi: (number | undefined),
-                            vendor_id: (number | undefined)}} */ (
-        this.getSettingValue('dpi'));
+    const dpi =
+        /**
+           @type {{horizontal_dpi: (number | undefined),
+                    vertical_dpi: (number | undefined),
+                    vendor_id: (number | undefined)}}
+         */
+        (this.getSettingValue('dpi'));
     const ticket = {
       mediaSize: this.getSettingValue('mediaSize'),
       pageCount: this.getSettingValue('pages').length,

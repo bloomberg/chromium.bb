@@ -29,7 +29,6 @@ js_type_check("closure_compile") {
     ":margin_control_container",
     ":margins_settings",
     ":media_size_settings",
-    ":model",
     ":more_settings",
     ":number_settings_section",
     ":other_options_settings",
@@ -43,7 +42,6 @@ js_type_check("closure_compile") {
     ":settings_behavior",
     ":settings_select",
     ":sidebar",
-    ":state",
   ]
 
   if (is_chromeos) {
@@ -53,16 +51,16 @@ js_type_check("closure_compile") {
 
 js_library("app") {
   deps = [
-    ":model",
     ":preview_area",
     ":sidebar",
-    ":state",
     "..:cloud_print_interface",
     "..:cloud_print_interface_manager",
     "..:native_layer",
     "../data:destination",
     "../data:document_info",
     "../data:measurement_system",
+    "../data:model",
+    "../data:state",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -90,10 +88,10 @@ js_library("sidebar") {
     ":pages_per_sheet_settings",
     ":pages_settings",
     ":scaling_settings",
-    ":state",
     "..:cloud_print_interface",
     "..:metrics",
     "../data:destination",
+    "../data:state",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -102,8 +100,8 @@ js_library("sidebar") {
 
 js_library("button_strip") {
   deps = [
-    ":state",
     "../data:destination",
+    "../data:state",
     "//ui/webui/resources/js:cr",
   ]
 
@@ -115,8 +113,8 @@ js_library("button_strip") {
 js_library("header") {
   deps = [
     ":settings_behavior",
-    ":state",
     "../data:destination",
+    "../data:state",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -124,8 +122,8 @@ js_library("header") {
 js_library("header_new") {
   deps = [
     ":settings_behavior",
-    ":state",
     "../data:destination",
+    "../data:state",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -135,11 +133,11 @@ js_library("destination_settings") {
     ":destination_dialog",
     ":destination_select",
     ":settings_behavior",
-    ":state",
     "..:cloud_print_interface",
     "../data:destination",
     "../data:destination_store",
     "../data:invitation_store",
+    "../data:state",
     "../data:user_info",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
     "//ui/webui/resources/js:i18n_behavior",
@@ -164,7 +162,7 @@ if (is_chromeos) {
     deps = [
       ":input_behavior",
       ":settings_behavior",
-      ":state",
+      "../data:state",
     ]
   }
 }
@@ -285,7 +283,7 @@ js_library("settings_select") {
 
 js_library("settings_behavior") {
   deps = [
-    ":model",
+    "../data:model",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -312,17 +310,17 @@ js_library("link_container") {
 js_library("preview_area") {
   deps = [
     ":margin_control_container",
-    ":model",
     ":plugin_proxy",
     ":settings_behavior",
-    ":state",
     "..:native_layer",
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
     "../data:margins",
+    "../data:model",
     "../data:printable_area",
     "../data:size",
+    "../data:state",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:dark_mode",
     "//ui/webui/resources/js:i18n_behavior",
@@ -335,11 +333,11 @@ js_library("margin_control_container") {
   deps = [
     ":margin_control",
     ":settings_behavior",
-    ":state",
     "../data:coordinate2d",
     "../data:margins",
     "../data:measurement_system",
     "../data:size",
+    "../data:state",
     "//ui/webui/resources/js:event_tracker",
   ]
   externs_list = [ "$externs_path/pending.js" ]
@@ -436,21 +434,5 @@ js_library("provisional_destination_resolver") {
 js_library("highlight_utils") {
   deps = [
     "//ui/webui/resources/js:search_highlight_utils",
-  ]
-}
-
-js_library("model") {
-  deps = [
-    "../data:destination",
-    "../data:document_info",
-    "../data:margins",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:promise_resolver",
-  ]
-}
-
-js_library("state") {
-  deps = [
-    "//ui/webui/resources/js:cr",
   ]
 }

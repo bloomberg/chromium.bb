@@ -56,7 +56,7 @@ group("closure_compile") {
   deps = [
     ":print_preview_resources",
     "data:closure_compile",
-    "new:closure_compile",
+    "ui:closure_compile",
   ]
 }
 

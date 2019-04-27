@@ -36,7 +36,7 @@ const NewPrintPreviewTest = class extends PolymerTest {
 PrintPreviewAppTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -69,7 +69,7 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
 PrintPreviewSidebarTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/sidebar.html';
+    return 'chrome://print/ui/sidebar.html';
   }
 
   /** @override */
@@ -99,7 +99,7 @@ TEST_F(
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/pages_settings.html';
+    return 'chrome://print/ui/pages_settings.html';
   }
 
   /** @override */
@@ -136,7 +136,7 @@ TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
 PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -176,7 +176,7 @@ TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
 PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/settings_select.html';
+    return 'chrome://print/ui/settings_select.html';
   }
 
   /** @override */
@@ -196,7 +196,7 @@ TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
 PrintPreviewSelectBehaviorTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/select_behavior.html';
+    return 'chrome://print/ui/select_behavior.html';
   }
 
   /** @override */
@@ -220,7 +220,7 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
 PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/number_settings_section.html';
+    return 'chrome://print/ui/number_settings_section.html';
   }
 
   /** @override */
@@ -245,7 +245,7 @@ TEST_F('PrintPreviewNumberSettingsSectionTest', 'BlocksInvalidKeys',
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -280,7 +280,7 @@ TEST_F('PrintPreviewRestoreStateTest', 'SaveValues', function() {
 PrintPreviewModelTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/model.html';
+    return 'chrome://print/data/model.html';
   }
 
   /** @override */
@@ -321,7 +321,7 @@ TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
 PrintPreviewModelSettingsAvailabilityTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/model.html';
+    return 'chrome://print/data/model.html';
   }
 
   /** @override */
@@ -342,7 +342,7 @@ GEN('#if defined(OS_CHROMEOS)');
 PrintPreviewModelSettingsPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/model.html';
+    return 'chrome://print/data/model.html';
   }
 
   /** @override */
@@ -363,7 +363,7 @@ GEN('#endif');
 PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -452,7 +452,7 @@ GEN('#if !defined(OS_CHROMEOS)');
 PrintPreviewLinkContainerTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/link_container.html';
+    return 'chrome://print/ui/link_container.html';
   }
 
   /** @override */
@@ -493,7 +493,7 @@ GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
 PrintPreviewSystemDialogBrowserTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -532,7 +532,7 @@ GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
 PrintPreviewInvalidSettingsBrowserTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -585,7 +585,7 @@ TEST_F(
 PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_settings.html';
+    return 'chrome://print/ui/destination_settings.html';
   }
 
   /** @override */
@@ -676,7 +676,7 @@ TEST_F(
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_dialog.html';
+    return 'chrome://print/ui/destination_dialog.html';
   }
 
   /** @override */
@@ -722,7 +722,7 @@ TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
 PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/advanced_settings_dialog.html';
+    return 'chrome://print/ui/advanced_settings_dialog.html';
   }
 
   /** @override */
@@ -765,7 +765,7 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
 PrintPreviewCustomMarginsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/margin_control_container.html';
+    return 'chrome://print/ui/margin_control_container.html';
   }
 
   /** @override */
@@ -843,7 +843,7 @@ TEST_F(
 PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_dialog.html';
+    return 'chrome://print/ui/destination_dialog.html';
   }
 
   /** @override */
@@ -901,7 +901,7 @@ TEST_F('PrintPreviewNewDestinationSearchTest', 'CloudKioskPrinter', function() {
 PrintPreviewHeaderTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/header.html';
+    return 'chrome://print/ui/header.html';
   }
 
   /** @override */
@@ -945,7 +945,7 @@ TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
 PrintPreviewHeaderNewTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/header_new.html';
+    return 'chrome://print/ui/header_new.html';
   }
 
   /** @override */
@@ -985,7 +985,7 @@ TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
 PrintPreviewButtonStripTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/button_strip.html';
+    return 'chrome://print/ui/button_strip.html';
   }
 
   /** @override */
@@ -1017,7 +1017,7 @@ TEST_F('PrintPreviewButtonStripTest', 'ButtonStripFiresEvents', function() {
 PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_list_item.html';
+    return 'chrome://print/ui/destination_list_item.html';
   }
 
   /** @override */
@@ -1057,7 +1057,7 @@ TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
 PrintPreviewAdvancedItemTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/advanced_settings_item.html';
+    return 'chrome://print/ui/advanced_settings_item.html';
   }
 
   /** @override */
@@ -1102,7 +1102,7 @@ TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
 PrintPreviewDestinationListTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_list.html';
+    return 'chrome://print/ui/destination_list.html';
   }
 
   /** @override */
@@ -1131,7 +1131,7 @@ TEST_F('PrintPreviewDestinationListTest', 'FireDestinationSelected',
 PrintPreviewPrintButtonTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -1162,7 +1162,7 @@ TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
 PrintPreviewKeyEventTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/ui/app.html';
   }
 
   /** @override */
@@ -1224,7 +1224,7 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
 PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/destination_settings.html';
+    return 'chrome://print/ui/destination_settings.html';
   }
 
   /** @override */
@@ -1307,7 +1307,7 @@ TEST_F(
 PrintPreviewScalingSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/scaling_settings.html';
+    return 'chrome://print/ui/scaling_settings.html';
   }
 
   /** @override */
@@ -1346,7 +1346,7 @@ TEST_F(
 PrintPreviewCopiesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/copies_settings.html';
+    return 'chrome://print/ui/copies_settings.html';
   }
 
   /** @override */
@@ -1366,7 +1366,7 @@ TEST_F('PrintPreviewCopiesSettingsTest', 'All', function() {
 PrintPreviewMediaSizeSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/media_size_settings.html';
+    return 'chrome://print/ui/media_size_settings.html';
   }
 
   /** @override */
@@ -1386,7 +1386,7 @@ TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
 PrintPreviewDpiSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/dpi_settings.html';
+    return 'chrome://print/ui/dpi_settings.html';
   }
 
   /** @override */
@@ -1406,7 +1406,7 @@ TEST_F('PrintPreviewDpiSettingsTest', 'All', function() {
 PrintPreviewOtherOptionsSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/other_options_settings.html';
+    return 'chrome://print/ui/other_options_settings.html';
   }
 
   /** @override */
@@ -1426,7 +1426,7 @@ TEST_F('PrintPreviewOtherOptionsSettingsTest', 'All', function() {
 PrintPreviewLayoutSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/layout_settings.html';
+    return 'chrome://print/ui/layout_settings.html';
   }
 
   /** @override */
@@ -1446,7 +1446,7 @@ TEST_F('PrintPreviewLayoutSettingsTest', 'All', function() {
 PrintPreviewColorSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/color_settings.html';
+    return 'chrome://print/ui/color_settings.html';
   }
 
   /** @override */
@@ -1466,7 +1466,7 @@ TEST_F('PrintPreviewColorSettingsTest', 'All', function() {
 PrintPreviewMarginsSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/margins_settings.html';
+    return 'chrome://print/ui/margins_settings.html';
   }
 
   /** @override */
@@ -1486,7 +1486,7 @@ TEST_F('PrintPreviewMarginsSettingsTest', 'All', function() {
 PrintPreviewPagesPerSheetSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/pages_per_sheet_settings.html';
+    return 'chrome://print/ui/pages_per_sheet_settings.html';
   }
 
   /** @override */
@@ -1506,7 +1506,7 @@ TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
 PrintPreviewDuplexSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/duplex_settings.html';
+    return 'chrome://print/ui/duplex_settings.html';
   }
 
   /** @override */
@@ -1527,7 +1527,7 @@ GEN('#if defined(OS_CHROMEOS)');
 PrintPreviewPinSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/pin_settings.html';
+    return 'chrome://print/ui/pin_settings.html';
   }
 
   /** @override */

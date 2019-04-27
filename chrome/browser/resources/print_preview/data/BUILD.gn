@@ -17,8 +17,10 @@ js_type_check("closure_compile") {
     ":local_parsers",
     ":margins",
     ":measurement_system",
+    ":model",
     ":printable_area",
     ":size",
+    ":state",
   ]
 }
 
@@ -106,6 +108,16 @@ js_library("measurement_system") {
   ]
 }
 
+js_library("model") {
+  deps = [
+    ":destination",
+    ":document_info",
+    ":margins",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:promise_resolver",
+  ]
+}
+
 js_library("printable_area") {
   deps = [
     ":coordinate2d",
@@ -115,6 +127,12 @@ js_library("printable_area") {
 }
 
 js_library("size") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("state") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
