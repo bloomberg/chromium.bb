@@ -2079,7 +2079,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'sentry',
       'sludge',
-      'stout',
       'tael',
       'tatl',
       'terra',

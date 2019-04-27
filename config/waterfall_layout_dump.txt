@@ -130,7 +130,6 @@
     scarlet-paladin
     sentry-paladin
     sludge-paladin
-    stout-paladin
     tael-paladin
     tatl-paladin
     terra-paladin
@@ -524,7 +523,6 @@
     snappy-postsubmit
     soraka-postsubmit
     squawks-postsubmit
-    stout-postsubmit
     sumo-postsubmit
     swanky-postsubmit
     tael-postsubmit
@@ -2674,7 +2672,6 @@
     scarlet-paladin-tryjob
     sentry-paladin-tryjob
     sludge-paladin-tryjob
-    stout-paladin-tryjob
     tael-paladin-tryjob
     tatl-paladin-tryjob
     terra-paladin-tryjob
@@ -2814,7 +2811,6 @@
     snappy-postsubmit-tryjob
     soraka-postsubmit-tryjob
     squawks-postsubmit-tryjob
-    stout-postsubmit-tryjob
     sumo-postsubmit-tryjob
     swanky-postsubmit-tryjob
     tael-postsubmit-tryjob
@@ -3752,24 +3748,6 @@
   squawks-tot-chrome-pfq-informational-tryjob
   squawks-tot-chromium-pfq-informational-tryjob
   squawks-unittest-stress
-  stout-chrome-pfq-tryjob
-  stout-chromium-pfq-tryjob
-  stout-compile-only-pre-cq
-  stout-full-tryjob
-  stout-llvm-next-toolchain-tryjob
-  stout-llvm-toolchain-tryjob
-  stout-no-vmtest-pre-cq
-  stout-paladin-tryjob
-  stout-payloads-tryjob
-  stout-postsubmit-tryjob
-  stout-pre-cq
-  stout-release-afdo-generate-tryjob
-  stout-release-afdo-tryjob
-  stout-release-afdo-use-tryjob
-  stout-release-tryjob
-  stout-tot-chrome-pfq-informational-tryjob
-  stout-tot-chromium-pfq-informational-tryjob
-  stout-unittest-stress
   success-build
   sumo-chrome-pfq-tryjob
   sumo-chromium-pfq-tryjob
