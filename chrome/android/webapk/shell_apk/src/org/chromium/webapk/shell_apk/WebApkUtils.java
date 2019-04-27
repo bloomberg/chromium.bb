@@ -282,4 +282,12 @@ public class WebApkUtils {
             activity.finish();
         }
     }
+
+    public static String getNotificationChannelName(Context context) {
+        return context.getString(R.string.notification_channel_name);
+    }
+
+    public static int getNotificationSmallIconId() {
+        return R.drawable.notification_badge;
+    }
 }
