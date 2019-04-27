@@ -207,7 +207,7 @@ def _NormalizeResourcesArsc(apk_path, num_arsc_files, num_translations,
       print('Skipping resources.arsc normalization (output directory required)')
       return 0
     ap_name = os.path.basename(apk_path).replace('.apk', '.intermediate.ap_')
-    ap_path = os.path.join(out_dir, 'arsc/apks', ap_name)
+    ap_path = os.path.join(out_dir, 'gen/arsc/apks', ap_name)
     if not os.path.exists(ap_path):
       raise Exception('Missing expected file: %s, try rebuilding.' % ap_path)
     apk_path = ap_path

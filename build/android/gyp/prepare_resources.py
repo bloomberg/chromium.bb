@@ -36,9 +36,6 @@ def _ParseArgs(args):
   """
   parser, input_opts, output_opts = resource_utils.ResourceArgsParser()
 
-  input_opts.add_argument(
-      '--aapt-path', required=True, help='Path to the Android aapt tool')
-
   input_opts.add_argument('--resource-dirs',
                         default='[]',
                         help='A list of input directories containing resources '
