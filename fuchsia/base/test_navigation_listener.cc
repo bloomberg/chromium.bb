@@ -59,10 +59,23 @@ void TestNavigationListener::RunUntilUrlEquals(const GURL& expected_url) {
 
 void TestNavigationListener::RunUntilUrlAndTitleEquals(
     const GURL& expected_url,
-    const std::string& expected_title) {
+    const base::StringPiece expected_title) {
   fuchsia::web::NavigationState state;
   state.set_url(expected_url.spec());
-  state.set_title(expected_title);
+  state.set_title(expected_title.as_string());
+  RunUntilNavigationStateMatches(state);
+}
+
+void TestNavigationListener::RunUntilUrlTitleBackForwardEquals(
+    const GURL& expected_url,
+    base::StringPiece expected_title,
+    bool expected_can_go_back,
+    bool expected_can_go_forward) {
+  fuchsia::web::NavigationState state;
+  state.set_url(expected_url.spec());
+  state.set_title(expected_title.as_string());
+  state.set_can_go_back(expected_can_go_back);
+  state.set_can_go_forward(expected_can_go_forward);
   RunUntilNavigationStateMatches(state);
 }
 
@@ -76,10 +89,10 @@ void TestNavigationListener::OnNavigationStateChanged(
     current_state_.set_url(change.url());
   if (change.has_title())
     current_state_.set_title(change.title());
-  if (change.has_can_go_forward())
-    current_state_.set_can_go_forward(change.can_go_forward());
   if (change.has_can_go_back())
     current_state_.set_can_go_back(change.can_go_back());
+  if (change.has_can_go_forward())
+    current_state_.set_can_go_forward(change.can_go_forward());
 
   // Signal readiness for the next navigation event.
   before_ack_.Run(change, std::move(callback));
@@ -105,15 +118,15 @@ bool TestNavigationListener::AllFieldsMatch(
       all_equal = false;
     }
   }
-  if (expected.has_can_go_forward()) {
-    if (!current_state_.has_can_go_forward() ||
-        expected.can_go_forward() != current_state_.can_go_forward()) {
-      all_equal = false;
-    }
-  }
   if (expected.has_can_go_back()) {
     if (!current_state_.has_can_go_back() ||
         expected.can_go_back() != current_state_.can_go_back()) {
+      all_equal = false;
+    }
+  }
+  if (expected.has_can_go_forward()) {
+    if (!current_state_.has_can_go_forward() ||
+        expected.can_go_forward() != current_state_.can_go_forward()) {
       all_equal = false;
     }
   }

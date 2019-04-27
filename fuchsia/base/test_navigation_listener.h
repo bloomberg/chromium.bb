@@ -37,7 +37,14 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
   // Calls RunUntilNavigationStateMatches with a NagivationState that has
   // |expected_url| and |expected_title|.
   void RunUntilUrlAndTitleEquals(const GURL& expected_url,
-                                 const std::string& expected_title);
+                                 base::StringPiece expected_title);
+
+  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // all the expected fields.
+  void RunUntilUrlTitleBackForwardEquals(const GURL& expected_url,
+                                         base::StringPiece expected_title,
+                                         bool expected_can_go_back,
+                                         bool expected_can_go_forward);
 
   // Register a callback which intercepts the execution of the event
   // acknowledgement callback. |before_ack| takes ownership of the

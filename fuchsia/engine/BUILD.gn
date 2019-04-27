@@ -90,6 +90,9 @@ component("web_engine_core") {
   data_deps = [
     ":web_engine_pak",
   ]
+  public_deps = [
+    "//content/public/browser",
+  ]
   data = [
     "$root_out_dir/web_engine.pak",
   ]
@@ -214,6 +217,7 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "browser/frame_impl_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",

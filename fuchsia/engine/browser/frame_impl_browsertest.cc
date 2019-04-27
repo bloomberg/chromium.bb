@@ -119,6 +119,21 @@ class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FrameImplTest);
 };
 
+void VerifyCanGoBackAndForward(fuchsia::web::NavigationController* controller,
+                               bool can_go_back_expected,
+                               bool can_go_forward_expected) {
+  base::RunLoop run_loop;
+  cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> visible_entry(
+      run_loop.QuitClosure());
+  controller->GetVisibleEntry(
+      cr_fuchsia::CallbackToFitFunction(visible_entry.GetReceiveCallback()));
+  run_loop.Run();
+  EXPECT_TRUE(visible_entry->has_can_go_back());
+  EXPECT_EQ(visible_entry->can_go_back(), can_go_back_expected);
+  EXPECT_TRUE(visible_entry->has_can_go_forward());
+  EXPECT_EQ(visible_entry->can_go_forward(), can_go_forward_expected);
+}
+
 // Verifies that the browser will navigate and generate a navigation listener
 // event when LoadUrl() is called.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
@@ -229,25 +244,33 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), title1.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(title1, kPage1Title);
+  navigation_listener_.RunUntilUrlTitleBackForwardEquals(title1, kPage1Title,
+                                                         false, false);
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), title2.spec()));
-  navigation_listener_.RunUntilUrlAndTitleEquals(title2, kPage2Title);
+  navigation_listener_.RunUntilUrlTitleBackForwardEquals(title2, kPage2Title,
+                                                         true, false);
 
+  VerifyCanGoBackAndForward(controller.get(), true, false);
   controller->GoBack();
-  navigation_listener_.RunUntilUrlAndTitleEquals(title1, kPage1Title);
+  navigation_listener_.RunUntilUrlTitleBackForwardEquals(title1, kPage1Title,
+                                                         false, true);
 
   // At the top of the navigation entry list; this should be a no-op.
+  VerifyCanGoBackAndForward(controller.get(), false, true);
   controller->GoBack();
 
   // Process the navigation request message.
   base::RunLoop().RunUntilIdle();
 
+  VerifyCanGoBackAndForward(controller.get(), false, true);
   controller->GoForward();
-  navigation_listener_.RunUntilUrlAndTitleEquals(title2, kPage2Title);
+  navigation_listener_.RunUntilUrlTitleBackForwardEquals(title2, kPage2Title,
+                                                         true, false);
 
   // At the end of the navigation entry list; this should be a no-op.
+  VerifyCanGoBackAndForward(controller.get(), true, false);
   controller->GoForward();
 
   // Process the navigation request message.

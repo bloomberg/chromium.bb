@@ -180,4 +180,10 @@ class FrameImpl : public fuchsia::web::Frame,
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };
 
+// Computes the observable differences between |old_entry| and |new_entry|.
+// Returns true if they are different, |false| if their observable fields are
+// identical.
+bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
+                           const fuchsia::web::NavigationState& new_entry,
+                           fuchsia::web::NavigationState* difference);
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_

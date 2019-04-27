@@ -78,7 +78,8 @@ class LayoutManagerImpl : public aura::LayoutManager {
 };
 
 fuchsia::web::NavigationState ConvertContentNavigationEntry(
-    content::NavigationEntry* entry) {
+    content::NavigationEntry* entry,
+    content::WebContents* web_contents) {
   DCHECK(entry);
 
   fuchsia::web::NavigationState converted;
@@ -94,39 +95,11 @@ fuchsia::web::NavigationState ConvertContentNavigationEntry(
       converted.set_page_type(fuchsia::web::PageType::ERROR);
       break;
   }
+
+  converted.set_can_go_back(web_contents->GetController().CanGoBack());
+  converted.set_can_go_forward(web_contents->GetController().CanGoForward());
+
   return converted;
-}
-
-// Computes the observable differences between |old_entry| and |new_entry|.
-// Returns true if they are different, |false| if their observable fields are
-// identical.
-bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
-                           const fuchsia::web::NavigationState& new_entry,
-                           fuchsia::web::NavigationState* difference) {
-  DCHECK(difference);
-
-  bool is_changed = false;
-
-  DCHECK(new_entry.has_title());
-  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
-    is_changed = true;
-    difference->set_title(new_entry.title());
-  }
-
-  DCHECK(new_entry.has_url());
-  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
-    is_changed = true;
-    difference->set_url(new_entry.url());
-  }
-
-  DCHECK(new_entry.has_page_type());
-  if (!old_entry.has_page_type() ||
-      (new_entry.page_type() != old_entry.page_type())) {
-    is_changed = true;
-    difference->set_page_type(new_entry.page_type());
-  }
-
-  return is_changed;
 }
 
 class FrameFocusRules : public wm::BaseFocusRules {
@@ -496,7 +469,7 @@ void FrameImpl::TearDownView() {
 
 void FrameImpl::OnNavigationEntryChanged(content::NavigationEntry* entry) {
   fuchsia::web::NavigationState entry_converted =
-      ConvertContentNavigationEntry(entry);
+      ConvertContentNavigationEntry(entry, web_contents_.get());
   pending_navigation_event_is_dirty_ |= DiffNavigationEntries(
       cached_navigation_state_, entry_converted, &pending_navigation_event_);
   cached_navigation_state_ = std::move(entry_converted);
@@ -609,7 +582,7 @@ void FrameImpl::GetVisibleEntry(
     return;
   }
 
-  callback(ConvertContentNavigationEntry(entry));
+  callback(ConvertContentNavigationEntry(entry, web_contents_.get()));
 }
 
 bool FrameImpl::ShouldCreateWebContents(
@@ -711,4 +684,47 @@ void FrameImpl::ReadyToCommitNavigation(
 
 void FrameImpl::TitleWasSet(content::NavigationEntry* entry) {
   OnNavigationEntryChanged(entry);
+}
+
+bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
+                           const fuchsia::web::NavigationState& new_entry,
+                           fuchsia::web::NavigationState* difference) {
+  DCHECK(difference);
+
+  bool is_changed = false;
+
+  DCHECK(new_entry.has_title());
+  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
+    is_changed = true;
+    difference->set_title(new_entry.title());
+  }
+
+  DCHECK(new_entry.has_url());
+  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
+    is_changed = true;
+    difference->set_url(new_entry.url());
+  }
+
+  DCHECK(new_entry.has_page_type());
+  if (!old_entry.has_page_type() ||
+      (new_entry.page_type() != old_entry.page_type())) {
+    is_changed = true;
+    difference->set_page_type(new_entry.page_type());
+  }
+
+  DCHECK(new_entry.has_can_go_back());
+  if (!old_entry.has_can_go_back() ||
+      old_entry.can_go_back() != new_entry.can_go_back()) {
+    is_changed = true;
+    difference->set_can_go_back(new_entry.can_go_back());
+  }
+
+  DCHECK(new_entry.has_can_go_forward());
+  if (!old_entry.has_can_go_forward() ||
+      old_entry.can_go_forward() != new_entry.can_go_forward()) {
+    is_changed = true;
+    difference->set_can_go_forward(new_entry.can_go_forward());
+  }
+
+  return is_changed;
 }
