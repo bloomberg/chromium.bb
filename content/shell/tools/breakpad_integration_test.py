@@ -238,12 +238,7 @@ def main():
         failure = 'Failed to run generate_breakpad_symbols.py.'
         subprocess.check_call(cmd)
 
-    print '# Running test without trap handler.'
     run_test(options, crash_dir, symbols_dir, platform)
-    print '# Running test with trap handler.'
-    run_test(options, crash_dir, symbols_dir, platform,
-             additional_arguments =
-               ['--enable-features=WebAssemblyTrapHandler'])
 
   except:
     print 'FAIL: %s' % failure
