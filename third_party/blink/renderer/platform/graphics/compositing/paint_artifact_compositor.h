@@ -222,13 +222,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     bool requires_own_layer;
   };
 
-  void DecompositeTransforms(Vector<PendingLayer>* pending_layers) const;
+  void DecompositeTransforms();
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
-  void CollectPendingLayers(const PaintArtifact&,
-                            const Settings& settings,
-                            Vector<PendingLayer>& pending_layers);
+  void CollectPendingLayers(const PaintArtifact&, const Settings& settings);
 
   // This is the internal recursion of collectPendingLayers. This function
   // loops over the list of paint chunks, scoped by an isolated group
@@ -247,11 +245,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // recursion, the layerization of the subgroup may be tested for merge &
   // overlap with other chunks in the parent group, if grouping requirement
   // can be satisfied (and the effect node has no direct reason).
-  static void LayerizeGroup(const PaintArtifact&,
-                            const Settings& settings,
-                            Vector<PendingLayer>& pending_layers,
-                            const EffectPaintPropertyNode&,
-                            Vector<PaintChunk>::const_iterator& chunk_cursor);
+  void LayerizeGroup(const PaintArtifact&,
+                     const Settings& settings,
+                     const EffectPaintPropertyNode&,
+                     Vector<PaintChunk>::const_iterator& chunk_cursor);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);
   static bool CanDecompositeEffect(const EffectPaintPropertyNode&,
                                    const PendingLayer&);
@@ -323,6 +320,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
 
   PropertyTreeManager property_tree_manager_;
+
+  Vector<PendingLayer, 0> pending_layers_;
 
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;

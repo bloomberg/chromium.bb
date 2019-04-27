@@ -570,7 +570,6 @@ static bool SkipGroupIfEffectivelyInvisible(
 void PaintArtifactCompositor::LayerizeGroup(
     const PaintArtifact& paint_artifact,
     const Settings& settings,
-    Vector<PendingLayer>& pending_layers,
     const EffectPaintPropertyNode& current_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // Skip paint chunks that are effectively invisible due to opacity and don't
@@ -580,7 +579,7 @@ void PaintArtifactCompositor::LayerizeGroup(
                                       chunk_it))
     return;
 
-  wtf_size_t first_layer_in_current_group = pending_layers.size();
+  wtf_size_t first_layer_in_current_group = pending_layers_.size();
   // The worst case time complexity of the algorithm is O(pqd), where
   // p = the number of paint chunks.
   // q = average number of trials to find a squash layer or rejected
@@ -613,9 +612,9 @@ void PaintArtifactCompositor::LayerizeGroup(
                                 // TODO(pdr): This should require a direct
                                 // compositing reason.
                                 last_display_item.IsScrollHitTest();
-      pending_layers.push_back(PendingLayer(
+      pending_layers_.emplace_back(
           *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
-          requires_own_layer));
+          requires_own_layer);
       chunk_it++;
       if (requires_own_layer)
         continue;
@@ -628,9 +627,8 @@ void PaintArtifactCompositor::LayerizeGroup(
         break;
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
-      wtf_size_t first_layer_in_subgroup = pending_layers.size();
-      LayerizeGroup(paint_artifact, settings, pending_layers,
-                    *unaliased_subgroup, chunk_it);
+      wtf_size_t first_layer_in_subgroup = pending_layers_.size();
+      LayerizeGroup(paint_artifact, settings, *unaliased_subgroup, chunk_it);
       // Now the chunk iterator stepped over the subgroup we just saw.
       // If the subgroup generated 2 or more layers then the subgroup must be
       // composited to satisfy grouping requirement.
@@ -638,10 +636,10 @@ void PaintArtifactCompositor::LayerizeGroup(
       // for example,  Opacity(A+B) != Opacity(A) + Opacity(B), thus an effect
       // either applied 100% within a layer, or not at all applied within layer
       // (i.e. applied by compositor render surface instead).
-      if (pending_layers.size() != first_layer_in_subgroup + 1)
+      if (pending_layers_.size() != first_layer_in_subgroup + 1)
         continue;
       // Now attempt to "decomposite" subgroup.
-      PendingLayer& subgroup_layer = pending_layers[first_layer_in_subgroup];
+      PendingLayer& subgroup_layer = pending_layers_[first_layer_in_subgroup];
       if (!CanDecompositeEffect(*unaliased_subgroup, subgroup_layer))
         continue;
       subgroup_layer.Upcast(
@@ -651,20 +649,21 @@ void PaintArtifactCompositor::LayerizeGroup(
                                 : subgroup_layer.property_tree_state.Clip(),
                             unaliased_group));
     }
-    // At this point pending_layers.back() is the either a layer from a
+    // At this point pending_layers_.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
     // processed. Now determine whether it could be merged into a previous
     // layer.
-    const PendingLayer& new_layer = pending_layers.back();
+    const PendingLayer& new_layer = pending_layers_.back();
     DCHECK(!new_layer.requires_own_layer);
     DCHECK_EQ(&unaliased_group, &new_layer.property_tree_state.Effect());
-    // This iterates pending_layers[first_layer_in_current_group:-1] in reverse.
-    for (wtf_size_t candidate_index = pending_layers.size() - 1;
+    // This iterates pending_layers_[first_layer_in_current_group:-1] in
+    // reverse.
+    for (wtf_size_t candidate_index = pending_layers_.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
-      PendingLayer& candidate_layer = pending_layers[candidate_index];
+      PendingLayer& candidate_layer = pending_layers_[candidate_index];
       if (candidate_layer.CanMerge(new_layer)) {
         candidate_layer.Merge(new_layer);
-        pending_layers.pop_back();
+        pending_layers_.pop_back();
         break;
       }
       if (MightOverlap(new_layer, candidate_layer))
@@ -675,13 +674,15 @@ void PaintArtifactCompositor::LayerizeGroup(
 
 void PaintArtifactCompositor::CollectPendingLayers(
     const PaintArtifact& paint_artifact,
-    const Settings& settings,
-    Vector<PendingLayer>& pending_layers) {
+    const Settings& settings) {
   Vector<PaintChunk>::const_iterator cursor =
       paint_artifact.PaintChunks().begin();
-  LayerizeGroup(paint_artifact, settings, pending_layers,
-                EffectPaintPropertyNode::Root(), cursor);
+  // Shrink, but do not release the backing. Re-use it from the last frame.
+  pending_layers_.Shrink(0);
+  LayerizeGroup(paint_artifact, settings, EffectPaintPropertyNode::Root(),
+                cursor);
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
+  pending_layers_.ShrinkToReasonableCapacity();
 }
 
 void SynthesizedClip::UpdateLayer(bool needs_layer,
@@ -813,15 +814,13 @@ static void UpdateCompositorViewportProperties(
 //  9. All child transform nodes are also able to be de-composited.
 // This algorithm should be O(t+c+e) where t,c,e are the number of transform,
 // clip, and effect nodes in the full tree.
-void PaintArtifactCompositor::DecompositeTransforms(
-    Vector<PendingLayer>* pending_layers) const {
-  DCHECK(pending_layers);
+void PaintArtifactCompositor::DecompositeTransforms() {
   // TODO(masonfreed): CAP is not yet implemented here.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
   WTF::HashMap<const TransformPaintPropertyNode*, bool> can_be_decomposited;
   WTF::HashSet<const void*> clips_and_effects_seen;
-  for (const auto& pending_layer : *pending_layers) {
+  for (const auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
 
     // Lambda to handle marking a transform node false, and walking up all true
@@ -877,7 +876,7 @@ void PaintArtifactCompositor::DecompositeTransforms(
   // Now, for any transform nodes that can be de-composited, re-map their
   // transform to point to the correct parent, and set the
   // offset_to_transform_parent.
-  for (auto& pending_layer : *pending_layers) {
+  for (auto& pending_layer : pending_layers_) {
     const auto* transform_node = &pending_layer.property_tree_state.Transform();
     while (transform_node && !transform_node->IsRoot() &&
            can_be_decomposited.at(transform_node)) {
@@ -919,14 +918,13 @@ void PaintArtifactCompositor::Update(
 
   property_tree_manager_.Initialize(host->property_trees(),
                                     &layer_list_builder);
-  Vector<PendingLayer, 0> pending_layers;
-  CollectPendingLayers(*paint_artifact, settings, pending_layers);
+  CollectPendingLayers(*paint_artifact, settings);
 
   UpdateCompositorViewportProperties(viewport_properties,
                                      property_tree_manager_, host);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
-  new_content_layer_clients.ReserveCapacity(pending_layers.size());
+  new_content_layer_clients.ReserveCapacity(pending_layers_.size());
   Vector<scoped_refptr<cc::Layer>> new_scroll_hit_test_layers;
 
   // Maps from cc effect id to blink effects. Containing only the effects having
@@ -937,11 +935,11 @@ void PaintArtifactCompositor::Update(
     entry.in_use = false;
 
   // See if we can de-composite any transforms.
-  DecompositeTransforms(&pending_layers);
+  DecompositeTransforms();
 
   // Clear prior frame ids before inserting new ones.
   composited_element_ids.clear();
-  for (auto& pending_layer : pending_layers) {
+  for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
     const auto& transform = property_state.Transform();
     const auto& clip = property_state.Clip();
