@@ -551,7 +551,6 @@ const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
-const char kSetCarrierFunction[] = "SetCarrier";
 const char kSetPropertiesFunction[] = "SetProperties";
 const char kVerifyAndEncryptCredentialsFunction[] =
     "VerifyAndEncryptCredentials";
