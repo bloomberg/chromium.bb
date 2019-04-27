@@ -172,7 +172,7 @@ PrefService* TestExtensionsBrowserClient::GetPrefServiceForContext(
 
 void TestExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
-    std::vector<ExtensionPrefsObserver*>* observers) const {}
+    std::vector<EarlyExtensionPrefsObserver*>* observers) const {}
 
 ProcessManagerDelegate* TestExtensionsBrowserClient::GetProcessManagerDelegate()
     const {

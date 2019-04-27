@@ -19,7 +19,8 @@ class ExtensionPrefs;
 // This service hosts a single ContentSettingsStore for the
 // chrome.contentSettings API.
 class ContentSettingsService : public BrowserContextKeyedAPI,
-                               public ExtensionPrefsObserver {
+                               public ExtensionPrefsObserver,
+                               public EarlyExtensionPrefsObserver {
  public:
   explicit ContentSettingsService(content::BrowserContext* context);
   ~ContentSettingsService() override;
@@ -44,6 +45,9 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   void OnExtensionPrefsDeleted(const std::string& extension_id) override;
   void OnExtensionStateChanged(const std::string& extension_id,
                                bool state) override;
+
+  // EarlyExtensionPrefsObserver implementation.
+  void OnExtensionPrefsAvailable(ExtensionPrefs* prefs) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ContentSettingsService>;

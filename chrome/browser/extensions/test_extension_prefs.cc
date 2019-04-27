@@ -124,7 +124,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   std::unique_ptr<ExtensionPrefs> prefs(ExtensionPrefs::Create(
       &profile_, pref_service_.get(), temp_dir_.GetPath(),
       extension_pref_value_map_.get(), extensions_disabled_,
-      std::vector<ExtensionPrefsObserver*>(),
+      std::vector<EarlyExtensionPrefsObserver*>(),
       // Guarantee that no two extensions get the same installation time
       // stamp and we can reliably assert the installation order in the tests.
       clock_.get()));

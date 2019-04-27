@@ -95,7 +95,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) override;
   void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
-      std::vector<ExtensionPrefsObserver*>* observers) const override;
+      std::vector<EarlyExtensionPrefsObserver*>* observers) const override;
   ProcessManagerDelegate* GetProcessManagerDelegate() const override;
   std::unique_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate() override;
   bool DidVersionUpdate(content::BrowserContext* context) override;

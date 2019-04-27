@@ -63,7 +63,6 @@ class Extension;
 class ExtensionCache;
 class ExtensionError;
 class ExtensionHostDelegate;
-class ExtensionPrefsObserver;
 class ExtensionApiFrameIdMap;
 class ExtensionApiFrameIdMapHelper;
 class ExtensionNavigationUIData;
@@ -206,7 +205,7 @@ class ExtensionsBrowserClient {
   // are not owned by ExtensionPrefs.
   virtual void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
-      std::vector<ExtensionPrefsObserver*>* observers) const = 0;
+      std::vector<EarlyExtensionPrefsObserver*>* observers) const = 0;
 
   // Returns the ProcessManagerDelegate shared across all BrowserContexts. May
   // return NULL in tests or for simple embedders.

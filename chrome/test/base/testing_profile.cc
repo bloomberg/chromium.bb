@@ -488,7 +488,7 @@ void TestingProfile::Init() {
           this, GetPrefs(), extensions_path_,
           ExtensionPrefValueMapFactory::GetForBrowserContext(this),
           extensions_disabled,
-          std::vector<extensions::ExtensionPrefsObserver*>()));
+          std::vector<extensions::EarlyExtensionPrefsObserver*>()));
   extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
       this, std::move(extension_prefs));
 

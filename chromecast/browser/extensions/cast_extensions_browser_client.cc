@@ -161,7 +161,7 @@ PrefService* CastExtensionsBrowserClient::GetPrefServiceForContext(
 
 void CastExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
-    std::vector<ExtensionPrefsObserver*>* observers) const {}
+    std::vector<EarlyExtensionPrefsObserver*>* observers) const {}
 
 ProcessManagerDelegate* CastExtensionsBrowserClient::GetProcessManagerDelegate()
     const {

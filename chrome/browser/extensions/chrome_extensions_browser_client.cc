@@ -251,7 +251,7 @@ PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(
 
 void ChromeExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
-    std::vector<ExtensionPrefsObserver*>* observers) const {
+    std::vector<EarlyExtensionPrefsObserver*>* observers) const {
   observers->push_back(ContentSettingsService::Get(context));
 }
 
