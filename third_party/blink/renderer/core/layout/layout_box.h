@@ -43,6 +43,7 @@ class NGConstraintSpace;
 class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
 class NGBreakToken;
+struct NGFragmentGeometry;
 class NGLayoutResult;
 struct NGPhysicalBoxStrut;
 struct PaintInfo;
@@ -913,9 +914,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
+  //
+  // This method (while determining if the layout result can be reused), *may*
+  // calculate the |initial_fragment_geometry| of the node.
+  //
+  // TODO(ikilpatrick): Move this function into NGBlockNode.
   scoped_refptr<const NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
-      const NGBreakToken*);
+      const NGBreakToken*,
+      base::Optional<NGFragmentGeometry>* initial_fragment_geometry);
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();

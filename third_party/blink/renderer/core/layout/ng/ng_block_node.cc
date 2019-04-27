@@ -232,8 +232,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
         previous_result->GetConstraintSpaceForCaching().ExclusionSpace());
   }
 
-  scoped_refptr<const NGLayoutResult> layout_result =
-      box_->CachedLayoutResult(constraint_space, break_token);
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  scoped_refptr<const NGLayoutResult> layout_result = box_->CachedLayoutResult(
+      constraint_space, break_token, &fragment_geometry);
   if (layout_result) {
     // We may have to update the margins on box_; we reuse the layout result
     // even if a percentage margin may have changed.
@@ -248,17 +249,20 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     return layout_result;
   }
 
+  if (!fragment_geometry) {
+    fragment_geometry =
+        CalculateInitialFragmentGeometry(constraint_space, *this);
+  }
+
   PrepareForLayout();
 
-  NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(constraint_space, *this);
-  NGLayoutAlgorithmParams params(*this, fragment_geometry, constraint_space,
+  NGLayoutAlgorithmParams params(*this, *fragment_geometry, constraint_space,
                                  To<NGBlockBreakToken>(break_token));
   layout_result = LayoutWithAlgorithm(params);
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
   NGBoxStrut after_layout_scrollbars = GetScrollbarSizes();
-  if (fragment_geometry.scrollbar != after_layout_scrollbars) {
+  if (fragment_geometry->scrollbar != after_layout_scrollbars) {
     // If our scrollbars have changed, we need to relayout because either:
     // - Our size has changed (if shrinking to fit), or
     // - Space available to our children has changed.
@@ -898,7 +902,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
   // We need to force a layout on the child if the constraint space given will
   // change the layout.
   bool needs_force_relayout =
-      layout_result && !MaySkipLayout(*this, *layout_result, constraint_space);
+      layout_result &&
+      !MaySkipLegacyLayout(*this, *layout_result, constraint_space);
 
   if (box_->NeedsLayout() || !layout_result || needs_force_relayout) {
     BoxLayoutExtraInput input(*box_);

@@ -83,7 +83,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   // percentages against the "final" size of their parent.
   if (child.DependsOnPercentageBlockSize() &&
       !child.PhysicalFragment()->IsOutOfFlowPositioned())
-    has_child_that_depends_on_percentage_block_size_ = true;
+    has_descendant_that_depends_on_percentage_block_size_ = true;
 
   if (child.MayHaveDescendantAboveBlockStart() &&
       !child.PhysicalFragment()->IsBlockFormattingContextRoot())

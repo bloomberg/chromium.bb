@@ -123,18 +123,18 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+      space_.bitfields_.is_fixed_size_inline = b;
     else
-      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+      space_.bitfields_.is_fixed_size_block = b;
 
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+      space_.bitfields_.is_fixed_size_block = b;
     else
-      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+      space_.bitfields_.is_fixed_size_inline = b;
 
     return *this;
   }
@@ -147,7 +147,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetIsShrinkToFit(bool b) {
-    SetFlag(NGConstraintSpace::kShrinkToFit, b);
+    space_.bitfields_.is_shrink_to_fit = b;
     return *this;
   }
 

@@ -61,6 +61,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       const NGFragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;
     size_ = initial_fragment_geometry_->border_box_size;
+    is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
     return *this;
   }
 
@@ -237,6 +238,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;
+  bool is_initial_block_size_indefinite_ = false;
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;

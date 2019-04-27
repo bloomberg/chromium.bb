@@ -2318,7 +2318,8 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
 
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
-    const NGBreakToken* break_token) {
+    const NGBreakToken* break_token,
+    base::Optional<NGFragmentGeometry>* initial_fragment_geometry) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
 
@@ -2343,21 +2344,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return nullptr;
 
   NGBlockNode node(this);
-  if (!MaySkipLayout(node, *cached_layout_result, new_space))
+  if (!MaySkipLayout(node, *cached_layout_result, new_space,
+                     initial_fragment_geometry))
     return nullptr;
-  // It is possible that our intrinsic size has changed; check for that here.
-  // TODO(cbiesinger): Move this to ::MaySkipLayout.
-  if (new_space.IsShrinkToFit() || NeedMinMaxSize(StyleRef())) {
-    NGBoxFragment fragment(
-        new_space.GetWritingMode(), StyleRef().Direction(),
-        To<NGPhysicalBoxFragment>(*cached_layout_result->PhysicalFragment()));
-    // If we get here, we know that border and padding haven't changed.
-    NGBoxStrut border_padding = fragment.Borders() + fragment.Padding();
-    LayoutUnit size =
-        ComputeInlineSizeForFragment(new_space, node, border_padding);
-    if (size != fragment.InlineSize())
-      return nullptr;
-  }
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();

@@ -60,19 +60,16 @@ class CORE_EXPORT NGConstraintSpace final {
  public:
   enum ConstraintSpaceFlags {
     kOrthogonalWritingModeRoot = 1 << 0,
-    kFixedSizeInline = 1 << 1,
-    kFixedSizeBlock = 1 << 2,
-    kFixedSizeBlockIsDefinite = 1 << 3,
-    kShrinkToFit = 1 << 4,
-    kIntermediateLayout = 1 << 5,
-    kSeparateLeadingFragmentainerMargins = 1 << 6,
-    kNewFormattingContext = 1 << 7,
-    kAnonymous = 1 << 8,
-    kUseFirstLineStyle = 1 << 9,
-    kForceClearance = 1 << 10,
+    kFixedSizeBlockIsDefinite = 1 << 1,
+    kIntermediateLayout = 1 << 2,
+    kSeparateLeadingFragmentainerMargins = 1 << 3,
+    kNewFormattingContext = 1 << 4,
+    kAnonymous = 1 << 5,
+    kUseFirstLineStyle = 1 << 6,
+    kForceClearance = 1 << 7,
 
     // Size of bitfield used to store the flags.
-    kNumberOfConstraintSpaceFlags = 11
+    kNumberOfConstraintSpaceFlags = 8
   };
 
   // To ensure that the bfc_offset_, rare_data_ union doesn't get polluted,
@@ -286,9 +283,9 @@ class CORE_EXPORT NGConstraintSpace final {
   //
   // If these flags are true, the AvailableSize() is interpreted as the fixed
   // border-box size of this box in the respective dimension.
-  bool IsFixedSizeInline() const { return HasFlag(kFixedSizeInline); }
+  bool IsFixedSizeInline() const { return bitfields_.is_fixed_size_inline; }
 
-  bool IsFixedSizeBlock() const { return HasFlag(kFixedSizeBlock); }
+  bool IsFixedSizeBlock() const { return bitfields_.is_fixed_size_block; }
 
   // Whether a fixed block size should be considered definite.
   bool FixedSizeBlockIsDefinite() const {
@@ -297,7 +294,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Whether an auto inline-size should be interpreted as shrink-to-fit
   // (ie. fit-content). This is used for inline-block, floats, etc.
-  bool IsShrinkToFit() const { return HasFlag(kShrinkToFit); }
+  bool IsShrinkToFit() const { return bitfields_.is_shrink_to_fit; }
 
   // Whether this constraint space is used for an intermediate layout in a
   // multi-pass layout. In such a case, we should not copy back the resulting
@@ -436,6 +433,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return other.rare_data_->IsInitialForMaySkipLayout();
   }
 
+  // Returns true if the size constraints (shrink-to-fit, fixed-inline-size)
+  // are equal.
+  bool AreSizeConstraintsEqual(const NGConstraintSpace& other) const {
+    return bitfields_.AreSizeConstraintsEqual(other.bitfields_);
+  }
+
   bool AreSizesEqual(const NGConstraintSpace& other) const {
     if (available_size_ != other.available_size_)
       return false;
@@ -553,29 +556,44 @@ class CORE_EXPORT NGConstraintSpace final {
 
     explicit Bitfields(WritingMode writing_mode)
         : has_rare_data(false),
-          table_cell_child_layout_phase(static_cast<unsigned>(
-              NGTableCellChildLayoutPhase::kNotTableCellChild)),
           adjoining_floats(static_cast<unsigned>(kFloatTypeNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
+          is_shrink_to_fit(false),
+          is_fixed_size_inline(false),
+          is_fixed_size_block(false),
+          table_cell_child_layout_phase(static_cast<unsigned>(
+              NGTableCellChildLayoutPhase::kNotTableCellChild)),
           flags(kFixedSizeBlockIsDefinite),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
-      return table_cell_child_layout_phase ==
-                 other.table_cell_child_layout_phase &&
-             adjoining_floats == other.adjoining_floats &&
+      return adjoining_floats == other.adjoining_floats &&
              writing_mode == other.writing_mode && flags == other.flags &&
              baseline_requests == other.baseline_requests;
     }
 
+    bool AreSizeConstraintsEqual(const Bitfields& other) const {
+      return is_shrink_to_fit == other.is_shrink_to_fit &&
+             is_fixed_size_inline == other.is_fixed_size_inline &&
+             is_fixed_size_block == other.is_fixed_size_block &&
+             table_cell_child_layout_phase ==
+                 other.table_cell_child_layout_phase;
+    }
+
     unsigned has_rare_data : 1;
-    unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
     unsigned adjoining_floats : 2;               // NGFloatTypes
     unsigned writing_mode : 3;
     unsigned direction : 1;
+
+    // Size constraints.
+    unsigned is_shrink_to_fit : 1;
+    unsigned is_fixed_size_inline : 1;
+    unsigned is_fixed_size_block : 1;
+    unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
+
     unsigned flags : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
     unsigned baseline_requests : NGBaselineRequestList::kSerializedBits;
 

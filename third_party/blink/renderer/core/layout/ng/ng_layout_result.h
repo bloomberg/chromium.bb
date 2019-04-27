@@ -115,10 +115,25 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 
+  // Returns true if the initial (pre-layout) block-size of this fragment was
+  // indefinite. (e.g. it has "height: auto").
+  bool IsInitialBlockSizeIndefinite() const {
+    return is_initial_block_size_indefinite_;
+  }
+
   // Returns true if we aren't able to re-use this layout result if the
   // PercentageResolutionBlockSize changes.
   bool DependsOnPercentageBlockSize() const {
     return depends_on_percentage_block_size_;
+  }
+
+  // Returns true if there is a descendant that depends on percentage
+  // resolution block-size changes.
+  // Some layout modes (flex-items, table-cells) have more complex child
+  // percentage sizing behaviour (typically when their parent layout forces a
+  // block-size on them).
+  bool HasDescendantThatDependsOnPercentageBlockSize() const {
+    return has_descendant_that_depends_on_percentage_block_size_;
   }
 
   // Returns true if we have a descendant within this formatting context, which
@@ -219,9 +234,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned is_pushed_by_floats_ : 1;
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
+  unsigned is_initial_block_size_indefinite_ : 1;
   unsigned has_orthogonal_flow_roots_ : 1;
   unsigned may_have_descendant_above_block_start_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
+  unsigned has_descendant_that_depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;
 };

@@ -68,8 +68,9 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   scoped_refptr<const NGLayoutResult> RunCachedLayoutResult(
       const NGConstraintSpace& space,
       const NGBlockNode& node) {
+    base::Optional<NGFragmentGeometry> initial_fragment_geometry;
     return To<LayoutBlockFlow>(node.GetLayoutBox())
-        ->CachedLayoutResult(space, nullptr);
+        ->CachedLayoutResult(space, nullptr, &initial_fragment_geometry);
   }
 
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {

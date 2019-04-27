@@ -18,6 +18,8 @@ NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(builder, /* cache_space */ true) {
+  is_initial_block_size_indefinite_ =
+      builder->is_initial_block_size_indefinite_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
   minimal_space_shortage_ = builder->minimal_space_shortage_;
   initial_break_before_ = builder->initial_break_before_;
@@ -41,6 +43,7 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
     : NGLayoutResult(builder, /* cache_space */ false) {
   adjoining_floats_ = kFloatTypeNone;
   depends_on_percentage_block_size_ = false;
+  has_descendant_that_depends_on_percentage_block_size_ = false;
   status_ = status;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
@@ -69,11 +72,15 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
       has_forced_break_(other.has_forced_break_),
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
+      is_initial_block_size_indefinite_(
+          other.is_initial_block_size_indefinite_),
       has_orthogonal_flow_roots_(other.has_orthogonal_flow_roots_),
       may_have_descendant_above_block_start_(
           other.may_have_descendant_above_block_start_),
       depends_on_percentage_block_size_(
           other.depends_on_percentage_block_size_),
+      has_descendant_that_depends_on_percentage_block_size_(
+          other.has_descendant_that_depends_on_percentage_block_size_),
       status_(other.status_) {}
 
 NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
@@ -90,10 +97,13 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
       has_forced_break_(false),
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
+      is_initial_block_size_indefinite_(false),
       has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
       may_have_descendant_above_block_start_(
           builder->may_have_descendant_above_block_start_),
       depends_on_percentage_block_size_(DependsOnPercentageBlockSize(*builder)),
+      has_descendant_that_depends_on_percentage_block_size_(
+          builder->has_descendant_that_depends_on_percentage_block_size_),
       status_(kSuccess) {}
 
 // Define the destructor here, so that we can forward-declare more in the
@@ -105,7 +115,7 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
   NGLayoutInputNode node = builder.node_;
 
   if (!node || node.IsInline())
-    return builder.has_child_that_depends_on_percentage_block_size_;
+    return builder.has_descendant_that_depends_on_percentage_block_size_;
 
   // NOTE: If an element is OOF positioned, and has top/bottom constraints
   // which are percentage based, this function will return false.
@@ -118,7 +128,7 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
   // element if it has a percentage block-size however, but this will return
   // the correct result from below.
 
-  if ((builder.has_child_that_depends_on_percentage_block_size_ ||
+  if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
        builder.is_legacy_layout_root_) &&
       node.UseParentPercentageResolutionBlockSizeForChildren()) {
     // Quirks mode has different %-block-size behaviour, than standards mode.

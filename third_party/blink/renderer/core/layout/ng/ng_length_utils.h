@@ -31,13 +31,6 @@ class NGLayoutInputNode;
 // intrinsic sizes pass, and kLayout must be used during the layout pass.
 enum class LengthResolvePhase { kIntrinsic, kLayout };
 
-// LengthResolveType indicates what type length the function is being passed
-// based on its CSS property. E.g.
-// kMinSize - min-width / min-height
-// kMaxSize - max-width / max-height
-// kMainSize - width / height
-enum class LengthResolveType { kMinSize, kMaxSize, kMainSize };
-
 inline bool NeedMinMaxSize(const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
   // size computation) but that's a rare case and only affects performance, not

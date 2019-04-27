@@ -15,9 +15,16 @@ class NGLayoutResult;
 // Returns true if for a given |new_space|, the |node| will provide the same
 // |NGLayoutResult| as |cached_layout_result|, and therefore might be able to
 // skip layout.
-bool MaySkipLayout(const NGBlockNode node,
+bool MaySkipLayout(const NGBlockNode& node,
                    const NGLayoutResult& cached_layout_result,
-                   const NGConstraintSpace& new_space);
+                   const NGConstraintSpace& new_space,
+                   base::Optional<NGFragmentGeometry>* fragment_geometry);
+
+// Similar to |MaySkipLayout| but for legacy layout roots. Doesn't attempt to
+// pre-compute the geometry of the fragment.
+bool MaySkipLegacyLayout(const NGBlockNode& node,
+                         const NGLayoutResult& cached_layout_result,
+                         const NGConstraintSpace& new_space);
 
 // Return true if layout is considered complete. In some cases we require more
 // than one layout pass.

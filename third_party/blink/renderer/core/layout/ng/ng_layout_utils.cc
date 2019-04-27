@@ -4,14 +4,22 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
 namespace {
+
+// LengthResolveType indicates what type length the function is being passed
+// based on its CSS property. E.g.
+// kMinSize - min-width / min-height
+// kMaxSize - max-width / max-height
+// kMainSize - width / height
+enum class LengthResolveType { kMinSize, kMaxSize, kMainSize };
 
 bool ContentShrinkToFitMayChange(const ComputedStyle& style,
                                  const NGConstraintSpace& new_space,
@@ -100,6 +108,8 @@ inline bool InlineLengthMayChange(const ComputedStyle& style,
       type == LengthResolveType::kMainSize &&
       (new_space.IsShrinkToFit() || length.IsFitContent());
 
+  // TODO(ikilpatrick): Test if we can remove this optimization now that we
+  // compute the initial size of the fragment.
   if (is_content_shrink_to_fit) {
     return ContentShrinkToFitMayChange(style, new_space, old_space,
                                        layout_result);
@@ -127,18 +137,27 @@ inline bool BlockLengthMayChange(const Length& length,
         old_space.AvailableSize().block_size)
       return true;
   }
+
   return false;
 }
 
 // Return true if it's possible (but not necessarily guaranteed) that the new
 // constraint space will give a different size compared to the old one, when
 // computed style and child content remain unchanged.
-bool SizeMayChange(const ComputedStyle& style,
+bool SizeMayChange(const NGBlockNode& node,
                    const NGConstraintSpace& new_space,
                    const NGConstraintSpace& old_space,
                    const NGLayoutResult& layout_result) {
+  if (node.IsQuirkyAndFillsViewport())
+    return true;
+
   DCHECK_EQ(new_space.IsFixedSizeInline(), old_space.IsFixedSizeInline());
   DCHECK_EQ(new_space.IsFixedSizeBlock(), old_space.IsFixedSizeBlock());
+  DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
+  DCHECK_EQ(new_space.TableCellChildLayoutPhase(),
+            old_space.TableCellChildLayoutPhase());
+
+  const ComputedStyle& style = node.Style();
 
   // Go through all length properties, and, depending on length type
   // (percentages, auto, etc.), check whether the constraint spaces differ in
@@ -203,11 +222,129 @@ bool SizeMayChange(const ComputedStyle& style,
   return false;
 }
 
+// Return true if the new constraint space will produce a different sized
+// fragment. This will also return true if any %-block-size children will
+// change size.
+bool SizeWillChange(const NGBlockNode& node,
+                    const NGFragmentGeometry& fragment_geometry,
+                    const NGLayoutResult& layout_result,
+                    const NGConstraintSpace& new_space,
+                    const NGConstraintSpace& old_space) {
+  const ComputedStyle& style = node.Style();
+  NGBoxFragment fragment(
+      style.GetWritingMode(), style.Direction(),
+      To<NGPhysicalBoxFragment>(*layout_result.PhysicalFragment()));
+
+  if (fragment_geometry.border_box_size.inline_size != fragment.InlineSize())
+    return true;
+
+  LayoutUnit block_size = fragment_geometry.border_box_size.block_size;
+  bool is_initial_block_size_indefinite = block_size == kIndefiniteSize;
+  if (is_initial_block_size_indefinite) {
+    // The intrinsic size of column flex-boxes can depend on the
+    // %-resolution-block-size. This occurs when a flex-box has "max-height:
+    // 100%" or similar on itself.
+    //
+    // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
+    // value, as the following |block_size| calculation would be incorrect.
+    if (node.IsFlexibleBox() && style.IsColumnFlexDirection() &&
+        layout_result.DependsOnPercentageBlockSize()) {
+      if (new_space.PercentageResolutionBlockSize() !=
+          old_space.PercentageResolutionBlockSize())
+        return true;
+    }
+
+    block_size = ComputeBlockSizeForFragment(
+        new_space, style, fragment_geometry.border + fragment_geometry.padding,
+        layout_result.IntrinsicBlockSize());
+  }
+
+  if (block_size != fragment.BlockSize())
+    return true;
+
+  if (layout_result.HasDescendantThatDependsOnPercentageBlockSize()) {
+    // %-block-size children of flex-items sometimes don't resolve their
+    // percentages against a fixed block-size.
+    // We miss the cache if the %-resolution block-size changes from indefinite
+    // to definite (or visa-versa).
+    bool is_new_initial_block_size_indefinite =
+        new_space.IsFixedSizeBlock() ? !new_space.FixedSizeBlockIsDefinite()
+                                     : is_initial_block_size_indefinite;
+
+    bool is_old_initial_block_size_indefinite =
+        old_space.IsFixedSizeBlock()
+            ? !old_space.FixedSizeBlockIsDefinite()
+            : layout_result.IsInitialBlockSizeIndefinite();
+
+    if (is_old_initial_block_size_indefinite !=
+        is_new_initial_block_size_indefinite)
+      return true;
+
+    // %-block-size children of table-cells have different behaviour if they
+    // are in the "measure" or "layout" phase.
+    // Instead of trying to capture that logic here, we always miss the cache.
+    if (node.IsTableCell() &&
+        new_space.IsFixedSizeBlock() != old_space.IsFixedSizeBlock())
+      return true;
+
+    // At this point we must have the same block-size for our fragment, so this
+    // is really only checking if any %-block-size children will change size.
+    // This is checks for the quirks-mode %-block-size behaviour.
+    //
+    // The |NGLayoutResult::DependsOnPercentageBlockSize| flag will returns true
+    // if we are in quirks mode, and have a descendant that depends on a
+    // percentage block-size, however it will also return true if the node
+    // itself depends on the %-block-size.
+    //
+    // We remove this false-positive by checking if we have an initial
+    // indefinite block-size.
+    if (is_new_initial_block_size_indefinite &&
+        layout_result.DependsOnPercentageBlockSize()) {
+      DCHECK(is_old_initial_block_size_indefinite);
+      if (new_space.PercentageResolutionBlockSize() !=
+          old_space.PercentageResolutionBlockSize())
+        return true;
+      if (new_space.ReplacedPercentageResolutionBlockSize() !=
+          old_space.ReplacedPercentageResolutionBlockSize())
+        return true;
+    }
+  }
+
+  if (style.MayHavePadding() && fragment_geometry.padding != fragment.Padding())
+    return true;
+
+  return false;
+}
+
+bool IntrinsicSizeWillChange(
+    const NGBlockNode& node,
+    const NGLayoutResult& cached_layout_result,
+    const NGConstraintSpace& new_space,
+    base::Optional<NGFragmentGeometry>* fragment_geometry) {
+  const ComputedStyle& style = node.Style();
+  if (!new_space.IsShrinkToFit() && !NeedMinMaxSize(style))
+    return false;
+
+  if (!*fragment_geometry)
+    *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
+
+  NGBoxFragment fragment(
+      style.GetWritingMode(), style.Direction(),
+      To<NGPhysicalBoxFragment>(*cached_layout_result.PhysicalFragment()));
+
+  if ((*fragment_geometry)->border_box_size.inline_size !=
+      fragment.InlineSize())
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
-bool MaySkipLayout(const NGBlockNode node,
+bool MaySkipLayout(const NGBlockNode& node,
                    const NGLayoutResult& cached_layout_result,
-                   const NGConstraintSpace& new_space) {
+                   const NGConstraintSpace& new_space,
+                   base::Optional<NGFragmentGeometry>* fragment_geometry) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
   DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
 
@@ -216,17 +353,52 @@ bool MaySkipLayout(const NGBlockNode node,
   if (!new_space.MaySkipLayout(old_space))
     return false;
 
-  if (!new_space.AreSizesEqual(old_space)) {
-    // We need to descend all the way down into BODY if we're in quirks mode,
-    // since it magically follows the viewport size.
-    if (node.IsQuirkyAndFillsViewport())
+  if (new_space.AreSizeConstraintsEqual(old_space)) {
+    // It is possible that our intrinsic size has changed, check for that here.
+    // TODO(cbiesinger): Investigate why this check doesn't apply to
+    // |MaySkipLegacyLayout|.
+    if (IntrinsicSizeWillChange(node, cached_layout_result, new_space,
+                                fragment_geometry))
       return false;
 
-    // If the available / percentage sizes have changed in a way that may affect
-    // layout, we cannot re-use the previous result.
-    if (SizeMayChange(node.Style(), new_space, old_space, cached_layout_result))
-      return false;
+    // We don't have to check our style if we know the constraint space sizes
+    // will remain the same.
+    if (new_space.AreSizesEqual(old_space))
+      return true;
+
+    if (!SizeMayChange(node, new_space, old_space, cached_layout_result))
+      return true;
   }
+
+  if (!*fragment_geometry)
+    *fragment_geometry = CalculateInitialFragmentGeometry(new_space, node);
+
+  if (SizeWillChange(node, **fragment_geometry, cached_layout_result, new_space,
+                     old_space))
+    return false;
+
+  return true;
+}
+
+bool MaySkipLegacyLayout(const NGBlockNode& node,
+                         const NGLayoutResult& cached_layout_result,
+                         const NGConstraintSpace& new_space) {
+  DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
+  DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result.GetConstraintSpaceForCaching();
+  if (!new_space.MaySkipLayout(old_space))
+    return false;
+
+  if (!new_space.AreSizeConstraintsEqual(old_space))
+    return false;
+
+  if (new_space.AreSizesEqual(old_space))
+    return true;
+
+  if (SizeMayChange(node, new_space, old_space, cached_layout_result))
+    return false;
 
   return true;
 }
