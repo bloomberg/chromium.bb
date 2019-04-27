@@ -37,6 +37,7 @@
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/common/print.mojom.h"
+#include "components/arc/common/print_spooler.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/common/property.mojom.h"
 #include "components/arc/common/rotation_lock.mojom.h"

@@ -578,6 +578,8 @@ source_set("chromeos") {
     "arc/policy/arc_policy_util.h",
     "arc/print/arc_print_service.cc",
     "arc/print/arc_print_service.h",
+    "arc/print_spooler/arc_print_spooler_bridge.cc",
+    "arc/print_spooler/arc_print_spooler_bridge.h",
     "arc/process/arc_process.cc",
     "arc/process/arc_process.h",
     "arc/process/arc_process_service.cc",

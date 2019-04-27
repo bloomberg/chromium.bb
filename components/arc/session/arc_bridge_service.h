@@ -71,6 +71,8 @@ class PowerHost;
 class PowerInstance;
 class PrintHost;
 class PrintInstance;
+class PrintSpoolerHost;
+class PrintSpoolerInstance;
 class ProcessInstance;
 class PropertyInstance;
 class RotationLockInstance;
@@ -204,6 +206,10 @@ class ArcBridgeService {
   ConnectionHolder<mojom::PrintInstance, mojom::PrintHost>* print() {
     return &print_;
   }
+  ConnectionHolder<mojom::PrintSpoolerInstance, mojom::PrintSpoolerHost>*
+  print_spooler() {
+    return &print_spooler_;
+  }
   ConnectionHolder<mojom::ProcessInstance>* process() { return &process_; }
   ConnectionHolder<mojom::PropertyInstance>* property() { return &property_; }
   ConnectionHolder<mojom::RotationLockInstance>* rotation_lock() {
@@ -282,6 +288,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::PolicyInstance, mojom::PolicyHost> policy_;
   ConnectionHolder<mojom::PowerInstance, mojom::PowerHost> power_;
   ConnectionHolder<mojom::PrintInstance, mojom::PrintHost> print_;
+  ConnectionHolder<mojom::PrintSpoolerInstance, mojom::PrintSpoolerHost>
+      print_spooler_;
   ConnectionHolder<mojom::ProcessInstance> process_;
   ConnectionHolder<mojom::PropertyInstance> property_;
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;

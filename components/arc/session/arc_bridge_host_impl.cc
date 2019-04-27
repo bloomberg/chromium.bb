@@ -42,6 +42,7 @@
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/common/print.mojom.h"
+#include "components/arc/common/print_spooler.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/common/property.mojom.h"
 #include "components/arc/common/rotation_lock.mojom.h"
@@ -254,6 +255,12 @@ void ArcBridgeHostImpl::OnPowerInstanceReady(
 void ArcBridgeHostImpl::OnPrintInstanceReady(
     mojom::PrintInstancePtr print_ptr) {
   OnInstanceReady(arc_bridge_service_->print(), std::move(print_ptr));
+}
+
+void ArcBridgeHostImpl::OnPrintSpoolerInstanceReady(
+    mojom::PrintSpoolerInstancePtr print_spooler_ptr) {
+  OnInstanceReady(arc_bridge_service_->print_spooler(),
+                  std::move(print_spooler_ptr));
 }
 
 void ArcBridgeHostImpl::OnProcessInstanceReady(

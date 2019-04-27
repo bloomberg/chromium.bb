@@ -45,6 +45,7 @@ if (is_chromeos) {
       "policy.mojom",
       "power.mojom",
       "print.mojom",
+      "print_spooler.mojom",
       "process.mojom",
       "property.mojom",
       "rotation_lock.mojom",

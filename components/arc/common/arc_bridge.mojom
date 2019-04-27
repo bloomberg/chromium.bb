@@ -36,6 +36,7 @@ import "components/arc/common/pip.mojom";
 import "components/arc/common/policy.mojom";
 import "components/arc/common/power.mojom";
 import "components/arc/common/print.mojom";
+import "components/arc/common/print_spooler.mojom";
 import "components/arc/common/process.mojom";
 import "components/arc/common/property.mojom";
 import "components/arc/common/rotation_lock.mojom";
@@ -52,9 +53,9 @@ import "components/arc/common/volume_mounter.mojom";
 import "components/arc/common/wake_lock.mojom";
 import "components/arc/common/wallpaper.mojom";
 
-// Next MinVersion: 45
+// Next MinVersion: 46
 // Deprecated method IDs: 101, 105
-// Next method ID: 150
+// Next method ID: 151
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -164,6 +165,10 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the PrintInstance interface is ready.
   [MinVersion=16] OnPrintInstanceReady@121(PrintInstance instance_ptr);
+
+  // Notifies Chrome that the PrintSpoolerInstance interface is ready.
+  [MinVersion=45] OnPrintSpoolerInstanceReady@150(
+                      PrintSpoolerInstance instance_ptr);
 
   // Notifies Chrome that the ProcessInstance interface is ready.
   OnProcessInstanceReady@104(ProcessInstance instance_ptr);
