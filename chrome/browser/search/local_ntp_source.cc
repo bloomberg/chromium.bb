@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -74,6 +73,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
@@ -905,62 +905,43 @@ void LocalNtpSource::StartDataRequest(
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   if (stripped_path == kMainHtmlFilename) {
-    std::string html = ui::ResourceBundle::GetSharedInstance()
-                           .GetRawDataResource(IDR_LOCAL_NTP_HTML)
-                           .as_string();
-
-    std::string animations_integrity =
-        base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{ANIMATIONS_INTEGRITY}}",
-                                           animations_integrity);
-
-    std::string config_data_integrity = base::StringPrintf(
-        kIntegrityFormat,
-        search_config_provider_->config_data_integrity().c_str());
-    base::ReplaceFirstSubstringAfterOffset(
-        &html, 0, "{{CONFIG_DATA_INTEGRITY}}", config_data_integrity);
-
-    std::string custom_bg_integrity =
-        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(
-        &html, 0, "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}", custom_bg_integrity);
-
-    std::string doodles_integrity =
-        base::StringPrintf(kIntegrityFormat, DOODLES_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{DOODLES_INTEGRITY}}",
-                                           doodles_integrity);
-
-    std::string local_ntp_integrity =
-        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
-                                           local_ntp_integrity);
-
-    std::string utils_integrity =
-        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{UTILS_INTEGRITY}}",
-                                           utils_integrity);
-
-    std::string voice_integrity =
-        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(
-        &html, 0, "{{LOCAL_NTP_VOICE_INTEGRITY}}", voice_integrity);
-
-    base::ReplaceFirstSubstringAfterOffset(
-        &html, 0, "{{CONTENT_SECURITY_POLICY}}", GetContentSecurityPolicy());
-
     std::string force_doodle_param;
     GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
     if (net::GetValueForKeyInQuery(path_url, "force-doodle",
                                    &force_doodle_param)) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
       command_line->AppendSwitchASCII(
           search_provider_logos::switches::kGoogleDoodleUrl,
           "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
               force_doodle_param + ".json");
     }
 
-    callback.Run(base::RefCountedString::TakeString(&html));
+    // TODO(dbeam): rewrite this class to WebUIDataSource instead of
+    // URLDataSource, and get magical $i18n{} replacement for free.
+    ui::TemplateReplacements replacements;
+    replacements["animationsIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
+    replacements["configDataIntegrity"] = base::StringPrintf(
+        kIntegrityFormat,
+        search_config_provider_->config_data_integrity().c_str());
+    replacements["localNtpCustomBgIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
+    replacements["doodlesIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, DOODLES_JS_INTEGRITY);
+    replacements["localNtpIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
+    replacements["utilsIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
+    replacements["localNtpVoiceIntegrity"] =
+        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
+    // TODO(dbeam): why is this needed? How does it interact with
+    // URLDataSource::GetContentSecurityPolicy*() methods?
+    replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
+
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
+    std::string replaced = ui::ReplaceTemplateExpressions(html, replacements);
+    callback.Run(base::RefCountedString::TakeString(&replaced));
     return;
   }
 
