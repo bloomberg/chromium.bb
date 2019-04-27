@@ -110,24 +110,26 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
   // request to ARC++ container to extract the real data. This logic is
   // isolated inside ArcAppListPrefs and I don't think that anybody else should
   // call mojom RequestAppIcon".
-  if (icon_resource_id.empty()) {
-    auto* app_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder, RequestAppIcon);
-    if (app_instance) {
-      app_instance->RequestAppIcon(
-          package_name, activity, size_hint_in_px,
-          base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
-      return;
-    }
+  if (app_connection_holder) {
+    if (icon_resource_id.empty()) {
+      auto* app_instance =
+          ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder, RequestAppIcon);
+      if (app_instance) {
+        app_instance->RequestAppIcon(
+            package_name, activity, size_hint_in_px,
+            base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
+        return;
+      }
 
-  } else {
-    auto* app_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder, RequestShortcutIcon);
-    if (app_instance) {
-      app_instance->RequestShortcutIcon(
-          icon_resource_id, size_hint_in_px,
-          base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
-      return;
+    } else {
+      auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder,
+                                                       RequestShortcutIcon);
+      if (app_instance) {
+        app_instance->RequestShortcutIcon(
+            icon_resource_id, size_hint_in_px,
+            base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
+        return;
+      }
     }
   }
 
@@ -179,6 +181,13 @@ ArcApps::ArcApps(Profile* profile)
 }
 
 ArcApps::~ArcApps() {
+  // Clear out any pending icon calls to avoid a CHECK for Mojo callbacks that
+  // have not been run at App Service destruction.
+  for (auto& pending : pending_load_icon_calls_) {
+    std::move(pending).Run(nullptr);
+  }
+  pending_load_icon_calls_.clear();
+
   if (prefs_) {
     prefs_->app_connection_holder()->RemoveObserver(this);
     prefs_->RemoveObserver(this);
