@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
+import android.support.annotation.DrawableRes;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -49,8 +50,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
 
             // Each menu item is assigned its own instance of TouchlessItemClickListener where
             // itemId of this item is maintained.
-            PropertyModel menuItem = buildMenuItem(context, getResourceIdForMenuItem(itemId),
-                    new TouchlessItemClickListener(delegate, itemId));
+            PropertyModel menuItem = buildMenuItem(
+                    context, itemId, new TouchlessItemClickListener(delegate, itemId));
             menuItems.add(menuItem);
         }
         if (menuItems.size() == 0) return;
@@ -92,9 +93,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      * resources by PropertyModel.Builder.
      */
     private PropertyModel buildMenuItem(
-            Context context, @StringRes int itemTextId, OnClickListener listener) {
+            Context context, @ContextMenuItemId int itemId, OnClickListener listener) {
         return new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                .with(DialogListItemProperties.TEXT, context.getResources(), itemTextId)
+                .with(DialogListItemProperties.TEXT, context.getResources(),
+                        getResourceIdForMenuItem(itemId))
+                .with(DialogListItemProperties.ICON, context, getIconIdForMenuItem(itemId))
                 .with(DialogListItemProperties.CLICK_LISTENER, listener)
                 .build();
     }
@@ -124,6 +127,20 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
             builder.with(ModalDialogProperties.TITLE, title);
         }
         return builder.build();
+    }
+
+    /**
+     * Returns resource id of an icon to be displayed for menu item with given item id.
+     */
+    private @DrawableRes int getIconIdForMenuItem(@ContextMenuItemId int itemId) {
+        switch (itemId) {
+            case ContextMenuItemId.REMOVE:
+                return R.drawable.ic_remove_circle_outline_24dp;
+            case ContextMenuItemId.LEARN_MORE:
+                return R.drawable.ic_help_outline_24dp;
+            default:
+                return 0;
+        }
     }
 
     private void closeTouchlessContextMenu() {
