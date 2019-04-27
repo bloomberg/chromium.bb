@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -259,12 +260,18 @@ void NavigationPredictor::RecordActionAccuracyOnClick(
 void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (current_visibility_ == visibility)
+    return;
+
   // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
   // predictor is currently restricted to Android, it is okay to disregard the
   // occluded state.
   if (current_visibility_ != content::Visibility::HIDDEN ||
       visibility != content::Visibility::VISIBLE) {
     current_visibility_ = visibility;
+
+    // Stop any future preconnects while hidden.
+    timer_.Stop();
     return;
   }
 
@@ -306,6 +313,20 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
   loading_predictor->PrepareForPageLoad(
       preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,
       true);
+
+  if (current_visibility_ != content::Visibility::VISIBLE)
+    return;
+
+  // Set/Reset the timer to fire after the pre-connect times out. Add an extra
+  // 50ms to make sure the preconnect has expired if it wasn't used.
+  timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          net::features::kNetUnusedIdleSocketTimeout,
+          "unused_idle_socket_timeout_seconds", 10)) +
+          base::TimeDelta::FromMilliseconds(50),
+      base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
+                     base::Unretained(this), Action::kPreconnectAfterTimeout));
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {

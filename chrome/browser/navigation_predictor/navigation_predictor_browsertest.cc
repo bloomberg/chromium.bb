@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
@@ -31,12 +32,35 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
   base::RunLoop().RunUntilIdle();
-  for (size_t attempt = 0; attempt < 3; ++attempt) {
+  for (size_t attempt = 0; attempt < 50; ++attempt) {
     const std::vector<base::Bucket> buckets =
         histogram_tester->GetAllSamples(histogram_name);
     size_t total_count = 0;
     for (const auto& bucket : buckets)
       total_count += bucket.count;
+    if (total_count >= count)
+      return;
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
+// Retries fetching |histogram_name| until it contains at least |count| samples.
+void RetryForHistogramBucketUntilCountReached(
+    base::HistogramTester* histogram_tester,
+    const std::string& histogram_name,
+    base::HistogramBase::Sample target_bucket,
+    size_t count) {
+  base::RunLoop().RunUntilIdle();
+  for (size_t attempt = 0; attempt < 50; ++attempt) {
+    const std::vector<base::Bucket> buckets =
+        histogram_tester->GetAllSamples(histogram_name);
+    size_t total_count = 0;
+    for (const auto& bucket : buckets) {
+      if (bucket.min == target_bucket)
+        total_count += bucket.count;
+    }
     if (total_count >= count)
       return;
     content::FetchHistogramsFromChildProcesses();
@@ -53,9 +77,9 @@ class NavigationPredictorBrowserTest
  public:
   NavigationPredictorBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
-    const std::vector<base::Feature> features = {
-        blink::features::kNavigationPredictor};
-    feature_list_.InitWithFeatures(features, {});
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor,
+        {{"same_origin_preconnecting_allowed", "true"}});
   }
 
   void SetUp() override {
@@ -334,6 +358,60 @@ IN_PROC_BROWSER_TEST_F(
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     3);
+}
+
+// Test that we preconnect after the last preconnect timed out.
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout)) {
+  base::HistogramTester histogram_tester;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::map<std::string, std::string> parameters;
+  parameters["unused_idle_socket_timeout_seconds"] = "0";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      net::features::kNetUnusedIdleSocketTimeout, parameters);
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  RetryForHistogramBucketUntilCountReached(
+      &histogram_tester, "NavigationPredictor.OnNonDSE.ActionTaken",
+      static_cast<base::HistogramBase::Sample>(
+          NavigationPredictor::Action::kPreconnectAfterTimeout),
+      1);
+
+  EXPECT_LT(0, histogram_tester.GetBucketCount(
+                   "NavigationPredictor.OnNonDSE.ActionTaken",
+                   static_cast<base::HistogramBase::Sample>(
+                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
+}
+
+// Test that we do not preconnect after the last preconnect timed out when
+// backgrounded.
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_background)) {
+  base::HistogramTester histogram_tester;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::map<std::string, std::string> parameters;
+
+  // Force synchronous timer instead of delayed, without tab background this
+  // would cause an infinite loop in RunUntilIdle.
+  parameters["unused_idle_socket_timeout_seconds"] = "-1";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      net::features::kNetUnusedIdleSocketTimeout, parameters);
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+
+  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "NavigationPredictor.OnNonDSE.ActionTaken",
+                   static_cast<base::HistogramBase::Sample>(
+                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
 }
 
 // Test that the action accuracy is properly recorded and when same origin
