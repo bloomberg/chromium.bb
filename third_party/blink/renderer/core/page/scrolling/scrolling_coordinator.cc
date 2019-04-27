@@ -184,7 +184,7 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
 
     SetShouldHandleScrollGestureOnMainThreadRegion(
         main_thread_scrolling_region,
-        frame_view->LayoutViewport()->LayerForScrolling());
+        frame_view->GetScrollableArea()->LayerForScrolling());
 
     // Fixed regions will be stored on the visual viewport's scroll layer. This
     // is because a region for an area that's fixed to the layout viewport
@@ -214,6 +214,8 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
       // TODO(pdr): This also takes over scroll animations if main thread
       // reasons are present. This needs to be implemented for
       // BlinkGenPropertyTrees.
+      // TODO(bokan): Does this work for scrollers other than FrameViews? If
+      // not, this will need to account for root scrollers.
       SetShouldUpdateScrollLayerPositionOnMainThread(
           frame, frame_view->GetMainThreadScrollingReasons());
 
@@ -716,6 +718,11 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
   GraphicsLayer* visual_viewport_layer = visual_viewport.ScrollLayer();
   cc::Layer* visual_viewport_scroll_layer =
       GraphicsLayerToCcLayer(visual_viewport_layer);
+  // TODO(bokan): It would probably make more sense to use the root scroller's
+  // layer here, but this code is only ever executed in !BGPT mode. With BGPT
+  // the MainThreadScrollingReasons are already stored on individual
+  // ScrollNodes. The CompositorAnimation hand-off should probably be
+  // generalized to work on non-FrameView scrollers though.
   ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
   GraphicsLayer* layer = scrollable_area->LayerForScrolling();
   if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(layer)) {
@@ -981,6 +988,8 @@ void ScrollingCoordinator::FrameViewRootLayerDidChange(
 bool ScrollingCoordinator::FrameScrollerIsDirty(
     LocalFrameView* frame_view) const {
   DCHECK(frame_view);
+  // TODO(bokan): This should probably be checking the root scroller in the
+  // FrameView, rather than the frame_view.
   if (frame_view->FrameIsScrollableDidChange())
     return true;
 
