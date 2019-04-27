@@ -277,8 +277,10 @@ void AddWifiData(const WifiData& wifi_data,
   auto wifi_access_point_list = std::make_unique<base::ListValue>();
   for (auto* ap_data : access_points_by_signal_strength) {
     auto wifi_dict = std::make_unique<base::DictionaryValue>();
-    AddString("macAddress", base::UTF16ToUTF8(ap_data->mac_address),
-              wifi_dict.get());
+    auto macAddress = base::UTF16ToUTF8(ap_data->mac_address);
+    if (macAddress.empty())
+      continue;
+    AddString("macAddress", macAddress, wifi_dict.get());
     AddInteger("signalStrength", ap_data->radio_signal_strength,
                wifi_dict.get());
     AddInteger("age", age_milliseconds, wifi_dict.get());
