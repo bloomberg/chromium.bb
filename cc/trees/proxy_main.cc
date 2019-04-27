@@ -320,7 +320,6 @@ void ProxyMain::BeginMainFrame(
       std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
 
   current_pipeline_stage_ = NO_PIPELINE_STAGE;
-  layer_tree_host_->DidBeginMainFrame();
 
   // Notify the impl thread that the main thread is ready to commit. This will
   // begin the commit process, which is blocking from the main thread's
@@ -342,8 +341,14 @@ void ProxyMain::BeginMainFrame(
                        hold_commit_for_activation));
     completion.Wait();
   }
-
   layer_tree_host_->CommitComplete();
+
+  // For Blink implementations, this updates frame throttling and
+  // delivers IntersectionObserver events for Chromium-internal customers
+  // but *not* script-created IntersectionObserver. See
+  // blink::LocalFrameView::RunPostLifecycleSteps.
+  layer_tree_host_->DidBeginMainFrame();
+
   layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
 }
 
