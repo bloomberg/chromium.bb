@@ -492,8 +492,8 @@
   },
   {
     "name": "device-discovery-notifications",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "thestig" ],
+    "expiry_milestone": 78
   },
   {
     "name": "direct-manipulation-stylus",
