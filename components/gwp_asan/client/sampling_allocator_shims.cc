@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/allocator/buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -326,17 +325,11 @@ void InstallAllocatorHooks(size_t max_allocated_pages,
                            size_t num_metadata,
                            size_t total_pages,
                            size_t sampling_frequency) {
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   gpa = new GuardedPageAllocator();
   gpa->Init(max_allocated_pages, num_metadata, total_pages);
   RegisterAllocatorAddress(gpa->GetCrashKeyAddress());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
-#else
-  ignore_result(g_allocator_dispatch);
-  ignore_result(gpa);
-  DLOG(WARNING) << "base::allocator shims are unavailable for GWP-ASan.";
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
 
 }  // namespace internal

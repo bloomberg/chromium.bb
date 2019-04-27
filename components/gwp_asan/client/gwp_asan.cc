@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 
+#include "base/allocator/buildflags.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -18,13 +19,17 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "components/gwp_asan/client/sampling_allocator_shims.h"
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 namespace gwp_asan {
 
 namespace internal {
 namespace {
 
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 constexpr int kDefaultMaxAllocations = 35;
 constexpr int kDefaultMaxMetadata = 150;
 
@@ -176,14 +181,19 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
                         alloc_sampling_freq);
   return true;
 }
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 }  // namespace
 }  // namespace internal
 
 void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   static bool init_once =
       internal::EnableForMalloc(is_canary_dev, is_browser_process);
   ignore_result(init_once);
+#else
+  DLOG(WARNING) << "base::allocator shims are unavailable for GWP-ASan.";
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
 
 }  // namespace gwp_asan

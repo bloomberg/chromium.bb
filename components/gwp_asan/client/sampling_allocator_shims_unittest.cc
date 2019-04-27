@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/allocator/buildflags.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
@@ -25,8 +24,6 @@
 
 // These tests install global allocator shims so they are not safe to run in
 // multi-threaded contexts. Instead they're implemented as multi-process tests.
-
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #if defined(OS_WIN)
 #include <malloc.h>
@@ -328,5 +325,3 @@ TEST_F(SamplingAllocatorShimsTest, BatchFree) {
 
 }  // namespace internal
 }  // namespace gwp_asan
-
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
