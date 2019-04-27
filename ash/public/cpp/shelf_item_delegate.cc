@@ -19,6 +19,9 @@ ShelfItemDelegate::ShelfItemDelegate(const ShelfID& shelf_id)
 ShelfItemDelegate::~ShelfItemDelegate() = default;
 
 mojom::ShelfItemDelegatePtr ShelfItemDelegate::CreateInterfacePtrAndBind() {
+  if (binding_.is_bound())
+    binding_.Close();
+
   mojom::ShelfItemDelegatePtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;

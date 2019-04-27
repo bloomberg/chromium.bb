@@ -21,7 +21,7 @@ ShelfSpinnerItemController::~ShelfSpinnerItemController() {
 
 void ShelfSpinnerItemController::SetHost(
     const base::WeakPtr<ShelfSpinnerController>& host) {
-  DCHECK(!host_);
+  DCHECK(!host_ || host_.get() == host.get());
   host_ = host;
 }
 
@@ -55,6 +55,10 @@ void ShelfSpinnerItemController::GetContextMenu(int64_t display_id,
 }
 
 void ShelfSpinnerItemController::Close() {
-  if (host_)
-    host_->Close(app_id());
+  if (host_) {
+    // CloseSpinner can result in |app_id| being deleted, so make a copy of it
+    // first.
+    const std::string safe_app_id = app_id();
+    host_->CloseSpinner(safe_app_id);
+  }
 }

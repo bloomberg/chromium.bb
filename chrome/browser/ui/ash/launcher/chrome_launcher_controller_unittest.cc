@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
@@ -659,7 +660,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   // Create and initialize the controller, owned by the test shell delegate.
-  void InitLauncherController() { CreateLauncherController()->Init(); }
+  void InitLauncherController() {
+    CreateLauncherController()->Init();
+    FlushBindings();
+  }
 
   // Create and initialize the controller; create a tab and show the browser.
   void InitLauncherControllerWithBrowser() {
@@ -1308,6 +1312,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     // Call FlushBindings() to ensure ash has completed processing of the
     // switch.
     FlushBindings();
+
+    // TODO(crbug.com/956841) This should be redundant with the FlushBindings
+    // call, but removing it breaks some tests.
     launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
         account_id.GetUserEmail());
 
@@ -3606,6 +3613,108 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     v2_app_2.window()->Hide();
     EXPECT_EQ(3, model_->item_count());
   }
+}
+
+// Checks that spinners are hidden and restored on profile switching
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       SpinnersUpdateOnUserSwitch) {
+  InitLauncherController();
+
+  const AccountId account_id(
+      multi_user_util::GetAccountIdFromProfile(profile()));
+  const std::string user2 = "user2";
+  const TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
+
+  const std::string app_id = extension1_->id();
+  extension_service_->AddExtension(extension1_.get());
+
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Add a spinner to the shelf
+  launcher_controller_->GetShelfSpinnerController()->AddSpinnerToShelf(
+      app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Switch to a new profile
+  SwitchActiveUser(account_id2);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Switch back
+  SwitchActiveUser(account_id);
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Close the spinner
+  launcher_controller_->GetShelfSpinnerController()->CloseSpinner(app_id);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+}
+
+// Checks that pinned spinners are hidden and restored on profile switching
+// but are not removed when the spinner closes.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       PinnedSpinnersUpdateOnUserSwitch) {
+  InitLauncherController();
+
+  const AccountId account_id(
+      multi_user_util::GetAccountIdFromProfile(profile()));
+  const std::string user2 = "user2";
+  const TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
+
+  const std::string app_id = extension1_->id();
+  extension_service_->AddExtension(extension1_.get());
+
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Pin an app to the shelf
+  launcher_controller_->PinAppWithID(app_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Activate the spinner
+  launcher_controller_->GetShelfSpinnerController()->AddSpinnerToShelf(
+      app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Switch to a new profile
+  SwitchActiveUser(account_id2);
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Switch back
+  SwitchActiveUser(account_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+
+  // Close the spinner
+  launcher_controller_->GetShelfSpinnerController()->CloseSpinner(app_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(4, model_->item_count());
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
 
 // Checks that the generated menu list properly activates items.

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
@@ -205,9 +206,16 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     return;
   }
 
+  // Currently Crostini can only be used from the primary profile. In the
+  // future, this may be replaced by some way of matching the container that
+  // runs this app with the user that owns it.
+  const AccountId& primary_account_id =
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
+
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          owner()->profile());
+          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
+              primary_account_id));
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
       exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
   // Windows without an application id set will get filtered out here.
@@ -233,8 +241,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
 
   // Prevent Crostini window from showing up after user switch.
   MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
-      window,
-      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+      window, primary_account_id);
 
   RegisterAppWindow(window, shelf_app_id);
 

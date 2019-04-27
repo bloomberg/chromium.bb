@@ -428,10 +428,8 @@ void MultiUserWindowManagerClientImpl::OnTransitionUserShelfToNewAccount() {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   // Some unit tests have no ChromeLauncherController.
-  if (chrome_launcher_controller) {
-    chrome_launcher_controller->ActiveUserChanged(
-        current_account_id_.GetUserEmail());
-  }
+  if (chrome_launcher_controller)
+    chrome_launcher_controller->ActiveUserChanged(current_account_id_);
 }
 
 void MultiUserWindowManagerClientImpl::OnDidSwitchActiveAccount() {

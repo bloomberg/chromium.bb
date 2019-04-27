@@ -12,7 +12,7 @@
 
 namespace multi_user_util {
 
-AccountId GetAccountIdFromProfile(Profile* profile) {
+AccountId GetAccountIdFromProfile(const Profile* profile) {
   // This will guarantee an nonempty AccountId be returned if a valid profile is
   // provided.
   const user_manager::User* user =

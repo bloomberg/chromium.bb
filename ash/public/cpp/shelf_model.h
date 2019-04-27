@@ -58,6 +58,12 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Removes the item at |index|.
   void RemoveItemAt(int index);
 
+  // Removes the item with id |shelf_id| and passes ownership of its
+  // ShelfItemDelegate to the caller. This is useful if you want to remove an
+  // item from the shelf temporarily and be able to restore its behavior later.
+  std::unique_ptr<ShelfItemDelegate> RemoveItemAndTakeShelfItemDelegate(
+      const ShelfID& shelf_id);
+
   // Moves the item at |index| to |target_index|. |target_index| is in terms
   // of the model *after* the item at |index| is removed.
   void Move(int index, int target_index);

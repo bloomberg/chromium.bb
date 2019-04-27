@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -169,7 +170,7 @@ class ChromeLauncherController
                                                     bool allow_minimize);
 
   // Called when the active user has changed.
-  void ActiveUserChanged(const std::string& user_email);
+  void ActiveUserChanged(const AccountId& account_id);
 
   // Called when a user got added to the session.
   void AdditionalUserAddedToSession(Profile* profile);

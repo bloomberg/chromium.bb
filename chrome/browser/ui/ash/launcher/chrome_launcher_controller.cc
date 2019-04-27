@@ -565,8 +565,7 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   return ash::SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
-void ChromeLauncherController::ActiveUserChanged(
-    const std::string& user_email) {
+void ChromeLauncherController::ActiveUserChanged(const AccountId& account_id) {
   // Store the order of running applications for the user which gets inactive.
   RememberUnpinnedRunningApplicationOrder();
   // Coming here the default profile is already switched. All profile specific
@@ -576,17 +575,21 @@ void ChromeLauncherController::ActiveUserChanged(
   // set it as active.
   AttachProfile(ProfileManager::GetActiveUserProfile());
   // Update the V1 applications.
-  browser_status_monitor_->ActiveUserChanged(user_email);
+  browser_status_monitor_->ActiveUserChanged(account_id.GetUserEmail());
+  // Save/restore spinners belonging to the old/new user. Must be called before
+  // notifying the AppWindowControllers, as some of them assume spinners owned
+  // by the new user have already been added to the shelf.
+  shelf_spinner_controller_->ActiveUserChanged(account_id);
   // Switch the running applications to the new user.
   for (auto& controller : app_window_controllers_)
-    controller->ActiveUserChanged(user_email);
+    controller->ActiveUserChanged(account_id.GetUserEmail());
   // Update the user specific shell properties from the new user profile.
   // Shelf preferences are loaded in ChromeLauncherController::AttachProfile.
   UpdateAppLaunchersFromSync();
 
   // Restore the order of running, but unpinned applications for the activated
   // user.
-  RestoreUnpinnedRunningApplicationOrder(user_email);
+  RestoreUnpinnedRunningApplicationOrder(account_id.GetUserEmail());
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {

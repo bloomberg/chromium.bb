@@ -13,6 +13,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_manager_base.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -1085,10 +1086,17 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
     base::ScopedAllowBlockingForTesting allow_blocking;
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id));
+    user_manager::User* user =
+        user_manager::User::CreateRegularUserForTesting(account_id);
+    static_cast<user_manager::UserManagerBase*>(
+        user_manager::UserManager::Get())
+        ->AddUserRecordForTesting(user);
     if (log_in) {
       session_manager::SessionManager::Get()->CreateSession(account_id,
                                                             info.hash, false);
     }
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, profile());
     user_manager::UserManager::Get()->SaveUserDisplayName(
         account_id, base::UTF8ToUTF16(info.display_name));
     Profile* profile =
