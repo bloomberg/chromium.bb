@@ -101,6 +101,38 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
+void RecordConnectionCloseErrorCode(quic::QuicErrorCode error,
+                                    quic::ConnectionCloseSource source,
+                                    const std::string& hostname,
+                                    bool handshake_confirmed) {
+  bool is_google_host = HasGoogleHost(GURL("https://" + hostname));
+  std::string histogram = "Net.QuicSession.ConnectionCloseErrorCode";
+
+  if (source == quic::ConnectionCloseSource::FROM_PEER) {
+    histogram += "Server";
+  } else {
+    histogram += "Client";
+  }
+  base::UmaHistogramSparse(histogram, error);
+
+  if (handshake_confirmed) {
+    base::UmaHistogramSparse(histogram + ".HandshakeConfirmed", error);
+  } else {
+    base::UmaHistogramSparse(histogram + ".HandshakeNotConfirmed", error);
+  }
+
+  if (is_google_host) {
+    histogram += "Google";
+    base::UmaHistogramSparse(histogram, error);
+
+    if (handshake_confirmed) {
+      base::UmaHistogramSparse(histogram + ".HandshakeConfirmed", error);
+    } else {
+      base::UmaHistogramSparse(histogram + ".HandshakeNotConfirmed", error);
+    }
+  }
+}
+
 NetLogParametersCallback NetLogQuicConnectionMigrationTriggerCallback(
     const char* trigger) {
   return NetLog::StringCallback("trigger", trigger);
@@ -1556,7 +1588,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
     quic::ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
   logger_->OnConnectionClosed(error, error_details, source);
-  bool is_google_host = HasGoogleHost(GURL("https://" + session_key_.host()));
+
+  RecordConnectionCloseErrorCode(error, source, session_key_.host(),
+                                 IsCryptoHandshakeConfirmed());
   if (source == quic::ConnectionCloseSource::FROM_PEER) {
     if (error == quic::QUIC_PUBLIC_RESET) {
       // is_from_google_server will be true if the received EPID is
@@ -1581,15 +1615,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
       }
     }
     if (IsCryptoHandshakeConfirmed()) {
-      if (is_google_host) {
-        base::UmaHistogramSparse(
-            "Net.QuicSession.ConnectionCloseErrorCodeServerGoogle."
-            "HandshakeConfirmed",
-            error);
-      }
-      base::UmaHistogramSparse(
-          "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
-          error);
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
           "Net.QuicSession.StreamCloseErrorCodeServer.HandshakeConfirmed",
           base::HistogramBase::kUmaTargetedHistogramFlag);
@@ -1597,23 +1622,8 @@ void QuicChromiumClientSession::OnConnectionClosed(
       if (num_streams > 0)
         histogram->AddCount(error, num_streams);
     }
-    if (is_google_host) {
-      base::UmaHistogramSparse(
-          "Net.QuicSession.ConnectionCloseErrorCodeServerGoogle", error);
-    }
-    base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeServer",
-                             error);
   } else {
     if (IsCryptoHandshakeConfirmed()) {
-      if (is_google_host) {
-        base::UmaHistogramSparse(
-            "Net.QuicSession.ConnectionCloseErrorCodeClientGoogle."
-            "HandshakeConfirmed",
-            error);
-      }
-      base::UmaHistogramSparse(
-          "Net.QuicSession.ConnectionCloseErrorCodeClient.HandshakeConfirmed",
-          error);
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
           "Net.QuicSession.StreamCloseErrorCodeClient.HandshakeConfirmed",
           base::HistogramBase::kUmaTargetedHistogramFlag);
@@ -1627,12 +1637,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
             connection()->IsPathDegrading());
       }
     }
-    if (is_google_host) {
-      base::UmaHistogramSparse(
-          "Net.QuicSession.ConnectionCloseErrorCodeClientGoogle", error);
-    }
-    base::UmaHistogramSparse("Net.QuicSession.ConnectionCloseErrorCodeClient",
-                             error);
     if (error == quic::QUIC_TOO_MANY_RTOS) {
       UMA_HISTOGRAM_COUNTS_1000(
           "Net.QuicSession.ClosedByRtoAtClient.ReceivedPacketCount",
