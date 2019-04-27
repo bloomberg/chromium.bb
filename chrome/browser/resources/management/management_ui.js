@@ -64,6 +64,9 @@ Polymer({
     // </if>
 
     /** @private */
+    managed_: Boolean,
+
+    /** @private */
     extensionReportingSubtitle_: String,
   },
 
@@ -236,8 +239,14 @@ Polymer({
   },
 
   /** @private */
+  onTapBack_() {
+    window.location.href = `chrome://settings/help`;
+  },
+
+  /** @private */
   updateManagedFields_() {
     this.browserProxy_.getContextualManagedData().then(data => {
+      this.managed_ = data.managed;
       this.extensionReportingSubtitle_ = data.extensionReportingTitle;
       this.subtitle_ = data.pageSubtitle;
       this.accountManagedInfo_ = data.accountManagedInfo;

@@ -559,6 +559,7 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
                                       l10n_util::GetStringUTF16(device_type)));
 #endif  // !defined(OS_CHROMEOS)
   }
+  response.SetBoolean("managed", managed_);
   GetManagementStatus(profile, &response);
   return response;
 }

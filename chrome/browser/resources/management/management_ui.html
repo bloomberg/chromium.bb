@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -12,9 +14,10 @@
 
 <dom-module id="management-ui">
   <template>
-    <style>
+    <style include="cr-icons cr-hidden-style">
       :host {
         @apply --cr-page-host;
+        color: var(--cr-secondary-text-color);
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -23,10 +26,6 @@
       a {
         color: var(--cr-link-color);
         text-decoration: none;
-      }
-
-      a iron-icon {
-        color: var(--cr-primary-text-color);
       }
 
       cr-toolbar {
@@ -54,22 +53,14 @@
         align-items: center;
         flex-direction: row;
         justify-content: start;
-        padding-bottom: 0;
-        padding-top: 0;
+        min-height: 40px;
+        padding-bottom: 24px;
+        padding-top: 6px;
       }
 
-      .page-subtitle a {
-        margin-inline-end: 32px;
-      }
-
-      .page-subtitle iron-icon {
-        color: var(--cr-title-text-color);
-        padding-bottom: 0;
-        padding-top: 0;
-      }
-
-      .overview-section {
-        padding-inline-start: 32px;
+      .page-subtitle cr-icon-button {
+        margin-inline-end: 10px;
+        margin-inline-start: -10px;
       }
 
       .overview-section div + div {
@@ -85,7 +76,7 @@
       }
 
       th {
-        font-weight: 400;
+        font-weight: 500;
       }
 
       h2 {
@@ -104,13 +95,11 @@
       section {
         @apply --cr-section;
         align-items: flex-start;
+        border-top: none;
         flex-direction: column;
         justify-content: center;
-        padding: 24px;
-      }
-
-      section:not(.page-subtitle):not(.overview-section) {
-        padding-inline-start: 32px;
+        padding-bottom: 12px;
+        padding-top: 12px;
       }
 
       section:not(.page-subtitle) h2 {
@@ -135,6 +124,7 @@
 
       table {
         border-spacing: 0 16px;
+        width: 100%;
       }
 
       th,
@@ -149,6 +139,13 @@
 
       .extension-name {
         width: 40%;
+      }
+
+      .extension-name span {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .extension-permissions {
@@ -176,10 +173,10 @@
     <main id="mainContent">
       <div class="sections-container">
         <div class="card">
-          <section class="page-subtitle">
-            <a href="chrome://settings/help" aria-label="$i18n{backButton}">
-              <iron-icon icon="cr:arrow-back"></iron-icon>
-            </a>
+          <section hidden="[[!managed_]]" class="page-subtitle">
+            <cr-icon-button class="icon-arrow-back" id="closeButton"
+                on-click="onTapBack_" aria-label="$i18n{backButton}">
+            </cr-icon-button>
             <h2>
               [[subtitle_]]
             </h2>
@@ -200,20 +197,15 @@
               </li>
               <li>[[deviceManagedInfo_.data]]</li>
             </ul>
-</if>
             <div>[[accountManagedInfo_.overview]]</div>
             <ul class="overview-messages" hidden="[[!accountManagedInfo_]]">
-<if expr="chromeos">
               <li>[[accountManagedInfo_.setup]]
                     <a href="$i18nRaw{managementAccountLearnMoreUrl}"
                     target="_blank">$i18n{learnMore}</a>
               </li>
-</if>
-<if expr="not chromeos">
-              <li>[[accountManagedInfo_.setup]]</li>
-</if>
               <li>[[accountManagedInfo_.data]]</li>
             </ul>
+</if>
           </section>
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">
@@ -242,15 +234,15 @@
             </section>
           </template>
 </if>
-
+<if expr="not chromeos">
           <template is="dom-if"
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
             <section>
               <h2>$i18n{browserReporting}</h2>
-              <div class="subtitle content-indented">
+              <div class="subtitle">
                 $i18n{browserReportingExplanation}
               </div>
-              <div class="content-indented">
+              <div>
                 <template is="dom-repeat" items="[[browserReportingInfo_]]">
                   <div class="report">
                     <iron-icon icon="[[item.icon]]"></iron-icon>
@@ -265,11 +257,12 @@
               </div>
             </section>
           </template>
+</if>
           <template is="dom-if"
               if="[[showExtensionReportingInfo_(extensions_)]]">
-            <section>
+            <section class="extension-reporting">
               <h2>$i18n{extensionReporting}</h2>
-              <div class="subtitle content-indented">
+              <div class="subtitle">
                 [[extensionReportingSubtitle_]]
               </div>
               <table class="content-indented">
@@ -282,8 +275,8 @@
                 <template is="dom-repeat" items="[[extensions_]]">
                   <tr>
                     <td class="extension-name">
-                      <div>
-                        <img src="[[item.icon]]" alt="">
+                      <div title="[[item.name]]" role="presentation">
+                        <img src="[[item.icon]]" alt="" aria-hidden="true">
                         <span>[[item.name]]</span>
                       </div>
                     </td>
