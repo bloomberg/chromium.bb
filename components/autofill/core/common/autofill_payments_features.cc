@@ -28,6 +28,10 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 const base::Feature kAutofillCreditCardAuthentication{
     "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
+    "AutofillDoNotMigrateUnsupportedLocalCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
     "AutofillDoNotUploadSaveUnsupportedCards",
     base::FEATURE_DISABLED_BY_DEFAULT};

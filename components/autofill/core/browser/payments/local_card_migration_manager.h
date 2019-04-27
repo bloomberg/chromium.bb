@@ -156,6 +156,11 @@ class LocalCardMigrationManager {
  private:
   friend class LocalCardMigrationBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_MigrateWhenHasSupportedLocalCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      LocalCardMigrationManagerTest,
+      MigrateCreditCard_MigrationAbortWhenNoSupportedCards);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationPermanentFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationTemporaryFailure);
@@ -166,6 +171,10 @@ class LocalCardMigrationManager {
 
   // Returns the LocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
+
+  // Filter the |migratable_credit_cards_| with |supported_card_bin_ranges_| and
+  // keep supported local cards in |migratable_credit_cards_|.
+  void FilterOutUnsupportedLocalCards();
 
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
@@ -214,6 +223,10 @@ class LocalCardMigrationManager {
 
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
+
+  // List of BIN prefix ranges which are supoorted, with the first and second
+  // number in the pair being the start and end of the range.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

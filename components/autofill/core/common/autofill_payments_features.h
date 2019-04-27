@@ -21,6 +21,7 @@ namespace features {
 // All features in alphabetical order.
 extern const base::Feature kAutofillCreditCardAblationExperiment;
 extern const base::Feature kAutofillCreditCardAuthentication;
+extern const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards;
 extern const base::Feature kAutofillDoNotUploadSaveUnsupportedCards;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;

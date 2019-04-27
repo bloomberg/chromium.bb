@@ -430,6 +430,12 @@ const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
     "offering card upload to Google Payments, the offer-to-save dialog "
     "displays an expiration date selector.";
 
+const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[] =
+    "Prevents local card migration on local cards from unsupported networks";
+const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
+    "If enabled, local cards from unsupported networks will not be offered "
+    "local card migration.";
+
 const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[] =
     "Prevents upload save on cards from unsupported networks";
 const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =

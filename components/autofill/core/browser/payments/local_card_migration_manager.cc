@@ -209,6 +209,7 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     migration_request_.context_token = context_token;
     legal_message_ = base::DictionaryValue::From(std::move(legal_message));
     migration_request_.risk_data.clear();
+    supported_card_bin_ranges_ = supported_card_bin_ranges;
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog. If triggered from settings page, we pop-up the main prompt
     // directly. If not, we pop up the intermediate bubble.
@@ -219,6 +220,12 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
       // Pops up a larger, modal dialog showing the local cards to be uploaded.
       ShowMainMigrationDialog();
     } else {
+      // Filter the migratable credit cards with |supported_card_bin_ranges_|.
+      FilterOutUnsupportedLocalCards();
+      // Abandon the migration if no supported card left.
+      // TODO(crbug.com/954367): Log a metric here.
+      if (migratable_credit_cards_.empty())
+        return;
       client_->ShowLocalCardMigrationDialog(base::BindOnce(
           &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
           weak_ptr_factory_.GetWeakPtr()));
@@ -382,6 +389,28 @@ void LocalCardMigrationManager::GetMigratableCreditCards() {
         !personal_data_manager_->IsServerCard(credit_card)) {
       migratable_credit_cards_.push_back(MigratableCreditCard(*credit_card));
     }
+  }
+
+  // Filter out Unsupported local cards when |supported_card_bin_ranges_| is not
+  // empty.
+  FilterOutUnsupportedLocalCards();
+}
+
+void LocalCardMigrationManager::FilterOutUnsupportedLocalCards() {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillDoNotMigrateUnsupportedLocalCards) &&
+      !supported_card_bin_ranges_.empty()) {
+    // Update the |migratable_credit_cards_| with the
+    // |supported_card_bin_ranges|. This will remove any card from
+    // |migratable_credit_cards_| of which the card number is not in
+    // |supported_card_bin_ranges|.
+    auto card_is_unsupported =
+        [& supported_card_bin_ranges =
+             supported_card_bin_ranges_](MigratableCreditCard& card) {
+          return !payments::IsCreditCardSupported(card.credit_card(),
+                                                  supported_card_bin_ranges);
+        };
+    base::EraseIf(migratable_credit_cards_, card_is_unsupported);
   }
 }
 

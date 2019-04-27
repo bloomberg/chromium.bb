@@ -285,6 +285,9 @@ extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
+extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
+extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
+
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
 

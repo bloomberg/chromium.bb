@@ -792,6 +792,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-do-not-migrate-unsupported-local-cards",
+    "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-autofill-do-not-upload-save-unsupported-cards",
     "owners": [ "annelim@google.com", "jsaul@google.com" ],
     "expiry_milestone": 76

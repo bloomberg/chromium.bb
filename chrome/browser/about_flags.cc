@@ -3946,6 +3946,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnterpriseReportingInBrowser)},
 #endif  // !defined(OS_ANDROID)
 
+    {"enable-autofill-do-not-migrate-unsupported-local-cards",
+     flag_descriptions::kEnableAutofillDoNotMigrateUnsupportedLocalCardsName,
+     flag_descriptions::
+         kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
