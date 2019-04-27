@@ -461,4 +461,19 @@ TEST(CommandLineTest, RemoveSwitch) {
   EXPECT_EQ(value2, cl.GetSwitchValueASCII(switch2));
 }
 
+TEST(CommandLineTest, MultipleSameSwitch) {
+  const CommandLine::CharType* argv[] = {
+      FILE_PATH_LITERAL("program"),
+      FILE_PATH_LITERAL("--foo=one"),  // --foo first time
+      FILE_PATH_LITERAL("-baz"),
+      FILE_PATH_LITERAL("--foo=two")  // --foo second time
+  };
+  CommandLine cl(size(argv), argv);
+
+  EXPECT_TRUE(cl.HasSwitch("foo"));
+  EXPECT_TRUE(cl.HasSwitch("baz"));
+
+  EXPECT_EQ("two", cl.GetSwitchValueASCII("foo"));
+}
+
 } // namespace base

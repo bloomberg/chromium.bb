@@ -6,6 +6,7 @@
 // Arguments with prefixes ('--', '-', and on Windows, '/') are switches.
 // Switches will precede all other arguments without switch prefixes.
 // Switches can optionally have values, delimited by '=', e.g., "-switch=value".
+// If a switch is specified multiple times, only the last value is used.
 // An argument of "--" will terminate switch parsing during initialization,
 // interpreting subsequent tokens as non-switch arguments, regardless of prefix.
 
