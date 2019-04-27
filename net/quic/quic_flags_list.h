@@ -64,6 +64,11 @@ QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 
+// If true, adjust congestion window when doing bandwidth resumption in BBR.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_bbr_cwnd_in_bandwidth_resumption,
+          false)
+
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 

@@ -8,8 +8,9 @@
 #include "base/logging.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "testing/gmock/include/gmock/gmock.h"  // IWYU pragma: export
-#include "testing/gtest/include/gtest/gtest.h"  // IWYU pragma: export
+#include "testing/gmock/include/gmock/gmock.h"      // IWYU pragma: export
+#include "testing/gtest/include/gtest/gtest-spi.h"  // IWYU pragma: export
+#include "testing/gtest/include/gtest/gtest.h"      // IWYU pragma: export
 
 // When constructed, saves the current values of all QUIC flags. When
 // destructed, restores all QUIC flags to the saved values.
