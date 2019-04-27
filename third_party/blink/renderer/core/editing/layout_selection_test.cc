@@ -81,7 +81,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
                                  std::ostream& ostream,
                                  const Node& node,
                                  wtf_size_t depth) {
-    if (const Text* text = ToTextOrNull(node))
+    if (const Text* text = DynamicTo<Text>(node))
       PrintText(ostream, *text);
     else if (const Element* element = ToElementOrNull(node))
       ostream << element->tagName().Utf8().data();
@@ -981,8 +981,8 @@ class NGLayoutSelectionTest
 
   const Text* GetFirstTextNode() {
     for (const Node& runner : NodeTraversal::StartsAt(*GetDocument().body())) {
-      if (runner.IsTextNode())
-        return &ToText(runner);
+      if (auto* text_node = DynamicTo<Text>(runner))
+        return text_node;
     }
     NOTREACHED();
     return nullptr;

@@ -477,7 +477,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
-  const Text* text = ToText(node_);
+  const auto* text = To<Text>(node_.Get());
   last_text_node_ = text;
 
   // TODO(editing-dev): Introduce a |DOMOffsetRange| class so that we can pass
@@ -919,9 +919,9 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionBefore(
     return PositionTemplate<Strategy>(
         node, text_state_.PositionStartOffset() + char16_offset);
   }
-  if (node.IsTextNode()) {
+  if (auto* text_node = DynamicTo<Text>(node)) {
     if (text_state_.IsAfterPositionNode())
-      return PositionTemplate<Strategy>(node, ToText(node).length());
+      return PositionTemplate<Strategy>(node, text_node->length());
     return PositionTemplate<Strategy>(node, 0);
   }
   if (text_state_.IsAfterPositionNode())
@@ -950,10 +950,10 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionAfter(
     return PositionTemplate<Strategy>(
         node, text_state_.PositionStartOffset() + char16_offset + 1);
   }
-  if (node.IsTextNode()) {
+  if (auto* text_node = DynamicTo<Text>(node)) {
     if (text_state_.IsBeforePositionNode())
       return PositionTemplate<Strategy>(node, 0);
-    return PositionTemplate<Strategy>(node, ToText(node).length());
+    return PositionTemplate<Strategy>(node, text_node->length());
   }
   if (text_state_.IsBeforePositionNode())
     return PositionTemplate<Strategy>::BeforeNode(node);

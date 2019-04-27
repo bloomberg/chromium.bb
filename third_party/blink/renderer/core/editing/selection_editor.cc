@@ -344,7 +344,8 @@ static Position UpdatePostionAfterAdoptingTextNodeSplit(
   unsigned old_length = old_node.length();
   if (position_offset <= old_length)
     return position;
-  return Position(ToText(old_node.nextSibling()), position_offset - old_length);
+  return Position(To<Text>(old_node.nextSibling()),
+                  position_offset - old_length);
 }
 
 void SelectionEditor::DidSplitTextNode(const Text& old_node) {

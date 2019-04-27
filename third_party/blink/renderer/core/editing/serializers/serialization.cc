@@ -757,11 +757,10 @@ void ReplaceChildrenWithText(ContainerNode* container,
 
 void MergeWithNextTextNode(Text* text_node, ExceptionState& exception_state) {
   DCHECK(text_node);
-  Node* next = text_node->nextSibling();
-  if (!next || !next->IsTextNode())
+  auto* text_next = DynamicTo<Text>(text_node->nextSibling());
+  if (!text_next)
     return;
 
-  Text* text_next = ToText(next);
   text_node->appendData(text_next->data());
   if (text_next->parentNode())  // Might have been removed by mutation event.
     text_next->remove(exception_state);

@@ -1477,16 +1477,16 @@ TEST_F(InputMethodControllerTest, ImeTextSpanAppearsCorrectlyAfterNewline) {
       PlainTextRange(2).CreateRange(*div).StartPosition();
   const Position& second_line_position =
       PlainTextRange(8).CreateRange(*div).StartPosition();
-  ASSERT_EQ(0u,
-            GetDocument()
-                .Markers()
-                .MarkersFor(ToText(*first_line_position.ComputeContainerNode()))
-                .size());
   ASSERT_EQ(
-      1u, GetDocument()
+      0u, GetDocument()
               .Markers()
-              .MarkersFor(ToText(*second_line_position.ComputeContainerNode()))
+              .MarkersFor(To<Text>(*first_line_position.ComputeContainerNode()))
               .size());
+  ASSERT_EQ(1u, GetDocument()
+                    .Markers()
+                    .MarkersFor(
+                        To<Text>(*second_line_position.ComputeContainerNode()))
+                    .size());
 
   // Verify marker has correct start/end offsets (measured from the beginning
   // of the node, which is the beginning of the line)
@@ -1628,7 +1628,7 @@ TEST_F(InputMethodControllerTest,
   // either space around it
   EXPECT_EQ(
       1u,
-      GetDocument().Markers().MarkersFor(ToText(*div->firstChild())).size());
+      GetDocument().Markers().MarkersFor(To<Text>(*div->firstChild())).size());
   EXPECT_STREQ("text",
                GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
                    .Utf8()
@@ -2450,8 +2450,8 @@ TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
   Controller().SetComposition("test", ime_text_spans, 0, 4);
 
   Node* b = div->firstChild();
-  Text* text1 = ToText(b->firstChild());
-  Text* text2 = ToText(b->nextSibling());
+  auto* text1 = To<Text>(b->firstChild());
+  auto* text2 = To<Text>(b->nextSibling());
 
   const DocumentMarkerVector& text1_markers =
       GetDocument().Markers().MarkersFor(
@@ -2482,7 +2482,7 @@ TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupBeforeText) {
   Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
 
   EXPECT_EQ(1u, div->CountChildren());
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
   EXPECT_EQ("t", text->data());
 }
 
@@ -2498,7 +2498,7 @@ TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupAfterText) {
   Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
 
   EXPECT_EQ(1u, div->CountChildren());
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
   EXPECT_EQ("t", text->data());
 }
 
@@ -2515,7 +2515,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
 
   EXPECT_EQ(1u, div->CountChildren());
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
   EXPECT_EQ("t", text->data());
 }
 
@@ -2572,7 +2572,7 @@ TEST_F(InputMethodControllerTest, SetCompositionTamilVirama) {
                               Vector<ImeTextSpan>(), 1, 1);
 
   EXPECT_EQ(1u, div->CountChildren());
-  Text* text = ToText(div->firstChild());
+  auto* text = To<Text>(div->firstChild());
   EXPECT_STREQ("\xE0\xAE\x9A\xE0\xAF\x8D\xE0\xAE\x9A",
                text->data().Utf8().data());
 

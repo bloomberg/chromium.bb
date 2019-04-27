@@ -399,17 +399,17 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       continue;
     }
     // This node is in its own sub-block separate from our starting position.
-    if (first_traversed_node != node && !node->IsTextNode() &&
+    const auto* text_node = DynamicTo<Text>(node);
+    if (first_traversed_node != node && !text_node &&
         IsBlock(style->Display())) {
       break;
     }
 
-    if (style->Visibility() == EVisibility::kVisible && node->IsTextNode() &&
+    if (style->Visibility() == EVisibility::kVisible && text_node &&
         node->GetLayoutObject()) {
-      const Text& text_node = ToText(*node);
       LayoutBlockFlow& block_flow =
           *NGOffsetMapping::GetInlineFormattingContextOf(
-              *text_node.GetLayoutObject());
+              *text_node->GetLayoutObject());
       if (last_block_flow && last_block_flow != block_flow) {
         // We enter another block flow.
         break;
@@ -417,7 +417,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       if (!last_block_flow) {
         last_block_flow = &block_flow;
       }
-      AddTextToBuffer(text_node, block_flow, range);
+      AddTextToBuffer(*text_node, block_flow, range);
     }
     if (node == end_node) {
       node = FlatTreeTraversal::Next(*node);

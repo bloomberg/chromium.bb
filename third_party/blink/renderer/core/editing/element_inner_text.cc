@@ -291,8 +291,9 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   }
 
   // 4. If node is a Text node, then for each CSS text box produced by node.
-  if (node.IsTextNode())
-    return ProcessTextNode(ToText(node));
+  auto* text_node = DynamicTo<Text>(node);
+  if (text_node)
+    return ProcessTextNode(*text_node);
 
   // 5. If node is a br element, then append a string containing a single U+000A
   // LINE FEED (LF) character to items.

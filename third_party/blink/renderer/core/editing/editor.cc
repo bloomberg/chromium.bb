@@ -154,11 +154,11 @@ static bool IsCaretAtStartOfWrappedLine(const FrameSelection& selection) {
   // character is not a space, but typing another space will do.
   Position prev =
       PreviousPositionOf(position, PositionMoveType::kGraphemeCluster);
-  const Node* prev_node = prev.ComputeContainerNode();
-  if (!prev_node || !prev_node->IsTextNode())
+  const auto* prev_node = DynamicTo<Text>(prev.ComputeContainerNode());
+  if (!prev_node)
     return false;
   int prev_offset = prev.ComputeOffsetInContainerNode();
-  UChar prev_char = ToText(prev_node)->data()[prev_offset];
+  UChar prev_char = prev_node->data()[prev_offset];
   return prev_char == kSpaceCharacter;
 }
 

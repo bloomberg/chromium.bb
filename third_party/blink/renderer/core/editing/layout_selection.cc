@@ -457,12 +457,13 @@ static base::Optional<unsigned> ComputeStartOffset(
 static base::Optional<unsigned> ComputeEndOffset(
     const Node& node,
     const PositionInFlatTree& selection_end) {
-  if (!node.IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return base::nullopt;
 
   if (&node == selection_end.AnchorNode())
     return selection_end.OffsetInContainerNode();
-  return ToText(node).length();
+  return text_node->length();
 }
 
 #if DCHECK_IS_ON()
@@ -597,7 +598,7 @@ static Text* AssociatedTextNode(const LayoutText& text) {
   if (const LayoutTextFragment* fragment = ToLayoutTextFragmentOrNull(text))
     return fragment->AssociatedTextNode();
   if (Node* node = text.GetNode())
-    return ToTextOrNull(node);
+    return DynamicTo<Text>(node);
   return nullptr;
 }
 

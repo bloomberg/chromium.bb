@@ -153,7 +153,7 @@ void MarkupAccumulator::AppendEndTag(const Element& element,
 void MarkupAccumulator::AppendStartMarkup(const Node& node) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
-      formatter_.AppendText(markup_, ToText(node));
+      formatter_.AppendText(markup_, To<Text>(node));
       break;
     case Node::kElementNode:
       NOTREACHED();
