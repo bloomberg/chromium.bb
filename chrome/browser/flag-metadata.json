@@ -600,8 +600,8 @@
   },
   {
     "name": "discover-app",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "alemate" ],
+    "expiry_milestone": 80
   },
   {
     "name": "document-passive-event-listeners",
