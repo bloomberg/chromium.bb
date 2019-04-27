@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -80,6 +81,10 @@ class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
+
+namespace mojom {
+enum class CommitResult : int32_t;
+}
 
 // Indicates whether the global object (i.e. Window instance) associated with
 // the previous document in a browsing context was replaced or reused for the
@@ -152,9 +157,6 @@ class CORE_EXPORT DocumentLoader
                                        Document*);
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
-  void SetIsClientRedirect(bool is_client_redirect) {
-    is_client_redirect_ = is_client_redirect;
-  }
   bool ReplacesCurrentHistoryItem() const {
     return replaces_current_history_item_;
   }
@@ -192,6 +194,19 @@ class CORE_EXPORT DocumentLoader
 
   void StartLoading();
   void StopLoading();
+
+  // Called when the browser process has asked this renderer process to commit a
+  // same document navigation in that frame. Returns false if the navigation
+  // cannot commit, true otherwise.
+  mojom::CommitResult CommitSameDocumentNavigation(
+      const KURL&,
+      WebFrameLoadType,
+      HistoryItem*,
+      ClientRedirectPolicy,
+      Document* origin_document,
+      bool has_event,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
+
   void SetDefersLoading(bool defers);
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
@@ -302,6 +317,15 @@ class CORE_EXPORT DocumentLoader
 
   void CommitNavigation(const AtomicString& mime_type,
                         const KURL& overriding_url = KURL());
+
+  void CommitSameDocumentNavigationInternal(
+      const KURL&,
+      WebFrameLoadType,
+      HistoryItem*,
+      ClientRedirectPolicy,
+      Document*,
+      bool has_event,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.

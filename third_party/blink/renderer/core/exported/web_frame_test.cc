@@ -7755,7 +7755,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       local_frame->Loader().GetDocumentLoader()->GetHistoryItem();
   RunPendingTasks();
 
-  local_frame->Loader().CommitSameDocumentNavigation(
+  local_frame->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item->Url(), WebFrameLoadType::kBackForward, item.Get(),
       ClientRedirectPolicy::kNotClientRedirect, nullptr, /* origin_document */
       false,                                             /* has_event */

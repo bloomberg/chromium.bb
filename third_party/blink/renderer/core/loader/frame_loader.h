@@ -63,15 +63,10 @@ class Frame;
 class LocalFrameClient;
 class ProgressTracker;
 class ResourceRequest;
-class SerializedScriptValue;
 class TracedValue;
 struct FrameLoadRequest;
 struct WebNavigationInfo;
 struct WebNavigationParams;
-
-namespace mojom {
-enum class CommitResult : int32_t;
-}
 
 CORE_EXPORT bool IsBackForwardLoadType(WebFrameLoadType);
 CORE_EXPORT bool IsReloadLoadType(WebFrameLoadType);
@@ -106,18 +101,6 @@ class CORE_EXPORT FrameLoader final {
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
-
-  // Called when the browser process has asked this renderer process to commit a
-  // same document navigation in that frame. Returns false if the navigation
-  // cannot commit, true otherwise.
-  mojom::CommitResult CommitSameDocumentNavigation(
-      const KURL&,
-      WebFrameLoadType,
-      HistoryItem*,
-      ClientRedirectPolicy,
-      Document* origin_document,
-      bool has_event,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
   // Called when the browser process is handling the navigation, to
   // create a "placeholder" document loader and mark the frame as loading.
@@ -195,6 +178,10 @@ class CORE_EXPORT FrameLoader final {
   void FinishedParsing();
   void DidFinishNavigation();
 
+  void DidFinishSameDocumentNavigation(const KURL&,
+                                       WebFrameLoadType,
+                                       HistoryItem*);
+
   // This prepares the FrameLoader for the next commit. It will dispatch unload
   // events, abort XHR requests and detach the document. Returns true if the
   // frame is ready to receive the next commit, or false otherwise.
@@ -222,7 +209,7 @@ class CORE_EXPORT FrameLoader final {
     return GetProvisionalDocumentLoader();
   }
 
-  void DetachProvisionalDocumentLoader(DocumentLoader*);
+  void DetachProvisionalDocumentLoader();
 
   void Trace(blink::Visitor*);
 
@@ -255,13 +242,6 @@ class CORE_EXPORT FrameLoader final {
       bool cancel_scheduled_navigations,
       bool is_starting_blank_navigation);
 
-  void LoadInSameDocument(const KURL&,
-                          scoped_refptr<SerializedScriptValue> state_object,
-                          WebFrameLoadType,
-                          HistoryItem*,
-                          ClientRedirectPolicy,
-                          Document*,
-                          std::unique_ptr<WebDocumentLoader::ExtraData>);
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
                                          const HistoryItem::ViewState&,

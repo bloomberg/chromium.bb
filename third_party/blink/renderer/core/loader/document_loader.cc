@@ -36,6 +36,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
+#include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
@@ -640,7 +642,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error, http_method_);
       probe::DidFailProvisionalLoad(frame_);
       if (frame_)
-        GetFrameLoader().DetachProvisionalDocumentLoader(this);
+        GetFrameLoader().DetachProvisionalDocumentLoader();
       break;
     case kCommitted:
       if (frame_->GetDocument()->Parser())
@@ -955,6 +957,86 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
   } else {
     parser_->AppendBytes(bytes, length);
   }
+}
+
+mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
+    const KURL& url,
+    WebFrameLoadType frame_load_type,
+    HistoryItem* history_item,
+    ClientRedirectPolicy client_redirect_policy,
+    Document* origin_document,
+    bool has_event,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  DCHECK(!IsReloadLoadType(frame_load_type));
+  DCHECK(frame_->GetDocument());
+
+  if (!frame_->IsNavigationAllowed())
+    return mojom::CommitResult::Aborted;
+
+  if (!IsBackForwardLoadType(frame_load_type)) {
+    // In the case of non-history navigations, check that this is a
+    // same-document navigation. If not, the navigation should restart as a
+    // cross-document navigation.
+    if (!url.HasFragmentIdentifier() ||
+        !EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url) ||
+        frame_->GetDocument()->IsFrameSet()) {
+      return mojom::CommitResult::RestartCrossDocument;
+    }
+  }
+
+  CommitSameDocumentNavigationInternal(url, frame_load_type, history_item,
+                                       client_redirect_policy, origin_document,
+                                       has_event, std::move(extra_data));
+  return mojom::CommitResult::Ok;
+}
+
+void DocumentLoader::CommitSameDocumentNavigationInternal(
+    const KURL& url,
+    WebFrameLoadType frame_load_type,
+    HistoryItem* history_item,
+    ClientRedirectPolicy client_redirect,
+    Document* initiating_document,
+    bool has_event,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  if (!IsBackForwardLoadType(frame_load_type)) {
+    SetNavigationType(has_event ? kWebNavigationTypeLinkClicked
+                                : kWebNavigationTypeOther);
+    if (history_item_ && url == history_item_->Url())
+      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  }
+
+  // If we have a provisional request for a different document, a fragment
+  // scroll should cancel it.
+  GetFrameLoader().DetachProvisionalDocumentLoader();
+
+  if (!frame_->GetPage())
+    return;
+  GetFrameLoader().SaveScrollState();
+
+  KURL old_url = frame_->GetDocument()->Url();
+  bool hash_change = EqualIgnoringFragmentIdentifier(url, old_url) &&
+                     url.FragmentIdentifier() != old_url.FragmentIdentifier();
+  if (hash_change) {
+    // If we were in the autoscroll/middleClickAutoscroll mode we want to stop
+    // it before following the link to the anchor
+    frame_->GetEventHandler().StopAutoscroll();
+    frame_->DomWindow()->EnqueueHashchangeEvent(old_url, url);
+  }
+  is_client_redirect_ =
+      client_redirect == ClientRedirectPolicy::kClientRedirect;
+  if (history_item)
+    history_item_ = history_item;
+  if (extra_data)
+    GetLocalFrameClient().UpdateDocumentLoader(this, std::move(extra_data));
+  UpdateForSameDocumentNavigation(url, kSameDocumentNavigationDefault, nullptr,
+                                  kScrollRestorationAuto, frame_load_type,
+                                  initiating_document);
+
+  initial_scroll_state_.was_scrolled_by_user = false;
+
+  frame_->GetDocument()->CheckCompleted();
+  GetFrameLoader().DidFinishSameDocumentNavigation(url, frame_load_type,
+                                                   history_item);
 }
 
 void DocumentLoader::HandleData(const char* data, size_t length) {

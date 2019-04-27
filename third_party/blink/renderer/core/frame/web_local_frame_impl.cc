@@ -2073,7 +2073,7 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
   DCHECK(!url.ProtocolIs("javascript"));
 
   HistoryItem* history_item = item;
-  return GetFrame()->Loader().CommitSameDocumentNavigation(
+  return GetFrame()->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       url, web_frame_load_type, history_item,
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
                          : ClientRedirectPolicy::kNotClientRedirect,
@@ -2140,7 +2140,7 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   // Don't send failure notification to the client, it already knows.
   document_loader->SetSentDidFinishLoad();
   GetFrame()->Owner()->RenderFallbackContent(GetFrame());
-  GetFrame()->Loader().DetachProvisionalDocumentLoader(document_loader);
+  GetFrame()->Loader().DetachProvisionalDocumentLoader();
   return FallbackRendered;
 }
 

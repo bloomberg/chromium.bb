@@ -41,7 +41,6 @@
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -69,7 +68,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
@@ -479,47 +477,14 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
   loader = nullptr;
 }
 
-void FrameLoader::LoadInSameDocument(
+void FrameLoader::DidFinishSameDocumentNavigation(
     const KURL& url,
-    scoped_refptr<SerializedScriptValue> state_object,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item,
-    ClientRedirectPolicy client_redirect,
-    Document* initiating_document,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    HistoryItem* history_item) {
   // If we have a state object, we cannot also be a new navigation.
+  scoped_refptr<SerializedScriptValue> state_object =
+      history_item ? history_item->StateObject() : nullptr;
   DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
-
-  // If we have a provisional request for a different document, a fragment
-  // scroll should cancel it.
-  DetachDocumentLoader(provisional_document_loader_);
-
-  if (!frame_->GetPage())
-    return;
-  SaveScrollState();
-
-  KURL old_url = frame_->GetDocument()->Url();
-  bool hash_change = EqualIgnoringFragmentIdentifier(url, old_url) &&
-                     url.FragmentIdentifier() != old_url.FragmentIdentifier();
-  if (hash_change) {
-    // If we were in the autoscroll/middleClickAutoscroll mode we want to stop
-    // it before following the link to the anchor
-    frame_->GetEventHandler().StopAutoscroll();
-    frame_->DomWindow()->EnqueueHashchangeEvent(old_url, url);
-  }
-  document_loader_->SetIsClientRedirect(client_redirect ==
-                                        ClientRedirectPolicy::kClientRedirect);
-  if (history_item)
-    document_loader_->SetItemForHistoryNavigation(history_item);
-  if (extra_data)
-    Client()->UpdateDocumentLoader(document_loader_, std::move(extra_data));
-  GetDocumentLoader()->UpdateForSameDocumentNavigation(
-      url, kSameDocumentNavigationDefault, nullptr, kScrollRestorationAuto,
-      frame_load_type, initiating_document);
-
-  document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
-
-  frame_->GetDocument()->CheckCompleted();
 
   // onpopstate might change view state, so stash for later restore.
   base::Optional<HistoryItem::ViewState> view_state;
@@ -800,7 +765,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   // Perform same document navigation.
   if (same_document_navigation) {
-    CommitSameDocumentNavigation(
+    document_loader_->CommitSameDocumentNavigation(
         url, frame_load_type, nullptr, request.ClientRedirect(),
         origin_document,
         request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent,
@@ -995,54 +960,6 @@ void FrameLoader::CommitNavigation(
   virtual_time_pauser_.PauseVirtualTime();
   provisional_document_loader_->StartLoading();
   TakeObjectSnapshot();
-}
-
-mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
-    const KURL& url,
-    WebFrameLoadType frame_load_type,
-    HistoryItem* history_item,
-    ClientRedirectPolicy client_redirect_policy,
-    Document* origin_document,
-    bool has_event,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  DCHECK(!IsReloadLoadType(frame_load_type));
-  DCHECK(frame_->GetDocument());
-
-  bool history_navigation = IsBackForwardLoadType(frame_load_type);
-
-  if (!frame_->IsNavigationAllowed())
-    return mojom::CommitResult::Aborted;
-
-  if (!history_navigation) {
-    // In the case of non-history navigations, check that this is a
-    // same-document navigation. If not, the navigation should restart as a
-    // cross-document navigation.
-    if (!url.HasFragmentIdentifier() ||
-        !EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url) ||
-        frame_->GetDocument()->IsFrameSet()) {
-      return mojom::CommitResult::RestartCrossDocument;
-    }
-  }
-
-  DCHECK(history_item || !history_navigation);
-  scoped_refptr<SerializedScriptValue> state_object =
-      history_navigation ? history_item->StateObject() : nullptr;
-
-  if (!history_navigation) {
-    document_loader_->SetNavigationType(
-        DetermineNavigationType(frame_load_type, false, has_event));
-    bool should_treat_url_as_same_as_current =
-        document_loader_->GetHistoryItem() &&
-        url == document_loader_->GetHistoryItem()->Url();
-    if (should_treat_url_as_same_as_current)
-      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  }
-
-  // Perform the same-document navigation.
-  LoadInSameDocument(url, state_object, frame_load_type, history_item,
-                     client_redirect_policy, origin_document,
-                     std::move(extra_data));
-  return mojom::CommitResult::Ok;
 }
 
 bool FrameLoader::CreatePlaceholderDocumentLoader(
@@ -1351,8 +1268,7 @@ void FrameLoader::Detach() {
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
-void FrameLoader::DetachProvisionalDocumentLoader(DocumentLoader* loader) {
-  DCHECK_EQ(loader, provisional_document_loader_);
+void FrameLoader::DetachProvisionalDocumentLoader() {
   DetachDocumentLoader(provisional_document_loader_);
   DidFinishNavigation();
 }
@@ -1470,7 +1386,7 @@ void FrameLoader::ClientDroppedNavigation() {
   if (!provisional_document_loader_ || provisional_document_loader_->DidStart())
     return;
 
-  DetachProvisionalDocumentLoader(provisional_document_loader_);
+  DetachProvisionalDocumentLoader();
   // Forcibly instantiate WindowProxy for initial frame document.
   // This is only required when frame navigation is aborted, e.g. due to
   // mixed content.
