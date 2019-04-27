@@ -1766,8 +1766,8 @@
   },
   {
     "name": "enable-use-zoom-for-dsf",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ccameron" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-usermedia-screen-capturing",
