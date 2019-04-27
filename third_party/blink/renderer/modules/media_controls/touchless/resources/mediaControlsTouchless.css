@@ -213,3 +213,79 @@ video::-internal-media-controls-touchless-volume-icon.muted {
 video::-webkit-media-controls-touchless.inline div[pseudo="-internal-media-controls-touchless-volume-icon" i] {
   display: none;
 }
+
+/**
+ * Text Tracks
+ */
+video::-webkit-media-text-track-container {
+    position: relative;
+    width: inherit;
+    height: inherit;
+    overflow: hidden;
+
+    font: 22px sans-serif;
+    text-align: center;
+    color: rgba(255, 255, 255, 1);
+
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0;
+    text-decoration: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    word-break: break-word;
+}
+
+video::cue {
+    display: inline;
+
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+video::-webkit-media-text-track-region {
+    position: absolute;
+    line-height: 5.33vh;
+    writing-mode: horizontal-tb;
+    background: rgba(0, 0, 0, 0.8);
+    color: rgba(255, 255, 255, 1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+}
+
+video::-webkit-media-text-track-region-container {
+    position: relative;
+
+    display: flex;
+    flex-flow: column;
+    flex-direction: column;
+}
+
+video::-webkit-media-text-track-region-container.scrolling {
+    transition: top 433ms linear;
+}
+
+video::-webkit-media-text-track-display {
+    position: absolute;
+    overflow: hidden;
+    white-space: pre-wrap;
+    -webkit-box-sizing: border-box;
+    flex: 0 0 auto;
+}
+
+video::cue(:future) {
+    color: gray;
+}
+
+video::cue(b) {
+    font-weight: bold;
+}
+
+video::cue(u) {
+    text-decoration: underline;
+}
+
+video::cue(i) {
+    font-style: italic;
+}

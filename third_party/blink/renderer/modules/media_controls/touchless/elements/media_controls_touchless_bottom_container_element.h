@@ -10,12 +10,21 @@
 namespace blink {
 
 class MediaControlsTouchlessImpl;
+class MediaControlsTouchlessTimelineElement;
+class MediaControlsTouchlessTimeDisplayElement;
+class LayoutObject;
 
 class MediaControlsTouchlessBottomContainerElement
     : public MediaControlsTouchlessElement {
  public:
   MediaControlsTouchlessBottomContainerElement(MediaControlsTouchlessImpl&);
+  LayoutObject* TimelineLayoutObject();
+  LayoutObject* TimeDisplayLayoutObject();
   void Trace(blink::Visitor*) override;
+
+ private:
+  Member<MediaControlsTouchlessTimelineElement> timeline_element_;
+  Member<MediaControlsTouchlessTimeDisplayElement> time_display_element_;
 };
 
 }  // namespace blink
