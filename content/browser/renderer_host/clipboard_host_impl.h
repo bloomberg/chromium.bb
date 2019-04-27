@@ -55,21 +55,15 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void ReadCustomData(ui::ClipboardType clipboard_type,
                       const base::string16& type,
                       ReadCustomDataCallback callback) override;
-  void WriteText(ui::ClipboardType clipboard_type,
-                 const base::string16& text) override;
-  void WriteHtml(ui::ClipboardType clipboard_type,
-                 const base::string16& markup,
-                 const GURL& url) override;
-  void WriteSmartPasteMarker(ui::ClipboardType clipboard_type) override;
+  void WriteText(const base::string16& text) override;
+  void WriteHtml(const base::string16& markup, const GURL& url) override;
+  void WriteSmartPasteMarker() override;
   void WriteCustomData(
-      ui::ClipboardType clipboard_type,
       const base::flat_map<base::string16, base::string16>& data) override;
-  void WriteBookmark(ui::ClipboardType clipboard_type,
-                     const std::string& url,
+  void WriteBookmark(const std::string& url,
                      const base::string16& title) override;
-  void WriteImage(ui::ClipboardType clipboard_type,
-                  const SkBitmap& bitmap) override;
-  void CommitWrite(ui::ClipboardType clipboard_type) override;
+  void WriteImage(const SkBitmap& bitmap) override;
+  void CommitWrite() override;
 #if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
