@@ -1279,7 +1279,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   base::ListValue allowed_languages;
   allowed_languages.AppendString("fr");
   policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
-  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
+                                         profile);
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
@@ -1351,7 +1352,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   allowed_input_methods.AppendString("xkb:de::ger");
   allowed_input_methods.AppendString("invalid_value_will_be_ignored");
   policy->SetKey(key::kAllowedInputMethods, std::move(allowed_input_methods));
-  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
+                                         profile);
 
   // Only "xkb:fr::fra", "xkb:de::ger" should be allowed, current input method
   // should be "xkb:fr::fra", enabling "xkb:us::eng" should not be possible,
@@ -1369,8 +1371,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   invalid_input_methods.AppendString("invalid_value_will_be_ignored");
   policy_invalid->SetKey(key::kAllowedInputMethods,
                          std::move(invalid_input_methods));
-  user_policy_helper()->UpdatePolicy(*policy_invalid, base::DictionaryValue(),
-                                     profile);
+  user_policy_helper()->SetPolicyAndWait(*policy_invalid,
+                                         base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
   EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
@@ -1379,8 +1381,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
 
   // Allow all input methods again.
-  user_policy_helper()->UpdatePolicy(base::DictionaryValue(),
-                                     base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(base::DictionaryValue(),
+                                         base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
   EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());

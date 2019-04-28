@@ -43,19 +43,15 @@ LoginPolicyTestBase::LoginPolicyTestBase() {
 
 LoginPolicyTestBase::~LoginPolicyTestBase() = default;
 
-void LoginPolicyTestBase::SetUp() {
+void LoginPolicyTestBase::SetUpInProcessBrowserTestFixture() {
+  OobeBaseTest::SetUpInProcessBrowserTestFixture();
   base::DictionaryValue mandatory;
   GetMandatoryPoliciesValue(&mandatory);
   base::DictionaryValue recommended;
   GetRecommendedPoliciesValue(&recommended);
-  user_policy_helper_.reset(new UserPolicyTestHelper(GetAccount()));
-  user_policy_helper_->Init(mandatory, recommended);
-  OobeBaseTest::SetUp();
-}
-
-void LoginPolicyTestBase::SetUpCommandLine(base::CommandLine* command_line) {
-  user_policy_helper_->UpdateCommandLine(command_line);
-  OobeBaseTest::SetUpCommandLine(command_line);
+  user_policy_helper_.reset(
+      new UserPolicyTestHelper(GetAccount(), &local_policy_server_));
+  user_policy_helper_->SetPolicy(mandatory, recommended);
 }
 
 void LoginPolicyTestBase::SetUpOnMainThread() {

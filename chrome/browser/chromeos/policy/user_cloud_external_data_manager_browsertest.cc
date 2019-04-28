@@ -86,7 +86,8 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>();
   policy->SetKey(key::kWallpaperImage, base::Value(value));
-  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
+                                         profile);
 
   UserCloudPolicyManagerChromeOS* policy_manager =
       UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(

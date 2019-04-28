@@ -176,8 +176,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, LockOverride) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   EXPECT_FALSE(IsAuthEnabled());
 }
@@ -204,8 +204,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
   bedtime_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(bedtime_policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      bedtime_policy, base::DictionaryValue(), child_profile_);
 
   // Check that auth is disabled, since the bedtime has already started.
   EXPECT_FALSE(IsAuthEnabled());
@@ -218,8 +218,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
   unlock_override_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(unlock_override_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      unlock_override_policy, base::DictionaryValue(), child_profile_);
 
   // Check that the unlock worked and auth is enabled.
   EXPECT_TRUE(IsAuthEnabled());
@@ -255,8 +255,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, OverrideBedtimeWithDuration) {
   bedtime_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(bedtime_policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      bedtime_policy, base::DictionaryValue(), child_profile_);
 
   // Check that auth is enable, since the bedtime hasn't started.
   EXPECT_TRUE(IsAuthEnabled());
@@ -270,8 +270,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, OverrideBedtimeWithDuration) {
   unlock_override_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(unlock_override_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      unlock_override_policy, base::DictionaryValue(), child_profile_);
 
   // Check that the unlock worked and auth is enabled.
   EXPECT_TRUE(IsAuthEnabled());
@@ -321,8 +321,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
   daily_limit_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(daily_limit_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      daily_limit_policy, base::DictionaryValue(), child_profile_);
 
   // Check that auth is enabled at 10 AM with 0 usage time.
   EXPECT_TRUE(IsAuthEnabled());
@@ -341,8 +341,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
   unlock_override_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(unlock_override_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      unlock_override_policy, base::DictionaryValue(), child_profile_);
 
   // Check that the unlock worked and auth is enabled.
   EXPECT_TRUE(IsAuthEnabled());
@@ -389,8 +389,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtimeWithDuration) {
   bedtime_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(bedtime_policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      bedtime_policy, base::DictionaryValue(), child_profile_);
 
   // Check that auth is disabled, since the bedtime has already started.
   EXPECT_FALSE(IsAuthEnabled());
@@ -404,8 +404,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtimeWithDuration) {
   unlock_override_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(unlock_override_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      unlock_override_policy, base::DictionaryValue(), child_profile_);
 
   // Check that the unlock worked and auth is enabled.
   EXPECT_TRUE(IsAuthEnabled());
@@ -451,8 +451,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockDailyLimitWithDuration) {
   daily_limit_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(daily_limit_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      daily_limit_policy, base::DictionaryValue(), child_profile_);
 
   // Check that auth is enabled at 10 AM with 0 usage time.
   EXPECT_TRUE(IsAuthEnabled());
@@ -471,8 +471,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockDailyLimitWithDuration) {
   unlock_override_policy.SetKey(
       policy::key::kUsageTimeLimit,
       base::Value(utils::PolicyToString(policy_content.get())));
-  user_policy_helper()->UpdatePolicy(unlock_override_policy,
-                                     base::DictionaryValue(), child_profile_);
+  user_policy_helper()->SetPolicyAndWait(
+      unlock_override_policy, base::DictionaryValue(), child_profile_);
 
   // Check that the unlock worked and auth is enabled.
   EXPECT_TRUE(IsAuthEnabled());
@@ -535,8 +535,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultBedtime) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Iterate over a week checking that the device is locked properly everyday.
   for (int i = 0; i < 7; i++) {
@@ -591,8 +591,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultDailyLimit) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Iterate over a week checking that the device is locked properly
   // every day.
@@ -645,8 +645,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionBedtime) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Verify that device is unlocked at 10 AM.
   EXPECT_FALSE(IsLocked());
@@ -682,8 +682,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Verify that device is unlocked at 10 AM.
   EXPECT_FALSE(IsLocked());
@@ -720,8 +720,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Verify that auth is enabled at 10 AM.
   EXPECT_TRUE(IsAuthEnabled());
@@ -772,8 +772,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   // Verify that auth is disabled at 8 AM.
   EXPECT_TRUE(IsAuthEnabled());
@@ -816,8 +816,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, CallObservers) {
   policy.SetKey(policy::key::kUsageTimeLimit,
                 base::Value(utils::PolicyToString(policy_content.get())));
 
-  user_policy_helper()->UpdatePolicy(policy, base::DictionaryValue(),
-                                     child_profile_);
+  user_policy_helper()->SetPolicyAndWait(policy, base::DictionaryValue(),
+                                         child_profile_);
 
   TestScreenTimeControllerObserver observer;
   ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)

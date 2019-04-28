@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOCAL_POLICY_TEST_SERVER_MIXIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -33,6 +34,10 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
 
   bool UpdateDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy);
+
+  bool UpdateUserPolicy(const base::Value& mandatory_policy,
+                        const base::Value& recommended_policy,
+                        const std::string& policy_user);
 
   // Configures and sets expectations for enrollment flow with license
   // selection. Non-negative values indicate number of available licenses.

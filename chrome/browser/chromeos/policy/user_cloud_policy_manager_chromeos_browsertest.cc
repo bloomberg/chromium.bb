@@ -154,8 +154,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
 }
 
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
-  // Delete the policy file - this will cause a 500 error on policy requests.
-  user_policy_helper()->DeletePolicyFile();
+  local_policy_server_.SetExpectedPolicyFetchError(500);
+
   SkipToLoginScreen();
   CountNotificationObserver observer(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -185,8 +185,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
       account_id,
       user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
 
-  // Delete the policy file - this will cause a 500 error on policy requests.
-  user_policy_helper()->DeletePolicyFile();
+  local_policy_server_.SetExpectedPolicyFetchError(500);
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
