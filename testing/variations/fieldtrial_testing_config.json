@@ -4626,6 +4626,40 @@
             ]
         }
     ],
+    "ServiceWorkerIsolateInForeground": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerIsolateInForeground"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ServiceWorkerIsolateInForegroundAndroid": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerIsolateInForeground"
+                    ]
+                }
+            ]
+        }
+    ],
     "SettingsEnforcement": [
         {
             "platforms": [

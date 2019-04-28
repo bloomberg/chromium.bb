@@ -522,6 +522,11 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kServiceWorkerIsolateInForeground)) {
+    GetThread()->GetIsolate()->IsolateInForegroundNotification();
+  }
+
   WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,
                                                    std::move(cached_meta_data));
 }

@@ -154,6 +154,9 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kServiceWorkerIsolateInForeground{
+    "ServiceWorkerIsolateInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
