@@ -31,7 +31,7 @@ std::string GetRegion(const AutofillProfile& profile,
 
 }  // namespace
 
-PhoneNumber::PhoneNumber(AutofillProfile* profile) : profile_(profile) {}
+PhoneNumber::PhoneNumber(const AutofillProfile* profile) : profile_(profile) {}
 
 PhoneNumber::PhoneNumber(const PhoneNumber& number) : profile_(nullptr) {
   *this = number;

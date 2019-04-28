@@ -13,9 +13,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 
 namespace autofill {
 
@@ -218,6 +220,8 @@ void EmailInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
 CompanyInfo::CompanyInfo() {}
 
+CompanyInfo::CompanyInfo(const AutofillProfile* profile) : profile_(profile) {}
+
 CompanyInfo::CompanyInfo(const CompanyInfo& info) {
   *this = info;
 }
@@ -228,12 +232,13 @@ CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
   if (this == &info)
     return *this;
 
-  company_name_ = info.company_name_;
+  company_name_ = info.GetRawInfo(COMPANY_NAME);
   return *this;
 }
 
 bool CompanyInfo::operator==(const CompanyInfo& other) const {
-  return this == &other || company_name_ == other.company_name_;
+  return this == &other ||
+         GetRawInfo(COMPANY_NAME) == other.GetRawInfo(COMPANY_NAME);
 }
 
 void CompanyInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
@@ -241,13 +246,25 @@ void CompanyInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
 }
 
 base::string16 CompanyInfo::GetRawInfo(ServerFieldType type) const {
-  return company_name_;
+  return IsValidOrVerified(company_name_) ? company_name_ : base::string16();
 }
 
 void CompanyInfo::SetRawInfo(ServerFieldType type,
                              const base::string16& value) {
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;
+}
+
+bool CompanyInfo::IsValidOrVerified(const base::string16& value) const {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRejectCompanyBirthyear))
+    return true;
+
+  if (profile_ && profile_->IsVerified())
+    return true;
+
+  // Companies that are of the format of a four digit birth year are not valid.
+  return !MatchesPattern(value, base::UTF8ToUTF16("^(19|20)\\d{2}$"));
 }
 
 }  // namespace autofill

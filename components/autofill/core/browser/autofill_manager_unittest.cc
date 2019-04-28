@@ -2249,6 +2249,57 @@ TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOffNotRespected) {
                     "text", response_data.fields[3]);
 }
 
+// Test that if a company is of a format of a birthyear and the relevant feature
+// is enabled, we would not fill it.
+TEST_F(AutofillManagerTest, FillAddressForm_CompanyBirthyear) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRejectCompanyBirthyear);
+
+  // Set up our form data.
+  FormData address_form;
+  address_form.name = ASCIIToUTF16("MyForm");
+  address_form.url = GURL("https://myform.com/form.html");
+  address_form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  address_form.fields.push_back(field);
+  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
+  address_form.fields.push_back(field);
+  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
+  address_form.fields.push_back(field);
+  test::CreateTestFormField("Company", "company", "", "text", &field);
+  address_form.fields.push_back(field);
+
+  std::vector<FormData> address_forms(1, address_form);
+  FormsSeen(address_forms);
+
+  AutofillProfile profile;
+  const char guid[] = "00000000-0000-0000-0000-000000000123";
+  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "1987", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile.set_guid(guid);
+  personal_data_.AddProfile(profile);
+
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      kDefaultPageID, address_form, *address_form.fields.begin(),
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+
+  // All the fields should be filled except the company.
+  ExpectFilledField("First name", "firstname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Middle name", "middle", "Aaron", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("Last name", "lastname", "Presley", "text",
+                    response_data.fields[2]);
+  ExpectFilledField("Company", "company", "", "text", response_data.fields[3]);
+}
+
 // Test that a field with a value equal to it's placeholder attribute is filled.
 TEST_F(AutofillManagerTest, FillAddressForm_PlaceholderEqualsValue) {
   FormData address_form;

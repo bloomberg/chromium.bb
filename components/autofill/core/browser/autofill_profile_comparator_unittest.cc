@@ -6,11 +6,13 @@
 
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Field Type Constants
@@ -758,9 +760,16 @@ TEST_F(AutofillProfileComparatorTest, MergeEmailAddresses) {
 }
 
 TEST_F(AutofillProfileComparatorTest, MergeCompanyNames) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{autofill::features::
+                                kAutofillRejectCompanyBirthyear},
+      /*disabled_features=*/{});
+
   static const char kCompanyA[] = "Some Company";
   static const char kCompanyB[] = "SÔMÈ ÇÖMPÁÑÝ";
   static const char kCompanyC[] = "SÔMÈ ÇÖMPÁÑÝ A.G.";
+  static const char kCompanyD[] = "1987";
 
   CompanyInfo company_a;
   company_a.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyA));
@@ -781,15 +790,31 @@ TEST_F(AutofillProfileComparatorTest, MergeCompanyNames) {
   AutofillProfile profile_c = CreateProfileWithCompanyName(kCompanyC);
   profile_c.set_use_date(profile_a.use_date() - base::TimeDelta::FromDays(1));
 
+  // Company Name D is in the format of a birthyear, invalid and non-verified.
+  CompanyInfo company_d;
+  company_d.SetRawInfo(COMPANY_NAME, UTF8ToUTF16(kCompanyD));
+  AutofillProfile profile_d = CreateProfileWithCompanyName(kCompanyD);
+  profile_a.set_use_date(base::Time::Now());
+
   MergeCompanyNamesAndExpect(profile_a, profile_a, company_a);
   MergeCompanyNamesAndExpect(profile_a, profile_b, company_b);
   MergeCompanyNamesAndExpect(profile_a, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_a, profile_d, company_a);
+
   MergeCompanyNamesAndExpect(profile_b, profile_a, company_b);
   MergeCompanyNamesAndExpect(profile_b, profile_b, company_b);
   MergeCompanyNamesAndExpect(profile_b, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_b, profile_d, company_b);
+
   MergeCompanyNamesAndExpect(profile_c, profile_a, company_c);
   MergeCompanyNamesAndExpect(profile_c, profile_b, company_c);
   MergeCompanyNamesAndExpect(profile_c, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_c, profile_d, company_c);
+
+  MergeCompanyNamesAndExpect(profile_d, profile_a, company_a);
+  MergeCompanyNamesAndExpect(profile_d, profile_b, company_b);
+  MergeCompanyNamesAndExpect(profile_d, profile_c, company_c);
+  MergeCompanyNamesAndExpect(profile_d, profile_d, company_d);
 }
 
 TEST_F(AutofillProfileComparatorTest, MergePhoneNumbers_NA) {

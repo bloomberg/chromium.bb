@@ -21,7 +21,7 @@ class AutofillProfile;
 // A form group that stores phone number information.
 class PhoneNumber : public FormGroup {
  public:
-  explicit PhoneNumber(AutofillProfile* profile);
+  explicit PhoneNumber(const AutofillProfile* profile);
   PhoneNumber(const PhoneNumber& number);
   ~PhoneNumber() override;
 
@@ -29,7 +29,7 @@ class PhoneNumber : public FormGroup {
   bool operator==(const PhoneNumber& other) const;
   bool operator!=(const PhoneNumber& other) const { return !operator==(other); }
 
-  void set_profile(AutofillProfile* profile) { profile_ = profile; }
+  void set_profile(const AutofillProfile* profile) { profile_ = profile; }
 
   // FormGroup implementation:
   void GetMatchingTypes(const base::string16& text,
