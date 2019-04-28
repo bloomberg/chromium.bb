@@ -451,10 +451,12 @@ bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
 }
 
 bool AutofillProfile::EqualsForUpdatePurposes(
-    const AutofillProfile& profile) const {
-  return use_count() == profile.use_count() &&
-         UseDateEqualsInSeconds(&profile) &&
-         language_code() == profile.language_code() && Compare(profile) == 0;
+    const AutofillProfile& new_profile) const {
+  return use_count() == new_profile.use_count() &&
+         (origin() == new_profile.origin() || !new_profile.IsVerified()) &&
+         UseDateEqualsInSeconds(&new_profile) &&
+         language_code() == new_profile.language_code() &&
+         Compare(new_profile) == 0;
 }
 
 bool AutofillProfile::EqualsForClientValidationPurpose(

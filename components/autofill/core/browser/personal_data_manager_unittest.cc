@@ -1226,26 +1226,25 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   // Try to update with just the origin changed.
   AutofillProfile original_profile(profile);
+  ASSERT_FALSE(original_profile.IsVerified());
   CreditCard original_credit_card(credit_card);
   profile.set_origin(kSettingsOrigin);
   credit_card.set_origin(kSettingsOrigin);
 
   EXPECT_TRUE(profile.IsVerified());
   EXPECT_TRUE(credit_card.IsVerified());
-
   UpdateProfileOnPersonalDataManager(profile);
   personal_data_->UpdateCreditCard(credit_card);
 
-  // Note: No refresh, as no update is expected.
-
+  // Credit Card origin should not be overwritten.
   const std::vector<AutofillProfile*>& profiles2 =
       personal_data_->GetProfiles();
   const std::vector<CreditCard*>& cards2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, profiles2.size());
   ASSERT_EQ(1U, cards2.size());
-  EXPECT_NE(profile.origin(), profiles2[0]->origin());
+  EXPECT_EQ(profile.origin(), profiles2[0]->origin());
   EXPECT_NE(credit_card.origin(), cards2[0]->origin());
-  EXPECT_EQ(original_profile.origin(), profiles2[0]->origin());
+  EXPECT_NE(original_profile.origin(), profiles2[0]->origin());
   EXPECT_EQ(original_credit_card.origin(), cards2[0]->origin());
 
   // Try to update with data changed as well.
@@ -1266,6 +1265,39 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   EXPECT_EQ(0, credit_card.Compare(*cards3[0]));
   EXPECT_EQ(profile.origin(), profiles3[0]->origin());
   EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
+}
+
+// Test that updating a verified profile with another profile whose only
+// difference is the origin, would not change the old profile, and thus it would
+// remain verified.
+TEST_F(PersonalDataManagerTest, UpdateVerifiedProfilesOrigin) {
+  // Start with verified data.
+  AutofillProfile profile(base::GenerateGUID(), kSettingsOrigin);
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  ASSERT_TRUE(profile.IsVerified());
+  AddProfileToPersonalDataManager(profile);
+
+  const std::vector<AutofillProfile*>& profiles1 =
+      personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles1.size());
+  EXPECT_EQ(0, profile.Compare(*profiles1[0]));
+
+  // Try to update with just the origin changed to a non-setting origin.
+  AutofillProfile new_profile(profile);
+  new_profile.set_origin("");
+  ASSERT_FALSE(new_profile.IsVerified());
+
+  UpdateProfileOnPersonalDataManager(profile);
+
+  // Verified profile origin should not be overwritten.
+  const std::vector<AutofillProfile*>& profiles2 =
+      personal_data_->GetProfiles();
+  ASSERT_EQ(1U, profiles2.size());
+  EXPECT_EQ(profile.origin(), profiles2[0]->origin());
+  EXPECT_NE(new_profile.origin(), profiles2[0]->origin());
+  EXPECT_TRUE(profiles2[0]->IsVerified());
 }
 
 // Makes sure that full cards are re-masked when full PAN storage is off.
