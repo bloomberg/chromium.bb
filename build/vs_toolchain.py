@@ -254,7 +254,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
         sdk_redist_root_version = os.path.join(sdk_redist_root, directory)
         if not os.path.isdir(sdk_redist_root_version):
           continue
-        if re.match('10\.\d+\.\d+\.\d+', directory):
+        if re.match(r'10\.\d+\.\d+\.\d+', directory):
           source_dir = os.path.join(sdk_redist_root_version, target_cpu, 'ucrt')
           break
     _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
@@ -278,7 +278,7 @@ def FindVCComponentRoot(component):
   for directory in vc_component_msvc_contents:
     if not os.path.isdir(os.path.join(vc_component_msvc_root, directory)):
       continue
-    if re.match('14\.\d+\.\d+', directory):
+    if re.match(r'14\.\d+\.\d+', directory):
       return os.path.join(vc_component_msvc_root, directory)
   raise Exception('Unable to find the VC %s directory.' % component)
 
