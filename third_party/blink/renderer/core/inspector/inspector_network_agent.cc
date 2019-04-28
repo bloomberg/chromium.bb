@@ -808,12 +808,12 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
+  if (is_handling_sync_xhr_)
+    GetFrontend()->flush();
 
   if (pending_xhr_replay_data_) {
     resources_data_->SetXHRReplayData(request_id,
                                       pending_xhr_replay_data_.Get());
-    if (!pending_xhr_replay_data_->Async())
-      GetFrontend()->flush();
     pending_xhr_replay_data_.Clear();
   }
   pending_request_type_ = base::nullopt;
@@ -1057,6 +1057,7 @@ void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
   if (monotonic_finish_time.is_null())
     monotonic_finish_time = CurrentTimeTicks();
 
+  is_handling_sync_xhr_ = false;
   // TODO(npm): Use TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
       request_id, monotonic_finish_time.since_origin().InSecondsF(),
@@ -1086,6 +1087,7 @@ void InspectorNetworkAgent::DidFailLoading(uint64_t identifier,
     blocked_reason =
         BuildBlockedReason(resource_request_blocked_reason.value());
   }
+  is_handling_sync_xhr_ = false;
   GetFrontend()->loadingFailed(
       request_id, CurrentTimeTicksInSeconds(),
       InspectorPageAgent::ResourceTypeJson(
@@ -1124,6 +1126,9 @@ void InspectorNetworkAgent::WillLoadXHR(ExecutionContext* execution_context,
       form_data ? form_data->DeepCopy() : nullptr, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
+  DCHECK(!is_handling_sync_xhr_);
+  if (!async)
+    is_handling_sync_xhr_ = true;
 }
 
 void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
