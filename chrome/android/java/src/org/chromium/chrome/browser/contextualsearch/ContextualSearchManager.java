@@ -15,6 +15,7 @@ import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
@@ -115,8 +116,6 @@ public class ContextualSearchManager
     // How long to wait for a Tap to be converted to a Long-press gesture when the user taps on
     // an existing tap-selection.
     private static final int TAP_ON_TAP_SELECTION_DELAY_MS = 100;
-
-    private static final int NANOSECONDS_IN_A_MILLISECOND = 1000000;
 
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
@@ -1419,7 +1418,8 @@ public class ContextualSearchManager
                 && tapTimeNanoseconds > 0) {
             delayBeforeFinishingWorkMs = ContextualSearchFieldTrial.getValue(
                                                  ContextualSearchSetting.WAIT_AFTER_TAP_DELAY_MS)
-                    - (System.nanoTime() - tapTimeNanoseconds) / NANOSECONDS_IN_A_MILLISECOND;
+                    - (System.nanoTime() - tapTimeNanoseconds)
+                            / TimeUtils.NANOSECONDS_PER_MILLISECOND;
         }
 
         // Finish work on the current state, either immediately or with a delay.
