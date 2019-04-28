@@ -223,6 +223,8 @@ const char* EncryptionLevelToString(EncryptionLevel level) {
   switch (level) {
     case ENCRYPTION_INITIAL:
       return "Initial";
+    case ENCRYPTION_HANDSHAKE:
+      return "Handshake";
     case ENCRYPTION_0RTT:
       return "0-RTT";
     case ENCRYPTION_1RTT:
