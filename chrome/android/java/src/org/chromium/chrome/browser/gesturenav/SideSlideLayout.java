@@ -8,9 +8,13 @@ import android.content.Context;
 import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -68,13 +72,14 @@ public class SideSlideLayout extends ViewGroup {
 
     private static final float DECELERATE_INTERPOLATION_FACTOR = 2f;
 
-    private static final int SCALE_DOWN_DURATION_MS = 500;
+    private static final int SCALE_DOWN_DURATION_MS = 400;
     private static final int ANIMATE_TO_START_DURATION_MS = 500;
 
     // Minimum number of pull updates necessary to trigger a side nav.
     private static final int MIN_PULLS_TO_ACTIVATE = 3;
 
     private final DecelerateInterpolator mDecelerateInterpolator;
+    private final LinearInterpolator mLinearInterpolator;
     private final float mTotalDragDistance;
     private final int mMediumAnimationDuration;
     private final int mCircleWidth;
@@ -101,7 +106,8 @@ public class SideSlideLayout extends ViewGroup {
     private int mFrom;
     private int mOriginalOffset;
 
-    private Animation mScaleDownAnimation;
+    private AnimationSet mHidingAnimation;
+    private int mAnimationViewWidth;
     private AnimationListener mCancelAnimationListener;
 
     private boolean mIsForward;
@@ -116,8 +122,8 @@ public class SideSlideLayout extends ViewGroup {
 
         @Override
         public void onAnimationEnd(Animation animation) {
+            mArrowView.setVisibility(View.INVISIBLE);
             if (mNavigating) {
-                // Make sure the arrow widget is fully visible
                 if (mListener != null) mListener.onNavigate(mIsForward);
                 recordHistogram("Overscroll.Navigated3", mIsForward);
             } else {
@@ -147,6 +153,7 @@ public class SideSlideLayout extends ViewGroup {
 
         setWillNotDraw(false);
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
+        mLinearInterpolator = new LinearInterpolator();
 
         final float density = getResources().getDisplayMetrics().density;
         mCircleWidth = (int) (CIRCLE_DIAMETER_DP * density);
@@ -183,7 +190,7 @@ public class SideSlideLayout extends ViewGroup {
     private void setNavigating(boolean navigating) {
         if (mNavigating != navigating) {
             mNavigating = navigating;
-            if (mNavigating) startScaleDownAnimation(mNavigateListener);
+            if (mNavigating) startHidingAnimation(mNavigateListener);
         }
     }
 
@@ -191,20 +198,25 @@ public class SideSlideLayout extends ViewGroup {
         return mIsForward ? -Math.min(0, mTotalMotion) : Math.max(0, mTotalMotion);
     }
 
-    private void startScaleDownAnimation(AnimationListener listener) {
-        if (mScaleDownAnimation == null) {
-            mScaleDownAnimation = new Animation() {
-                @Override
-                public void applyTransformation(float interpolatedTime, Transformation t) {
-                    float progress = 1 - interpolatedTime; // [0..1]
-                    mArrowView.setScaleY(progress);
-                }
-            };
-            mScaleDownAnimation.setDuration(SCALE_DOWN_DURATION_MS);
+    private void startHidingAnimation(AnimationListener listener) {
+        // ScaleAnimation needs to be created again if the arrow widget width changes over time
+        // (due to turning on/off close indicator) to set the right x pivot point.
+        if (mHidingAnimation == null || mAnimationViewWidth != mArrowViewWidth) {
+            mAnimationViewWidth = mArrowViewWidth;
+            ScaleAnimation scalingDown =
+                    new ScaleAnimation(1, 0, 1, 0, mArrowViewWidth / 2, mArrowView.getHeight() / 2);
+            scalingDown.setInterpolator(mLinearInterpolator);
+            scalingDown.setDuration(SCALE_DOWN_DURATION_MS);
+            Animation fadingOut = new AlphaAnimation(1, 0);
+            fadingOut.setInterpolator(mDecelerateInterpolator);
+            fadingOut.setDuration(SCALE_DOWN_DURATION_MS);
+            mHidingAnimation = new AnimationSet(false);
+            mHidingAnimation.addAnimation(fadingOut);
+            mHidingAnimation.addAnimation(scalingDown);
         }
         mArrowView.setAnimationListener(listener);
         mArrowView.clearAnimation();
-        mArrowView.startAnimation(mScaleDownAnimation);
+        mArrowView.startAnimation(mHidingAnimation);
     }
 
     /**
@@ -284,7 +296,6 @@ public class SideSlideLayout extends ViewGroup {
                 * 2f;
 
         if (mArrowView.getVisibility() != View.VISIBLE) mArrowView.setVisibility(View.VISIBLE);
-        mArrowView.setScaleY(1f);
 
         float originalDragPercent = overscroll / mTotalDragDistance;
         float dragPercent = Math.min(1f, Math.abs(originalDragPercent));
@@ -340,7 +351,7 @@ public class SideSlideLayout extends ViewGroup {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    startScaleDownAnimation(mNavigateListener);
+                    startHidingAnimation(mNavigateListener);
                 }
 
                 @Override
