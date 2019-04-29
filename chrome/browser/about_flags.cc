@@ -2042,9 +2042,6 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
          "ContentSuggestionsNotifications")},
-    {"enable-site-exploration-ui", flag_descriptions::kSiteExplorationUiName,
-     flag_descriptions::kSiteExplorationUiDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(ntp_tiles::kSiteExplorationUiFeature)},
 #endif  // OS_ANDROID
     {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
      flag_descriptions::kUserActivationV2Description, kOsAll,

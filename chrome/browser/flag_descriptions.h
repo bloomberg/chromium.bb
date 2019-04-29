@@ -1512,9 +1512,6 @@ extern const char kSetMarketUrlForTestingDescription[];
 extern const char kShoppingAssistName[];
 extern const char kShoppingAssistDescription[];
 
-extern const char kSiteExplorationUiName[];
-extern const char kSiteExplorationUiDescription[];
-
 extern const char kSiteIsolationForPasswordSitesName[];
 extern const char kSiteIsolationForPasswordSitesDescription[];
 

@@ -1598,11 +1598,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-site-exploration-ui",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-site-isolation-for-password-sites",
     "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
     "expiry_milestone": 79
