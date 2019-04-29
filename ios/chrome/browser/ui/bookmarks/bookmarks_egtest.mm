@@ -173,15 +173,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -1723,15 +1721,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -2716,15 +2712,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -2930,15 +2924,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
@@ -3107,15 +3099,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -4048,15 +4038,13 @@ id<GREYMatcher> SearchIconButton() {
   [super setUp];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =

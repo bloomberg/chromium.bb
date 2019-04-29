@@ -409,8 +409,7 @@ void FocusOmnibox() {
 
   // Setup the bookmarks.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 
   // Setup the server.
   self.testServer->RegisterRequestHandler(
@@ -444,8 +443,7 @@ void FocusOmnibox() {
       assertWithMatcher:Spotlighted()];
 
   // Clean the bookmarks
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 }
 
 // Tests that tapping a button cancels the focus on the omnibox.

@@ -137,6 +137,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // happen within a timeout, a GREYAssert is induced.
 + (NSError*)waitForBookmarksToFinishLoading WARN_UNUSED_RESULT;
 
+// Clears bookmarks and if any bookmark still presents. Returns nil on success,
+// or else an NSError indicating why the operation failed.
++ (NSError*)clearBookmarks;
+
 // Waits for the matcher to return an element that is sufficiently visible.
 + (NSError*)waitForElementWithMatcherSufficientlyVisible:
     (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;

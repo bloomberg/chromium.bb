@@ -117,8 +117,7 @@ using chrome_test_util::SettingsDoneButton;
 // shown.
 - (void)testKeyboardCommandsNotRegistered_AddBookmarkPresented {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  BOOL success = chrome_test_util::ClearBookmarks();
-  GREYAssert(success, @"Not all bookmarks were removed.");
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 
   // Load a webpage because the NTP is not always bookmarkable.
   web::test::SetUpFileBasedHttpServer();

@@ -372,6 +372,15 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
++ (NSError*)clearBookmarks {
+  bool success = chrome_test_util::ClearBookmarks();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Not all bookmarks were removed.");
+  }
+  return nil;
+}
+
 + (NSError*)waitForElementWithMatcherSufficientlyVisible:
     (id<GREYMatcher>)matcher {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {

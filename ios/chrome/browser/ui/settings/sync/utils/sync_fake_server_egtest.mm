@@ -99,8 +99,7 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 - (void)tearDown {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  chrome_test_util::ClearBookmarks();
-  AssertNumberOfEntities(0, syncer::BOOKMARKS);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
 
   chrome_test_util::ClearSyncServerData();
   AssertNumberOfEntities(0, syncer::AUTOFILL_PROFILE);
