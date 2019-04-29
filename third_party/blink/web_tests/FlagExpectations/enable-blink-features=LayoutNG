@@ -329,7 +329,6 @@ crbug.com/591099 paint/invalidation/overflow/opacity-change-on-overflow-float.ht
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/transform-focus-ring-repaint.html [ Failure ]
-crbug.com/591099 printing/iframe-svg-in-object-print.html [ Failure ]
 crbug.com/591099 storage/indexeddb/objectstore-cursor.html [ Pass ]
 crbug.com/591099 svg/zoom/page/zoom-svg-float-border-padding.xml [ Pass ]
 crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Pass ]

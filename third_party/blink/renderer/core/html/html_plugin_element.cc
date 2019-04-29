@@ -262,7 +262,8 @@ void HTMLPlugInElement::DidMoveToNewDocument(Document& old_document) {
 void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
   HTMLFrameOwnerElement::AttachLayoutTree(context);
 
-  if (!GetLayoutObject() || UseFallbackContent()) {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || UseFallbackContent()) {
     // If we don't have a layoutObject we have to dispose of any plugins
     // which we persisted over a reattach.
     if (persisted_plugin_) {
@@ -272,23 +273,31 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
     return;
   }
 
-  if (!IsImageType() && NeedsPluginUpdate() && GetLayoutEmbeddedObject() &&
-      !GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator() &&
-      GetObjectContentType() != ObjectContentType::kPlugin &&
-      !is_delaying_load_event_) {
+  // This element may have been attached previously, and if we created a frame
+  // back then, re-use it now. We do not want to reload the frame if we don't
+  // have to, as that would cause us to lose any state changed after loading.
+  // Re-using the frame also matters if we have to re-attach for printing; we
+  // don't support reloading anything during printing (the frame would just show
+  // up blank then).
+  const Frame* content_frame = ContentFrame();
+  if (content_frame && !dispose_view_) {
+    SetEmbeddedContentView(content_frame->View());
+  } else if (!IsImageType() && NeedsPluginUpdate() &&
+             GetLayoutEmbeddedObject() &&
+             !GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator() &&
+             GetObjectContentType() != ObjectContentType::kPlugin &&
+             !is_delaying_load_event_) {
     is_delaying_load_event_ = true;
     GetDocument().IncrementLoadEventDelayCount();
     GetDocument().LoadPluginsSoon();
   }
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    if (image_loader_ && layout_object->IsLayoutImage()) {
-      LayoutImageResource* image_resource =
-          ToLayoutImage(layout_object)->ImageResource();
-      image_resource->SetImageResource(image_loader_->GetContent());
-    }
-    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
-      context.previous_in_flow = layout_object;
+  if (image_loader_ && layout_object->IsLayoutImage()) {
+    LayoutImageResource* image_resource =
+        ToLayoutImage(layout_object)->ImageResource();
+    image_resource->SetImageResource(image_loader_->GetContent());
   }
+  if (!layout_object->IsFloatingOrOutOfFlowPositioned())
+    context.previous_in_flow = layout_object;
 
   dispose_view_ = false;
 }
@@ -355,6 +364,13 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
     // Clear the plugin; will trigger disposal of it with Oilpan.
     SetEmbeddedContentView(nullptr);
   }
+
+  // We should attempt to use the same view afterwards, so that we don't lose
+  // state. But only if we're reattaching. Otherwise we need to throw it away,
+  // since there's no telling what's going to happen next, and it wouldn't be
+  // safe to keep it.
+  if (!context.performing_reattach)
+    dispose_view_ = true;
 
   ResetInstance();
 
