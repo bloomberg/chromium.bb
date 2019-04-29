@@ -488,6 +488,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Retrieves names of any additional site isolation modes from the embedder.
   virtual std::vector<std::string> GetAdditionalSiteIsolationModes();
 
+  // Called when a new dynamic isolated origin was added in |context|, and the
+  // origin desires to be persisted across restarts, to give the embedder an
+  // opportunity to save this isolated origin to disk.
+  virtual void PersistIsolatedOrigin(BrowserContext* context,
+                                     const url::Origin& origin) {}
+
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
   virtual bool IsFileAccessAllowed(const base::FilePath& path,

@@ -844,7 +844,14 @@ void SiteInstance::StartIsolatingSite(BrowserContext* context,
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigins({url::Origin::Create(site)}, context);
+  url::Origin site_origin(url::Origin::Create(site));
+  policy->AddIsolatedOrigins({site_origin}, context);
+
+  // This function currently assumes the new isolated site should persist
+  // across restarts, so ask the embedder to save it, excluding off-the-record
+  // profiles.
+  if (!context->IsOffTheRecord())
+    GetContentClient()->browser()->PersistIsolatedOrigin(context, site_origin);
 }
 
 }  // namespace content

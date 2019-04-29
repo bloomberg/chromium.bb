@@ -2573,6 +2573,12 @@ const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
 const char kSitePerProcess[] = "site_isolation.site_per_process";
 
+// A list of origins that were heuristically determined to need process
+// isolation. For example, an origin may be placed on this list in response to
+// the user typing a password on it.
+const char kUserTriggeredIsolatedOrigins[] =
+    "site_isolation.user_triggered_isolated_origins";
+
 // Boolean that specifies if the web driver flag is allowed to override policies
 // which prevent it from operating normally. (e.g. SitePerProcess.)
 const char kWebDriverOverridesIncompatiblePolicies[] =

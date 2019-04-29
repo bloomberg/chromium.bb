@@ -6,7 +6,11 @@
 
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/site_isolation_policy.h"
 
 // static
@@ -35,4 +39,24 @@ bool SiteIsolationPolicy::IsEnterprisePolicyApplicable() {
 #else
   return true;
 #endif
+}
+
+// static
+void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(Profile* profile) {
+  // If the user turned off password-triggered isolation, don't apply any
+  // stored isolated origins, but also don't clear them from prefs, so that
+  // they can be used if password-triggered isolation is re-enabled later.
+  if (!IsIsolationForPasswordSitesEnabled())
+    return;
+
+  std::vector<url::Origin> origins;
+  for (const auto& value :
+       *profile->GetPrefs()->GetList(prefs::kUserTriggeredIsolatedOrigins)) {
+    origins.push_back(url::Origin::Create(GURL(value.GetString())));
+  }
+
+  if (!origins.empty()) {
+    auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+    policy->AddIsolatedOrigins(origins, /* browser_context = */ profile);
+  }
 }

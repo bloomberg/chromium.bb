@@ -187,6 +187,12 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Note that this has no effect if site isolation is turned off, such as via
   // the kDisableSiteIsolation cmdline flag or enterprise policy -- see also
   // SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled().
+  //
+  // Currently this function assumes that the site is added *persistently*: it
+  // will ask the embedder to save the site as part of profile data for
+  // |context|, so that it survives restarts.  The site will be cleared from
+  // profile data if the user clears browsing data.  Future uses of this
+  // function may want to avoid persistence by passing in a new flag.
   static void StartIsolatingSite(BrowserContext* context, const GURL& url);
 
  protected:
