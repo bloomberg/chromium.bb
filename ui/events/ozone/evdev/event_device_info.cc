@@ -480,8 +480,9 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
     uint16_t vid;
     uint16_t pid;
   } kUSBInternalDevices[] = {
-    { 0x18d1, 0x5030 }, // Google, Hammer PID
-    { 0x1fd2, 0x8103 }  // LG, Internal TouchScreen PID
+      {0x18d1, 0x5030},  // Google, Hammer PID (nocturne)
+      {0x18d1, 0x502b},  // Google, Hammer PID (soraka)
+      {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 
   if (id.bustype == BUS_USB) {
