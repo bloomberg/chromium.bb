@@ -59,6 +59,8 @@ public class LayoutTab implements ChromeAnimation.Animatable {
 
     // Public Layout constants.
     public static final float CLOSE_BUTTON_WIDTH_DP = 36.f;
+    public static final float SHADOW_ALPHA_ON_LIGHT_BG = 0.8f;
+    public static final float SHADOW_ALPHA_ON_DARK_BG = 1.0f;
 
     // TODO(dtrainor): Investigate removing this.
     private static final float BORDER_THICKNESS_DP = 4.f;
