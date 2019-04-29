@@ -192,6 +192,14 @@ _BANNED_OBJC_FUNCTIONS = (
       ),
       False,
     ),
+    (
+      'freeWhenDone:NO',
+      (
+        'The use of "freeWhenDone:NO" with the NoCopy creation of ',
+        'Foundation types is prohibited.',
+      ),
+      True,
+    ),
 )
 
 # Format: Sequence of tuples containing:
@@ -749,6 +757,15 @@ _BANNED_CPP_FUNCTIONS = (
       (
         r'/base/win/win_util_unittest.cc'
       ),
+    ),
+    (
+      'kCFAllocatorNull',
+      (
+        'The use of kCFAllocatorNull with the NoCopy creation of ',
+        'CoreFoundation types is prohibited.',
+      ),
+      True,
+      (),
     ),
 )
 

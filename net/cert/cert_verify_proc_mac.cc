@@ -576,15 +576,13 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
     // disabled, these will only go against the local cache.
   }
 
-  CFDataRef action_data_ref =
-      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-                                  reinterpret_cast<UInt8*>(&tp_action_data),
-                                  sizeof(tp_action_data), kCFAllocatorNull);
+  ScopedCFTypeRef<CFDataRef> action_data_ref(CFDataCreate(
+      kCFAllocatorDefault, reinterpret_cast<UInt8*>(&tp_action_data),
+      sizeof(tp_action_data)));
   if (!action_data_ref)
     return ERR_OUT_OF_MEMORY;
-  ScopedCFTypeRef<CFDataRef> scoped_action_data_ref(action_data_ref);
   status = SecTrustSetParameters(tmp_trust, CSSM_TP_ACTION_DEFAULT,
-                                 action_data_ref);
+                                 action_data_ref.get());
   if (status)
     return NetErrorFromOSStatus(status);
 
@@ -630,10 +628,10 @@ int VerifyWithGivenFlags(X509Certificate* cert,
 
   ScopedCFTypeRef<CFDataRef> ocsp_response_ref;
   if (!ocsp_response.empty()) {
-    ocsp_response_ref.reset(CFDataCreateWithBytesNoCopy(
-        kCFAllocatorDefault,
-        reinterpret_cast<const UInt8*>(ocsp_response.data()),
-        base::checked_cast<CFIndex>(ocsp_response.size()), kCFAllocatorNull));
+    ocsp_response_ref.reset(
+        CFDataCreate(kCFAllocatorDefault,
+                     reinterpret_cast<const UInt8*>(ocsp_response.data()),
+                     base::checked_cast<CFIndex>(ocsp_response.size())));
     if (!ocsp_response_ref)
       return ERR_OUT_OF_MEMORY;
   }

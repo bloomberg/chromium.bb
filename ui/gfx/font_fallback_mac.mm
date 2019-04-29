@@ -77,8 +77,7 @@ bool GetFallbackFont(const Font& font,
                      int text_length,
                      Font* result) {
   base::ScopedCFTypeRef<CFStringRef> cf_string(
-      CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, text, text_length,
-                                         kCFAllocatorNull));
+      CFStringCreateWithCharacters(kCFAllocatorDefault, text, text_length));
   CTFontRef ct_font = base::mac::NSToCFCast(font.GetNativeFont());
   base::ScopedCFTypeRef<CTFontRef> ct_result(
       CTFontCreateForString(ct_font, cf_string, {0, text_length}));

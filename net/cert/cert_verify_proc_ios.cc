@@ -280,10 +280,10 @@ int CertVerifyProcIOS::VerifyInternal(
 
   ScopedCFTypeRef<CFDataRef> ocsp_response_ref;
   if (!ocsp_response.empty()) {
-    ocsp_response_ref.reset(CFDataCreateWithBytesNoCopy(
-        kCFAllocatorDefault,
-        reinterpret_cast<const UInt8*>(ocsp_response.data()),
-        base::checked_cast<CFIndex>(ocsp_response.size()), kCFAllocatorNull));
+    ocsp_response_ref.reset(
+        CFDataCreate(kCFAllocatorDefault,
+                     reinterpret_cast<const UInt8*>(ocsp_response.data()),
+                     base::checked_cast<CFIndex>(ocsp_response.size())));
     if (!ocsp_response_ref)
       return ERR_OUT_OF_MEMORY;
   }
