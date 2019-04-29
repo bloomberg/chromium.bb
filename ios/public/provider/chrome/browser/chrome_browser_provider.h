@@ -22,6 +22,7 @@ class BrowserURLRewriterProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
+class OverridesProvider;
 class SpecialUserProvider;
 class SpotlightProvider;
 class UserFeedbackProvider;
@@ -162,6 +163,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the BrowserURLRewriter provider.
   virtual BrowserURLRewriterProvider* GetBrowserURLRewriterProvider() const;
+
+  // Returns an instance of the Overrides provider;
+  virtual OverridesProvider* GetOverridesProvider() const;
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);

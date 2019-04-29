@@ -152,6 +152,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
+#import "ios/public/provider/chrome/browser/overrides_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -792,6 +793,8 @@ enum class EnterTabSwitcherSnapshotResult {
     [ContentSuggestionsSchedulerNotifications
         notifyForeground:_mainBrowserState];
   }
+
+  ios::GetChromeBrowserProvider()->GetOverridesProvider()->InstallOverrides();
 
   [self scheduleLowPriorityStartupTasks];
 
