@@ -5,6 +5,7 @@ install_headers(
 	'plugin-registry.h',
 	'timeline-object.h',
 	'windowed-output-api.h',
+	'weston-debug.h',
 	'zalloc.h',
 	subdir: dir_include_libweston_install
 )
