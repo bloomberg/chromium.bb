@@ -83,6 +83,11 @@ extern const base::Feature kSingleProcessMash;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kMojoIMF;
 #endif
 
+// Used to enable the new controls UI.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kFormControlsRefresh;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsFormControlsRefreshEnabled();
+
 // Returns true if Chrome's aura usage is backed by the WindowService.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWindowService();
 

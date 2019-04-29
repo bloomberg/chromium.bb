@@ -1074,6 +1074,11 @@
     "args": ["--enable-features=NativeFileSystemAPI"]
   },
   {
+    "prefix": "controls-refresh",
+    "base": "fast/forms/controls-new-ui",
+    "args": ["--enable-features=FormControlsRefresh"]
+  },
+  {
     "prefix": "user-timing-l2",
     "base": "external/wpt/user-timing",
     "args": ["--disable-blink-features=CustomUserTiming"]

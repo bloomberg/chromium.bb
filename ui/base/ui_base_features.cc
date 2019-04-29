@@ -138,6 +138,13 @@ const base::Feature kSingleProcessMash = {"SingleProcessMash",
 const base::Feature kMojoIMF = {"MojoIMF", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsFormControlsRefreshEnabled() {
+  return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
+}
+
 bool IsUsingWindowService() {
   return IsSingleProcessMash() || IsMultiProcessMash();
 }
