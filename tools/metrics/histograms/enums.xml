@@ -27740,6 +27740,24 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Dismissed"/>
 </enum>
 
+<enum name="HeapProfilingMode">
+  <int value="0" label="None"/>
+  <int value="1" label="Minimal"/>
+  <int value="2" label="All"/>
+  <int value="3" label="Browser"/>
+  <int value="4" label="Gpu"/>
+  <int value="5" label="Renderer Sampling"/>
+  <int value="6" label="All renderers"/>
+  <int value="7" label="Manual"/>
+</enum>
+
+<enum name="HeapProfilingProcessType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Renderer"/>
+  <int value="3" label="GPU"/>
+</enum>
+
 <enum name="HeavyPageCappingInfoBarInteraction">
   <int value="0" label="InfoBar shown">
     The user was shown the capping heavy pages InfoBar.
@@ -42570,24 +42588,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Open All"/>
   <int value="9" label="Has foreign data"/>
   <int value="10" label="Hide for now"/>
-</enum>
-
-<enum name="OutOfProcessHeapProfilingMode">
-  <int value="0" label="None"/>
-  <int value="1" label="Minimal"/>
-  <int value="2" label="All"/>
-  <int value="3" label="Browser"/>
-  <int value="4" label="Gpu"/>
-  <int value="5" label="Renderer Sampling"/>
-  <int value="6" label="All renderers"/>
-  <int value="7" label="Manual"/>
-</enum>
-
-<enum name="OutOfProcessHeapProfilingProcessType">
-  <int value="0" label="Other"/>
-  <int value="1" label="Browser"/>
-  <int value="2" label="Renderer"/>
-  <int value="3" label="GPU"/>
 </enum>
 
 <enum name="OutputDeviceStatus">

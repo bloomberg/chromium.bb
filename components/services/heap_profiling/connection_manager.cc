@@ -140,7 +140,7 @@ void ConnectionManager::OnConnectionComplete(base::ProcessId pid) {
 void ConnectionManager::ReportMetrics() {
   base::AutoLock lock(connections_lock_);
   for (auto& pair : connections_) {
-    UMA_HISTOGRAM_ENUMERATION("OutOfProcessHeapProfiling.ProfiledProcess.Type",
+    UMA_HISTOGRAM_ENUMERATION("HeapProfiling.ProfiledProcess.Type",
                               pair.second->process_type,
                               static_cast<int>(mojom::ProcessType::LAST) + 1);
   }
