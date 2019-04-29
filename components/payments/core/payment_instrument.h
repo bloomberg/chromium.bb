@@ -40,6 +40,8 @@ class PaymentInstrument {
 
   // Will call into the |delegate| (can't be null) on success or error.
   virtual void InvokePaymentApp(Delegate* delegate) = 0;
+  // Called when the payment app window has closed.
+  virtual void OnPaymentAppWindowClosed() {}
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
   virtual bool IsCompleteForPayment() const = 0;

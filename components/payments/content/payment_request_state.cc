@@ -304,6 +304,12 @@ void PaymentRequestState::GeneratePaymentResponse() {
       selected_shipping_profile_, selected_contact_profile_, this);
 }
 
+void PaymentRequestState::OnPaymentAppWindowClosed() {
+  DCHECK(selected_instrument_);
+  response_helper_.reset();
+  selected_instrument_->OnPaymentAppWindowClosed();
+}
+
 void PaymentRequestState::RecordUseStats() {
   if (spec_->request_shipping()) {
     DCHECK(selected_shipping_profile_);

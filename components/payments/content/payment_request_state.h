@@ -126,6 +126,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // |is_ready_to_pay|, which is inexpensive.
   void GeneratePaymentResponse();
 
+  // Cancels the generation of the PaymentResponse.
+  void OnPaymentAppWindowClosed();
+
   // Record the use of the data models that were used in the Payment Request.
   void RecordUseStats();
 
