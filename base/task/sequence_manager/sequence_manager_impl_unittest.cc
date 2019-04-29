@@ -155,8 +155,11 @@ class FixtureWithMockTaskRunner final : public Fixture {
             nullptr,
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
-            SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
-                                      mock_tick_clock()})) {
+            SequenceManager::Settings::Builder()
+                .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+                .SetRandomisedSamplingEnabled(false)
+                .SetTickClock(mock_tick_clock())
+                .Build())) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
 
@@ -223,11 +226,15 @@ class FixtureWithMockMessagePump : public Fixture {
 
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
+    auto settings = SequenceManager::Settings::Builder()
+                        .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+                        .SetRandomisedSamplingEnabled(false)
+                        .SetTickClock(mock_tick_clock())
+                        .Build();
     sequence_manager_ = SequenceManagerForTest::Create(
-        std::make_unique<ThreadControllerWithMessagePumpImpl>(
-            std::move(pump), mock_tick_clock()),
-        SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
-                                  mock_tick_clock()});
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
+                                                              settings),
+        std::move(settings));
     sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
 
     // The SequenceManager constructor calls Now() once for setting up
@@ -305,9 +312,12 @@ class FixtureWithMessageLoop : public Fixture {
     pump_ = pump.get();
     message_loop_ = std::make_unique<MessageLoop>(std::move(pump));
 
-    sequence_manager_ =
-        SequenceManagerForTest::CreateOnCurrentThread(SequenceManager::Settings{
-            MessageLoop::Type::TYPE_DEFAULT, false, mock_tick_clock()});
+    sequence_manager_ = SequenceManagerForTest::CreateOnCurrentThread(
+        SequenceManager::Settings::Builder()
+            .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+            .SetRandomisedSamplingEnabled(false)
+            .SetTickClock(mock_tick_clock())
+            .Build());
 
     // The SequenceManager constructor calls Now() once for setting up
     // housekeeping. The MessageLoop also contains a SequenceManager so two

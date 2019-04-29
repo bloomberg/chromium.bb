@@ -34,15 +34,20 @@ TimeTicks CapAtOneDay(TimeTicks next_run_time, LazyNow* lazy_now) {
 }  // namespace
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
-    const TickClock* time_source)
+    const SequenceManager::Settings& settings)
     : associated_thread_(AssociatedThreadId::CreateUnbound()),
       work_deduplicator_(associated_thread_),
-      time_source_(time_source) {}
+#if DCHECK_IS_ON()
+      log_runloop_quit_and_quit_when_idle_(
+          settings.log_runloop_quit_and_quit_when_idle),
+#endif
+      time_source_(settings.clock) {
+}
 
 ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
     std::unique_ptr<MessagePump> message_pump,
-    const TickClock* time_source)
-    : ThreadControllerWithMessagePumpImpl(time_source) {
+    const SequenceManager::Settings& settings)
+    : ThreadControllerWithMessagePumpImpl(settings) {
   BindToCurrentThread(std::move(message_pump));
 }
 
@@ -56,8 +61,8 @@ ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
 // static
 std::unique_ptr<ThreadControllerWithMessagePumpImpl>
 ThreadControllerWithMessagePumpImpl::CreateUnbound(
-    const TickClock* time_source) {
-  return base::WrapUnique(new ThreadControllerWithMessagePumpImpl(time_source));
+    const SequenceManager::Settings& settings) {
+  return base::WrapUnique(new ThreadControllerWithMessagePumpImpl(settings));
 }
 
 ThreadControllerWithMessagePumpImpl::MainThreadOnly::MainThreadOnly() = default;
@@ -363,6 +368,14 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
       task_annotator_.RunTask("ThreadController::Task", &*task);
     }
 
+#if DCHECK_IS_ON()
+    if (log_runloop_quit_and_quit_when_idle_ && !quit_when_idle_requested_ &&
+        ShouldQuitWhenIdle()) {
+      DVLOG(1) << "ThreadControllerWithMessagePumpImpl::QuitWhenIdle";
+      quit_when_idle_requested_ = true;
+    }
+#endif
+
     *ran_task = true;
     main_thread_only().task_execution_allowed = true;
     main_thread_only().task_source->DidRunTask();
@@ -433,6 +446,11 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
       &main_thread_only().quit_runloop_after,
       (timeout == TimeDelta::Max()) ? TimeTicks::Max()
                                     : time_source_->NowTicks() + timeout);
+
+#if DCHECK_IS_ON()
+  AutoReset<bool> quit_when_idle_requested(&quit_when_idle_requested_, false);
+#endif
+
   // Quit may have been called outside of a Run(), so |quit_pending| might be
   // true here. We can't use InTopLevelDoWork() in Quit() as this call may be
   // outside top-level DoWork but still in Run().
@@ -447,6 +465,12 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
   } else {
     pump_->Run(this);
   }
+
+#if DCHECK_IS_ON()
+  if (log_runloop_quit_and_quit_when_idle_)
+    DVLOG(1) << "ThreadControllerWithMessagePumpImpl::Quit";
+#endif
+
   main_thread_only().runloop_count--;
   main_thread_only().quit_pending = false;
 }

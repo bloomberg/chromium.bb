@@ -65,10 +65,11 @@ CreateSequenceManagerForMainThreadType(
   if (!type) {
     return nullptr;
   } else {
-    auto settings = base::sequence_manager::SequenceManager::Settings{
-        .message_loop_type = *type};
     return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-        MessageLoop::CreateMessagePumpForType(*type), std::move(settings));
+        MessageLoop::CreateMessagePumpForType(*type),
+        base::sequence_manager::SequenceManager::Settings::Builder()
+            .SetMessageLoopType(*type)
+            .Build());
   }
 }
 

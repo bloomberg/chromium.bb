@@ -34,14 +34,15 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       public RunLoop::Delegate,
       public RunLoop::NestingObserver {
  public:
-  ThreadControllerWithMessagePumpImpl(std::unique_ptr<MessagePump> message_pump,
-                                      const TickClock* time_source);
+  ThreadControllerWithMessagePumpImpl(
+      std::unique_ptr<MessagePump> message_pump,
+      const SequenceManager::Settings& settings);
   ~ThreadControllerWithMessagePumpImpl() override;
 
   using ShouldScheduleWork = WorkDeduplicator::ShouldScheduleWork;
 
   static std::unique_ptr<ThreadControllerWithMessagePumpImpl> CreateUnbound(
-      const TickClock* time_source);
+      const SequenceManager::Settings& settings);
 
   // ThreadController implementation:
   void SetSequencedTaskSource(SequencedTaskSource* task_source) override;
@@ -74,7 +75,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void OnExitNestedRunLoop() override;
 
  protected:
-  explicit ThreadControllerWithMessagePumpImpl(const TickClock* time_source);
+  explicit ThreadControllerWithMessagePumpImpl(
+      const SequenceManager::Settings& settings);
 
   // MessagePump::Delegate implementation.
   void BeforeDoInternalWork() override;
@@ -154,6 +156,12 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   std::unique_ptr<MessagePump> pump_;
 
   TaskAnnotator task_annotator_;
+
+#if DCHECK_IS_ON()
+  const bool log_runloop_quit_and_quit_when_idle_;
+  bool quit_when_idle_requested_ = false;
+#endif
+
   const TickClock* time_source_;  // Not owned.
 
   // Non-null provider of id state for identifying distinct work items executed

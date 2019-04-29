@@ -2087,8 +2087,9 @@ class MainThreadSchedulerImplWithMessageLoopTest
     clock_.Advance(base::TimeDelta::FromMilliseconds(5));
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-            base::sequence_manager::SequenceManager::Settings{.clock =
-                                                                  &clock_}),
+            base::sequence_manager::SequenceManager::Settings::Builder()
+                .SetTickClock(&clock_)
+                .Build()),
         base::nullopt));
   }
 

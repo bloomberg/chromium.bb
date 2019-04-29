@@ -162,7 +162,9 @@ class SequenceManagerWithMessageLoopPerfTestDelegate
   explicit SequenceManagerWithMessageLoopPerfTestDelegate(const char* name)
       : name_(name), message_loop_(new MessageLoopType()) {
     SetSequenceManager(CreateSequenceManagerOnCurrentThread(
-        SequenceManager::Settings{.randomised_sampling_enabled = false}));
+        SequenceManager::Settings::Builder()
+            .SetRandomisedSamplingEnabled(false)
+            .Build()));
   }
 
   ~SequenceManagerWithMessageLoopPerfTestDelegate() override { ShutDown(); }
@@ -182,12 +184,14 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
       MessageLoop::Type type,
       bool randomised_sampling_enabled = false)
       : name_(name) {
+    auto settings =
+        SequenceManager::Settings::Builder()
+            .SetRandomisedSamplingEnabled(randomised_sampling_enabled)
+            .Build();
     SetSequenceManager(SequenceManagerForTest::Create(
         std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
-            MessageLoop ::CreateMessagePumpForType(type),
-            DefaultTickClock::GetInstance()),
-        SequenceManager::Settings{.randomised_sampling_enabled =
-                                      randomised_sampling_enabled}));
+            MessageLoop ::CreateMessagePumpForType(type), settings),
+        std::move(settings)));
 
     // ThreadControllerWithMessagePumpImpl doesn't provide a default task
     // runner.

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/single_thread_task_runner.h"
@@ -25,7 +26,7 @@ class TimeDomain;
 // a single backing sequence (currently bound to a single thread, which is
 // refererred as *main thread* in the comments below). SequenceManager
 // implementation can be used in a various ways to apply scheduling logic.
-class SequenceManager {
+class BASE_EXPORT SequenceManager {
  public:
   class Observer {
    public:
@@ -59,11 +60,13 @@ class SequenceManager {
 
   // Settings defining the desired SequenceManager behaviour: the type of the
   // MessageLoop and whether randomised sampling should be enabled.
-  struct Settings {
-    Settings() = default;
+  struct BASE_EXPORT Settings {
+    class Builder;
+
+    Settings();
     // In the future MessagePump (which is move-only) will also be a setting,
     // so we are making Settings move-only in preparation.
-    Settings(Settings&& move_from) noexcept = default;
+    Settings(Settings&& move_from) noexcept;
 
     MessageLoop::Type message_loop_type = MessageLoop::TYPE_DEFAULT;
     bool randomised_sampling_enabled = false;
@@ -85,14 +88,17 @@ class SequenceManager {
     // to run.
     bool log_task_delay_expiry = false;
 
+    // If true usages of the RunLoop API will be logged.
+    bool log_runloop_quit_and_quit_when_idle = false;
+
     // Scheduler policy induced raciness is an area of concern. This lets us
     // apply an extra delay per priority for cross thread posting.
-    TimeDelta
-        per_priority_cross_thread_task_delay[TaskQueue::kQueuePriorityCount];
+    std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
+        per_priority_cross_thread_task_delay;
 
     // Like the above but for same thread posting.
-    TimeDelta
-        per_priority_same_thread_task_delay[TaskQueue::kQueuePriorityCount];
+    std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
+        per_priority_same_thread_task_delay;
 
     // If not zero this seeds a PRNG used by the task selection logic to choose
     // a random TaskQueue for a given priority rather than the TaskQueue with
@@ -199,6 +205,58 @@ class SequenceManager {
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) = 0;
+};
+
+class BASE_EXPORT SequenceManager::Settings::Builder {
+ public:
+  Builder();
+  ~Builder();
+
+  // Sets the MessageLoop::Type which is sued to create a MessagePump.
+  Builder& SetMessageLoopType(MessageLoop::Type message_loop_type);
+
+  Builder& SetRandomisedSamplingEnabled(bool randomised_sampling_enabled);
+
+  // Sets the TickClock the SequenceManager uses to obtain Now.
+  Builder& SetTickClock(const TickClock* clock);
+
+#if DCHECK_IS_ON()
+  // Controls task execution logging.
+  Builder& SetTaskLogging(TaskLogging task_execution_logging);
+
+  // Whether or not PostTask will emit a debug log.
+  Builder& SetLogPostTask(bool log_post_task);
+
+  // Whether or not debug logs will be emitted when a delayed task becomes
+  // eligible to run.
+  Builder& SetLogTaskDelayExpiry(bool log_task_delay_expiry);
+
+  // Whether or not usages of the RunLoop API will be logged.
+  Builder& SetLogRunloopQuitAndQuitWhenIdle(
+      bool log_runloop_quit_and_quit_when_idle);
+
+  // Scheduler policy induced raciness is an area of concern. This lets us
+  // apply an extra delay per priority for cross thread posting.
+  Builder& SetPerPriorityCrossThreadTaskDelay(
+      std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
+          per_priority_cross_thread_task_delay);
+
+  // Scheduler policy induced raciness is an area of concern. This lets us
+  // apply an extra delay per priority for same thread posting.
+  Builder& SetPerPrioritySameThreadTaskDelay(
+      std::array<TimeDelta, TaskQueue::kQueuePriorityCount>
+          per_priority_same_thread_task_delay);
+
+  // If not zero this seeds a PRNG used by the task selection logic to choose a
+  // random TaskQueue for a given priority rather than the TaskQueue with the
+  // oldest EnqueueOrder.
+  Builder& SetRandomTaskSelectionSeed(int random_task_selection_seed);
+#endif  // DCHECK_IS_ON()
+
+  Settings Build();
+
+ private:
+  Settings settings_;
 };
 
 // Create SequenceManager using MessageLoop on the current thread.

@@ -80,9 +80,10 @@ WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
   // TODO(alexclarke): Do we need to unify virtual time for workers and the main
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
-      base::sequence_manager::SequenceManager::Settings{
-          base::MessageLoop::TYPE_DEFAULT,
-          /*randomised_sampling_enabled=*/true});
+      base::sequence_manager::SequenceManager::Settings::Builder()
+          .SetMessageLoopType(base::MessageLoop::TYPE_DEFAULT)
+          .SetRandomisedSamplingEnabled(true)
+          .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(
       base::sequence_manager::TaskQueue::Spec("worker_thread_internal_tq"));
   internal_task_runner_ = internal_task_queue_->CreateTaskRunner(

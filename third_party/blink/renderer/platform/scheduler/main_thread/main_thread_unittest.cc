@@ -49,8 +49,9 @@ class MainThreadTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new MainThreadSchedulerImpl(
         base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-            base::sequence_manager::SequenceManager::Settings{.clock =
-                                                                  &clock_}),
+            base::sequence_manager::SequenceManager::Settings::Builder()
+                .SetTickClock(&clock_)
+                .Build()),
         base::nullopt));
     scheduler_overrider_ =
         std::make_unique<ScopedSchedulerOverrider>(scheduler_.get());

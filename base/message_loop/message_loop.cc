@@ -163,7 +163,9 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
     : sequence_manager_(
           sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
-              sequence_manager::SequenceManager::Settings{type})),
+              sequence_manager::SequenceManager::Settings::Builder()
+                  .SetMessageLoopType(type)
+                  .Build())),
       default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
       custom_pump_(std::move(custom_pump)) {

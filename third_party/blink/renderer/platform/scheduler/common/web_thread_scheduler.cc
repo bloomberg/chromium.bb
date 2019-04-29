@@ -20,9 +20,10 @@ std::unique_ptr<WebThreadScheduler>
 WebThreadScheduler::CreateMainThreadScheduler(
     std::unique_ptr<base::MessagePump> message_pump,
     base::Optional<base::Time> initial_virtual_time) {
-  auto settings = base::sequence_manager::SequenceManager::Settings{
-      base::MessageLoop::TYPE_DEFAULT,
-      /*randomised_sampling_enabled=*/true};
+  auto settings = base::sequence_manager::SequenceManager::Settings::Builder()
+                      .SetMessageLoopType(base::MessageLoop::TYPE_DEFAULT)
+                      .SetRandomisedSamplingEnabled(true)
+                      .Build();
   auto sequence_manager =
       message_pump
           ? base::sequence_manager::

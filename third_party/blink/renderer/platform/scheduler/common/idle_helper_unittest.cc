@@ -188,8 +188,9 @@ class BaseIdleHelperTest : public testing::Test {
       // it isn't bound to thread and all tasks will go through a MessageLoop.
       sequence_manager_ =
           base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-              SequenceManager::Settings{
-                  .clock = test_task_runner_->GetMockTickClock()});
+              base::sequence_manager::SequenceManager::Settings::Builder()
+                  .SetTickClock(test_task_runner_->GetMockTickClock())
+                  .Build());
     }
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
         sequence_manager_.get(), nullptr, TaskType::kInternalTest);
