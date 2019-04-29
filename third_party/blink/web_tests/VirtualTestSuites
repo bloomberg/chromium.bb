@@ -56,6 +56,12 @@
   },
   {
     "prefix": "threaded",
+    "base": "external/wpt/css/css-paint-api",
+    "args": ["--enable-threaded-compositing",
+             "--enable-blink-features=OffMainThreadCSSPaint"]
+  },
+  {
+    "prefix": "threaded",
     "base": "external/wpt/requestidlecallback",
     "args": ["--enable-threaded-compositing"]
   },
