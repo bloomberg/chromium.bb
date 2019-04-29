@@ -342,6 +342,10 @@ void ProcessedTrace::FillTableForPacket(Table* table,
       }
     }
   }
+  if(packet->event_type() == PACKET_RECEIVED) {
+    table->AddRow("Encryption",
+              EncryptionLevelToString(packet->encryption_level()));
+  }
 
   if (packet->has_transport_state()) {
     const TransportState& state = packet->transport_state();
