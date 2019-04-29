@@ -160,10 +160,6 @@ uint8_t get_filter_level(const struct AV1Common *cm,
                          const loop_filter_info_n *lfi_n, const int dir_idx,
                          int plane, const MB_MODE_INFO *mbmi);
 #if LOOP_FILTER_BITMASK
-void av1_setup_bitmask(struct AV1Common *const cm, int mi_row, int mi_col,
-                       int plane, int subsampling_x, int subsampling_y,
-                       int row_end, int col_end);
-
 void av1_filter_block_plane_ver(struct AV1Common *const cm,
                                 struct macroblockd_plane *const plane_ptr,
                                 int pl, int mi_row, int mi_col);
