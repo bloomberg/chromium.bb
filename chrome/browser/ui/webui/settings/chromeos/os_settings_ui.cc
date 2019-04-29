@@ -14,7 +14,6 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -31,14 +30,11 @@
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
-#include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -76,19 +72,10 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AppearanceHandler>(web_ui));
 
-#if defined(USE_NSS_CERTS)
-  AddSettingsPageUIHandler(
-      std::make_unique<certificate_manager::CertificatesHandler>());
-#elif defined(OS_WIN) || defined(OS_MACOSX)
-  AddSettingsPageUIHandler(std::make_unique<NativeCertificatesHandler>());
-#endif  // defined(USE_NSS_CERTS)
-
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::BrowserLifetimeHandler>());
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::ClearBrowsingDataHandler>(web_ui));
   AddSettingsPageUIHandler(std::make_unique<::settings::CookiesViewHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::DownloadsHandler>(profile));
@@ -108,9 +95,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::SiteSettingsHandler>(profile));
-  AddSettingsPageUIHandler(std::make_unique<::settings::SecurityKeysHandler>());
 
   bool password_protection_available = false;
 #if defined(FULL_SAFE_BROWSING)

@@ -226,9 +226,8 @@
                 restamp>
               <settings-section page-title="$i18n{privacyPageTitle}"
                   section="privacy">
-                <settings-privacy-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.privacy]]">
-                </settings-privacy-page>
+                <os-settings-privacy-page prefs="{{prefs}}">
+                </os-settings-privacy-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
