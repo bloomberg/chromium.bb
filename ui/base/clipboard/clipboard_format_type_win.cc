@@ -8,15 +8,16 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace ui {
 
 // ClipboardFormatType implementation.
-ClipboardFormatType::ClipboardFormatType() : data_() {}
+ClipboardFormatType::ClipboardFormatType() {}
 
-ClipboardFormatType::ClipboardFormatType(UINT native_format) : data_() {
+ClipboardFormatType::ClipboardFormatType(UINT native_format) {
   // There's no good way to actually initialize this in the constructor in
   // C++03.
   data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
@@ -25,14 +26,25 @@ ClipboardFormatType::ClipboardFormatType(UINT native_format) : data_() {
   data_.tymed = TYMED_HGLOBAL;
 }
 
-ClipboardFormatType::ClipboardFormatType(UINT native_format, LONG index)
-    : data_() {
+ClipboardFormatType::ClipboardFormatType(UINT native_format, LONG index) {
   // There's no good way to actually initialize this in the constructor in
   // C++03.
   data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
   data_.dwAspect = DVASPECT_CONTENT;
   data_.lindex = index;
   data_.tymed = TYMED_HGLOBAL;
+}
+
+// TODO(https://crbug.com/949411): Use delegating constructors.
+ClipboardFormatType::ClipboardFormatType(UINT native_format,
+                                         LONG index,
+                                         DWORD tymed) {
+  // There's no good way to actually initialize this in the constructor in
+  // C++03.
+  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
+  data_.dwAspect = DVASPECT_CONTENT;
+  data_.lindex = index;
+  data_.tymed = tymed;
 }
 
 ClipboardFormatType::~ClipboardFormatType() {}
@@ -167,18 +179,58 @@ const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
   return type.Get();
 }
 
+// Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
+// ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
+// register both the ANSI and UNICODE file group descriptors.
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
   CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR));
+      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA));
+  return type.Get();
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorWType() {
+  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
+      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW));
   return type.Get();
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileContentZeroType() {
+  // Note this uses a storage media type of TYMED_HGLOBAL, which is not commonly
+  // used with CFSTR_FILECONTENTS (but used in Chromium--see
+  // OSExchangeDataProviderWin::SetFileContents). Use GetFileContentAtIndexType
+  // if TYMED_ISTREAM and TYMED_ISTORAGE are needed.
+  // TODO(https://crbug.com/950756): Should TYMED_ISTREAM / TYMED_ISTORAGE be
+  // used instead of TYMED_HGLOBAL in
+  // OSExchangeDataProviderWin::SetFileContents.
   CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
       type, ::RegisterClipboardFormat(CFSTR_FILECONTENTS), 0);
   return type.Get();
+}
+
+// static
+std::map<LONG, ClipboardFormatType>&
+ClipboardFormatType::GetFileContentTypeMap() {
+  static base::NoDestructor<std::map<LONG, ClipboardFormatType>>
+      index_to_type_map;
+  return *index_to_type_map;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetFileContentAtIndexType(
+    LONG index) {
+  auto& index_to_type_map = GetFileContentTypeMap();
+
+  // Use base::WrapUnique instead of std::make_unique here since
+  // ClipboardFormatType constructor is private. See
+  // https://chromium.googlesource.com/chromium/src/+/HEAD/styleguide/c++/c++-dos-and-donts.md.
+  auto insert_or_assign_result = index_to_type_map.insert(
+      {index,
+       ClipboardFormatType(::RegisterClipboardFormat(CFSTR_FILECONTENTS), index,
+                           TYMED_HGLOBAL | TYMED_ISTREAM | TYMED_ISTORAGE)});
+  return insert_or_assign_result.first->second;
 }
 
 // static

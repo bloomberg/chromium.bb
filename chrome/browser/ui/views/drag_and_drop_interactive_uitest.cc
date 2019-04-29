@@ -87,9 +87,9 @@ class DragAndDropSimulator {
   // |location| is relative to |web_contents|.
   // Returns true upon success.
   bool SimulateDragEnter(gfx::Point location, const std::string& text) {
-    ui::OSExchangeData data;
-    data.SetString(base::UTF8ToUTF16(text));
-    return SimulateDragEnter(location, data);
+    os_exchange_data_ = std::make_unique<ui::OSExchangeData>();
+    os_exchange_data_->SetString(base::UTF8ToUTF16(text));
+    return SimulateDragEnter(location, *os_exchange_data_);
   }
 
   // Simulates dropping of the drag-and-dropped item.
@@ -168,6 +168,7 @@ class DragAndDropSimulator {
 
   content::WebContents* web_contents_;
   std::unique_ptr<ui::DropTargetEvent> active_drag_event_;
+  std::unique_ptr<ui::OSExchangeData> os_exchange_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DragAndDropSimulator);
 };
@@ -540,6 +541,11 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     drag_simulator_.reset(new DragAndDropSimulator(web_contents()));
+  }
+
+  void TearDownOnMainThread() override {
+    // For X11 need to tear down before UI goes away.
+    drag_simulator_.reset();
   }
 
   bool use_cross_site_subframe() {

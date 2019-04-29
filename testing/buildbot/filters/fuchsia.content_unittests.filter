@@ -60,3 +60,7 @@
 
 # Flaky, https://crbug.com/884250.
 -ReferrerSanitizerTest.SanitizesPolicyForNonEmptyReferrers
+
+# This test requires OSExchangeDataProviderFactory::CreateProvider to
+# be implemented: https://crbug.com/750934.
+-WebContentsViewAuraTest.DragDropFiles

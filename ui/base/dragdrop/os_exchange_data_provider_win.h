@@ -9,6 +9,7 @@
 #include <shlobj.h>
 #include <stddef.h>
 #include <wrl/client.h>
+#include <utility>
 
 #include <memory>
 #include <string>
@@ -154,6 +155,13 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   void SetURL(const GURL& url, const base::string16& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
+  // Test only method for adding virtual file content to the data store. The
+  // first value in the pair is the file display name, the second is a string
+  // providing the file content.
+  void SetVirtualFileContentsForTesting(
+      const std::vector<std::pair<base::FilePath, std::string>>&
+          filenames_and_contents,
+      DWORD tymed) override;
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   void SetFileContents(const base::FilePath& filename,
@@ -166,6 +174,12 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
+  bool HasVirtualFilenames() const override;
+  bool GetVirtualFilenames(std::vector<FileInfo>* filenames) const override;
+  bool GetVirtualFilesAsTempFiles(
+      base::OnceCallback<
+          void(const std::vector<std::pair<base::FilePath, base::FilePath>>&)>
+          callback) const override;
   bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool GetFileContents(base::FilePath* filename,
@@ -185,6 +199,10 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   gfx::Vector2d GetDragImageOffset() const override;
 
  private:
+  void SetVirtualFileContentAtIndexForTesting(base::span<const uint8_t> data,
+                                              DWORD tymed,
+                                              size_t index);
+
   scoped_refptr<DataObjectImpl> data_;
   Microsoft::WRL::ComPtr<IDataObject> source_object_;
 

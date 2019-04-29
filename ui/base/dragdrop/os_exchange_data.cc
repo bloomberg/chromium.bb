@@ -4,6 +4,10 @@
 
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
@@ -134,6 +138,22 @@ void OSExchangeData::SetFileContents(const base::FilePath& filename,
 bool OSExchangeData::GetFileContents(base::FilePath* filename,
                                      std::string* file_contents) const {
   return provider_->GetFileContents(filename, file_contents);
+}
+
+bool OSExchangeData::HasVirtualFilenames() const {
+  return provider_->HasVirtualFilenames();
+}
+
+bool OSExchangeData::GetVirtualFilenames(
+    std::vector<FileInfo>* filenames) const {
+  return provider_->GetVirtualFilenames(filenames);
+}
+
+bool OSExchangeData::GetVirtualFilesAsTempFiles(
+    base::OnceCallback<
+        void(const std::vector<std::pair<base::FilePath, base::FilePath>>&)>
+        callback) const {
+  return provider_->GetVirtualFilesAsTempFiles(std::move(callback));
 }
 
 void OSExchangeData::SetDownloadFileInfo(const DownloadFileInfo& download) {

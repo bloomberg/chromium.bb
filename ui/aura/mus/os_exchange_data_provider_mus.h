@@ -76,6 +76,16 @@ class AURA_EXPORT OSExchangeDataProviderMus
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
   bool HasFileContents() const override;
+  void SetVirtualFileContentsForTesting(
+      const std::vector<std::pair<base::FilePath, std::string>>&
+          filenames_and_contents,
+      DWORD tymed) override;
+  bool HasVirtualFilenames() const override;
+  bool GetVirtualFilenames(std::vector<ui::FileInfo>* filenames) const override;
+  bool GetVirtualFilesAsTempFiles(
+      base::OnceCallback<
+          void(const std::vector<std::pair<base::FilePath, base::FilePath>>&)>
+          callback) const override;
   void SetDownloadFileInfo(
       const ui::OSExchangeData::DownloadFileInfo& download) override;
 #endif

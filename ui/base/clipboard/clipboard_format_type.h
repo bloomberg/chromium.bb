@@ -5,6 +5,8 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_FORMAT_TYPE_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_FORMAT_TYPE_H_
 
+#include <map>
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
@@ -60,7 +62,9 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static const ClipboardFormatType& GetTextHtmlType();
   static const ClipboardFormatType& GetCFHDropType();
   static const ClipboardFormatType& GetFileDescriptorType();
+  static const ClipboardFormatType& GetFileDescriptorWType();
   static const ClipboardFormatType& GetFileContentZeroType();
+  static const ClipboardFormatType& GetFileContentAtIndexType(LONG index);
   static const ClipboardFormatType& GetIDListType();
 #endif
 
@@ -99,7 +103,17 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 #if defined(OS_WIN)
   explicit ClipboardFormatType(UINT native_format);
   ClipboardFormatType(UINT native_format, LONG index);
-  FORMATETC data_;
+  ClipboardFormatType(UINT native_format, LONG index, DWORD tymed);
+
+  // When there are multiple files in the data store and they are described
+  // using a file group descriptor, the file contents are retrieved by
+  // requesting the CFSTR_FILECONTENTS clipboard format type and also providing
+  // an index into the data (the first file corresponds to index 0). This
+  // function returns a map of index to CFSTR_FILECONTENTS clipboard format
+  // type.
+  static std::map<LONG, ClipboardFormatType>& GetFileContentTypeMap();
+
+  FORMATETC data_{};
 #elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   explicit ClipboardFormatType(const std::string& native_format);
   std::string data_;

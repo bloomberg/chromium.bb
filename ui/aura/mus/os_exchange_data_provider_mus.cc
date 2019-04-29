@@ -252,6 +252,8 @@ bool OSExchangeDataProviderMus::HasCustomFormat(
 
 // These methods were added in an ad-hoc way to different operating
 // systems. We need to support them until they get cleaned up.
+// TODO(https://crbug.com/951547): Clean up OSExchangeDataProviderMus methods
+// that were added in an ad-hoc way
 #if defined(USE_X11) || defined(OS_WIN)
 void OSExchangeDataProviderMus::SetFileContents(
     const base::FilePath& filename,
@@ -266,6 +268,27 @@ bool OSExchangeDataProviderMus::GetFileContents(
 }
 
 bool OSExchangeDataProviderMus::HasFileContents() const {
+  return false;
+}
+
+void OSExchangeDataProviderMus::SetVirtualFileContentsForTesting(
+    const std::vector<std::pair<base::FilePath, std::string>>&
+        filenames_and_contents,
+    DWORD tymed) {}
+
+bool OSExchangeDataProviderMus::HasVirtualFilenames() const {
+  return false;
+}
+
+bool OSExchangeDataProviderMus::GetVirtualFilenames(
+    std::vector<ui::FileInfo>* filenames) const {
+  return false;
+}
+
+bool OSExchangeDataProviderMus::GetVirtualFilesAsTempFiles(
+    base::OnceCallback<
+        void(const std::vector<std::pair<base::FilePath, base::FilePath>>&)>
+        callback) const {
   return false;
 }
 
