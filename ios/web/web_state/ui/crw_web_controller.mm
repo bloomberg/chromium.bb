@@ -3845,7 +3845,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // There is no reliable way to tell if there was a user gesture, so this code
   // checks if user has recently tapped on web view. TODO(crbug.com/809706):
   // Remove the usage of -userIsInteracting when rdar://19989909 is fixed.
-  bool initiatedByUser = [self userIsInteracting];
+  bool initiatedByUser = [self isUserInitiatedAction:action];
 
   if (UIAccessibilityIsVoiceOverRunning()) {
     // -userIsInteracting returns NO if VoiceOver is On. Inspect action's
@@ -3964,6 +3964,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - WKUIDelegate Helpers
+
+- (BOOL)isUserInitiatedAction:(WKNavigationAction*)action {
+  return [self userIsInteracting];
+}
 
 // Helper to respond to |webView:runJavaScript...| delegate methods.
 // |completionHandler| must not be nil.
