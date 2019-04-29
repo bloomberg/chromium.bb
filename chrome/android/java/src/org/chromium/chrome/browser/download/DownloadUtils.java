@@ -677,7 +677,7 @@ public class DownloadUtils {
             context.startActivity(viewIntent);
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
-        } catch (ActivityNotFoundException e) {
+        } catch (Exception e) {
             // Can't launch the Intent.
             if (source != DownloadMetrics.DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
