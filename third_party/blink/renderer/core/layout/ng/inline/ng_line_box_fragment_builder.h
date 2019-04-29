@@ -52,6 +52,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Mark this line box is an "empty" line box. See NGLineBoxType.
   void SetIsEmptyLineBox();
 
+  // True if descendants were propagated to outside of this fragment.
+  bool HasPropagatedDescendants() const;
+
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
 

@@ -261,6 +261,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   // The following bitfield is only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
+  unsigned has_propagated_descendants_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
 
   // The following bitfield is only to be used by NGPhysicalBoxFragment (it's

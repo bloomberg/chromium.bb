@@ -741,56 +741,43 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   DCHECK_EQ(direction, lineboxes->Style().Direction());
   const PhysicalSize outer_size = lineboxes->Size();
 
-  struct FragmentWithLogicalOffset {
-    const NGPhysicalFragment& fragment;
-    LogicalOffset offset;
-  };
-  // Avoid calling |ReserveInitialCapacity()| because
-  // |lineboxes->Children().size()| is O(n), not linear, but it's critical to
-  // have enough capacity.
-  Vector<FragmentWithLogicalOffset, 64> fragments;
+  LayoutUnit used_block_size = previous_inflow_position->logical_block_offset;
+  NGBreakToken* last_break_token = nullptr;
   for (const NGPaintFragment* child : lineboxes->Children()) {
     if (child->IsDirty())
       break;
 
-    // Abort if there are floats, oof, or list marker. They need re-layout.
-    const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
-    if (!child_fragment.IsLineBox())
-      return nullptr;
+    // Abort if the line propagated its descendants to outside of the line. They
+    // are propagated through NGLayoutResult, which we don't cache.
+    const NGPhysicalLineBoxFragment* line =
+        DynamicTo<NGPhysicalLineBoxFragment>(&child->PhysicalFragment());
+    if (!line || line->HasPropagatedDescendants())
+      break;
 
+    // TODO(kojii): Running the normal layout code at least once for this child
+    // helps reducing the code to setup internal states after the reuse. Remove
+    // the last fragment if it is the end of the fragmentation to do so, but we
+    // should figure out how to setup the states without doing this.
+    NGBreakToken* break_token = line->BreakToken();
+    DCHECK(break_token);
+    if (break_token->IsFinished())
+      break;
+
+    last_break_token = break_token;
     LogicalOffset logical_offset = child->Offset().ConvertToLogical(
-        writing_mode, direction, outer_size, child_fragment.Size());
-    fragments.push_back(
-        FragmentWithLogicalOffset{child_fragment, logical_offset});
+        writing_mode, direction, outer_size, line->Size());
+    container_builder_.AddChild(
+        line, {logical_offset.inline_offset, used_block_size});
+    used_block_size += line->Size().ConvertToLogical(writing_mode).block_size;
   }
-  if (fragments.IsEmpty())
+  if (!last_break_token)
     return nullptr;
 
-  // TODO(kojii): Running the normal layout code at least once for this child
-  // helps reducing the code to setup internal states after the reuse. Remove
-  // the last fragment if it is the end of the fragmentation to do so, but we
-  // should figure out how to setup the states without doing this.
-  DCHECK(fragments.back().fragment.BreakToken());
-  if (fragments.back().fragment.BreakToken()->IsFinished()) {
-    fragments.Shrink(fragments.size() - 1);
-    if (fragments.IsEmpty())
-      return nullptr;
-  }
-
-  for (const auto& fragment : fragments) {
-    container_builder_.AddChild(&fragment.fragment, fragment.offset);
-  }
-
   // Update the internal states to after the re-used fragments.
-  const auto& last_fragment = fragments.back();
-  LayoutUnit used_block_size =
-      last_fragment.offset.block_offset +
-      last_fragment.fragment.Size().ConvertToLogical(writing_mode).block_size;
   previous_inflow_position->logical_block_offset = used_block_size;
 
   // In order to layout the rest of lines, return the break token from the last
   // reused line box.
-  NGBreakToken* last_break_token = last_fragment.fragment.BreakToken();
   DCHECK(last_break_token);
   DCHECK(!last_break_token->IsFinished());
   return To<NGInlineBreakToken>(last_break_token);

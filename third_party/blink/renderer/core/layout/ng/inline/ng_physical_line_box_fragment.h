@@ -41,6 +41,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   }
   bool IsEmptyLineBox() const { return LineBoxType() == kEmptyLineBox; }
 
+  // True if descendants were propagated to outside of this fragment.
+  bool HasPropagatedDescendants() const { return has_propagated_descendants_; }
 
   const ComputedStyle& Style() const { return *style_; }
   const NGLineHeightMetrics& Metrics() const { return metrics_; }

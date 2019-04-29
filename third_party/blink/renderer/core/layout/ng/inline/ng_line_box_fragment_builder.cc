@@ -37,6 +37,11 @@ void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {
   line_box_type_ = NGPhysicalLineBoxFragment::kEmptyLineBox;
 }
 
+bool NGLineBoxFragmentBuilder::HasPropagatedDescendants() const {
+  return has_floating_descendants_ || !oof_positioned_descendants_.IsEmpty() ||
+         unpositioned_list_marker_;
+}
+
 NGLineBoxFragmentBuilder::Child*
 NGLineBoxFragmentBuilder::ChildList::FirstInFlowChild() {
   for (auto& child : *this) {

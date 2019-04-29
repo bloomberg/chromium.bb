@@ -49,6 +49,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   builder->line_box_type_),
       metrics_(builder->metrics_) {
   style_ = std::move(builder->style_);
+  has_propagated_descendants_ = builder->HasPropagatedDescendants();
   base_direction_ = static_cast<unsigned>(builder->base_direction_);
 }
 
