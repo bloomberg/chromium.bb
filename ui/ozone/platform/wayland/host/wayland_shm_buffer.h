@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,7 +54,7 @@ class WaylandShmBuffer {
   gfx::Size size_;
   int stride_;
   wl::Object<wl_buffer> buffer_;
-  std::unique_ptr<base::SharedMemory> shared_memory_ = nullptr;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandShmBuffer);
 };

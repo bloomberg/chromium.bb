@@ -18,7 +18,9 @@
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "base/memory/free_deleter.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
@@ -53,13 +55,20 @@ class WaylandKeyboardTest : public WaylandTest {
         xkb_keymap_get_as_string(xkb_keymap_.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     DCHECK(keymap_string.get());
     size_t keymap_size = strlen(keymap_string.get()) + 1;
-    base::SharedMemory shared_keymap;
-    bool rv = shared_keymap.CreateAndMapAnonymous(keymap_size);
-    DCHECK(rv);
+
+    base::UnsafeSharedMemoryRegion shared_keymap_region =
+        base::UnsafeSharedMemoryRegion::Create(keymap_size);
+    base::WritableSharedMemoryMapping shared_keymap =
+        shared_keymap_region.Map();
+    base::subtle::PlatformSharedMemoryRegion platform_shared_keymap =
+        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+            std::move(shared_keymap_region));
+    DCHECK(shared_keymap.IsValid());
+
     memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
-    wl_keyboard_send_keymap(keyboard_->resource(),
-                            WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-                            shared_keymap.handle().GetHandle(), keymap_size);
+    wl_keyboard_send_keymap(
+        keyboard_->resource(), WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+        platform_shared_keymap.PassPlatformHandle().fd.release(), keymap_size);
 #endif
   }
 

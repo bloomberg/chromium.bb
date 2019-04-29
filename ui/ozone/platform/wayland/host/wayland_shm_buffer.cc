@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
 
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
@@ -16,7 +18,7 @@ const uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
 namespace ui {
 
 WaylandShmBuffer::WaylandShmBuffer(wl_shm* shm, const gfx::Size& size)
-    : size_(size), shared_memory_(std::make_unique<base::SharedMemory>()) {
+    : size_(size) {
   Initialize(shm);
 }
 
@@ -35,19 +37,25 @@ void WaylandShmBuffer::Initialize(wl_shm* shm) {
   if (buffer_size == SIZE_MAX)
     return;
 
-  if (!shared_memory_->CreateAndMapAnonymous(buffer_size)) {
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Create(buffer_size);
+  shared_memory_mapping_ = shared_memory_region.Map();
+  if (!shared_memory_mapping_.IsValid()) {
     PLOG(ERROR) << "Create and mmap failed.";
     return;
   }
+  base::subtle::PlatformSharedMemoryRegion platform_shared_memory =
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(shared_memory_region));
 
-  auto handle = shared_memory_->handle().GetHandle();
-  wl::Object<wl_shm_pool> pool(wl_shm_create_pool(shm, handle, buffer_size));
+  wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
+      shm, platform_shared_memory.PassPlatformHandle().fd.release(),
+      buffer_size));
 
   auto* new_buffer = wl_shm_pool_create_buffer(
       pool.get(), 0, size_.width(), size_.height(), stride, kShmFormat);
   if (!new_buffer) {
-    shared_memory_->Unmap();
-    shared_memory_->Close();
+    shared_memory_mapping_ = base::WritableSharedMemoryMapping();
     return;
   }
 
@@ -56,9 +64,9 @@ void WaylandShmBuffer::Initialize(wl_shm* shm) {
 }
 
 uint8_t* WaylandShmBuffer::GetMemory() const {
-  if (!IsValid() || !shared_memory_)
+  if (!IsValid() || !shared_memory_mapping_.IsValid())
     return nullptr;
-  return static_cast<uint8_t*>(shared_memory_->memory());
+  return shared_memory_mapping_.GetMemoryAs<uint8_t>();
 }
 
 }  // namespace ui
