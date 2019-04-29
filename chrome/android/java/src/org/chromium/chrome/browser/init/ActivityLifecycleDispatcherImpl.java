@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ActivityResultWithNativeObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -24,7 +25,7 @@ import org.chromium.chrome.browser.lifecycle.WindowFocusChangedObserver;
  *
  * All observers will be automatically cleared when the backing activity is destroyed.
  */
-public class ActivityLifecycleDispatcher {
+public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatcher {
     private final ObserverList<InflationObserver> mInflationObservers = new ObserverList<>();
     private final ObserverList<NativeInitObserver> mNativeInitObservers = new ObserverList<>();
     private final ObserverList<PauseResumeWithNativeObserver> mPauseResumeObservers =
@@ -39,11 +40,7 @@ public class ActivityLifecycleDispatcher {
     private final ObserverList<ActivityResultWithNativeObserver>
             mActivityResultWithNativeObservers = new ObserverList<>();
 
-    /**
-     * Registers an observer.
-     * @param observer must implement one or several observer interfaces in
-     * {@link org.chromium.chrome.browser.lifecycle} in order to receive corresponding events.
-     */
+    @Override
     public void register(LifecycleObserver observer) {
         if (observer instanceof InflationObserver) {
             mInflationObservers.addObserver((InflationObserver) observer);
@@ -72,9 +69,7 @@ public class ActivityLifecycleDispatcher {
         }
     }
 
-    /**
-     * Unregisters an observer.
-     */
+    @Override
     public void unregister(LifecycleObserver observer) {
         if (observer instanceof InflationObserver) {
             mInflationObservers.removeObserver((InflationObserver) observer);
@@ -164,13 +159,13 @@ public class ActivityLifecycleDispatcher {
     }
 
     void dispatchOnSaveInstanceState(Bundle outBundle) {
-        for (SaveInstanceStateObserver observer: mSaveInstanceStateObservers) {
+        for (SaveInstanceStateObserver observer : mSaveInstanceStateObservers) {
             observer.onSaveInstanceState(outBundle);
         }
     }
 
     void dispatchOnWindowFocusChanged(boolean hasFocus) {
-        for (WindowFocusChangedObserver observer: mWindowFocusChangesObservers) {
+        for (WindowFocusChangedObserver observer : mWindowFocusChangesObservers) {
             observer.onWindowFocusChanged(hasFocus);
         }
     }

@@ -6,16 +6,15 @@ package org.chromium.chrome.browser.lifecycle;
 
 import android.content.Intent;
 
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-
 /**
- * Implement this interface and register in {@link ActivityLifecycleDispatcher} to receive
- * activity result methods.
+ * Implement this interface and register in {@link
+ * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to receive activity result methods.
  */
 public interface ActivityResultWithNativeObserver extends LifecycleObserver {
     /**
-     * Called when {@link AsyncInitializationActivity#onActivityResult(int, int, Intent)} is called.
+     * Called when {@link
+     * org.chromium.chrome.browser.init.AsyncInitializationActivity#onActivityResult(int, int,
+     * Intent)} is called.
      */
     void onActivityResultWithNative(int requestCode, int resultCode, Intent data);
 }

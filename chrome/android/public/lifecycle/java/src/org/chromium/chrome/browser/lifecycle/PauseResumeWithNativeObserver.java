@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.lifecycle;
 
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
-
 /**
- * Implement this interface and register in {@link ActivityLifecycleDispatcher} to receive
- * pause and resume with native events.
+ * Implement this interface and register in {@link
+ * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to receive pause and resume with
+ * native events.
  */
 public interface PauseResumeWithNativeObserver extends LifecycleObserver {
-
     /**
      * Called when activity is resumed, provided that native is initialized.
      * If native is not initialized at that point, the call is postponed until it is.

@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -63,8 +64,8 @@ public abstract class AsyncInitializationActivity
     private final NativeInitializationController mNativeInitializationController =
             new NativeInitializationController(this);
 
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher =
-            new ActivityLifecycleDispatcher();
+    private final ActivityLifecycleDispatcherImpl mLifecycleDispatcher =
+            new ActivityLifecycleDispatcherImpl();
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;

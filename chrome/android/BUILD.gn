@@ -272,6 +272,7 @@ android_library("chrome_java") {
     "//base:jni_java",
     "//chrome/android/features/keyboard_accessory/factory:java",
     "//chrome/android/features/keyboard_accessory/public:java",
+    "//chrome/android/public/lifecycle:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",

@@ -10,7 +10,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.app.AppCompatDelegate;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
