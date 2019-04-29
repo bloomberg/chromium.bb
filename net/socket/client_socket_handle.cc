@@ -86,48 +86,6 @@ void ClientSocketHandle::ResetAndCloseSocket() {
   ResetErrorState();
 }
 
-void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {
-  DCHECK(cancel || !cancel_connect_job);
-
-  // Was Init called?
-  if (!group_id_.destination().IsEmpty()) {
-    // If so, we must have a pool.
-    CHECK(pool_);
-    if (is_initialized()) {
-      if (socket_) {
-        socket_->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
-        // Release the socket back to the ClientSocketPool so it can be
-        // deleted or reused.
-        pool_->ReleaseSocket(group_id_, std::move(socket_), group_generation_);
-      } else {
-        // If the handle has been initialized, we should still have a
-        // socket.
-        NOTREACHED();
-      }
-    } else if (cancel) {
-      // If we did not get initialized yet and we have a socket
-      // request pending, cancel it.
-      pool_->CancelRequest(group_id_, this, cancel_connect_job);
-    }
-  }
-  is_initialized_ = false;
-  socket_.reset();
-  group_id_ = ClientSocketPool::GroupId();
-  reuse_type_ = ClientSocketHandle::UNUSED;
-  callback_.Reset();
-  if (higher_pool_)
-    RemoveHigherLayeredPool(higher_pool_);
-  pool_ = nullptr;
-  idle_time_ = base::TimeDelta();
-  connect_timing_ = LoadTimingInfo::ConnectTiming();
-  group_generation_ = -1;
-}
-
-void ClientSocketHandle::ResetErrorState() {
-  is_ssl_error_ = false;
-  ssl_cert_request_info_ = nullptr;
-}
-
 LoadState ClientSocketHandle::GetLoadState() const {
   CHECK(!is_initialized());
   CHECK(!group_id_.destination().IsEmpty());
@@ -209,16 +167,16 @@ void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
   ssl_cert_request_info_ = connect_job->GetCertRequestInfo();
 }
 
+std::unique_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
+  return std::move(socket_);
+}
+
 void ClientSocketHandle::OnIOComplete(int result) {
   TRACE_EVENT0(NetTracingCategory(), "ClientSocketHandle::OnIOComplete");
   CompletionOnceCallback callback = std::move(callback_);
   callback_.Reset();
   HandleInitCompletion(result);
   std::move(callback).Run(result);
-}
-
-std::unique_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
-  return std::move(socket_);
 }
 
 void ClientSocketHandle::HandleInitCompletion(int result) {
@@ -243,6 +201,48 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
   DCHECK(socket_.get());
   socket_->NetLog().BeginEvent(NetLogEventType::SOCKET_IN_USE,
                                requesting_source_.ToEventParametersCallback());
+}
+
+void ClientSocketHandle::ResetInternal(bool cancel, bool cancel_connect_job) {
+  DCHECK(cancel || !cancel_connect_job);
+
+  // Was Init called?
+  if (!group_id_.destination().IsEmpty()) {
+    // If so, we must have a pool.
+    CHECK(pool_);
+    if (is_initialized()) {
+      if (socket_) {
+        socket_->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
+        // Release the socket back to the ClientSocketPool so it can be
+        // deleted or reused.
+        pool_->ReleaseSocket(group_id_, std::move(socket_), group_generation_);
+      } else {
+        // If the handle has been initialized, we should still have a
+        // socket.
+        NOTREACHED();
+      }
+    } else if (cancel) {
+      // If we did not get initialized yet and we have a socket
+      // request pending, cancel it.
+      pool_->CancelRequest(group_id_, this, cancel_connect_job);
+    }
+  }
+  is_initialized_ = false;
+  socket_.reset();
+  group_id_ = ClientSocketPool::GroupId();
+  reuse_type_ = ClientSocketHandle::UNUSED;
+  callback_.Reset();
+  if (higher_pool_)
+    RemoveHigherLayeredPool(higher_pool_);
+  pool_ = nullptr;
+  idle_time_ = base::TimeDelta();
+  connect_timing_ = LoadTimingInfo::ConnectTiming();
+  group_generation_ = -1;
+}
+
+void ClientSocketHandle::ResetErrorState() {
+  is_ssl_error_ = false;
+  ssl_cert_request_info_ = nullptr;
 }
 
 }  // namespace net
