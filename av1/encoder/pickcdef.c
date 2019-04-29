@@ -427,7 +427,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       }
       // No filtering if the entire filter block is skipped
       if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
-      cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
+      cdef_count = cdef_compute_sb_list(cm, fbr * MI_SIZE_64X64,
                                         fbc * MI_SIZE_64X64, dlist, bs);
       for (pli = 0; pli < num_planes; pli++) {
         for (i = 0; i < CDEF_INBUF_SIZE; i++) inbuf[i] = CDEF_VERY_LARGE;

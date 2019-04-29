@@ -31,7 +31,7 @@ static int is_8x8_block_skip(MB_MODE_INFO **grid, int mi_row, int mi_col,
   return is_skip;
 }
 
-int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
+int cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
                          cdef_list *dlist, BLOCK_SIZE bs) {
   MB_MODE_INFO **grid = cm->mi_grid_visible;
   int maxc = cm->mi_cols - mi_col;
@@ -225,7 +225,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       uv_sec_strength += uv_sec_strength == 3;
       if ((level == 0 && sec_strength == 0 && uv_level == 0 &&
            uv_sec_strength == 0) ||
-          (cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
+          (cdef_count = cdef_compute_sb_list(cm, fbr * MI_SIZE_64X64,
                                              fbc * MI_SIZE_64X64, dlist,
                                              BLOCK_64X64)) == 0) {
         cdef_left = 0;
