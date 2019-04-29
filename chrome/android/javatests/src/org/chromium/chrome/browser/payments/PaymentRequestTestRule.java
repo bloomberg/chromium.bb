@@ -107,6 +107,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     final PaymentsCallbackHelper<CardUnmaskPrompt> mUnmaskValidationDone;
+    final PaymentsCallbackHelper<CardUnmaskPrompt> mSubmitRejected;
     final CallbackHelper mReadyToEdit;
     final CallbackHelper mEditorValidationError;
     final CallbackHelper mEditorTextUpdate;
@@ -138,6 +139,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mUnmaskValidationDone = new PaymentsCallbackHelper<>();
+        mSubmitRejected = new PaymentsCallbackHelper<>();
         mReadyToEdit = new CallbackHelper();
         mEditorValidationError = new CallbackHelper();
         mEditorTextUpdate = new CallbackHelper();
@@ -197,6 +199,9 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     }
     public PaymentsCallbackHelper<CardUnmaskPrompt> getUnmaskValidationDone() {
         return mUnmaskValidationDone;
+    }
+    public PaymentsCallbackHelper<CardUnmaskPrompt> getSubmitRejected() {
+        return mSubmitRejected;
     }
     public CallbackHelper getReadyToEdit() {
         return mReadyToEdit;
@@ -1008,6 +1013,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     public void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt) {
         ThreadUtils.assertOnUiThread();
         mUnmaskValidationDone.notifyCalled(prompt);
+    }
+
+    @Override
+    public void onCardUnmaskPromptSubmitRejected(CardUnmaskPrompt prompt) {
+        ThreadUtils.assertOnUiThread();
+        mSubmitRejected.notifyCalled(prompt);
     }
 
     @Override

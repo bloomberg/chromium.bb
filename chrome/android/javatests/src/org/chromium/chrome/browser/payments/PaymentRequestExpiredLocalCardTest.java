@@ -219,4 +219,20 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
 
         mRule.hitSoftwareKeyboardSubmitButtonAndWait(R.id.card_unmask_input, mRule.getDismissed());
     }
+
+    /**
+     * Tests that hitting "submit" on the software keyboard in the CVC number field with no CVC set
+     * will not submit the CVC unmask dialog.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    @Test
+    public void testNoSoftwareKeyboardSubmitInCvcNumberFieldIfInvalid()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mRule.triggerUIAndWait(mRule.getReadyToPay());
+        mRule.clickAndWait(R.id.button_primary, mRule.getReadyForUnmaskInput());
+
+        mRule.hitSoftwareKeyboardSubmitButtonAndWait(
+                R.id.card_unmask_input, mRule.getSubmitRejected());
+    }
 }

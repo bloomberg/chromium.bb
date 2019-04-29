@@ -132,6 +132,11 @@ public class CardUnmaskPrompt
          * Called when the input values in the unmask prompt have been validated.
          */
         void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt);
+
+        /**
+         * Called when submitting through the soft keyboard was disallowed.
+         */
+        void onCardUnmaskPromptSubmitRejected(CardUnmaskPrompt prompt);
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
@@ -189,7 +194,11 @@ public class CardUnmaskPrompt
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
+                if (!mDialogModel.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED)) {
+                    onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
+                } else if (sObserverForTest != null) {
+                    sObserverForTest.onCardUnmaskPromptSubmitRejected(this);
+                }
                 return true;
             }
             return false;
