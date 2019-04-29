@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/android/resource_sizes.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
@@ -1662,6 +1663,13 @@ chrome_public_apk_or_module_tmpl("chrome_public_apk") {
   enable_multidex = is_java_debug
 }
 
+android_resource_sizes_test("resource_sizes_chrome_public_apk") {
+  apk_name = "ChromePublic"
+  data_deps = [
+    ":chrome_public_apk",
+  ]
+}
+
 chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromeModernPublic"
@@ -2098,6 +2106,14 @@ if (is_official_build) {
     ]
     bundle_path = "$root_build_dir/apks/ChromeModernPublic.aab"
   }
+
+  android_resource_sizes_test(
+      "resource_sizes_chrome_modern_public_minimal_apks") {
+    file_path = "$root_build_dir/apks/ChromeModernPublic.minimal.apks"
+    data_deps = [
+      ":chrome_modern_public_minimal_apks",
+    ]
+  }
 }
 
 template("monochrome_or_trichrome_public_bundle_tmpl") {
@@ -2269,6 +2285,12 @@ if (is_official_build) {
       ":monochrome_public_bundle",
     ]
     bundle_path = "$root_build_dir/apks/MonochromePublic.aab"
+  }
+  android_resource_sizes_test("resource_sizes_monochrome_public_minimal_apks") {
+    file_path = "$root_build_dir/apks/MonochromePublic.minimal.apks"
+    data_deps = [
+      ":monochrome_public_minimal_apks",
+    ]
   }
 }
 
