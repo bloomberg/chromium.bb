@@ -109,8 +109,8 @@ struct Error {
 
     /**
      * Error code indicating an error related to the <a href="https://www.chromium.org/quic">
-     * QUIC</a> protocol. When {@link #getErrorCode} returns this code, this exception can be cast
-     * to {@link QuicException} for more information.
+     * QUIC</a> protocol. When {@link #error_code} is this code, see
+     * {@link quic_detailed_error_code} for more information.
      */
     ERROR_QUIC_PROTOCOL_FAILED = 10,
 
