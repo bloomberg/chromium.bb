@@ -185,7 +185,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                             sectionIndex == 0 && dateIndex > 0 /* showDivider */);
                     if (!mHideSectionHeaders) {
                         sectionHeaderItem.showTitle = !mHideTitleFromSectionHeaders;
-                        sectionHeaderItem.showMenu = filter == OfflineItemFilter.FILTER_IMAGE;
+                        sectionHeaderItem.showMenu = filter == OfflineItemFilter.IMAGE;
                         sectionHeaderItem.items = new ArrayList<>(section.items.values());
                     }
                     listItems.add(sectionHeaderItem);
@@ -195,7 +195,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 for (OfflineItem offlineItem : section.items.values()) {
                     OfflineItemListItem item = new OfflineItemListItem(offlineItem);
                     if (mConfig.supportFullWidthImages && section.items.size() == 1
-                            && offlineItem.filter == OfflineItemFilter.FILTER_IMAGE) {
+                            && offlineItem.filter == OfflineItemFilter.IMAGE) {
                         item.spanFullWidth = true;
                     }
                     listItems.add(item);

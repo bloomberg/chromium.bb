@@ -93,16 +93,16 @@ public class ListUtils {
             if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
 
             switch (offlineItem.item.filter) {
-                case OfflineItemFilter.FILTER_VIDEO:
+                case OfflineItemFilter.VIDEO:
                     return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
-                case OfflineItemFilter.FILTER_IMAGE:
+                case OfflineItemFilter.IMAGE:
                     return inProgress ? ViewType.IN_PROGRESS_IMAGE
                                       : (offlineItem.spanFullWidth ? ViewType.IMAGE_FULL_WIDTH
                                                                    : ViewType.IMAGE);
-                // case OfflineItemFilter.FILTER_PAGE:
-                // case OfflineItemFilter.FILTER_AUDIO:
-                // case OfflineItemFilter.FILTER_OTHER:
-                // case OfflineItemFilter.FILTER_DOCUMENT:
+                // case OfflineItemFilter.PAGE:
+                // case OfflineItemFilter.AUDIO:
+                // case OfflineItemFilter.OTHER:
+                // case OfflineItemFilter.DOCUMENT:
                 default:
                     return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
             }
@@ -117,17 +117,17 @@ public class ListUtils {
      */
     public static @StringRes int getTextForSection(int filter) {
         switch (filter) {
-            case OfflineItemFilter.FILTER_PAGE:
+            case OfflineItemFilter.PAGE:
                 return R.string.download_manager_ui_pages;
-            case OfflineItemFilter.FILTER_IMAGE:
+            case OfflineItemFilter.IMAGE:
                 return R.string.download_manager_ui_images;
-            case OfflineItemFilter.FILTER_VIDEO:
+            case OfflineItemFilter.VIDEO:
                 return R.string.download_manager_ui_video;
-            case OfflineItemFilter.FILTER_AUDIO:
+            case OfflineItemFilter.AUDIO:
                 return R.string.download_manager_ui_audio;
-            case OfflineItemFilter.FILTER_OTHER:
+            case OfflineItemFilter.OTHER:
                 return R.string.download_manager_ui_other;
-            case OfflineItemFilter.FILTER_DOCUMENT:
+            case OfflineItemFilter.DOCUMENT:
                 return R.string.download_manager_ui_documents;
             default:
                 return R.string.download_manager_ui_all_downloads;

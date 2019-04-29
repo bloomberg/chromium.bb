@@ -540,7 +540,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean isOfflinePage() {
-            return mItem.filter == OfflineItemFilter.FILTER_PAGE;
+            return mItem.filter == OfflineItemFilter.PAGE;
         }
 
         @Override

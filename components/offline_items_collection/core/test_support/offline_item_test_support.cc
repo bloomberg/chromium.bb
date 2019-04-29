@@ -66,8 +66,8 @@ std::ostream& operator<<(std::ostream& os, const OfflineItemState& state) {
       return os << "FAILED";
     case PAUSED:
       return os << "PAUSED";
-    case MAX_DOWNLOAD_STATE:
-      return os << "MAX_DOWNLOAD_STATE";
+    case NUM_ENTRIES:
+      return os << "NUM_ENTRIES";
   }
   CHECK(false) << "state=" << static_cast<int>(state);
   return os;
@@ -171,8 +171,8 @@ std::ostream& operator<<(std::ostream& os, OfflineItemFilter state) {
       return os << "FILTER_DOCUMENT";
     case FILTER_OTHER:
       return os << "FILTER_OTHER";
-    case FILTER_BOUNDARY:
-      return os << "FILTER_BOUNDARY";
+    case FILTER_NUM_ENTRIES:
+      return os << "FILTER_NUM_ENTRIES";
   }
   CHECK(false) << "state=" << static_cast<int>(state);
   return os;

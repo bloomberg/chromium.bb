@@ -372,23 +372,23 @@ public final class DownloadInfo {
 
         switch (DownloadFilter.fromMimeType(downloadInfo.getMimeType())) {
             case DownloadFilter.Type.PAGE:
-                offlineItem.filter = OfflineItemFilter.FILTER_PAGE;
+                offlineItem.filter = OfflineItemFilter.PAGE;
                 break;
             case DownloadFilter.Type.VIDEO:
-                offlineItem.filter = OfflineItemFilter.FILTER_VIDEO;
+                offlineItem.filter = OfflineItemFilter.VIDEO;
                 break;
             case DownloadFilter.Type.AUDIO:
-                offlineItem.filter = OfflineItemFilter.FILTER_AUDIO;
+                offlineItem.filter = OfflineItemFilter.AUDIO;
                 break;
             case DownloadFilter.Type.IMAGE:
-                offlineItem.filter = OfflineItemFilter.FILTER_IMAGE;
+                offlineItem.filter = OfflineItemFilter.IMAGE;
                 break;
             case DownloadFilter.Type.DOCUMENT:
-                offlineItem.filter = OfflineItemFilter.FILTER_DOCUMENT;
+                offlineItem.filter = OfflineItemFilter.DOCUMENT;
                 break;
             case DownloadFilter.Type.OTHER:
             default:
-                offlineItem.filter = OfflineItemFilter.FILTER_OTHER;
+                offlineItem.filter = OfflineItemFilter.OTHER;
                 break;
         }
 
