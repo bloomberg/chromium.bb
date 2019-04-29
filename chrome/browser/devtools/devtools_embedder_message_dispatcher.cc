@@ -212,6 +212,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RecordEnumeratedHistogram, delegate);
   d->RegisterHandler("recordPerformanceHistogram",
                      &Delegate::RecordPerformanceHistogram, delegate);
+  d->RegisterHandler("recordUserMetricsAction",
+                     &Delegate::RecordUserMetricsAction, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",
                                  &Delegate::SendJsonRequest, delegate);
   d->RegisterHandlerWithCallback("getPreferences",

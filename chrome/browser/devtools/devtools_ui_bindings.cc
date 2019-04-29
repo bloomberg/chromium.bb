@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1147,6 +1148,14 @@ void DevToolsUIBindings::RecordPerformanceHistogram(const std::string& name,
   // DevTools frontend javascript and so will always have the same call site.
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
   base::UmaHistogramTimes(name, delta);
+}
+
+void DevToolsUIBindings::RecordUserMetricsAction(const std::string& name) {
+  if (!frontend_host_)
+    return;
+  // Use RecordComputedAction instead of RecordAction as the name comes from
+  // DevTools frontend javascript and so will always have the same call site.
+  base::RecordComputedAction(name);
 }
 
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
