@@ -18,15 +18,17 @@ import org.chromium.base.annotations.NativeMethods;
 public class ConsistencyCookieManager implements ObservableValue.Observer {
     private final long mNativeConsistencyCookieManager;
     private final AccountManagerFacade mAccountManagerFacade;
+    private final SigninActivityMonitor mSigninActivityMonitor;
     private boolean mIsUpdatePending;
 
     private ConsistencyCookieManager(long nativeConsistencyCookieManager) {
         ThreadUtils.assertOnUiThread();
         mNativeConsistencyCookieManager = nativeConsistencyCookieManager;
         mAccountManagerFacade = AccountManagerFacade.get();
+        mSigninActivityMonitor = SigninActivityMonitor.get();
 
         mAccountManagerFacade.isUpdatePending().addObserver(this);
-        // TODO(https://crbug.com/949562): Observe ongoing sign-in activities.
+        mSigninActivityMonitor.hasOngoingActivity().addObserver(this);
 
         mIsUpdatePending = calculateIsUpdatePending();
     }
@@ -41,8 +43,8 @@ public class ConsistencyCookieManager implements ObservableValue.Observer {
     }
 
     private boolean calculateIsUpdatePending() {
-        // TODO(https://crbug.com/949562): Check for ongoing sign-in activities.
-        return mAccountManagerFacade.isUpdatePending().get();
+        return mAccountManagerFacade.isUpdatePending().get()
+                || mSigninActivityMonitor.hasOngoingActivity().get();
     }
 
     @CalledByNative

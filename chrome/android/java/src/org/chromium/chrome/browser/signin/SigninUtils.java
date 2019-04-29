@@ -12,7 +12,6 @@ import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.GAIAServiceType;
+import org.chromium.components.signin.SigninActivityMonitor;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -49,6 +49,7 @@ public class SigninUtils {
         return IntentUtils.safeStartActivity(context, intent);
     }
 
+    // TODO(https://crbug.com/955501): Migrate all clients to WindowAndroid and remove this.
     /**
      * Opens a Settings page with all accounts on the device.
      * @param context Context to use when starting the Activity.
@@ -58,6 +59,16 @@ public class SigninUtils {
         Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return IntentUtils.safeStartActivity(context, intent);
+    }
+
+    /**
+     * Opens a Settings page with all accounts on the device.
+     * @param windowAndroid WindowAndroid to use when starting the Activity.
+     * @return Whether or not Android accepted the Intent.
+     */
+    public static boolean openSettingsForAllAccounts(WindowAndroid windowAndroid) {
+        Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
+        return startActivity(windowAndroid, intent);
     }
 
     @CalledByNative
@@ -86,7 +97,7 @@ public class SigninUtils {
                     break;
                 default:
                     // Open generic accounts settings.
-                    SigninUtils.openSettingsForAllAccounts(ContextUtils.getApplicationContext());
+                    openSettingsForAllAccounts(windowAndroid);
                     break;
             }
             return;
@@ -105,14 +116,33 @@ public class SigninUtils {
         logEvent(ProfileAccountManagementMetrics.DIRECT_ADD_ACCOUNT, gaiaServiceTypeSignup);
 
         AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
-            Activity activity = windowAndroid.getActivity().get();
-            if (intent == null || activity == null
-                    || !IntentUtils.safeStartActivity(activity, intent)) {
-                // Failed to create or show an intent, open settings for all accounts so
-                // the user has a chance to create an account manually.
-                SigninUtils.openSettingsForAllAccounts(ContextUtils.getApplicationContext());
+            if (intent != null && startActivity(windowAndroid, intent)) {
+                return;
             }
+            // Failed to create or show an intent, open settings for all accounts so
+            // the user has a chance to create an account manually.
+            SigninUtils.openSettingsForAllAccounts(windowAndroid);
         });
+    }
+
+    // TODO(https://crbug.com/953765): Move this to SigninActivityMonitor.
+    /**
+     * Starts an activity using the provided intent. The started activity will be tracked by
+     * {@link SigninActivityMonitor#hasOngoingActivity()}.
+     *
+     * @param windowAndroid The window to use when launching the intent.
+     * @param intent The intent to launch.
+     * @return Whether {@link WindowAndroid#showIntent} succeeded.
+     */
+    private static boolean startActivity(WindowAndroid windowAndroid, Intent intent) {
+        SigninActivityMonitor signinActivityMonitor = SigninActivityMonitor.get();
+        WindowAndroid.IntentCallback intentCallback =
+                (window, resultCode, data) -> signinActivityMonitor.activityFinished();
+        if (windowAndroid.showIntent(intent, intentCallback, null)) {
+            signinActivityMonitor.activityStarted();
+            return true;
+        }
+        return false;
     }
 
     /**
