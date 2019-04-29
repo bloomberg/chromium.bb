@@ -346,6 +346,15 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
       AutofillProfileComparator::DISCARD_WHITESPACE));
 }
 
+TEST_F(AutofillProfileComparatorTest, MatchesAfterNormalization) {
+  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
+      base::ASCIIToUTF16("H3B 2Y5"), base::ASCIIToUTF16("H3B2Y5")));
+  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
+      base::UTF8ToUTF16("Jean-François"), base::UTF8ToUTF16("Jean François")));
+  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
+      base::ASCIIToUTF16("(234) 567-8900"), base::ASCIIToUTF16("2345678900")));
+}
+
 TEST_F(AutofillProfileComparatorTest, GetNamePartVariants) {
   std::set<base::string16> expected_variants = {
       UTF8ToUTF16("timothe noel"),

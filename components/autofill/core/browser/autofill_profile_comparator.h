@@ -39,6 +39,12 @@ class AutofillProfileComparator {
       base::StringPiece16 text,
       WhitespaceSpec whitespace_spec = RETAIN_WHITESPACE) const;
 
+  // Returns true if |text1| matches |text2| when the texts are normalized and
+  // white space and punctuation are removed. For example, if |text1| is H3B 2Y5
+  // and |text2| is H3B2Y5, then returns true.
+  bool MatchesAfterNormalization(base::StringPiece16 text1,
+                                 base::StringPiece16 text2) const;
+
   // Returns true if |p1| and |p2| are viable merge candidates. This means that
   // their names, addresses, email addreses, company names, and phone numbers
   // are all pairwise equivalent or mergeable.

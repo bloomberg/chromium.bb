@@ -492,47 +492,64 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
                                  const std::string& app_locale) const {
   ServerFieldTypeSet types;
   GetSupportedTypes(&types);
-  return IsSubsetOfForFieldSet(profile, app_locale, types);
+  return IsSubsetOfForFieldSet(AutofillProfileComparator(app_locale), profile,
+                               app_locale, types);
 }
 
 bool AutofillProfile::IsSubsetOfForFieldSet(
+    const AutofillProfileComparator& comparator,
     const AutofillProfile& profile,
     const std::string& app_locale,
     const ServerFieldTypeSet& types) const {
-  AutofillProfileComparator comparator(app_locale);
-
   for (ServerFieldType type : types) {
-    base::string16 value = GetRawInfo(type);
-    if (value.empty())
-      continue;
+    // Prefer GetInfo over GetRawInfo so that a reasonable value is retrieved
+    // when the raw data is empty or unnormalized. For example, suppose a
+    // profile's first and last names are set but its full name is not set.
+    // GetInfo for the NAME_FULL type returns the constituent name parts;
+    // however, GetRawInfo returns an empty string.
+    const base::string16 value = GetInfo(type, app_locale);
 
-    if (type == NAME_FULL || type == ADDRESS_HOME_STREET_ADDRESS) {
-      // Ignore the compound "full name" field type.  We are only interested in
-      // comparing the constituent parts.  For example, if |this| has a middle
-      // name saved, but |profile| lacks one, |profile| could still be a subset
-      // of |this|.  Likewise, ignore the compound "street address" type, as we
-      // are only interested in matching line-by-line.
+    if (value.empty() || type == ADDRESS_HOME_STREET_ADDRESS ||
+        type == ADDRESS_HOME_LINE1 || type == ADDRESS_HOME_LINE2 ||
+        type == ADDRESS_HOME_LINE3) {
+      // Ignore street addresses because comparing addresses such as 200 Elm St
+      // and 200 Elm Street could cause |profile| to not be seen as a subset of
+      // |this|. If the form includes a street address, then it is likely it
+      // contains another address field, e.g. a city or postal code, and
+      // comparing these other address parts is more reliable.
       continue;
+    } else if (type == NAME_FULL) {
+      if (!comparator.IsNameVariantOf(
+              comparator.NormalizeForComparison(
+                  profile.GetInfo(NAME_FULL, app_locale)),
+              comparator.NormalizeForComparison(value))) {
+        // Check whether the full name of |this| can be derived from the full
+        // name of |profile| if the form contains a full name field.
+        //
+        // Suppose the full name of |this| is Mia Park and |profile|'s full name
+        // is Mia L Park. Mia Park can be derived from Mia L Park, so |this|
+        // could be a subset of |profile|.
+        //
+        // If the form contains fields for a name's constiuent parts, e.g.
+        // NAME_FIRST, then these values are compared according to the
+        // conditions that follow.
+        return false;
+      }
     } else if (AutofillType(type).group() == PHONE_HOME) {
-      // Phone numbers should be canonicalized prior to being compared.
+      // Phone numbers should be canonicalized before comparing.
       if (type != PHONE_HOME_WHOLE_NUMBER) {
         continue;
       } else if (!i18n::PhoneNumbersMatch(
-                     value, profile.GetRawInfo(type),
+                     value, profile.GetInfo(type, app_locale),
                      base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
                      app_locale)) {
         return false;
       }
-    } else {
-      const base::string16 this_value =
-          comparator.NormalizeForComparison(value);
-      const base::string16 that_value =
-          comparator.NormalizeForComparison(profile.GetRawInfo(type));
-      if (this_value != that_value)
-        return false;
+    } else if (!comparator.MatchesAfterNormalization(
+                   value, profile.GetInfo(type, app_locale))) {
+      return false;
     }
   }
-
   return true;
 }
 

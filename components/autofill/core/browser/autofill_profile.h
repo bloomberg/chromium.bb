@@ -26,6 +26,8 @@
 
 namespace autofill {
 
+class AutofillProfileComparator;
+
 struct AutofillMetadata;
 
 // A collection of FormGroups stored in a profile.  AutofillProfile also
@@ -122,13 +124,13 @@ class AutofillProfile : public AutofillDataModel {
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
-  // Returns true if the data in this AutofillProfile is a subset of the data in
-  // |profile|.
+  // Returns true if this AutofillProfile's data is a subset of |profile|'s.
   bool IsSubsetOf(const AutofillProfile& profile,
                   const std::string& app_locale) const;
 
-  // Like IsSubsetOf, but only considers the types present in |types|.
-  bool IsSubsetOfForFieldSet(const AutofillProfile& profile,
+  // Like IsSubsetOf, but considers only the given |types|.
+  bool IsSubsetOfForFieldSet(const AutofillProfileComparator& comparator,
+                             const AutofillProfile& profile,
                              const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
 

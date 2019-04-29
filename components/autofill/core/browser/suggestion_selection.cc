@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -123,6 +124,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 
 std::vector<Suggestion> GetUniqueSuggestions(
     const std::vector<ServerFieldType>& field_types,
+    const AutofillProfileComparator& comparator,
     const std::string app_locale,
     const std::vector<AutofillProfile*> matched_profiles,
     const std::vector<Suggestion>& suggestions,
@@ -140,15 +142,18 @@ std::vector<Suggestion> GetUniqueSuggestions(
     for (size_t j = 0; j < matched_profiles.size(); ++j) {
       AutofillProfile* profile_b = matched_profiles[j];
       // Check if profile A is a subset of profile B. If not, continue.
-      if (i == j || suggestions[i].value != suggestions[j].value ||
-          !profile_a->IsSubsetOfForFieldSet(*profile_b, app_locale, types)) {
+      if (i == j ||
+          !comparator.MatchesAfterNormalization(suggestions[i].value,
+                                                suggestions[j].value) ||
+          !profile_a->IsSubsetOfForFieldSet(comparator, *profile_b, app_locale,
+                                            types)) {
         continue;
       }
 
       // Check if profile B is also a subset of profile A. If so, the
       // profiles are identical. Include the first one but not the second.
-      if (i < j &&
-          profile_b->IsSubsetOfForFieldSet(*profile_a, app_locale, types)) {
+      if (i < j && profile_b->IsSubsetOfForFieldSet(comparator, *profile_a,
+                                                    app_locale, types)) {
         continue;
       }
 

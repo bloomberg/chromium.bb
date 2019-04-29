@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -672,37 +673,207 @@ TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Apt. 42"), labels[0]);
 }
 
-TEST(AutofillProfileTest, IsSubsetOf) {
-  std::unique_ptr<AutofillProfile> a, b;
+TEST(AutofillProfileTest, IsSubsetOfForProfiles) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox",
+                       "genevieve@hotmail.com", "", "274 Main St", "",
+                       "Northhampton", "MA", "01060", "US", "");
 
-  // |a| is a subset of |b|.
-  a.reset(new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin));
-  b.reset(new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin));
-  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Jefferson",
-                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
-                       nullptr, nullptr, nullptr, nullptr, nullptr);
-  test::SetProfileInfo(b.get(), "Thomas", nullptr, "Jefferson",
-                       "declaration_guy@gmail.com", "United States Government",
-                       "Monticello", nullptr, "Charlottesville", "Virginia",
-                       "22902", nullptr, nullptr);
-  EXPECT_TRUE(a->IsSubsetOf(*b, "en-US"));
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox",
+                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
+                       "");
 
-  // |b| is not a subset of |a|.
-  EXPECT_FALSE(b->IsSubsetOf(*a, "en-US"));
+  AutofillProfile profile3 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile3, "Genevieve", "", "Fuller",
+                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
+                       "");
 
-  // |a| is a subset of |a|.
-  EXPECT_TRUE(a->IsSubsetOf(*a, "en-US"));
+  EXPECT_FALSE(profile1.IsSubsetOf(profile2, "en-US"));
+  EXPECT_TRUE(profile2.IsSubsetOf(profile1, "en-US"));
+  EXPECT_FALSE(profile2.IsSubsetOf(profile3, "en-US"));
+  EXPECT_FALSE(profile3.IsSubsetOf(profile2, "en-US"));
+}
 
-  // One field in |b| is different.
-  a.reset(new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin));
-  b.reset(new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin));
-  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Jefferson",
-                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
-                       nullptr, nullptr, nullptr, nullptr, nullptr);
-  test::SetProfileInfo(a.get(), "Thomas", nullptr, "Adams",
-                       "declaration_guy@gmail.com", nullptr, nullptr, nullptr,
-                       nullptr, nullptr, nullptr, nullptr, nullptr);
-  EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
+TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentMiddleNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "M", "Fox", "", "", "", "", "",
+                       "", "", "US", "");
+
+  AutofillProfile profile3 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile3, "Genevieve", "Marie", "Fox", "", "", "", "",
+                       "", "", "", "US", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  // When a form has a NAME_FULL field rather than a NAME_MIDDLE field, consider
+  // whether one profile's full name can be derived from the other's.
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                             {NAME_FULL}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_FULL}));
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile3, "en-US",
+                                             {NAME_FULL}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_FULL}));
+  // True because Genevieve M Fox can be derived from Genevieve Marie Fox.
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(comparator, profile3, "en-US",
+                                             {NAME_FULL}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_FULL}));
+
+  // When a form has a NAME_MIDDLE field rather than a NAME_FULL field, consider
+  // a name's constituent parts.
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                             {NAME_MIDDLE}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_MIDDLE}));
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile3, "en-US",
+                                             {NAME_MIDDLE}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_MIDDLE}));
+  // False because the middle name M doesn't equal the middle name Marie.
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile3, "en-US",
+                                              {NAME_MIDDLE}));
+  EXPECT_FALSE(profile3.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_MIDDLE}));
+}
+
+TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentFirstNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Cynthia", "", "Fox", "", "", "", "", "", "",
+                       "", "US", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_FULL}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_FULL}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_FIRST}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_FIRST}));
+}
+
+TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentLastNames) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fuller", "", "", "", "", "",
+                       "", "", "US", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "US", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_FULL}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_FULL}));
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-US",
+                                              {NAME_LAST}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-US",
+                                              {NAME_LAST}));
+}
+
+TEST(AutofillProfileTest,
+     IsSubsetOfForFieldSet_DifferentStreetAddressesIgnored) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "274 Main St",
+                       "", "", "", "", "US", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "",
+                       "274 Main Street", "", "", "", "", "US", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US", {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US", {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS}));
+}
+
+TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentNonStreetAddresses) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "274 Main St",
+                       "", "Northhampton", "", "", "US", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "274 Main St",
+                       "", "Sturbridge", "", "", "US", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-US",
+      {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-US",
+      {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY}));
+}
+
+TEST(AutofillProfileTest,
+     IsSubsetOfForFieldSet_PostalCodesWithAndWithoutSpaces) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "H3B 2Y5", "CA", "");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "H3B2Y5", "CA", "");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2, "en-CA",
+                                             {NAME_FULL, ADDRESS_HOME_ZIP}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(comparator, profile1, "en-CA",
+                                             {NAME_FULL, ADDRESS_HOME_ZIP}));
+}
+
+TEST(AutofillProfileTest,
+     IsSubsetOfForFieldSet_PhoneNumbersWithAndWithoutSpacesAndPunctuation) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "CA", "+1 (514) 444-5454");
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "", "", "", "",
+                       "", "", "CA", "15144445454");
+
+  const AutofillProfileComparator comparator("en-US");
+
+  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
+      comparator, profile2, "en-CA", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
+  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
+      comparator, profile1, "en-CA", {NAME_FULL, PHONE_HOME_WHOLE_NUMBER}));
 }
 
 TEST(AutofillProfileTest, SetRawInfo_UpdateValidityFlag) {

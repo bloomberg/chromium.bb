@@ -131,6 +131,17 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   return base::i18n::UnicodeStringToString16(value);
 }
 
+bool AutofillProfileComparator::MatchesAfterNormalization(
+    base::StringPiece16 text1,
+    base::StringPiece16 text2) const {
+  return NormalizeForComparison(
+             text1,
+             AutofillProfileComparator::WhitespaceSpec::DISCARD_WHITESPACE) ==
+         NormalizeForComparison(
+             text2,
+             AutofillProfileComparator::WhitespaceSpec::DISCARD_WHITESPACE);
+}
+
 bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
                                              const AutofillProfile& p2) const {
   // Sorted in order to relative expense of the tests to fail early and cheaply

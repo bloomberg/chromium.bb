@@ -4,8 +4,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_SUGGESTION_SELECTION_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_SUGGESTION_SELECTION_H_
 
+#include <string>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/suggestion.h"
 
@@ -38,6 +41,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 // the field on which the user is currently focused.
 std::vector<Suggestion> GetUniqueSuggestions(
     const std::vector<ServerFieldType>& field_types,
+    const AutofillProfileComparator& comparator,
     const std::string app_locale,
     const std::vector<AutofillProfile*> matched_profiles,
     const std::vector<Suggestion>& suggestions,

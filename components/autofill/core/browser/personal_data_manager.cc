@@ -1132,7 +1132,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
-  AutofillProfileComparator comparator(app_locale_);
+  const AutofillProfileComparator comparator(app_locale_);
   base::string16 field_contents_canon =
       comparator.NormalizeForComparison(field_contents);
 
@@ -1162,9 +1162,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
   std::vector<Suggestion> unique_suggestions =
-      suggestion_selection::GetUniqueSuggestions(field_types, app_locale_,
-                                                 matched_profiles, suggestions,
-                                                 &unique_matched_profiles);
+      suggestion_selection::GetUniqueSuggestions(
+          field_types, comparator, app_locale_, matched_profiles, suggestions,
+          &unique_matched_profiles);
 
   std::unique_ptr<LabelFormatter> formatter;
 

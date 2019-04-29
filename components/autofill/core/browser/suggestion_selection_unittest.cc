@@ -242,7 +242,7 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_SingleDedupe) {
 
   std::vector<AutofillProfile*> unique_matched_profiles;
   auto unique_suggestions =
-      GetUniqueSuggestions({}, app_locale_, profile_pointers,
+      GetUniqueSuggestions({}, comparator_, app_locale_, profile_pointers,
                            CreateSuggestions(profile_pointers, NAME_FIRST),
                            &unique_matched_profiles);
 
@@ -267,10 +267,10 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_MultipleDedupe) {
   auto profile_pointers = {profile1.get(), profile2.get(), profile3.get()};
 
   std::vector<AutofillProfile*> unique_matched_profiles;
-  auto unique_suggestions =
-      GetUniqueSuggestions({NAME_LAST}, app_locale_, profile_pointers,
-                           CreateSuggestions(profile_pointers, NAME_FIRST),
-                           &unique_matched_profiles);
+  auto unique_suggestions = GetUniqueSuggestions(
+      {NAME_LAST}, comparator_, app_locale_, profile_pointers,
+      CreateSuggestions(profile_pointers, NAME_FIRST),
+      &unique_matched_profiles);
 
   ASSERT_EQ(3U, unique_suggestions.size());
   ASSERT_EQ(3U, unique_matched_profiles.size());
@@ -299,10 +299,10 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_DedupeLimit) {
                  });
 
   std::vector<AutofillProfile*> unique_matched_profiles;
-  auto unique_suggestions =
-      GetUniqueSuggestions({NAME_LAST}, app_locale_, profiles_pointers,
-                           CreateSuggestions(profiles_pointers, NAME_FIRST),
-                           &unique_matched_profiles);
+  auto unique_suggestions = GetUniqueSuggestions(
+      {NAME_LAST}, comparator_, app_locale_, profiles_pointers,
+      CreateSuggestions(profiles_pointers, NAME_FIRST),
+      &unique_matched_profiles);
 
   ASSERT_EQ(kMaxUniqueSuggestionsCount, unique_suggestions.size());
   ASSERT_EQ(kMaxUniqueSuggestionsCount, unique_matched_profiles.size());
@@ -316,8 +316,8 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_DedupeLimit) {
 
 TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_EmptyMatchingProfiles) {
   std::vector<AutofillProfile*> unique_matched_profiles;
-  auto unique_suggestions = GetUniqueSuggestions({NAME_LAST}, app_locale_, {},
-                                                 {}, &unique_matched_profiles);
+  auto unique_suggestions = GetUniqueSuggestions(
+      {NAME_LAST}, comparator_, app_locale_, {}, {}, &unique_matched_profiles);
 
   ASSERT_EQ(0U, unique_matched_profiles.size());
   ASSERT_EQ(0U, unique_suggestions.size());
