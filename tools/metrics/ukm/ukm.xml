@@ -1112,7 +1112,7 @@ be describing additional metrics about the same event.
   <summary>
     Metrics that measure various update times in Blink. This includes paint,
     compositing, and layout update times. The metrics are recorded at first
-    lifecycle update and then a random interval with mean duration of 30s.
+    lifecycle update and then a random frame with mean interval of 2000 frames.
   </summary>
   <metric name="Animate">
     <summary>

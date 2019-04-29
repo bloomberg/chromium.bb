@@ -47,10 +47,10 @@ namespace blink {
 //
 // A UKM event is generated according to a sampling strategy. A record is always
 // generated on the first lifecycle update, and then additional samples are
-// taken at random intervals simulating a poisson process with mean time of
-// mean_milliseconds_between_samples_. The first primary metric recording after
-// the end of the interval will produce an event with all the
-// data for that frame (i.e. the period since the last BeginMainFrame).
+// taken at random frames simulating a poisson process with mean number of
+// frames between events of mean_frames_between_samples_. The first primary
+// metric recording after the frame count has passed will produce an event with
+// all the data for that frame (i.e. the period since the last BeginMainFrame).
 //
 // Sample usage (see also SCOPED_UMA_AND_UKM_TIMER):
 //   std::unique_ptr<UkmHierarchicalTimeAggregator> aggregator(
@@ -247,15 +247,15 @@ class CORE_EXPORT LocalFrameUkmAggregator
     void reset() { interval_duration = TimeDelta(); }
   };
 
-  void UpdateEventTimeAndRecordEventIfNeeded(TimeTicks current_time);
+  void UpdateEventTimeAndRecordEventIfNeeded();
   void RecordEvent();
   void ResetAllMetrics();
-  TimeDelta SampleInterval();
+  unsigned SampleFramesToNextEvent();
 
   // To test event sampling. This and all future intervals will be the given
-  // time delta, until this is called again.
-  void NextSampleIntervalForTest(TimeDelta interval) {
-    interval_for_test_ = interval;
+  // frame count, until this is called again.
+  void FramesToNextEventForTest(unsigned num_frames) {
+    frames_to_next_event_for_test_ = num_frames;
   }
 
   // UKM system data
@@ -268,12 +268,14 @@ class CORE_EXPORT LocalFrameUkmAggregator
   Vector<AbsoluteMetricRecord> absolute_metric_records_;
   Vector<MainFramePercentageRecord> main_frame_percentage_records_;
 
-  // Time and sampling data
-  int mean_milliseconds_between_samples_;
-  TimeTicks next_event_time_;
+  // Sampling control. Currently we sample a bit more than every 30s assuming we
+  // are achieving 60fps. Better to sample less rather than more given our data
+  // is already beyond the throtting threshold.
+  unsigned mean_frames_between_samples_ = 2000;
+  unsigned frames_to_next_event_ = 0;
 
-  // Test data, used for SampleInterval if present
-  TimeDelta interval_for_test_ = TimeDelta();
+  // Test data, used for SampleFramesToNextEvent if present
+  unsigned frames_to_next_event_for_test_ = 0;
 
   // Set by BeginMainFrame() and cleared in RecordMEndOfFrameMetrics.
   // Main frame metrics are only recorded if this is true.

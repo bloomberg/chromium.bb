@@ -39,9 +39,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
                                                  ukm::UkmRecorder* recorder)
     : source_id_(source_id),
       recorder_(recorder),
-      event_name_("Blink.UpdateTime"),
-      mean_milliseconds_between_samples_(30000),
-      next_event_time_(CurrentTimeTicks()) {
+      event_name_("Blink.UpdateTime") {
   // Record average and worst case for the primary metric.
   primary_metric_.reset();
 
@@ -177,27 +175,22 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
 
   // Record here to avoid resetting the ratios before this data point is
   // recorded.
-  UpdateEventTimeAndRecordEventIfNeeded(end);
+  UpdateEventTimeAndRecordEventIfNeeded();
 
   // Reset for the next frame.
   ResetAllMetrics();
 }
 
-void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded(
-    TimeTicks current_time) {
-  // When a long frame comes in, it might cover more than one interval
-  // sampled. That's quite unlikely given the mean interval is 30s and
-  // a single frame is rarely longer, but it may happen. Report multiple
-  // events for the long frame so that we can detect it in the data, and
-  // also to weigh long frames more because they are the primary source
-  // of user frustration and we want to know about that.
+void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded() {
   // TODO(schenney) Adjust the mean sample interval so that we do not
   // get our events throttled by the UKM system. For M-73 only 1 in 212
   // events are being sent.
-  while (current_time >= next_event_time_) {
+  if (!frames_to_next_event_) {
     RecordEvent();
-    next_event_time_ += SampleInterval();
+    frames_to_next_event_ += SampleFramesToNextEvent();
   }
+  DCHECK_GT(frames_to_next_event_, 0u);
+  --frames_to_next_event_;
 }
 
 void LocalFrameUkmAggregator::RecordEvent() {
@@ -291,10 +284,10 @@ void LocalFrameUkmAggregator::ResetAllMetrics() {
     record.reset();
 }
 
-TimeDelta LocalFrameUkmAggregator::SampleInterval() {
+unsigned LocalFrameUkmAggregator::SampleFramesToNextEvent() {
   // Return the test interval if set
-  if (interval_for_test_ > TimeDelta())
-    return interval_for_test_;
+  if (frames_to_next_event_for_test_)
+    return frames_to_next_event_for_test_;
 
   // Sample from an exponential distribution to give a poisson distribution
   // of samples per time unit. In this case, a mean of one sample per
@@ -306,9 +299,19 @@ TimeDelta LocalFrameUkmAggregator::SampleInterval() {
   // chance of an interval mofre than 5 * mean).
   // RandDouble() returns [0,1), but we need (0,1]. If RandDouble() is
   // uniformly random, so is 1-RandDouble(), so use it to adjust the range.
-  double sample =
-      -mean_milliseconds_between_samples_ * log(1.0 - base::RandDouble());
-  return TimeDelta::FromMillisecondsD(sample);
+  // When RandDouble returns 0.0, as it could, we will get a float_sample of
+  // 0, causing underflow in UpdateEventTimeAndRecordIfNeeded. So rejection
+  // sample until we get a positive count.
+  double float_sample = 0;
+  do {
+    float_sample =
+        -(mean_frames_between_samples_ * std::log(1.0 - base::RandDouble()));
+  } while (float_sample == 0);
+  // float_sample is positive, so we don't need to worry about underflow.
+  // But with extremely low probability we might end up with a super high
+  // sample. That's OK because it just means we'll stop reporting metrics
+  // for that session.
+  return (unsigned)std::ceil(float_sample);
 }
 
 }  // namespace blink
