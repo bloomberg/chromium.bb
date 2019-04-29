@@ -38,20 +38,6 @@ using PressKind = ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind;
 using SourceKind =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind;
 
-using ABI::Windows::Foundation::ITypedEventHandler;
-using ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager;
-using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs;
-using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs2;
-using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState;
-using ABI::Windows::UI::Input::Spatial::SpatialInteractionManager;
-using ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceEventArgs;
-using Microsoft::WRL::Callback;
-using Microsoft::WRL::ComPtr;
-
-typedef ITypedEventHandler<SpatialInteractionManager*,
-                           SpatialInteractionSourceEventArgs*>
-    SpatialInteractionSourceEventHandler;
-
 ParsedInputState::ParsedInputState() {}
 ParsedInputState::~ParsedInputState() {}
 ParsedInputState::ParsedInputState(ParsedInputState&& other) = default;
@@ -319,16 +305,13 @@ uint32_t GetSourceId(const WMRInputSource& source) {
 }
 }  // namespace
 
-MixedRealityInputHelper::MixedRealityInputHelper(HWND hwnd) : hwnd_(hwnd) {
-  pressed_token_.value = 0;
-  released_token_.value = 0;
-}
+MixedRealityInputHelper::MixedRealityInputHelper(HWND hwnd) : hwnd_(hwnd) {}
 
 MixedRealityInputHelper::~MixedRealityInputHelper() {
   // Dispose must be called before destruction, which ensures that we're
   // unsubscribed from events.
-  DCHECK(pressed_token_.value == 0);
-  DCHECK(released_token_.value == 0);
+  DCHECK(pressed_subscription_ == nullptr);
+  DCHECK(released_subscription_ == nullptr);
 }
 
 void MixedRealityInputHelper::Dispose() {
@@ -491,47 +474,34 @@ ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
   return input_state;
 }
 
-HRESULT MixedRealityInputHelper::OnSourcePressed(
-    ISpatialInteractionManager* sender,
-    ISpatialInteractionSourceEventArgs* args) {
-  return ProcessSourceEvent(args, true /* is_pressed */);
+void MixedRealityInputHelper::OnSourcePressed(
+    const WMRInputSourceEventArgs& args) {
+  ProcessSourceEvent(args, true /* is_pressed */);
 }
 
-HRESULT MixedRealityInputHelper::OnSourceReleased(
-    ISpatialInteractionManager* sender,
-    ISpatialInteractionSourceEventArgs* args) {
-  return ProcessSourceEvent(args, false /* is_pressed */);
+void MixedRealityInputHelper::OnSourceReleased(
+    const WMRInputSourceEventArgs& args) {
+  ProcessSourceEvent(args, false /* is_pressed */);
 }
 
-HRESULT MixedRealityInputHelper::ProcessSourceEvent(
-    ISpatialInteractionSourceEventArgs* raw_args,
+void MixedRealityInputHelper::ProcessSourceEvent(
+    const WMRInputSourceEventArgs& args,
     bool is_pressed) {
   base::AutoLock scoped_lock(lock_);
-  ComPtr<ISpatialInteractionSourceEventArgs> args(raw_args);
-  ComPtr<ISpatialInteractionSourceEventArgs2> args2;
-  HRESULT hr = args.As(&args2);
-  if (FAILED(hr))
-    return S_OK;
 
-  PressKind press_kind;
-  hr = args2->get_PressKind(&press_kind);
-  DCHECK(SUCCEEDED(hr));
+  PressKind press_kind = args.PressKind();
 
   if (press_kind != PressKind::SpatialInteractionPressKind_Select)
-    return S_OK;
+    return;
 
-  ComPtr<ISpatialInteractionSourceState> source_state_wmr;
-  hr = args->get_State(&source_state_wmr);
-  DCHECK(SUCCEEDED(hr));
-
-  WMRInputSourceState state(source_state_wmr);
+  WMRInputSourceState state = args.State();
   WMRInputSource source = state.GetSource();
 
   SourceKind source_kind = source.Kind();
 
   if (source_kind != SourceKind::SpatialInteractionSourceKind_Controller &&
       source_kind != SourceKind::SpatialInteractionSourceKind_Voice)
-    return S_OK;
+    return;
 
   uint32_t id = GetSourceId(source);
 
@@ -545,46 +515,26 @@ HRESULT MixedRealityInputHelper::ProcessSourceEvent(
   if (source_kind == SourceKind::SpatialInteractionSourceKind_Voice &&
       !is_pressed)
     pending_voice_states_.push_back(std::move(state));
-  return S_OK;
 }
 
 void MixedRealityInputHelper::SubscribeEvents() {
   DCHECK(input_manager_);
-  DCHECK(pressed_token_.value == 0);
-  DCHECK(released_token_.value == 0);
+  DCHECK(pressed_subscription_ == nullptr);
+  DCHECK(released_subscription_ == nullptr);
 
-  // The destructor ensures that we're unsubscribed so raw this is fine.
-  auto pressed_callback = Callback<SpatialInteractionSourceEventHandler>(
-      this, &MixedRealityInputHelper::OnSourcePressed);
-  HRESULT hr = input_manager_->GetComPtr()->add_SourcePressed(
-      pressed_callback.Get(), &pressed_token_);
-  DCHECK(SUCCEEDED(hr));
-
-  // The destructor ensures that we're unsubscribed so raw this is fine.
-  auto released_callback = Callback<SpatialInteractionSourceEventHandler>(
-      this, &MixedRealityInputHelper::OnSourceReleased);
-  hr = input_manager_->GetComPtr()->add_SourceReleased(released_callback.Get(),
-                                                       &released_token_);
-  DCHECK(SUCCEEDED(hr));
+  // Unretained is safe since we explicitly get disposed and unsubscribe before
+  // destruction
+  pressed_subscription_ =
+      input_manager_->AddPressedCallback(base::BindRepeating(
+          &MixedRealityInputHelper::OnSourcePressed, base::Unretained(this)));
+  released_subscription_ =
+      input_manager_->AddReleasedCallback(base::BindRepeating(
+          &MixedRealityInputHelper::OnSourceReleased, base::Unretained(this)));
 }
 
 void MixedRealityInputHelper::UnsubscribeEvents() {
-  base::AutoLock scoped_lock(lock_);
-  if (!input_manager_)
-    return;
-
-  HRESULT hr = S_OK;
-  if (pressed_token_.value != 0) {
-    hr = input_manager_->GetComPtr()->remove_SourcePressed(pressed_token_);
-    pressed_token_.value = 0;
-    DCHECK(SUCCEEDED(hr));
-  }
-
-  if (released_token_.value != 0) {
-    hr = input_manager_->GetComPtr()->remove_SourceReleased(released_token_);
-    released_token_.value = 0;
-    DCHECK(SUCCEEDED(hr));
-  }
+  pressed_subscription_ = nullptr;
+  released_subscription_ = nullptr;
 }
 
 }  // namespace device

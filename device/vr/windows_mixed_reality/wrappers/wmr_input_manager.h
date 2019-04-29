@@ -11,12 +11,39 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 
 namespace device {
 class WMRInputSourceState;
+class WMRInputSourceEventArgs {
+ public:
+  explicit WMRInputSourceEventArgs(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs>
+          args);
+  virtual ~WMRInputSourceEventArgs();
+
+  ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind PressKind()
+      const;
+  WMRInputSourceState State() const;
+
+ private:
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs>
+      args_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs2>
+      args2_;
+};
+
 class WMRInputManager {
  public:
+  using InputEventCallbackList =
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>;
+  using InputEventCallback =
+      base::RepeatingCallback<void(const WMRInputSourceEventArgs&)>;
+
   static std::unique_ptr<WMRInputManager> GetForWindow(HWND hwnd);
 
   explicit WMRInputManager(
@@ -29,15 +56,33 @@ class WMRInputManager {
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp) const;
 
-  // TODO(954413): Remove this once the events that are used have been wrapped.
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
-  GetComPtr() const;
+  std::unique_ptr<InputEventCallbackList::Subscription> AddPressedCallback(
+      const InputEventCallback& cb);
+
+  std::unique_ptr<InputEventCallbackList::Subscription> AddReleasedCallback(
+      const InputEventCallback& cb);
 
  private:
+  void SubscribeEvents();
+  void UnsubscribeEvents();
+
+  HRESULT OnSourcePressed(
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
+          args);
+  HRESULT OnSourceReleased(
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
+          args);
+
   Microsoft::WRL::ComPtr<
       ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
       manager_;
+
+  EventRegistrationToken pressed_token_;
+  EventRegistrationToken released_token_;
+  InputEventCallbackList pressed_callback_list_;
+  InputEventCallbackList released_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WMRInputManager);
 };

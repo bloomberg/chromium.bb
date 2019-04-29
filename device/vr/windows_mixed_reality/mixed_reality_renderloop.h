@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -111,7 +112,8 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   std::unique_ptr<MixedRealityInputHelper> input_helper_;
 
   std::unique_ptr<WMRStageStatics> stage_statics_;
-  EventRegistrationToken stage_changed_token_;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      stage_changed_subscription_;
 
   std::vector<gfx::Point3F> bounds_;
   bool bounds_updated_ = false;

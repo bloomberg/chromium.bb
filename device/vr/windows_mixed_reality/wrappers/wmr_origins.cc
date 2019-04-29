@@ -5,11 +5,13 @@
 
 #include <windows.perception.spatial.h>
 #include <wrl.h>
+#include <wrl/event.h>
 
 #include <cstdint>
 #include <memory>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/win/core_winrt_util.h"
@@ -21,6 +23,7 @@
 namespace WFN = ABI::Windows::Foundation::Numerics;
 using SpatialMovementRange =
     ABI::Windows::Perception::Spatial::SpatialMovementRange;
+using ABI::Windows::Foundation::IEventHandler;
 using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
 using ABI::Windows::Perception::Spatial::ISpatialLocator;
@@ -220,9 +223,20 @@ WMRStageStatics::WMRStageStatics(
     ComPtr<ISpatialStageFrameOfReferenceStatics> stage_statics)
     : stage_statics_(stage_statics) {
   DCHECK(stage_statics_);
+  auto callback = Microsoft::WRL::Callback<IEventHandler<IInspectable*>>(
+      this, &WMRStageStatics::OnCurrentChanged);
+  HRESULT hr =
+      stage_statics_->add_CurrentChanged(callback.Get(), &stage_changed_token_);
+  DCHECK(SUCCEEDED(hr));
 }
 
-WMRStageStatics::~WMRStageStatics() = default;
+WMRStageStatics::~WMRStageStatics() {
+  if (stage_changed_token_.value != 0) {
+    HRESULT hr = stage_statics_->remove_CurrentChanged(stage_changed_token_);
+    stage_changed_token_.value = 0;
+    DCHECK(SUCCEEDED(hr));
+  }
+}
 
 std::unique_ptr<WMRStageOrigin> WMRStageStatics::CurrentStage() {
   ComPtr<ISpatialStageFrameOfReference> stage_origin;
@@ -235,8 +249,14 @@ std::unique_ptr<WMRStageOrigin> WMRStageStatics::CurrentStage() {
   return std::make_unique<WMRStageOrigin>(stage_origin);
 }
 
-ComPtr<ISpatialStageFrameOfReferenceStatics> WMRStageStatics::GetComPtr()
-    const {
-  return stage_statics_;
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+WMRStageStatics::AddStageChangedCallback(
+    const base::RepeatingCallback<void()>& cb) {
+  return callback_list_.Add(cb);
+}
+
+HRESULT WMRStageStatics::OnCurrentChanged(IInspectable*, IInspectable*) {
+  callback_list_.Notify();
+  return S_OK;
 }
 }  // namespace device

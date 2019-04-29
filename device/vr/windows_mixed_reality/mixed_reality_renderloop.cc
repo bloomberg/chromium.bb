@@ -38,8 +38,6 @@ namespace WFN = ABI::Windows::Foundation::Numerics;
 using SpatialMovementRange =
     ABI::Windows::Perception::Spatial::SpatialMovementRange;
 using ABI::Windows::Foundation::DateTime;
-using ABI::Windows::Foundation::IEventHandler;
-using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Foundation::TimeSpan;
 using ABI::Windows::Foundation::Numerics::Matrix4x4;
 using ABI::Windows::Graphics::Holographic::HolographicStereoTransform;
@@ -126,7 +124,6 @@ MixedRealityRenderLoop::MixedRealityRenderLoop(
     : XRCompositorCommon(),
       on_display_info_changed_(std::move(on_display_info_changed)),
       weak_ptr_factory_(this) {
-  stage_changed_token_.value = 0;
 }
 
 MixedRealityRenderLoop::~MixedRealityRenderLoop() {
@@ -308,44 +305,30 @@ bool MixedRealityRenderLoop::EnsureStageStatics() {
   if (!stage_statics_)
     return false;
 
-  auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  scoped_refptr<base::SingleThreadTaskRunner> thread_runner = task_runner();
-
-  auto callback = Microsoft::WRL::Callback<IEventHandler<IInspectable*>>(
-      [weak_this, thread_runner](IInspectable*, IInspectable*) {
-        thread_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(&MixedRealityRenderLoop::OnCurrentStageChanged,
-                           weak_this));
-        return S_OK;
-      });
-
-  DCHECK(stage_changed_token_.value == 0);
-  HRESULT hr = stage_statics_->GetComPtr()->add_CurrentChanged(
-      callback.Get(), &stage_changed_token_);
-  DCHECK(SUCCEEDED(hr));
+  // Since we explicitly null out both the statics and the subscription during
+  // StopRuntime (which happens before destruction), base::Unretained is safe.
+  stage_changed_subscription_ = stage_statics_->AddStageChangedCallback(
+      base::BindRepeating(&MixedRealityRenderLoop::OnCurrentStageChanged,
+                          base::Unretained(this)));
 
   return true;
 }
 
 void MixedRealityRenderLoop::ClearStageStatics() {
-  if (!stage_statics_)
-    return;
-
-  HRESULT hr = S_OK;
-  if (stage_changed_token_.value != 0) {
-    hr = stage_statics_->GetComPtr()->remove_CurrentChanged(
-        stage_changed_token_);
-    stage_changed_token_.value = 0;
-    DCHECK(SUCCEEDED(hr));
-  }
-
+  stage_changed_subscription_ = nullptr;
   stage_statics_ = nullptr;
 }
 
 void MixedRealityRenderLoop::OnCurrentStageChanged() {
-  stage_origin_ = nullptr;
-  InitializeStageOrigin();
+  // Unretained is safe here because the task_runner() gets invalidated
+  // during Stop() which happens before our destruction
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(
+                              [](MixedRealityRenderLoop* render_loop) {
+                                render_loop->stage_origin_ = nullptr;
+                                render_loop->InitializeStageOrigin();
+                              },
+                              base::Unretained(this)));
 }
 
 void MixedRealityRenderLoop::EnsureStageBounds() {

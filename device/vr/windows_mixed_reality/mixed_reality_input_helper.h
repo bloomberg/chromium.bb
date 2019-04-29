@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/synchronization/lock.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
@@ -46,6 +47,7 @@ struct ParsedInputState {
 class WMRCoordinateSystem;
 class WMRInputManager;
 class WMRInputSourceState;
+class WMRInputSourceEventArgs;
 class WMRTimestamp;
 class MixedRealityInputHelper {
  public:
@@ -67,25 +69,20 @@ class MixedRealityInputHelper {
       const WMRInputSourceState& state,
       const WMRCoordinateSystem* origin);
 
-  HRESULT OnSourcePressed(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          args);
-  HRESULT OnSourceReleased(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          args);
-  HRESULT ProcessSourceEvent(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          raw_args,
-      bool is_pressed);
+  void OnSourcePressed(const WMRInputSourceEventArgs& args);
+  void OnSourceReleased(const WMRInputSourceEventArgs& args);
+  void ProcessSourceEvent(const WMRInputSourceEventArgs& args, bool is_pressed);
 
   void SubscribeEvents();
   void UnsubscribeEvents();
 
   std::unique_ptr<WMRInputManager> input_manager_;
-  EventRegistrationToken pressed_token_;
-  EventRegistrationToken released_token_;
+  std::unique_ptr<
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>::Subscription>
+      pressed_subscription_;
+  std::unique_ptr<
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>::Subscription>
+      released_subscription_;
 
   struct ControllerState {
     bool pressed;

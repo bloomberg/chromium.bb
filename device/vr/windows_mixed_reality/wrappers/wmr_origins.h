@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 
 namespace device {
@@ -112,15 +113,17 @@ class WMRStageStatics {
 
   std::unique_ptr<WMRStageOrigin> CurrentStage();
 
-  // TODO(crbug.com/954413): Remove this once the events are exposed directly.
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics>
-  GetComPtr() const;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddStageChangedCallback(const base::RepeatingCallback<void()>& cb);
 
  private:
+  HRESULT OnCurrentChanged(IInspectable* sender, IInspectable* args);
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics>
       stage_statics_;
+
+  EventRegistrationToken stage_changed_token_;
+  base::CallbackList<void()> callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WMRStageStatics);
 };
