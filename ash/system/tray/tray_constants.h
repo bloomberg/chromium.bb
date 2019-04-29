@@ -176,6 +176,7 @@ constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
+constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
 constexpr int kUnifiedSliderViewSpacing = 12;
