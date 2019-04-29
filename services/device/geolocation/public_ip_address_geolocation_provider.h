@@ -16,6 +16,10 @@
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace device {
 
 // Implementation of PublicIpAddressGeolocationProvider Mojo interface that will
@@ -32,6 +36,7 @@ class PublicIpAddressGeolocationProvider
   // |api_key| and |url_loader_factory| for network location requests.
   PublicIpAddressGeolocationProvider(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::NetworkConnectionTracker* network_connection_tracker,
       const std::string& api_key);
   ~PublicIpAddressGeolocationProvider() override;
 

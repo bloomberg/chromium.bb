@@ -807,6 +807,7 @@ void ServiceManagerContext::OnUnhandledServiceRequest(
     auto service = device::CreateDeviceService(
         device_blocking_task_runner, service_manager_thread_task_runner_,
         base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        content::GetNetworkConnectionTracker(),
         GetContentClient()->browser()->GetGeolocationApiKey(),
         GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
         base::BindRepeating(&WakeLockContextHost::GetNativeViewForContext),
@@ -818,6 +819,7 @@ void ServiceManagerContext::OnUnhandledServiceRequest(
     auto service = device::CreateDeviceService(
         device_blocking_task_runner, service_manager_thread_task_runner_,
         base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        content::GetNetworkConnectionTracker(),
         GetContentClient()->browser()->GetGeolocationApiKey(),
         base::BindRepeating(
             &ContentBrowserClient::OverrideSystemLocationProvider,

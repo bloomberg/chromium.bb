@@ -50,6 +50,7 @@ std::unique_ptr<DeviceService> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     bool use_gms_core_location_provider,
     const WakeLockContextCallback& wake_lock_context_callback,
@@ -61,14 +62,16 @@ std::unique_ptr<DeviceService> CreateDeviceService(
       custom_location_provider_callback, use_gms_core_location_provider);
   return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
-      std::move(url_loader_factory), geolocation_api_key,
-      wake_lock_context_callback, java_nfc_delegate, std::move(request));
+      std::move(url_loader_factory), network_connection_tracker,
+      geolocation_api_key, wake_lock_context_callback, java_nfc_delegate,
+      std::move(request));
 }
 #else
 std::unique_ptr<DeviceService> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     const CustomLocationProviderCallback& custom_location_provider_callback,
     service_manager::mojom::ServiceRequest request) {
@@ -77,7 +80,8 @@ std::unique_ptr<DeviceService> CreateDeviceService(
       custom_location_provider_callback);
   return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
-      std::move(url_loader_factory), geolocation_api_key, std::move(request));
+      std::move(url_loader_factory), network_connection_tracker,
+      geolocation_api_key, std::move(request));
 }
 #endif
 
@@ -86,6 +90,7 @@ DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate,
@@ -94,6 +99,7 @@ DeviceService::DeviceService(
       file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
+      network_connection_tracker_(network_connection_tracker),
       geolocation_api_key_(geolocation_api_key),
       wake_lock_context_callback_(wake_lock_context_callback),
       wake_lock_provider_(file_task_runner_, wake_lock_context_callback_),
@@ -105,12 +111,14 @@ DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
       file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
+      network_connection_tracker_(network_connection_tracker),
       geolocation_api_key_(geolocation_api_key),
       wake_lock_provider_(file_task_runner_, wake_lock_context_callback_) {}
 #endif
@@ -287,7 +295,8 @@ void DeviceService::BindPublicIpAddressGeolocationProviderRequest(
   if (!public_ip_address_geolocation_provider_) {
     public_ip_address_geolocation_provider_ =
         std::make_unique<PublicIpAddressGeolocationProvider>(
-            url_loader_factory_, geolocation_api_key_);
+            url_loader_factory_, network_connection_tracker_,
+            geolocation_api_key_);
   }
   public_ip_address_geolocation_provider_->Bind(std::move(request));
 }

@@ -17,6 +17,7 @@
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 
@@ -37,12 +38,14 @@ std::unique_ptr<DeviceService> CreateTestDeviceService(
 #if defined(OS_ANDROID)
   return CreateDeviceService(
       file_task_runner, io_task_runner, url_loader_factory,
+      network::TestNetworkConnectionTracker::GetInstance(),
       kTestGeolocationApiKey, false, WakeLockContextCallback(),
       base::BindRepeating(&GetCustomLocationProviderForTest), nullptr,
       std::move(request));
 #else
   return CreateDeviceService(
       file_task_runner, io_task_runner, url_loader_factory,
+      network::TestNetworkConnectionTracker::GetInstance(),
       kTestGeolocationApiKey,
       base::BindRepeating(&GetCustomLocationProviderForTest),
       std::move(request));
@@ -56,6 +59,8 @@ DeviceServiceTestBase::DeviceServiceTestBase()
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE})),
+      network_connection_tracker_(
+          network::TestNetworkConnectionTracker::CreateInstance()),
       connector_(test_connector_factory_.CreateConnector()) {}
 
 DeviceServiceTestBase::~DeviceServiceTestBase() = default;
