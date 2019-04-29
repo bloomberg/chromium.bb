@@ -371,7 +371,7 @@ void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
 }
 
 bool IsValidPlaybackRate(double rate) {
-  return rate == 0.0 || (rate > kMinRate && rate < kMaxRate);
+  return rate == 0.0 || (rate >= kMinRate && rate <= kMaxRate);
 }
 
 }  // anonymous namespace
