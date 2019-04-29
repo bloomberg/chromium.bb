@@ -66,5 +66,6 @@ group("closure_compile") {
     "os_settings_menu:closure_compile",
     "os_settings_page:closure_compile",
     "os_settings_ui:closure_compile",
+    "personalization_page:closure_compile",
   ]
 }

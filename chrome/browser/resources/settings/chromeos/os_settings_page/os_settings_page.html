@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="../../appearance_page/appearance_page.html">
+<link rel="import" href="../personalization_page/personalization_page.html">
 <link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
 <link rel="import" href="../../people_page/people_page.html">
@@ -128,13 +128,15 @@
             </settings-people-page>
           </settings-section>
         </template>
+        <!-- TODO(hsuregan): Change from appearance to personalization once
+          pageVisibility is forked for OS Settings.-->
         <template is="dom-if" if="[[showPage_(pageVisibility.appearance)]]"
             restamp>
-          <settings-section page-title="$i18n{appearancePageTitle}"
-              section="appearance">
-            <settings-appearance-page prefs="{{prefs}}"
+          <settings-section page-title="$i18n{personalizationPageTitle}"
+              section="personalization">
+            <settings-personalization-page
                 page-visibility="[[pageVisibility.appearance]]">
-            </settings-appearance-page>
+            </settings-personalization-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.device)]]" restamp>
