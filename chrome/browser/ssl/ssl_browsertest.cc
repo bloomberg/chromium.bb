@@ -4080,17 +4080,10 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 
 // This test checks that all mixed content requests from a dedicated worker are
 // blocked regardless of the settings in WebPreferences when
-// block-all-mixed-content CSP is set.
-// TODO(crbug.com/890372): This test is flaky.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_MixedContentSettingsWithBlockingCSP \
-  DISABLED_MixedContentSettingsWithBlockingCSP
-#else
-#define MAYBE_MixedContentSettingsWithBlockingCSP \
-  MixedContentSettingsWithBlockingCSP
-#endif
-IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
-                       MAYBE_MixedContentSettingsWithBlockingCSP) {
+// block-all-mixed-content CSP is set with allow_running_insecure_content=true.
+IN_PROC_BROWSER_TEST_P(
+    SSLUIWorkerFetchTest,
+    MixedContentSettingsWithBlockingCSP_AllowRunningInsecureContent) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -4105,20 +4098,51 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
             "HTTP/1.1 200 OK\n"
             "Content-Type: text/html\n"
             "Content-Security-Policy: block-all-mixed-content;");
+  for (bool strict_mixed_content_checking : {true, false}) {
+    for (bool strictly_block_blockable_mixed_content : {true, false}) {
+      RunMixedContentSettingsTest(
+          &browser_client, true /* allow_running_insecure_content */,
+          strict_mixed_content_checking, strictly_block_blockable_mixed_content,
+          false /* expected_load */, false /* expected_show_blocked */,
+          false /* expected_show_dangerous */,
+          false /* expected_load_after_allow */,
+          false /* expected_show_blocked_after_allow */,
+          false /* expected_show_dangerous_after_allow */);
+    }
+  }
+  content::SetBrowserClientForTesting(old_browser_client);
+}
 
-  for (bool allow_running_insecure_content : {true, false}) {
-    for (bool strict_mixed_content_checking : {true, false}) {
-      for (bool strictly_block_blockable_mixed_content : {true, false}) {
-        RunMixedContentSettingsTest(
-            &browser_client, allow_running_insecure_content,
-            strict_mixed_content_checking,
-            strictly_block_blockable_mixed_content, false /* expected_load */,
-            false /* expected_show_blocked */,
-            false /* expected_show_dangerous */,
-            false /* expected_load_after_allow */,
-            false /* expected_show_blocked_after_allow */,
-            false /* expected_show_dangerous_after_allow */);
-      }
+// This test checks that all mixed content requests from a dedicated worker are
+// blocked regardless of the settings in WebPreferences when
+// block-all-mixed-content CSP is set with allow_running_insecure_content=false.
+IN_PROC_BROWSER_TEST_P(
+    SSLUIWorkerFetchTest,
+    MixedContentSettingsWithBlockingCSP_DisallowRunningInsecureContent) {
+  ChromeContentBrowserClientForMixedContentTest browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  https_server_.ServeFilesFromDirectory(tmp_dir_.GetPath());
+  embedded_test_server()->ServeFilesFromDirectory(tmp_dir_.GetPath());
+  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WriteTestFiles(*embedded_test_server(), "example.com");
+  WriteFile(FILE_PATH_LITERAL("worker_test.html.mock-http-headers"),
+            "HTTP/1.1 200 OK\n"
+            "Content-Type: text/html\n"
+            "Content-Security-Policy: block-all-mixed-content;");
+  for (bool strict_mixed_content_checking : {true, false}) {
+    for (bool strictly_block_blockable_mixed_content : {true, false}) {
+      RunMixedContentSettingsTest(
+          &browser_client, false /* allow_running_insecure_content */,
+          strict_mixed_content_checking, strictly_block_blockable_mixed_content,
+          false /* expected_load */, false /* expected_show_blocked */,
+          false /* expected_show_dangerous */,
+          false /* expected_load_after_allow */,
+          false /* expected_show_blocked_after_allow */,
+          false /* expected_show_dangerous_after_allow */);
     }
   }
   content::SetBrowserClientForTesting(old_browser_client);
@@ -4128,7 +4152,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // which is started from a subframe are blocked if
 // allow_running_insecure_content setting is false or
 // strict_mixed_content_checking setting is true.
-// TODO(crbug.com/890372): This test is flaky.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSubFrame) {
   // TODO(carlosil): Reenable tests once confirmed not flaky for committed
   // interstitials.
