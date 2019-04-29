@@ -10,6 +10,7 @@
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/test/fakes/fake_wk_configuration_provider_observer.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,6 +158,28 @@ TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
   EXPECT_LT(0U, [[scripts[1] source] rangeOfString:main_frame_script].length);
   EXPECT_LT(0U,
             [[scripts[2] source] rangeOfString:late_all_frames_script].length);
+}
+
+// Tests that observers methods are correctly triggered when observing the
+// WKWebViewConfigurationProvider
+TEST_F(WKWebViewConfigurationProviderTest, Observers) {
+  std::unique_ptr<TestBrowserState> browser_state =
+      std::make_unique<TestBrowserState>();
+  WKWebViewConfigurationProvider* provider = &GetProvider(browser_state.get());
+
+  FakeWKConfigurationProviderObserver observer(provider);
+  EXPECT_FALSE(observer.GetLastCreatedWKConfiguration());
+  WKWebViewConfiguration* config = provider->GetWebViewConfiguration();
+  EXPECT_NSEQ(config.preferences,
+              observer.GetLastCreatedWKConfiguration().preferences);
+  observer.ResetLastCreatedWKConfig();
+  config = provider->GetWebViewConfiguration();
+  EXPECT_FALSE(observer.GetLastCreatedWKConfiguration());
+
+  // Test that ConfigurationProviderDestroyed is called.
+  ASSERT_FALSE(observer.IsProviderDestroyed());
+  browser_state.reset();
+  EXPECT_TRUE(observer.IsProviderDestroyed());
 }
 
 }  // namespace

@@ -6,6 +6,7 @@
 #define IOS_WEB_WEB_STATE_UI_WK_WEB_VIEW_CONFIGURATION_PROVIDER_H_
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/supports_user_data.h"
 
 @class CRWWebUISchemeHandler;
@@ -15,6 +16,7 @@
 namespace web {
 
 class BrowserState;
+class WKWebViewConfigurationProviderObserver;
 
 // A provider class associated with a single web::BrowserState object. Manages
 // the lifetime and performs setup of WKWebViewConfiguration and
@@ -47,14 +49,23 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   // be enforced in debug builds).
   void Purge();
 
+  // Adds |observer| to monitor changes to the ConfigurationProvider.
+  void AddObserver(WKWebViewConfigurationProviderObserver* observer);
+
+  // Stop |observer| from monitoring changes to the ConfigurationProvider.
+  void RemoveObserver(WKWebViewConfigurationProviderObserver* observer);
+
  private:
   explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
-
   CRWWebUISchemeHandler* scheme_handler_ = nil;
   WKWebViewConfiguration* configuration_;
   CRWWKScriptMessageRouter* router_;
   BrowserState* browser_state_;
+
+  // A list of observers notified when WKWebViewConfiguration changes.
+  base::ObserverList<WKWebViewConfigurationProviderObserver, true>::Unchecked
+      observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WKWebViewConfigurationProvider);
 };

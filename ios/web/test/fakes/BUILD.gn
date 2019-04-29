@@ -12,6 +12,7 @@ source_set("fakes") {
     "//ios/web/navigation:core",
     "//ios/web/public:public",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
+    "//ios/web/web_state/ui:wk_web_view_configuration_provider",
     "//testing/gmock",
     "//third_party/ocmock:ocmock",
   ]
@@ -31,6 +32,8 @@ source_set("fakes") {
     "crw_fake_wk_navigation_response.mm",
     "fake_navigation_manager_delegate.h",
     "fake_navigation_manager_delegate.mm",
+    "fake_wk_configuration_provider_observer.h",
+    "fake_wk_configuration_provider_observer.mm",
     "mock_interstitial_delegate.h",
     "mock_interstitial_delegate.mm",
   ]
