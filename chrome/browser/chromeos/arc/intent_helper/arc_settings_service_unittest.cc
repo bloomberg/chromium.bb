@@ -246,13 +246,16 @@ TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesFontSize) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
 
-  // No initial broadcast.
+  // Initial broadcast resets to 100%.
   arc_session_manager()->RequestEnable();
   SetInstances();
   FakeIntentHelperInstance* intent_helper = intent_helper_instance();
-  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetFontScale).size());
+  auto broadcasts = intent_helper->GetBroadcastsForAction(kSetFontScale);
+  ASSERT_EQ(1U, broadcasts.size());
+  EXPECT_EQ("{\"scale\":1.0}", broadcasts[0].extras);
 
   // No broadcast after update.
+  intent_helper->clear_broadcasts();
   profile()->GetPrefs()->SetInteger(::prefs::kWebKitDefaultFontSize, 20);
   EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetFontScale).size());
 }
@@ -264,13 +267,16 @@ TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesPageZoom) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
 
-  // No initial broadcast.
+  // Initial broadcast resets to 100%.
   arc_session_manager()->RequestEnable();
   SetInstances();
   FakeIntentHelperInstance* intent_helper = intent_helper_instance();
-  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetPageZoom).size());
+  auto broadcasts = intent_helper->GetBroadcastsForAction(kSetPageZoom);
+  ASSERT_EQ(1U, broadcasts.size());
+  EXPECT_EQ("{\"zoomFactor\":1.0}", broadcasts[0].extras);
 
   // No broadcast after update.
+  intent_helper->clear_broadcasts();
   profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(150.0);
   EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetPageZoom).size());
 }
