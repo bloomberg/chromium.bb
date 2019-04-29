@@ -46,10 +46,13 @@ class HeapProfilerControllerTest : public testing::Test {
     int metadata_count_index =
         static_cast<int>(metadata_count_iterator - metadata_hashes.begin());
 
+    // The first sample is guaranteed to have metadata. It will be removed in
+    // subsequent samples if its value is the same as in the first sample.
+    EXPECT_EQ(1, profile.call_stack_profile().stack_sample(0).metadata_size());
+
     bool found = false;
     for (const metrics::CallStackProfile::StackSample& sample :
          profile.call_stack_profile().stack_sample()) {
-      EXPECT_LT(0, sample.metadata_size());
       for (const metrics::CallStackProfile::MetadataItem& item :
            sample.metadata()) {
         if (item.name_hash_index() == metadata_count_index &&

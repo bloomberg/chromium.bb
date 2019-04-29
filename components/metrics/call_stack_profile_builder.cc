@@ -5,6 +5,8 @@
 #include "components/metrics/call_stack_profile_builder.h"
 
 #include <algorithm>
+#include <iterator>
+#include <map>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -42,6 +44,56 @@ uint64_t HashModuleFilename(const base::FilePath& filename) {
   std::string name_bytes(basename_length_in_bytes, '\0');
   memcpy(&name_bytes[0], &basename[0], basename_length_in_bytes);
   return base::HashMetricName(name_bytes);
+}
+
+std::map<uint64_t, int64_t> CreateMetadataMap(
+    base::MetadataRecorder::ItemArray items,
+    size_t item_count) {
+  std::map<uint64_t, int64_t> item_map;
+  for (size_t i = 0; i < item_count; ++i) {
+    item_map[items[i].name_hash] = items[i].value;
+  }
+  return item_map;
+}
+
+// Returns all metadata items with new values in the current sample.
+std::map<uint64_t, int64_t> GetNewOrModifiedMetadataItems(
+    const std::map<uint64_t, int64_t>& current_items,
+    const std::map<uint64_t, int64_t>& previous_items) {
+  std::map<uint64_t, int64_t> new_or_modified_items;
+  // By default, std::pairs are sorted by the first then second pair elements
+  // and therefore pairs with either element differing are treated as different.
+  std::set_difference(
+      current_items.begin(), current_items.end(), previous_items.begin(),
+      previous_items.end(),
+      std::inserter(new_or_modified_items, new_or_modified_items.begin()));
+  return new_or_modified_items;
+}
+
+// Returns all metadata items deleted since the previous sample.
+std::map<uint64_t, int64_t> GetDeletedMetadataItems(
+    const std::map<uint64_t, int64_t>& current_items,
+    const std::map<uint64_t, int64_t>& previous_items) {
+  std::map<uint64_t, int64_t> deleted_items;
+  // By default, std::pairs are sorted by the first then second pair elements
+  // and therefore pairs with either element differing are treated as different.
+  //
+  // To find removed items, we need to override this comparator to do a set
+  // subtraction based only on the item name hashes, ignoring the item values.
+  //
+  // The set_difference algorithm requires that the items in the set already be
+  // sorted according to whatever comparator is passed to set_difference.
+  // Because our new sort order is just a looser version of the existing set
+  // sort order, we can find the set_difference here without creating a new set.
+  auto name_hash_comparator = [](const std::pair<uint64_t, int64_t>& lhs,
+                                 const std::pair<uint64_t, int64_t>& rhs) {
+    return lhs.first < rhs.first;
+  };
+  std::set_difference(previous_items.begin(), previous_items.end(),
+                      current_items.begin(), current_items.end(),
+                      std::inserter(deleted_items, deleted_items.begin()),
+                      name_hash_comparator);
+  return deleted_items;
 }
 
 }  // namespace
@@ -137,22 +189,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
   if (is_continued_work_)
     stack_sample_proto->set_continued_work(is_continued_work_);
 
-  for (size_t i = 0; i < metadata_item_count_; ++i) {
-    const base::MetadataRecorder::Item recorder_item = metadata_items_[i];
-    int next_item_index = call_stack_profile->metadata_name_hash_size();
-    auto result = metadata_hashes_cache_.emplace(recorder_item.name_hash,
-                                                 next_item_index);
-    if (result.second)
-      call_stack_profile->add_metadata_name_hash(recorder_item.name_hash);
-    CallStackProfile::MetadataItem* profile_item =
-        stack_sample_proto->add_metadata();
-    // TODO(crbug.com/913570): Before uploading real metadata, ensure that we
-    // add metadata items only if the value differs from the value for the
-    // previous sample, per
-    // https://cs.chromium.org/chromium/src/third_party/metrics_proto/call_stack_profile.proto?rcl=8811ddb099&l=108-110.
-    profile_item->set_name_hash_index(result.first->second);
-    profile_item->set_value(recorder_item.value);
-  }
+  AddSampleMetadata(call_stack_profile, stack_sample_proto);
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(
@@ -223,6 +260,48 @@ bool CallStackProfileBuilder::StackComparer::operator()(
         return std::make_pair(loc1.address(), loc1.module_id_index()) <
                std::make_pair(loc2.address(), loc2.module_id_index());
       });
+}
+
+void CallStackProfileBuilder::AddSampleMetadata(
+    CallStackProfile* profile,
+    CallStackProfile::StackSample* sample) {
+  std::map<uint64_t, int64_t> current_items =
+      CreateMetadataMap(metadata_items_, metadata_item_count_);
+
+  for (auto item :
+       GetNewOrModifiedMetadataItems(current_items, previous_items_)) {
+    size_t name_hash_index = MaybeAddNameHashToProfile(profile, item.first);
+
+    CallStackProfile::MetadataItem* profile_item = sample->add_metadata();
+    profile_item->set_name_hash_index(name_hash_index);
+    profile_item->set_value(item.second);
+  }
+
+  for (auto item : GetDeletedMetadataItems(current_items, previous_items_)) {
+    size_t name_hash_index = MaybeAddNameHashToProfile(profile, item.first);
+
+    CallStackProfile::MetadataItem* profile_item = sample->add_metadata();
+    profile_item->set_name_hash_index(name_hash_index);
+    // Leave the value empty to indicate that the item was deleted.
+  }
+
+  previous_items_ = std::move(current_items);
+  metadata_item_count_ = 0;
+}
+
+size_t CallStackProfileBuilder::MaybeAddNameHashToProfile(
+    CallStackProfile* profile,
+    uint64_t name_hash) {
+  std::unordered_map<uint64_t, int>::iterator it;
+  bool inserted;
+  int next_item_index = profile->metadata_name_hash_size();
+
+  std::tie(it, inserted) =
+      metadata_hashes_cache_.emplace(name_hash, next_item_index);
+  if (inserted)
+    profile->add_metadata_name_hash(name_hash);
+
+  return it->second;
 }
 
 }  // namespace metrics

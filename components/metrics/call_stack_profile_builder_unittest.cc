@@ -459,10 +459,9 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_RepeatItem) {
   EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
   EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
 
-  // The second sample should have the same metadata as the first sample.
-  ASSERT_EQ(1, profile.stack_sample(1).metadata_size());
-  EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
-  EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
+  // The second sample shouldn't have any metadata because it's all the same as
+  // the last sample.
+  ASSERT_EQ(0, profile.stack_sample(1).metadata_size());
 }
 
 TEST(CallStackProfileBuilderTest, MetadataRecorder_ModifiedItem) {
@@ -516,6 +515,8 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_NewItem) {
   metadata_recorder.Set(100, 10);
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
+
+  metadata_recorder.Set(100, 11);
   metadata_recorder.Set(200, 20);
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
@@ -543,7 +544,8 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_NewItem) {
   auto sample2 = profile.stack_sample(1);
   ASSERT_EQ(2, sample2.metadata_size());
   EXPECT_EQ(0, sample2.metadata(0).name_hash_index());
-  EXPECT_EQ(10, sample2.metadata(0).value());
+  EXPECT_EQ(11, sample2.metadata(0).value());
+
   EXPECT_EQ(1, sample2.metadata(1).name_hash_index());
   EXPECT_EQ(20, sample2.metadata(1).value());
 }
@@ -581,9 +583,12 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_RemovedItem) {
   EXPECT_EQ(0, sample1.metadata(0).name_hash_index());
   EXPECT_EQ(10, sample1.metadata(0).value());
 
-  // The second sample should have no metadata.
+  // The second sample should have a metadata item with a set name hash but an
+  // empty value to indicate that the metadata item was removed.
   auto sample2 = profile.stack_sample(1);
-  ASSERT_EQ(0, sample2.metadata_size());
+  ASSERT_EQ(1, sample2.metadata_size());
+  EXPECT_EQ(0, sample2.metadata(0).name_hash_index());
+  EXPECT_FALSE(sample2.metadata(0).has_value());
 }
 
 }  // namespace metrics
