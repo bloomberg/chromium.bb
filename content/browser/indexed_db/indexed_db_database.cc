@@ -1586,7 +1586,7 @@ Status IndexedDBDatabase::OpenCursorOperation(
 
   std::unique_ptr<IndexedDBCursor> cursor = std::make_unique<IndexedDBCursor>(
       std::move(backing_store_cursor), params->cursor_type, params->task_type,
-      transaction);
+      transaction->AsWeakPtr());
   IndexedDBCursor* cursor_ptr = cursor.get();
   transaction->RegisterOpenCursor(cursor_ptr);
   params->callbacks->OnSuccess(std::move(cursor), cursor_ptr->key(),

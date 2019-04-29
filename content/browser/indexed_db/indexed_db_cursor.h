@@ -26,7 +26,7 @@ class CONTENT_EXPORT IndexedDBCursor {
   IndexedDBCursor(std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
                   indexed_db::CursorType cursor_type,
                   blink::mojom::IDBTaskType task_type,
-                  IndexedDBTransaction* transaction);
+                  base::WeakPtr<IndexedDBTransaction> transaction);
   ~IndexedDBCursor();
 
   void Advance(uint32_t count,
@@ -82,7 +82,7 @@ class CONTENT_EXPORT IndexedDBCursor {
   indexed_db::CursorType cursor_type_;
 
   // We rely on the transaction calling Close() to clear this.
-  IndexedDBTransaction* transaction_;
+  base::WeakPtr<IndexedDBTransaction> transaction_;
 
   // Must be destroyed before transaction_.
   std::unique_ptr<IndexedDBBackingStore::Cursor> cursor_;

@@ -36,9 +36,10 @@ IndexedDBDatabaseError CreateCursorClosedError() {
                                 "The cursor has been closed.");
 }
 
-IndexedDBDatabaseError CreateError(uint16_t code,
-                                   const char* message,
-                                   IndexedDBTransaction* transaction) {
+IndexedDBDatabaseError CreateError(
+    uint16_t code,
+    const char* message,
+    base::WeakPtr<IndexedDBTransaction> transaction) {
   DCHECK(transaction);
   transaction->IncrementNumErrorsSent();
   return IndexedDBDatabaseError(code, message);
@@ -73,10 +74,10 @@ IndexedDBCursor::IndexedDBCursor(
     std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
     blink::mojom::IDBTaskType task_type,
-    IndexedDBTransaction* transaction)
+    base::WeakPtr<IndexedDBTransaction> transaction)
     : task_type_(task_type),
       cursor_type_(cursor_type),
-      transaction_(transaction),
+      transaction_(std::move(transaction)),
       cursor_(std::move(cursor)),
       closed_(false),
       ptr_factory_(this) {
@@ -96,6 +97,8 @@ void IndexedDBCursor::Advance(
     blink::mojom::IDBCursor::AdvanceCallback callback) {
   IDB_TRACE("IndexedDBCursor::Advance");
 
+  if (!transaction_)
+    Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
     std::move(callback).Run(
@@ -178,6 +181,8 @@ void IndexedDBCursor::Continue(
     std::unique_ptr<IndexedDBKey> primary_key,
     blink::mojom::IDBCursor::CursorContinueCallback callback) {
   IDB_TRACE("IndexedDBCursor::Continue");
+  if (!transaction_)
+    Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
     std::move(callback).Run(
@@ -264,6 +269,8 @@ void IndexedDBCursor::PrefetchContinue(
     blink::mojom::IDBCursor::PrefetchCallback callback) {
   IDB_TRACE("IndexedDBCursor::PrefetchContinue");
 
+  if (!transaction_)
+    Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
     std::move(callback).Run(
@@ -426,7 +433,7 @@ void IndexedDBCursor::Close() {
   closed_ = true;
   cursor_.reset();
   saved_cursor_.reset();
-  transaction_ = nullptr;
+  transaction_.reset();
 }
 
 }  // namespace content
