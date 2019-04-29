@@ -238,21 +238,20 @@ class PrinterDiscoverySessionHostImpl
   }
 
   void StartPrinterStateTracking(const std::string& printer_id) override {
-    std::unique_ptr<chromeos::Printer> printer =
+    base::Optional<chromeos::Printer> printer =
         printers_manager_->GetPrinter(printer_id);
     if (!printer) {
       RemovePrinter(printer_id);
       return;
     }
     if (printers_manager_->IsPrinterInstalled(*printer)) {
-      PrinterInstalled(std::move(printer), chromeos::kSuccess);
+      PrinterInstalled(*printer, chromeos::kSuccess);
       return;
     }
-    const chromeos::Printer& printer_ref = *printer;
     configurer_->SetUpPrinter(
-        printer_ref,
+        *printer,
         base::BindOnce(&PrinterDiscoverySessionHostImpl::PrinterInstalled,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(printer)));
+                       weak_ptr_factory_.GetWeakPtr(), *printer));
   }
 
   void StopPrinterStateTracking(const std::string& printer_id) override {
@@ -281,19 +280,19 @@ class PrinterDiscoverySessionHostImpl
   }
 
   // Fetch capabilities for newly installed printer.
-  void PrinterInstalled(std::unique_ptr<chromeos::Printer> printer,
+  void PrinterInstalled(const chromeos::Printer& printer,
                         chromeos::PrinterSetupResult result) {
     if (result != chromeos::kSuccess) {
-      RemovePrinter(printer->id());
+      RemovePrinter(printer.id());
       return;
     }
-    printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
-    const std::string& printer_id = printer->id();
+    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+    const std::string& printer_id = printer.id();
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer_id),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(printer)));
+                       weak_ptr_factory_.GetWeakPtr(), printer));
   }
 
   // Remove from the list of available printers.
@@ -303,14 +302,14 @@ class PrinterDiscoverySessionHostImpl
 
   // Transform printer capabilities to mojo type and send to container.
   void CapabilitiesReceived(
-      std::unique_ptr<chromeos::Printer> printer,
+      const chromeos::Printer& printer,
       std::unique_ptr<printing::PrinterSemanticCapsAndDefaults> caps) {
     if (!caps) {
-      RemovePrinter(printer->id());
+      RemovePrinter(printer.id());
       return;
     }
     std::vector<mojom::PrinterInfoPtr> arc_printers;
-    arc_printers.emplace_back(ToArcPrinter(*printer, std::move(caps)));
+    arc_printers.push_back(ToArcPrinter(printer, std::move(caps)));
     instance_->AddPrinters(std::move(arc_printers));
   }
 

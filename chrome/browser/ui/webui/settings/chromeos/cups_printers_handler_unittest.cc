@@ -72,8 +72,8 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
     return false;
   }
 
-  std::unique_ptr<Printer> GetPrinter(const std::string& id) const override {
-    return std::make_unique<Printer>();
+  base::Optional<Printer> GetPrinter(const std::string& id) const override {
+    return Printer();
   }
 };
 

@@ -475,13 +475,13 @@ TEST_F(CupsPrintersManagerTest, GetPrinter) {
 
   for (const std::string& id :
        {"Saved", "Enterprise", "Discovered", "Automatic"}) {
-    std::unique_ptr<Printer> printer = manager_->GetPrinter(id);
-    ASSERT_NE(printer, nullptr);
+    base::Optional<Printer> printer = manager_->GetPrinter(id);
+    ASSERT_TRUE(printer);
     EXPECT_EQ(printer->id(), id);
   }
 
-  std::unique_ptr<Printer> printer = manager_->GetPrinter("Nope");
-  EXPECT_EQ(printer, nullptr);
+  base::Optional<Printer> printer = manager_->GetPrinter("Nope");
+  EXPECT_FALSE(printer);
 }
 
 // Test that if |UserNativePrintersAllowed| pref is set to false, then
@@ -577,12 +577,13 @@ TEST_F(CupsPrintersManagerTest, GetPrinterUserNativePrintersDisabled) {
   // Diable the use of non-enterprise printers.
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
 
-  std::unique_ptr<Printer> saved_ptr = manager_->GetPrinter("Saved");
-  EXPECT_EQ(saved_ptr, nullptr);
+  base::Optional<Printer> saved_printer = manager_->GetPrinter("Saved");
+  EXPECT_FALSE(saved_printer);
 
-  std::unique_ptr<Printer> enterprise_ptr = manager_->GetPrinter("Enterprise");
-  ASSERT_NE(enterprise_ptr, nullptr);
-  EXPECT_EQ(enterprise_ptr->id(), "Enterprise");
+  base::Optional<Printer> enterprise_printer =
+      manager_->GetPrinter("Enterprise");
+  ASSERT_TRUE(enterprise_printer);
+  EXPECT_EQ(enterprise_printer->id(), "Enterprise");
 }
 
 }  // namespace

@@ -87,15 +87,17 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
     return installed_.contains(printer.id());
   }
 
-  std::unique_ptr<Printer> GetPrinter(const std::string& id) const override {
+  base::Optional<Printer> GetPrinter(const std::string& id) const override {
+    // Search through each class of printers and find a printer with a
+    // matching id.
     for (const std::vector<Printer>& v : printers_) {
       auto iter = std::find_if(
           v.begin(), v.end(), [&id](const Printer& p) { return p.id() == id; });
       if (iter != v.end()) {
-        return std::make_unique<Printer>(*iter);
+        return *iter;
       }
     }
-    return nullptr;
+    return base::nullopt;
   }
 
   // Add |printer| to the corresponding list in |printers_| bases on the given

@@ -77,19 +77,19 @@ void CapabilitiesFetched(base::Value policies,
   std::move(cb).Run(std::move(printer_info));
 }
 
-void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
+void FetchCapabilities(const chromeos::Printer& printer,
                        base::Value policies,
                        LocalPrinterHandlerChromeos::GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  PrinterBasicInfo basic_info = ToBasicInfo(*printer);
-  bool has_secure_protocol = !printer->HasNetworkProtocol() ||
-                             printer->GetProtocol() == chromeos::Printer::kIpps;
+  PrinterBasicInfo basic_info = ToBasicInfo(printer);
+  bool has_secure_protocol = !printer.HasNetworkProtocol() ||
+                             printer.GetProtocol() == chromeos::Printer::kIpps;
 
   // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&GetSettingsOnBlockingPool, printer->id(), basic_info,
+      base::BindOnce(&GetSettingsOnBlockingPool, printer.id(), basic_info,
                      PrinterSemanticCapsAndDefaults::Papers(),
                      has_secure_protocol, nullptr),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
@@ -181,7 +181,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
     GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<chromeos::Printer> printer =
+  base::Optional<chromeos::Printer> printer =
       printers_manager_->GetPrinter(printer_name);
   if (!printer) {
     // If the printer was removed, the lookup will fail.
@@ -197,32 +197,29 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
 
   if (printers_manager_->IsPrinterInstalled(*printer)) {
     // Skip setup if the printer is already installed.
-    HandlePrinterSetup(std::move(printer), std::move(cb), chromeos::kSuccess);
+    HandlePrinterSetup(*printer, std::move(cb), chromeos::kSuccess);
     return;
   }
 
-  const chromeos::Printer& printer_ref = *printer;
   printer_configurer_->SetUpPrinter(
-      printer_ref,
+      *printer,
       base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                     weak_factory_.GetWeakPtr(), std::move(printer),
-                     std::move(cb)));
+                     weak_factory_.GetWeakPtr(), *printer, std::move(cb)));
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
-    std::unique_ptr<chromeos::Printer> printer,
+    const chromeos::Printer& printer,
     GetCapabilityCallback cb,
     chromeos::PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   switch (result) {
     case chromeos::PrinterSetupResult::kSuccess: {
-      VLOG(1) << "Printer setup successful for " << printer->id()
+      VLOG(1) << "Printer setup successful for " << printer.id()
               << " fetching properties";
-      printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
+      printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
       // fetch settings on the blocking pool and invoke callback.
-      FetchCapabilities(std::move(printer), GetNativePrinterPolicies(),
-                        std::move(cb));
+      FetchCapabilities(printer, GetNativePrinterPolicies(), std::move(cb));
       return;
     }
     case chromeos::PrinterSetupResult::kPpdNotFound:

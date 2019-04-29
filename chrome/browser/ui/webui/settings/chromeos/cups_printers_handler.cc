@@ -13,6 +13,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -478,7 +479,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
-    std::unique_ptr<Printer> printer,
+    Printer printer,
     bool success,
     const std::string& make,
     const std::string& model,
@@ -495,9 +496,9 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
       // manufacturer and model are set with make_and_model because they are
       // derived from make_and_model for compatability and are slated for
       // removal.
-      printer->set_manufacturer(make);
-      printer->set_model(model);
-      printer->set_make_and_model(make_and_model);
+      printer.set_manufacturer(make);
+      printer.set_model(model);
+      printer.set_make_and_model(make_and_model);
       PRINTER_LOG(DEBUG) << "Printer queried for make and model "
                          << make_and_model;
     }
@@ -505,10 +506,11 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     // Autoconfig available, use it.
     if (ipp_everywhere) {
       PRINTER_LOG(DEBUG) << "Performing autoconf setup";
-      printer->mutable_ppd_reference()->autoconf = true;
+      printer.mutable_ppd_reference()->autoconf = true;
       printer_configurer_->SetUpPrinter(
-          *printer, base::Bind(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
-                               weak_factory_.GetWeakPtr(), *printer));
+          printer,
+          base::BindOnce(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
+                         weak_factory_.GetWeakPtr(), printer));
       return;
     }
   }
@@ -517,7 +519,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
   // much information as we can about the printer, and ask the user to supply
   // the rest.
   PRINTER_LOG(EVENT) << "Could not query printer.  Fallback to asking the user";
-  FireManuallyAddDiscoveredPrinter(*printer);
+  FireManuallyAddDiscoveredPrinter(printer);
 }
 
 void CupsPrintersHandler::OnAutoconfQueried(
@@ -635,7 +637,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
     return;
   }
 
-  std::unique_ptr<Printer> existing_printer_object =
+  base::Optional<Printer> existing_printer_object =
       printers_manager_->GetPrinter(printer->id());
   if (existing_printer_object) {
     if (!IsValidUriChange(*existing_printer_object, *printer)) {
@@ -1009,8 +1011,8 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   CHECK(args->GetString(0, &printer_id));
 
   PRINTER_LOG(USER) << "Adding discovered printer";
-  std::unique_ptr<Printer> printer = printers_manager_->GetPrinter(printer_id);
-  if (printer == nullptr) {
+  base::Optional<Printer> printer = printers_manager_->GetPrinter(printer_id);
+  if (!printer) {
     PRINTER_LOG(ERROR) << "Discovered printer disappeared";
     // Printer disappeared, so we don't have information about it anymore and
     // can't really do much. Fail the add.
@@ -1049,7 +1051,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   }
   endpoint_resolver_->Start(
       address, base::BindOnce(&CupsPrintersHandler::OnIpResolved,
-                              weak_factory_.GetWeakPtr(), std::move(printer)));
+                              weak_factory_.GetWeakPtr(), std::move(*printer)));
 }
 
 void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
@@ -1094,32 +1096,32 @@ void CupsPrintersHandler::FireManuallyAddDiscoveredPrinter(
                     *GetCupsPrinterInfo(printer));
 }
 
-void CupsPrintersHandler::OnIpResolved(std::unique_ptr<Printer> printer,
+void CupsPrintersHandler::OnIpResolved(const Printer& printer,
                                        const net::IPEndPoint& endpoint) {
   bool address_resolved = endpoint.address().IsValid();
   UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.AddressResolutionResult",
                         address_resolved);
   if (!address_resolved) {
-    PRINTER_LOG(ERROR) << printer->make_and_model() << " IP Resolution failed";
-    OnAddedDiscoveredPrinter(*printer, PrinterSetupResult::kPrinterUnreachable);
+    PRINTER_LOG(ERROR) << printer.make_and_model() << " IP Resolution failed";
+    OnAddedDiscoveredPrinter(printer, PrinterSetupResult::kPrinterUnreachable);
     return;
   }
 
-  PRINTER_LOG(EVENT) << printer->make_and_model() << " IP Resolution succeeded";
-  std::string resolved_uri = printer->ReplaceHostAndPort(endpoint);
+  PRINTER_LOG(EVENT) << printer.make_and_model() << " IP Resolution succeeded";
+  std::string resolved_uri = printer.ReplaceHostAndPort(endpoint);
 
   if (IsIppUri(resolved_uri)) {
     PRINTER_LOG(EVENT) << "Query printer for IPP attributes";
-    QueryAutoconf(resolved_uri,
-                  base::BindRepeating(
-                      &CupsPrintersHandler::OnAutoconfQueriedDiscovered,
-                      weak_factory_.GetWeakPtr(), base::Passed(&printer)));
+    QueryAutoconf(
+        resolved_uri,
+        base::BindRepeating(&CupsPrintersHandler::OnAutoconfQueriedDiscovered,
+                            weak_factory_.GetWeakPtr(), printer));
     return;
   }
 
   PRINTER_LOG(EVENT) << "Request make and model from user";
   // If it's not an IPP printer, the user must choose a PPD.
-  FireManuallyAddDiscoveredPrinter(*printer);
+  FireManuallyAddDiscoveredPrinter(printer);
 }
 
 }  // namespace settings
