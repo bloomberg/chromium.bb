@@ -77,8 +77,7 @@ public class AccountTrackerService {
      */
     public boolean checkAndSeedSystemAccounts() {
         ThreadUtils.assertOnUiThread();
-        if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE
-                && !mSystemAccountsChanged) {
+        if (areSystemAccountsSeeded()) {
             return true;
         }
         if ((mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_NOT_STARTED
@@ -91,14 +90,21 @@ public class AccountTrackerService {
     }
 
     /**
+     * Checks whether system accounts are seeded without changing the state.
+     * @return Whether account list in {@link AccountManagerFacade} is consistent with accounts in
+     *         the native AccountTrackerService.
+     */
+    boolean areSystemAccountsSeeded() {
+        return mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE
+                && !mSystemAccountsChanged;
+    }
+
+    /**
      * Register an |observer| to observe system accounts seeding status.
      */
     public void addSystemAccountsSeededListener(OnSystemAccountsSeededListener observer) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsSeedingObservers.addObserver(observer);
-        if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE) {
-            observer.onSystemAccountsSeedingComplete();
-        }
     }
 
     /**

@@ -17,16 +17,28 @@ import org.chromium.base.annotations.NativeMethods;
  */
 public class ConsistencyCookieManager implements ObservableValue.Observer {
     private final long mNativeConsistencyCookieManager;
+    private final AccountTrackerService mAccountTrackerService;
     private final AccountManagerFacade mAccountManagerFacade;
     private final SigninActivityMonitor mSigninActivityMonitor;
     private boolean mIsUpdatePending;
 
-    private ConsistencyCookieManager(long nativeConsistencyCookieManager) {
+    private ConsistencyCookieManager(
+            long nativeConsistencyCookieManager, AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
+        mAccountTrackerService = accountTrackerService;
         mNativeConsistencyCookieManager = nativeConsistencyCookieManager;
         mAccountManagerFacade = AccountManagerFacade.get();
         mSigninActivityMonitor = SigninActivityMonitor.get();
 
+        // For now, this class relies on the order of notifications sent by AccountManagerFacade and
+        // AccountTrackerService. Whenever the account list changes, this class will get
+        // notification from AccountManagerFacade.isUpdatePending(). This will change
+        // mIsUpdatePending to true. By the time AccountManagerFacade finishes updating account list
+        // and sets AccountManagerFacade.isUpdatePending() to false, AccountTrackerService should
+        // have already invalidate account seed status, so mIsUpdatePending will stay false until
+        // accounts are seeded to the native AccountTrackerService.
+        // TODO(https://crbug.com/831257): Simplify this after seeding is reimplemented.
+        mAccountTrackerService.addSystemAccountsSeededListener(this::onValueChanged);
         mAccountManagerFacade.isUpdatePending().addObserver(this);
         mSigninActivityMonitor.hasOngoingActivity().addObserver(this);
 
@@ -44,13 +56,15 @@ public class ConsistencyCookieManager implements ObservableValue.Observer {
 
     private boolean calculateIsUpdatePending() {
         return mAccountManagerFacade.isUpdatePending().get()
-                || mSigninActivityMonitor.hasOngoingActivity().get();
+                || mSigninActivityMonitor.hasOngoingActivity().get()
+                || !mAccountTrackerService.areSystemAccountsSeeded();
     }
 
     @CalledByNative
     @MainThread
-    private static ConsistencyCookieManager create(long nativeConsistencyCookieManager) {
-        return new ConsistencyCookieManager(nativeConsistencyCookieManager);
+    private static ConsistencyCookieManager create(
+            long nativeConsistencyCookieManager, AccountTrackerService accountTrackerService) {
+        return new ConsistencyCookieManager(nativeConsistencyCookieManager, accountTrackerService);
     }
 
     @CalledByNative

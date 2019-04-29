@@ -5,17 +5,20 @@
 #include "components/signin/core/browser/consistency_cookie_manager_android.h"
 
 #include "jni/ConsistencyCookieManager_jni.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace signin {
 
 ConsistencyCookieManagerAndroid::ConsistencyCookieManagerAndroid(
+    identity::IdentityManager* identity_manager,
     SigninClient* signin_client,
     AccountReconcilor* reconcilor)
     : ConsistencyCookieManagerBase(signin_client, reconcilor) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_ref =
-      Java_ConsistencyCookieManager_create(env,
-                                           reinterpret_cast<intptr_t>(this));
+      Java_ConsistencyCookieManager_create(
+          env, reinterpret_cast<intptr_t>(this),
+          identity_manager->LegacyGetAccountTrackerServiceJavaObject());
   java_ref_.Reset(env, java_ref.obj());
   is_update_pending_in_java_ =
       Java_ConsistencyCookieManager_getIsUpdatePending(env, java_ref_);

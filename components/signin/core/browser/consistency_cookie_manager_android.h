@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/consistency_cookie_manager_base.h"
 
+namespace identity {
+class IdentityManager;
+}
+
 class SigninClient;
 
 namespace signin {
@@ -17,7 +21,8 @@ namespace signin {
 // watch whether there are pending updates to the account list on the Java side.
 class ConsistencyCookieManagerAndroid : public ConsistencyCookieManagerBase {
  public:
-  ConsistencyCookieManagerAndroid(SigninClient* signin_client,
+  ConsistencyCookieManagerAndroid(identity::IdentityManager* identity_manager,
+                                  SigninClient* signin_client,
                                   AccountReconcilor* reconcilor);
 
   ~ConsistencyCookieManagerAndroid() override;
