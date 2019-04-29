@@ -2019,6 +2019,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'cave',
       'chell',
+      'cheza',
       'cobblepot',
       'coral',
       'cyan',
@@ -2126,7 +2127,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'cheza', # crbug.com/957280
       'mistral', # contact: roopeshr@, b/131190241.
   ])
 
