@@ -13,22 +13,6 @@
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
-namespace label_formatter_groups {
-
-// Bits for FieldTypeGroup options.
-// The form has a field associated with the NAME_HOME or NAME_BILLING
-// FieldTypeGroups.
-constexpr uint32_t kName = 1 << 0;
-// The form has a field associated with the ADDRESS_HOME or ADDRESS_BILLING
-// FieldTypeGroups.
-constexpr uint32_t kAddress = 1 << 1;
-// The form has a field associated with the EMAIL FieldTypeGroup.
-constexpr uint32_t kEmail = 1 << 2;
-// The form has a field associated with the PHONE_HOME or PHONE_BILLING
-// FieldTypeGroups.
-constexpr uint32_t kPhone = 1 << 3;
-
-}  // namespace label_formatter_groups
 
 // Returns true if kName is set in |groups|.
 bool ContainsName(uint32_t groups);

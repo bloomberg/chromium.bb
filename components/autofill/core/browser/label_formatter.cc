@@ -12,15 +12,17 @@
 #include "components/autofill/core/browser/address_email_form_label_formatter.h"
 #include "components/autofill/core/browser/address_form_label_formatter.h"
 #include "components/autofill/core/browser/address_phone_form_label_formatter.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/contact_form_label_formatter.h"
 #include "components/autofill/core/browser/label_formatter_utils.h"
 
 namespace autofill {
 
-using label_formatter_groups::kAddress;
-using label_formatter_groups::kEmail;
-using label_formatter_groups::kName;
-using label_formatter_groups::kPhone;
+using data_util::bit_field_type_groups::kAddress;
+using data_util::bit_field_type_groups::kEmail;
+using data_util::bit_field_type_groups::kName;
+using data_util::bit_field_type_groups::kPhone;
 
 LabelFormatter::LabelFormatter(const std::string& app_locale,
                                ServerFieldType focused_field_type,
@@ -78,7 +80,7 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types,
     const std::vector<AutofillProfile*>& profiles) {
-  const uint32_t groups = DetermineGroups(field_types);
+  const uint32_t groups = data_util::DetermineGroups(field_types);
 
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:

@@ -749,7 +749,7 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
-  // For mesuring how wallet addresses are converted to local profiles.
+  // For measuring how wallet addresses are converted to local profiles.
   enum WalletAddressConversionType : int {
     // The converted wallet address was merged into an existing local profile.
     CONVERTED_ADDRESS_MERGED,
@@ -758,11 +758,11 @@ class AutofillMetrics {
     NUM_CONVERTED_ADDRESS_CONVERSION_TYPES
   };
 
-  // To record whether or not the upload event was sent,
+  // To record whether the upload event was sent.
   enum class UploadEventStatus { kNotSent, kSent, kMaxValue = kSent };
 
-  // Log all the scenarios that lead to making the decision whether card upload
-  // is enabled or not.
+  // Log all the scenarios that contribute to the decision of whether card
+  // upload is enabled or not.
   enum class CardUploadEnabledMetric {
     SYNC_SERVICE_NULL = 0,
     SYNC_SERVICE_PERSISTENT_AUTH_ERROR = 1,

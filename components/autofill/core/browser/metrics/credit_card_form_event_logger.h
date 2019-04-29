@@ -8,12 +8,15 @@
 #include <string>
 
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/form_event_logger_base.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
 
@@ -67,7 +70,9 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   void LogUkmInteractedWithForm(FormSignature form_signature) override;
   void OnSuggestionsShownOnce() override;
   void OnSuggestionsShownSubmittedOnce(const FormStructure& form) override;
-  void OnLog(const std::string& name, FormEvent event) const override;
+  void OnLog(const std::string& name,
+             FormEvent event,
+             const FormStructure& form) const override;
 
   // Bringing base class' Log function into scope to allow overloading.
   using FormEventLoggerBase::Log;
