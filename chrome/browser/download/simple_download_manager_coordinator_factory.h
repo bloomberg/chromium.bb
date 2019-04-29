@@ -43,6 +43,7 @@ class SimpleDownloadManagerCoordinatorFactory
   // SimpleKeyedServiceFactory overrides.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       SimpleFactoryKey* key) const override;
+  SimpleFactoryKey* GetKeyToUse(SimpleFactoryKey* key) const override;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDownloadManagerCoordinatorFactory);
 };

@@ -131,14 +131,14 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 #else
     task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
-    download::SimpleDownloadManagerCoordinator* coordinator =
-        SimpleDownloadManagerCoordinatorFactory::GetForKey(
-            profile->GetProfileKey());
-    coordinator->SetSimpleDownloadManager(
-        content::BrowserContext::GetDownloadManager(context), true);
+    content::DownloadManager* manager =
+        content::BrowserContext::GetDownloadManager(context);
+    DCHECK(manager);
     return download::BuildDownloadService(
         profile->GetProfileKey(), profile->GetPrefs(), std::move(clients),
-        content::GetNetworkConnectionTracker(), storage_dir, coordinator,
+        content::GetNetworkConnectionTracker(), storage_dir,
+        SimpleDownloadManagerCoordinatorFactory::GetForKey(
+            profile->GetProfileKey()),
         background_task_runner, std::move(task_scheduler));
   }
 }

@@ -37,3 +37,8 @@ SimpleDownloadManagerCoordinatorFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
   return std::make_unique<download::SimpleDownloadManagerCoordinator>();
 }
+
+SimpleFactoryKey* SimpleDownloadManagerCoordinatorFactory::GetKeyToUse(
+    SimpleFactoryKey* key) const {
+  return key;
+}

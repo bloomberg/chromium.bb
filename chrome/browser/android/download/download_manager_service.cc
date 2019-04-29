@@ -23,6 +23,7 @@
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -31,6 +32,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/task/task_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -199,7 +201,9 @@ DownloadManagerService::DownloadActionParams::DownloadActionParams(
 DownloadManagerService::DownloadManagerService()
     : is_manager_initialized_(false),
       is_pending_downloads_loaded_(false),
-      pending_get_downloads_actions_(NONE) {}
+      pending_get_downloads_actions_(NONE),
+      original_coordinator_(nullptr),
+      off_the_record_coordinator_(nullptr) {}
 
 DownloadManagerService::~DownloadManagerService() {}
 
@@ -222,17 +226,7 @@ void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(profile);
-  if (!download_manager)
-    return;
-
-  // Waiting for DownloadManager to initialize and carry out all the pending
-  // actions
-  if (download_manager->IsManagerInitialized())
-    OnManagerInitialized();
-  else
-    download_manager->AddObserver(this);
+  ResetCoordinatorIfNeeded(profile);
 }
 
 void DownloadManagerService::Observe(
@@ -242,19 +236,7 @@ void DownloadManagerService::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      content::DownloadManager* manager =
-          content::BrowserContext::GetDownloadManager(profile);
-      if (!manager)
-        break;
-
-      auto& notifier = profile->IsOffTheRecord() ? off_the_record_notifier_
-                                                 : original_notifier_;
-
-      // Update notifiers to monitor any newly created DownloadManagers.
-      if (!notifier || notifier->GetManager() != manager) {
-        notifier =
-            std::make_unique<download::AllDownloadItemNotifier>(manager, this);
-      }
+      ResetCoordinatorIfNeeded(profile);
     } break;
     default:
       NOTREACHED();
@@ -445,7 +427,11 @@ void DownloadManagerService::CancelDownload(
     EnqueueDownloadAction(download_guid, DownloadActionParams(CANCEL));
 }
 
-void DownloadManagerService::OnManagerInitialized() {
+void DownloadManagerService::OnDownloadsInitialized(
+    download::SimpleDownloadManagerCoordinator* coordinator,
+    bool active_downloads_only) {
+  if (active_downloads_only)
+    return;
   is_manager_initialized_ = true;
   OnPendingDownloadsLoaded();
 
@@ -456,11 +442,16 @@ void DownloadManagerService::OnManagerInitialized() {
     GetAllDownloadsInternal(true);
 }
 
-void DownloadManagerService::OnManagerInitialized(
-    content::DownloadManager* manager) {}
+void DownloadManagerService::OnManagerGoingDown(
+    download::SimpleDownloadManagerCoordinator* coordinator) {
+  if (original_coordinator_ == coordinator)
+    original_coordinator_ = nullptr;
+  else if (off_the_record_coordinator_ == coordinator)
+    off_the_record_coordinator_ = nullptr;
+}
 
 void DownloadManagerService::OnDownloadCreated(
-    content::DownloadManager* manager,
+    download::SimpleDownloadManagerCoordinator* coordinator,
     download::DownloadItem* item) {
   if (item->IsTransient())
     return;
@@ -472,7 +463,7 @@ void DownloadManagerService::OnDownloadCreated(
 }
 
 void DownloadManagerService::OnDownloadUpdated(
-    content::DownloadManager* manager,
+    download::SimpleDownloadManagerCoordinator* coordinator,
     download::DownloadItem* item) {
   if (java_ref_.is_null())
     return;
@@ -487,7 +478,7 @@ void DownloadManagerService::OnDownloadUpdated(
 }
 
 void DownloadManagerService::OnDownloadRemoved(
-    content::DownloadManager* manager,
+    download::SimpleDownloadManagerCoordinator* coordinator,
     download::DownloadItem* item) {
   if (java_ref_.is_null() || item->IsTransient())
     return;
@@ -773,21 +764,25 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   if (is_off_the_record)
     profile = profile->GetOffTheRecordProfile();
 
-  auto& notifier =
-      is_off_the_record ? off_the_record_notifier_ : original_notifier_;
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile);
-  if (!manager) {
-    notifier.reset();
-    return nullptr;
-  }
-
-  // Update notifiers to monitor any newly created DownloadManagers.
-  if (!notifier || notifier->GetManager() != manager) {
-    notifier =
-        std::make_unique<download::AllDownloadItemNotifier>(manager, this);
-  }
+  ResetCoordinatorIfNeeded(profile);
   return manager;
+}
+
+void DownloadManagerService::ResetCoordinatorIfNeeded(Profile* profile) {
+  auto*& coordinator = profile->IsOffTheRecord() ? off_the_record_coordinator_
+                                                 : original_coordinator_;
+
+  download::SimpleDownloadManagerCoordinator* new_coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          profile->GetProfileKey());
+  if (!coordinator || coordinator != new_coordinator) {
+    if (coordinator)
+      coordinator->GetNotifier()->RemoveObserver(this);
+    coordinator = new_coordinator;
+    coordinator->GetNotifier()->AddObserver(this);
+  }
 }
 
 void DownloadManagerService::RenameDownload(
