@@ -3460,7 +3460,7 @@
     Your app will open when the upgrade is finished. Upgrades can take a few minutes.
   </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
-    Shut Down Linux (Beta)
+    Shut down Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_TERMINA_UPDATE_REQUIRED" desc="Text shown in the Crostini update dialog when the VM component needs updating.">
     Linux (Beta) update required
