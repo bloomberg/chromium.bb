@@ -57,6 +57,7 @@ public abstract class CardViewHolder
                 (menu, view, menuInfo)
                         -> contextMenuManager.createContextMenu(
                                 menu, itemView, CardViewHolder.this));
+        ContextMenuManager.registerViewForTouchlessContextMenu(itemView, this);
 
         mUiConfig = uiConfig;
     }
