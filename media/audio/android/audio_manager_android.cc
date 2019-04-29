@@ -113,11 +113,8 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
     // MODIFY_AUDIO_SETTINGS or RECORD_AUDIO permissions.
     return;
   }
-  jsize len = env->GetArrayLength(j_device_array.obj());
   AudioDeviceName device;
-  for (jsize i = 0; i < len; ++i) {
-    ScopedJavaLocalRef<jobject> j_device(
-        env, env->GetObjectArrayElement(j_device_array.obj(), i));
+  for (auto j_device : j_device_array.ReadElements<jobject>()) {
     ScopedJavaLocalRef<jstring> j_device_name =
         Java_AudioDeviceName_name(env, j_device);
     ConvertJavaStringToUTF8(env, j_device_name.obj(), &device.device_name);

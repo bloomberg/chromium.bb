@@ -917,10 +917,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
   // Used to store the projection column names according their sequence.
   std::vector<std::string> columns_name;
   if (projection) {
-    jsize len = env->GetArrayLength(projection);
-    for (int i = 0; i < len; i++) {
-      ScopedJavaLocalRef<jstring> j_name(
-          env, static_cast<jstring>(env->GetObjectArrayElement(projection, i)));
+    for (auto j_name : projection.ReadElements<jstring>()) {
       std::string name = ConvertJavaStringToUTF8(env, j_name);
       history::HistoryAndBookmarkRow::ColumnID id =
           history::HistoryAndBookmarkRow::GetColumnID(name);
@@ -1059,10 +1056,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
   // Used to store the projection column names according their sequence.
   std::vector<std::string> columns_name;
   if (projection) {
-    jsize len = env->GetArrayLength(projection);
-    for (int i = 0; i < len; i++) {
-      ScopedJavaLocalRef<jstring> j_name(
-          env, static_cast<jstring>(env->GetObjectArrayElement(projection, i)));
+    for (auto j_name : projection.ReadElements<jstring>()) {
       std::string name = ConvertJavaStringToUTF8(env, j_name);
       history::SearchRow::ColumnID id =
           history::SearchRow::GetColumnID(name);

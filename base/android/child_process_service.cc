@@ -27,13 +27,11 @@ void JNI_ChildProcessService_RegisterFileDescriptors(
     const JavaParamRef<jlongArray>& j_offsets,
     const JavaParamRef<jlongArray>& j_sizes) {
   std::vector<base::Optional<std::string>> keys;
-  jsize keys_size = env->GetArrayLength(j_keys);
-  keys.reserve(keys_size);
-  for (jsize i = 0; i < keys_size; i++) {
-    base::android::ScopedJavaLocalRef<jstring> str(
-        env, static_cast<jstring>(env->GetObjectArrayElement(j_keys, i)));
+  JavaObjectArrayReader<jstring> keys_array(j_keys);
+  keys.reserve(keys_array.size());
+  for (auto str : keys_array) {
     base::Optional<std::string> key;
-    if (!str.is_null()) {
+    if (str) {
       key = base::android::ConvertJavaStringToUTF8(env, str);
     }
     keys.push_back(std::move(key));

@@ -191,9 +191,7 @@ std::vector<PaymentMethodDataPtr> ConvertPaymentMethodDataFromJavaToNative(
     JNIEnv* env,
     const JavaParamRef<jobjectArray>& jmethod_data) {
   std::vector<PaymentMethodDataPtr> result;
-  for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
-    ScopedJavaLocalRef<jobject> element(
-        env, env->GetObjectArrayElement(jmethod_data, i));
+  for (auto element : jmethod_data.ReadElements<jobject>()) {
     PaymentMethodDataPtr method_data_item = PaymentMethodData::New();
     method_data_item->supported_method = ConvertJavaStringToUTF8(
         env,
@@ -253,9 +251,7 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
       env,
       Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(env, jtotal));
 
-  for (jsize i = 0; i < env->GetArrayLength(jmodifiers); i++) {
-    ScopedJavaLocalRef<jobject> jmodifier(
-        env, env->GetObjectArrayElement(jmodifiers, i));
+  for (auto jmodifier : jmodifiers.ReadElements<jobject>()) {
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
 
     ScopedJavaLocalRef<jobject> jmodifier_total =
@@ -360,9 +356,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
   event_data->method_data =
       ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data);
 
-  for (jsize i = 0; i < env->GetArrayLength(jmodifiers); i++) {
-    ScopedJavaLocalRef<jobject> jmodifier(
-        env, env->GetObjectArrayElement(jmodifiers, i));
+  for (auto jmodifier : jmodifiers.ReadElements<jobject>()) {
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
 
     ScopedJavaLocalRef<jobject> jmodifier_total =

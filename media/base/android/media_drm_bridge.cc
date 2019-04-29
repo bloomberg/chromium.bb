@@ -38,10 +38,11 @@
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaByteArrayToByteVector;
 using base::android::JavaByteArrayToString;
+using base::android::JavaObjectArrayReader;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -772,13 +773,10 @@ void MediaDrmBridge::OnSessionKeysChange(
 
   CdmKeysInfo cdm_keys_info;
 
-  size_t size = env->GetArrayLength(j_keys_info);
-  DCHECK_GT(size, 0u);
+  JavaObjectArrayReader<jobject> j_keys_info_array(j_keys_info);
+  DCHECK_GT(j_keys_info_array.size(), 0);
 
-  for (size_t i = 0; i < size; ++i) {
-    ScopedJavaLocalRef<jobject> j_key_status(
-        env, env->GetObjectArrayElement(j_keys_info, i));
-
+  for (auto j_key_status : j_keys_info_array) {
     ScopedJavaLocalRef<jbyteArray> j_key_id =
         Java_KeyStatus_getKeyId(env, j_key_status);
     std::vector<uint8_t> key_id;

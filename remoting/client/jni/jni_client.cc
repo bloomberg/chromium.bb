@@ -19,6 +19,7 @@
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaObjectArrayReader;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -245,14 +246,10 @@ void JniClient::SendTouchEvent(
 
   // Iterate over the elements in the object array and transfer the data from
   // the java object to a native event object.
-  jsize length = env->GetArrayLength(touchEventObjectArray);
-  DCHECK_GE(length, 0);
-  for (jsize i = 0; i < length; ++i) {
+  JavaObjectArrayReader<jobject> java_touch_events(touchEventObjectArray);
+  DCHECK_GE(java_touch_events.size(), 0);
+  for (auto java_touch_event : java_touch_events) {
     protocol::TouchEventPoint* touch_point = touch_event.add_touch_points();
-
-    ScopedJavaLocalRef<jobject> java_touch_event(
-        env, env->GetObjectArrayElement(touchEventObjectArray, i));
-
     JniTouchEventData::CopyTouchPointData(env, java_touch_event, touch_point);
   }
 
