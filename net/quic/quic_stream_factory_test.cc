@@ -31,6 +31,7 @@
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
 #include "net/quic/properties_based_quic_server_info.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_server_info.h"
@@ -296,7 +297,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         test_params_.quic_headers_include_h2_stream_dependency,
         test_params_.quic_connection_options,
         test_params_.quic_client_connection_options,
-        test_params_.quic_enable_socket_recv_optimization));
+        test_params_.quic_enable_socket_recv_optimization,
+        test_params_.quic_initial_rtt_for_handshake_milliseconds));
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -10191,6 +10193,69 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
+  int kInitialRtt = 400;
+  test_params_.quic_initial_rtt_for_handshake_milliseconds = kInitialRtt;
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+  Initialize();
+  factory_->set_require_confirmation(true);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner so that we can control time.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(2));
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(3, 0));
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+
+  // The pending task is scheduled for handshake timeout retransmission,
+  // which is 2 * 400ms for v99 and 1.5 * 400ms for others.
+  int handshake_timeout =
+      version_ == quic::QUIC_VERSION_99 ? 2 * kInitialRtt : 1.5 * kInitialRtt;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(handshake_timeout),
+            task_runner->NextPendingTaskDelay());
+
+  // The alarm factory dependes on |clock_|, so clock is advanced to trigger
+  // retransmission alarm.
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(handshake_timeout));
+  task_runner->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(handshake_timeout));
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_EQ(400000u, session->config()->GetInitialRoundTripTimeUsToSend());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 // Test that QuicStreamRequests with similar and different tags results in

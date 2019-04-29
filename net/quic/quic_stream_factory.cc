@@ -1048,7 +1048,8 @@ QuicStreamFactory::QuicStreamFactory(
     bool headers_include_h2_stream_dependency,
     const quic::QuicTagVector& connection_options,
     const quic::QuicTagVector& client_connection_options,
-    bool enable_socket_recv_optimization)
+    bool enable_socket_recv_optimization,
+    int initial_rtt_for_handshake_milliseconds)
     : require_confirmation_(true),
       net_log_(net_log),
       host_resolver_(host_resolver),
@@ -1118,6 +1119,8 @@ QuicStreamFactory::QuicStreamFactory(
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
       enable_socket_recv_optimization_(enable_socket_recv_optimization),
+      initial_rtt_for_handshake_milliseconds_(
+          initial_rtt_for_handshake_milliseconds),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
@@ -1921,6 +1924,13 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
   if (type == NetworkChangeNotifier::CONNECTION_3G) {
     SetInitialRttEstimate(base::TimeDelta::FromMilliseconds(400),
                           INITIAL_RTT_CACHED, config);
+    return;
+  }
+
+  if (initial_rtt_for_handshake_milliseconds_ > 0) {
+    SetInitialRttEstimate(base::TimeDelta::FromMilliseconds(
+                              initial_rtt_for_handshake_milliseconds_),
+                          INITIAL_RTT_DEFAULT, config);
     return;
   }
 

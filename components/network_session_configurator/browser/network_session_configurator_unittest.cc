@@ -124,6 +124,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(params_.quic_migrate_idle_sessions);
   EXPECT_FALSE(params_.quic_go_away_on_path_degrading);
+  EXPECT_EQ(0, params_.quic_initial_rtt_for_handshake_milliseconds);
   EXPECT_FALSE(params_.quic_allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
   EXPECT_EQ(net::kDefaultRetransmittableOnWireTimeoutMillisecs,
@@ -837,6 +838,18 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_websocket_over_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicInitialRttForHandshakeFromFieldTrailParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["initial_rtt_for_handshake_milliseconds"] = "500";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(500, params_.quic_initial_rtt_for_handshake_milliseconds);
 }
 
 }  // namespace network_session_configurator

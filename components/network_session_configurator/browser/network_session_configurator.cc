@@ -399,6 +399,18 @@ bool ShouldQuicAllowServerMigration(
       GetVariationParam(quic_trial_params, "allow_server_migration"), "true");
 }
 
+int GetQuicInitialRttForHandshakeMilliseconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(quic_trial_params,
+                            "initial_rtt_for_handshake_milliseconds"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 base::flat_set<std::string> GetQuicHostWhitelist(
     const VariationParameters& quic_trial_params) {
   std::string host_whitelist =
@@ -500,6 +512,12 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicRetryOnAlternateNetworkBeforeHandshake(quic_trial_params);
     params->quic_go_away_on_path_degrading =
         ShouldQuicGoawayOnPathDegrading(quic_trial_params);
+    int initial_rtt_for_handshake_milliseconds =
+        GetQuicInitialRttForHandshakeMilliseconds(quic_trial_params);
+    if (initial_rtt_for_handshake_milliseconds > 0) {
+      params->quic_initial_rtt_for_handshake_milliseconds =
+          initial_rtt_for_handshake_milliseconds;
+    }
     int retransmittable_on_wire_timeout_milliseconds =
         GetQuicRetransmittableOnWireTimeoutMilliseconds(quic_trial_params);
     if (retransmittable_on_wire_timeout_milliseconds > 0) {

@@ -231,6 +231,10 @@ class NET_EXPORT HttpNetworkSession {
     // If true, client headers will include HTTP/2 stream dependency info
     // derived from the request priority.
     bool quic_headers_include_h2_stream_dependency;
+    // The initial rtt that will be used in crypto handshake if no cached
+    // smoothed rtt is present.
+    int quic_initial_rtt_for_handshake_milliseconds;
+
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 

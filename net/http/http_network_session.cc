@@ -134,6 +134,7 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
+      quic_initial_rtt_for_handshake_milliseconds(0),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
   quic_supported_versions.push_back(quic::QUIC_VERSION_43);
@@ -234,7 +235,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_headers_include_h2_stream_dependency,
           params.quic_connection_options,
           params.quic_client_connection_options,
-          params.quic_enable_socket_recv_optimization),
+          params.quic_enable_socket_recv_optimization,
+          params.quic_initial_rtt_for_handshake_milliseconds),
       spdy_session_pool_(context.host_resolver,
                          context.ssl_config_service,
                          context.http_server_properties,
@@ -384,6 +386,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
   dict->SetBoolean("server_push_cancellation",
                    params_.enable_server_push_cancellation);
+  dict->SetInteger("initial_rtt_for_handshake_milliseconds",
+                   params_.quic_initial_rtt_for_handshake_milliseconds);
 
   return std::move(dict);
 }
