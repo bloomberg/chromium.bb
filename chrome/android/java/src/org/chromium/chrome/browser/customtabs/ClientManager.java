@@ -277,7 +277,7 @@ class ClientManager {
     private boolean mWarmupHasBeenCalled;
 
     public ClientManager() {
-        RequestThrottler.loadInBackground(ContextUtils.getApplicationContext());
+        RequestThrottler.loadInBackground();
     }
 
     /** Creates a new session.
@@ -346,8 +346,7 @@ class ClientManager {
                 TextUtils.isEmpty(url) && lowConfidence && !params.lowConfidencePrediction;
         params.setPredictionMetrics(url, SystemClock.elapsedRealtime(), lowConfidence);
         if (firstLowConfidencePrediction) return true;
-        RequestThrottler throttler =
-                RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid);
+        RequestThrottler throttler = RequestThrottler.getForUid(uid);
         return throttler.updateStatsAndReturnWhetherAllowed();
     }
 
@@ -401,8 +400,7 @@ class ClientManager {
         if (outcome == PredictionStatus.GOOD) {
             long elapsedTimeMs = SystemClock.elapsedRealtime()
                     - params.getLastMayLaunchUrlTimestamp();
-            RequestThrottler.getForUid(ContextUtils.getApplicationContext(), params.uid)
-                    .registerSuccess(params.mPredictedUrl);
+            RequestThrottler.getForUid(params.uid).registerSuccess(params.mPredictedUrl);
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
                     elapsedTimeMs, 1, DateUtils.MINUTE_IN_MILLIS * 3, 100);
         }
@@ -769,24 +767,22 @@ class ClientManager {
 
     /** See {@link RequestThrottler#isPrerenderingAllowed()} */
     public synchronized boolean isPrerenderingAllowed(int uid) {
-        return RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid)
-                .isPrerenderingAllowed();
+        return RequestThrottler.getForUid(uid).isPrerenderingAllowed();
     }
 
     /** See {@link RequestThrottler#registerPrerenderRequest(String)} */
     public synchronized void registerPrerenderRequest(int uid, String url) {
-        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid)
-                .registerPrerenderRequest(url);
+        RequestThrottler.getForUid(uid).registerPrerenderRequest(url);
     }
 
     /** See {@link RequestThrottler#reset()} */
     public synchronized void resetThrottling(int uid) {
-        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid).reset();
+        RequestThrottler.getForUid(uid).reset();
     }
 
     /** See {@link RequestThrottler#ban()} */
     public synchronized void ban(int uid) {
-        RequestThrottler.getForUid(ContextUtils.getApplicationContext(), uid).ban();
+        RequestThrottler.getForUid(uid).ban();
     }
 
     /**

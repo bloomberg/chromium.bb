@@ -460,7 +460,7 @@ public class CustomTabsConnection {
                     // The throttling database uses shared preferences, that can cause a
                     // StrictMode violation on the first access. Make sure that this access is
                     // not in mayLauchUrl.
-                    RequestThrottler.loadInBackground(ContextUtils.getApplicationContext());
+                    RequestThrottler.loadInBackground();
                 }
             });
         }
