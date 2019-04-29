@@ -37,11 +37,6 @@ import zipfile
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION = '357692'
 
-use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
-                         in ('1', 'YES'))
-if use_head_revision:
-  CLANG_REVISION = 'HEAD'
-
 # This is incremented when pushing a new build of Clang at the same revision.
 CLANG_SUB_REVISION=1
 
@@ -439,7 +434,7 @@ def CopyDiaDllTo(target_dir):
 def VeryifyVersionOfBuiltClangMatchesVERSION():
   """Checks that `clang --version` outputs VERSION.  If this fails, VERSION
   in this file is out-of-date and needs to be updated (possibly in an
-  `if use_head_revision:` block in main() first)."""
+  `if args.llvm_force_head_revision:` block in main() first)."""
   clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
   if sys.platform == 'win32':
     # TODO: Parse `clang-cl /?` output for built clang's version and check that
@@ -626,7 +621,7 @@ def UpdateClang(args):
 
   # If building at head, define a macro that plugins can use for #ifdefing
   # out code that builds at head, but not at CLANG_REVISION or vice versa.
-  if use_head_revision:
+  if args.llvm_force_head_revision:
     cflags += ['-DLLVM_FORCE_HEAD_REVISION']
     cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
 
@@ -927,7 +922,7 @@ def UpdateClang(args):
                fuchsia_lib_dst_dir)
 
   # Run tests.
-  if args.run_tests or use_head_revision:
+  if args.run_tests or args.llvm_force_head_revision:
     os.chdir(LLVM_BUILD_DIR)
     RunCommand(['ninja', 'cr-check-all'], msvc_arch='x64')
   if args.run_tests:
@@ -995,6 +990,9 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
+  if (os.environ.get('LLVM_FORCE_HEAD_REVISION', '0') in ('1', 'YES')):
+    args.llvm_force_head_revision = True
+
   if args.lto_lld and not args.bootstrap:
     print('--lto-lld requires --bootstrap')
     return 1
@@ -1003,8 +1001,7 @@ def main():
     args.lto_lld = False
 
   # Get svn if we're going to use it to check the revision or do a local build.
-  if (use_head_revision or args.llvm_force_head_revision or
-      args.force_local_build):
+  if args.llvm_force_head_revision or args.force_local_build:
     AddSvnToPathOnWin()
 
   if args.verify_version and args.verify_version != VERSION:
@@ -1022,7 +1019,7 @@ def main():
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
-    if use_head_revision or args.llvm_force_head_revision:
+    if args.llvm_force_head_revision:
       print(GetSvnRevision(LLVM_DIR))
     else:
       print(PACKAGE_VERSION)
@@ -1037,7 +1034,7 @@ def main():
   # an error message when this script is run from gn for some reason.
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
-  if use_head_revision:
+  if args.llvm_force_head_revision:
     # Use a real revision number rather than HEAD to make sure that the stamp
     # file logic works.
     CLANG_REVISION = GetSvnRevision(LLVM_REPO_URL)

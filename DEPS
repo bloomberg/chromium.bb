@@ -112,6 +112,10 @@ vars = {
   # luci-go CIPD package version.
   'luci_go': 'git_revision:25958d48e89e980e2a97daeddc977fb5e2e1fb8c',
 
+  # This can be overridden, e.g. with custom_vars, to build clang from HEAD
+  # instead of downloading the prebuilt pinned revision.
+  'llvm_force_head_revision': False,
+
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
@@ -2394,10 +2398,22 @@ hooks = [
     ],
   },
   {
+    # Update the prebuilt clang toolchain.
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'src/tools/clang/scripts/update.py', '--with-android={checkout_android}'],
+    'condition': 'not llvm_force_head_revision',
+    'action': ['python', 'src/tools/clang/scripts/update.py'],
+  },
+  {
+    # Build the clang toolchain from tip-of-tree.
+    # Note: On Win, this should run after win_toolchain, as it may use it.
+    'name': 'clang_tot',
+    'pattern': '.',
+    'condition': 'llvm_force_head_revision',
+    'action': ['python', 'src/tools/clang/scripts/update.py',
+               '--llvm-force-head-revision',
+               '--with-android={checkout_android}'],
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.
