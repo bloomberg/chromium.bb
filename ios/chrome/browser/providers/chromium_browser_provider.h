@@ -29,6 +29,7 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   SpecialUserProvider* GetSpecialUserProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
   FullscreenProvider* GetFullscreenProvider() const override;
+  OverridesProvider* GetOverridesProvider() const override;
 
  private:
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
@@ -41,6 +42,7 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   std::unique_ptr<SpecialUserProvider> special_user_provider_;
   std::unique_ptr<SpotlightProvider> spotlight_provider_;
   std::unique_ptr<FullscreenProvider> fullscreen_provider_;
+  std::unique_ptr<OverridesProvider> overrides_provider_;
 };
 
 #endif  // IOS_CHROME_BROWSER_PROVIDERS_CHROMIUM_BROWSER_PROVIDER_H_

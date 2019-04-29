@@ -13,6 +13,8 @@ source_set("browser") {
     "chrome_browser_provider.mm",
     "geolocation_updater_provider.h",
     "geolocation_updater_provider.mm",
+    "overrides_provider.h",
+    "overrides_provider.mm",
   ]
   deps = [
     "//base",
