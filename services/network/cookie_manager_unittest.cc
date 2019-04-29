@@ -294,6 +294,16 @@ class CookieManagerTest : public testing::Test {
   void InitializeCookieService(
       scoped_refptr<net::CookieMonster::PersistentCookieStore> store,
       scoped_refptr<SessionCleanupCookieStore> cleanup_store) {
+    if (cookie_service_) {
+      // Make sure that data from any previous store is fully saved.
+      // |cookie_service_| destroyed first since it may issue some writes to the
+      // |cookie_monster_|.
+      cookie_service_ = nullptr;
+      net::NoResultCookieCallback callback;
+      cookie_monster_->FlushStore(callback.MakeCallback());
+      callback.WaitUntilDone();
+    }
+
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
         std::move(store), nullptr /* netlog */);
