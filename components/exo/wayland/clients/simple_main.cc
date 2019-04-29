@@ -11,6 +11,11 @@
 #include "base/message_loop/message_loop.h"
 #include "components/exo/wayland/clients/simple.h"
 
+namespace switches {
+// Specifies if VSync timing updates should be logged on the output.
+const char kLogVSyncTimingUpdates[] = "log-vsync-timing-updates";
+}  // namespace switches
+
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   base::CommandLine::Init(argc, argv);
@@ -24,7 +29,10 @@ int main(int argc, char* argv[]) {
   if (!client.Init(params))
     return 1;
 
-  client.Run(std::numeric_limits<int>::max());
+  bool log_vsync_timing_updates =
+      command_line->HasSwitch(switches::kLogVSyncTimingUpdates);
+
+  client.Run(std::numeric_limits<int>::max(), log_vsync_timing_updates);
 
   return 0;
 }

@@ -137,6 +137,9 @@ void RegistryHandler(void* data,
         static_cast<zwp_linux_explicit_synchronization_v1*>(wl_registry_bind(
             registry, id, &zwp_linux_explicit_synchronization_v1_interface,
             1)));
+  } else if (strcmp(interface, "zcr_vsync_feedback_v1") == 0) {
+    globals->vsync_feedback.reset(static_cast<zcr_vsync_feedback_v1*>(
+        wl_registry_bind(registry, id, &zcr_vsync_feedback_v1_interface, 1)));
   }
 }
 

@@ -251,6 +251,7 @@ source_set("client_support") {
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:linux_explicit_synchronization_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
+    "//third_party/wayland-protocols:vsync_feedback_protocol",
   ]
 
   if (ozone_platform_gbm) {
@@ -309,6 +310,7 @@ source_set("simple") {
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
+    "//third_party/wayland-protocols:vsync_feedback_protocol",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
