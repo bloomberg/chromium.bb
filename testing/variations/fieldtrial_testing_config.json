@@ -606,6 +606,26 @@
             ]
         }
     ],
+    "AutofillDoNotUploadSaveUnsupportedCards": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillDoNotUploadSaveUnsupportedCards"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDropdownLayout": [
         {
             "platforms": [
@@ -772,6 +792,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillMetadataUploads"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillNoLocalSaveOnUnmaskOrUploadSuccess": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillNoLocalSaveOnUnmaskSuccess",
+                        "AutofillNoLocalSaveOnUploadSuccess"
                     ]
                 }
             ]
