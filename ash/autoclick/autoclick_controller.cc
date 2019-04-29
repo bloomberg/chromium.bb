@@ -183,9 +183,7 @@ void AutoclickController::UpdateAutoclickRingWidget(
 }
 
 void AutoclickController::DoAutoclickAction() {
-  // The gesture_anchor_location_ is the position at which the animation is
-  // anchored, and where the click should occur.
-  aura::Window* root_window = wm::GetRootWindowAt(gesture_anchor_location_);
+  aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   // But if the thing that would be acted upon is an autoclick menu button, do a
@@ -193,9 +191,8 @@ void AutoclickController::DoAutoclickAction() {
   // ensures that no matter the autoclick setting, users can always change to
   // another autoclick setting. By using a fake click we avoid closing dialogs
   // and menus, allowing autoclick users to interact with those items.
-  if (!DragInProgress() &&
-      AutoclickMenuContainsPoint(gesture_anchor_location_)) {
-    menu_bubble_controller_->ClickOnBubble(gesture_anchor_location_,
+  if (!DragInProgress() && AutoclickMenuContainsPoint(anchor_location_)) {
+    menu_bubble_controller_->ClickOnBubble(anchor_location_,
                                            mouse_event_flags_);
     // Reset UI.
     CancelAutoclickAction();
@@ -207,7 +204,7 @@ void AutoclickController::DoAutoclickAction() {
   mojom::AutoclickEventType in_progress_event_type = event_type_;
   RecordUserAction(in_progress_event_type);
 
-  gfx::Point location_in_pixels(gesture_anchor_location_);
+  gfx::Point location_in_pixels(anchor_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
@@ -286,9 +283,7 @@ void AutoclickController::StartAutoclickGesture() {
     }
     // Otherwise, go ahead and start the gesture.
   }
-  // The anchor is always the point in the screen where the timer starts, and is
-  // used to determine when the cursor has moved far enough to cancel the
-  // autoclick.
+  // The anchor is always the point in the screen where the timer starts.
   anchor_location_ = gesture_anchor_location_;
   autoclick_ring_handler_->StartGesture(
       delay_ - CalculateStartGestureDelay(delay_), anchor_location_,
@@ -433,7 +428,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     } else if (autoclick_timer_->IsRunning() && !stabilize_click_position_) {
       // If we are not stabilizing the click position, update the gesture
       // center with each mouse move event.
-      gesture_anchor_location_ = point_in_screen;
+      anchor_location_ = point_in_screen;
       autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
