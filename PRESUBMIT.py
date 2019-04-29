@@ -718,6 +718,16 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'SHFileOperation',
+      (
+        'SHFileOperation was deprecated in Windows Vista, and there are less ',
+        'complex functions to achieve the same goals. Use IFileOperation for ',
+        'any esoteric actions instead.'
+      ),
+      True,
+      (),
+    ),
 )
 
 
