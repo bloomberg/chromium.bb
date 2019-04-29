@@ -30,20 +30,17 @@ bool PwaInstallView::Update() {
   if (!web_contents)
     return false;
 
-  banners::AppBannerManager* manager =
-      banners::AppBannerManager::FromWebContents(web_contents);
+  auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
   // May not be present e.g. in incognito mode.
   if (!manager)
     return false;
 
-  bool is_installable = manager->IsProbablyInstallable();
-  bool is_installed =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents)
-          ->HasAssociatedApp();
-  bool show_install_button = is_installable && !is_installed;
-  // TODO(crbug.com/907351): When installability is unknown and we're still in
-  // the scope of a previously-determined installable site, display it as still
-  // being installable.
+  bool is_probably_installable = manager->IsProbablyInstallable();
+  auto* tab_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  bool is_installed = tab_helper && tab_helper->HasAssociatedApp();
+
+  bool show_install_button = is_probably_installable && !is_installed;
 
   if (show_install_button && manager->MaybeConsumeInstallAnimation())
     AnimateIn(base::nullopt);
