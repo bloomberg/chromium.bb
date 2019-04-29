@@ -9304,8 +9304,8 @@ static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
 // the same prediction as from regular bmc, therefore we can skip the
 // overlapping operations for less complexity. The parameters checked include
 // reference frame, motion vector, and interpolation filter.
-int check_identical_obmc_mv_field(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                  int mi_row, int mi_col) {
+static int check_identical_obmc_mv_field(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                         int mi_row, int mi_col) {
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   struct obmc_check_mv_field_ctxt mv_field_check_ctxt = { xd->mi[0], 1 };
 
@@ -11833,9 +11833,9 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   av1_zero(search_state->single_state_modelled_cnt);
 }
 
-bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
-                    const MV_REFERENCE_FRAME *ref_frame,
-                    const PREDICTION_MODE this_mode) {
+static bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
+                           const MV_REFERENCE_FRAME *ref_frame,
+                           const PREDICTION_MODE this_mode) {
   if (mode_skip_mask->pred_modes[ref_frame[0]] & (1 << this_mode)) {
     return true;
   }
@@ -12692,7 +12692,7 @@ static void release_compound_type_rd_buffers(
 }
 
 // Enables do_tx_search on a per-mode basis.
-int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
+static int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
   if (!adaptive || do_tx_search_global) {
     return do_tx_search_global;
   }
