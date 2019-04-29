@@ -324,6 +324,10 @@ TEST_F(NativeViewHostAuraTest, InstallClip) {
 // a regression test for http://crbug.com/389261.
 TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
   CreateHost();
+  // Force a Layout() now so that the visibility is set to false (because the
+  // bounds is empty).
+  host()->Layout();
+
   aura::Window* child_win = child()->GetNativeView();
   aura::Window* root_window = child_win->GetRootWindow();
   aura::WindowTreeHost* child_win_tree_host = child_win->GetHost();
@@ -396,6 +400,10 @@ TEST_F(NativeViewHostAuraTest, Attach) {
   child()->GetNativeView()->AddObserver(&test_observer);
 
   host()->Attach(child()->GetNativeView());
+
+  // Visibiliity is not updated until Layout() happens. This is normally async,
+  // but force a Layout() so this code doesn't have to wait.
+  host()->Layout();
 
   ASSERT_EQ(3u, test_observer.events().size());
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_BOUNDS_CHANGED,
@@ -548,6 +556,22 @@ TEST_F(NativeViewHostAuraTest, TopInsets) {
 
   DestroyHost();
   DestroyTopLevel();
+}
+
+TEST_F(NativeViewHostAuraTest, WindowHiddenWhenAttached) {
+  std::unique_ptr<aura::Window> window =
+      std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->set_owned_by_parent(false);
+  window->Show();
+  EXPECT_TRUE(window->TargetVisibility());
+  CreateTopLevel();
+  NativeViewHost* host = toplevel()->GetRootView()->AddChildView(
+      std::make_unique<NativeViewHost>());
+  host->SetVisible(false);
+  host->Attach(window.get());
+  // Is |host| is not visible, |window| should immediately be hidden.
+  EXPECT_FALSE(window->TargetVisibility());
 }
 
 }  // namespace views

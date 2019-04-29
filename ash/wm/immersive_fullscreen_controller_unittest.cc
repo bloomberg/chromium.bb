@@ -781,7 +781,7 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealViaGestureChildConsumesEvents) {
           &child_delegate, aura::client::WINDOW_TYPE_CONTROL, 1234,
           gfx::Rect()));
   content_view()->Attach(child.get());
-  child->Show();
+  content_view()->Layout();
 
   ConsumeEventHandler handler;
   child->AddPreTargetHandler(&handler);
