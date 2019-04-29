@@ -25,19 +25,35 @@ constexpr int kBindingsFailureExitCode = 129;
 constexpr char kStubBindingsPath[] =
     FILE_PATH_LITERAL("fuchsia/runners/cast/not_implemented_api_bindings.js");
 
+TouchInputPolicy TouchInputPolicyFromApplicationConfig(
+    const chromium::cast::ApplicationConfig& application_config) {
+  if (!application_config.has_touch_enabled_policy())
+    return TouchInputPolicy::UNSPECIFIED;
+
+  if (application_config.touch_enabled_policy())
+    return TouchInputPolicy::FORCE_ENABLE;
+
+  return TouchInputPolicy::FORCE_DISABLE;
+}
+
 }  // namespace
 
 CastComponent::CastComponent(
     CastRunner* runner,
+    chromium::cast::ApplicationConfig application_config,
     std::unique_ptr<base::fuchsia::StartupContext> context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request,
     std::unique_ptr<cr_fuchsia::AgentManager> agent_manager)
     : WebComponent(runner, std::move(context), std::move(controller_request)),
       agent_manager_(std::move(agent_manager)),
+      application_config_(std::move(application_config)),
+      touch_input_policy_(
+          TouchInputPolicyFromApplicationConfig(application_config_)),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
+  frame()->SetEnableInput(false);
   InitializeCastPlatformBindings();
 
   frame()->SetNavigationEventListener(
@@ -88,4 +104,6 @@ void CastComponent::InitializeCastPlatformBindings() {
       frame(),
       agent_manager_->ConnectToAgentService<chromium::cast::QueryableData>(
           CastRunner::kAgentComponentUrl));
+  touch_input_ = std::make_unique<TouchInputBindings>(touch_input_policy_,
+                                                      frame(), &connector_);
 }

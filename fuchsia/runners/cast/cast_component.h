@@ -15,6 +15,7 @@
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/cast/queryable_data_bindings.h"
+#include "fuchsia/runners/cast/touch_input_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 
 class CastRunner;
@@ -24,6 +25,7 @@ class CastComponent : public WebComponent,
                       public fuchsia::web::NavigationEventListener {
  public:
   CastComponent(CastRunner* runner,
+                chromium::cast::ApplicationConfig application_config,
                 std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                 fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                     controller_request,
@@ -44,11 +46,14 @@ class CastComponent : public WebComponent,
       OnNavigationStateChangedCallback callback) override;
 
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
+  chromium::cast::ApplicationConfig application_config_;
 
   bool constructor_active_ = false;
+  TouchInputPolicy touch_input_policy_;
   NamedMessagePortConnector connector_;
   std::unique_ptr<CastChannelBindings> cast_channel_;
   std::unique_ptr<QueryableDataBindings> queryable_data_;
+  std::unique_ptr<TouchInputBindings> touch_input_;
 
   fuchsia::sys::ServiceProviderPtr agent_services_;
   fuchsia::modular::AgentControllerPtr agent_controller_;

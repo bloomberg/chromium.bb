@@ -59,11 +59,6 @@ cast.__platform__._notImplemented = function(functionName, returnValue,
 cast.__platform__.canDisplayType =
     cast.__platform__._notImplemented('canDisplayType', true);
 
-cast.__platform__.setTouchInputSupport =
-    cast.__platform__._notImplemented('setTouchInputSupport',
-        {displayControls: true},
-        cast.__platform__.ReturnType.PROMISE_RESOLVED);
-
 cast.__platform__.setAssistantMessageHandler =
     cast.__platform__._notImplemented('setAssistantMessageHandler');
 

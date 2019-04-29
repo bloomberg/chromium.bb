@@ -142,7 +142,6 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, ApiCoverage) {
   // expected output.
   const std::vector<StubExpectation> kExpectations = {
       {"canDisplayType", "true"},
-      {"setTouchInputSupport", "promise {\"displayControls\":true}"},
       {"setAssistantMessageHandler"},
       {"sendAssistantRequest"},
       {"setWindowRequestHandler"},
