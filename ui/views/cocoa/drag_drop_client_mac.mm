@@ -125,7 +125,9 @@ void DragDropClientMac::DragExit() {
 }
 
 gfx::Point DragDropClientMac::LocationInView(NSPoint point) const {
-  return gfx::Point(point.x, NSHeight([bridge_->ns_window() frame]) - point.y);
+  NSRect content_rect = [bridge_->ns_window()
+      contentRectForFrameRect:[bridge_->ns_window() frame]];
+  return gfx::Point(point.x, NSHeight(content_rect) - point.y);
 }
 
 }  // namespace views
