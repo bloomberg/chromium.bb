@@ -21,7 +21,6 @@ namespace content {
 namespace {
 using ::inspector_protocol_encoding::span;
 using ::inspector_protocol_encoding::SpanFrom;
-using ::inspector_protocol_encoding::Status;
 using ::inspector_protocol_encoding::cbor::AppendString8EntryToCBORMap;
 using ::inspector_protocol_encoding::cbor::IsCBORMessage;
 
@@ -148,7 +147,8 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     if (client_->UsesBinaryProtocol()) {
       DCHECK(IsCBORMessage(SpanFrom(message)));
       std::string json;
-      Status status = ConvertCBORToJSON(SpanFrom(message), &json);
+      ::inspector_protocol_encoding::Status status =
+          ConvertCBORToJSON(SpanFrom(message), &json);
       LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
       proxy_delegate_->SendMessageToBackend(this, json);
       return true;
@@ -163,7 +163,7 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     // CBOR (it comes from the client).
     DCHECK(IsCBORMessage(SpanFrom(message)));
   } else {
-    Status status =
+    ::inspector_protocol_encoding::Status status =
         ConvertJSONToCBOR(SpanFrom(message), &converted_cbor_message);
     LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
     message_to_send = &converted_cbor_message;
@@ -284,7 +284,8 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string json;
-  Status status = ConvertCBORToJSON(SpanFrom(cbor), &json);
+  ::inspector_protocol_encoding::Status status =
+      ConvertCBORToJSON(SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
 }
@@ -319,7 +320,7 @@ static void DispatchProtocolResponseOrNotification(
     return;
   }
   std::string json;
-  Status status = ConvertCBORToJSON(cbor, &json);
+  ::inspector_protocol_encoding::Status status = ConvertCBORToJSON(cbor, &json);
   // TODO(johannes): Should we kill renderer if !status.ok() ?
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
@@ -356,9 +357,9 @@ void DevToolsSession::DispatchOnClientHost(const std::string& message) {
     return;
   }
   std::string converted;
-  Status status = client_->UsesBinaryProtocol()
-                      ? ConvertJSONToCBOR(bytes, &converted)
-                      : ConvertCBORToJSON(bytes, &converted);
+  ::inspector_protocol_encoding::Status status =
+      client_->UsesBinaryProtocol() ? ConvertJSONToCBOR(bytes, &converted)
+                                    : ConvertCBORToJSON(bytes, &converted);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, converted);
   // |this| may be deleted at this point.
@@ -412,8 +413,8 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
     return;
   DCHECK(IsCBORMessage(SpanFrom(message)));
   std::string patched(message);
-  Status status = AppendString8EntryToCBORMap(SpanFrom(kSessionId),
-                                              SpanFrom(session_id), &patched);
+  ::inspector_protocol_encoding::Status status = AppendString8EntryToCBORMap(
+      SpanFrom(kSessionId), SpanFrom(session_id), &patched);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   if (!status.ok())
     return;

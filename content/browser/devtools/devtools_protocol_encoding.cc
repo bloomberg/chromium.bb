@@ -9,7 +9,6 @@
 namespace content {
 namespace {
 using ::inspector_protocol_encoding::span;
-using ::inspector_protocol_encoding::Status;
 using ::inspector_protocol_encoding::json::ConvertCBORToJSON;
 using ::inspector_protocol_encoding::json::ConvertJSONToCBOR;
 
@@ -31,17 +30,21 @@ class Platform : public ::inspector_protocol_encoding::json::Platform {
 };
 }  // namespace
 
-Status ConvertCBORToJSON(span<uint8_t> cbor, std::string* json) {
+::inspector_protocol_encoding::Status ConvertCBORToJSON(span<uint8_t> cbor,
+                                                        std::string* json) {
   Platform platform;
   return ConvertCBORToJSON(platform, cbor, json);
 }
 
-Status ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor) {
+::inspector_protocol_encoding::Status ConvertJSONToCBOR(span<uint8_t> json,
+                                                        std::string* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }
 
-Status ConvertJSONToCBOR(span<uint8_t> json, std::vector<uint8_t>* cbor) {
+::inspector_protocol_encoding::Status ConvertJSONToCBOR(
+    span<uint8_t> json,
+    std::vector<uint8_t>* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }
