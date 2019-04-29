@@ -59,9 +59,13 @@ namespace blink {
 
 namespace {
 
-static unsigned NextSequenceNumber() {
+unsigned NextSequenceNumber() {
   static unsigned next = 0;
   return ++next;
+}
+
+double ToMilliseconds(double seconds) {
+  return seconds * 1000;
 }
 }
 
@@ -261,24 +265,40 @@ double Animation::currentTime(bool& is_null) {
   return result;
 }
 
+// https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation
 double Animation::currentTime() {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
-  if (PlayStateInternal() == kIdle || (!hold_time_ && !start_time_))
-    return std::numeric_limits<double>::quiet_NaN();
+  // 1. If the animation’s hold time is resolved,
+  //    The current time is the animation’s hold time.
+  if (hold_time_.has_value())
+    return ToMilliseconds(hold_time_.value());
 
-  return CurrentTimeInternal() * 1000;
+  // 2.  If any of the following are true:
+  //    * the animation has no associated timeline, or
+  //    * the associated timeline is inactive, or
+  //    * the animation’s start time is unresolved.
+  // The current time is an unresolved time value.
+  if (!timeline_ || PlayStateInternal() == kIdle || !start_time_)
+    return NullValue();
+
+  // 3. Otherwise,
+  // current time = (timeline time - start time) × playback rate
+  double current_time =
+      (timeline_->EffectiveTime() - start_time_.value()) * playback_rate_;
+  return ToMilliseconds(current_time);
 }
 
 double Animation::CurrentTimeInternal() const {
   double result = hold_time_.value_or(CalculateCurrentTime());
 #if DCHECK_IS_ON()
-  // We can't enforce this check during Unset due to other
-  // assertions.
+  // We can't enforce this check during Unset due to other assertions.
   if (play_state_ != kUnset) {
     const_cast<Animation*>(this)->UpdateCurrentTimingState(
         kTimingUpdateOnDemand);
-    DCHECK_EQ(result, hold_time_.value_or(CalculateCurrentTime()));
+    double hold_or_current_time = hold_time_.value_or(CalculateCurrentTime());
+    DCHECK((IsNull(result) && IsNull(hold_or_current_time)) ||
+           result == hold_or_current_time);
   }
 #endif
   return result;
@@ -455,9 +475,8 @@ base::Optional<double> Animation::CalculateStartTime(
 }
 
 double Animation::CalculateCurrentTime() const {
-  // TODO(crbug.com/818196): By spec, this should be unresolved, not 0.
   if (!start_time_ || !timeline_)
-    return 0;
+    return NullValue();
   return (timeline_->EffectiveTime() - start_time_.value()) * playback_rate_;
 }
 
@@ -526,7 +545,8 @@ void Animation::setEffect(AnimationEffect* new_effect) {
     new_effect->Attach(this);
     SetOutdated();
   }
-  SetCurrentTimeInternal(stored_current_time, kTimingUpdateOnDemand);
+  if (!IsNull(stored_current_time))
+    SetCurrentTimeInternal(stored_current_time, kTimingUpdateOnDemand);
 }
 
 const char* Animation::PlayStateString(AnimationPlayState play_state) {
@@ -609,7 +629,7 @@ void Animation::play(ExceptionState& exception_state) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   double current_time = this->CurrentTimeInternal();
-  if (playback_rate_ < 0 && current_time <= 0 &&
+  if (playback_rate_ < 0 && (current_time <= 0 || IsNull(current_time)) &&
       EffectEnd() == std::numeric_limits<double>::infinity()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -629,11 +649,12 @@ void Animation::play(ExceptionState& exception_state) {
   finished_ = false;
   UnpauseInternal();
 
-  if (playback_rate_ > 0 && (current_time < 0 || current_time >= EffectEnd())) {
+  if (playback_rate_ > 0 && (IsNull(current_time) || current_time < 0 ||
+                             current_time >= EffectEnd())) {
     start_time_ = base::nullopt;
     SetCurrentTimeInternal(0, kTimingUpdateOnDemand);
-  } else if (playback_rate_ < 0 &&
-             (current_time <= 0 || current_time > EffectEnd())) {
+  } else if (playback_rate_ < 0 && (IsNull(current_time) || current_time <= 0 ||
+                                    current_time > EffectEnd())) {
     start_time_ = base::nullopt;
     SetCurrentTimeInternal(EffectEnd(), kTimingUpdateOnDemand);
   }
@@ -771,7 +792,8 @@ void Animation::SetPlaybackRateInternal(double playback_rate) {
 
   playback_rate_ = playback_rate;
   start_time_ = base::nullopt;
-  SetCurrentTimeInternal(stored_current_time, kTimingUpdateOnDemand);
+  if (!IsNull(stored_current_time))
+    SetCurrentTimeInternal(stored_current_time, kTimingUpdateOnDemand);
 }
 
 void Animation::ClearOutdated() {
