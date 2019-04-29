@@ -47,13 +47,9 @@ template("trichrome_library_apk_tmpl") {
                              "apk_name",
                              "android_manifest",
                              "android_manifest_dep",
+                             "proguard_jar_path",
                              "static_library_dependent_targets",
                            ])
-
-    # TODO(torne): this contains the list of locales amongst other things.
-    # Skip building it because the version in the library won't be used anyway;
-    # the one in the main APK will take precedence.
-    generate_buildconfig_java = false
 
     # TODO(torne): since there's no real java code in the library right now,
     # leave out the build hooks and let them get compiled into each APK. Later
@@ -68,6 +64,7 @@ template("trichrome_library_apk_tmpl") {
     version_name = chrome_version_name
     version_code = trichrome_version_code
     min_sdk_version = 28
+    product_version_resources_dep = "//chrome/android:product_version_resources"
 
     # TODO(torne): using system_webview_resources just to get a temporary icon
     deps = [

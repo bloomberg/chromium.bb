@@ -350,6 +350,10 @@ template("write_build_config") {
       ]
     }
 
+    if (defined(invoker.is_base_module) && invoker.is_base_module) {
+      args += [ "--is-base-module" ]
+    }
+
     if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
       _rebased_modules = rebase_path(invoker.loadable_modules, root_build_dir)
       args += [ "--native-libs=$_rebased_modules" ]
@@ -460,6 +464,11 @@ template("write_build_config") {
       args += [ "--proguard-configs=$_rebased_proguard_configs" ]
     }
     if (defined(invoker.static_library_dependent_targets)) {
+      assert(defined(invoker.static_library_jar_path))
+      args += [
+        "--static-library-jar-path",
+        rebase_path(invoker.static_library_jar_path, root_build_dir),
+      ]
       _dependent_configs = []
       foreach(d, invoker.static_library_dependent_targets) {
         _target_label = get_label_info(d, "label_no_toolchain")
@@ -468,8 +477,10 @@ template("write_build_config") {
         _dep_name = get_label_info(d, "name")
         _dependent_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
       }
-      _rebased_depdent_configs = rebase_path(_dependent_configs, root_build_dir)
-      args += [ "--static-library-dependent-configs=$_rebased_depdent_configs" ]
+      _rebased_dependent_configs =
+          rebase_path(_dependent_configs, root_build_dir)
+      args +=
+          [ "--static-library-dependent-configs=$_rebased_dependent_configs" ]
     }
     if (defined(invoker.gradle_treat_as_prebuilt) &&
         invoker.gradle_treat_as_prebuilt) {
@@ -491,6 +502,11 @@ template("write_build_config") {
         "--base-module-build-config",
         rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir),
       ]
+    }
+    if (defined(invoker.module_build_configs)) {
+      _rebased_configs =
+          rebase_path(invoker.module_build_configs, root_build_dir)
+      args += [ "--module-build-configs=$_rebased_configs" ]
     }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
@@ -1034,6 +1050,13 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
 
+      if (defined(invoker.is_static_library) && invoker.is_static_library) {
+        args += [
+          "--extra-mapping-output-paths",
+          "@FileArg($_rebased_build_config:deps_info:static_library_proguard_mapping_output_paths)",
+        ]
+      }
+
       if (defined(invoker.config_output_path)) {
         _config_output_path = invoker.config_output_path
         outputs += [ _config_output_path ]
@@ -1200,6 +1223,7 @@ if (enable_java_templates) {
                                  "proguard_expectations_file",
                                  "proguard_jar_path",
                                  "proguard_mapping_path",
+                                 "is_static_library",
                                  "testonly",
                                ])
         inputs = []
@@ -2582,9 +2606,6 @@ if (enable_java_templates) {
                  _apksigner,
                  _zipalign,
                ]
-      if (defined(invoker.dex_path)) {
-        inputs += [ invoker.dex_path ]
-      }
 
       outputs = [
         invoker.output_apk_path,
@@ -3085,6 +3106,8 @@ if (enable_java_templates) {
   #    java_files is empty. If not
   #  jar_path: Optional path to a prebuilt .jar file for this target.
   #    Mutually exclusive with java_files and srcjar_deps.
+  #  intermediate_jar_path: Optional path to the output .jar file. If used,
+  #    final_jar_path must be created by another target.
   #  final_jar_path: Optional path to the final output .jar file (after
   #    processing). If not provided, the output will go under
   #    $root_build_dir/lib.java/
@@ -3250,6 +3273,16 @@ if (enable_java_templates) {
       if (defined(invoker.final_jar_path)) {
         _final_jar_path = invoker.final_jar_path
       }
+
+      # For static libraries, the javac jar output is created at the intermediate
+      # path so that it can be processed by another target and moved to the final
+      # spot that the .build_config knows about. Technically this should be done
+      # for the ijar as well, but this is only used for APK targets where
+      # the ijar path isn't actually used.
+      _build_config_jar_path = _final_jar_path
+      if (defined(invoker.intermediate_jar_path)) {
+        _final_jar_path = invoker.intermediate_jar_path
+      }
       _final_ijar_path =
           get_path_info(_final_jar_path, "dir") + "/" +
           get_path_info(_final_jar_path, "name") + ".interface.jar"
@@ -3401,6 +3434,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "base_module_target",
+                                 "is_base_module",
                                  "module_rtxt_path",
                                  "proto_resources_path",
                                ])
@@ -3416,8 +3450,11 @@ if (enable_java_templates) {
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
                                invoker.bypass_platform_checks
 
+      if (defined(invoker.intermediate_jar_path)) {
+        static_library_jar_path = invoker.intermediate_jar_path
+      }
       if (defined(_final_jar_path)) {
-        jar_path = _final_jar_path
+        jar_path = _build_config_jar_path
         ijar_path = _final_ijar_path
         unprocessed_jar_path = _unprocessed_jar_path
       }
@@ -3815,13 +3852,14 @@ template("create_android_app_bundle_module") {
 #   input_dex_zip: Path to zipped dex files to split.
 #   all_modules: Path to list of all modules. Each Module must have
 #     build_config, name, and build_config_target properties.
+#   feature_jars_args: Optional list of args to be passed to dexsplitter.py.
+#     If used should include the jars owned by each feature (in the same order
+#     as all_modules). Allows invoker to pull the list of jars from a different
+#     .build_config than the module's .build_config.
 template("dexsplitter") {
   action_with_pydeps(target_name) {
     forward_variables_from(invoker, [ "deps" ])
     script = "//build/android/gyp/dexsplitter.py"
-    inputs = [
-      invoker.input_dex_zip,
-    ]
     _stamp = "${target_gen_dir}/${target_name}.stamp"
     outputs = [
       _stamp,
@@ -3847,10 +3885,15 @@ template("dexsplitter") {
       args += [
         "--feature-name",
         _feature_module.name,
-        "--feature-jars=@FileArg($_rebased_module_build_config:deps_info:java_runtime_classpath)",
         "--dex-dest=@FileArg($_rebased_module_build_config:final_dex:path)",
       ]
+      if (!defined(invoker.feature_jars_args)) {
+        args += [ "--feature-jars=@FileArg($_rebased_module_build_config:deps_info:java_runtime_classpath)" ]
+      }
       deps += [ _feature_module.build_config_target ]
+    }
+    if (defined(invoker.feature_jars_args)) {
+      args += invoker.feature_jars_args
     }
   }
 }

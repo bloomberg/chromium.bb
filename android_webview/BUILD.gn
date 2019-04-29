@@ -1118,5 +1118,23 @@ if (public_android_sdk) {
     apk_name = "TrichromeWebView"
     use_trichrome_library = true
     uncompress_dex = use_uncompressed_dex
+    if (trichrome_synchronized_proguard) {
+      static_library_provider = "//chrome/android:trichrome_library_apk"
+    }
+  }
+
+  # This target should be removed once Trichrome only supports Chrome bundle
+  # builds.
+  system_webview_apk_tmpl("trichrome_webview_for_bundle_apk") {
+    android_manifest = trichrome_webview_android_manifest
+    android_manifest_dep = ":trichrome_webview_manifest"
+    deps = upstream_only_webview_deps
+    apk_name = "TrichromeWebViewForBundle"
+    use_trichrome_library = true
+    uncompress_dex = use_uncompressed_dex
+    if (trichrome_synchronized_proguard) {
+      static_library_provider =
+          "//chrome/android:trichrome_library_for_bundle_apk"
+    }
   }
 }

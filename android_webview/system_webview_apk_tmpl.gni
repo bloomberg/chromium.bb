@@ -64,9 +64,6 @@ template("system_webview_apk_tmpl") {
       uncompress_shared_libraries = true
 
       app_as_shared_lib = true
-      if (trichrome_synchronized_proguard) {
-        emit_resource_ids = true
-      }
 
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.

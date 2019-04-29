@@ -151,9 +151,11 @@ def AtomicOutput(path, only_if_changed=True):
       subprocess.check_call(['prog', '--output', tmp_file.name])
   """
   # Create in same directory to ensure same filesystem when moving.
-  with tempfile.NamedTemporaryFile(suffix=os.path.basename(path),
-                                   dir=os.path.dirname(path),
-                                   delete=False) as f:
+  dirname = os.path.dirname(path)
+  if not os.path.exists(dirname):
+    MakeDirectory(dirname)
+  with tempfile.NamedTemporaryFile(
+      suffix=os.path.basename(path), dir=dirname, delete=False) as f:
     try:
       yield f
 

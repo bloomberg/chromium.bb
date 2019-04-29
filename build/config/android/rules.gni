@@ -2049,6 +2049,13 @@ if (enable_java_templates) {
   #     resources with acceptable/non-acceptable optimizations.
   #   verify_android_configuration: Enables verification of expected merged
   #     manifest and proguard flags based on a golden file.
+  #   static_library_dependent_targets: A list of targets that use this target
+  #     as a static library. Common Java code from the targets listed in
+  #     static_library_dependent_targets will be moved into this target.
+  #   static_library_provider: Specifies a single target that this target will
+  #     use as a static library APK. When proguard is enabled, the
+  #     static_library_provider target will provide the dex file(s) for this
+  #     target.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2264,6 +2271,23 @@ if (enable_java_templates) {
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     if (_proguard_enabled) {
       _proguard_mapping_path = "$_final_apk_path.mapping"
+    }
+
+    # TODO(http://crbug.com/901465): Move shared Java code to static libraries
+    # when !_proguard_enabled too.
+    _is_static_library_provider =
+        defined(invoker.static_library_dependent_targets) && _proguard_enabled
+    if (_is_static_library_provider) {
+      _static_library_apk_java_target_output = _jar_path
+      _static_library_sync_dex_path =
+          "$_gen_dir/static_library_synchronized_proguard.classes.dex.zip"
+    }
+
+    _uses_static_library = defined(invoker.static_library_provider)
+    if (_uses_static_library) {
+      # These will be provided by the static library APK.
+      _generate_buildconfig_java = false
+      _generate_final_jni = false
     }
 
     # TODO(crbug.com/864142): Allow incremental installs of bundle modules.
@@ -2627,6 +2651,7 @@ if (enable_java_templates) {
       if (_is_bundle_module) {
         type = "android_app_bundle_module"
         res_size_info_path = _res_size_info_path
+        is_base_module = _is_base_module
       } else {
         type = "android_apk"
       }
@@ -2637,6 +2662,10 @@ if (enable_java_templates) {
 
       srcjar_deps = _srcjar_deps
       final_jar_path = _jar_path
+      if (_is_static_library_provider) {
+        intermediate_jar_path = "$_base_path.intermediate.jar"
+        final_jar_path = _static_library_apk_java_target_output
+      }
       dex_path = _lib_dex_path
       final_dex_path = _final_dex_path
 
@@ -2705,11 +2734,48 @@ if (enable_java_templates) {
       }
     }
 
-    # Dex generation for app bundle modules with proguarding enabled takes
-    # place later due to synchronized proguarding. For more details,
-    # read build/android/docs/android_app_bundles.md
-    if (!(_is_bundle_module && _proguard_enabled)) {
+    if (_is_static_library_provider) {
+      _static_library_apk_java_target = "${_template_name}__combine_apk_jars"
+
+      # Since some of the static_libary_dependent_targets may have overlapping
+      # resource dependencies, we can't include all jars created by the
+      # static_library_dependent_targets or else proguard will fail with
+      # duplicate class definitions. This step combines these jars into
+      # a single jar with duplicates ignored.
+      action_with_pydeps(_static_library_apk_java_target) {
+        script = "//build/android/gyp/zip.py"
+        deps = [
+          ":$_build_config_target",
+          ":$_java_target",
+        ]
+        foreach(_dep, invoker.static_library_dependent_targets) {
+          _target_label = get_label_info(_dep, "label_no_toolchain")
+          deps += [ "${_target_label}__java" ]
+        }
+        inputs = [
+          _build_config,
+        ]
+        outputs = [
+          _static_library_apk_java_target_output,
+        ]
+        args = [
+          "--input-zips=@FileArg($_rebased_build_config:deps_info:static_library_dependent_apk_jars)",
+          "--output",
+          rebase_path(_static_library_apk_java_target_output, root_build_dir),
+        ]
+      }
+    }
+
+    if (_proguard_enabled && _uses_static_library) {
+      _final_dex_target_dep = "${invoker.static_library_provider}__dexsplitter"
+    } else if (!(_is_bundle_module && _proguard_enabled)) {
+      # Dex generation for app bundle modules with proguarding enabled takes
+      # place later due to synchronized proguarding. For more details,
+      # read build/android/docs/android_app_bundles.md
       _final_dex_target_name = "${_template_name}__final_dex"
+      if (!_is_bundle_module) {
+        _final_dex_target_dep = ":$_final_dex_target_name"
+      }
       dex(_final_dex_target_name) {
         forward_variables_from(invoker,
                                [
@@ -2722,6 +2788,9 @@ if (enable_java_templates) {
           ":$_build_config_target",
           ":$_java_target",
         ]
+        if (_is_static_library_provider) {
+          deps += [ ":$_static_library_apk_java_target" ]
+        }
         if (_proguard_enabled) {
           forward_variables_from(invoker, [ "proguard_jar_path" ])
           deps += _deps + [ ":$_compile_resources_target" ]
@@ -2741,7 +2810,12 @@ if (enable_java_templates) {
           }
         }
 
-        output = _final_dex_path
+        if (_is_static_library_provider) {
+          output = _static_library_sync_dex_path
+          is_static_library = true
+        } else {
+          output = _final_dex_path
+        }
         enable_multidex = _enable_multidex
 
         if (_enable_main_dex_list) {
@@ -2753,6 +2827,59 @@ if (enable_java_templates) {
             not_needed(invoker, [ "negative_main_dex_globs" ])
           }
         }
+      }
+
+      # For static libraries, a single Proguard run is performed that includes
+      # code from the static library APK and the APKs that use the static
+      # library (done via. classpath merging in write_build_config.py).
+      # This dexsplitter target splits the synchronized dex output into dex
+      # files for each APK/Bundle. In the Bundle case, another dexsplitter step
+      # is later performed to split the dex further for each feature module.
+      if (_is_static_library_provider && _proguard_enabled) {
+        _static_library_dexsplitter_target = "${_template_name}__dexsplitter"
+        dexsplitter(_static_library_dexsplitter_target) {
+          input_dex_zip = _static_library_sync_dex_path
+          proguard_mapping = _proguard_mapping_path
+          deps = [
+            ":$_build_config_target",
+            "$_final_dex_target_dep",
+          ]
+          all_modules = [
+            {
+              name = "base"
+              build_config = _build_config
+              build_config_target = ":$_build_config_target"
+            },
+          ]
+          feature_jars_args = [
+            "--feature-jars",
+            "@FileArg($_rebased_build_config:deps_info:" +
+                "static_library_dependent_classpath_configs:" +
+                "$_rebased_build_config)",
+          ]
+          foreach(_apk_as_module, invoker.static_library_dependent_targets) {
+            _module_config_target =
+                "${_apk_as_module}$build_config_target_suffix"
+            _module_gen_dir = get_label_info(_apk_as_module, "target_gen_dir")
+            _module_name = get_label_info(_apk_as_module, "name")
+            _module_config = "$_module_gen_dir/$_module_name.build_config"
+            _rebased_module_config = rebase_path(_module_config, root_build_dir)
+            all_modules += [
+              {
+                name = _module_name
+                build_config = _module_config
+                build_config_target = _module_config_target
+              },
+            ]
+            feature_jars_args += [
+              "--feature-jars",
+              "@FileArg($_rebased_build_config:deps_info:" +
+                  "static_library_dependent_classpath_configs:" +
+                  "$_rebased_module_config)",
+            ]
+          }
+        }
+        _deps += [ ":$_static_library_dexsplitter_target" ]
       }
     } else {
       # A small sanity check to help developers with a subtle point!
@@ -2871,7 +2998,7 @@ if (enable_java_templates) {
         deps = _deps + [
                  ":$_merge_manifest_target",
                  ":$_build_config_target",
-                 ":$_final_dex_target_name",
+                 "$_final_dex_target_dep",
                  ":$_compile_resources_target",
                ]
 
@@ -3093,7 +3220,6 @@ if (enable_java_templates) {
                                "dexlayout_profile",
                                "dist_ijar_path",
                                "dont_load_shared_libraries",
-                               "emit_resource_ids",
                                "emma_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
@@ -3140,6 +3266,7 @@ if (enable_java_templates) {
                                "shared_resources_whitelist_target",
                                "srcjar_deps",
                                "static_library_dependent_targets",
+                               "static_library_provider",
                                "support_zh_hk",
                                "testonly",
                                "uncompress_shared_libraries",
@@ -3243,6 +3370,7 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_exceptions",
                                "resource_blacklist_regex",
+                               "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_shared_libraries",
                                "shared_libraries",
@@ -3250,6 +3378,7 @@ if (enable_java_templates) {
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
                                "srcjar_deps",
+                               "static_library_provider",
                                "support_zh_hk",
                                "testonly",
                                "uncompress_shared_libraries",
@@ -4078,6 +4207,10 @@ if (enable_java_templates) {
   #    system_image_locale_whitelist: List of locales that should be included
   #      on system APKs generated from this bundle.
   #
+  #    static_library_provider: Specifies a single target that this target will
+  #      use as a static library APK. When proguard is enabled, the
+  #      static_library_provider target will perform the synchronized dex step.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4136,7 +4269,13 @@ if (enable_java_templates) {
     not_needed([ "_enable_multidex" ])
 
     if (_proguard_enabled) {
-      _sync_dex_target = "${target_name}__sync_dex"
+      _uses_static_library = defined(invoker.static_library_provider)
+      if (_uses_static_library) {
+        _sync_dex_target_dep = "${invoker.static_library_provider}__dexsplitter"
+      } else {
+        _sync_dex_target = "${target_name}__sync_dex"
+        _sync_dex_target_dep = ":$_sync_dex_target"
+      }
 
       # TODO(crbug.com/938635): Combine synchronous proguard run mapping file
       # and asynchronous proguard run mapping files into single .mapping.
@@ -4202,8 +4341,8 @@ if (enable_java_templates) {
               apply_mapping = _sync_proguard_mapping_path
 
               deps = [
-                ":${_sync_dex_target}",
                 _module.module_target,
+                _sync_dex_target_dep,
               ]
 
               output = _dex_zip
@@ -4220,10 +4359,20 @@ if (enable_java_templates) {
     }
 
     # Make build config, which is required for synchronized proguarding.
+    _sync_module_java_targets = []
+    _sync_module_build_configs = []
     _sync_module_targets = []
     foreach(_module, _sync_modules) {
       _sync_module_targets += [ _module.module_target ]
+      _sync_module_java_targets += [ "${_module.module_target}__java" ]
+      _sync_module_build_configs += [ _module.build_config ]
     }
+
+    # Used to expose the module Java targets of the bundle.
+    group("${target_name}__java") {
+      deps = _sync_module_java_targets
+    }
+
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     _build_config_target = "$target_name$build_config_target_suffix"
@@ -4232,6 +4381,14 @@ if (enable_java_templates) {
     } else {
       proguard_android_sdk_dep_ = "//third_party/android_sdk:android_sdk_java"
     }
+
+    if (_proguard_enabled) {
+      _proguard_mapping_path = "${_bundle_path}.mapping"
+    }
+
+    _unsplit_dex_zip =
+        "${target_gen_dir}/${target_name}/${target_name}__unsplit_dex.zip"
+
     write_build_config(_build_config_target) {
       # We don't want async modules to be proguarded synchronously, so we leave
       # them out of possible_config_deps.
@@ -4240,34 +4397,50 @@ if (enable_java_templates) {
           _sync_module_targets + [ proguard_android_sdk_dep_ ]
       build_config = _build_config
       proguard_enabled = _proguard_enabled
+      module_build_configs = _sync_module_build_configs
+      final_dex_path = _unsplit_dex_zip
+
+      if (_proguard_enabled) {
+        proguard_mapping_path = _proguard_mapping_path
+      }
     }
 
     if (_proguard_enabled) {
-      _unsplit_dex_zip =
-          "${target_gen_dir}/${target_name}/${target_name}__sync_dex.zip"
-      dex(_sync_dex_target) {
-        enable_multidex = _enable_multidex
-        proguard_enabled = true
-        proguard_mapping_path = _sync_proguard_mapping_path
-        forward_variables_from(invoker,
-                               [
-                                 "proguard_jar_path",
-                                 "min_sdk_version",
-                               ])
-        build_config = _build_config
+      # If this Bundle uses a static library, the static library APK will
+      # create the synchronized dex file path.
+      if (_uses_static_library) {
+        if (defined(invoker.min_sdk_version)) {
+          not_needed(invoker, [ "min_sdk_version" ])
+        }
+        if (defined(proguard_jar_path)) {
+          not_needed(invoker, [ "proguard_jar_path" ])
+        }
+      } else {
+        dex(_sync_dex_target) {
+          enable_multidex = _enable_multidex
+          proguard_enabled = true
+          proguard_mapping_path = _proguard_mapping_path
+          forward_variables_from(invoker,
+                                 [
+                                   "proguard_jar_path",
+                                   "min_sdk_version",
+                                 ])
+          build_config = _build_config
 
-        deps = _sync_module_targets + [ ":$_build_config_target" ]
-        output = _unsplit_dex_zip
+          deps = _sync_module_java_targets + [ ":$_build_config_target" ]
+          output = _unsplit_dex_zip
+        }
       }
 
-      _dexsplitter_target = "${_sync_dex_target}__dexsplitter"
+      _dexsplitter_target = "${target_name}__dexsplitter"
       dexsplitter(_dexsplitter_target) {
         input_dex_zip = _unsplit_dex_zip
         proguard_mapping = _sync_proguard_mapping_path
         all_modules = _sync_modules
         deps = [
-          ":${_sync_dex_target}",
-        ]
+                 ":$_build_config_target",
+                 _sync_dex_target_dep,
+               ] + _sync_module_java_targets
       }
     }
 

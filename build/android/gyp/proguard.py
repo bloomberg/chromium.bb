@@ -55,6 +55,9 @@ def _ParseOptions(args):
   parser.add_option('--mapping-output',
                     help='Path for proguard to output mapping file to.')
   parser.add_option(
+      '--extra-mapping-output-paths',
+      help='Additional paths to copy output mapping file to.')
+  parser.add_option(
       '--output-config',
       help='Path to write the merged proguard config file to.')
   parser.add_option(
@@ -228,6 +231,10 @@ def main(args):
         # some of our tooling so remove those.
         with open(tmp_mapping_path) as tmp:
           mapping.writelines(l for l in tmp if not l.startswith('#'))
+
+      for output in build_utils.ParseGnList(options.extra_mapping_output_paths):
+        shutil.copy(tmp_mapping_path, output)
+
 
     with build_utils.AtomicOutput(options.output_config) as f:
       f.write(merged_configs)

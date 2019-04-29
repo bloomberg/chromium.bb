@@ -1755,6 +1755,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "verify_android_configuration",
                              "proguard_jar_path",
                              "resource_ids_provider_dep",
+                             "static_library_provider",
                              "target_type",
                              "use_trichrome_library",
                              "version_code",
@@ -1805,8 +1806,32 @@ if (public_android_sdk) {
     android_manifest_dep = ":trichrome_library_android_manifest"
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
-        ":trichrome_chrome_apk",
         "//android_webview:trichrome_webview_apk",
+
+        # Webview must be listed first WebView's R classes take precedence.
+        # TODO(http://crbug.com/901465): Make this less subtle by handling
+        # order in writing_build_config.py by prioritizing the entry that
+        # matches resource_ids_provider_dep.
+        ":trichrome_chrome_apk",
+      ]
+    }
+  }
+
+  # This target should be removed once Trichrome only supports Chrome bundle
+  # builds.
+  trichrome_library_apk_tmpl("trichrome_library_for_bundle_apk") {
+    apk_name = "TrichromeLibraryForBundle"
+    android_manifest = trichrome_library_android_manifest
+    android_manifest_dep = ":trichrome_library_android_manifest"
+    if (trichrome_synchronized_proguard) {
+      static_library_dependent_targets = [
+        "//android_webview:trichrome_webview_for_bundle_apk",
+
+        # Webview must be listed first WebView's R classes take precedence.
+        # TODO(http://crbug.com/901465): Make this less subtle by handling
+        # order in write_build_config.py by prioritizing the entry that
+        # matches resource_ids_provider_dep.
+        ":trichrome_chrome_bundle",
       ]
     }
   }
@@ -1826,6 +1851,7 @@ monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
   target_type = "android_apk"
   use_trichrome_library = true
   if (trichrome_synchronized_proguard) {
+    static_library_provider = ":trichrome_library_apk"
     resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
   }
 }
@@ -2130,6 +2156,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         !_is_trichrome) {
       verify_android_configuration = true
     }
+    if (trichrome_synchronized_proguard) {
+      resource_ids_provider_dep =
+          "//android_webview:trichrome_webview_for_bundle_apk"
+    }
   }
 
   if (enable_arcore || enable_vr) {
@@ -2195,6 +2225,10 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     }
     enable_language_splits = enable_chrome_language_splits
     min_sdk_version = _min_sdk_version
+
+    if (trichrome_synchronized_proguard) {
+      static_library_provider = ":trichrome_library_for_bundle_apk"
+    }
 
     extra_modules = []
     if (enable_arcore) {

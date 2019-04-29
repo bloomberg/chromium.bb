@@ -245,7 +245,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
     } else {
       deps += [ "//chrome/android:bundle_canary_java" ]
     }
-    product_version_resources_dep = "//chrome/android:product_version_resources"
+    if (!_is_trichrome) {
+      product_version_resources_dep =
+          "//chrome/android:product_version_resources"
+    }
 
     if (defined(invoker.add_unwind_tables_in_apk) &&
         invoker.add_unwind_tables_in_apk) {
