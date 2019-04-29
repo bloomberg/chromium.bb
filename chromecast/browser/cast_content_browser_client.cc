@@ -622,6 +622,12 @@ std::string CastContentBrowserClient::GetAcceptLangs(
   return CastHttpUserAgentSettings::AcceptLanguage();
 }
 
+network::mojom::NetworkContext*
+CastContentBrowserClient::GetSystemNetworkContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return cast_network_contexts_->GetSystemContext();
+}
+
 void CastContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
