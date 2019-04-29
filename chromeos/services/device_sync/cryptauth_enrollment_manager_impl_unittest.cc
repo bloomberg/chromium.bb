@@ -354,7 +354,8 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, ForceEnrollment) {
 
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   enrollment_manager_.ForceEnrollmentNow(
-      cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+      cryptauth::INVOCATION_REASON_SERVER_INITIATED,
+      base::nullopt /* session_id */);
 
   auto completion_callback =
       FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);

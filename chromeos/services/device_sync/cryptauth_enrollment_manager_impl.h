@@ -6,10 +6,12 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_MANAGER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
@@ -92,7 +94,8 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
   // CryptAuthEnrollmentManager:
   void Start() override;
   void ForceEnrollmentNow(
-      cryptauth::InvocationReason invocation_reason) override;
+      cryptauth::InvocationReason invocation_reason,
+      const base::Optional<std::string>& session_id) override;
   bool IsEnrollmentValid() const override;
   base::Time GetLastEnrollmentTime() const override;
   base::TimeDelta GetTimeToNextAttempt() const override;

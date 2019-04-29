@@ -30,10 +30,13 @@ const TargetService kTestClientDirectiveInvokeNextService =
 
 ClientMetadata BuildClientMetadata(
     int32_t retry_count,
-    const ClientMetadata::InvocationReason& invocation_reason) {
+    const ClientMetadata::InvocationReason& invocation_reason,
+    const base::Optional<std::string>& session_id) {
   ClientMetadata client_metadata;
   client_metadata.set_retry_count(retry_count);
   client_metadata.set_invocation_reason(invocation_reason);
+  if (session_id)
+    client_metadata.set_session_id(*session_id);
 
   return client_metadata;
 }

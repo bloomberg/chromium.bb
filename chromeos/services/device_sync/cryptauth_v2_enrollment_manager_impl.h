@@ -124,7 +124,8 @@ class CryptAuthV2EnrollmentManagerImpl
   // CryptAuthEnrollmentManager:
   void Start() override;
   void ForceEnrollmentNow(
-      cryptauth::InvocationReason invocation_reason) override;
+      cryptauth::InvocationReason invocation_reason,
+      const base::Optional<std::string>& session_id) override;
   bool IsEnrollmentValid() const override;
   base::Time GetLastEnrollmentTime() const override;
   base::TimeDelta GetTimeToNextAttempt() const override;
@@ -161,6 +162,7 @@ class CryptAuthV2EnrollmentManagerImpl
   // enrollment attempt. If no valid reason is stored, returns null.
   base::Optional<cryptauthv2::ClientMetadata::InvocationReason>
   GetFailureRecoveryInvocationReasonFromPref() const;
+  base::Optional<std::string> GetFailureRecoverySessionIdFromPref() const;
 
   std::string GetV1UserPublicKey() const;
   std::string GetV1UserPrivateKey() const;
@@ -181,9 +183,11 @@ class CryptAuthV2EnrollmentManagerImpl
   std::unique_ptr<CryptAuthEnrollmentScheduler> scheduler_;
   std::unique_ptr<CryptAuthV2Enroller> enroller_;
 
-  // Only non-null while an enrollment attempt is active.
-  base::Optional<cryptauthv2::ClientMetadata::InvocationReason>
-      current_enrollment_invocation_reason_;
+  // Only non-null while an enrollment attempt is active. The invocation reason
+  // and session ID are set in ForceEnrollmentNow() for forced enrollments and
+  // OnEnrollmentRequested() otherwise. The other ClientMetadata fields are
+  // populated in Enroll().
+  base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
 
   base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   base::Optional<cryptauthv2::PolicyReference>

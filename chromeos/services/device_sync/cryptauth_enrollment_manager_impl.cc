@@ -172,7 +172,8 @@ void CryptAuthEnrollmentManagerImpl::Start() {
 }
 
 void CryptAuthEnrollmentManagerImpl::ForceEnrollmentNow(
-    cryptauth::InvocationReason invocation_reason) {
+    cryptauth::InvocationReason invocation_reason,
+    const base::Optional<std::string>& session_id) {
   // We store the invocation reason in a preference so that it can persist
   // across browser restarts. If the sync fails, the next retry should still use
   // this original reason instead of
@@ -293,7 +294,8 @@ void CryptAuthEnrollmentManagerImpl::OnKeyPairGenerated(
 void CryptAuthEnrollmentManagerImpl::OnReenrollMessage(
     const base::Optional<std::string>& session_id,
     const base::Optional<CryptAuthFeatureType>& feature_type) {
-  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED,
+                     base::nullopt /* session_id */);
 }
 
 void CryptAuthEnrollmentManagerImpl::OnSyncRequested(

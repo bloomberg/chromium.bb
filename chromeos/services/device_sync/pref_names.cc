@@ -37,6 +37,11 @@ const char kCryptAuthDeviceSyncUnlockKeys[] =
 const char kCryptAuthEnrollmentFailureRecoveryInvocationReason[] =
     "cryptauth.enrollment.failure_recovery_invocation_reason";
 
+// The session ID, sent via a GCM message, to use when retrying a failed
+// enrollment attempt.
+const char kCryptAuthEnrollmentFailureRecoverySessionId[] =
+    "cryptauth.enrollment.failure_recovery_session_id";
+
 // Whether the system is scheduling enrollments more aggressively to recover
 // from the previous enrollment failure.
 const char kCryptAuthEnrollmentIsRecoveringFromFailure[] =

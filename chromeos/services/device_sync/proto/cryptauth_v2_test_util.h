@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "chromeos/services/device_sync/proto/cryptauth_better_together_feature_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -35,14 +36,19 @@ extern const TargetService kTestClientDirectiveInvokeNextService;
 
 ClientMetadata BuildClientMetadata(
     int32_t retry_count,
-    const ClientMetadata::InvocationReason& invocation_reason);
+    const ClientMetadata::InvocationReason& invocation_reason,
+    const base::Optional<std::string>& session_id = base::nullopt);
+
 PolicyReference BuildPolicyReference(const std::string& name, int64_t version);
+
 KeyDirective BuildKeyDirective(const PolicyReference& policy_reference,
                                int64_t enroll_time_millis);
+
 RequestContext BuildRequestContext(const std::string& group,
                                    const ClientMetadata& client_metadata,
                                    const std::string& device_id,
                                    const std::string& device_id_token);
+
 DeviceFeatureStatus BuildDeviceFeatureStatus(
     const std::string& device_id,
     const std::vector<std::pair<std::string /* feature_type */,
