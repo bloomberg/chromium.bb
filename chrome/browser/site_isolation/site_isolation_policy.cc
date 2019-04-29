@@ -4,6 +4,7 @@
 
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -59,4 +60,7 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(Profile* profile) {
     auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
     policy->AddIsolatedOrigins(origins, /* browser_context = */ profile);
   }
+
+  UMA_HISTOGRAM_COUNTS_1000(
+      "SiteIsolation.SavedUserTriggeredIsolatedOrigins.Size", origins.size());
 }

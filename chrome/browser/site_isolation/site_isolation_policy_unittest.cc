@@ -4,6 +4,7 @@
 
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -80,7 +81,10 @@ TEST_F(PasswordSiteIsolationPolicyTest, ApplyPersistedIsolatedOrigins) {
 
   // Apply isolated origins and ensure that they take effect for SiteInstances
   // in new BrowsingInstances.
+  base::HistogramTester histograms;
   SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(profile);
+  histograms.ExpectUniqueSample(
+      "SiteIsolation.SavedUserTriggeredIsolatedOrigins.Size", 2, 1);
   {
     scoped_refptr<content::SiteInstance> foo_instance =
         content::SiteInstance::CreateForURL(profile, GURL("http://foo.com/1"));
