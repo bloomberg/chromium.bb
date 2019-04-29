@@ -232,9 +232,20 @@ TEST_F(AutoclickTest, MovementThreshold) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2u, root_windows.size());
 
-  // Try at a couple different thresholds.
-  for (int movement_threshold = 10; movement_threshold < 50;
-       movement_threshold += 10) {
+  int animation_delay = 5;
+
+  const struct {
+    int movement_threshold;
+    bool stabilize_click_position;
+  } kTestCases[] = {
+      {10, false}, {20, false}, {30, false}, {40, false}, {50, false},
+      {10, true},  {20, true},  {30, true},  {40, true},  {50, true},
+  };
+
+  for (const auto& test : kTestCases) {
+    GetAutoclickController()->set_stabilize_click_position(
+        test.stabilize_click_position);
+    int movement_threshold = test.movement_threshold;
     GetAutoclickController()->SetMovementThreshold(movement_threshold);
 
     // Run test for the secondary display too to test fix for crbug.com/449870.
@@ -243,6 +254,7 @@ TEST_F(AutoclickTest, MovementThreshold) {
 
       GetAutoclickController()->SetEnabled(true);
       GetEventGenerator()->MoveMouseTo(center);
+      ClearMouseEvents();
       EXPECT_EQ(2u, WaitForMouseEvents().size());
 
       // Small mouse movements should not trigger an autoclick, i.e. movements
@@ -265,11 +277,37 @@ TEST_F(AutoclickTest, MovementThreshold) {
           center +
           gfx::Vector2d(movement_threshold + 1, movement_threshold + 1));
       EXPECT_EQ(2u, WaitForMouseEvents().size());
+
+      // Moving outside the threshold after the gesture begins should cancel
+      // the autoclick. Update the delay so we can do events between the initial
+      // trigger of the feature and the click.
+      int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
+      GetEventGenerator()->MoveMouseTo(
+          center - gfx::Vector2d(movement_threshold, movement_threshold));
+      FastForwardBy(animation_delay + 1);
+      GetEventGenerator()->MoveMouseTo(center);
+      ClearMouseEvents();
+
+      // After a time, a new click will occur at the second location. The first
+      // location should never get a click.
+      FastForwardBy(full_delay * 2);
+      EXPECT_EQ(2u, GetMouseEvents().size());
+      gfx::Rect display_bounds = display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(root_window)
+                                     .bounds();
+      EXPECT_EQ(center - gfx::Vector2d(display_bounds.origin().x(),
+                                       display_bounds.origin().y()),
+                GetMouseEvents()[0].location());
+
+      // Move it out of the way so the next cycle starts properly.
+      GetEventGenerator()->MoveMouseTo(gfx::Point(0, 0));
+      GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
     }
   }
 
-  // Reset to default threshold.
+  // Reset to defaults.
   GetAutoclickController()->SetMovementThreshold(20);
+  GetAutoclickController()->set_stabilize_click_position(false);
 }
 
 TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
