@@ -984,9 +984,24 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     }
   }
 
-  CommitSameDocumentNavigationInternal(url, frame_load_type, history_item,
-                                       client_redirect_policy, origin_document,
-                                       has_event, std::move(extra_data));
+  // If the requesting document is cross-origin, perform the navigation
+  // asynchronously to minimize the navigator's ability to execute timing
+  // attacks.
+  if (origin_document && !origin_document->GetSecurityOrigin()->CanAccess(
+                             frame_->GetDocument()->GetSecurityOrigin())) {
+    frame_->GetTaskRunner(TaskType::kInternalLoading)
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&DocumentLoader::CommitSameDocumentNavigationInternal,
+                      WrapWeakPersistent(this), url, frame_load_type,
+                      WrapPersistent(history_item), client_redirect_policy,
+                      WrapPersistent(origin_document), has_event,
+                      std::move(extra_data)));
+  } else {
+    CommitSameDocumentNavigationInternal(
+        url, frame_load_type, history_item, client_redirect_policy,
+        origin_document, has_event, std::move(extra_data));
+  }
   return mojom::CommitResult::Ok;
 }
 
@@ -998,6 +1013,11 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     Document* initiating_document,
     bool has_event,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  // If this function was scheduled to run asynchronously, this DocumentLoader
+  // might have been detached before the task ran.
+  if (!frame_)
+    return;
+
   if (!IsBackForwardLoadType(frame_load_type)) {
     SetNavigationType(has_event ? kWebNavigationTypeLinkClicked
                                 : kWebNavigationTypeOther);

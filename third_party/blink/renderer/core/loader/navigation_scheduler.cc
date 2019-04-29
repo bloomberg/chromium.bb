@@ -250,23 +250,15 @@ void NavigationScheduler::ScheduleFrameNavigation(
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
 
   base::TimeTicks input_timestamp = InputTimestamp();
-  // If the URL we're going to navigate to is the same as the current one,
-  // except for the fragment part, we don't need to schedule the location
-  // change. We'll skip this optimization for cross-origin navigations to
-  // minimize the navigator's ability to execute timing attacks.
-  if (origin_document->GetSecurityOrigin()->CanAccess(
-          frame_->GetDocument()->GetSecurityOrigin())) {
-    if (url.HasFragmentIdentifier() &&
-        EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
-      FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
-      request.SetInputStartTime(input_timestamp);
-      if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
-        request.SetClientRedirectReason(
-            ClientNavigationReason::kFrameNavigation);
-      }
-      frame_->Loader().StartNavigation(request, frame_load_type);
-      return;
+  if (url.HasFragmentIdentifier() &&
+      EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
+    FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
+    request.SetInputStartTime(input_timestamp);
+    if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
+      request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
     }
+    frame_->Loader().StartNavigation(request, frame_load_type);
+    return;
   }
 
   Schedule(ScheduledFrameNavigation::Create(origin_document, url,
