@@ -21,7 +21,11 @@ const kFrameNodesBottomMargin = kProcessNodesYRange + 50;
 /** @implements {d3.ForceNode} */
 class GraphNode {
   constructor(id) {
+    /** @type {number} */
     this.id = id;
+    /** @type {string} */
+    this.color = 'black';
+
     // Implementation of the d3.ForceNode interface.
     // See https://github.com/d3/d3-force#simulation_nodes.
     this.index = null;
@@ -72,12 +76,22 @@ class GraphNode {
   linkTargets() {
     return [];
   }
+
+  /**
+   * Selects a color string from an id.
+   * @param {number} id: The id the returned color is selected from.
+   * @return {string}
+   */
+  selectColor(id) {
+    return d3.schemeSet3[Math.abs(id) % 12];
+  }
 }
 
 class PageNode extends GraphNode {
-  /** @param {resourceCoordinator.mojom.WebUIPageInfo} page */
+  /** @param {!resourceCoordinator.mojom.WebUIPageInfo} page */
   constructor(page) {
     super(page.id);
+    /** @type {!resourceCoordinator.mojom.WebUIPageInfo} */
     this.page = page;
     this.y = kPageNodesTargetY;
   }
@@ -114,10 +128,12 @@ class PageNode extends GraphNode {
 }
 
 class FrameNode extends GraphNode {
-  /** @param {resourceCoordinator.mojom.WebUIFrameInfo} frame */
+  /** @param {!resourceCoordinator.mojom.WebUIFrameInfo} frame */
   constructor(frame) {
     super(frame.id);
+    /** @type {!resourceCoordinator.mojom.WebUIFrameInfo} frame */
     this.frame = frame;
+    this.color = this.selectColor(frame.processId);
   }
 
   /** override */
@@ -145,8 +161,10 @@ class ProcessNode extends GraphNode {
   /** @param {!resourceCoordinator.mojom.WebUIProcessInfo} process */
   constructor(process) {
     super(process.id);
-    /** {!resourceCoordinator.mojom.WebUIProcessInfo} */
+    /** @type {!resourceCoordinator.mojom.WebUIProcessInfo} */
     this.process = process;
+
+    this.color = this.selectColor(process.id);
   }
 
   /** override */
@@ -281,21 +299,24 @@ class Graph {
 
       const circles = node.enter()
                           .append('circle')
-                          .attr('r', 7.5)
+                          .attr('r', 9)
                           .attr('fill', 'green')  // New nodes appear green.
                           .call(drag);
       circles.append('title');
 
-      // Transition new nodes to black over 2 seconds.
-      circles.transition().duration(2000).attr('fill', 'black').attr('r', 5);
+      // Transition new nodes to their chosen color in 2 seconds.
+      circles.transition()
+          .duration(2000)
+          .attr('fill', d => d.color)
+          .attr('r', 6);
     }
 
-    // Give dead notes a distinguishing class to exclude them from the selection
+    // Give dead nodes a distinguishing class to exclude them from the selection
     // above. Interrupt any ongoing transitions, then transition them out.
     node.exit()
         .classed('dead', true)
         .interrupt()
-        .attr('r', 7.5)
+        .attr('r', 9)
         .attr('fill', 'red')
         .transition()
         .duration(2000)
