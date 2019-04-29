@@ -37,6 +37,8 @@ class SchedulingAffectingFeaturesTest : public SimTest {
              ->GetActiveFeaturesTrackedForBackForwardCacheMetrics()) {
       if (feature == SchedulingPolicy::Feature::kDocumentLoaded)
         continue;
+      if (feature == SchedulingPolicy::Feature::kOutstandingNetworkRequest)
+        continue;
       result.push_back(feature);
     }
     return result;

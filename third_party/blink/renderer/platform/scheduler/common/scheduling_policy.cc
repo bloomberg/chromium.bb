@@ -13,6 +13,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebSocket:
     case Feature::kWebRTC:
     case Feature::kDedicatedWorkerOrWorklet:
+    case Feature::kOutstandingNetworkRequest:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:

@@ -30,6 +30,15 @@ ukm::SourceId ToSourceId(int64_t navigation_id) {
                                 ukm::SourceIdType::NAVIGATION_ID);
 }
 
+// Some features are present in almost all page loads (especially the ones
+// which are related to the document finishing loading).
+// We ignore them to make tests easier to read and write.
+constexpr uint64_t kFeaturesToIgnoreMask =
+    1 << static_cast<size_t>(
+        blink::scheduler::WebSchedulerTrackedFeature::kDocumentLoaded) |
+    1 << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                                 kOutstandingNetworkRequest);
+
 using UkmMetrics = std::map<std::string, int64_t>;
 using UkmEntry = std::pair<ukm::SourceId, UkmMetrics>;
 
@@ -294,12 +303,6 @@ std::ostream& operator<<(std::ostream& os, const FeatureUsage& usage) {
 
 std::vector<FeatureUsage> GetFeatureUsageMetrics(
     ukm::TestAutoSetUkmRecorder* recorder) {
-  // Some features are present in almost all page loads (especially the ones
-  // which are related to the document finishing loading).
-  // We ignore them to make tests easier to read and write.
-  constexpr uint64_t features_to_ignore_mask =
-      ~(1 << static_cast<size_t>(
-            blink::scheduler::WebSchedulerTrackedFeature::kDocumentLoaded));
 
   std::vector<FeatureUsage> result;
   for (const auto& entry :
@@ -309,13 +312,12 @@ std::vector<FeatureUsage> GetFeatureUsageMetrics(
     FeatureUsage feature_usage;
     feature_usage.source_id = entry.first;
     feature_usage.main_frame_features =
-        entry.second.at("MainFrameFeatures") & features_to_ignore_mask;
+        entry.second.at("MainFrameFeatures") & ~kFeaturesToIgnoreMask;
     feature_usage.same_origin_subframes_features =
-        entry.second.at("SameOriginSubframesFeatures") &
-        features_to_ignore_mask;
+        entry.second.at("SameOriginSubframesFeatures") & ~kFeaturesToIgnoreMask;
     feature_usage.cross_origin_subframes_features =
         entry.second.at("CrossOriginSubframesFeatures") &
-        features_to_ignore_mask;
+        ~kFeaturesToIgnoreMask;
     result.push_back(feature_usage);
   }
   return result;
@@ -473,8 +475,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
 
   EXPECT_EQ(
       static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetMainFrame()
-          ->scheduler_tracked_features(),
+              ->GetMainFrame()
+              ->scheduler_tracked_features() &
+          ~kFeaturesToIgnoreMask,
       1ull << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
                                       kDedicatedWorkerOrWorklet));
 }
