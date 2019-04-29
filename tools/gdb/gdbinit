@@ -71,7 +71,10 @@ def newobj_handler(event):
   src_dir, _ = git.communicate()
   if git.returncode:
     return
-  src_dir = str(src_dir).rstrip()
+  if isinstance(src_dir, str):
+    src_dir = src_dir.rstrip()
+  else:
+    src_dir = src_dir.decode('utf-8').rstrip()
 
   load_libcxx_pretty_printers(src_dir)
 
