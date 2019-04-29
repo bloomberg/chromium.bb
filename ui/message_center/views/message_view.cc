@@ -320,9 +320,6 @@ void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
 }
 
 void MessageView::OnSlideOut() {
-  for (auto* observer : slide_observers_)
-    observer->OnSlideOut(notification_id_);
-
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
 }
