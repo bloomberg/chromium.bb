@@ -2041,6 +2041,23 @@ ScriptCompiler::CachedData::~CachedData() {
   }
 }
 
+//- - - - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+
+ScriptCompiler::CachedData *
+ScriptCompiler::CachedData::create(const uint8_t *data,
+                                   int            length,
+                                   BufferPolicy   buffer_policy)
+{
+  return new ScriptCompiler::CachedData(data, length, buffer_policy);
+}
+
+void ScriptCompiler::CachedData::dispose(CachedData *data)
+{
+  delete data;
+}
+
+//- - - - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
+
 bool ScriptCompiler::ExternalSourceStream::SetBookmark() { return false; }
 
 void ScriptCompiler::ExternalSourceStream::ResetToBookmark() { UNREACHABLE(); }
