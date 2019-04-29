@@ -135,8 +135,8 @@ TEST_F(PasswordRequirementsServiceTest, ExerciseEverything) {
       service_.PrefetchSpec(test_origin_);
     }
     if (test.spec_for_signature) {
-      service_.AddSpec(test_form_signature_, test_field_signature_,
-                       *(test.spec_for_signature));
+      service_.AddSpec(test_origin_, test_form_signature_,
+                       test_field_signature_, *(test.spec_for_signature));
     }
 
     // Perform lookup.

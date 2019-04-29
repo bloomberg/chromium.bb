@@ -18,21 +18,25 @@ constexpr size_t kCacheSizeForDomainKeyedSpecs = 200;
 constexpr size_t kCacheSizeForSignatureKeyedSpecs = 500;
 }  // namespace
 
+using autofill::PasswordRequirementsSpec;
+using autofill::PasswordRequirementsSpecFetcher;
+using autofill::PasswordRequirementsSpecFetcherImpl;
+
 namespace password_manager {
 
 PasswordRequirementsService::PasswordRequirementsService(
-    std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher)
+    std::unique_ptr<PasswordRequirementsSpecFetcher> fetcher)
     : specs_for_domains_(kCacheSizeForDomainKeyedSpecs),
       specs_for_signatures_(kCacheSizeForSignatureKeyedSpecs),
       fetcher_(std::move(fetcher)) {}
 
 PasswordRequirementsService::~PasswordRequirementsService() = default;
 
-autofill::PasswordRequirementsSpec PasswordRequirementsService::GetSpec(
+PasswordRequirementsSpec PasswordRequirementsService::GetSpec(
     const GURL& main_frame_domain,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature) {
-  autofill::PasswordRequirementsSpec result;
+  PasswordRequirementsSpec result;
 
   auto iter_by_signature = specs_for_signatures_.Get(
       std::make_pair(form_signature, field_signature));
@@ -44,7 +48,7 @@ autofill::PasswordRequirementsSpec PasswordRequirementsService::GetSpec(
 
   auto iter_by_domain = specs_for_domains_.Get(main_frame_domain);
   if (iter_by_domain != specs_for_domains_.end()) {
-    const autofill::PasswordRequirementsSpec& spec = iter_by_domain->second;
+    const PasswordRequirementsSpec& spec = iter_by_domain->second;
     if (!found_item_by_signature) {
       // If nothing was found by signature, |spec| can be adopted.
       result = spec;
@@ -90,20 +94,29 @@ void PasswordRequirementsService::PrefetchSpec(const GURL& main_frame_domain) {
 
 void PasswordRequirementsService::OnFetchedRequirements(
     const GURL& main_frame_domain,
-    const autofill::PasswordRequirementsSpec& spec) {
+    const PasswordRequirementsSpec& spec) {
   VLOG(1) << "PasswordRequirementsService::OnFetchedRequirements("
           << main_frame_domain << ", " << spec << ")";
   specs_for_domains_.Put(main_frame_domain, spec);
 }
 
 void PasswordRequirementsService::AddSpec(
+    const GURL& main_frame_domain,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
-    const autofill::PasswordRequirementsSpec& spec) {
+    const PasswordRequirementsSpec& spec) {
   VLOG(1) << "PasswordRequirementsService::AddSpec(" << form_signature << ", "
           << field_signature << ", " << spec << ")";
   specs_for_signatures_.Put(std::make_pair(form_signature, field_signature),
                             spec);
+
+  auto iter_by_domain = specs_for_domains_.Get(main_frame_domain);
+  if (iter_by_domain != specs_for_domains_.end()) {
+    PasswordRequirementsSpec& existing_spec = iter_by_domain->second;
+    if (existing_spec.priority() > spec.priority())
+      return;
+  }
+  specs_for_domains_.Put(main_frame_domain, spec);
 }
 
 void PasswordRequirementsService::ClearDataForTestingImpl() {
@@ -142,8 +155,8 @@ std::unique_ptr<PasswordRequirementsService> CreatePasswordRequirementsService(
   VLOG(1) << "PasswordGenerationRequirements parameters: " << version << ", "
           << prefix_length << ", " << timeout_in_ms << " ms";
 
-  std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher =
-      std::make_unique<autofill::PasswordRequirementsSpecFetcherImpl>(
+  std::unique_ptr<PasswordRequirementsSpecFetcher> fetcher =
+      std::make_unique<PasswordRequirementsSpecFetcherImpl>(
           url_loader_factory, version, prefix_length, timeout_in_ms);
   return std::make_unique<PasswordRequirementsService>(std::move(fetcher));
 }

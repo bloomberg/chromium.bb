@@ -752,9 +752,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   if (![self getFormForGenerationFromFormName:formName])
     return;
 
-  // TODO(crbug.com/886583): form_signature, field_signature, max_length and
-  // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
-  // now to get a generic random password.
+  // TODO(crbug.com/886583): pass correct |max_length|.
   base::string16 generatedPassword =
       _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
                                                   0, nullptr);

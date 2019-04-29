@@ -73,8 +73,8 @@ void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
     for (const auto& field : *form) {
       if (field->password_requirements()) {
         password_requirements_service->AddSpec(
-            form->form_signature(), field->GetFieldSignature(),
-            field->password_requirements().value());
+            form->source_url().GetOrigin(), form->form_signature(),
+            field->GetFieldSignature(), field->password_requirements().value());
       }
     }
   }
