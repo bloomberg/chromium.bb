@@ -302,8 +302,6 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Callback to call in this queue's destructor.
   base::OnceClosure destroy_cb_;
 
-  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
-
   V4L2Queue(scoped_refptr<V4L2Device> dev,
             enum v4l2_buf_type type,
             base::OnceClosure destroy_cb);
@@ -312,6 +310,9 @@ class MEDIA_GPU_EXPORT V4L2Queue
   friend class base::RefCountedThreadSafe<V4L2Queue>;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(V4L2Queue);
 };
 

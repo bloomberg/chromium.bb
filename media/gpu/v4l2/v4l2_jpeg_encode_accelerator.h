@@ -60,6 +60,12 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
               const BitstreamBuffer* exif_buffer,
               const BitstreamBuffer& output_buffer) override;
 
+  void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
+                        scoped_refptr<VideoFrame> output_frame,
+                        int quality,
+                        int32_t buffer_id,
+                        const BitstreamBuffer* exif_buffer) override;
+
  private:
   // Record for input buffers.
   struct I420BufferRecord {

@@ -36,7 +36,8 @@ class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
                    ::media::JpegEncodeAccelerator::Status status) override;
 
  private:
-  using EncodeCallbackMap = std::unordered_map<int32_t, EncodeWithFDCallback>;
+  using EncodeCallbackMap =
+      std::unordered_map<int32_t, EncodeWithDmaBufCallback>;
 
   // This constructor internally calls
   // GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories() to
@@ -45,6 +46,8 @@ class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
 
   // chromeos_camera::mojom::JpegEncodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
+
+  // TODO(wtlee): To be deprecated. (crbug.com/944705)
   void EncodeWithFD(int32_t buffer_id,
                     mojo::ScopedHandle input_fd,
                     uint32_t input_buffer_size,
@@ -55,6 +58,17 @@ class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
                     mojo::ScopedHandle output_fd,
                     uint32_t output_buffer_size,
                     EncodeWithFDCallback callback) override;
+
+  void EncodeWithDmaBuf(
+      int32_t buffer_id,
+      uint32_t input_format,
+      std::vector<chromeos_camera::mojom::DmaBufPlanePtr> input_planes,
+      std::vector<chromeos_camera::mojom::DmaBufPlanePtr> output_planes,
+      mojo::ScopedHandle exif_handle,
+      uint32_t exif_buffer_size,
+      int32_t coded_size_width,
+      int32_t coded_size_height,
+      EncodeWithDmaBufCallback callback) override;
 
   void NotifyEncodeStatus(int32_t bitstream_buffer_id,
                           size_t encoded_picture_size,

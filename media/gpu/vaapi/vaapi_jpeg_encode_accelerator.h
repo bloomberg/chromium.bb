@@ -44,6 +44,12 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
               const BitstreamBuffer* exif_buffer,
               const BitstreamBuffer& output_buffer) override;
 
+  void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
+                        scoped_refptr<VideoFrame> output_frame,
+                        int quality,
+                        int32_t buffer_id,
+                        const BitstreamBuffer* exif_buffer) override;
+
  private:
   // An input video frame and the corresponding output buffer awaiting
   // consumption, provided by the client.

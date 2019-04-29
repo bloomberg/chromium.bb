@@ -1034,6 +1034,15 @@ void V4L2JpegEncodeAccelerator::Encode(
                      base::Unretained(this), base::Passed(&job_record)));
 }
 
+void V4L2JpegEncodeAccelerator::EncodeWithDmaBuf(
+    scoped_refptr<VideoFrame> input_frame,
+    scoped_refptr<VideoFrame> output_frame,
+    int quality,
+    int32_t buffer_id,
+    const BitstreamBuffer* exif_buffer) {
+  NOTIMPLEMENTED();
+}
+
 void V4L2JpegEncodeAccelerator::EncodeTask(
     std::unique_ptr<JobRecord> job_record) {
   DCHECK(encoder_task_runner_->BelongsToCurrentThread());

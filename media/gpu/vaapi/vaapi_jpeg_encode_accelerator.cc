@@ -337,4 +337,13 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
                      base::Unretained(encoder_.get()), std::move(request)));
 }
 
+void VaapiJpegEncodeAccelerator::EncodeWithDmaBuf(
+    scoped_refptr<VideoFrame> input_frame,
+    scoped_refptr<VideoFrame> output_frame,
+    int quality,
+    int32_t buffer_id,
+    const BitstreamBuffer* exif_buffer) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace media
