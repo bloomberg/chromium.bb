@@ -650,7 +650,7 @@ drm_public drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 	}
 
 	if (!(r = drmMalloc(sizeof(*r))))
-		return NULL;
+		goto err_allocs;
 
 	r->prop_id = prop.prop_id;
 	r->count_values = prop.count_values;
