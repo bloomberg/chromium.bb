@@ -353,9 +353,9 @@ class IdentityManagerTest : public testing::Test {
                              network::mojom::CookieChangeCause::EXPLICIT);
   }
 
-  void SimulateOAuthMultiloginFinished(GaiaAuthConsumer* consumer,
-                                       const OAuthMultiloginResult& result) {
-    consumer->OnOAuthMultiloginFinished(result);
+  void SimulateOAuthMultiloginFinished(GaiaCookieManagerService* manager,
+                                       const GoogleServiceAuthError& error) {
+    manager->OnSetAccountsFinished(error);
   }
 
   std::string primary_account_id() { return primary_account_id_; }
@@ -1813,29 +1813,9 @@ TEST_F(IdentityManagerTest,
   identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
       account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
-  // Sample success cookie response.
-  std::string data =
-      R"()]}'
-      {
-        "status": "OK",
-        "cookies":[
-        {
-            "name":"SID",
-            "value":"vAlUe1",
-            "domain":".google.ru",
-            "path":"/",
-            "isSecure":true,
-            "isHttpOnly":false,
-            "priority":"HIGH",
-            "maxAge":63070000
-          }
-        ]
-      }
-    )";
-  OAuthMultiloginResult result(data);
-
   SimulateOAuthMultiloginFinished(
-      identity_manager()->GetGaiaCookieManagerService(), result);
+      identity_manager()->GetGaiaCookieManagerService(),
+      GoogleServiceAuthError::AuthErrorNone());
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback,
             GoogleServiceAuthError::AuthErrorNone());
@@ -1861,66 +1841,27 @@ TEST_F(IdentityManagerTest,
 
   // Sample an erroneous response.
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
-  OAuthMultiloginResult result(error);
 
   SimulateOAuthMultiloginFinished(
-      identity_manager()->GetGaiaCookieManagerService(), result);
+      identity_manager()->GetGaiaCookieManagerService(), error);
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback, error);
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnAccountsCookieDeletedByUserAction) {
-  const char kTestAccountId[] = "account_id";
-  const char kTestAccountId2[] = "account_id2";
-  const std::vector<std::string> account_ids = {kTestAccountId,
-                                                kTestAccountId2};
-
-  // Needed to insert request in the queue.
-  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      account_ids, gaia::GaiaSource::kChrome,
-      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
-
-  // Sample success cookie response.
-  std::string data =
-      R"()]}'
-      {
-        "status": "OK",
-        "cookies":[
-        {
-            "name":"APISID",
-            "value":"vAlUe1",
-            "domain":".google.com",
-            "path":"/",
-            "isSecure":true,
-            "isHttpOnly":false,
-            "priority":"HIGH",
-            "maxAge":63070000
-          }
-        ]
-      }
-    )";
-  OAuthMultiloginResult result(data);
-
-  SimulateOAuthMultiloginFinished(
-      identity_manager()->GetGaiaCookieManagerService(), result);
-  base::RunLoop().RunUntilIdle();
-
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnCookieDeletedByUserCallback(
       run_loop.QuitClosure());
-
-  const std::vector<net::CanonicalCookie>& cookies = result.cookies();
+  net::CanonicalCookie cookie("APISID", std::string(), ".google.com", "/",
+                              base::Time(), base::Time(), base::Time(), false,
+                              false, net::CookieSameSite::NO_RESTRICTION,
+                              net::COOKIE_PRIORITY_DEFAULT);
   SimulateCookieDeletedByUser(identity_manager()->GetGaiaCookieManagerService(),
-                              cookies[0]);
+                              cookie);
   run_loop.Run();
 }
 
 TEST_F(IdentityManagerTest, OnNetworkInitialized) {
-  const char kTestAccountId[] = "account_id";
-  const char kTestAccountId2[] = "account_id2";
-  const std::vector<std::string> account_ids = {kTestAccountId,
-                                                kTestAccountId2};
-
   auto test_cookie_manager = std::make_unique<network::TestCookieManager>();
   network::TestCookieManager* test_cookie_manager_ptr =
       test_cookie_manager.get();
@@ -1928,41 +1869,9 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
 
   identity_manager()->OnNetworkInitialized();
 
-  // Needed to insert request in the queue.
-  identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      account_ids, gaia::GaiaSource::kChrome,
-      GaiaCookieManagerService::SetAccountsInCookieCompletedCallback());
-
-  // Sample success cookie response.
-  std::string data =
-      R"()]}'
-      {
-        "status": "OK",
-        "cookies":[
-        {
-            "name":"APISID",
-            "value":"vAlUe1",
-            "domain":".google.com",
-            "path":"/",
-            "isSecure":true,
-            "isHttpOnly":false,
-            "priority":"HIGH",
-            "maxAge":63070000
-          }
-        ]
-      }
-    )";
-  OAuthMultiloginResult result(data);
-
-  SimulateOAuthMultiloginFinished(
-      identity_manager()->GetGaiaCookieManagerService(), result);
-  base::RunLoop().RunUntilIdle();
-
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnCookieDeletedByUserCallback(
       run_loop.QuitClosure());
-
-  const std::vector<net::CanonicalCookie>& cookies = result.cookies();
 
   // Dispatch a known change of a known cookie instance *through the mojo
   // pipe* in order to ensure the GCMS is listening to CookieManager changes.
@@ -1975,8 +1884,12 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
   // Note that this call differs from calling SimulateCookieDeletedByUser()
   // directly in the sense that SimulateCookieDeletedByUser() does not go
   // through any mojo pipe.
+  net::CanonicalCookie cookie("APISID", std::string(), ".google.com", "/",
+                              base::Time(), base::Time(), base::Time(), false,
+                              false, net::CookieSameSite::NO_RESTRICTION,
+                              net::COOKIE_PRIORITY_DEFAULT);
   test_cookie_manager_ptr->DispatchCookieChange(
-      cookies[0], network::mojom::CookieChangeCause::EXPLICIT);
+      cookie, network::mojom::CookieChangeCause::EXPLICIT);
   run_loop.Run();
 }
 

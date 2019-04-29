@@ -13,6 +13,8 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -58,7 +60,12 @@ enum class AccountsCookiesMutatorAction {
 namespace identity {
 class AccountsCookieMutatorTest : public testing::Test {
  public:
-  AccountsCookieMutatorTest() : identity_test_env_(&test_url_loader_factory_) {}
+  AccountsCookieMutatorTest()
+      : test_signin_client_(&prefs_),
+        identity_test_env_(test_url_loader_factory(),
+                           &prefs_,
+                           signin::AccountConsistencyMethod::kDisabled,
+                           &test_signin_client_) {}
 
   ~AccountsCookieMutatorTest() override {}
 
@@ -72,7 +79,7 @@ class AccountsCookieMutatorTest : public testing::Test {
   void PrepareURLLoaderResponsesForAction(AccountsCookiesMutatorAction action) {
     switch (action) {
       case AccountsCookiesMutatorAction::kAddAccountToCookie:
-        test_url_loader_factory_.AddResponse(
+        test_url_loader_factory()->AddResponse(
             GaiaUrls::GetInstance()
                 ->oauth1_login_url()
                 .Resolve(base::StringPrintf("?source=%s&issueuberauth=1",
@@ -80,14 +87,14 @@ class AccountsCookieMutatorTest : public testing::Test {
                 .spec(),
             kTestUberToken, net::HTTP_OK);
 
-        test_url_loader_factory_.AddResponse(
+        test_url_loader_factory()->AddResponse(
             GaiaUrls::GetInstance()
                 ->GetCheckConnectionInfoURLWithSource(
                     GaiaConstants::kChromeSource)
                 .spec(),
             std::string(), net::HTTP_OK);
 
-        test_url_loader_factory_.AddResponse(
+        test_url_loader_factory()->AddResponse(
             GaiaUrls::GetInstance()
                 ->merge_session_url()
                 .Resolve(base::StringPrintf(
@@ -97,7 +104,7 @@ class AccountsCookieMutatorTest : public testing::Test {
             std::string(), net::HTTP_OK);
         break;
       case AccountsCookiesMutatorAction::kSetAccountsInCookie:
-        test_url_loader_factory_.AddResponse(
+        test_url_loader_factory()->AddResponse(
             GaiaUrls::GetInstance()
                 ->oauth_multilogin_url()
                 .Resolve(base::StringPrintf("?source=%s",
@@ -106,11 +113,11 @@ class AccountsCookieMutatorTest : public testing::Test {
             std::string(kTestOAuthMultiLoginResponse), net::HTTP_OK);
         break;
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts:
-        signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
+        signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
         break;
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateOneAccount:
         signin::SetListAccountsResponseOneAccount(
-            kTestAccountEmail, kTestAccountGaiaId, &test_url_loader_factory_);
+            kTestAccountEmail, kTestAccountGaiaId, test_url_loader_factory());
         break;
     }
   }
@@ -128,12 +135,13 @@ class AccountsCookieMutatorTest : public testing::Test {
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
-    return &test_url_loader_factory_;
+    return test_signin_client_.test_url_loader_factory();
   }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
+  TestSigninClient test_signin_client_;
   identity::IdentityTestEnvironment identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorTest);
