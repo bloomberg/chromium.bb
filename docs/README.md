@@ -275,6 +275,9 @@ used when committed.
 *   [Running iOS test suites locally](ios/testing.md)
 
 ### Misc Chrome-OS-Specific Docs
+*   [Setting up captive portals and other restrictive networks](login/restrictive_networks.md)
+*   [Enrolling a device in OOBE/Login](login/enterprise_enrollment.md)
+*   [Debugging UI in OOBE/login/lock](login/ui_debugging.md)
 *   [Chrome Logging on Chrome OS](chrome_os_logging.md)
 
 ### Misc WebUI-Specific Docs
