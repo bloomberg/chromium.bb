@@ -261,9 +261,10 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                            int_mv *near_mv, int is_integer);
 
-int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize);
-int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-                int *pts, int *pts_inref);
+int av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
+                      BLOCK_SIZE bsize);
+int av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
+                    int mi_col, int *pts, int *pts_inref);
 
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)

@@ -960,7 +960,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
         memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
         if (total_samples > 1)
           mbmi->num_proj_ref =
-              selectSamples(&this_mv, pts, pts_inref, total_samples, bsize);
+              av1_selectSamples(&this_mv, pts, pts_inref, total_samples, bsize);
 
         if (!find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize, *tr,
                              *tc, &mbmi->wm_params, mi_row, mi_col)) {

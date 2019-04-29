@@ -1105,7 +1105,8 @@ static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
 }
 
 // Select samples according to the motion vector difference.
-int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize) {
+int av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
+                      BLOCK_SIZE bsize) {
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int thresh = clamp(AOMMAX(bw, bh), 16, 112);
@@ -1152,8 +1153,8 @@ int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize) {
 // Note: Samples returned are at 1/8-pel precision
 // Sample are the neighbor block center point's coordinates relative to the
 // left-top pixel of current block.
-int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-                int *pts, int *pts_inref) {
+int av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
+                    int mi_col, int *pts, int *pts_inref) {
   MB_MODE_INFO *const mbmi0 = xd->mi[0];
   int ref_frame = mbmi0->ref_frame[0];
   int up_available = xd->up_available;
