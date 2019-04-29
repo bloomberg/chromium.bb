@@ -795,11 +795,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
   // content.
   RenderFrameHost* subframe = content::ChildFrameAt(tab->GetMainFrame(), 0);
   EXPECT_EQ(app_url, subframe->GetLastCommittedURL());
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      subframe, "window.domAutomationController.send(document.body.innerText);",
-      &result));
-  EXPECT_EQ("This page has no title.", result);
+  EXPECT_EQ(
+      "This page has no title.",
+      EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
 }
 
 // Check that no assertions are hit when showing a permission request bubble.
