@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -106,6 +107,8 @@ class CORE_EXPORT ScrollManager
   void AnimateSnapFling(base::TimeTicks monotonic_time);
 
  private:
+  Node* NodeTargetForScrollableAreaElementId(
+      CompositorElementId scrollable_area_element_id) const;
   WebInputEventResult HandleGestureScrollUpdate(const WebGestureEvent&);
   WebInputEventResult HandleGestureScrollBegin(const WebGestureEvent&);
 

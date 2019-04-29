@@ -20,9 +20,12 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -1767,6 +1770,205 @@ TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
       WebCoalescedInputEvent(scroll_end_event));
 
   EXPECT_EQ(0, GetDocument().getElementById("outer")->scrollLeft());
+}
+
+TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scroller {
+        overflow-y:scroll;
+        height:200px;
+      }
+      #talldiv {
+        height:1000px;
+      }
+    </style>
+    <div id="talldiv">Tall text to create viewport scrollbar</div>
+    <div id="scroller">
+      <div style="height:2000px">To create subscroller scrollbar</div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Element* const scroller = GetDocument().getElementById("scroller");
+  constexpr float delta_y = 100;
+  // Send GSB/GSU at 0,0 to target the viewport first, then verify that
+  // the viewport scrolled accordingly.
+  WebGestureEvent gesture_scroll_begin{
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_begin.SetFrameScale(1);
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+
+  WebGestureEvent gesture_scroll_update{
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_update.SetFrameScale(1);
+  gesture_scroll_update.data.scroll_update.delta_x = 0;
+  gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
+
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_update);
+
+  WebGestureEvent gesture_scroll_end{
+      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_end.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_end);
+
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), delta_y);
+
+  // Switch to the element_id-based targeting for GSB, then resend GSU
+  // and validate that the subscroller scrolled (and that the viewport
+  // did not).
+  ScrollableArea* scrollable_area =
+      scroller->GetLayoutBox()->GetScrollableArea();
+  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+      scrollable_area->GetCompositorElementId().GetInternalValue();
+
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_update);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_end);
+
+  ASSERT_EQ(scrollable_area->ScrollOffsetInt().Height(), delta_y);
+  ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), delta_y);
+
+  // Remove the scroller, update layout, and ensure the same gestures
+  // don't crash or scroll the layout viewport.
+  scroller->remove();
+  GetDocument().UpdateStyleAndLayout();
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_update);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_end);
+
+  ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), delta_y);
+}
+
+TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollIFrame) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request_outer("https://example.com/test-outer.html", "text/html");
+  SimRequest request_inner("https://example.com/test-inner.html", "text/html");
+  LoadURL("https://example.com/test-outer.html");
+  request_outer.Complete(R"HTML(
+    <!DOCTYPE html>
+    <iframe id="iframe" src="test-inner.html"></iframe>
+    <div style="height:1000px"></div>
+    )HTML");
+
+  request_inner.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div style="height:1000px"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  HTMLFrameElementBase* const iframe =
+      ToHTMLFrameElementBase(GetDocument().getElementById("iframe"));
+  FrameView* child_frame_view =
+      iframe->GetLayoutEmbeddedContent()->ChildFrameView();
+  auto* local_child_frame_view = DynamicTo<LocalFrameView>(child_frame_view);
+  ScrollableArea* scrollable_area = local_child_frame_view->GetScrollableArea();
+
+  // Target the iframe scrollable area and make sure it scrolls when targeted
+  // with gestures.
+  constexpr float delta_y = 100;
+  WebGestureEvent gesture_scroll_begin{
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_begin.SetFrameScale(1);
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+      scrollable_area->GetCompositorElementId().GetInternalValue();
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+
+  WebGestureEvent gesture_scroll_update{
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_update.SetFrameScale(1);
+  gesture_scroll_update.data.scroll_update.delta_x = 0;
+  gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
+
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_update);
+
+  WebGestureEvent gesture_scroll_end{
+      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_end.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_end);
+
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), 0);
+  ASSERT_EQ(scrollable_area->ScrollOffsetInt().Height(), delta_y);
+}
+
+TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollViewport) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  // Set a page scale factor so that the VisualViewport will also scroll.
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div style="height:1000px">Tall text to create viewport scrollbar</div>
+  )HTML");
+  WebView().SetPageScaleFactor(2);
+  Compositor().BeginFrame();
+
+  // Target the visual viewport (which is a ScrollableArea), and validate
+  // that the layout viewport scrolled.
+  constexpr float delta_y = 700;
+  const VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
+
+  WebGestureEvent gesture_scroll_begin{
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_begin.SetFrameScale(1);
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+      visual_viewport.GetCompositorElementId().GetInternalValue();
+
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_begin);
+
+  WebGestureEvent gesture_scroll_update{
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_update.SetFrameScale(1);
+  gesture_scroll_update.data.scroll_update.delta_x = 0;
+  gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
+
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_update);
+
+  WebGestureEvent gesture_scroll_end{
+      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_end.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_scroll_end);
+
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), 400);
+  ASSERT_EQ(visual_viewport.GetScrollOffset().Height(), 300);
 }
 
 }  // namespace blink

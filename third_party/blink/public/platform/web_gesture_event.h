@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_
 
+#include "cc/trees/element_id.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -102,9 +103,14 @@ class WebGestureEvent : public WebInputEvent {
       // True if this event is generated from a wheel event with synthetic
       // phase.
       bool synthetic;
-
       // number of pointers down.
       int pointer_count;
+      // If set, used to target a scrollable area directly instead of performing
+      // a hit-test. Should be used for gestures queued up internally within
+      // the renderer process. This is an ElementIdType instead of ElementId
+      // due to the fact that ElementId has a non-trivial constructor that
+      // can't easily participate in this union of structs.
+      cc::ElementIdType scrollable_area_element_id;
     } scroll_begin;
 
     struct {

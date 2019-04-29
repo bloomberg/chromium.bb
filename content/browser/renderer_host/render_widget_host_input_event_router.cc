@@ -1222,6 +1222,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
   scroll_begin.data.scroll_begin.delta_y_hint = 0;
   scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::kPrecisePixels;
+  scroll_begin.data.scroll_begin.scrollable_area_element_id = 0;
   view->ProcessGestureEvent(
       scroll_begin,
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(

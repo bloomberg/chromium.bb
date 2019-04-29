@@ -330,18 +330,9 @@ void MouseWheelEventQueue::SendScrollBegin(
     bool synthetic) {
   DCHECK(!client_->IsWheelScrollInProgress());
 
-  WebGestureEvent scroll_begin(gesture_update);
-  scroll_begin.SetType(WebInputEvent::kGestureScrollBegin);
+  WebGestureEvent scroll_begin =
+      ui::ScrollBeginFromScrollUpdate(gesture_update);
   scroll_begin.data.scroll_begin.synthetic = synthetic;
-  scroll_begin.data.scroll_begin.inertial_phase =
-      gesture_update.data.scroll_update.inertial_phase;
-  scroll_begin.data.scroll_begin.delta_x_hint =
-      gesture_update.data.scroll_update.delta_x;
-  scroll_begin.data.scroll_begin.delta_y_hint =
-      gesture_update.data.scroll_update.delta_y;
-  scroll_begin.data.scroll_begin.target_viewport = false;
-  scroll_begin.data.scroll_begin.delta_hint_units =
-      gesture_update.data.scroll_update.delta_units;
 
   client_->ForwardGestureEventWithLatencyInfo(
       scroll_begin, ui::LatencyInfo(ui::SourceEventType::WHEEL));

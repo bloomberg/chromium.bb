@@ -417,19 +417,14 @@ void FlingController::CancelCurrentFling() {
       (last_fling_boost_event.GetType() == WebInputEvent::kGestureScrollBegin ||
        last_fling_boost_event.GetType() ==
            WebInputEvent::kGestureScrollUpdate)) {
-    WebGestureEvent scroll_begin_event = last_fling_boost_event;
-    scroll_begin_event.SetType(WebInputEvent::kGestureScrollBegin);
-    bool is_update =
-        last_fling_boost_event.GetType() == WebInputEvent::kGestureScrollUpdate;
-    float delta_x_hint =
-        is_update ? last_fling_boost_event.data.scroll_update.delta_x
-                  : last_fling_boost_event.data.scroll_begin.delta_x_hint;
-    float delta_y_hint =
-        is_update ? last_fling_boost_event.data.scroll_update.delta_y
-                  : last_fling_boost_event.data.scroll_begin.delta_y_hint;
-    scroll_begin_event.data.scroll_begin.delta_x_hint = delta_x_hint;
-    scroll_begin_event.data.scroll_begin.delta_y_hint = delta_y_hint;
-
+    WebGestureEvent scroll_begin_event;
+    if (last_fling_boost_event.GetType() ==
+        WebInputEvent::kGestureScrollUpdate) {
+      scroll_begin_event =
+          ui::ScrollBeginFromScrollUpdate(last_fling_boost_event);
+    } else {
+      scroll_begin_event = last_fling_boost_event;
+    }
     event_sender_client_->SendGeneratedGestureScrollEvents(
         GestureEventWithLatencyInfo(
             scroll_begin_event,
