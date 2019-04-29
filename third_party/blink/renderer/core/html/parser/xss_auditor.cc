@@ -926,7 +926,13 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
           StartsMultiLineCommentAt(string, found_position)) {
         break;
       }
-      if (!request.should_allow_cdata) {
+      if (request.should_allow_cdata) {
+        // Under SVG/XML rules, blink may apply an additional html entity
+        // decoding to this particular string before handing it to the JS
+        // parser. So stop before anything that looks like an entity.
+        if (string[found_position] == '&')
+          break;
+      } else {
         if (StartsHTMLOpenCommentAt(string, found_position) ||
             StartsHTMLCloseCommentAt(string, found_position)) {
           break;
