@@ -590,9 +590,6 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     return WebFrameLoadType::kReplaceCurrentItem;
   }
 
-  if (origin_document && !origin_document->CanCreateHistoryEntry())
-    return WebFrameLoadType::kReplaceCurrentItem;
-
   return WebFrameLoadType::kStandard;
 }
 

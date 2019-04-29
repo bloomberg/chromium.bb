@@ -1091,11 +1091,6 @@ const char kHideActiveAppsFromShelfName[] =
 const char kHideActiveAppsFromShelfDescription[] =
     "Save space in the shelf by hiding running apps (that are not pinned).";
 
-const char kHistoryRequiresUserGestureName[] =
-    "New history entries require a user gesture.";
-const char kHistoryRequiresUserGestureDescription[] =
-    "Require a user gesture to add a history entry.";
-
 const char kHorizontalTabSwitcherAndroidName[] =
     "Enable horizontal tab switcher";
 const char kHorizontalTabSwitcherAndroidDescription[] =

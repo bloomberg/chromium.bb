@@ -1100,10 +1100,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
 #endif  // ENABLE_EXTENSIONS
-    {"enable-history-entry-requires-user-gesture",
-     flag_descriptions::kHistoryRequiresUserGestureName,
-     flag_descriptions::kHistoryRequiresUserGestureDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kHistoryEntryRequiresUserGesture)},
     {"enable-history-manipulation-intervention",
      flag_descriptions::kHistoryManipulationIntervention,
      flag_descriptions::kHistoryManipulationInterventionDescription, kOsAll,

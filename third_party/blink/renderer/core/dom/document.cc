@@ -383,10 +383,6 @@ static const unsigned kCMaxWriteRecursionDepth = 21;
 // adequate, but a little high for dual G5s. :)
 static const int kCLayoutScheduleThreshold = 250;
 
-// After a document has been committed for this time, it can create a history
-// entry even if the user hasn't interacted with the document.
-static const int kElapsedTimeForHistoryEntryWithoutUserGestureMS = 5000;
-
 // DOM Level 2 says (letters added):
 //
 // a) Name start characters must have one of the categories Ll, Lu, Lo, Lt, Nl.
@@ -3756,24 +3752,6 @@ bool Document::ShouldScheduleLayout() const {
 
 int Document::ElapsedTime() const {
   return static_cast<int>((CurrentTime() - start_time_) * 1000);
-}
-
-bool Document::CanCreateHistoryEntry() const {
-  if (!frame_ || frame_->HasBeenActivated())
-    return true;
-  if (ElapsedTime() >= kElapsedTimeForHistoryEntryWithoutUserGestureMS)
-    return true;
-  UseCounter::Count(*this, WebFeature::kSuppressHistoryEntryWithoutUserGesture);
-  // TODO(japhet): This flag controls an intervention to require a user gesture
-  // or a long time on page in order for a content-initiated navigation to add
-  // an entry to the back/forward list. Removing the flag and making this the
-  // default will require updating a couple hundred tests that currently depend
-  // on creating history entries without user gestures. I'm waiting to update
-  // the tests until the feature is proven to minimize churn.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=638198
-  if (!GetSettings() || !GetSettings()->GetHistoryEntryRequiresUserGesture())
-    return true;
-  return false;
 }
 
 void Document::write(const String& text,

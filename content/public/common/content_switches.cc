@@ -524,11 +524,6 @@ const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
-// Don't allow content to arbitrarily append to the back/forward list.
-// The page must prcoess a user gesture before an entry can be added.
-const char kHistoryEntryRequiresUserGesture[] =
-    "history-entry-requires-user-gesture";
-
 // Start the renderer with an initial virtual time override specified in
 // seconds since the epoch.
 const char kInitialVirtualTime[] = "initial-virtual-time";

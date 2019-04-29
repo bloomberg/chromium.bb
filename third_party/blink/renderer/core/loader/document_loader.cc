@@ -444,11 +444,6 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   // Update the data source's request with the new URL to fake the URL change
   frame_->GetDocument()->SetURL(new_url);
 
-  if (type == WebFrameLoadType::kStandard && initiating_document &&
-      !initiating_document->CanCreateHistoryEntry()) {
-    type = WebFrameLoadType::kReplaceCurrentItem;
-  }
-
   KURL old_url = url_;
   original_url_ = new_url;
   url_ = new_url;

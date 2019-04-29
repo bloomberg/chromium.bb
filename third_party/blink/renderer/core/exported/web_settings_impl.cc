@@ -503,10 +503,6 @@ void WebSettingsImpl::SetHighlightAds(bool enabled) {
   settings_->SetHighlightAds(enabled);
 }
 
-void WebSettingsImpl::SetHistoryEntryRequiresUserGesture(bool enabled) {
-  settings_->SetHistoryEntryRequiresUserGesture(enabled);
-}
-
 void WebSettingsImpl::SetHyperlinkAuditingEnabled(bool enabled) {
   settings_->SetHyperlinkAuditingEnabled(enabled);
 }

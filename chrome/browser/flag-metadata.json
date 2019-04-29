@@ -1148,11 +1148,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-history-entry-requires-user-gesture",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-history-manipulation-intervention",
     "owners": [ "shivanisha" ],
     "expiry_milestone": 76

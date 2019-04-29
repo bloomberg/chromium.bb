@@ -672,9 +672,6 @@ extern const char kViewsCastDialogDescription[];
 extern const char kHideActiveAppsFromShelfName[];
 extern const char kHideActiveAppsFromShelfDescription[];
 
-extern const char kHistoryRequiresUserGestureName[];
-extern const char kHistoryRequiresUserGestureDescription[];
-
 extern const char kHostedAppQuitNotificationName[];
 extern const char kHostedAppQuitNotificationDescription[];
 

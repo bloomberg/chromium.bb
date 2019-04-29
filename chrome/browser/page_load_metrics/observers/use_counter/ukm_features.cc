@@ -78,7 +78,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kDocumentLevelPassiveDefaultEventListenerPreventedWheel,
           WebFeature::kDocumentDomainBlockedCrossOriginAccess,
           WebFeature::kDocumentDomainEnabledCrossOriginAccess,
-          WebFeature::kSuppressHistoryEntryWithoutUserGesture,
           WebFeature::kCursorImageGT32x32,
           WebFeature::kCursorImageLE32x32,
           WebFeature::kHistoryPushState,
