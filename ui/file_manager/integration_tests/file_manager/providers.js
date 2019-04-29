@@ -275,4 +275,32 @@
     // ejected.
     return IGNORE_APP_ERRORS;
   };
+
+  /**
+   * Tests that when online, the install new service button is enabled.
+   */
+  testcase.installNewServiceOnline = async () => {
+    const appId = await setUpProvider('manifest.json');
+    await showProvidersMenu(appId);
+
+    const selector = '#add-new-services-menu:not([hidden]) ' +
+        'cr-menu-item[command="#install-new-extension"]:not([disabled])';
+    const element = await remoteCall.waitForElement(appId, selector);
+    chrome.test.assertEq('Install new service', element.text);
+    chrome.test.assertFalse(element.hidden);
+  };
+
+  /**
+   * Tests that when offline, the install new service button is disabled.
+   */
+  testcase.installNewServiceOffline = async () => {
+    const appId = await setUpProvider('manifest.json');
+    await showProvidersMenu(appId);
+
+    const selector = '#add-new-services-menu:not([hidden]) ' +
+        'cr-menu-item[command="#install-new-extension"][disabled]';
+    const element = await remoteCall.waitForElement(appId, selector);
+    chrome.test.assertEq('Install new service', element.text);
+    chrome.test.assertFalse(element.hidden);
+  };
 })();

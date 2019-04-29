@@ -2313,8 +2313,9 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
     });
   },
   canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.dialogType === DialogType.FULL_PAGE;
-    event.command.setHidden(!event.canExecute);
+    const isFullPage = fileManager.dialogType === DialogType.FULL_PAGE;
+    event.canExecute = isFullPage && navigator.onLine;
+    event.command.setHidden(!isFullPage);
   }
 });
 

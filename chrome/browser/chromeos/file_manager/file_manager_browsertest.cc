@@ -908,7 +908,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("requestMountSourceFile"),
                       TestCase("requestMountSourceFile").DisableNativeSmb(),
                       TestCase("providerEject"),
-                      TestCase("providerEject").DisableNativeSmb()));
+                      TestCase("providerEject").DisableNativeSmb(),
+                      TestCase("installNewServiceOnline"),
+                      TestCase("installNewServiceOffline").Offline()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     GearMenu, /* gear_menu.js */
