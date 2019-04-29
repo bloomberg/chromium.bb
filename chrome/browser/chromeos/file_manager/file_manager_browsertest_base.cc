@@ -539,24 +539,6 @@ class TestVolume {
   DISALLOW_COPY_AND_ASSIGN(TestVolume);
 };
 
-class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
- public:
-  OfflineGetDriveConnectionState() = default;
-
-  ResponseAction Run() override {
-    extensions::api::file_manager_private::DriveConnectionState result;
-    result.type = "offline";
-    return RespondNow(
-        ArgumentList(extensions::api::file_manager_private::
-                         GetDriveConnectionState::Results::Create(result)));
-  }
-
- private:
-  ~OfflineGetDriveConnectionState() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
-};
-
 base::Lock& GetLockForBlockingDefaultFileTaskRunner() {
   static base::NoDestructor<base::Lock> lock;
   return *lock;
@@ -1508,6 +1490,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     command_line->AppendSwitch(switches::kIncognito);
   }
 
+  if (IsOfflineTest()) {
+    command_line->AppendSwitchASCII(chromeos::switches::kShillStub, "clear=1");
+  }
+
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
 
@@ -1665,12 +1651,6 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
-
-  if (IsOfflineTest()) {
-    ExtensionFunctionRegistry::GetInstance().OverrideFunctionForTesting(
-        "fileManagerPrivate.getDriveConnectionState",
-        &NewExtensionFunction<OfflineGetDriveConnectionState>);
-  }
 
   content::NetworkConnectionChangeSimulator network_change_simulator;
   network_change_simulator.SetConnectionType(
