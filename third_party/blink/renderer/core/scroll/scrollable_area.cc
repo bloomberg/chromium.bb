@@ -181,7 +181,7 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
     sequencer->AbortAnimations();
 
   ScrollResult result =
-      GetScrollAnimator().UserScroll(granularity, pixel_delta);
+      GetScrollAnimator().UserScroll(granularity, scrollable_axis_delta);
 
   // Delta that wasn't scrolled because the axis is !userInputScrollable
   // should count as unusedScrollDelta.

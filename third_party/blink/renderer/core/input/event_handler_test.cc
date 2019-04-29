@@ -1708,4 +1708,65 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   EXPECT_GT(scrollable_area->ScrollOffsetInt().Height(), 0);
 }
 
+TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #outer {
+        width: 100vw;
+        height: 100vh;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    #inner {
+        width: 300vw;
+        height: 300vh;
+    }
+    </style>
+    <body>
+      <div id='outer'>
+        <div id='inner'>
+      </div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebGestureEvent scroll_begin_event(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll_begin_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_begin_event.SetPositionInScreen(WebFloatPoint(10, 10));
+  scroll_begin_event.SetFrameScale(1);
+
+  WebGestureEvent scroll_update_event(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll_update_event.data.scroll_update.delta_x = -100;
+  scroll_update_event.data.scroll_update.delta_y = -100;
+  scroll_update_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_update_event.SetPositionInScreen(WebFloatPoint(10, 10));
+  scroll_update_event.SetFrameScale(1);
+
+  WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
+                                   WebInputEvent::kNoModifiers,
+                                   WebInputEvent::GetStaticTimeStampForTests(),
+                                   blink::WebGestureDevice::kTouchpad);
+  scroll_end_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_end_event.SetPositionInScreen(WebFloatPoint(10, 10));
+
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_begin_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_update_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_end_event));
+
+  EXPECT_EQ(0, GetDocument().getElementById("outer")->scrollLeft());
+}
+
 }  // namespace blink
