@@ -168,8 +168,13 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
       provider->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
   frame->SetFootnoteView(CreateFootnoteView());
 
+  BubbleBorder::Arrow adjusted_arrow = arrow();
+  if (base::i18n::IsRTL()) {
+    adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
+    arrow_ = adjusted_arrow;
+  }
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
+      std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
     border->SetCornerRadius(
         base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
@@ -273,8 +278,6 @@ void BubbleDialogDelegateView::SetHighlightedButton(
 }
 
 void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
-  if (base::i18n::IsRTL())
-    arrow = BubbleBorder::horizontal_mirror(arrow);
   if (arrow_ == arrow)
     return;
   arrow_ = arrow;
@@ -318,12 +321,12 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
     : close_on_deactivate_(true),
       anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
+      arrow_(arrow),
       shadow_(shadow),
       color_explicitly_set_(false),
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(nullptr) {
-  SetArrow(arrow);
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
   // from the typical title/text/buttons.
