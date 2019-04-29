@@ -538,7 +538,8 @@ test.waitForFiles = function(expected, opt_options) {
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
-test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
+test.setupAndWaitUntilReady =
+    async function(opt_downloads, opt_drive, opt_crostini) {
   const entriesDownloads = opt_downloads || test.BASIC_LOCAL_ENTRY_SET;
   const entriesDrive = opt_drive || test.BASIC_DRIVE_ENTRY_SET;
   const entriesCrostini = opt_crostini || test.BASIC_CROSTINI_ENTRY_SET;
@@ -557,20 +558,17 @@ test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
 
   const downloadsElement = '#directory-tree [volume-type-icon="downloads"]';
 
-  return test.loadData()
-      .then(() => {
-        test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
-        return test.waitForElement(downloadsElement);
-      })
-      .then((downloadsIcon) => {
-        // Click Downloads if not already on Downloads, then refresh button.
-        if (!downloadsIcon.parentElement.hasAttribute('selected')) {
-          assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
-        }
-        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
-        return test.waitForFiles(
-            test.TestEntryInfo.getExpectedRows(entriesDownloads));
-      });
+  await test.loadData();
+  test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
+  const downloadsIcon = await test.waitForElement(downloadsElement);
+
+  // Click Downloads if not already on Downloads, then refresh button.
+  if (!downloadsIcon.parentElement.hasAttribute('selected')) {
+    assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
+  }
+  assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
+  return test.waitForFiles(
+      test.TestEntryInfo.getExpectedRows(entriesDownloads));
 };
 
 /**
