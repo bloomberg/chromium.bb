@@ -52,7 +52,7 @@
 
 #include <libweston/libweston.h>
 #include <libweston/backend-drm.h>
-#include "weston-debug.h"
+#include <libweston/weston-debug.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 #include "renderer-gl/gl-renderer.h"

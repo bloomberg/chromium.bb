@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "weston-debug.h"
+#include <libweston/weston-debug.h>
 #include "helpers.h"
 #include <libweston/libweston.h>
 

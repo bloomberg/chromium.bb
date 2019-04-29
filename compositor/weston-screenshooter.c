@@ -32,7 +32,7 @@
 #include "weston.h"
 #include "weston-screenshooter-server-protocol.h"
 #include "shared/helpers.h"
-#include "weston-debug.h"
+#include <libweston/weston-debug.h>
 
 struct screenshooter {
 	struct weston_compositor *ec;
