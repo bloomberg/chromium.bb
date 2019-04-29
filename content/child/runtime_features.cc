@@ -166,8 +166,8 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
   }
 
-  if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
-    WebRuntimeFeatures::EnableReducedReferrerGranularity(true);
+  WebRuntimeFeatures::EnableReducedReferrerGranularity(
+      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity));
 
   if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
     WebRuntimeFeatures::EnablePermissionsAPI(false);

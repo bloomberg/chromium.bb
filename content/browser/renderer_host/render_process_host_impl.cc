@@ -3025,7 +3025,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kProfilingAtStart,
     switches::kProfilingFile,
     switches::kProfilingFlush,
-    switches::kReducedReferrerGranularity,
     switches::kRegisterPepperPlugins,
     switches::kRendererStartupDialog,
     switches::kReportVp9AsAnUnsupportedMimeType,

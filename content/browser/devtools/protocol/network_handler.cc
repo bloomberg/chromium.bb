@@ -50,7 +50,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -554,8 +554,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     case network::mojom::ReferrerPolicy::kAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case network::mojom::ReferrerPolicy::kDefault:
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kReducedReferrerGranularity)) {
+      if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
         return Network::Request::ReferrerPolicyEnum::
             StrictOriginWhenCrossOrigin;
       } else {

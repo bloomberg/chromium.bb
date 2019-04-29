@@ -715,10 +715,6 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // that's needed to show a dialog.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
-// Reduce the default `referer` header's granularity.
-const char kReducedReferrerGranularity[] =
-  "reduced-referrer-granularity";
-
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
 

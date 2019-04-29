@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "services/network/loader_util.h"
 
 namespace content {
@@ -17,8 +17,7 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
                                       const Referrer& referrer) {
   Referrer sanitized_referrer(referrer.url.GetAsReferrer(), referrer.policy);
   if (sanitized_referrer.policy == network::mojom::ReferrerPolicy::kDefault) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kReducedReferrerGranularity)) {
+    if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
       sanitized_referrer.policy = network::mojom::ReferrerPolicy::
           kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     } else {
@@ -114,8 +113,7 @@ net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
       return net::URLRequest::
           ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case network::mojom::ReferrerPolicy::kDefault:
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kReducedReferrerGranularity)) {
+      if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
         return net::URLRequest::
             REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
       }
@@ -157,8 +155,7 @@ network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
 }
 
 net::URLRequest::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kReducedReferrerGranularity)) {
+  if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
     return net::URLRequest::
         REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
   }

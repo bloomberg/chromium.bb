@@ -1611,7 +1611,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"reduced-referrer-granularity",
      flag_descriptions::kReducedReferrerGranularityName,
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kReducedReferrerGranularity)},
+     FEATURE_VALUE_TYPE(features::kReducedReferrerGranularity)},
 #if defined(OS_CHROMEOS)
     {"crostini-backup", flag_descriptions::kCrostiniBackupName,
      flag_descriptions::kCrostiniBackupDescription, kOsCrOS,

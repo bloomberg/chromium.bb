@@ -369,6 +369,11 @@ const base::Feature kPrioritizeBootstrapTasks = {
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Reduce the amount of information in the default 'referer' header for
+// cross-origin requests.
+const base::Feature kReducedReferrerGranularity{
+    "ReducedReferrerGranularity", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // RenderDocument:
 //
 // Currently, a RenderFrameHost represents neither a frame nor a document, but a

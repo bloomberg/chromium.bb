@@ -87,6 +87,7 @@ CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithStrictSiteInstances;
 CONTENT_EXPORT extern const base::Feature kRasterInducingScroll;
+CONTENT_EXPORT extern const base::Feature kReducedReferrerGranularity;
 CONTENT_EXPORT extern const base::Feature kRenderDocumentForMainFrame;
 CONTENT_EXPORT extern const base::Feature kRenderDocumentForSubframe;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
