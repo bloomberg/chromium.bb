@@ -572,9 +572,14 @@ class LocalNtpSource::SearchConfigurationProvider
                                                   features::kRemoveNtpFakebox));
       config_data.SetBoolean("alternateFakebox",
                              features::IsUseAlternateFakeboxOnNtpEnabled());
+      config_data.SetBoolean("alternateFakeboxRect",
+                             base::FeatureList::IsEnabled(
+                                 features::kUseAlternateFakeboxRectOnNtp));
+      config_data.SetBoolean("fakeboxSearchIcon",
+                             features::IsFakeboxSearchIconOnNtpEnabled());
       config_data.SetBoolean(
-          "fakeboxSearchIcon",
-          base::FeatureList::IsEnabled(features::kFakeboxSearchIconOnNtp));
+          "fakeboxSearchIconColor",
+          base::FeatureList::IsEnabled(features::kFakeboxSearchIconColorOnNtp));
       config_data.SetBoolean(
           "hideShortcuts",
           base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));

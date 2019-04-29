@@ -72,12 +72,15 @@ var NTP_DESIGN = {
 var CLASSES = {
   // Shows a Google search style fakebox.
   ALTERNATE_FAKEBOX: 'alternate-fakebox',
+  // Shows a rectangular Google search style fakebox with rounded corners.
+  ALTERNATE_FAKEBOX_RECT: 'alternate-fakebox-rect',
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  FAKEBOX_ICON_COLOR: 'color',       // Use a blue search icon for the fakebox.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   // Shows a search icon in the fakebox.
   SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
@@ -123,6 +126,7 @@ var IDS = {
   ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
   FAKEBOX_CONTAINER: 'fakebox-container',
+  FAKEBOX_ICON: 'fakebox-search-icon',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
@@ -1164,8 +1168,14 @@ function init() {
     if (configData.alternateFakebox) {
       document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX);
     }
+    if (configData.alternateFakeboxRect) {
+      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX_RECT);
+    }
     if (configData.fakeboxSearchIcon) {
       document.body.classList.add(CLASSES.SHOW_FAKEBOX_ICON);
+    }
+    if (configData.fakeboxSearchIconColor) {
+      $(IDS.FAKEBOX_ICON).classList.add(CLASSES.FAKEBOX_ICON_COLOR);
     }
 
     if (configData.removeFakebox) {
