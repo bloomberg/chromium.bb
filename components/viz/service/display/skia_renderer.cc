@@ -788,7 +788,7 @@ void SkiaRenderer::ClearFramebuffer() {
   if (current_frame()->current_render_pass->has_transparent_background) {
     ClearCanvas(SkColorSetARGB(0, 0, 0, 0));
   } else {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     // On DEBUG builds, opaque render passes are cleared to blue
     // to easily see regions that were not drawn on the screen.
     ClearCanvas(SkColorSetARGB(255, 0, 0, 255));

@@ -845,6 +845,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
         continue;
       }
 
+      DCHECK(representation->size() == context->size);
       context->representation = std::move(representation);
       context->promise_image_texture = context->representation->BeginReadAccess(
           begin_semaphores, end_semaphores);
