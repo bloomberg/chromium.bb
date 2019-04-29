@@ -83,7 +83,7 @@ class ContentCoordinator {
         mAdapter = new ContextualSuggestionsAdapter(
                 profile, mUiConfig, uiDelegate, mContextMenuManager, clusterList);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.init(mUiConfig, mContextMenuManager);
+        mRecyclerView.init(mUiConfig, closeContextMenuCallback);
 
         Resources resources = context.getResources();
         int defaultMargin =

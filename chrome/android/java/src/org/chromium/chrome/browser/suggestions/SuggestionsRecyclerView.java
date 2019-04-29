@@ -31,7 +31,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -80,8 +79,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
     /** The ui config for this view. */
     private UiConfig mUiConfig;
 
-    /** The context menu manager for this view. */
-    private ContextMenuManager mContextMenuManager;
+    private Runnable mCloseContextMenuCallback;
 
     private boolean mIsCardBeingSwiped;
 
@@ -214,7 +212,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         if (mUiConfig != null) mUiConfig.updateDisplayStyle();
 
         // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        if (mContextMenuManager != null) mContextMenuManager.closeContextMenu();
+        if (mCloseContextMenuCallback != null) mCloseContextMenuCallback.run();
     }
 
     @Override
@@ -227,9 +225,9 @@ public class SuggestionsRecyclerView extends RecyclerView {
         super.onLayout(changed, l, t, r, b);
     }
 
-    public void init(UiConfig uiConfig, ContextMenuManager contextMenuManager) {
+    public void init(UiConfig uiConfig, Runnable closeContextMenuCallback) {
         mUiConfig = uiConfig;
-        mContextMenuManager = contextMenuManager;
+        mCloseContextMenuCallback = closeContextMenuCallback;
     }
 
     public NewTabPageAdapter getNewTabPageAdapter() {
