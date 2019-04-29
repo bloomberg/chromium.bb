@@ -74,7 +74,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
-  void EnqueueBuffer(const scoped_refptr<AudioBuffer>& buffer_in);
+  void EnqueueBuffer(scoped_refptr<AudioBuffer> buffer_in);
 
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();

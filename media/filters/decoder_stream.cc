@@ -617,7 +617,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   }
 
   // If the frame should be dropped, exit early and decode another frame.
-  if (traits_->OnDecodeDone(output) == PostDecodeAction::DROP)
+  if (traits_->OnDecodeDone(output.get()) == PostDecodeAction::DROP)
     return;
 
   if (prepare_cb_ && output->timestamp() + AverageDuration() >=

@@ -16,7 +16,7 @@ namespace media {
 class AudioBuffer;
 class DecoderBuffer;
 class DecryptConfig;
-}
+}  // namespace media
 
 // These are specializations of mojo::TypeConverter and have to be in the mojo
 // namespace.
@@ -47,10 +47,8 @@ struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
 };
 
 template <>
-struct TypeConverter<media::mojom::AudioBufferPtr,
-                     scoped_refptr<media::AudioBuffer>> {
-  static media::mojom::AudioBufferPtr Convert(
-      const scoped_refptr<media::AudioBuffer>& input);
+struct TypeConverter<media::mojom::AudioBufferPtr, media::AudioBuffer> {
+  static media::mojom::AudioBufferPtr Convert(const media::AudioBuffer& input);
 };
 template <>
 struct TypeConverter<scoped_refptr<media::AudioBuffer>,

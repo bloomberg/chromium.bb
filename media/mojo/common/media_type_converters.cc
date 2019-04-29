@@ -119,21 +119,21 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
 
 // static
 media::mojom::AudioBufferPtr
-TypeConverter<media::mojom::AudioBufferPtr, scoped_refptr<media::AudioBuffer>>::
-    Convert(const scoped_refptr<media::AudioBuffer>& input) {
+TypeConverter<media::mojom::AudioBufferPtr, media::AudioBuffer>::Convert(
+    const media::AudioBuffer& input) {
   media::mojom::AudioBufferPtr buffer(media::mojom::AudioBuffer::New());
-  buffer->sample_format = input->sample_format_;
-  buffer->channel_layout = input->channel_layout();
-  buffer->channel_count = input->channel_count();
-  buffer->sample_rate = input->sample_rate();
-  buffer->frame_count = input->frame_count();
-  buffer->end_of_stream = input->end_of_stream();
-  buffer->timestamp = input->timestamp();
+  buffer->sample_format = input.sample_format_;
+  buffer->channel_layout = input.channel_layout();
+  buffer->channel_count = input.channel_count();
+  buffer->sample_rate = input.sample_rate();
+  buffer->frame_count = input.frame_count();
+  buffer->end_of_stream = input.end_of_stream();
+  buffer->timestamp = input.timestamp();
 
-  if (input->data_) {
-    DCHECK_GT(input->data_size(), 0u);
-    buffer->data.assign(input->data_.get(),
-                        input->data_.get() + input->data_size_);
+  if (input.data_) {
+    DCHECK_GT(input.data_size(), 0u);
+    buffer->data.assign(input.data_.get(),
+                        input.data_.get() + input.data_size_);
   }
 
   return buffer;

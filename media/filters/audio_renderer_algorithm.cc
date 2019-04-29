@@ -224,9 +224,9 @@ void AudioRendererAlgorithm::FlushBuffers() {
 }
 
 void AudioRendererAlgorithm::EnqueueBuffer(
-    const scoped_refptr<AudioBuffer>& buffer_in) {
+    scoped_refptr<AudioBuffer> buffer_in) {
   DCHECK(!buffer_in->end_of_stream());
-  audio_buffer_.Append(buffer_in);
+  audio_buffer_.Append(std::move(buffer_in));
 }
 
 bool AudioRendererAlgorithm::IsQueueFull() {

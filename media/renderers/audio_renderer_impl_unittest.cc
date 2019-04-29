@@ -329,7 +329,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     }
     next_timestamp_->AddFrames(frames.value);
 
-    DeliverBuffer(DecodeStatus::OK, buffer);
+    DeliverBuffer(DecodeStatus::OK, std::move(buffer));
   }
 
   void DeliverEndOfStream() {
@@ -476,12 +476,11 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     main_thread_task_runner_->PostTask(FROM_HERE, reset_cb);
   }
 
-  void DeliverBuffer(DecodeStatus status,
-                     const scoped_refptr<AudioBuffer>& buffer) {
+  void DeliverBuffer(DecodeStatus status, scoped_refptr<AudioBuffer> buffer) {
     CHECK(decode_cb_);
 
     if (buffer.get() && !buffer->end_of_stream())
-      output_cb_.Run(buffer);
+      output_cb_.Run(std::move(buffer));
     std::move(decode_cb_).Run(status);
 
     if (reset_cb_)
@@ -739,7 +738,7 @@ TEST_F(AudioRendererImplTest, ChannelMask) {
   scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
       kSampleFormat, hw_params.channel_layout(), hw_params.channels(),
       kInputSamplesPerSecond, 1.0f, 0.0f, 256, base::TimeDelta());
-  DeliverBuffer(DecodeStatus::OK, buffer);
+  DeliverBuffer(DecodeStatus::OK, std::move(buffer));
 
   // All channels should now be enabled.
   mask = channel_mask();

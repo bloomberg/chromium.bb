@@ -137,7 +137,7 @@ void MojoAudioDecoderService::OnAudioBufferReady(
   DVLOG(1) << __func__;
 
   // TODO(timav): Use DataPipe.
-  client_->OnBufferDecoded(mojom::AudioBuffer::From(std::move(audio_buffer)));
+  client_->OnBufferDecoded(mojom::AudioBuffer::From(*audio_buffer));
 }
 
 void MojoAudioDecoderService::OnWaiting(WaitingReason reason) {

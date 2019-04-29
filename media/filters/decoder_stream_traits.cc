@@ -89,8 +89,8 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::OnDecode(
 }
 
 PostDecodeAction DecoderStreamTraits<DemuxerStream::AUDIO>::OnDecodeDone(
-    const scoped_refptr<OutputType>& buffer) {
-  audio_ts_validator_->RecordOutputDuration(buffer);
+    OutputType* buffer) {
+  audio_ts_validator_->RecordOutputDuration(*buffer);
   return PostDecodeAction::DELIVER;
 }
 
@@ -198,7 +198,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
 }
 
 PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
-    const scoped_refptr<OutputType>& buffer) {
+    OutputType* buffer) {
   // Add a timestamp here (after decoding completed) to enable buffering delay
   // measurements down the line.
   buffer->metadata()->SetTimeTicks(media::VideoFrameMetadata::DECODE_TIME,

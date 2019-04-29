@@ -265,7 +265,7 @@ void MojoDecryptorService::OnAudioDecoded(
   // improved to use shared memory (http://crbug.com/593896).
   std::vector<mojom::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
-    audio_buffers.push_back(mojom::AudioBuffer::From(frame));
+    audio_buffers.push_back(mojom::AudioBuffer::From(*frame));
 
   std::move(callback).Run(status, std::move(audio_buffers));
 }
