@@ -615,16 +615,16 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.test_results['end_run'] = int(time.time())
 
     # Gets passed tests
-    self.logs['passed'] = []
+    self.logs['passed tests'] = []
     for shard_attempts in attempts_results:
       for attempt in shard_attempts:
-        self.logs['passed'].extend(attempt['passed'])
+        self.logs['passed tests'].extend(attempt['passed'])
 
     # If the last attempt does not have failures, mark failed as empty
-    self.logs['failed'] = []
+    self.logs['failed tests'] = []
     for shard_attempts in attempts_results:
       if shard_attempts[-1]['failed']:
-        self.logs['failed'].extend(shard_attempts[-1]['failed'].keys())
+        self.logs['failed tests'].extend(shard_attempts[-1]['failed'].keys())
 
     # Gets all failures/flakes and lists them in bot summary
     all_failures = set()
@@ -638,10 +638,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           all_failures.add(failure)
 
     # Gets only flaky(not failed) tests.
-    self.logs['flaked'] = list(all_failures - set(self.logs['failed']))
+    self.logs['flaked tests'] = list(
+        all_failures - set(self.logs['failed tests']))
 
     # Test is failed if there are failures for the last run.
-    return not self.logs['failed']
+    return not self.logs['failed tests']
 
   def erase_all_simulators(self):
     """Erases all simulator devices.
