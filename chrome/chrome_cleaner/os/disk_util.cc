@@ -29,6 +29,7 @@
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/constants/version.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
@@ -658,9 +659,9 @@ void GetLayeredServiceProviders(const LayeredServiceProviderAPI& lsp_api,
           providers->emplace(base::FilePath(path), std::set<GUID, GUIDLess>());
       inserted.first->second.insert(service_providers[i].ProviderId);
     } else {
-      base::string16 guid;
-      GUIDToString(service_providers[i].ProviderId, &guid);
-      LOG(ERROR) << "Couldn't get path for provider: " << guid;
+      LOG(ERROR) << "Couldn't get path for provider: "
+                 << base::win::String16FromGUID(
+                        service_providers[i].ProviderId);
     }
   }
 }

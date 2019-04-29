@@ -34,16 +34,4 @@ TEST(SystemUtilTests, GetMediumIntegrityToken) {
   EXPECT_LT(integrity_level, SECURITY_MANDATORY_HIGH_RID);
 }
 
-TEST(SystemUtilTests, GUIDToString) {
-  base::string16 provider1;
-  base::string16 provider2;
-  base::string16 provider3;
-  GUIDToString(kGUID1, &provider1);
-  GUIDToString(kGUID2, &provider2);
-  GUIDToString(kGUID3, &provider3);
-  EXPECT_STREQ(provider1.c_str(), kGUID1Str);
-  EXPECT_STREQ(provider2.c_str(), kGUID2Str);
-  EXPECT_STREQ(provider3.c_str(), kGUID3Str);
-}
-
 }  // namespace chrome_cleaner

@@ -27,6 +27,7 @@
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -348,23 +349,9 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
 }
 
 // static
-base::string16 InstallUtil::String16FromGUID(const GUID& guid) {
-  // A GUID has a string format of "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}",
-  // which contains 38 characters. The length is 39 inclusive of the string
-  // terminator.
-  constexpr int kGuidLength = 39;
-  base::string16 guid_string;
-
-  const int length_with_terminator = ::StringFromGUID2(
-      guid, base::WriteInto(&guid_string, kGuidLength), kGuidLength);
-  DCHECK_EQ(length_with_terminator, kGuidLength);
-  return guid_string;
-}
-
-// static
 base::string16 InstallUtil::GetToastActivatorRegistryPath() {
-  return L"Software\\Classes\\CLSID\\" +
-         String16FromGUID(install_static::GetToastActivatorClsid());
+  return STRING16_LITERAL("Software\\Classes\\CLSID\\") +
+         base::win::String16FromGUID(install_static::GetToastActivatorClsid());
 }
 
 // static

@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
@@ -55,17 +57,15 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
   eventlog_path =
       eventlog_path.Append(FILE_PATH_LITERAL("gcp_eventlog_provider.dll"));
 
-  wchar_t provider_guid_in_wchar[64];
-  StringFromGUID2(CLSID_GaiaCredentialProvider, provider_guid_in_wchar,
-                  base::size(provider_guid_in_wchar));
+  auto provider_guid_string =
+      base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
 
-  wchar_t filter_guid_in_wchar[64];
-  StringFromGUID2(__uuidof(CGaiaCredentialProviderFilter), filter_guid_in_wchar,
-                  base::size(filter_guid_in_wchar));
+  auto filter_guid_string =
+      base::win::String16FromGUID(__uuidof(CGaiaCredentialProviderFilter));
 
   ATL::_ATL_REGMAP_ENTRY regmap[] = {
-      {L"CP_CLASS_GUID", provider_guid_in_wchar},
-      {L"CP_FILTER_CLASS_GUID", filter_guid_in_wchar},
+      {L"CP_CLASS_GUID", base::as_wcstr(provider_guid_string.c_str())},
+      {L"CP_FILTER_CLASS_GUID", base::as_wcstr(filter_guid_string.c_str())},
       {L"VERSION", TEXT(CHROME_VERSION_STRING)},
       {L"EVENTLOG_PATH", eventlog_path.value().c_str()},
       {nullptr, nullptr},
