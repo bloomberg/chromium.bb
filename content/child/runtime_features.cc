@@ -101,7 +101,7 @@ void SetIndividualRuntimeFeatures(
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::EnableFileSystem(false);
 
-  if (!command_line.HasSwitch(switches::kDisableAcceleratedJpegDecoding))
+  if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding))
     WebRuntimeFeatures::EnableDecodeToYUV(true);
 
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)

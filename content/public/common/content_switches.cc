@@ -319,11 +319,9 @@ const char kDomAutomationController[]       = "dom-automation";
 // Disable antialiasing on 2d canvas clips
 const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 
-// Disable partially decoding jpeg images using the GPU.
-// At least YUV decoding will be accelerated when not using this flag.
+// Disable YUV image decoding for those formats and cases where it's supported.
 // Has no effect unless GPU rasterization is enabled.
-const char kDisableAcceleratedJpegDecoding[] =
-    "disable-accelerated-jpeg-decoding";
+const char kDisableYUVImageDecoding[] = "disable-yuv-image-decoding";
 
 // Logs Runtime Call Stats for Blink. --single-process also needs to be
 // used along with this for the stats to be logged.

@@ -2934,7 +2934,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDefaultTileWidth,
     switches::kDefaultTileHeight,
     switches::kDisable2dCanvasImageChromium,
-    switches::kDisableAcceleratedJpegDecoding,
+    switches::kDisableYUVImageDecoding,
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBackgroundTimerThrottling,
     switches::kDisableBestEffortTasks,

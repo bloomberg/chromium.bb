@@ -32,7 +32,7 @@ CONTENT_EXPORT extern const char kDisable2dCanvasAntialiasing[];
 CONTENT_EXPORT extern const char kDisable2dCanvasImageChromium[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
-CONTENT_EXPORT extern const char kDisableAcceleratedJpegDecoding[];
+CONTENT_EXPORT extern const char kDisableYUVImageDecoding[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoEncode[];
 extern const char kDisableBackingStoreLimit[];

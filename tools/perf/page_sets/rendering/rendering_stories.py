@@ -61,8 +61,7 @@ class RenderingStorySet(story.StorySet):
           shared_page_state_class=shared_page_state_class,
           extra_browser_args=required_args))
 
-      if (platform == platforms.MOBILE and
-          story_class.TAGS and
+      if (story_class.TAGS and
           story_tags.IMAGE_DECODING in story_class.TAGS):
         self.AddStory(story_class(
             page_set=self,
@@ -70,7 +69,6 @@ class RenderingStorySet(story.StorySet):
             name_suffix='_gpu_rasterization_and_decoding',
             extra_browser_args=required_args + [
                 '--force-gpu-rasterization',
-                '--enable-accelerated-jpeg-decoding',
             ]))
 
 
