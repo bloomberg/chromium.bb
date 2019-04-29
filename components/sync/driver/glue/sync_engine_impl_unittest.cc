@@ -251,7 +251,6 @@ class SyncEngineImplTest : public testing::Test {
     params.delete_sync_data_folder = true;
     params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
-    params.saved_nigori_state = std::move(saved_nigori_state_);
     sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
 
     backend_->Initialize(std::move(params));
@@ -325,7 +324,6 @@ class SyncEngineImplTest : public testing::Test {
   ModelTypeSet engine_types_;
   ModelTypeSet enabled_types_;
   std::unique_ptr<NetworkResources> network_resources_;
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state_;
   base::OnceClosure quit_loop_;
   testing::NiceMock<MockInvalidationService> invalidator_;
 };

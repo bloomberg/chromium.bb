@@ -507,7 +507,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function =
       base::BindRepeating(ReportUnrecoverableError, channel_);
-  params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.poll_interval = sync_prefs_.GetPollInterval();
   if (params.poll_interval.is_zero()) {

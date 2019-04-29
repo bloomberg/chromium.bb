@@ -74,7 +74,6 @@ class SyncEngine : public ModelTypeConfigurer {
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
     std::map<ModelType, int64_t> invalidation_versions;
 
     // Initial authoritative values (usually read from prefs).

@@ -314,13 +314,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
     return;
   }
 
-  // Now that we have opened the Directory we can restore any previously saved
-  // nigori specifics.
-  if (args->saved_nigori_state) {
-    sync_encryption_handler_->RestoreNigori(*args->saved_nigori_state);
-    args->saved_nigori_state.reset();
-  }
-
   if (args->enable_local_sync_backend) {
     VLOG(1) << "Running against local sync backend.";
     allstatus_.SetLocalBackendFolder(

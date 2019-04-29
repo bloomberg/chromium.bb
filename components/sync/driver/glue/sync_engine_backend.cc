@@ -365,7 +365,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
-  args.saved_nigori_state = std::move(params.saved_nigori_state);
   args.poll_interval = params.poll_interval;
   args.cache_guid = params.cache_guid;
   args.birthday = params.birthday;

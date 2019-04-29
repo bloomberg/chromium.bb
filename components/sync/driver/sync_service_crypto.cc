@@ -353,10 +353,4 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
-std::unique_ptr<SyncEncryptionHandler::NigoriState>
-SyncServiceCrypto::TakeSavedNigoriState() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::move(state_.saved_nigori_state);
-}
-
 }  // namespace syncer

@@ -242,9 +242,6 @@ class SyncManager {
     // Must outlive SyncManager.
     CancelationSignal* cancelation_signal;
 
-    // Optional nigori state to be restored.
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
-
     // Define the polling interval. Must not be zero.
     base::TimeDelta poll_interval;
 
