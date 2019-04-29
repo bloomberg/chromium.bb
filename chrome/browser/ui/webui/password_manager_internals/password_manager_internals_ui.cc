@@ -30,15 +30,11 @@ namespace {
 content::WebUIDataSource* CreatePasswordManagerInternalsHTMLSource() {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIPasswordManagerInternalsHost);
-
-  source->AddResourcePath(
-      "password_manager_internals.js",
-      IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_JS);
-  source->AddResourcePath(
-      "password_manager_internals.css",
-      IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_CSS);
-  source->SetDefaultResource(
-      IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_HTML);
+  source->AddResourcePath("autofill_and_password_manager_internals.js",
+                          IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_JS);
+  source->AddResourcePath("autofill_and_password_manager_internals.css",
+                          IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_CSS);
+  source->SetDefaultResource(IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_HTML);
   source->UseGzip();
   return source;
 }
@@ -65,6 +61,7 @@ void PasswordManagerInternalsUI::DidStartLoading() {
 }
 
 void PasswordManagerInternalsUI::DidStopLoading() {
+  web_ui()->CallJavascriptFunctionUnsafe("setUpPasswordManagerInternals");
   DCHECK(!registered_with_logging_service_);
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
@@ -100,8 +97,7 @@ void PasswordManagerInternalsUI::LogSavePasswordProgress(
   std::string no_quotes(text);
   std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
   base::Value text_string_value(net::EscapeForHTML(no_quotes));
-  web_ui()->CallJavascriptFunctionUnsafe("addSavePasswordProgressLog",
-                                         text_string_value);
+  web_ui()->CallJavascriptFunctionUnsafe("addLog", text_string_value);
 }
 
 void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {

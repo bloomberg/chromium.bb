@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_internals_logging.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -42,6 +43,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL,
         sync_state);
+    AutofillInternalsLogging::Log("SYNC_SERVICE_NULL");
     return false;
   }
 
@@ -50,6 +52,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_PERSISTENT_AUTH_ERROR,
         sync_state);
+    AutofillInternalsLogging::Log("SYNC_SERVICE_PERSISTENT_ERROR");
     return false;
   }
 
@@ -58,6 +61,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE,
         sync_state);
+    AutofillInternalsLogging::Log(
+        "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE");
     return false;
   }
 
@@ -69,6 +74,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           AutofillMetrics::CardUploadEnabledMetric::
               SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE,
           sync_state);
+      AutofillInternalsLogging::Log(
+          "SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_DATA_TYPE");
       return false;
     }
   } else {
@@ -84,6 +91,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           AutofillMetrics::CardUploadEnabledMetric::
               ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED,
           sync_state);
+      AutofillInternalsLogging::Log("ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED");
       return false;
     }
   }
@@ -97,6 +105,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             USING_SECONDARY_SYNC_PASSPHRASE,
         sync_state);
+    AutofillInternalsLogging::Log("USER_HAS_SECONDARY_SYNC_PASSPHRASE");
     return false;
   }
 
@@ -106,6 +115,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED,
         sync_state);
+    AutofillInternalsLogging::Log("USER_ONLY_SYNCING_LOCALLY");
     return false;
   }
 
@@ -114,6 +124,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::PAYMENTS_INTEGRATION_DISABLED,
         sync_state);
+    AutofillInternalsLogging::Log("PAYMENTS_INTEGRATION_DISABLED");
     return false;
   }
 
@@ -121,6 +132,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   if (user_email.empty()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY, sync_state);
+    AutofillInternalsLogging::Log("USER_EMAIL_EMPTY");
     return false;
   }
 
@@ -138,6 +150,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED,
         sync_state);
+    AutofillInternalsLogging::Log("USER_EMAIL_DOMAIN_NOT_SUPPORTED");
     return false;
   }
 
@@ -145,6 +158,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED,
         sync_state);
+    AutofillInternalsLogging::Log("AUTOFILL_UPSTREAM_NOT_ENABLED");
     return false;
   }
 

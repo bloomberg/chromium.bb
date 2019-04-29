@@ -8,6 +8,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <part file="autofill_and_password_manager_internals_resources.grdp" />
       <part file="about_ui_resources.grdp" />
       <part file="crash_resources.grdp" />
       <part file="dom_distiller_resources.grdp" />
@@ -17,7 +18,6 @@
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
       <part file="offline_pages_resources.grdp" />
-      <part file="password_manager_internals_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="safe_browsing_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />

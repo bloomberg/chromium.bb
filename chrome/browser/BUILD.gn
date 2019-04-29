@@ -126,6 +126,8 @@ jumbo_split_static_library("browser") {
     "autofill/address_normalizer_factory.h",
     "autofill/autocomplete_history_manager_factory.cc",
     "autofill/autocomplete_history_manager_factory.h",
+    "autofill/autofill_internals_logging_impl.cc",
+    "autofill/autofill_internals_logging_impl.h",
     "autofill/autofill_profile_validator_factory.cc",
     "autofill/autofill_profile_validator_factory.h",
     "autofill/legacy_strike_database_factory.cc",
