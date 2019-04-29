@@ -390,6 +390,10 @@ void UnifiedSystemTrayView::SetNotificationRectBelowScroll(
   SchedulePaint();
 }
 
+int UnifiedSystemTrayView::GetVisibleFeaturePodCount() const {
+  return feature_pods_container_->GetVisibleCount();
+}
+
 // static
 std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
   return views::CreateBackgroundFromPainter(

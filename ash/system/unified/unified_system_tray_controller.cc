@@ -41,6 +41,7 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_view.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
@@ -366,6 +367,15 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
+
+  std::string histogram_name = "ChromeOS.SystemTray.FeaturePodCountOnOpen";
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
+    histogram_name = "ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen";
+  }
+  UMA_HISTOGRAM_COUNTS_100(histogram_name,
+                           unified_view_->GetVisibleFeaturePodCount());
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(

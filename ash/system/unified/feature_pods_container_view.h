@@ -36,6 +36,9 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   void SaveFocus();
   void RestoreFocus();
 
+  // Returns the number of children that prefer to be visible.
+  int GetVisibleCount() const;
+
   // Overridden views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(View* child) override;
@@ -45,9 +48,6 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
 
  private:
   void UpdateChildVisibility();
-
-  // Returns the number of children that prefer to be visible.
-  int GetVisibleCount() const;
 
   // Calculate the current position of the button from |visible_index| and
   // |expanded_amount_|.
