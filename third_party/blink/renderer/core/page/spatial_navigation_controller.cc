@@ -347,8 +347,7 @@ bool SpatialNavigationController::AdvanceWithinContainer(
 
 Node* SpatialNavigationController::StartingNode() {
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    if (interest_element_ && interest_element_->isConnected() &&
-        interest_element_->GetDocument().GetFrame()) {
+    if (interest_element_ && IsValidCandidate(interest_element_)) {
       // If an iframe is interested, start the search from its document node.
       // This matches the behavior in the focus case below where focusing a
       // frame means the focused document doesn't have a focused element and so
@@ -455,7 +454,23 @@ void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
 
 bool SpatialNavigationController::IsValidCandidate(
     const Element* element) const {
-  return element && element->IsKeyboardFocusable();
+  if (!element || !element->isConnected() || !element->GetLayoutObject())
+    return false;
+
+  LocalFrame* frame = element->GetDocument().GetFrame();
+  if (!frame)
+    return false;
+
+  // If the author installed a click handler on the main document or body, we
+  // almost certainly don't want to actually interest it. Doing so leads to
+  // issues since the document/body will likely contain most of the other
+  // content on the page.
+  if (frame->IsMainFrame()) {
+    if (IsHTMLHtmlElement(element) || IsHTMLBodyElement(element))
+      return false;
+  }
+
+  return element->IsKeyboardFocusable();
 }
 
 Element* SpatialNavigationController::GetFocusedElement() const {
