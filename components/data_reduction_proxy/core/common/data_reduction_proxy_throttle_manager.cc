@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 
@@ -13,24 +14,29 @@ class HttpRequestHeaders;
 
 namespace data_reduction_proxy {
 
-DataReductionProxyThrottleManager::~DataReductionProxyThrottleManager() =
-    default;
-
 DataReductionProxyThrottleManager::DataReductionProxyThrottleManager(
-    mojom::DataReductionProxyPtr data_reduction_proxy,
+    mojom::DataReductionProxy* data_reduction_proxy,
     mojom::DataReductionProxyThrottleConfigPtr initial_config)
-    : data_reduction_proxy_(std::move(data_reduction_proxy)), binding_(this) {
-  data_reduction_proxy::mojom::DataReductionProxyThrottleConfigObserverPtr
-      observer;
+    : data_reduction_proxy_(data_reduction_proxy), binding_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  mojom::DataReductionProxyThrottleConfigObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
+
   data_reduction_proxy_->AddThrottleConfigObserver(std::move(observer));
 
   OnThrottleConfigChanged(std::move(initial_config));
 }
 
+DataReductionProxyThrottleManager::~DataReductionProxyThrottleManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 base::Optional<DataReductionProxyTypeInfo>
 DataReductionProxyThrottleManager::FindConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(https://crbug.com/721403): The non-NS code also searches through the
   // recently seen proxies, not just the current ones.
   return params::FindConfiguredProxyInVector(proxies_for_http_, proxy_server);
@@ -40,6 +46,8 @@ void DataReductionProxyThrottleManager::MarkProxiesAsBad(
     base::TimeDelta bypass_duration,
     const net::ProxyList& bad_proxies,
     mojom::DataReductionProxy::MarkProxiesAsBadCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // There is no need to handle the case where |callback| is never invoked
   // (possible on connection error). That would imply disconnection from the
   // browser, which is not recoverable.
@@ -47,23 +55,10 @@ void DataReductionProxyThrottleManager::MarkProxiesAsBad(
                                           std::move(callback));
 }
 
-std::unique_ptr<DataReductionProxyThrottleManager>
-DataReductionProxyThrottleManager::Clone() {
-  mojom::DataReductionProxyPtr data_reduction_proxy;
-
-  if (data_reduction_proxy_)
-    data_reduction_proxy_->Clone(mojo::MakeRequest(&data_reduction_proxy));
-
-  auto cloned_config = proxies_for_http_.empty()
-                           ? mojom::DataReductionProxyThrottleConfigPtr()
-                           : CreateConfig(proxies_for_http_);
-
-  return std::make_unique<DataReductionProxyThrottleManager>(
-      std::move(data_reduction_proxy), std::move(cloned_config));
-}
-
 void DataReductionProxyThrottleManager::OnThrottleConfigChanged(
     mojom::DataReductionProxyThrottleConfigPtr config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   proxies_for_http_.clear();
 
   if (!config)
@@ -75,6 +70,7 @@ void DataReductionProxyThrottleManager::OnThrottleConfigChanged(
   }
 }
 
+// static
 mojom::DataReductionProxyThrottleConfigPtr
 DataReductionProxyThrottleManager::CreateConfig(
     const std::vector<DataReductionProxyServer>& proxies_for_http) {

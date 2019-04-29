@@ -11,7 +11,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/previews_state.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,22 +25,8 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override {
-    ASSERT_FALSE(waiting_for_mark_as_bad_closure_.is_null())
-        << "Unexpected call to MarkProxyAsBadAndRestart";
-
-    std::move(callback).Run();
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(waiting_for_mark_as_bad_closure_));
-  }
-
-  // Wait for MarkProxiesAsBad() to be called, and then reply.
-  void WaitUntilMarkProxiesAsBadCalled() {
-    ASSERT_TRUE(waiting_for_mark_as_bad_closure_.is_null());
-
-    base::RunLoop run_loop;
-    waiting_for_mark_as_bad_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
   }
 
   void AddThrottleConfigObserver(
@@ -50,8 +35,6 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   void Clone(mojom::DataReductionProxyRequest request) override {}
 
  private:
-  base::RepeatingClosure waiting_for_mark_as_bad_closure_;
-
   DISALLOW_COPY_AND_ASSIGN(MockMojoDataReductionProxy);
 };
 
@@ -64,7 +47,11 @@ class MockDelegate : public content::URLLoaderThrottle::Delegate {
     FAIL() << "Should not be reached";
   }
 
-  void Resume() override { resume_called++; }
+  void Resume() override {
+    resume_called++;
+    if (resume_callback)
+      std::move(resume_callback).Run();
+  }
 
   void RestartWithFlags(int additional_load_flags) override {
     restart_with_flags_called++;
@@ -75,26 +62,17 @@ class MockDelegate : public content::URLLoaderThrottle::Delegate {
   size_t restart_with_flags_called = 0;
   int restart_additional_load_flags = 0;
 
+  base::OnceClosure resume_callback;
+
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 // Creates a DataReductionProxyThrottleManager which is bound to a
-// MockMojoDataReductionProxy, and has an initial throttle configuration
+// mojo::DataReductionProxy, and has an initial throttle configuration
 // containing |initial_drp_servers|.
-//
-// If |out_mock_drp| is non-null, it is assigned a non-owned pointer to the
-// underlying mock implementation. This pointer will remain valid while the
-// DataReductionProxyThrottleManager is alive.
 std::unique_ptr<DataReductionProxyThrottleManager> CreateManager(
-    const std::vector<DataReductionProxyServer>& initial_drp_servers = {},
-    MockMojoDataReductionProxy** out_mock_drp = nullptr) {
-  auto mock_drp = std::make_unique<MockMojoDataReductionProxy>();
-  if (out_mock_drp)
-    *out_mock_drp = mock_drp.get();
-
-  mojom::DataReductionProxyPtr drp;
-  mojo::MakeStrongBinding(std::move(mock_drp), mojo::MakeRequest(&drp));
-
+    mojom::DataReductionProxy* mojo_data_reduction_proxy,
+    const std::vector<DataReductionProxyServer>& initial_drp_servers = {}) {
   auto initial_throttle_config =
       initial_drp_servers.empty()
           ? mojom::DataReductionProxyThrottleConfigPtr()
@@ -102,7 +80,7 @@ std::unique_ptr<DataReductionProxyThrottleManager> CreateManager(
                 initial_drp_servers);
 
   return std::make_unique<DataReductionProxyThrottleManager>(
-      std::move(drp), std::move(initial_throttle_config));
+      mojo_data_reduction_proxy, std::move(initial_throttle_config));
 }
 
 DataReductionProxyServer MakeCoreDrpServer(const std::string pac_string) {
@@ -112,12 +90,18 @@ DataReductionProxyServer MakeCoreDrpServer(const std::string pac_string) {
 }
 
 class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {
+ public:
+  MockMojoDataReductionProxy* mock_mojo_data_reduction_proxy() {
+    return &mock_mojo_data_reduction_proxy_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  MockMojoDataReductionProxy mock_mojo_data_reduction_proxy_;
 };
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, AcceptTransformHeaderSet) {
-  auto manager = CreateManager();
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
   DataReductionProxyURLLoaderThrottle throttle(net::HttpRequestHeaders(),
                                                manager.get());
   network::ResourceRequest request;
@@ -136,7 +120,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, AcceptTransformHeaderSet) {
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        AcceptTransformHeaderSetForMainFrame) {
-  auto manager = CreateManager();
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
@@ -156,7 +140,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        ConstructorHeadersAddedToPostCacheHeaders) {
-  auto manager = CreateManager();
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
 
   net::HttpRequestHeaders headers;
   headers.SetHeader("foo", "bar");
@@ -174,7 +158,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, UseAlternateProxyList) {
-  auto manager = CreateManager();
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
@@ -188,7 +172,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, UseAlternateProxyList) {
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
-  auto manager = CreateManager();
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
@@ -201,11 +185,12 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
   EXPECT_FALSE(request.custom_proxy_use_alternate_proxy_list);
 }
 
-void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
+void RestartBypassProxyAndCacheHelper(
+    mojom::DataReductionProxy* mojo_data_reduction_proxy,
+    bool response_came_from_drp) {
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
-  MockMojoDataReductionProxy* drp;
-  auto manager = CreateManager({drp_server}, &drp);
+  auto manager = CreateManager(mojo_data_reduction_proxy, {drp_server});
   MockDelegate delegate;
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
@@ -250,7 +235,8 @@ void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
 // Tests that when "Chrome-Proxy: block-once" is received from a DRP response
 // the request is immediately restarted.
 TEST_F(DataReductionProxyURLLoaderThrottleTest, RestartBypassProxyAndCache) {
-  RestartBypassProxyAndCacheHelper(/*response_was_from_drp=*/true);
+  RestartBypassProxyAndCacheHelper(mock_mojo_data_reduction_proxy(),
+                                   /*response_was_from_drp=*/true);
 }
 
 // Tests that when "Chrome-proxy: block-once" is received from a non-DRP server
@@ -258,14 +244,15 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, RestartBypassProxyAndCache) {
 // restarted).
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        ChromeProxyDisregardedForNonDrp) {
-  RestartBypassProxyAndCacheHelper(/*response_was_from_drp=*/false);
+  RestartBypassProxyAndCacheHelper(mock_mojo_data_reduction_proxy(),
+                                   /*response_was_from_drp=*/false);
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        DisregardChromeProxyFromDirect) {
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
-  auto manager = CreateManager({drp_server}, nullptr);
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy(), {drp_server});
   MockDelegate delegate;
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
@@ -297,8 +284,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
-  MockMojoDataReductionProxy* drp;
-  auto manager = CreateManager({drp_server}, &drp);
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy(), {drp_server});
   MockDelegate delegate;
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
@@ -326,9 +312,11 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
 
-  drp->WaitUntilMarkProxiesAsBadCalled();
-
   // The throttle should restart and resume.
+  base::RunLoop run_loop;
+  delegate.resume_callback = run_loop.QuitClosure();
+  run_loop.Run();
+
   EXPECT_EQ(1u, delegate.resume_called);
   EXPECT_EQ(1u, delegate.restart_with_flags_called);
   EXPECT_EQ(0, delegate.restart_additional_load_flags);

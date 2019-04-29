@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "extensions/buildflags/buildflags.h"
@@ -53,6 +54,9 @@ class URLLoaderThrottleProviderImpl
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
 
+  data_reduction_proxy::mojom::DataReductionProxyPtrInfo
+      data_reduction_proxy_info_;
+  data_reduction_proxy::mojom::DataReductionProxyPtr data_reduction_proxy_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
       data_reduction_proxy_manager_;
 

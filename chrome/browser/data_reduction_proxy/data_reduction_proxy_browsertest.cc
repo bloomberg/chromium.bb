@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -93,6 +94,14 @@ std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
   if (request.relative_url == relative_url)
     (*request_count)++;
   return std::make_unique<net::test_server::BasicHttpResponse>();
+}
+
+// Given a |request| to a proxy server, returns the destination host name.
+std::string GetDestinationHost(const net::test_server::HttpRequest& request) {
+  const auto it = request.headers.find("Host");
+  if (it == request.headers.end())
+    return {};
+  return it->second;
 }
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
@@ -1324,6 +1333,60 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   // Test a renderer initiated request.
   EXPECT_EQ("/x2", ReadSubresourceFromRenderer(browser(), x2_url));
   EXPECT_EQ(kExpectedLog2, event_log.GetAndReset());
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, NestedWebWorker) {
+  // Nested Web Workers exercise URLLoaderThrottles in interesting ways. Each
+  // worker runs on a separate thread and each one has an associated
+  // URLLoaderThrottleProvider. When spawning a nested worker, the outer
+  // worker's throttle provider is cloned on the outer worker's thread and then
+  // used on the inner worker's thread. This test verifies that the mojo
+  // connections between the throttles and DRP are set up correctly given the
+  // non-trivial threading scenario.
+  constexpr char kHtml[] = R"(
+    <html><body><script language="javascript">
+      function workerImpl() {
+        function nestedWorkerImpl() {
+          postMessage('done');
+        }
+        var blob = new Blob(['(' + nestedWorkerImpl.toString() + ')()'],
+                            { type: 'application/javascript' });
+        var nestedWorker = new Worker(URL.createObjectURL(blob));
+        nestedWorker.onmessage = (event) => postMessage(event.data);
+      }
+      var blob = new Blob(['(' + workerImpl.toString() + ')()'],
+                          { type: 'application/javascript' });
+      var worker = new Worker(URL.createObjectURL(blob));
+      worker.onmessage = (event) => document.title = event.data;
+    </script></body></html>
+  )";
+  constexpr char kDestinationHost[] = "some.host";
+
+  net::EmbeddedTestServer drp_server;
+  drp_server.RegisterRequestHandler(base::BindLambdaForTesting(
+      [&kHtml, &kDestinationHost](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (GetDestinationHost(request) != kDestinationHost)
+          return nullptr;
+
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_content(kHtml);
+        return response;
+      }));
+  ASSERT_TRUE(drp_server.Start());
+
+  // Change the DRP configuration so that |drp_server| is the current DRP.
+  SetConfig(CreateConfigForServer(drp_server));
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string("http://") + kDestinationHost));
+
+  const auto kExpectedTitle = base::ASCIIToUTF16("done");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), kExpectedTitle);
+  EXPECT_EQ(title_watcher.WaitAndGetTitle(), kExpectedTitle);
 }
 
 }  // namespace data_reduction_proxy

@@ -125,14 +125,9 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   }
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    data_reduction_proxy::mojom::DataReductionProxyPtr drp;
     content::RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, mojo::MakeRequest(&drp));
-
-    data_reduction_proxy_manager_ = std::make_unique<
-        data_reduction_proxy::DataReductionProxyThrottleManager>(
-        std::move(drp),
-        data_reduction_proxy::mojom::DataReductionProxyThrottleConfigPtr());
+        content::mojom::kBrowserServiceName,
+        mojo::MakeRequest(&data_reduction_proxy_info_));
   }
 }
 
@@ -147,9 +142,9 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   DETACH_FROM_THREAD(thread_checker_);
   if (other.safe_browsing_)
     other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
-  if (other.data_reduction_proxy_manager_) {
-    data_reduction_proxy_manager_ =
-        other.data_reduction_proxy_manager_->Clone();
+  if (other.data_reduction_proxy_) {
+    other.data_reduction_proxy_->Clone(
+        mojo::MakeRequest(&data_reduction_proxy_info_));
   }
   // An ad_delay_factory_ is created, rather than cloning the existing one.
 }
@@ -159,6 +154,8 @@ URLLoaderThrottleProviderImpl::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (safe_browsing_info_)
     safe_browsing_.Bind(std::move(safe_browsing_info_));
+  if (data_reduction_proxy_info_)
+    data_reduction_proxy_.Bind(std::move(data_reduction_proxy_info_));
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
@@ -180,7 +177,15 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);
 
-  if (data_reduction_proxy_manager_) {
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    if (data_reduction_proxy_info_)
+      data_reduction_proxy_.Bind(std::move(data_reduction_proxy_info_));
+    if (!data_reduction_proxy_manager_) {
+      data_reduction_proxy_manager_ = std::make_unique<
+          data_reduction_proxy::DataReductionProxyThrottleManager>(
+          data_reduction_proxy_.get(),
+          data_reduction_proxy::mojom::DataReductionProxyThrottleConfigPtr());
+    }
     throttles.push_back(
         std::make_unique<
             data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(

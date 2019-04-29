@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
@@ -210,6 +211,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -1101,7 +1103,11 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
     StartupData* startup_data)
-    : startup_data_(startup_data), weak_factory_(this) {
+    : data_reduction_proxy_throttle_manager_(
+          nullptr,
+          base::OnTaskRunnerDeleter(nullptr)),
+      startup_data_(startup_data),
+      weak_factory_(this) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
@@ -4709,6 +4715,15 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   if (chrome_navigation_ui_data && io_data &&
       io_data->data_reduction_proxy_io_data() &&
       data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    if (!data_reduction_proxy_throttle_manager_) {
+      data_reduction_proxy_throttle_manager_ = std::unique_ptr<
+          data_reduction_proxy::DataReductionProxyThrottleManager,
+          base::OnTaskRunnerDeleter>(
+          new data_reduction_proxy::DataReductionProxyThrottleManager(
+              io_data->data_reduction_proxy_io_data(),
+              io_data->data_reduction_proxy_io_data()->CreateThrottleConfig()),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+    }
     net::HttpRequestHeaders headers;
     data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
         io_data->data_reduction_proxy_io_data()->request_options();
@@ -4721,8 +4736,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     request_options->AddPageIDRequestHeader(&headers, page_id);
     result.push_back(std::make_unique<
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-        headers,
-        io_data->data_reduction_proxy_io_data()->GetThrottleManager()));
+        headers, data_reduction_proxy_throttle_manager_.get()));
   }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

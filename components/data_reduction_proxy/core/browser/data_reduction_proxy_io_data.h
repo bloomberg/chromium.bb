@@ -50,7 +50,6 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyServer;
 class DataReductionProxyService;
 class NetworkPropertiesManager;
-class DataReductionProxyThrottleManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -176,7 +175,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
     return proxy_delegate_.get();
   }
 
-  DataReductionProxyThrottleManager* GetThrottleManager();
+  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
@@ -271,8 +270,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // config.
   void UpdateThrottleConfig();
 
-  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
-
   // The type of Data Reduction Proxy client.
   const Client client_;
 
@@ -334,8 +331,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // IO thread is still available at the time of destruction. If the IO thread
   // is unavailable, then the destruction will happen on the UI thread.
   std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
-
-  std::unique_ptr<DataReductionProxyThrottleManager> throttle_manager_;
 
   // Current estimate of the effective connection type.
   net::EffectiveConnectionType effective_connection_type_;

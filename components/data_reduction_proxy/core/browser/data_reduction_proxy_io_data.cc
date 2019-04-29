@@ -468,18 +468,6 @@ void DataReductionProxyIOData::SetCustomProxyConfigClient(
   UpdateCustomProxyConfig();
 }
 
-DataReductionProxyThrottleManager*
-DataReductionProxyIOData::GetThrottleManager() {
-  if (!throttle_manager_) {
-    mojom::DataReductionProxyPtr drp;
-    Clone(mojo::MakeRequest(&drp));
-    throttle_manager_ = std::make_unique<DataReductionProxyThrottleManager>(
-        std::move(drp), CreateThrottleConfig());
-  }
-
-  return throttle_manager_.get();
-}
-
 void DataReductionProxyIOData::MarkProxiesAsBad(
     base::TimeDelta bypass_duration,
     const net::ProxyList& bad_proxies,

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_THROTTLE_MANAGER_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_THROTTLE_MANAGER_H_
 
+#include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -19,10 +20,10 @@ struct DataReductionProxyTypeInfo;
 class DataReductionProxyThrottleManager
     : public mojom::DataReductionProxyThrottleConfigObserver {
  public:
-  // Observes |data_reduction_proxy| for changes to the config, and starts off
-  // with the initial value (possibly empty) |initial_config|.
+  // Observes |data_reduction_proxy| for changes to the config, and starts
+  // off with the initial value (possibly empty) |initial_config|.
   DataReductionProxyThrottleManager(
-      mojom::DataReductionProxyPtr data_reduction_proxy,
+      mojom::DataReductionProxy* data_reduction_proxy_info,
       mojom::DataReductionProxyThrottleConfigPtr initial_config);
 
   ~DataReductionProxyThrottleManager() override;
@@ -35,8 +36,6 @@ class DataReductionProxyThrottleManager
       const net::ProxyList& bad_proxies,
       mojom::DataReductionProxy::MarkProxiesAsBadCallback callback);
 
-  std::unique_ptr<DataReductionProxyThrottleManager> Clone();
-
   // mojom::DataReductionProxyThrottleConfigObserver implementation.
   void OnThrottleConfigChanged(
       mojom::DataReductionProxyThrottleConfigPtr config) override;
@@ -47,7 +46,7 @@ class DataReductionProxyThrottleManager
  private:
   void SetDataReductionProxy(mojom::DataReductionProxyPtr data_reduction_proxy);
 
-  mojom::DataReductionProxyPtr data_reduction_proxy_;
+  mojom::DataReductionProxy* const data_reduction_proxy_;
 
   // The last seen config values.
   std::vector<DataReductionProxyServer> proxies_for_http_;
@@ -55,6 +54,8 @@ class DataReductionProxyThrottleManager
   mojo::Binding<
       data_reduction_proxy::mojom::DataReductionProxyThrottleConfigObserver>
       binding_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyThrottleManager);
 };
