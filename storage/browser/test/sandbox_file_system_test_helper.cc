@@ -165,9 +165,6 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
   file_system_context_->sandbox_delegate()->
       GetBaseDirectoryForOriginAndType(origin_, type_, true /* create */);
 
-  // Initialize the usage cache file. The directory does not exist and should be
-  // created for in memory tests.
-  base::CreateDirectory(GetUsageCachePath().DirName());
   base::FilePath usage_cache_path = GetUsageCachePath();
   if (!usage_cache_path.empty())
     usage_cache()->UpdateUsage(usage_cache_path, 0);

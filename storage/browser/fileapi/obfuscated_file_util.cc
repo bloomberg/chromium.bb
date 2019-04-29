@@ -213,9 +213,12 @@ class ObfuscatedOriginEnumerator
     : public ObfuscatedFileUtil::AbstractOriginEnumerator {
  public:
   using OriginRecord = SandboxOriginDatabase::OriginRecord;
-  ObfuscatedOriginEnumerator(SandboxOriginDatabaseInterface* origin_database,
-                             const base::FilePath& base_file_path)
-      : base_file_path_(base_file_path) {
+  ObfuscatedOriginEnumerator(
+      SandboxOriginDatabaseInterface* origin_database,
+      base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
+      const base::FilePath& base_file_path)
+      : base_file_path_(base_file_path),
+        memory_file_util_(std::move(memory_file_util)) {
     if (origin_database)
       origin_database->ListAllOrigins(&origins_);
   }
@@ -243,13 +246,17 @@ class ObfuscatedOriginEnumerator
     }
     base::FilePath path =
         base_file_path_.Append(current_.path).AppendASCII(type_string);
-    return base::DirectoryExists(path);
+    if (memory_file_util_)
+      return memory_file_util_->DirectoryExists(path);
+    else
+      return base::DirectoryExists(path);
   }
 
  private:
   std::vector<OriginRecord> origins_;
   OriginRecord current_;
   base::FilePath base_file_path_;
+  base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_;
 };
 
 ObfuscatedFileUtil::ObfuscatedFileUtil(
@@ -947,8 +954,15 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
   InitOriginDatabase(GURL(), false);
-  return std::make_unique<ObfuscatedOriginEnumerator>(origin_database_.get(),
-                                                      file_system_directory_);
+  base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> file_util_delegate;
+  if (is_incognito() &&
+      base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
+    file_util_delegate =
+        static_cast<ObfuscatedFileUtilMemoryDelegate*>(delegate())
+            ->GetWeakPtr();
+  }
+  return std::make_unique<ObfuscatedOriginEnumerator>(
+      origin_database_.get(), file_util_delegate, file_system_directory_);
 }
 
 void ObfuscatedFileUtil::DestroyDirectoryDatabase(

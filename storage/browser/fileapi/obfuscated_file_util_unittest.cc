@@ -225,25 +225,11 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   void TearDown() override {
     if (in_memory_test())
-      CheckFilesInFileSystemDirectory();
+      ASSERT_TRUE(IsDirectoryEmpty(data_dir_.GetPath()));
 
     quota_manager_ = nullptr;
     scoped_task_environment_.RunUntilIdle();
     sandbox_file_system_.TearDown();
-  }
-
-  void CheckFilesInFileSystemDirectory() {
-    // Make sure there is no file on disk for in memory file system. Ignore
-    // directories created by the ObfuscatedFileUtil as they do not represent
-    // user directories.
-    // TODO(https://crbug.com/93417): Investigate why directories are created.
-    std::unique_ptr<storage::FileSystemFileUtil::AbstractFileEnumerator>
-        enumerator = storage::NativeFileUtil::CreateFileEnumerator(
-            data_dir_.GetPath(), true);
-    for (base::FilePath path = enumerator->Next(); !path.empty();
-         path = enumerator->Next()) {
-      ASSERT_TRUE(storage::NativeFileUtil::DirectoryExists(path));
-    }
   }
 
   std::unique_ptr<FileSystemOperationContext> LimitedContext(
