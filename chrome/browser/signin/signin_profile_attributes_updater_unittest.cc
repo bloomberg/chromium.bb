@@ -41,7 +41,7 @@ class SigninProfileAttributesUpdaterTest : public testing::Test {
     signin_profile_attributes_updater_ =
         std::make_unique<SigninProfileAttributesUpdater>(
             identity_test_env_.identity_manager(), &signin_error_controller_,
-            profile_path_);
+            profile_manager_.profile_attributes_storage(), profile_path_);
   }
 
   void SetUp() override {
