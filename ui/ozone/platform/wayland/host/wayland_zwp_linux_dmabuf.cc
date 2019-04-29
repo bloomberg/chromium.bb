@@ -12,6 +12,10 @@
 
 namespace ui {
 
+namespace {
+constexpr uint32_t kImmedVerstion = 3;
+}
+
 WaylandZwpLinuxDmabuf::WaylandZwpLinuxDmabuf(
     zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
     WaylandConnection* connection)
@@ -45,10 +49,6 @@ void WaylandZwpLinuxDmabuf::CreateBuffer(base::File file,
   struct zwp_linux_buffer_params_v1* params =
       zwp_linux_dmabuf_v1_create_params(zwp_linux_dmabuf_.get());
 
-  // Store the |params| with the corresponding |callback| to identify newly
-  // created buffer and notify the client about it via the |callback|.
-  pending_params_.insert(std::make_pair(params, std::move(callback)));
-
   base::ScopedFD fd(file.TakePlatformFile());
 
   for (size_t i = 0; i < planes_count; i++) {
@@ -65,10 +65,23 @@ void WaylandZwpLinuxDmabuf::CreateBuffer(base::File file,
                                    offsets[i], strides[i], modifier_hi,
                                    modifier_lo);
   }
-  zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
-  zwp_linux_buffer_params_v1_create(params, size.width(), size.height(), format,
-                                    0);
 
+  // It's possible to avoid waiting until the buffer is created and have it
+  // immediately. This method is only available since the protocol version 3.
+  if (zwp_linux_dmabuf_v1_get_version(zwp_linux_dmabuf_.get()) >=
+      kImmedVerstion) {
+    wl::Object<wl_buffer> buffer(zwp_linux_buffer_params_v1_create_immed(
+        params, size.width(), size.height(), format, 0));
+    std::move(callback).Run(std::move(buffer));
+  } else {
+    // Store the |params| with the corresponding |callback| to identify newly
+    // created buffer and notify the client about it via the |callback|.
+    pending_params_.insert(std::make_pair(params, std::move(callback)));
+
+    zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
+    zwp_linux_buffer_params_v1_create(params, size.width(), size.height(),
+                                      format, 0);
+  }
   connection_->ScheduleFlush();
 }
 
