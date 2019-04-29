@@ -4115,9 +4115,7 @@
 
     'ozone_linux_gtests': {
       'services_unittests': {},
-      'ozone_unittests': {
-        'experiment_percentage': 100,
-      },
+      'ozone_unittests': {},
     },
 
     'performance_smoke_test_isolated_scripts': {

@@ -5121,7 +5121,6 @@
     ],
     "gtest_tests": [
       {
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
