@@ -355,6 +355,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough'], bug=844349)
     self.Fail('conformance/rendering/blending.html',
         ['passthrough'], bug=951628)
+    self.Fail('conformance/programs/program-test.html',
+        ['passthrough'], bug=953120)
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',

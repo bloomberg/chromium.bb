@@ -136,6 +136,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('conformance/rendering/blending.html',
         ['passthrough'], bug=951628)
+    # TODO(shrekhao): Restore failure expectation for
+    # ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016
+    # as Flaky after 953120 is fixed.
+    # And restore ['linux', 'intel'], bug=928530 as Fail
+    self.Fail('conformance/programs/program-test.html',
+        ['passthrough'], bug=953120)
 
     # Passthrough command decoder / OpenGL
     self.Fail(
@@ -186,8 +192,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / NVIDIA / Passthrough command decoder / D3D11
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['win7', 'nvidia', 'passthrough', 'd3d11', 'debug'], bug=751849)
-    self.Flaky('conformance/programs/program-test.html',
-        ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
+    # self.Flaky('conformance/programs/program-test.html',
+    #     ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016) # see 953120
 
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
@@ -632,6 +638,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/' +
         'draw-webgl-to-canvas-2d-repeatedly.html',
         ['linux', 'amd', 'passthrough'], bug=906066)
+    # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
+    # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
+    self.Fail('conformance/programs/program-test.html',
+        ['linux', 'intel', 'no_passthrough'], bug=928530)   # see 953120
 
     ####################
     # Android failures #
