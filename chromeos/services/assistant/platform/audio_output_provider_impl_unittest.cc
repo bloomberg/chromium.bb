@@ -81,7 +81,8 @@ class AudioDeviceOwnerTest : public testing::Test {
  public:
   AudioDeviceOwnerTest()
       : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                      QUEUED) {}
 
   ~AudioDeviceOwnerTest() override { task_env_.RunUntilIdle(); }
 
