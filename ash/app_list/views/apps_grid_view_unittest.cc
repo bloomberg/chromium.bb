@@ -427,6 +427,17 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
       1 /* Times kSuggestionChip Launched */);
 }
 
+// Tests that control + arrow while a suggested chip is focused does not crash.
+TEST_F(AppsGridViewTest, ControlArrowOnSuggestedChip) {
+  model_->PopulateApps(5);
+  suggestions_container_->children().front()->RequestFocus();
+
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(suggestions_container_->children().front(),
+            apps_grid_view_->GetFocusManager()->GetFocusedView());
+}
+
 TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   // If the app's full name and short name differ, the title label's tooltip
   // should always be the full name of the app.
