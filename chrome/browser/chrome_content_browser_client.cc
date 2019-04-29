@@ -5468,13 +5468,15 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
       ui_tab_helper->GetPreviewsUserData(navigation_handle);
 
   // Certain PreviewsStates are used within URLLoaders (Offline, server
-  // previews) and cannot re-evaluate PreviewsState during a redirect, so they
-  // should not change. Assume this is a redirect when PreviewsUserData already
-  // exists and a Lite Page Redirect preview is not being attempted, since it
-  // may also create a previews_data before this point.
-  bool is_redirect = false;
+  // previews) and cannot re-evaluate PreviewsState once previews triggering
+  // logic has already been run, so they should not change. Assume that
+  // previews triggering logic has run when PreviewsUserData already exists and
+  // a Lite Page Redirect preview is not being attempted, since it may also
+  // create a previews_data before this point.
+  bool previews_triggering_logic_already_ran = false;
   if (previews_data) {
-    is_redirect = !previews_data->server_lite_page_info();
+    previews_triggering_logic_already_ran =
+        !previews_data->server_lite_page_info();
   } else {
     previews_data = ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
         navigation_handle, previews_decider_impl->GeneratePageId());
@@ -5492,7 +5494,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
   // re-evaluate upon redirect. Plumbing does not exist to modify the CPAT
   // header, nor does the plumbing exist to modify the PreviewsState within the
   // URLLoader.
-  if (is_redirect) {
+  if (previews_triggering_logic_already_ran) {
     // Copy the server state that was used before the redirect for the initial
     // URL.
     previews_state |= (previews_data->allowed_previews_state() &
@@ -5507,7 +5509,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
 
   // Evaluate client LoFi, Offline, NoScript, and ResourceBlocking previews.
   previews_state |= previews::DetermineAllowedClientPreviewsState(
-      previews_data, current_navigation_url, is_reload, is_redirect,
+      previews_data, previews_triggering_logic_already_ran,
       data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
       previews_decider_impl, navigation_handle);
 

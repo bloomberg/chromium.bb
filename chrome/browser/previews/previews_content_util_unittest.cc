@@ -14,12 +14,37 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace previews {
 
 namespace {
+
+// Creates and populates a MockNavigationHandle to pass to
+// DetermineAllowedClientPreveiwsState.
+content::PreviewsState CallDetermineAllowedClientPreviewsState(
+    previews::PreviewsUserData* previews_data,
+    const GURL& url,
+    bool is_reload,
+    bool previews_triggering_logic_already_ran,
+    bool is_data_saver_user,
+    previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle) {
+  EXPECT_TRUE(!navigation_handle);
+  content::MockNavigationHandle mock_navigation_handle;
+  mock_navigation_handle.set_url(url);
+  if (is_reload) {
+    mock_navigation_handle.set_reload_type(content::ReloadType::NORMAL);
+  } else {
+    mock_navigation_handle.set_reload_type(content::ReloadType::NONE);
+  }
+
+  return DetermineAllowedClientPreviewsState(
+      previews_data, previews_triggering_logic_already_ran, is_data_saver_user,
+      previews_decider, &mock_navigation_handle);
+}
 
 // A test implementation of PreviewsDecider that simply returns whether the
 // preview type feature is enabled (ignores ECT and blacklist considerations).
@@ -105,18 +130,18 @@ TEST_F(PreviewsContentUtilTest,
       "Previews" /* disable_features */);
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(
-      content::PREVIEWS_UNSPECIFIED,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
-  EXPECT_EQ(
-      content::PREVIEWS_UNSPECIFIED,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -127,20 +152,20 @@ TEST_F(PreviewsContentUtilTest,
       {} /* disable_features */);
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(
-      content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON |
-          content::RESOURCE_LOADING_HINTS_ON | content::NOSCRIPT_ON,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON |
+                content::RESOURCE_LOADING_HINTS_ON | content::NOSCRIPT_ON,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
   is_data_saver_user = false;
-  EXPECT_EQ(
-      content::PREVIEWS_UNSPECIFIED,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -150,34 +175,34 @@ TEST_F(PreviewsContentUtilTest,
       "Previews", "ClientLoFi,ResourceLoadingHints,NoScriptPreviews");
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(
-      content::OFFLINE_PAGE_ON,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::OFFLINE_PAGE_ON,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
   EXPECT_FALSE(user_data.is_redirect());
   user_data.set_allowed_previews_state(content::OFFLINE_PAGE_ON);
-  is_redirect = true;
-  EXPECT_EQ(
-      content::OFFLINE_PAGE_ON,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  previews_triggering_logic_already_ran = true;
+  EXPECT_EQ(content::OFFLINE_PAGE_ON,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
   EXPECT_TRUE(user_data.is_redirect());
   user_data.set_allowed_previews_state(content::PREVIEWS_OFF);
-  EXPECT_EQ(
-      content::PREVIEWS_UNSPECIFIED,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
-  is_redirect = false;
-  EXPECT_EQ(
-      content::OFFLINE_PAGE_ON,
-      previews::DetermineAllowedClientPreviewsState(
-          &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
-          is_data_saver_user, enabled_previews_decider(), nullptr));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
+  previews_triggering_logic_already_ran = false;
+  EXPECT_EQ(content::OFFLINE_PAGE_ON,
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest, DetermineAllowedClientPreviewsStateClientLoFi) {
@@ -185,18 +210,18 @@ TEST_F(PreviewsContentUtilTest, DetermineAllowedClientPreviewsStateClientLoFi) {
   scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
   EXPECT_TRUE(content::CLIENT_LOFI_ON &
-              previews::DetermineAllowedClientPreviewsState(
+              previews::CallDetermineAllowedClientPreviewsState(
                   &user_data, GURL("https://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider(),
-                  nullptr));
+                  previews_triggering_logic_already_ran, is_data_saver_user,
+                  enabled_previews_decider(), nullptr));
   EXPECT_TRUE(content::CLIENT_LOFI_ON &
-              previews::DetermineAllowedClientPreviewsState(
+              previews::CallDetermineAllowedClientPreviewsState(
                   &user_data, GURL("http://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider(),
-                  nullptr));
+                  previews_triggering_logic_already_ran, is_data_saver_user,
+                  enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -206,18 +231,20 @@ TEST_F(PreviewsContentUtilTest,
                                           std::string());
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_LT(0, content::RESOURCE_LOADING_HINTS_ON &
-                   previews::DetermineAllowedClientPreviewsState(
-                       &user_data, GURL("https://www.google.com"), is_reload,
-                       is_redirect, is_data_saver_user,
-                       enabled_previews_decider(), nullptr));
-  EXPECT_LT(0, content::RESOURCE_LOADING_HINTS_ON &
-                   previews::DetermineAllowedClientPreviewsState(
-                       &user_data, GURL("http://www.google.com"), is_reload,
-                       is_redirect, is_data_saver_user,
-                       enabled_previews_decider(), nullptr));
+  EXPECT_LT(0,
+            content::RESOURCE_LOADING_HINTS_ON &
+                previews::CallDetermineAllowedClientPreviewsState(
+                    &user_data, GURL("https://www.google.com"), is_reload,
+                    previews_triggering_logic_already_ran, is_data_saver_user,
+                    enabled_previews_decider(), nullptr));
+  EXPECT_LT(0,
+            content::RESOURCE_LOADING_HINTS_ON &
+                previews::CallDetermineAllowedClientPreviewsState(
+                    &user_data, GURL("http://www.google.com"), is_reload,
+                    previews_triggering_logic_already_ran, is_data_saver_user,
+                    enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -229,25 +256,26 @@ TEST_F(PreviewsContentUtilTest,
 
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
   // Verify both are enabled.
   EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
-              previews::DetermineAllowedClientPreviewsState(
+              previews::CallDetermineAllowedClientPreviewsState(
                   &user_data, GURL("https://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider(),
-                  nullptr));
+                  previews_triggering_logic_already_ran, is_data_saver_user,
+                  enabled_previews_decider(), nullptr));
   EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
-              previews::DetermineAllowedClientPreviewsState(
+              previews::CallDetermineAllowedClientPreviewsState(
                   &user_data, GURL("http://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider(),
-                  nullptr));
+                  previews_triggering_logic_already_ran, is_data_saver_user,
+                  enabled_previews_decider(), nullptr));
 
   // Verify non-HTTP[S] URL has no previews enabled.
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineAllowedClientPreviewsState(
-                &user_data, GURL("data://someblob"), is_reload, is_redirect,
-                is_data_saver_user, enabled_previews_decider(), nullptr));
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("data://someblob"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -258,20 +286,20 @@ TEST_F(PreviewsContentUtilTest,
 
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
   // Verify preview is enabled on HTTPS.
   EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
-              previews::DetermineAllowedClientPreviewsState(
+              previews::CallDetermineAllowedClientPreviewsState(
                   &user_data, GURL("https://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider(),
-                  nullptr));
-
+                  previews_triggering_logic_already_ran, is_data_saver_user,
+                  enabled_previews_decider(), nullptr));
   // Verify non-HTTP[S] URL has no previews enabled.
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineAllowedClientPreviewsState(
-                &user_data, GURL("data://someblob"), is_reload, is_redirect,
-                is_data_saver_user, enabled_previews_decider(), nullptr));
+            previews::CallDetermineAllowedClientPreviewsState(
+                &user_data, GURL("data://someblob"), is_reload,
+                previews_triggering_logic_already_ran, is_data_saver_user,
+                enabled_previews_decider(), nullptr));
 
   // Other checks are performed in browser tests due to the nature of needing
   // fully initialized browser state.
@@ -286,20 +314,24 @@ TEST_F(PreviewsContentUtilTest,
 
   PreviewsUserData user_data(1);
   bool is_reload = false;
-  bool is_redirect = false;
+  bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
   // Verify Lite Page Redirect enabled for host without page hints.
-  content::PreviewsState ps1 = previews::DetermineAllowedClientPreviewsState(
-      &user_data, GURL("https://www.google.com"), is_reload, is_redirect,
-      is_data_saver_user, enabled_previews_decider(), nullptr);
+  content::PreviewsState ps1 =
+      previews::CallDetermineAllowedClientPreviewsState(
+          &user_data, GURL("https://www.google.com"), is_reload,
+          previews_triggering_logic_already_ran, is_data_saver_user,
+          enabled_previews_decider(), nullptr);
   EXPECT_TRUE(ps1 & content::LITE_PAGE_REDIRECT_ON);
   EXPECT_TRUE(ps1 & content::RESOURCE_LOADING_HINTS_ON);
   EXPECT_TRUE(ps1 & content::NOSCRIPT_ON);
 
   // Verify only page hint client previews enabled with known page hints.
-  content::PreviewsState ps2 = previews::DetermineAllowedClientPreviewsState(
-      &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
-      is_redirect, is_data_saver_user, enabled_previews_decider(), nullptr);
+  content::PreviewsState ps2 =
+      previews::CallDetermineAllowedClientPreviewsState(
+          &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
+          previews_triggering_logic_already_ran, is_data_saver_user,
+          enabled_previews_decider(), nullptr);
   EXPECT_FALSE(ps2 & content::LITE_PAGE_REDIRECT_ON);
   EXPECT_TRUE(ps2 & content::RESOURCE_LOADING_HINTS_ON);
   EXPECT_TRUE(ps2 & content::NOSCRIPT_ON);
@@ -313,9 +345,11 @@ TEST_F(PreviewsContentUtilTest,
         features::kLitePageServerPreviews, parameters);
 
     // Verify Lite Page Redirect now enabled for host with page hints.
-    content::PreviewsState ps = previews::DetermineAllowedClientPreviewsState(
-        &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
-        is_redirect, is_data_saver_user, enabled_previews_decider(), nullptr);
+    content::PreviewsState ps =
+        previews::CallDetermineAllowedClientPreviewsState(
+            &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
+            previews_triggering_logic_already_ran, is_data_saver_user,
+            enabled_previews_decider(), nullptr);
     EXPECT_TRUE(ps & content::LITE_PAGE_REDIRECT_ON);
     EXPECT_TRUE(ps & content::RESOURCE_LOADING_HINTS_ON);
     EXPECT_TRUE(ps & content::NOSCRIPT_ON);

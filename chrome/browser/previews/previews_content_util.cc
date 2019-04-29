@@ -62,6 +62,11 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   if (!navigation_handle)
     return true;
 
+  // This should only occur in unit tests; this behavior is tested in browser
+  // tests.
+  if (navigation_handle->GetWebContents() == nullptr)
+    return true;
+
   const GURL& url = navigation_handle->GetURL();
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   auto* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -165,6 +170,9 @@ CreateServerLitePageInfoFromNavigationHandle(
     content::NavigationHandle* navigation_handle) {
   auto server_lite_page_info =
       std::make_unique<PreviewsUserData::ServerLitePageInfo>();
+  // This is only for unit testing.
+  if (!navigation_handle->GetWebContents())
+    return nullptr;
 
   server_lite_page_info->original_navigation_start =
       navigation_handle->NavigationStart();
@@ -209,13 +217,15 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
 
 content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
-    const GURL& url,
-    bool is_reload,
-    bool is_redirect,
+    bool previews_triggering_logic_already_ran,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+
+  const GURL& url = navigation_handle->GetURL();
+  bool is_reload =
+      navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
   // Either this is a navigation to the lite page via the redirect mechanism and
   // only Lite Page redirect should be served, or this is a reload in which case
@@ -240,15 +250,16 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     return previews_state;
 
   auto* previews_service =
-      navigation_handle
+      navigation_handle && navigation_handle->GetWebContents()
           ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
                 navigation_handle->GetWebContents()->GetBrowserContext()))
           : nullptr;
 
-  // Offline previews state should not be updated during a redirect. The Offline
-  // Previews URLLoader will not receive an updated PreviewsState, so the state
-  // should stay consistent throughout the navigation.
-  if (is_redirect) {
+  // Offline previews state should not be updated if previews triggering
+  // logic has already been run. The Offline Previews URLLoader will not receive
+  // an updated PreviewsState, so the state should stay consistent throughout
+  // the navigation.
+  if (previews_triggering_logic_already_ran) {
     // Record that the navigation was redirected.
     previews_data->set_is_redirect(true);
     // Keep the same OFFLINE previews bit as the original URL.

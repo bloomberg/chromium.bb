@@ -43,7 +43,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(WasStartedFromContextMenu, bool());
   MOCK_METHOD0(GetSearchableFormURL, const GURL&());
   MOCK_METHOD0(GetSearchableFormEncoding, const std::string&());
-  MOCK_METHOD0(GetReloadType, ReloadType());
+  ReloadType GetReloadType() override { return reload_type_; }
   RestoreType GetRestoreType() override { return RestoreType::NONE; }
   const GURL& GetBaseURLForDataURL() override { return base_url_for_data_url_; }
   MOCK_METHOD0(IsPost, bool());
@@ -135,6 +135,7 @@ class MockNavigationHandle : public NavigationHandle {
   void set_proxy_server(const net::ProxyServer& proxy_server) {
     proxy_server_ = proxy_server;
   }
+  void set_reload_type(ReloadType reload_type) { reload_type_ = reload_type; }
 
  private:
   int64_t navigation_id_;
@@ -157,6 +158,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool was_response_cached_ = false;
   net::ProxyServer proxy_server_;
   base::Optional<url::Origin> initiator_origin_;
+  ReloadType reload_type_ = content::ReloadType::NONE;
 };
 
 }  // namespace content

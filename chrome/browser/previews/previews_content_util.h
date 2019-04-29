@@ -17,19 +17,16 @@ namespace previews {
 // Returns whether |previews_state| has any enabled previews.
 bool HasEnabledPreviews(content::PreviewsState previews_state);
 
-// Returns the bitmask of enabled client-side previews for |url| and the
+// Returns the bitmask of enabled client-side previews and the
 // current effective network connection given |previews_decider|.
 // This handles the mapping of previews::PreviewsType enum values to bitmask
 // definitions for content::PreviewsState.
-// |is_reload| is used to eliminate certain preview types, and |previews_data|
-// is populated with relevant information.
-// TODO(ryansturm): |navigation_handle| has all of the other information, so
-// remove extra arguments. https://crbug.com/934400
+// |previews_triggering_logic_already_ran| is used to prevent offline previews
+// from being updated if previews triggering logic has already run.
+// |previews_data| is populated with relevant information.
 content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
-    const GURL& url,
-    bool is_reload,
-    bool is_redirect,
+    bool previews_triggering_logic_already_ran,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
