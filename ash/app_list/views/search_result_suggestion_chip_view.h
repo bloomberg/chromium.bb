@@ -45,8 +45,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
 
   // views::View:
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
@@ -71,10 +69,13 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   // Updates the suggestion chip view's title and icon.
   void UpdateSuggestionChipView();
 
+  // Updates the focus ring draw path based on the current bounds.
+  void UpdateFocusRingPath();
+
   void InitLayout();
 
-  // Sets a rounded rect mask layer with |corner_radius| to clip the chip.
-  void SetRoundedRectMaskLayer(int corner_radius);
+  // Sets rounded corners for the layer with |corner_radius| to clip the chip.
+  void SetRoundedCornersForLayer(int corner_radius);
 
   AppListViewDelegate* const view_delegate_;  // Owned by AppListView.
 
@@ -82,9 +83,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   views::Label* text_view_;      // Owned by view hierarchy.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
-
-  // The owner of a mask layer used to clip the chip.
-  std::unique_ptr<ui::LayerOwner> chip_mask_;
 
   // The index of this view in the suggestion_chip_container, only used for uma
   // logging.

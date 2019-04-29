@@ -105,7 +105,7 @@ void SuggestionChipContainerView::Layout() {
   for (auto* chip : suggestion_chip_views_) {
     if (!chip->result())
       break;
-    const gfx::Size size = chip->CalculatePreferredSize();
+    const gfx::Size size = chip->GetPreferredSize();
     if (size.width() + total_width > max_width) {
       chip->SetVisible(false);
     } else {
