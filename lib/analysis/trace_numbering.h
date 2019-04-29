@@ -52,18 +52,33 @@ class NumberingWithoutRetransmissions {
     }
     TraceOffset offset = current_offset_;
     current_offset_ += size;
-    offsets_.emplace(event.packet_number(), Interval{offset, size});
+    getOffsets(event.encryption_level())->emplace(event.packet_number(), Interval{offset, size});
     return {offset, size};
   }
 
-  Interval GetTraceNumbering(uint64_t packet_number) {
-    auto it = offsets_.find(packet_number);
-    return it != offsets_.end() ? it->second : Interval{0, 0};
+  Interval GetTraceNumbering(uint64_t packet_number, EncryptionLevel enc_level) {
+    auto offsets = getOffsets(enc_level);
+    auto it = offsets->find(packet_number);
+    return it != offsets->end() ? it->second : Interval{0, 0};
   }
 
  private:
+  absl::flat_hash_map<uint64_t, Interval>* getOffsets(EncryptionLevel enc_level) {
+    switch(enc_level) {
+    case ENCRYPTION_INITIAL:
+      return &offsets_initial_;
+    case ENCRYPTION_HANDSHAKE:
+      return &offsets_handshake_;
+    case ENCRYPTION_0RTT:
+    case ENCRYPTION_1RTT:
+      return &offsets_1rtt_;
+    }
+  }
+
   TraceOffset current_offset_ = 0;
-  absl::flat_hash_map<uint64_t, Interval> offsets_;
+  absl::flat_hash_map<uint64_t, Interval> offsets_initial_;
+  absl::flat_hash_map<uint64_t, Interval> offsets_handshake_;
+  absl::flat_hash_map<uint64_t, Interval> offsets_1rtt_;
 };
 
 }  // namespace quic_trace
