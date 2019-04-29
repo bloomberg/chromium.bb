@@ -152,6 +152,7 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
 
 bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Initialize");
   VLOGF(2) << ": " << config.AsHumanReadableString();
 
   visible_size_ = config.input_visible_size;
@@ -720,6 +721,7 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
 
 void V4L2VideoEncodeAccelerator::Enqueue() {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Enqueue");
 
   DVLOGF(4) << "free_input_buffers: " << free_input_buffers_.size()
             << "input_queue: " << encoder_input_queue_.size();
@@ -792,6 +794,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
 void V4L2VideoEncodeAccelerator::Dequeue() {
   DVLOGF(4);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Dequeue");
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers, and recycle to the free
   // list.
@@ -893,6 +896,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DVLOGF(4);
   DCHECK(!free_input_buffers_.empty());
   DCHECK(!encoder_input_queue_.empty());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueInputRecord");
 
   // Enqueue an input (VIDEO_OUTPUT) buffer.
   InputFrameInfo frame_info = encoder_input_queue_.front();
@@ -989,6 +993,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
   DVLOGF(4);
   DCHECK(!free_output_buffers_.empty());
   DCHECK(!encoder_output_queue_.empty());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueOutputRecord");
 
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   const int index = free_output_buffers_.back();
@@ -1139,6 +1144,8 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t framerate) {
   VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT2("media,gpu", "V4L2VEA::RequestEncodingParametersChangeTask",
+               "bitrate", bitrate, "framerate", framerate);
 
   DCHECK_GT(bitrate, 0u);
   DCHECK_GT(framerate, 0u);
