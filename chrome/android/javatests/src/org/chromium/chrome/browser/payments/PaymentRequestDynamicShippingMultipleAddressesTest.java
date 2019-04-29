@@ -17,7 +17,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
+import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
@@ -91,7 +93,12 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
         // Add the profiles.
         ArrayList<String> guids = new ArrayList<>();
         for (int i = 0; i < mProfilesToAdd.length; i++) {
-            guids.add(helper.setProfile(mProfilesToAdd[i]));
+            // The user has a shipping address on disk.
+            String billingAddressId = helper.setProfile(mProfilesToAdd[i]);
+            guids.add(billingAddressId);
+            helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
+                    "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                    CardType.UNKNOWN, billingAddressId, "" /* serverId */));
         }
 
         // Set up the profile use stats.

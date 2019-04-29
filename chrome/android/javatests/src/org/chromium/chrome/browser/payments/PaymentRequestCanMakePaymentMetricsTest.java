@@ -68,6 +68,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testCannotMakePayment_UserAbort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.
@@ -99,6 +100,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testCannotMakePayment_Complete()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -236,6 +238,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testNoQuery_UserAbort()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Initiate a payment request.

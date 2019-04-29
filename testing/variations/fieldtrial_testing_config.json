@@ -3185,7 +3185,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled"
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NoCreditCardAbort"
+                    ]
                 }
             ]
         }

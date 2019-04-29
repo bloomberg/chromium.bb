@@ -664,6 +664,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_UnsupportedCard()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add an unsupported card (mastercard) and an complete address.
@@ -697,6 +698,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_OnlyPaymentApp()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add a complete address and a working payment app.
@@ -728,6 +730,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoInstruments()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add an address and a payment app without instruments on file.
@@ -929,6 +932,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_AcceptsCardsAndApps_NoCardOrPaymentApp()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add an address on file.

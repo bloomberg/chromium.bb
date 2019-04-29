@@ -94,6 +94,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
+    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testCannotMakeActivePaymentWithBasicMasterCard()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
