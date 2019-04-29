@@ -27,9 +27,9 @@
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/latency/latency_tracker.h"
 
-class GrBackendSemaphore;
 class SkDeferredDisplayList;
 
 namespace base {
@@ -213,6 +213,9 @@ class SkiaOutputSurfaceImplOnGpu {
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
+
+  // Semaphore for SkiaOutputDevice::SwapBuffers() to wait on.
+  GrBackendSemaphore swap_buffers_semaphore_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.

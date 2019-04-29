@@ -52,14 +52,16 @@ void SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
 }
 
 gfx::SwapResponse SkiaOutputDeviceX11::SwapBuffers(
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   return PostSubBuffer(
       gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()),
-      std::move(feedback));
+      semaphore, std::move(feedback));
 }
 
 gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   StartSwapBuffers(std::move(feedback));
 

@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/vulkan/vulkan_swap_chain.h"
 
 namespace gpu {
 class VulkanSurface;
@@ -33,7 +35,8 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
+                                BufferPresentedCallback feedback) override;
 
  private:
   void CreateVulkanSurface();
@@ -43,6 +46,8 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
 
   const gpu::SurfaceHandle surface_handle_;
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
+
+  base::Optional<gpu::VulkanSwapChain::ScopedWrite> scoped_write_;
 
   // SkSurfaces for swap chain images.
   std::vector<sk_sp<SkSurface>> sk_surfaces_;

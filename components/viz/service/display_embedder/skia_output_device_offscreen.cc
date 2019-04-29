@@ -15,7 +15,8 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     bool flipped,
     bool has_alpha,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(false /*need_swap_semaphore */,
+                       did_swap_buffer_complete_callback),
       gr_context_(gr_context),
       has_alpha_(has_alpha) {
   capabilities_.flipped_output_surface = flipped;
@@ -49,11 +50,13 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
 
 gfx::SwapResponse SkiaOutputDeviceOffscreen::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
-  return SwapBuffers(std::move(feedback));
+  return SwapBuffers(semaphore, std::move(feedback));
 }
 
 gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // Reshape should have been called first.
   DCHECK(draw_surface_);

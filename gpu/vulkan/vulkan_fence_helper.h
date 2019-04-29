@@ -21,6 +21,9 @@ class VULKAN_EXPORT VulkanFenceHelper {
   explicit VulkanFenceHelper(VulkanDeviceQueue* device_queue);
   ~VulkanFenceHelper();
 
+  // Destroy the fence helper.
+  void Destroy();
+
   // Class representing a fence registered with this system. Should be treated
   // as an opaque handle.
   class FenceHandle {

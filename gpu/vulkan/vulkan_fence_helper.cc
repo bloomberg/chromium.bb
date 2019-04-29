@@ -22,6 +22,11 @@ VulkanFenceHelper::VulkanFenceHelper(VulkanDeviceQueue* device_queue)
     : device_queue_(device_queue) {}
 
 VulkanFenceHelper::~VulkanFenceHelper() {
+  DCHECK(tasks_pending_fence_.empty());
+  DCHECK(cleanup_tasks_.empty());
+}
+
+void VulkanFenceHelper::Destroy() {
   PerformImmediateCleanup();
 }
 
@@ -172,14 +177,12 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
   // recover from this.
   CHECK(result == VK_SUCCESS || result == VK_ERROR_DEVICE_LOST);
   bool device_lost = result == VK_ERROR_DEVICE_LOST;
+  if (!device_lost)
+    current_generation_ = next_generation_ - 1;
 
   // Run all cleanup tasks. Create a temporary vector of tasks to run to avoid
   // reentrancy issues.
   std::vector<CleanupTask> tasks_to_run;
-  tasks_to_run.insert(tasks_to_run.end(),
-                      std::make_move_iterator(tasks_pending_fence_.begin()),
-                      std::make_move_iterator(tasks_pending_fence_.end()));
-  tasks_pending_fence_.clear();
   while (!cleanup_tasks_.empty()) {
     auto& tasks_for_fence = cleanup_tasks_.front();
     vkDestroyFence(device_queue_->GetVulkanDevice(),
@@ -189,6 +192,10 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
                         std::make_move_iterator(tasks_for_fence.tasks.end()));
     cleanup_tasks_.pop();
   }
+  tasks_to_run.insert(tasks_to_run.end(),
+                      std::make_move_iterator(tasks_pending_fence_.begin()),
+                      std::make_move_iterator(tasks_pending_fence_.end()));
+  tasks_pending_fence_.clear();
   for (auto& task : tasks_to_run)
     std::move(task).Run(device_queue_, device_lost);
 }

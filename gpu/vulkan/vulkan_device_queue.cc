@@ -182,6 +182,7 @@ bool VulkanDeviceQueue::InitializeForWevbView(
 }
 
 void VulkanDeviceQueue::Destroy() {
+  cleanup_helper_->Destroy();
   cleanup_helper_.reset();
 
   if (VK_NULL_HANDLE != owned_vk_device_) {

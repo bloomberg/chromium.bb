@@ -42,7 +42,6 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_util.h"
@@ -75,7 +74,8 @@ class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
                            std::vector<ImageContext*> image_contexts)
       : impl_on_gpu_(impl_on_gpu), image_contexts_(std::move(image_contexts)) {
     begin_semaphores_.reserve(image_contexts_.size());
-    end_semaphores_.reserve(image_contexts_.size());
+    // We may need one more space for the swap buffer semaphore.
+    end_semaphores_.reserve(image_contexts_.size() + 1);
     // TODO(penghuang): gather begin read access semaphores from shared images.
     // https://crbug.com/944194
     impl_on_gpu_->BeginAccessImages(image_contexts_, &begin_semaphores_,
@@ -422,57 +422,71 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     return;
 
   PullTextureUpdates(std::move(sync_tokens));
+
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gr_shader_cache_) {
+    if (gr_shader_cache_)
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
-    }
+
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
-    auto wait_result = output_sk_surface()->wait(
-        scoped_promise_image_access.begin_semaphores().size(),
-        scoped_promise_image_access.begin_semaphores().data());
-    DCHECK(wait_result);
+    if (!scoped_promise_image_access.begin_semaphores().empty()) {
+      auto result = output_sk_surface()->wait(
+          scoped_promise_image_access.begin_semaphores().size(),
+          scoped_promise_image_access.begin_semaphores().data());
+      DCHECK(result);
+    }
+
     output_sk_surface()->draw(ddl.get());
+    ddl = nullptr;
+
+    if (overdraw_ddl) {
+      sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
+          gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
+      overdraw_surface->draw(overdraw_ddl.get());
+      overdraw_ddl = nullptr;
+
+      SkPaint paint;
+      sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
+
+      sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
+      paint.setColorFilter(colorFilter);
+      // TODO(xing.xu): move below to the thread where skia record happens.
+      output_sk_surface()->getCanvas()->drawImage(overdraw_image.get(), 0, 0,
+                                                  &paint);
+    }
+
+    if (output_device_->need_swap_semaphore())
+      scoped_promise_image_access.end_semaphores().emplace_back();
+
     GrFlushInfo flush_info = {
         .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
-    // TODO(penghuang): flush output_sk_surface() with kPresent.
-    if (gr_context()->flush(flush_info) != GrSemaphoresSubmitted::kYes) {
+    auto result = output_sk_surface()->flush(
+        SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+    if (result != GrSemaphoresSubmitted::kYes &&
+        !(scoped_promise_image_access.begin_semaphores().empty() &&
+          scoped_promise_image_access.end_semaphores().empty())) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "GrContext::flush() failed.";
+      DLOG(ERROR) << "output_sk_surface()->flush() failed.";
       return;
     }
-  }
-
-  // Note that the ScopedCacheUse for GrShaderCache is scoped until the
-  // ReleaseFenceSync call here since releasing the fence may schedule a
-  // different decoder's stream which also uses the shader cache.
-  ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
-
-  if (overdraw_ddl) {
-    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gr_shader_cache_) {
-      cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
+    if (output_device_->need_swap_semaphore()) {
+      DCHECK(!swap_buffers_semaphore_.isInitialized());
+      swap_buffers_semaphore_ =
+          scoped_promise_image_access.end_semaphores().back();
+      DCHECK(swap_buffers_semaphore_.isInitialized());
     }
 
-    sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
-        gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
-    overdraw_surface->draw(overdraw_ddl.get());
-
-    SkPaint paint;
-    sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
-
-    sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
-    paint.setColorFilter(colorFilter);
-    // TODO(xing.xu): move below to the thread where skia record happens.
-    output_sk_surface()->getCanvas()->drawImage(overdraw_image.get(), 0, 0,
-                                                &paint);
+    // Add an extra GrContext flush to workaround a skia crash
+    // TODO(penghuang): remove it when the crash is fixed.
+    // https://crbug.com/c/956177
     gr_context()->flush();
   }
+  ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
@@ -490,10 +504,13 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
                                    frame.sub_buffer_rect->height());
     response = output_device_->PostSubBuffer(*frame.sub_buffer_rect,
+                                             swap_buffers_semaphore_,
                                              buffer_presented_callback_);
   } else {
-    response = output_device_->SwapBuffers(buffer_presented_callback_);
+    response = output_device_->SwapBuffers(swap_buffers_semaphore_,
+                                           buffer_presented_callback_);
   }
+  swap_buffers_semaphore_ = GrBackendSemaphore();
 
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
@@ -533,10 +550,12 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
-    auto wait_result = offscreen.surface()->wait(
-        scoped_promise_image_access.begin_semaphores().size(),
-        scoped_promise_image_access.begin_semaphores().data());
-    DCHECK(wait_result);
+    if (!scoped_promise_image_access.begin_semaphores().empty()) {
+      auto result = offscreen.surface()->wait(
+          scoped_promise_image_access.begin_semaphores().size(),
+          scoped_promise_image_access.begin_semaphores().data());
+      DCHECK(result);
+    }
     offscreen.surface()->draw(ddl.get());
     GrFlushInfo flush_info = {
         .fFlags = kNone_GrFlushFlags,
@@ -544,10 +563,14 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
         .fSignalSemaphores =
             scoped_promise_image_access.end_semaphores().data(),
     };
-    // TODO(penghuang): flush offscreen.surface() only.
-    if (gr_context()->flush(flush_info) != GrSemaphoresSubmitted::kYes) {
+
+    auto result = offscreen.surface()->flush(
+        SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    if (result != GrSemaphoresSubmitted::kYes &&
+        !(scoped_promise_image_access.begin_semaphores().empty() &&
+          scoped_promise_image_access.end_semaphores().empty())) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "GrContext::flush() failed.";
+      DLOG(ERROR) << "offscreen.surface()->flush() failed.";
       return;
     }
   }
@@ -792,8 +815,6 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
         // and a fallback content has been used, in that case, we cannot change
         // the content, so we do nothing.
         if (context->representation) {
-          // TODO(penghuang): create gather read access semaphores and call
-          // skia flush() with them. https://crbug.com/944194
           auto promise_image_texture = context->representation->BeginReadAccess(
               begin_semaphores, end_semaphores);
           // The image has been fulfilled and cached. It is too late to tell
@@ -825,8 +846,6 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       }
 
       context->representation = std::move(representation);
-      // TODO(penghuang): create gather read access semaphores and call
-      // skia flush() with them. https://crbug.com/944194
       context->promise_image_texture = context->representation->BeginReadAccess(
           begin_semaphores, end_semaphores);
       if (!context->promise_image_texture) {

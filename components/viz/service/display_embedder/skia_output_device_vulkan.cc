@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 
@@ -21,7 +22,8 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     VulkanContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(true /*need_swap_semaphore */,
+                       did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       surface_handle_(surface_handle) {
   capabilities_.flipped_output_surface = true;
@@ -29,6 +31,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
 }
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
+  scoped_write_.reset();
   if (vulkan_surface_)
     vulkan_surface_->Destroy();
 }
@@ -40,6 +43,7 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
   if (!vulkan_surface_)
     CreateVulkanSurface();
 
+  scoped_write_.reset();
   auto old_size = vulkan_surface_->size();
   vulkan_surface_->SetSize(size);
   if (vulkan_surface_->size() != old_size) {
@@ -53,10 +57,12 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
 }
 
 gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // Reshape should have been called first.
   DCHECK(vulkan_surface_);
   DCHECK(draw_surface_);
+  DCHECK(scoped_write_);
 
   StartSwapBuffers(std::move(feedback));
   auto backend = draw_surface_->getBackendRenderTarget(
@@ -64,10 +70,11 @@ gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
   GrVkImageInfo vk_image_info;
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get the image info.";
-  vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
-      vk_image_info.fImageLayout);
-  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers());
+  scoped_write_->set_image_layout(vk_image_info.fImageLayout);
+  scoped_write_->SetEndSemaphore(semaphore.vkSemaphore());
+  scoped_write_.reset();
 
+  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers());
   UpdateDrawSurface();
 
   return response;
@@ -97,20 +104,21 @@ void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
 
 void SkiaOutputDeviceVulkan::UpdateDrawSurface() {
   DCHECK(vulkan_surface_);
-  auto* swap_chain = vulkan_surface_->GetSwapChain();
-  auto index = swap_chain->current_image();
-  auto& sk_surface = sk_surfaces_[index];
+  DCHECK(!scoped_write_);
+
+  scoped_write_.emplace(vulkan_surface_->GetSwapChain());
+
+  auto& sk_surface = sk_surfaces_[scoped_write_->image_index()];
+
   if (!sk_surface) {
     SkSurfaceProps surface_props =
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-    VkImage vk_image = swap_chain->GetCurrentImage();
-    VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
     const auto surface_format = vulkan_surface_->surface_format().format;
     DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
            surface_format == VK_FORMAT_R8G8B8A8_UNORM);
-    GrVkImageInfo vk_image_info(vk_image, GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
-                                vk_image_layout, surface_format,
-                                1 /* level_count */);
+    GrVkImageInfo vk_image_info(
+        scoped_write_->image(), GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
+        scoped_write_->image_layout(), surface_format, 1 /* level_count */);
     GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
                                         vulkan_surface_->size().height(),
                                         0 /* sample_cnt */, vk_image_info);
@@ -125,9 +133,12 @@ void SkiaOutputDeviceVulkan::UpdateDrawSurface() {
   } else {
     auto backend = sk_surface->getBackendRenderTarget(
         SkSurface::kFlushRead_BackendHandleAccess);
-    backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
+    backend.setVkImageLayout(scoped_write_->image_layout());
   }
-
+  GrBackendSemaphore semaphore;
+  semaphore.initVulkan(scoped_write_->TakeBeginSemaphore());
+  auto result = sk_surface->wait(1, &semaphore);
+  DCHECK(result);
   draw_surface_ = sk_surface;
 }
 
