@@ -181,6 +181,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // hash prefixes that match it in the local database.
     FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
 
+    // List of full hashes of urls we are checking and corresponding store and
+    // hash prefixes that match it in the artificial database.
+    FullHashToStoreAndHashPrefixesMap
+        artificial_full_hash_to_store_and_hash_prefixes;
+
     // The metadata associated with the full hash of the severest match found
     // for that URL.
     ThreatMetadata url_metadata;

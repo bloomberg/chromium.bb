@@ -33,6 +33,9 @@ namespace {
 
 using CommandLineSwitchAndThreatType = std::pair<std::string, ThreatType>;
 
+// The expiration time of the full hash stored in the artificial database.
+const int64_t kFullHashExpiryTimeInMinutes = 60;
+
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
 
@@ -622,7 +625,7 @@ void V4LocalDatabaseManager::GetArtificialPrefixMatches(
           artificial_store_and_hash_prefix.hash_prefix;
       DCHECK_EQ(crypto::kSHA256Length, artificial_full_hash.size());
       if (artificial_full_hash == full_hash) {
-        (check->full_hash_to_store_and_hash_prefixes)[full_hash] = {
+        (check->artificial_full_hash_to_store_and_hash_prefixes)[full_hash] = {
             artificial_store_and_hash_prefix};
       }
     }
@@ -733,9 +736,11 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
 
   GetPrefixMatches(check);
   GetArtificialPrefixMatches(check);
-  if (check->full_hash_to_store_and_hash_prefixes.empty()) {
+  if (check->full_hash_to_store_and_hash_prefixes.empty() &&
+      check->artificial_full_hash_to_store_and_hash_prefixes.empty()) {
     return true;
   }
+
   ScheduleFullHashCheck(std::move(check));
   return false;
 }
@@ -759,16 +764,38 @@ void V4LocalDatabaseManager::PopulateArtificialDatabase() {
 
 void V4LocalDatabaseManager::ScheduleFullHashCheck(
     std::unique_ptr<PendingCheck> check) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // Add check to pending_checks_ before scheduling PerformFullHashCheck so that
   // even if the client calls CancelCheck before PerformFullHashCheck gets
   // called, the check can be found in pending_checks_.
   pending_checks_.insert(check.get());
 
-  // Post on the IO thread to enforce async behavior.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
-                     weak_factory_.GetWeakPtr(), std::move(check)));
+  // If the full hash matches one from the artificial list, don't send the
+  // request to the server.
+  if (!check->artificial_full_hash_to_store_and_hash_prefixes.empty()) {
+    std::vector<FullHashInfo> full_hash_infos;
+    for (const auto& entry :
+         check->artificial_full_hash_to_store_and_hash_prefixes) {
+      for (const auto& store_and_prefix : entry.second) {
+        ListIdentifier list_id = store_and_prefix.list_id;
+        base::Time next = base::Time::Now() + base::TimeDelta::FromMinutes(
+                                                  kFullHashExpiryTimeInMinutes);
+        full_hash_infos.emplace_back(entry.first, list_id, next);
+      }
+    }
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
+                       weak_factory_.GetWeakPtr(), std::move(check),
+                       full_hash_infos));
+  } else {
+    // Post on the IO thread to enforce async behavior.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
+                       weak_factory_.GetWeakPtr(), std::move(check)));
+  }
 }
 
 bool V4LocalDatabaseManager::HandleHashSynchronously(

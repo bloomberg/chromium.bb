@@ -1138,7 +1138,7 @@ TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {
 }
 
 TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsPhishing) {
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "mark_as_phishing", "https://example.com/1/");
   PopulateArtificialDatabase();
@@ -1146,16 +1146,20 @@ TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsPhishing) {
   const GURL url_bad("https://example.com/1/");
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
       url_bad, usual_threat_types_, nullptr));
+  // PerformFullHashCheck will not be called if there is a match within the
+  // artificial database
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
   const GURL url_good("https://other.example.com");
   EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
       url_good, usual_threat_types_, nullptr));
 
-  // Wait for PerformFullHashCheck to complete.
-  WaitForTasksOnTaskRunner();
+  StopLocalDatabaseManager();
 }
 
 TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsMalware) {
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "mark_as_malware", "https://example.com/1/");
   PopulateArtificialDatabase();
@@ -1163,16 +1167,20 @@ TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsMalware) {
   const GURL url_bad("https://example.com/1/");
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
       url_bad, usual_threat_types_, nullptr));
+  // PerformFullHashCheck will not be called if there is a match within the
+  // artificial database
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
   const GURL url_good("https://other.example.com");
   EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
       url_good, usual_threat_types_, nullptr));
 
-  // Wait for PerformFullHashCheck to complete.
-  WaitForTasksOnTaskRunner();
+  StopLocalDatabaseManager();
 }
 
 TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsUWS) {
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "mark_as_uws", "https://example.com/1/");
   PopulateArtificialDatabase();
@@ -1180,16 +1188,20 @@ TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsUWS) {
   const GURL url_bad("https://example.com/1/");
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
       url_bad, usual_threat_types_, nullptr));
+  // PerformFullHashCheck will not be called if there is a match within the
+  // artificial database
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
   const GURL url_good("https://other.example.com");
   EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
       url_good, usual_threat_types_, nullptr));
 
-  // Wait for PerformFullHashCheck to complete.
-  WaitForTasksOnTaskRunner();
+  StopLocalDatabaseManager();
 }
 
 TEST_F(V4LocalDatabaseManagerTest, FlagMultipleUrls) {
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "mark_as_phishing", "https://example.com/1/");
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -1207,12 +1219,16 @@ TEST_F(V4LocalDatabaseManagerTest, FlagMultipleUrls) {
   const GURL url_uws("https://example.test.com");
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
       url_uws, usual_threat_types_, nullptr));
+  // PerformFullHashCheck will not be called if there is a match within the
+  // artificial database
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
   const GURL url_good("https://other.example.com");
   EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
       url_good, usual_threat_types_, nullptr));
 
-  // Wait for PerformFullHashCheck to complete.
-  WaitForTasksOnTaskRunner();
+  StopLocalDatabaseManager();
 }
 
 }  // namespace safe_browsing
